@@ -3,10 +3,11 @@
 # include "comm_handler.hpp"
 # include <boost/cstdint.hpp>
 # define DEF_PORT_NUM 21299
+# define DEF_IP_ADDR "192.168.0.100"
 namespace mdl { class comm_deamon : public comm_handler
 {
     public :
-    comm_deamon(boost::uint16_t __port_num = DEF_PORT_NUM) {}
+    comm_deamon(char * __ip_addr = DEF_IP_ADDR, boost::uint16_t __port_num = DEF_PORT_NUM) {}
 
 
 
