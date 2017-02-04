@@ -4,9 +4,9 @@
 # include <GL/glu.h>
 # include <cstdio>
 # include <boost/cstdint.hpp>
-
-# define WX_LEN 640
-# define WY_LEN 640
+# include <string.h>
+# define WX_LEN 664
+# define WY_LEN 664
 
 float button_rcolour = 1.0;
 
@@ -66,8 +66,29 @@ bool is_inside_window(int w_xpos, int w_ypos, int m_xpos, int m_ypos) {
 	if ((m_xpos > w_xpos && m_xpos < (w_xpos + WX_LEN)) && (m_ypos > w_ypos && m_ypos < (w_ypos + WY_LEN))) return true;
 	return false;
 }
-
+# include <boost/asio.hpp>
+# define PACKET_SIZE 65500
+# include <iostream>
+# include <math.h>
+# include <chrono>
 int main() {
+
+	boost::asio::io_service io_service;
+    boost::asio::ip::udp::socket socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 10198));
+
+    boost::asio::ip::udp::resolver resolver(io_service);
+    boost::asio::ip::udp::endpoint endpoint = *resolver.resolve({boost::asio::ip::udp::v4(), "192.168.0.100", "21299"});
+
+
+	boost::uint8_t * pixels = static_cast<boost::uint8_t *>(malloc((WX_LEN * WY_LEN) * 4));
+	memset(pixels, 0x1, (WX_LEN * WY_LEN) * 4);
+
+	boost::uint32_t pix_count = (WX_LEN * WY_LEN) * 4;
+
+	std::size_t packet_count = ceil((float(pix_count)/PACKET_SIZE));
+
+	printf("pass. packets %ld.\n", packet_count);
+
 	XVisualInfo * _vis_info;
 
 	GLint att[] = {GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None};
@@ -131,13 +152,38 @@ int main() {
 	int w_xpos, w_ypos, m_xpos, m_ypos, r_mxpos, r_mypos;
 	int unsigned w_width, w_height, w_border_width, w_depth, m_mask;
 	Window child, root = XRootWindow(_display, 0);
-	for (;;) {
+	boost::uint8_t n = 0;
+	int unsigned tick_count = 0;
+
+    socket.set_option(boost::asio::socket_base::send_buffer_size(60 * PACKET_SIZE));
+    socket.set_option(boost::asio::socket_base::receive_buffer_size(60 * pix_count));
+
+	auto begin = std::chrono::high_resolution_clock::now();
+	while(true) {
+//		socket.send_to(boost::asio::buffer(&n, sizeof(boost::uint8_t)), endpoint);
+		std::size_t amount_to_recv = pix_count;
+		std::size_t o = 0;
+
+		while (o != packet_count) {
+			socket.send_to(boost::asio::buffer(&n, sizeof(boost::uint8_t)), endpoint);
+			std::size_t bytes_to_recv = PACKET_SIZE;
+
+			if (amount_to_recv < PACKET_SIZE)
+				bytes_to_recv = amount_to_recv;
+
+//			printf("recv packet of data. %ld\n", bytes_to_recv);
+			socket.receive_from(boost::asio::buffer((pixels + (o * PACKET_SIZE)), bytes_to_recv * sizeof(boost::uint8_t)), endpoint);
+			amount_to_recv -= PACKET_SIZE;
+			o ++;
+		}
+
 		//XGetGeometry(_display, _window, &root, &w_xpos, &w_ypos, &w_width, &w_height, &w_border_width, &w_depth);
 		XTranslateCoordinates(_display, _window, root, 0, 0, &w_xpos, &w_ypos, &child);
-
-		for (std::size_t i = 0; i != screen_count; i ++) {
+		std::size_t i = 0;
+		while(i != screen_count) {
 			bool result = XQueryPointer(_display, r_windows[i], &_rwindow, &child, &r_mxpos, &r_mypos, &m_xpos, &m_ypos, &m_mask);
 			if (result) break;
+			i ++;
 		}
 
 //		printf("window X: %d, window Y: %d, mouse X: %d, mouse Y: %d\n", w_xpos, w_ypos, m_xpos, m_ypos);
@@ -147,18 +193,19 @@ int main() {
 			if (_xevent.type == KeyPress || _xevent.type == ClientMessage) goto end;
 		}
 
-		draw();
-		draw_button();
+		glDrawPixels(WX_LEN, WY_LEN , GL_RGBA, GL_BYTE, pixels);
 
-		if (is_inside(w_xpos, w_ypos, m_xpos, m_ypos)) {
-		//	printf("currently inside window.\n");
+		auto now = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> duration = std::chrono::duration_cast<std::chrono::duration<double>>(now - begin);
+		std::chrono::milliseconds time_span = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+		if (time_span.count() >= 1000) {
+			std::cout << "FPS: " << tick_count << std::endl;
+			tick_count = 0;
+			begin = std::chrono::high_resolution_clock::now();
+		} else {
+			tick_count ++;
 		}
 
-		// slow things down
-		for (int x = 0; x != 10000; x ++) {}
-
-
-//		printf("tick.\n");
 		glXSwapBuffers(_display, _window);
 	}
 
