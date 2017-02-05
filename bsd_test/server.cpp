@@ -11,8 +11,8 @@ int main() {
 	int sock, len, n;
 	struct sockaddr_in server;
 	struct sockaddr_in from;
-	int const buff_len = 128;
-	char buff[buff_len] = {'\0'};
+	int const buff_len = 54000;
+	char buff[buff_len];// = {'\0'};
 	socklen_t fromlen;
 
 	int port_num = 21299;
@@ -21,7 +21,7 @@ int main() {
 
 	if (sock < 0) {
 		printf("error can't open socket.\n");
-
+		return 1;
 	}
 
 	len = sizeof(server);
