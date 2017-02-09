@@ -36,6 +36,8 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
 
     _window = XCreateWindow(_display, _rwindow, 0, 0, __wx_axis_len, __wy_axis_len, 0, _vis_info-> depth, InputOutput, _vis_info-> visual, CWColormap | CWEventMask, &_win_att);
 
+	XSelectInput(_display, _window, KeyPressMask | KeyReleaseMask);
+
     XMapWindow(_display, _window);
 
     Atom WM_DELETE_WINDOW = XInternAtom(_display, "WM_DELETE_WINDOW", false);
@@ -90,7 +92,16 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
 
 		while (XPending(_display) > 0) {
             XNextEvent(_display, &_xevent);
-            if (_xevent.type == KeyPress || _xevent.type == ClientMessage) goto end;
+            if (_xevent.type == ClientMessage) goto end;
+			if (_xevent.type == KeyPress) {
+				this-> key_press = true;
+				this-> key_code = _xevent.xkey.keycode;
+			} else if (_xevent.type == KeyRelease) {
+				this-> key_press = false;
+				this-> key_code = 0x0;
+			}
+
+			if (this-> key_press) printf("key press: %d\n", this-> key_code);
         }
 
 		glXSwapBuffers(_display, _window);

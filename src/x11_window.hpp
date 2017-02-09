@@ -26,7 +26,8 @@ namespace mdl { class x11_window
 	window_coords_t window_coords;
 	mouse_coords_t mouse_coords;
 	boost::uint8_t * pixels = nullptr;
-
+	int key_code = 0x0;
+	bool key_press = false;
 	private:
 	boost::thread * window_thread;
 	boost::uint16_t __wx_axis_len;

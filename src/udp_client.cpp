@@ -7,6 +7,18 @@ boost::uint8_t mdl::udp_client::init(char const * __ip_addr, boost::uint16_t __p
 	this-> server.sin_family = AF_INET;
 	this-> server.sin_port = htons(__port_num);
 	inet_pton(AF_INET, __ip_addr, &(this-> server.sin_addr));
+
+	if (setsockopt(this-> sock, SOL_SOCKET, SO_SNDBUF, &this-> wbuff_size, sizeof(int)) == -1) {
+		printf("failed to set send buffer size.\n");
+		return 1;
+	}
+
+	if (setsockopt(this-> sock, SOL_SOCKET, SO_RCVBUF, &this-> rbuff_size, sizeof(int)) == -1) {
+		printf("failed to set recv buffer size.\n");
+		return 1;
+	}
+
+	return 0;
 }
 
 void mdl::udp_client::send(boost::uint8_t *__buff, uint_t __buff_len) {

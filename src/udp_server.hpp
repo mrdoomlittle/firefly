@@ -9,10 +9,11 @@
 # include <unistd.h>
 # include <string.h>
 # include <math.h>
-# include "/home/daniel-robson/Projects/eint_t/inc/eint_t.hpp"
+# include "../eint_t/inc/eint_t.hpp"
 # include <boost/cstdint.hpp>
-
-# define PACKET_SIZE 54000
+# include "pk_config.hpp"
+# include "defaults.hpp"
+//# define PACKET_SIZE 54000
 
 namespace mdl { class udp_server
 {
@@ -22,7 +23,7 @@ namespace mdl { class udp_server
     void recv(boost::uint8_t *__buff, uint_t __buff_len);
 
 	private:
-	int len, sock;
+	int len, sock, wbuff_size = WBUFFER_SIZE, rbuff_size = RBUFFER_SIZE;
 	struct sockaddr_in server, client;
 	socklen_t clientlen;
 

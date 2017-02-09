@@ -11,6 +11,18 @@ boost::uint8_t mdl::udp_server::init(boost::uint16_t __port_num) {
 	bind(this-> sock, (struct sockaddr*)&this-> server, this-> len);
 
 	this-> clientlen = sizeof(struct sockaddr_in);
+
+	if (setsockopt(this-> sock, SOL_SOCKET, SO_SNDBUF, &this-> wbuff_size, sizeof(int)) == -1) {
+		printf("failed to set send buffer size.\n");
+		return 1;
+	}
+
+	if (setsockopt(this-> sock, SOL_SOCKET, SO_RCVBUF, &this-> rbuff_size, sizeof(int)) == -1) {
+		printf("failed to set recv buffer size.\n");
+		return 1;
+	}
+
+	return 0;
 }
 
 void mdl::udp_server::send(boost::uint8_t *__buff, uint_t __buff_len) {
