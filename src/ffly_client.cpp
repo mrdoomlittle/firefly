@@ -16,9 +16,19 @@ int main() {
 
 	std::size_t tick_count = 0;
 	auto begin = std::chrono::high_resolution_clock::now();
+
 	while(true) {
+		if (x11_window.pixels == nullptr) continue;
 		tcp_client.write(x11_window.key_code);
 		udp_client.recv(x11_window.pixels, pix_count);
+/*
+		for (std::size_t y = 0; y != 64; y ++) {
+			for (std::size_t x = 0; x != (WIN_XA * 4); x ++) {
+				x11_window.pixels[x + (y * (WIN_XA * 4) )] = 255;
+			}
+		}
+	}
+*/
 
 		auto now = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> duration = std::chrono::duration_cast<std::chrono::duration<double>>(now - begin);

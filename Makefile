@@ -14,7 +14,7 @@ server:
 	g++ -c -std=c++11 -o src/udp_server.o src/udp_server.cpp
 
 	#g++ -std=c++11 -DARC64 -o sandbox.exec sandbox.cpp src/x11_window.o src/udp_client.o -lboost_system -lboost_filesystem -lpthread -lboost_thread -lX11 -lGL -lGLU -lglut
-	g++ -std=c++11 -L/usr/local/lib -I/usr/local/include -L/usr/local/lib/x86_64/sdk -o server.exec src/ffly_server.cpp src/tcp_server.o src/udp_server.o -lboost_system -lemu2d -lOpenCL -lboost_filesystem -lpthread -lboost_thread
+	g++ -std=c++11 -L/usr/local/lib -I/usr/local/include -L/usr/local/lib/x86_64/sdk -o server.exec src/ffly_server.cpp src/tcp_server.o src/udp_server.o -lpng16 -lboost_system -lemu2d -lOpenCL -lboost_filesystem -lpthread -lboost_thread
 clean:
 	rm -f src/*.o
 	rm -f *.exec

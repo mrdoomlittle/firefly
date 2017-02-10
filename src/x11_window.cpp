@@ -66,6 +66,14 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
         r_windows[i] = XRootWindow(_display, i);
     }
 
+	glViewport(0, 0, __wx_axis_len, __wy_axis_len);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	glOrtho(0, __wx_axis_len, 0, __wy_axis_len, 0.1, 1);
+	glPixelZoom(1, -1);
+	glRasterPos3f(0, __wy_axis_len, -0.3);
+
 	int w_xpos, w_ypos, m_xpos, m_ypos, r_mxpos, r_mypos;
 	int unsigned w_width, w_height, w_border_width, w_depth, m_mask;
 	Window child, root = XRootWindow(_display, 0);
@@ -88,7 +96,7 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
             this-> mouse_coords.w_yaxis = 0;
 		}
 
-		glDrawPixels(__wx_axis_len, __wy_axis_len, GL_RGBA, GL_BYTE, this-> pixels);
+		glDrawPixels(__wx_axis_len, __wy_axis_len, GL_RGBA, GL_UNSIGNED_BYTE, this-> pixels);
 
 		while (XPending(_display) > 0) {
             XNextEvent(_display, &_xevent);

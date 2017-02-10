@@ -16,14 +16,47 @@ int unsigned xlen = 24, ylen = 24;
 int unsigned xadd = 640, xa = 0;
 int unsigned yadd = 640, ya = 0;
 bool dirx = FDIR, diry = FDIR;
+# include <png.h>
+int img_width, img_height;
+png_byte color_type;
+png_byte bit_depth;
+boost::uint8_t *pix_data;
+boost::uint8_t read_png_file(char const * __filename) {
+	FILE *file = fopen(__filename, "rb");
+
+	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!png) return 1;
+
+	png_infop info = png_create_info_struct(png);
+	if (!info) return 1;
+
+	if(setjmp(png_jmpbuf(png))) return 1;
+
+	png_init_io(png, file);
+	png_read_info(png, info);
+
+	img_width = png_get_image_width(png, info);
+	img_height = png_get_image_height(png, info);
+	color_type = png_get_color_type(png, info);
+	bit_depth = png_get_bit_depth(png, info);
+
+	pix_data = static_cast<boost::uint8_t *>(malloc((img_width * img_height) * 4));
+	memset(pix_data, 0x0, ((img_width * img_height) * 4));
+	for (std::size_t y = 0; y != img_height; y ++)
+		png_read_row(png, pix_data + (y * (img_width * 4)), NULL);
+
+	fclose(file);
+
+	return 0;
+}
 
 void draw_somthing(mdl::uint_t __pix_count, boost::uint8_t * __pixs) {
 	for (mdl::uint_t x = xa; x != xlen+xa; x ++) {
 		for (mdl::uint_t y = ya; y != ylen+ya; y ++) {
-			__pixs[(mdl::emu2d(x, y, WIN_XA, WIN_YA) * 4)] = 63;
-			__pixs[(mdl::emu2d(x, y, WIN_XA, WIN_YA) * 4) + 1] = 121;
-			__pixs[(mdl::emu2d(x, y, WIN_XA, WIN_YA) * 4) + 2] = 191;
-			__pixs[(mdl::emu2d(x, y, WIN_XA, WIN_YA) * 4) + 3] = 1;
+			__pixs[(mdl::emu2d(x, y, WIN_XA, WIN_YA) * 4)] = 57;
+			__pixs[(mdl::emu2d(x, y, WIN_XA, WIN_YA) * 4) + 1] = 120;
+			__pixs[(mdl::emu2d(x, y, WIN_XA, WIN_YA) * 4) + 2] = 156;
+			__pixs[(mdl::emu2d(x, y, WIN_XA, WIN_YA) * 4) + 3] = 255;
 		}
 	}
 
@@ -86,10 +119,18 @@ int main() {
 		return 1;
 	}
 
+	if (read_png_file("background.png")) {
+		std::free(pixs);
+		return 1;
+	}
+
+	printf("init.\n");
+
 	cl::Buffer membuf(context, CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY, pix_count);
-	//cl::Buffer xy_spacing(context, CL_MEM_READ_ONLY | CL_MEM_HOST_NO_ACCESS | CL_MEM_COPY_HOST_PTR, 2);
+	cl::Buffer background(context, CL_MEM_READ_ONLY | CL_MEM_HOST_NO_ACCESS | CL_MEM_COPY_HOST_PTR, pix_count, pix_data);
 	cl::Kernel kernel(program, "reset_background", &is_error);
 	kernel.setArg(0, membuf);
+	kernel.setArg(1, background);
 
 	cl::CommandQueue queue(context, device);
     queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(pix_count));
@@ -106,6 +147,11 @@ int main() {
 			case 114:
 				if (xlen != 0) xlen --;
 				printf("press\n");
+			break;
+			case 9:
+				std::free(pixs);
+				std::free(pix_data);
+				return 1;
 			break;
 		}
 		if (key_code != 0x0) printf("%d\n", key_code);
