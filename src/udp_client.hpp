@@ -25,7 +25,7 @@ namespace mdl { class udp_client
 	private:
 	int sock, wbuff_size = WBUFFER_SIZE, rbuff_size = RBUFFER_SIZE;
 	socklen_t sock_len;
-	struct sockaddr_in server, client;
+	struct sockaddr_in serveraddr, clientaddr;
 };
 }
 

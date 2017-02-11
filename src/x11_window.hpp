@@ -3,9 +3,11 @@
 # include <X11/Xlib.h>
 # include <GL/glx.h>
 # include <cstdio>
+# include <chrono>
 # include "/home/daniel-robson/Projects/eint_t/inc/eint_t.hpp"
 # include <boost/thread.hpp>
 # include <boost/cstdint.hpp>
+# include "types.hpp"
 namespace mdl { class x11_window
 {
 	public:
@@ -13,19 +15,15 @@ namespace mdl { class x11_window
 	boost::uint8_t begin(boost::uint16_t __wx_axis_len, boost::uint16_t __wy_axis_len, char const *__title);
 
 	bool init_called = false;
-	typedef struct {
-		int r_xaxis, r_yaxis;
-		int s_xaxis, s_yaxis;
-		int w_xaxis, w_yaxis;
-	} mouse_coords_t;
 
-	typedef struct {
-		int xaxis, yaxis;
-	} window_coords_t;
 
+	std::size_t fps_mark = 60;
 	window_coords_t window_coords;
 	mouse_coords_t mouse_coords;
 	boost::uint8_t * pixels = nullptr;
+
+	int button_code = 0x0;
+	bool button_press = false;
 	int key_code = 0x0;
 	bool key_press = false;
 	private:

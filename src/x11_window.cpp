@@ -36,7 +36,7 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
 
     _window = XCreateWindow(_display, _rwindow, 0, 0, __wx_axis_len, __wy_axis_len, 0, _vis_info-> depth, InputOutput, _vis_info-> visual, CWColormap | CWEventMask, &_win_att);
 
-	XSelectInput(_display, _window, KeyPressMask | KeyReleaseMask);
+	XSelectInput(_display, _window, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask);
 
     XMapWindow(_display, _window);
 
@@ -77,8 +77,17 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
 	int w_xpos, w_ypos, m_xpos, m_ypos, r_mxpos, r_mypos;
 	int unsigned w_width, w_height, w_border_width, w_depth, m_mask;
 	Window child, root = XRootWindow(_display, 0);
+
+	auto begin = std::chrono::high_resolution_clock::now();
+
+	uint_t nanoseconds_in_sec = 100000000;
+	double time_each_frame = (double(nanoseconds_in_sec)/double(this-> fps_mark));
 	while(true)
 	{
+		auto end = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
+		if (duration.count() < time_each_frame) continue;
+
 		XTranslateCoordinates(_display, _window, root, 0, 0, &this-> window_coords.xaxis, &this-> window_coords.yaxis, &child);
 
 		for (std::size_t o = 0; o != screen_count; o ++) {
@@ -107,12 +116,20 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
 			} else if (_xevent.type == KeyRelease) {
 				this-> key_press = false;
 				this-> key_code = 0x0;
+			} else if (_xevent.type == ButtonPress) {
+				this-> button_press = true;
+				this-> button_code = _xevent.xbutton.button;
+			} else if (_xevent.type == ButtonRelease) {
+				this-> button_press = false;
+				this-> button_code = 0x0;
 			}
 
 			if (this-> key_press) printf("key press: %d\n", this-> key_code);
         }
 
 		glXSwapBuffers(_display, _window);
+
+		begin = std::chrono::high_resolution_clock::now();
 	}
 
 	end:

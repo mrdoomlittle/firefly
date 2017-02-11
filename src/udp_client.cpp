@@ -4,9 +4,9 @@ boost::uint8_t mdl::udp_client::init(char const * __ip_addr, boost::uint16_t __p
 	this-> sock_len = sizeof(struct sockaddr_in);
 	this-> sock = socket(AF_INET, SOCK_DGRAM, 0);
 
-	this-> server.sin_family = AF_INET;
-	this-> server.sin_port = htons(__port_num);
-	inet_pton(AF_INET, __ip_addr, &(this-> server.sin_addr));
+	this-> serveraddr.sin_family = AF_INET;
+	this-> serveraddr.sin_port = htons(__port_num);
+	inet_pton(AF_INET, __ip_addr, &(this-> serveraddr.sin_addr));
 
 	if (setsockopt(this-> sock, SOL_SOCKET, SO_SNDBUF, &this-> wbuff_size, sizeof(int)) == -1) {
 		printf("failed to set send buffer size.\n");
@@ -28,13 +28,13 @@ void mdl::udp_client::send(boost::uint8_t *__buff, uint_t __buff_len) {
 	boost::uint8_t null_val = 0;
 	std::size_t o = 0;
 	while (o != amount_of_packets) {
-		recvfrom(this-> sock, &null_val, 1, 0, (struct sockaddr*)&this-> server, &this-> sock_len);
+		recvfrom(this-> sock, &null_val, 1, 0, (struct sockaddr*)&this-> serveraddr, &this-> sock_len);
 		uint_t bytes_to_send = PACKET_SIZE;
 
 		if (amount_to_send < PACKET_SIZE)
 			bytes_to_send = amount_to_send;
 
-		sendto(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_send, 0, (struct sockaddr*)&this-> server, this-> sock_len);
+		sendto(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_send, 0, (struct sockaddr*)&this-> serveraddr, this-> sock_len);
 
 		amount_to_send -= PACKET_SIZE;
         o ++;
@@ -48,13 +48,13 @@ void mdl::udp_client::recv(boost::uint8_t *__buff, uint_t __buff_len) {
 	boost::uint8_t null_val = 0;
 	std::size_t o = 0;
 	while (o != amount_of_packets) {
-		sendto(this-> sock, &null_val, 1, 0, (struct sockaddr*)&this-> server, this-> sock_len);
+		sendto(this-> sock, &null_val, 1, 0, (struct sockaddr*)&this-> serveraddr, this-> sock_len);
 		uint_t bytes_to_recv = PACKET_SIZE;
 
 		if (amount_to_recv < PACKET_SIZE)
 			bytes_to_recv = amount_to_recv;
 
-		recvfrom(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_recv, 0, (struct sockaddr*)&this-> server, &this-> sock_len);
+		recvfrom(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_recv, 0, (struct sockaddr*)&this-> serveraddr, &this-> sock_len);
 
 		amount_to_recv -= PACKET_SIZE;
 		o ++;
