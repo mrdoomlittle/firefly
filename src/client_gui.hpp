@@ -11,10 +11,16 @@ namespace mdl { class client_gui
 {
 	public:
 	client_gui(boost::uint8_t *__wpixmap, mouse_coords_t *__mouse_coords, bool *__button_press, int *__button_code, uint_t __window_xlen, uint_t __window_ylen);
-	boost::uint8_t create_button(boost::uint8_t *__pixmap, boost::uint8_t *__hpixmap, void (* __hover_action)(), void (* __press_action)(int), uint_t __xaxis, uint_t __yaxis, uint_t __xlen, uint_t __ylen);
+	mdl::uint_t create_button(boost::uint8_t *__pixmap, boost::uint8_t *__hpixmap, void (* __hover_action)(), void (* __press_action)(int), uint_t __xaxis, uint_t __yaxis, uint_t __xlen, uint_t __ylen);
 
-	void draw_buttons();
+	void handle_buttons();
 	bool is_mouse_inside(uint_t __xaxis, uint_t __yaxis, uint_t __xlen, uint_t __ylen);
+
+	void btn_disable(mdl::uint_t __btn_id);
+	void btn_enable(mdl::uint_t __btn_id);
+	void unlock_drawing(mdl::uint_t __btn_id) {
+		this-> button_index[__btn_id].unlocked_drawing = true;
+	}
 
 	private:
 	boost::uint8_t *wpixmap = nullptr;
@@ -30,6 +36,8 @@ namespace mdl { class client_gui
 		void (* hover_action)() = nullptr;
 		boost::uint8_t *pixmap = nullptr;
 		boost::uint8_t *hpixmap = nullptr;
+		bool disabled = false;
+		bool unlocked_drawing = false;
 	} button_info_t;
 
 	bool *button_press;

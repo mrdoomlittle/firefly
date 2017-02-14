@@ -10,8 +10,19 @@ bool mdl::client_gui::is_mouse_inside(uint_t __xaxis, uint_t __yaxis, uint_t __x
 	return false;
 }
 
-void mdl::client_gui::draw_buttons() {
+void mdl::client_gui::btn_disable(mdl::uint_t __btn_id) {
+	this-> button_index[__btn_id].disabled = true;
+}
+
+void mdl::client_gui::btn_enable(mdl::uint_t __btn_id) {
+	this-> button_index[__btn_id].disabled = false;
+}
+
+void mdl::client_gui::handle_buttons() {
 	for (std::size_t o = 0; o != this-> button_index.size(); o ++) {
+		button_info_t *btn = &this-> button_index[o];
+		if (btn-> disabled) continue;
+
 		int unsigned pixmap_size[2] = {this-> button_index[o].size[0], this-> button_index[o].size[1]};
 		int unsigned a[2] = {(this-> window_xlen * this-> window_ylen) * 4, (pixmap_size[0] * pixmap_size[1]) * 4};
 		int unsigned b[2] = {pixmap_size[0], pixmap_size[1]};
@@ -19,7 +30,7 @@ void mdl::client_gui::draw_buttons() {
 		bool is_mouse_overhead = this-> is_mouse_inside(this-> button_index[o].coords[0], this-> button_index[o].coords[1], pixmap_size[0], pixmap_size[1]);
 
 		if (is_mouse_overhead && *this-> button_press) {
-			if (this-> button_index[o].press_action != nullptr)
+			if (this-> button_index[o].press_action != nullptr && !this-> button_index[o].already_pressed)
 				this-> button_index[o].press_action(*this-> button_code);
 
 			this-> button_index[o].already_pressed = true;
@@ -31,7 +42,7 @@ void mdl::client_gui::draw_buttons() {
 
 			this-> button_index[o].pixmap_id = 1;
 
-			if (! this-> button_index[o].already_drawn) {
+			if (! this-> button_index[o].already_drawn || btn-> unlocked_drawing) {
 				this-> button_index[o].hover_action();
 				draw_pixmap(this-> button_index[o].coords[0], this-> button_index[o].coords[1], this-> wpixmap, this-> button_index[o].hpixmap, a, b, this-> window_xlen);
 				this-> button_index[o].already_drawn = true;
@@ -42,15 +53,18 @@ void mdl::client_gui::draw_buttons() {
 
 			this-> button_index[o].pixmap_id = 0;
 
-			if (! this-> button_index[o].already_drawn) {
+			if (! this-> button_index[o].already_drawn || btn-> unlocked_drawing) {
 				draw_pixmap(this-> button_index[o].coords[0], this-> button_index[o].coords[1], this-> wpixmap, this-> button_index[o].pixmap, a, b, this-> window_xlen);
 				this-> button_index[o].already_drawn = true;
 			}
 		}
+
+		bool& bp = *this-> button_press;
+		bp = false;
 	}
 }
 
-boost::uint8_t mdl::client_gui::create_button(boost::uint8_t *__pixmap, boost::uint8_t *__hpixmap, void (*__hover_action)(), void (* __press_action)(int), uint_t __xaxis, uint_t __yaxis, uint_t __xlen, uint_t __ylen) {
+mdl::uint_t mdl::client_gui::create_button(boost::uint8_t *__pixmap, boost::uint8_t *__hpixmap, void (*__hover_action)(), void (* __press_action)(int), uint_t __xaxis, uint_t __yaxis, uint_t __xlen, uint_t __ylen) {
 	std::size_t button_id = this-> button_index.size();
 	this-> button_index.resize(this-> button_index.size() + 1);
 
@@ -64,4 +78,6 @@ boost::uint8_t mdl::client_gui::create_button(boost::uint8_t *__pixmap, boost::u
 	this-> button_index[button_id].hover_action = __hover_action;
 	if (__hpixmap != nullptr) this-> button_index[button_id].do_hover_action = true;
 	this-> button_index[button_id].hpixmap = __hpixmap;
+
+	return button_id;
 }

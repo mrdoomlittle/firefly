@@ -2,6 +2,11 @@
 boost::uint8_t mdl::load_png_file(char const *__filename, boost::uint8_t *&__pixmap, int unsigned *__pixmap_size) {
 	FILE *file = fopen(__filename, "rb");
 
+	if (file == NULL) {
+		printf("error cant open png file.\n");
+		return 1;
+	}
+
 	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png) return 1;
 
@@ -15,13 +20,14 @@ boost::uint8_t mdl::load_png_file(char const *__filename, boost::uint8_t *&__pix
 
 	__pixmap_size[0] = png_get_image_width(png, info);
 	__pixmap_size[1] = png_get_image_height(png, info);
+	printf("loading img. size %dx%d\n", __pixmap_size[0], __pixmap_size[1]);
 	png_byte color_type = png_get_color_type(png, info);
 	png_byte bit_depth = png_get_bit_depth(png, info);
 
 	if (bit_depth != 8 || color_type != PNG_COLOR_TYPE_RGB_ALPHA) return 1;
 
 	boost::uint8_t *pixmap = static_cast<boost::uint8_t *>(malloc((__pixmap_size[0] * __pixmap_size[1]) * 4));
-	bzero(pixmap, ((__pixmap_size[0] * __pixmap_size[1]) * 4));
+	//bzero(pixmap, (__pixmap_size[0] * __pixmap_size[1]) * 4);
 
 	for (std::size_t y = 0; y != __pixmap_size[1]; y ++)
 		png_read_row(png, pixmap + (y * (__pixmap_size[0] * 4)), NULL);

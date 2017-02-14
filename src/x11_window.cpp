@@ -88,6 +88,9 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
 		auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
 		if (duration.count() < time_each_frame) continue;
 
+		this-> waitting = true;
+		this-> done_drawing = false;
+
 		XTranslateCoordinates(_display, _window, root, 0, 0, &this-> window_coords.xaxis, &this-> window_coords.yaxis, &child);
 
 		for (std::size_t o = 0; o != screen_count; o ++) {
@@ -104,8 +107,6 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
 			this-> mouse_coords.w_xaxis = 0;
             this-> mouse_coords.w_yaxis = 0;
 		}
-
-		glDrawPixels(__wx_axis_len, __wy_axis_len, GL_RGBA, GL_UNSIGNED_BYTE, this-> pixels);
 
 		while (XPending(_display) > 0) {
             XNextEvent(_display, &_xevent);
@@ -127,9 +128,15 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
 			if (this-> key_press) printf("key press: %d\n", this-> key_code);
         }
 
+		while(!this-> done_drawing) {}
+
+		glDrawPixels(__wx_axis_len, __wy_axis_len, GL_RGBA, GL_UNSIGNED_BYTE, this-> pixels);
+
 		glXSwapBuffers(_display, _window);
 
 		begin = std::chrono::high_resolution_clock::now();
+
+		while(this-> waitting) {}
 	}
 
 	end:

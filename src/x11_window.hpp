@@ -26,6 +26,10 @@ namespace mdl { class x11_window
 	bool button_press = false;
 	int key_code = 0x0;
 	bool key_press = false;
+	bool waitting = false;
+	bool done_drawing = false;
+	bool reading_stuff = false;
+
 	private:
 	boost::thread * window_thread;
 	boost::uint16_t __wx_axis_len;

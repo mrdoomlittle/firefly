@@ -9,6 +9,14 @@ __global__ void _draw_pixmap(int unsigned *__xoffset, int unsigned *__yoffset, b
 	__pixels[curr_pixel + 3] = __pixmap[pixmap_pos + 3];
 }
 
+__global__ void _reset_pixmap(boost::uint8_t *__pixmap) {
+	int unsigned pos = (threadIdx.x + (blockIdx.x * blockDim.x)) * 4;
+	__pixmap[pos] = 0x0;
+	__pixmap[pos + 1] = 0x0;
+	__pixmap[pos + 2] = 0x0;
+	__pixmap[pos + 3] = 0x0;
+}
+
 int unsigned *xoffset, *yoffset, *xlen;
 boost::uint8_t *pixels, *pixmap;
 void draw_pixmap(int unsigned __xoffset, int unsigned __yoffset, boost::uint8_t *__pixels, boost::uint8_t *__pixmap, int unsigned __sizes[2], int unsigned __imgsize[2], int unsigned __xlen) {
@@ -36,4 +44,18 @@ void draw_pixmap(int unsigned __xoffset, int unsigned __yoffset, boost::uint8_t 
 
 	cudaFree(pixels);
 	cudaFree(pixmap);
+}
+
+boost::uint8_t *bg_pixmap;
+void reset_pixmap(boost::uint8_t *__pixmap, int unsigned __sizes[2]) {
+	int unsigned size = (__sizes[0] * __sizes[1]) * 4;
+	cudaMalloc((void **)&bg_pixmap, size);
+
+	cudaMemcpy(bg_pixmap, __pixmap, size, cudaMemcpyHostToDevice);
+
+	_reset_pixmap<<<__sizes[1], __sizes[0]>>>(bg_pixmap);
+
+	cudaMemcpy(__pixmap, bg_pixmap, size, cudaMemcpyDeviceToHost);
+
+	cudaFree(bg_pixmap);
 }

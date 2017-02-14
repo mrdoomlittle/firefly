@@ -6,8 +6,8 @@
 # include <boost/cstdint.hpp>
 int main() {
 	mdl::tcp_server	mcomm_pipe;
-	mdl::udp_server cam_stream;
-
+//	mdl::udp_server cam_stream;
+/*
 	worker_info_t worker_info;
 	worker_info.chunk_xlen = 21;
 	worker_info.chunk_ylen = 99;
@@ -28,4 +28,5 @@ int main() {
 	worker_info.arc(archive);
 	mcomm_pipe.send(sock, archive.get_data(), size);
 	return 0;
+*/
 }

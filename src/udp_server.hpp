@@ -18,9 +18,9 @@
 namespace mdl { class udp_server
 {
 	public:
-	boost::uint8_t init(boost::uint16_t __port_num);
-	void send(boost::uint8_t *__buff, uint_t __buff_len);
-    void recv(boost::uint8_t *__buff, uint_t __buff_len);
+	boost::int8_t init(boost::uint16_t __port_num);
+	boost::int8_t send(boost::uint8_t *__buff, uint_t __buff_len);
+    boost::int8_t recv(boost::uint8_t *__buff, uint_t __buff_len);
 
 	private:
 	int len, sock, wbuff_size = WBUFFER_SIZE, rbuff_size = RBUFFER_SIZE;
