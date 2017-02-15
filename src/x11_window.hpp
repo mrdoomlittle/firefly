@@ -16,6 +16,9 @@ namespace mdl { class x11_window
 
 	bool init_called = false;
 
+	~x11_window() {
+		std::free(window_thread);
+	}
 
 	std::size_t fps_mark = 60;
 	window_coords_t window_coords;
@@ -30,10 +33,11 @@ namespace mdl { class x11_window
 	bool done_drawing = false;
 	bool reading_stuff = false;
 
-	private:
+	bool window_closed = false;
 	boost::thread * window_thread;
-	boost::uint16_t __wx_axis_len;
-	boost::uint16_t __wy_axis_len;
+	public:
+	boost::uint16_t __wx_axis_len = 0;
+	boost::uint16_t __wy_axis_len = 0;
 	char const *__title;
 } ;
 }

@@ -10,8 +10,11 @@ client:
 	g++ -c -std=c++11 -Wall -DARC64 -o src/png_loader.o src/png_loader.cpp
 	g++ -c -std=c++11 -Wall -DARC64 -o src/client_gui.o src/client_gui.cpp
 	nvcc -c -std=c++11 $(CUDA) -o src/draw.o src/draw.cu
-	g++ -std=c++11 $(CUDA) -DARC64 -Wall -o client.exec src/ffly_client.cpp src/x11_window.o src/tcp_client.o src/udp_client.o src/draw.o src/png_loader.o src/client_gui.o -lpulse -lpulse-simple -lpng16 -lcuda -lcudart -lboost_system -lboost_filesystem -lpthread -lboost_thread -lX11 -lGL -lGLU -lglut
-
+	g++ -std=c++11 $(CUDA) -DARC64 -Wall -o client.exec src/ffly_client.cpp src/x11_window.o src/tcp_client.o src/udp_client.o src/draw.o src/png_loader.o src/client_gui.o -lemu2d -lpulse -lpulse-simple -lpng16 -lcuda -lcudart -lboost_system -lboost_filesystem -lpthread -lboost_thread -lX11 -lGL -lGLU -lglut
+font_creator:
+	g++ -c -std=c++11 -DARC64 -o src/x11_window.o src/x11_window.cpp
+	nvcc -c -std=c++11 -DARC64 $(CUDA) -o draw_grid.o draw_grid.cu
+	g++ -std=c++11 $(CUDA) -DARC64 -L/usr/local/lib -I/usr/local/include -o font_creator.exec font_creator.cpp draw_grid.o src/x11_window.o -lcuda -lcudart -lboost_system -lpthread -lboost_thread -lemu2d -lX11 -lGL -lGLU -lglut
 manager:
 	g++ -c -std=c++11 -DARC64 -o src/tcp_server.o src/tcp_server.cpp
 	g++ -c -std=c++11 -DARC64 -o src/udp_server.o src/udp_server.cpp
@@ -30,7 +33,7 @@ server:
 clean:
 	rm -f src/*.o
 	rm -f *.exec
-
+	rm -f *.o
 #all:
 
 #client: ffly_client

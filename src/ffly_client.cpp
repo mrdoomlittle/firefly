@@ -92,7 +92,7 @@ void hover() {
 	boost::thread t{make_s};
 	printf("hovering.\n");
 }
-
+# include "text.hpp"
 boost::uint8_t mdl::ffly_client::begin(char const * __frame_title) {
 	struct sigaction sig_handler;
 
@@ -164,11 +164,19 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title) {
 	p = _x11_window.pixels;
 
 	bool connection_error = false;
+	text tx;
+
+	tx.load_skeleton("font.dat");
+
 	do {
 		while(!_x11_window.waitting) {}
 		while(_x11_window.done_drawing) {}
 		//printf("connected: %d, connection_error: %d\n", connected, connection_error);
 
+		tx.draw_letter(LETTER_A, _x11_window.pixels, {20, 20}, {this-> window_xlen, this-> window_ylen}, 8, {60, 56, 114, 255});
+
+		//text::draw_letter(LETTER_A, _x11_window.pixels, {20, 20}, {this-> window_xlen, this-> window_ylen}, 8, {60, 56, 114, 255});
+		goto le;
 		if (connected)
 		{
 	//		printf("hello\n");
@@ -239,7 +247,7 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title) {
 			}
 			//connect_to_server = false;
 		}
-
+		le:
 		//if (!connected) printf("look like the server it not working. oh no...\n");
 
 		_x11_window.done_drawing = true;
@@ -253,7 +261,7 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title) {
 }
 
 int main() {
-	mdl::ffly_client ffly_client(640, 640);
+	mdl::ffly_client ffly_client(1280, 720);
 	ffly_client.begin("Example Game");
 }
 

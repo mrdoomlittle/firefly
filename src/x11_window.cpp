@@ -7,6 +7,7 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
 
 	XVisualInfo * _vis_info;
 
+	printf("createing window with the size of %dx%d.\n", __wx_axis_len, __wy_axis_len);
 	GLint att[] = {GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None};
 
 	XSetWindowAttributes _win_att;
@@ -128,7 +129,7 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
 			if (this-> key_press) printf("key press: %d\n", this-> key_code);
         }
 
-		while(!this-> done_drawing) {}
+		if (!this-> done_drawing) continue;
 
 		glDrawPixels(__wx_axis_len, __wy_axis_len, GL_RGBA, GL_UNSIGNED_BYTE, this-> pixels);
 
@@ -136,20 +137,23 @@ boost::uint8_t mdl::x11_window::init(boost::uint16_t __wx_axis_len, boost::uint1
 
 		begin = std::chrono::high_resolution_clock::now();
 
-		while(this-> waitting) {}
+		if (this-> waitting) continue;
 	}
 
 	end:
 
+	printf("closeing window.\n");
+	this-> window_closed = true;
 	glXMakeCurrent(_display, None, NULL);
     glXDestroyContext(_display, _glx_context);
     XDestroyWindow(_display, _window);
     XCloseDisplay(_display);
     std::free(r_windows);
-
-	pthread_cancel(this-> window_thread-> native_handle());
+	std::free(pixels);
 
 	this-> init_called = true;
+
+	//pthread_cancel(this-> window_thread-> native_handle());
 }
 
 boost::uint8_t mdl::x11_window::begin(boost::uint16_t __wx_axis_len, boost::uint16_t __wy_axis_len, char const *__title) {
