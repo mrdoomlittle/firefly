@@ -16,6 +16,7 @@ struct serial {
 	void operator<<(__T& __obj) {
 		switch(this-> typ) {
 			case 'r':
+				memset(this-> _serial + curr_point, 0x0, obj_size);
 				for (std::size_t o = 0; o != this-> obj_size; o ++) {
 					if (o == 0)
 						this-> _serial[curr_point] = __obj & 0xFF;
@@ -29,8 +30,14 @@ struct serial {
 					__obj |= (__obj & 0xFF) | (this-> _serial[curr_point] << (o * 8));
 					this-> curr_point ++;
 				}
+				memset(this-> _serial - curr_point, 0x0, obj_size);
 			break;
 		}
+	}
+
+	void reset() {
+		this-> curr_point = 0;
+		this-> obj_size = 0;
 	}
 
 	void operator|(char __typ) {
@@ -47,9 +54,10 @@ struct serial {
 	template<typename __T>
 	std::size_t get_size(__T * __struct) {
 		typ = 's';
-		__struct-> arc(*this);
-		return obj_size;
-		obj_size = 0;
+		__struct-> achieve(*this);
+		std::size_t s = this-> obj_size;
+		this-> obj_size = 0;
+		return s;
 	}
 
 	boost::uint8_t * get_data() {

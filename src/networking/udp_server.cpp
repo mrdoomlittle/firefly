@@ -1,5 +1,5 @@
 # include "udp_server.hpp"
-boost::int8_t mdl::udp_server::init(boost::uint16_t __port_num) {
+boost::int8_t mdl::firefly::networking::udp_server::init(boost::uint16_t __port_num) {
 	this-> sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (this-> sock == -1) return -1;
 
@@ -27,7 +27,7 @@ boost::int8_t mdl::udp_server::init(boost::uint16_t __port_num) {
 	return 0;
 }
 
-boost::int8_t mdl::udp_server::send(boost::uint8_t *__buff, uint_t __buff_len) {
+boost::int8_t mdl::firefly::networking::udp_server::send(boost::uint8_t *__buff, uint_t __buff_len) {
 	std::size_t amount_of_packets = ceil(float(__buff_len) / PACKET_SIZE);
     uint_t amount_to_send = __buff_len;
 
@@ -56,7 +56,7 @@ boost::int8_t mdl::udp_server::send(boost::uint8_t *__buff, uint_t __buff_len) {
     }
 }
 
-boost::int8_t mdl::udp_server::recv(boost::uint8_t *__buff, uint_t __buff_len) {
+boost::int8_t mdl::firefly::networking::udp_server::recv(boost::uint8_t *__buff, uint_t __buff_len) {
 	std::size_t amount_of_packets = ceil(float(__buff_len) / PACKET_SIZE);
     uint_t amount_to_recv = __buff_len;
 

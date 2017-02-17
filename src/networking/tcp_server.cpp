@@ -1,5 +1,5 @@
 # include "tcp_server.hpp"
-boost::int8_t mdl::tcp_server::init(boost::uint16_t __port_num) {
+boost::int8_t mdl::firefly::networking::tcp_server::init(boost::uint16_t __port_num) {
 	this-> sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (this-> sock == -1) return -1;
 
@@ -16,20 +16,15 @@ boost::int8_t mdl::tcp_server::init(boost::uint16_t __port_num) {
 	return 0;
 }
 
-boost::int8_t mdl::tcp_server::accept(int& __sock) {
+boost::int8_t mdl::firefly::networking::tcp_server::accept(int& __sock) {
 	__sock = ::accept(this-> sock, (struct sockaddr*)&this-> clientaddr, &this-> len);
 	if (__sock == -1) return -1;
 }
 
-boost::int8_t mdl::tcp_server::send(int __sock, boost::uint8_t *__buff, uint_t __buff_len) {
+boost::int8_t mdl::firefly::networking::tcp_server::send(int __sock, boost::uint8_t *__buff, uint_t __buff_len) {
 	return ::send(__sock, __buff, __buff_len, 0);
 }
 
-boost::int8_t mdl::tcp_server::recv(int __sock, boost::uint8_t *__buff, uint_t __buff_len) {
+boost::int8_t mdl::firefly::networking::tcp_server::recv(int __sock, boost::uint8_t *__buff, uint_t __buff_len) {
 	return ::recv(__sock, __buff, __buff_len, 0);
 }
-/*
-int main() {
-	mdl::tcp_server tcp_server;
-	tcp_server.init(21299);
-}*/

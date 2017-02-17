@@ -7,7 +7,7 @@
 # include "/home/daniel-robson/Projects/eint_t/inc/eint_t.hpp"
 # include <boost/thread.hpp>
 # include <boost/cstdint.hpp>
-# include "types.hpp"
+# include "../types.hpp"
 namespace mdl { class x11_window
 {
 	public:

@@ -9,9 +9,12 @@
 # include <unistd.h>
 # include <string.h>
 # include <sys/time.h>
-# include "../eint_t/inc/eint_t.hpp"
+# include <eint_t.hpp>
 # include <boost/cstdint.hpp>
-namespace mdl { class tcp_server
+namespace mdl { 
+namespace firefly {
+namespace networking {
+class tcp_server
 {
 	public:
 	boost::int8_t init(boost::uint16_t __port_num);
@@ -87,6 +90,8 @@ namespace mdl { class tcp_server
 	int sock, k, tsock;
 	struct sockaddr_in clientaddr, serveraddr;
 } ;
+}
+}
 }
 
 # endif

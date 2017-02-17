@@ -9,13 +9,16 @@
 # include <unistd.h>
 # include <string.h>
 # include <math.h>
-# include "../eint_t/inc/eint_t.hpp"
+# include <eint_t.hpp>
 # include <boost/cstdint.hpp>
-# include "pk_config.hpp"
-# include "defaults.hpp"
+# include "../pk_config.hpp"
+# include "../defaults.hpp"
 //# define PACKET_SIZE 54000
 
-namespace mdl { class udp_server
+namespace mdl { 
+namespace firefly {
+namespace networking {
+class udp_server
 {
 	public:
 	boost::int8_t init(boost::uint16_t __port_num);
@@ -28,6 +31,8 @@ namespace mdl { class udp_server
 	socklen_t clientlen;
 
 };
+}
+}
 }
 
 # endif /*__udp__server__hpp*/

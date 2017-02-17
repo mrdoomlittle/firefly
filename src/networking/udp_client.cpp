@@ -1,6 +1,6 @@
 
 # include "udp_client.hpp"
-boost::int8_t mdl::udp_client::init(char const * __ip_addr, boost::uint16_t __port_num) {
+boost::int8_t mdl::firefly::networking::udp_client::init(char const * __ip_addr, boost::uint16_t __port_num) {
 	this-> sock_len = sizeof(struct sockaddr_in);
 	this-> sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (this-> sock == -1) return -1;
@@ -37,7 +37,7 @@ boost::int8_t mdl::udp_client::init(char const * __ip_addr, boost::uint16_t __po
 	return 0;
 }
 
-boost::int8_t mdl::udp_client::send(boost::uint8_t *__buff, uint_t __buff_len) {
+boost::int8_t mdl::firefly::networking::udp_client::send(boost::uint8_t *__buff, uint_t __buff_len) {
 	std::size_t amount_of_packets = ceil(float(__buff_len) / PACKET_SIZE);
 	uint_t amount_to_send = __buff_len;
 
@@ -65,7 +65,7 @@ boost::int8_t mdl::udp_client::send(boost::uint8_t *__buff, uint_t __buff_len) {
 	}
 }
 
-boost::int8_t mdl::udp_client::recv(boost::uint8_t *__buff, uint_t __buff_len) {
+boost::int8_t mdl::firefly::networking::udp_client::recv(boost::uint8_t *__buff, uint_t __buff_len) {
 	std::size_t amount_of_packets = ceil(float(__buff_len) / PACKET_SIZE);
 	uint_t amount_to_recv = __buff_len;
 
