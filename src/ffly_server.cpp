@@ -20,22 +20,17 @@ boost::int8_t mdl::ffly_server::init() {
 	if (this-> opencl.init() == -1) return -1;
 }
 
+// this will be used later
 void mdl::ffly_server::uni_wmanager() {
 	do {
 
 	} while(true);
 }
 
-void mdl::ffly_server::client_handler(int __sock, uint_t __player_id) {
+void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 	firefly::types::player_info_t& player_info = this-> player_index[__player_id];
+	printf("player with the id of %d. thread began.\n");
 
-	printf("client thread has begin.\n");
-	uint_t cam_xlen = 256, cam_ylen = 256;
-
-	uint_t cam_pix_count = (cam_xlen * cam_ylen) * 4;
-
-	boost::uint8_t *player_camera = static_cast<boost::uint8_t *>(malloc(cam_pix_count * sizeof(boost::uint8_t)));
-	memset(player_camera, 100, cam_pix_count);
 	serial serialize('\0');
 
 	std::size_t ss = serialize.get_size(&player_info);
@@ -44,108 +39,166 @@ void mdl::ffly_server::client_handler(int __sock, uint_t __player_id) {
 	serialize | 'w';
 
 	player_info.key_code = 0x0;
-
 	player_info.xaxis = 0;
 	player_info.yaxis = 0;
 	player_info.zaxis = 0;
 
-	cl_int any_error;
-	cl_ulong offsets[2] = {0, 0};
-	cl_ulong _uni_xlen[1] = {this-> uni_xlen};
+	cl_int any_error = CL_SUCCESS;
 
-	cl_mem offsets_buff = clCreateBuffer(this-> opencl.context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 2 * sizeof(cl_ulong), offsets, &any_error);
-	if (any_error != CL_SUCCESS) {
+	cl_ulong cam_offsets[3] = {
+		player_info.xaxis,
+		player_info.yaxis,
+		player_info.zaxis
+	};
+
+	uint_t camera_xlen = 256, camera_ylen = 256;
+
+	// amount of bytes in the pixmap for the camera
+	uint_t cam_pixmap_size = (camera_xlen * camera_ylen) * 4;
+
+	boost::uint8_t *camera_pixmap = this-> create_pixmap(camera_xlen, camera_ylen, 4);
+
+	cl_mem uni_buff, cam_buff, cam_offsets_buff, uni_xlen_buff;
+
+	uint_t const real_uni_xlen = this-> uni_xlen * FFLY_UNI_PAR_XLEN;
+
+	try {
+		uni_buff = clCreateBuffer(this-> opencl.context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, (this-> uni_particle_count * 4) * sizeof(boost::uint8_t), this-> uni_par_colours, &any_error);
+		if (any_error != CL_SUCCESS) {
+			fprintf(stderr, "opencl: failed to create 'uni_buff', error code: %d\n", any_error);
+			throw;
+		}
+
+		cam_buff = clCreateBuffer(this-> opencl.context, CL_MEM_WRITE_ONLY, cam_pixmap_size * sizeof(boost::uint8_t), NULL, &any_error);
+		if (any_error != CL_SUCCESS) {
+			fprintf(stderr, "opencl: failed to create 'cam_buff', error code: %d\n", any_error);
+			throw;
+		}
+
+		cam_offsets_buff = clCreateBuffer(this-> opencl.context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 3 * sizeof(cl_ulong), cam_offsets, &any_error);
+		if (any_error != CL_SUCCESS) {
+			fprintf(stderr, "opencl: failed to create 'cam_offsets_buff', error code: %d\n", any_error);
+			throw;
+		}
+
+		uni_xlen_buff = clCreateBuffer(this-> opencl.context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_ulong), const_cast<uint_t *>(&real_uni_xlen), &any_error);
+		if (any_error != CL_SUCCESS) {
+			fprintf(stderr, "opencl: failed to create 'uni_xlen_buff', error code: %d\n", any_error);
+			throw;
+		}
+	}
+	catch(...) {
+		std::free(camera_pixmap);
 		return;
 	}
 
-	cl_mem uni_xlen_buff = clCreateBuffer(this-> opencl.context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 1 * sizeof(cl_ulong), _uni_xlen, &any_error);
-	if (any_error != CL_SUCCESS) {
-		return;
-	}
+	std::size_t cam_gwork_size[2] = {camera_xlen, camera_ylen};
+	std::size_t cam_lwork_size[2] = {4, 4};
 
-	cl_mem uni_buff = clCreateBuffer(this-> opencl.context, CL_MEM_READ_ONLY | CL_MEM_HOST_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, (this-> uni_particle_count * 4) * sizeof(boost::uint8_t), this-> uni_par_colours, &any_error);
-	if (any_error != CL_SUCCESS) {
-		fprintf(stderr, "error unibuff.\n");
-		return;
-	}
-
-	cl_mem cam_buff = clCreateBuffer(this-> opencl.context, CL_MEM_WRITE_ONLY, cam_pix_count * sizeof(boost::uint8_t), NULL, &any_error);
-	if (any_error != CL_SUCCESS) {
-		fprintf(stderr, "error cambuff, error code: %d\n", any_error);
-		return;
-	}
+	uint_t camera_coords[3] = {0, 0, 0};
 
 	cl_kernel cam_kernel = clCreateKernel(this-> opencl.program, "render_camera", &any_error);
 	if (any_error != CL_SUCCESS) {
-		fprintf(stderr, "failed to create kernel, error code: %d\n", any_error);
-		return;
+		fprintf(stderr, "opencl: failed to create camera kernel, error code: %d\n", any_error);
+		goto end;
 	}
 
 	any_error = clSetKernelArg(cam_kernel, 0, sizeof(cl_mem), (void *)&uni_buff);
-	any_error = clSetKernelArg(cam_kernel, 1, sizeof(cl_mem), (void *)&cam_buff);
-	any_error = clSetKernelArg(cam_kernel, 2, sizeof(cl_mem), (void *)&offsets_buff);
-	any_error = clSetKernelArg(cam_kernel, 3, sizeof(cl_mem), (void *)&uni_xlen_buff);
-
 	if (any_error != CL_SUCCESS) {
-		fprintf(stderr, "failed to set kernel args.\n");
-		return;
+		fprintf(stderr, "opencl: failed to set 'uni_buff' arg, error code: %d\n", any_error);
+		goto end;
 	}
 
-	std::size_t global_work_size[2] = {cam_xlen, cam_ylen};
-	std::size_t local_work_size[2] = {4, 4};
+	any_error = clSetKernelArg(cam_kernel, 1, sizeof(cl_mem), (void *)&cam_buff);
+	if (any_error != CL_SUCCESS) {
+		fprintf(stderr, "opencl: failed to set 'cam_buff' arg, error code: %d\n", any_error);
+		goto end;
+	}
 
-//	any_error = clEnqueueNDRangeKernel(this-> opencl.command_queue, cam_kernel, 2, NULL, global_work_size, local_work_size, 0, NULL, NULL);
-//	if (any_error != CL_SUCCESS) {
-//		fprintf(stderr, "'clEnqueueNDRangeKernel' failed, error code: %d", any_error);
-//		return;
-//	}
+	any_error = clSetKernelArg(cam_kernel, 2, sizeof(cl_mem), (void *)&cam_offsets_buff);
+	if (any_error != CL_SUCCESS) {
+		fprintf(stderr, "opencl: failed to set 'cam_offsets_buff' arg, error code: %d\n", any_error);
+		goto end;
+	}
+
+	any_error = clSetKernelArg(cam_kernel, 3, sizeof(uint_t), (void *)&uni_xlen_buff);
+	if (any_error != CL_SUCCESS) {
+		fprintf(stderr, "opencl: failed to set 'uni_xlen' arg, error code: %d\n", any_error);
+		goto end;
+	}
 
 	do {
+		for (std::size_t y = player_info.yaxis; y != player_info.yaxis + 16; y ++) {
+			if ((player_info.yaxis + 17) >= (this-> uni_ylen * FFLY_UNI_PAR_XLEN)) break;
+			for (std::size_t x = player_info.xaxis; x != player_info.xaxis + 16; x ++) {
+				uint_t point = (x + (y * (this-> uni_xlen * FFLY_UNI_PAR_XLEN))) * 4;
+				this-> uni_par_colours[point] = 255;
+				this-> uni_par_colours[point + 1] = 0;
+				this-> uni_par_colours[point + 2] = 0;
+				this-> uni_par_colours[point + 3] = 255;
+			}
+		}
 
-for (std::size_t y = player_info.yaxis; y != player_info.yaxis + 128; y ++) {
-for (std::size_t x = player_info.xaxis; x != player_info.xaxis + 128; x ++) {
-int unsigned pos = (x + (y * this-> uni_xlen)) * 4;
-this-> uni_par_colours[pos] = 255;
-this-> uni_par_colours[pos + 1] = 0;
-this-> uni_par_colours[pos + 2] = 0;
-this-> uni_par_colours[pos + 3] = 255;
-}
-}
+		if (player_info.xaxis <= round(camera_xlen/2)) {
+			camera_coords[0] = 0;
+		} else {
+			if ((player_info.xaxis + round(camera_xlen/2)) < (this-> uni_xlen * FFLY_UNI_PAR_XLEN))
+				camera_coords[0] = player_info.xaxis - round(camera_xlen/2);
+		}
 
+		if (player_info.yaxis <= round(camera_ylen/2)) {
+			camera_coords[1] = 0;
+		} else {
+			if ((player_info.yaxis + round(camera_ylen/2)) < (this-> uni_ylen * FFLY_UNI_PAR_YLEN))
+				camera_coords[1] = player_info.yaxis - round(camera_ylen/2);
+		}
 
-		offsets[0] = player_info.xaxis;
-		offsets[1] = player_info.yaxis;
+		if (cam_offsets[0] != camera_coords[0] || cam_offsets[1] != camera_coords[1] || cam_offsets[2] != camera_coords[2]) {
+			cam_offsets[0] = camera_coords[0];
+			cam_offsets[1] = camera_coords[1];
+			cam_offsets[2] = camera_coords[2];
 
-	any_error = clEnqueueWriteBuffer(this-> opencl.command_queue, uni_buff, CL_TRUE, 0, (this-> uni_particle_count * 4) * sizeof(boost::uint8_t), this-> uni_par_colours, 0, NULL, NULL);
+			any_error = clEnqueueWriteBuffer(this-> opencl.command_queue, cam_offsets_buff, CL_TRUE, 0, 3 * sizeof(uint_t), &cam_offsets, 0, NULL, NULL);
+			if (any_error != CL_SUCCESS) {
+				fprintf(stderr, "opencl: failed to write 'cam_offsets_buff', error code: %d\n", any_error);
+				break;
+			}
+		}
 
-	any_error = clEnqueueNDRangeKernel(this-> opencl.command_queue, cam_kernel, 2, NULL, global_work_size, local_work_size, 0, NULL, NULL);
-	if (any_error != CL_SUCCESS) {
-		fprintf(stderr, "'clEnqueueNDRangeKernel' failed, error code: %d", any_error);
-		return;
-	}
+		any_error = clEnqueueWriteBuffer(this-> opencl.command_queue, uni_buff, CL_TRUE, 0, (this-> uni_particle_count * 4) * sizeof(boost::uint8_t), this-> uni_par_colours, 0, NULL, NULL);
+		if (any_error != CL_SUCCESS) {
+			fprintf(stderr, "opencl: failed to write 'uni_buff', error code: %d\n", any_error);
+			break;
+		}
 
+		any_error = clEnqueueNDRangeKernel(this-> opencl.command_queue, cam_kernel, 2, NULL, cam_gwork_size, cam_lwork_size, 0, NULL, NULL);
+		if (any_error != CL_SUCCESS) {
+			fprintf(stderr, "opencl: failed to set nd range, error code: %d\n", any_error);
+			break;
+		}
 
-	any_error = clEnqueueTask(this-> opencl.command_queue, cam_kernel, 0, NULL, NULL);
-	if (any_error != CL_SUCCESS) {
-		fprintf(stderr, "cl task failed, error code: %d\n", any_error);
-		return;
-	}
+		any_error = clEnqueueTask(this-> opencl.command_queue, cam_kernel, 0, NULL, NULL);
+		if (any_error != CL_SUCCESS) {
+			fprintf(stderr, "opencl: failed to queue task, error code: %d\n", any_error);
+			break;
+		}
 
-	any_error = clEnqueueReadBuffer(this-> opencl.command_queue, cam_buff, CL_TRUE, 0, cam_pix_count * sizeof(boost::uint8_t), player_camera, 0, NULL, NULL);
-	if (any_error != CL_SUCCESS) {
-		fprintf(stderr, "failed to read cam buff, error code: %d\n", any_error);
-		return;
-	}
+		any_error = clEnqueueReadBuffer(this-> opencl.command_queue, cam_buff, CL_TRUE, 0, cam_pixmap_size * sizeof(boost::uint8_t), camera_pixmap, 0, NULL, NULL);
+		if (any_error != CL_SUCCESS) {
+			fprintf(stderr, "opencl: failed to read 'cam_buff', error code: %d\n", any_error);
+			break;
+		}
+
 		boost::int8_t sock_result;
-
 		sock_result = this-> cl_tcp_stream.recv(__sock, serialize.get_data(), ss);
+
 		player_info.achieve(serialize);
 		serialize.reset();
 
-		if (sock_result == -1) break;
+		if (sock_result == -1 || sock_result == 0) break;
 
-		sock_result = this-> cl_udp_stream.send(player_camera, cam_pix_count);
-		if (sock_result == -1) break;
+		sock_result = this-> cl_udp_stream.send(camera_pixmap, cam_pixmap_size);
+		if (sock_result == -1 || sock_result == 0) break;
 
 		printf("X: %d, Y: %d, Z: %d\n", player_info.xaxis, player_info.yaxis, player_info.zaxis);
 		switch(player_info.key_code) {
@@ -165,18 +218,23 @@ this-> uni_par_colours[pos + 3] = 255;
 			break;
 		}
 
-		printf("%d\n", player_info.key_code);
-
+		// dont remove or edit
 		player_info.key_code = 0x0;
-		//usleep(1000000);
+
 	} while(true);
-	printf("client thread has closed.\n");
+
+	end:
+
+	std::free(camera_pixmap);
+
+	printf("player with the id of %d. thread ended.\n");
+
 	close(__sock);
 }
 
 boost::int8_t mdl::ffly_server::begin() {
-	boost::thread * dum = nullptr;
-	dum = new boost::thread(boost::bind(&ffly_server::uni_wmanager, this));
+	//boost::thread * dum = nullptr;
+	//dum = new boost::thread(boost::bind(&ffly_server::uni_wmanager, this));
 
 	if (this-> cl_tcp_stream.init(21299) == -1) return -1;
 	if (this-> cl_udp_stream.init(10198) == -1) return -1;
@@ -190,11 +248,11 @@ boost::int8_t mdl::ffly_server::begin() {
 		int sock;
 		printf("waiting for player/s to connect.\n");
 		this-> cl_tcp_stream.accept(sock);
-		uint_t player_id = this-> add_player();
-		cl = new boost::thread(boost::bind(&ffly_server::client_handler, this, sock, player_id));
-		do {
 
-		} while(1);
+		uint_t player_id = this-> add_player();
+
+		cl = new boost::thread(boost::bind(&ffly_server::player_handler, this, sock, player_id));
+
 		printf("player has connected to server.\n\n");
 	} while(true);
 }

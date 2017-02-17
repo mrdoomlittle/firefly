@@ -12,7 +12,7 @@
 # include "types/player_info_t.hpp"
 # define FFLY_UNI_PAR_XLEN 2
 # define FFLY_UNI_PAR_YLEN 2
-# define FFLY_UNI_PAR_XLEN 2
+# define FFLY_UNI_PAR_ZLEN 1
 # include <boost/numeric/ublas/vector.hpp>
 namespace ublas = boost::numeric::ublas;
 # include "keycodes.h"
@@ -22,8 +22,8 @@ namespace mdl { class ffly_server
 {
 	public:
 	ffly_server(uint_t __uni_xlen, uint_t __uni_ylen, uint_t __uni_zlen)
-	: uni_xlen(__uni_xlen), uni_ylen(__uni_ylen), uni_zlen(__uni_zlen), 
-	uni_particle_count((__uni_xlen * FFLY_UNI_PAR_XLEN) * (__uni_ylen * FFLY_UNI_PAR_YLEN) * (__uni_zlen * FFLY_UNI_PAR_XLEN)) {}
+	: uni_xlen(__uni_xlen), uni_ylen(__uni_ylen), uni_zlen(__uni_zlen),
+	uni_particle_count((__uni_xlen * FFLY_UNI_PAR_XLEN) * (__uni_ylen * FFLY_UNI_PAR_YLEN) * (__uni_zlen * FFLY_UNI_PAR_ZLEN)) {}
 
 	~ffly_server() {
 		std::free(uni_particles);
@@ -32,11 +32,22 @@ namespace mdl { class ffly_server
 	boost::int8_t init();
 	boost::int8_t begin();
 
+	boost::uint8_t *create_pixmap(uint_t __xaxis_len, uint_t __yaxis_len, uint_t __offset) {
+		boost::uint8_t *pixmap = static_cast<boost::uint8_t *>(malloc(((__xaxis_len * __yaxis_len) * __offset) * sizeof(boost::uint8_t)));
+		return pixmap;
+	}
+
+
+
 	void uni_wmanager();
 	void client_handler(int __sock, uint_t player_id);
+
+	void player_handler(int __sock, uint_t player_id);
+
 	uint_t add_player() {
 		uint_t player_id = this-> player_index.size();
 		this-> player_index.resize(this-> player_index.size() + 1);
+		this-> connected_players ++;
 		return player_id;
 	}
 
@@ -46,22 +57,21 @@ namespace mdl { class ffly_server
 			this-> player_index[__player_id] = this-> player_index[this-> player_index.size() - 1];
 		}
 		this-> player_index.resize(this-> player_index.size() - 1);
+		this-> connected_players --;
 	}
 
 	private:
+	uint_t uni_dimensions = 3;
+
 	ublas::vector<firefly::types::player_info_t> player_index;
 
-	cl::Context *cl_context;
-	cl::Program *cl_program;
-	cl::CommandQueue *cl_queue;
-	cl::Buffer *uni_xlen_buff;
-	cl::Buffer *cl_uni_buff;
 	uint_t connected_players = 0;
 
 	firefly::opencl opencl;
 
 	firefly::networking::tcp_server cl_tcp_stream;
 	firefly::networking::udp_server cl_udp_stream;
+
 	uint_t const uni_particle_count = 0;
 
 	firefly::types::uni_par_t * uni_particles = nullptr;

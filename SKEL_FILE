@@ -1,0 +1,4 @@
+FORMAT:
+	xaxis_len <uint64>
+	yaxis_len <uint64>
+	skelmap_data<uint8_t> 
