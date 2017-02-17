@@ -6,13 +6,18 @@
 # include <string.h>
 # include <fstream>
 # include "draw_grid.hpp"
-int main() {
-	mdl::x11_window x11_window;
-	mdl::uint_t xpix_amount = 5;
-	mdl::uint_t ypix_amount = 6;
+int main(int argc, char const *argv[]) {
+	if (argc < 6) {
+		printf("usage: x pix count, y pix count, x size, y size, save file.\n");
+		return 1;
+	}
 
-	mdl::uint_t pix_xlen = 64;
-	mdl::uint_t pix_ylen = 64;
+	mdl::x11_window x11_window;
+	mdl::uint_t xpix_amount = atoi(argv[1]);
+	mdl::uint_t ypix_amount = atoi(argv[2]);
+
+	mdl::uint_t pix_xlen = atoi(argv[3]);
+	mdl::uint_t pix_ylen = atoi(argv[4]);
 
 	mdl::uint_t w_width = xpix_amount * pix_xlen;
 	mdl::uint_t w_height = ypix_amount * pix_ylen;
@@ -37,6 +42,14 @@ int main() {
 	mdl::uint_t sizes[2] = {w_width, w_height};
 	mdl::uint_t grid_offsets[2] = {pix_xlen , pix_ylen};
 
+/*
+	mdl::uint_t spx = 0, spy = 0, epx = 234, epy = 68;
+
+	mdl::uint_t delx = epx - spx;
+	mdl::uint_t dely = epx - spx;
+	mdl::uint_t delaerr = abs(dely / delx);
+	mdl::uint_t error = delaerr - 0.5;
+*/
 	while(true) {
 		if (x11_window.window_closed && pthread_kill(x11_window.window_thread-> native_handle(), 0) != 0) {
 			printf("window has been closed.\n");
@@ -45,7 +58,22 @@ int main() {
 
 		if (!x11_window.waitting) continue;
 		if (x11_window.done_drawing) continue;
+/*
+		std::size_t y = spy;
+		for (std::size_t x = spx; x != spx + epx; x ++) {
+			mdl::uint_t pix_pos = mdl::emu2d(x, y, w_width, w_height, 4);
+			x11_window.pixels[pix_pos] = 255;
+			x11_window.pixels[pix_pos + 3] = 255;
+			error = error + delaerr;
+			if (error > 0.5) {
+				y = y + 1;
+				error = error - 1.0;
+			}
+		}
 
+
+		goto end;
+*/
 		if (x11_window.button_press) {
 			already_pressed = false;
 		}
@@ -107,7 +135,7 @@ int main() {
 
 	printf("exiting font creator.\n");
 
-	FILE *ofile = fopen("font.dat", "wb");
+	FILE *ofile = fopen(argv[5], "wb");
 
 	fwrite(&pxlen, sizeof(mdl::uint_t), 1, ofile);
 	fwrite(&pylen, sizeof(mdl::uint_t), 1, ofile);
