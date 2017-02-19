@@ -9,6 +9,8 @@
 # include <boost/cstdint.hpp>
 # include "serial.hpp"
 # include "types/player_info_t.hpp"
+# include "asset_manager.hpp"
+# include "layer.hpp"
 namespace mdl { class ffly_client
 {
 	public:
@@ -19,9 +21,10 @@ namespace mdl { class ffly_client
 			return _this-> curr_fps;
 		}
 
-		void connect_to_server(char const *__addr, boost::uint16_t __portno) {
+		void connect_to_server(char const *__addr, boost::uint16_t __portno, uint_t __layer_id) {
 			_this-> server_ipaddr = __addr;
 			_this-> server_portno = __portno;
+			_this-> cam_layer_id = __layer_id;
 		}
 
 		bool server_connected() {
@@ -33,6 +36,8 @@ namespace mdl { class ffly_client
 		mdl::ffly_client *_this;
 	} portal_t;
 
+	firefly::layer layer;
+
 	char const *server_ipaddr = nullptr;
 	boost::uint16_t server_portno = 0;
 	bool server_connected = false;
@@ -41,9 +46,11 @@ namespace mdl { class ffly_client
 
 	portal_t portal;
 
+	uint_t cam_layer_id = 0;
 	uint_t curr_fps = 0;
 	uint_t fps_counter = 0;
 
+	firefly::asset_manager asset_manager;
 	private:
 	firefly::networking::tcp_client tcp_stream;
 	firefly::networking::udp_client udp_stream;

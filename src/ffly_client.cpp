@@ -37,13 +37,13 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 			serialize.reset();
 			if (this-> tcp_stream.send(serialize.get_data(), ss) == -1) {
 				this-> server_connected = false;
-				fprintf(stderr, "connection error.\n");
+				fprintf(stderr, "connection error. tcp\n");
 				goto sskip;
 			}
 
-			if (this-> udp_stream.recv(_x11_window.pixels, pix_count) == -1) {
+			if (this-> udp_stream.recv(this-> layer.get_layer_pixmap(this-> cam_layer_id), pix_count) == -1) {
 				this-> server_connected = false;
-				fprintf(stderr, "connection error.\n");
+				fprintf(stderr, "connection error. udp\n");
 				goto sskip;
 			}
 		}
@@ -74,6 +74,8 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 		}
 
 		skip:
+
+		this-> layer.draw_layers(_x11_window.pixels, this-> win_xlen, this-> win_ylen);
 
 		_x11_window.done_drawing = true;
 		_x11_window.waitting = false;

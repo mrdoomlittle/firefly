@@ -2,7 +2,7 @@
 boost::int8_t mdl::ffly_server::init() {
 	this-> uni_particles = static_cast<firefly::types::uni_par_t *>(calloc(this-> uni_particle_count, sizeof(firefly::types::uni_par_t)));
 	this-> uni_par_colours = static_cast<boost::uint8_t *>(malloc((this-> uni_particle_count * 4) * sizeof(boost::uint8_t)));
-	memset(uni_par_colours, 255, (this-> uni_particle_count * 4) * sizeof(boost::uint8_t));
+	memset(uni_par_colours, 180, (this-> uni_particle_count * 4) * sizeof(boost::uint8_t));
 	uint_t curr_point = 0, offset = 4;
 
 	printf("please wait this might take some time. :)\n");
@@ -135,7 +135,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 				this-> uni_par_colours[point] = 255;
 				this-> uni_par_colours[point + 1] = 0;
 				this-> uni_par_colours[point + 2] = 0;
-				this-> uni_par_colours[point + 3] = 255;
+				this-> uni_par_colours[point + 3] = 180;
 			}
 		}
 

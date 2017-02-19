@@ -1,4 +1,4 @@
-# include "src/x11_window.hpp"
+# include "src/graphics/x11_window.hpp"
 # include <eint_t.hpp>
 # include <math.h>
 # include <signal.h>
@@ -24,7 +24,6 @@ int main(int argc, char const *argv[]) {
 
 	if (w_width % 2 || w_height  % 2) return 1;
 
-
 	mdl::uint_t pxlen = (w_width / pix_xlen), pylen = (w_height / pix_ylen);
 	boost::uint8_t *__pixmap = static_cast<boost::uint8_t *>(malloc(pxlen * pylen));
 	bzero(__pixmap, pxlen * pylen);
@@ -42,14 +41,6 @@ int main(int argc, char const *argv[]) {
 	mdl::uint_t sizes[2] = {w_width, w_height};
 	mdl::uint_t grid_offsets[2] = {pix_xlen , pix_ylen};
 
-/*
-	mdl::uint_t spx = 0, spy = 0, epx = 234, epy = 68;
-
-	mdl::uint_t delx = epx - spx;
-	mdl::uint_t dely = epx - spx;
-	mdl::uint_t delaerr = abs(dely / delx);
-	mdl::uint_t error = delaerr - 0.5;
-*/
 	while(true) {
 		if (x11_window.window_closed && pthread_kill(x11_window.window_thread-> native_handle(), 0) != 0) {
 			printf("window has been closed.\n");
@@ -58,22 +49,7 @@ int main(int argc, char const *argv[]) {
 
 		if (!x11_window.waitting) continue;
 		if (x11_window.done_drawing) continue;
-/*
-		std::size_t y = spy;
-		for (std::size_t x = spx; x != spx + epx; x ++) {
-			mdl::uint_t pix_pos = mdl::emu2d(x, y, w_width, w_height, 4);
-			x11_window.pixels[pix_pos] = 255;
-			x11_window.pixels[pix_pos + 3] = 255;
-			error = error + delaerr;
-			if (error > 0.5) {
-				y = y + 1;
-				error = error - 1.0;
-			}
-		}
 
-
-		goto end;
-*/
 		if (x11_window.button_press) {
 			already_pressed = false;
 		}

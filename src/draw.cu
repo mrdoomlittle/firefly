@@ -3,9 +3,12 @@ __global__ void _draw_pixmap(int unsigned *__xoffset, int unsigned *__yoffset, b
 	int unsigned curr_pixel = ((threadIdx.x + (*__xoffset)) + ((blockIdx.x + (*__yoffset)) * (*__xlen))) * 4;
 	int unsigned pixmap_pos = (threadIdx.x + (blockIdx.x * blockDim.x)) * 4;
 
+	
+	
 	__pixels[curr_pixel] = __pixmap[pixmap_pos];
 	__pixels[curr_pixel + 1] = __pixmap[pixmap_pos + 1];
 	__pixels[curr_pixel + 2] = __pixmap[pixmap_pos + 2];
+
 	__pixels[curr_pixel + 3] = __pixmap[pixmap_pos + 3];
 }
 
