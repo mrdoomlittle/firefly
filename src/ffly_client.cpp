@@ -10,7 +10,7 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 	this-> portal.pixbuff = _x11_window.pixels;
 	this-> portal._this = this;
 
-	uint_t pix_count = (this-> win_xlen * this-> win_ylen) * 4;
+	uint_t pix_count = (this-> cam_xaxis_len * this-> cam_yaxis_len) * 4;
 
 	int sock;
 	firefly::types::player_info_t player_info;

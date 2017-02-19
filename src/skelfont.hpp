@@ -18,6 +18,7 @@ types::skelfont_t* load_skelfont(char const *__dir, asset_manager *asset_man) {
 
 	struct dirent *dir_;
 	uint_t curr_skel_file = 0;
+
 	while ((dir_ = readdir(sf_dir)) != NULL) {
 		if (strlen(dir_-> d_name) < 12) continue;
 

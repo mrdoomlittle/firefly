@@ -50,6 +50,8 @@ namespace mdl { class ffly_client
 	uint_t curr_fps = 0;
 	uint_t fps_counter = 0;
 
+	uint_t cam_xaxis_len = 256, cam_yaxis_len = 256; 
+
 	firefly::asset_manager asset_manager;
 	private:
 	firefly::networking::tcp_client tcp_stream;

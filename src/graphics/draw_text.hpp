@@ -5,7 +5,6 @@
 # include "../types/colour_t.hpp"
 # include "../types/skelmap_info_t.hpp"
 # include "draw_skelmap.hpp"
-#include <unordered_map>
 namespace mdl {
 namespace firefly {
 namespace graphics {
@@ -13,7 +12,7 @@ void draw_text(asset_manager *asset_man, boost::uint8_t *__pixbuff, types::skelf
 	uint_t xaxis_offset = __xaxis;
 	for (std::size_t i = 0; i != strlen(__text); i ++) {
 //		for (std::size_t o = 0; o != __skelfont-> font_size; o ++) {
-		if (__skelfont-> font_data.find(__text[i]) != __skelfont-> font_data.end()) {
+		if (__skelfont-> font_data[__text[i]] != -1) {
 	//		if (__skelfont-> font_data[o].first == __text[i]) {
 				uint_t asset_id = __skelfont-> font_data[__text[i]];
 

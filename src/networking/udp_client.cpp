@@ -34,6 +34,11 @@ boost::int8_t mdl::firefly::networking::udp_client::init(char const * __ip_addr,
 		return -1;
 	}
 
+	int optval = 1;
+	if (setsockopt(this-> sock, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval)) < 0) {
+		return -1;
+	}
+
 	return 0;
 }
 
