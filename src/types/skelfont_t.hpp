@@ -9,7 +9,7 @@ namespace firefly {
 namespace types {
 typedef struct {
 	uint_t font_size;
-	int_t font_data[255] = {-1};
+	int_t font_data[255];
 //	std::unordered_map<char, uint_t> font_data;
 	//ublas::vector<std::pair<char, uint_t>> font_data;
 } skelfont_t;

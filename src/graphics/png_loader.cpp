@@ -1,5 +1,5 @@
 # include "png_loader.hpp"
-boost::uint8_t mdl::load_png_file(char const *__filename, boost::uint8_t *&__pixmap, int unsigned *__pixmap_size) {
+boost::uint8_t mdl::firefly::graphics::load_png_file(char const *__filename, boost::uint8_t *&__pixmap, uint_t *__pixmap_size) {
 	FILE *file = fopen(__filename, "rb");
 
 	if (file == NULL) {
@@ -27,7 +27,7 @@ boost::uint8_t mdl::load_png_file(char const *__filename, boost::uint8_t *&__pix
 	if (bit_depth != 8 || color_type != PNG_COLOR_TYPE_RGB_ALPHA) return 1;
 
 	boost::uint8_t *pixmap = static_cast<boost::uint8_t *>(malloc((__pixmap_size[0] * __pixmap_size[1]) * 4));
-	//bzero(pixmap, (__pixmap_size[0] * __pixmap_size[1]) * 4);
+	bzero(pixmap, (__pixmap_size[0] * __pixmap_size[1]) * 4);
 
 	for (std::size_t y = 0; y != __pixmap_size[1]; y ++)
 		png_read_row(png, pixmap + (y * (__pixmap_size[0] * 4)), NULL);

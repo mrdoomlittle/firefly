@@ -14,7 +14,7 @@ class layer {
 
 	} layer_info_t;
 
-	uint_t add_layer(uint_t __xlen, uint_t __ylen, uint_t __xoffset, uint_t __yoffset) {
+	uint_t add_layer(uint_t __xlen, uint_t __ylen, uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixmap = nullptr) {
 		uint_t layer_id = layers.size();
 		layers.resize(layers.size() + 1);
 
@@ -26,8 +26,13 @@ class layer {
 		};
 
 		layers[layer_id].first = layer_info;
-		layers[layer_id].second = static_cast<boost::uint8_t *>(malloc(((__xlen * __ylen) * 4) * sizeof(boost::uint8_t)));
-		memset(layers[layer_id].second, 0x0, ((__xlen * __ylen) * 4 * sizeof(boost::uint8_t)));
+
+		if (__pixmap != nullptr) {
+			layers[layer_id].second = __pixmap;
+		} else {
+			layers[layer_id].second = static_cast<boost::uint8_t *>(malloc(((__xlen * __ylen) * 4) * sizeof(boost::uint8_t)));
+			memset(layers[layer_id].second, 0x0, ((__xlen * __ylen) * 4 * sizeof(boost::uint8_t)));
+		}
 
 		return layer_id;
 	}

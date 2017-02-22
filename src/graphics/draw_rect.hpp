@@ -7,7 +7,7 @@
 namespace mdl {
 namespace firefly {
 namespace graphics {
-void draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b_ycoord, uint_t __e_xcoord, uint_t __e_ycoord, colour_t __colour, uint_t __pd_ylen, uint_t __pd_xlen);
+void draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b_ycoord, uint_t __e_xcoord, uint_t __e_ycoord, colour_t __colour, uint_t __pd_xlen, uint_t __pd_ylen);
 }
 }
 }

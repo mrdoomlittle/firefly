@@ -3,10 +3,10 @@ __global__ void cu_draw_pixmap(mdl::uint_t *__xoffset, mdl::uint_t *__yoffset, b
 	mdl::uint_t pixbuff_pos = ((threadIdx.x + (*__xoffset)) + ((blockIdx.x + (*__yoffset)) * (*__pb_xlen))) * 4;
 	mdl::uint_t pixmap_pos = (threadIdx.x + (blockIdx.x * blockDim.x)) * 4;
 
-	boost::uint8_t alpha = __pixmap[pixmap_pos + 3] + 1;
-	boost::uint8_t inv_alpha = 256 - __pixmap[pixmap_pos + 3];
+	boost::uint8_t alpha = __pixmap[pixmap_pos + 3];
+	boost::uint8_t inv_alpha = 255 - __pixmap[pixmap_pos + 3];
  
-	if (__pixmap[pixmap_pos + 3] == 0) return;
+	if (__pixmap[pixmap_pos + 3] != 0x0) {
 
 	boost::uint8_t new_r = (boost::uint8_t)((alpha * __pixmap[pixmap_pos] + inv_alpha * __pixbuff[pixbuff_pos]) >> 8);
 	boost::uint8_t new_g = (boost::uint8_t)((alpha * __pixmap[pixmap_pos + 1] + inv_alpha * __pixbuff[pixbuff_pos + 1]) >> 8);
@@ -17,25 +17,71 @@ __global__ void cu_draw_pixmap(mdl::uint_t *__xoffset, mdl::uint_t *__yoffset, b
 	__pixbuff[pixbuff_pos + 2] = new_b;
 
 	__pixbuff[pixbuff_pos + 3] = __pixmap[pixmap_pos + 3];
+
+	}
 }
 
 void mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, boost::uint8_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen) {
-	uint_t *xoffset, *yoffset, *pb_xlen;
-	boost::uint8_t *pixbuff, *pixmap;
+	static uint_t *xoffset = nullptr, *yoffset = nullptr, *pb_xlen = nullptr;
+	static boost::uint8_t *pixbuff = nullptr, *pixmap = nullptr;
+	static bool initialized = false;
 
-	cudaMalloc((void **)&xoffset, sizeof(uint_t));
-	cudaMalloc((void **)&yoffset, sizeof(uint_t));
-	cudaMalloc((void **)&pb_xlen, sizeof(uint_t));
+	if (!initialized) {
+		cudaMalloc((void **)&xoffset, sizeof(uint_t));
+		cudaMalloc((void **)&yoffset, sizeof(uint_t));
+		cudaMalloc((void **)&pb_xlen, sizeof(uint_t));
+
+		initialized = true;
+	}
 
 	uint_t pixbuff_size = (__pb_xlen * __pb_ylen) * 4;
-	uint_t	pixmap_size = (__pm_xlen * __pm_ylen) * 4;
+	uint_t pixmap_size = (__pm_xlen * __pm_ylen) * 4;
 
-	cudaMalloc((void **)&pixbuff, pixbuff_size * sizeof(boost::uint8_t));
-	cudaMalloc((void **)&pixmap, pixmap_size * sizeof(boost::uint8_t));
+	static uint_t _pixbuff_size = 0;
 
-	cudaMemcpy(xoffset, &__xoffset, sizeof(uint_t), cudaMemcpyHostToDevice);
-	cudaMemcpy(yoffset, &__xoffset, sizeof(uint_t), cudaMemcpyHostToDevice);
-	cudaMemcpy(pb_xlen, &__pb_xlen, sizeof(uint_t), cudaMemcpyHostToDevice);
+	if (_pixbuff_size != pixbuff_size) {
+		if (pixbuff != nullptr) cudaFree(pixbuff);
+
+		cudaMalloc((void **)&pixbuff, pixbuff_size * sizeof(boost::uint8_t));
+
+		_pixbuff_size = pixbuff_size;
+	}
+
+	static uint_t _pixmap_size = 0;
+
+	if (_pixmap_size != pixmap_size) {
+		if (pixmap != nullptr) cudaFree(pixmap);
+
+		cudaMalloc((void **)&pixmap, pixmap_size * sizeof(boost::uint8_t));
+
+		_pixmap_size = pixmap_size;
+	}
+
+	static uint_t _xoffset = 0;
+	
+	if (_xoffset != __xoffset) {
+		cudaMemcpy(xoffset, &__xoffset, sizeof(uint_t), cudaMemcpyHostToDevice);
+
+		_xoffset = __xoffset;
+	}
+
+
+	static uint_t _yoffset = 0;
+
+	if (_yoffset != __yoffset) {
+		cudaMemcpy(yoffset, &__xoffset, sizeof(uint_t), cudaMemcpyHostToDevice);
+
+		_yoffset = __yoffset;
+	}
+
+
+	static uint_t _pb_xlen = 0;
+
+	if (_pb_xlen != __pb_xlen) { 
+		cudaMemcpy(pb_xlen, &__pb_xlen, sizeof(uint_t), cudaMemcpyHostToDevice);
+
+		_pb_xlen = __pb_xlen;
+	}
 
 	cudaMemcpy(pixbuff, __pixbuff, pixbuff_size * sizeof(boost::uint8_t), cudaMemcpyHostToDevice);
 	cudaMemcpy(pixmap, __pixmap, pixmap_size * sizeof(boost::uint8_t), cudaMemcpyHostToDevice);
@@ -44,9 +90,6 @@ void mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yoffset, boo
 
 	cudaMemcpy(__pixbuff, pixbuff, pixbuff_size * sizeof(boost::uint8_t), cudaMemcpyDeviceToHost);
 
-	cudaFree(xoffset);
-	cudaFree(yoffset);
-	cudaFree(pb_xlen);
-	cudaFree(pixbuff);
-	cudaFree(pixmap);
+//	cudaFree(pixbuff);
+//	cudaFree(pixmap);
 }
