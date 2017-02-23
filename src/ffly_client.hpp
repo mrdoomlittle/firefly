@@ -11,10 +11,19 @@
 # include "types/player_info_t.hpp"
 # include "asset_manager.hpp"
 # include "layer.hpp"
+#include <cuda_runtime.h>
 namespace mdl { class ffly_client
 {
 	public:
 	ffly_client(uint_t __win_xlen, uint_t __win_ylen) : win_xlen(__win_xlen), win_ylen(__win_ylen) {}
+
+	~ffly_client() {
+		cudaDeviceReset();
+	}
+
+	void cu_clean() {
+		cudaDeviceReset();
+	}
 
 	typedef struct {
 		uint_t fps_count() {

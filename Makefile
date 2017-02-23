@@ -24,7 +24,7 @@ src/networking/udp_client.o: src/networking/udp_client.cpp
 	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) -o src/networking/udp_client.o src/networking/udp_client.cpp
 
 src/ffly_client.o: src/ffly_client.cpp
-	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) -o src/ffly_client.o src/ffly_client.cpp
+	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) $(CUDA) -o src/ffly_client.o src/ffly_client.cpp
 
 src/ffly_server.o: src/ffly_server.cpp
 	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) -o src/ffly_server.o src/ffly_server.cpp
@@ -47,6 +47,12 @@ src/graphics/draw_pixmap.o: src/graphics/draw_pixmap.cu
 src/graphics/fill_pixmap.o: src/graphics/fill_pixmap.cu
 	nvcc -c -std=c++11 $(CXXFLAGS) $(ARC) $(CUDA) -o src/graphics/fill_pixmap.o src/graphics/fill_pixmap.cu
 
+src/tests/layering.o: src/tests/layering.cpp
+	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) -o src/tests/layering.o src/tests/layering.cpp
+
+src/maths/rotate_point.o: src/maths/rotate_point.cpp
+	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) -o src/maths/rotate_point.o src/maths/rotate_point.cpp
+
 required:
 	cd intlen; make ARC64 EINT_T_INC=$(CURR_PATH)/eint_t/inc; cd ../;
 	cd getdigit; make ARC64 EINT_T_INC=$(CURR_PATH)/eint_t/inc INTLEN_INC=$(CURR_PATH)/intlen/inc INTLEN_LIB=$(CURR_PATH)/intlen/lib; cd ../;
@@ -63,9 +69,10 @@ ffly_server: required src/ffly_server.o src/graphics/png_loader.o src/networking
 	make move_libs;
 
 ffly_client: required src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o \
-	src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o
+	src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o src/tests/layering.o src/maths/rotate_point.o
 	ld -r -o lib/ffly_client.o src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o \
-	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o
+	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
+	src/tests/layering.o src/maths/rotate_point.o
 
 	ar rcs lib/libffly_client.a lib/ffly_client.o
 	rm lib/ffly_client.o
@@ -97,6 +104,19 @@ move_headers:
 	if ! [ -d $(CURR_PATH)/inc/firefly/types ]; then \
 		mkdir $(CURR_PATH)/inc/firefly/types; \
 	fi
+
+	if ! [ -d $(CURR_PATH)/inc/firefly/tests ]; then \
+		mkdir $(CURR_PATH)/inc/firefly/tests; \
+	fi
+
+	if ! [ -d $(CURR_PATH)/inc/firefly/maths ]; then \
+		mkdir $(CURR_PATH)/inc/firefly/maths; \
+	fi
+
+	cp $(CURR_PATH)/src/maths/*.hpp $(CURR_PATH)/inc/firefly/maths
+
+	cp $(CURR_PATH)/src/tests/*.hpp $(CURR_PATH)/inc/firefly/tests
+
 	cp $(CURR_PATH)/src/types/*.hpp $(CURR_PATH)/inc/firefly/types
 
 	cp $(CURR_PATH)/src/*.hpp $(CURR_PATH)/inc/firefly
@@ -118,9 +138,8 @@ example_server: src/uni_worker.o src/graphics/png_loader.o src/networking/tcp_se
 	src/uni_worker.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o \
 	-lpng16 -lboost_system -lemu2d -lOpenCL -lboost_filesystem -lpthread -lboost_thread
 
-uni_worker: src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o
-	g++ -std=c++11 $(CXXFLAGS) -L/usr/local/lib/x86_64/sdk -Wall $(ARC) -o bin/uni_worker.exec src/uni_worker.cpp \
-	src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o \
+uni_worker: src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o
+	g++ -std=c++11 $(CXXFLAGS) -L/usr/local/lib/x86_64/sdk -Wall $(ARC) -o bin/uni_worker.exec src/uni_worker.cpp src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o \
 	-lpng16 -lboost_system -lemu2d -lOpenCL -lboost_filesystem -lpthread -lboost_thread
 
 skel_creator: src/graphics/x11_window.o
@@ -134,6 +153,8 @@ clean:
 	cd strcmb; make clean; cd ../;
 	rm -f src/graphics/*.o
 	rm -f src/networking/*.o
+	rm -f src/maths/*.o
+	rm -f src/tests/*.o
 	rm -f src/*.o
 	rm -f *.exec
 	rm -f bin/*.exec

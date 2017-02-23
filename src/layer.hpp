@@ -5,6 +5,7 @@ namespace ublas = boost::numeric::ublas;
 # include <eint_t.hpp>
 # include "graphics/draw_pixmap.hpp"
 # include <utility>
+# include <string.h>
 namespace mdl {
 namespace firefly {
 class layer {
