@@ -1,7 +1,8 @@
 # include "rotate_point.hpp"
 
 void mdl::firefly::maths::rotate_point(uint_t& __xaxis, uint_t& __yaxis, uint_t __angle, uint_t __xoffset, uint_t __yoffset) {
-	float sn = sinf((float)__angle), cs = cosf((float)__angle);
+	float angle = (PI / 180.0) * (float)__angle;
+	float sn = sinf(angle), cs = cosf(angle);
 
 	float n_xaxis = (float)__xaxis * cs - (float)__yaxis * sn;
 	float n_yaxis = (float)__yaxis * cs + (float)__xaxis * sn;

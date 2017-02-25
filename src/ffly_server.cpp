@@ -31,7 +31,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 	firefly::types::player_info_t& player_info = this-> player_index[__player_id];
 	printf("player with the id of %d. thread began.\n");
 
-	serial serialize('\0');
+	serializer serialize('\0');
 
 	std::size_t ss = serialize.get_size(&player_info);
 	serialize.init(ss);

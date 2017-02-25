@@ -2,7 +2,7 @@
 # define __rotate__point__hpp
 # include <eint_t.hpp>
 # include <math.h>
-//# include "pi.h"
+# include "pi.h"
 namespace mdl {
 namespace firefly {
 namespace maths {

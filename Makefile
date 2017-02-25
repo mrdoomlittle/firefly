@@ -1,6 +1,6 @@
 SHELL :=/bin/bash
 CURR_PATH=${CURDIR}
-CXXFLAGS=-Ieint_t/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstrcmb/lib
+CXXFLAGS=-Ieint_t/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstrcmb/lib
 LDFLAGS=
 LLFLAGS=
 ARC=-DARC64
@@ -113,6 +113,7 @@ move_headers:
 		mkdir $(CURR_PATH)/inc/firefly/maths; \
 	fi
 
+	cp $(CURR_PATH)/src/maths/*.h $(CURR_PATH)/inc/firefly/maths
 	cp $(CURR_PATH)/src/maths/*.hpp $(CURR_PATH)/inc/firefly/maths
 
 	cp $(CURR_PATH)/src/tests/*.hpp $(CURR_PATH)/inc/firefly/tests

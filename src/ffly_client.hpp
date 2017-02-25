@@ -7,11 +7,11 @@
 # include <signal.h>
 # include "draw.hpp"
 # include <boost/cstdint.hpp>
-# include "serial.hpp"
 # include "types/player_info_t.hpp"
 # include "asset_manager.hpp"
 # include "layer.hpp"
-#include <cuda_runtime.h>
+# include <serializer.hpp>
+# include <cuda_runtime.h>
 namespace mdl { class ffly_client
 {
 	public:

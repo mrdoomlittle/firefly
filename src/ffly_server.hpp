@@ -8,7 +8,7 @@
 # include "types/uni_par_t.hpp"
 # include <boost/thread.hpp>
 # include "opencl_helper.hpp"
-# include "serial.hpp"
+# include <serializer.hpp>
 # include "types/player_info_t.hpp"
 # define FFLY_UNI_PAR_XLEN 2
 # define FFLY_UNI_PAR_YLEN 2

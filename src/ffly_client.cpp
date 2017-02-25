@@ -14,7 +14,7 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 
 	int sock;
 	firefly::types::player_info_t player_info;
-	serial serialize('\0');
+	serializer serialize('\0');
 
 	std::size_t ss = serialize.get_size(&player_info);
 	serialize.init(ss);
@@ -35,7 +35,7 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 		if (this-> server_connected) {
 			player_info.achieve(serialize);
 			serialize.reset();
-			if (this-> tcp_stream.send(serialize.get_data(), ss) == -1) {
+			if (this-> tcp_stream.send(serialize.get_serial(), ss) == -1) {
 				this-> server_connected = false;
 				fprintf(stderr, "connection error. tcp\n");
 				goto sskip;
