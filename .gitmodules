@@ -16,3 +16,6 @@
 [submodule "serializer"]
 	path = serializer
 	url = git@github.com:mrdoomlittle/serializer.git
+[submodule "qgdb"]
+	path = qgdb
+	url = git@github.com:mrdoomlittle/qgdb.git
