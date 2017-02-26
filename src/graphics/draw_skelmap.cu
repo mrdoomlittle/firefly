@@ -26,30 +26,63 @@ boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, bo
 
 	uint_t pixbuff_size = (__pixbuff_xlen * __pixbuff_ylen) * 4;
 
+	if (pixbuff_size == 0) {
+		fprintf(stderr, "error: pixbuff size is zero.\n");
+		return -1;
+	}
+
 	if (!initialized) {
 		if ((any_error = cudaMalloc((void **)&xaxis, sizeof(uint_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
 			return -1;
 		}
 
-		if ((any_error = cudaMalloc((void **)&yaxis, sizeof(uint_t)) != cudaSuccess) {
+		if (__xaxis == 0) {
+			if ((any_error = cudaMemcpy(xaxis, &__xaxis, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
+				return -1;	
+			}
+		}
+
+		if ((any_error = cudaMalloc((void **)&yaxis, sizeof(uint_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
 			return -1;
 		}
 
-		if ((any_error = cudaMalloc((void **)&pixbuff_xlen, sizeof(uint_t)) != cudaSuccess) {
+		if (__yaxis == 0) {
+			if ((any_error = cudaMemcpy(yaxis, &__yaxis, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
+				return -1;
+			}
+		}
+
+		if ((any_error = cudaMalloc((void **)&pixbuff_xlen, sizeof(uint_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
 			return -1;
 		}
 
-		if ((any_error = cudaMalloc((void **)&scale, sizeof(uint_t)) != cudaSuccess) {
+		if ((any_error = cudaMalloc((void **)&scale, sizeof(uint_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
 			return -1;
 		}
 
-		if ((any_error = cudaMalloc((void **)&colour, sizeof(colour_t)) != cudaSuccess) {
+		if (__scale == 0) {
+			if ((any_error = cudaMemcpy(scale, &__scale, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
+				return -1;
+			}
+		}
+
+		if ((any_error = cudaMalloc((void **)&colour, sizeof(colour_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
 			return -1;
+		}
+
+		if (__colour.r == 0 && __colour.g == 0 && __colour.b == 0 && __colour.a == 0) {
+			if ((any_error = cudaMemcpy(colour, &__colour, sizeof(colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
+				return -1;
+			}
 		}
 
 		initialized = true;
@@ -80,7 +113,7 @@ boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, bo
 		}
 
 		if (_pixbuff_xlen != __pixbuff_xlen) {
-			if ((any_error = cudaMemcpy(pixbuff_xlen, &__pixbuff_xlen, sizeof(uint_t), cudaMemcpyHostToDevice)) cudaSuccess) {
+			if ((any_error = cudaMemcpy(pixbuff_xlen, &__pixbuff_xlen, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 				return -1;
 			}
@@ -92,19 +125,19 @@ boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, bo
 	}
 
 	if ((any_error = cudaMemcpy(skelmap, __skelmap, (__skelmap_info.xaxis_len * __skelmap_info.yaxis_len) * sizeof(boost::uint8_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
-		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", error_code);
+		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 		return -1;
 	}
 
 	if ((any_error = cudaMemcpy(pixbuff, __pixbuff, pixbuff_size * sizeof(boost::uint8_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
-		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", error_code);
+		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 		return -1;
 	}
 
 	static uint_t _xaxis = 0;
 	if (_xaxis != __xaxis) {
 		if ((any_error = cudaMemcpy(xaxis, &__xaxis, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
-			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", error_code);
+			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 			return -1;
 		}
 
@@ -114,7 +147,7 @@ boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, bo
 	static uint_t _yaxis = 0;
 	if (_yaxis != __yaxis) {
 		if ((any_error = cudaMemcpy(yaxis, &__yaxis, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
-			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", error_code);
+			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 			return -1;
 		}
 
@@ -124,7 +157,7 @@ boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, bo
 	static uint_t _scale = 0;
 	if (_scale != __scale) {
 		if ((any_error = cudaMemcpy(scale, &__scale, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
-			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", error_code);
+			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 			return -1;
 		}
 
@@ -135,7 +168,7 @@ boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, bo
 
 	if (_colour.r != __colour.r || _colour.g != __colour.g || _colour.b != __colour.b || _colour.a != __colour.a) {
 		if ((any_error = cudaMemcpy(colour, &__colour, sizeof(colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
-			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", error_code);
+			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 			return -1;
 		}
 
@@ -145,7 +178,9 @@ boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, bo
 	cu_draw_skelmap<<<__skelmap_info.yaxis_len, __skelmap_info.xaxis_len>>>(skelmap, pixbuff, xaxis, yaxis, pixbuff_xlen, scale, colour);
 
 	if ((any_error = cudaMemcpy(__pixbuff, pixbuff, pixbuff_size * sizeof(boost::uint8_t), cudaMemcpyDeviceToHost)) != cudaSuccess) {
-		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", error_code);
+		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 		return -1;
 	}
+
+	return 0;
 }

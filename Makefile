@@ -53,11 +53,14 @@ src/tests/layering.o: src/tests/layering.cpp
 src/maths/rotate_point.o: src/maths/rotate_point.cpp
 	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) -o src/maths/rotate_point.o src/maths/rotate_point.cpp
 
+src/graphics/scale_pixmap.o: src/graphics/scale_pixmap.cu
+	nvcc -c -std=c++11 $(CXXFLAGS) $(ARC) $(CUDA) -o src/graphics/scale_pixmap.o src/graphics/scale_pixmap.cu
+
 required:
 	cd intlen; make ARC64 EINT_T_INC=$(CURR_PATH)/eint_t/inc; cd ../;
 	cd getdigit; make ARC64 EINT_T_INC=$(CURR_PATH)/eint_t/inc INTLEN_INC=$(CURR_PATH)/intlen/inc INTLEN_LIB=$(CURR_PATH)/intlen/lib; cd ../;
 	cd to_string; make ECHAR_T=$(CURR_PATH)/echar_t/inc EINT_T_INC=$(CURR_PATH)/eint_t/inc GETDIGIT_INC=$(CURR_PATH)/getdigit/inc INTLEN_INC=$(CURR_PATH)/intlen/inc GETDIGIT_LIB=$(CURR_PATH)/getdigit/lib INTLEN_LIB=$(CURR_PATH)/intlen/lib; cd ../;
-	cd  strcmb; make EINT_T_INC=$(CURR_PATH)/echar_t/inc EINT_T_INC=$(CURR_PATH)/eint_t/inc ARC=$(ARC); cd ../;
+	cd strcmb; make EINT_T_INC=$(CURR_PATH)/echar_t/inc EINT_T_INC=$(CURR_PATH)/eint_t/inc ARC=$(ARC); cd ../;
 
 ffly_server: required src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o
 	ld -r -o lib/ffly_server.o src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o
@@ -69,10 +72,10 @@ ffly_server: required src/ffly_server.o src/graphics/png_loader.o src/networking
 	make move_libs;
 
 ffly_client: required src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o \
-	src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o src/tests/layering.o src/maths/rotate_point.o
+	src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o
 	ld -r -o lib/ffly_client.o src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o \
 	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
-	src/tests/layering.o src/maths/rotate_point.o
+	src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o
 
 	ar rcs lib/libffly_client.a lib/ffly_client.o
 	rm lib/ffly_client.o
@@ -127,6 +130,7 @@ move_headers:
 	cp $(CURR_PATH)/intlen/inc/*.hpp $(CURR_PATH)/inc
 	cp $(CURR_PATH)/to_string/inc/*.hpp $(CURR_PATH)/inc
 	cp $(CURR_PATH)/strcmb/inc/*.hpp $(CURR_PATH)/inc
+	cp $(CURR_PATH)/serializer/inc/*.hpp $(CURR_PATH)/inc
 
 example_client: required src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o \
 	src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o
