@@ -1,5 +1,5 @@
-# ifndef __colour__t__hpp
-# define __colour__t__hpp
+# ifndef __colour__ptr__t__hpp
+# define __colour__ptr__t__hpp
 # include <boost/cstdint.hpp>
 namespace mdl {
 namespace firefly {
@@ -14,4 +14,4 @@ typedef struct {
 }
 }
 
-# endif /*__colour__t__hpp*/
+# endif /*__colour__ptr__t__hpp*/

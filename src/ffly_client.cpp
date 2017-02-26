@@ -14,6 +14,10 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 
 	int sock;
 	firefly::types::player_info_t player_info;
+	player_info.xaxis = 0;
+	player_info.yaxis = 0;
+	player_info.zaxis = 0;
+
 	serializer serialize('\0');
 
 	std::size_t ss = serialize.get_size(&player_info);

@@ -12,7 +12,7 @@ __global__ void cu_draw_rect(boost::uint8_t *__pixbuff, mdl::uint_t *__b_xcoord,
 boost::uint8_t *pixbuff;
 mdl::uint_t *b_xcoord, *b_ycoord, *pd_xlen;
 mdl::firefly::graphics::colour_t *colour;
-void mdl::firefly::graphics::draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b_ycoord, uint_t __e_xcoord, uint_t __e_ycoord, colour_t __colour, uint_t __pd_xlen, uint_t __pd_ylen) {
+boost::int8_t mdl::firefly::graphics::draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b_ycoord, uint_t __e_xcoord, uint_t __e_ycoord, colour_t __colour, uint_t __pd_xlen, uint_t __pd_ylen) {
 	uint_t pixbuff_size = (__pd_xlen * __pd_ylen) * 4;
 
 	cudaMalloc((void **)&pixbuff, pixbuff_size * sizeof(boost::uint8_t));

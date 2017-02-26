@@ -1,8 +1,9 @@
 # include "ffly_server.hpp"
+# include "graphics/draw_pixmap.hpp"
 boost::int8_t mdl::ffly_server::init() {
 	this-> uni_particles = static_cast<firefly::types::uni_par_t *>(calloc(this-> uni_particle_count, sizeof(firefly::types::uni_par_t)));
 	this-> uni_par_colours = static_cast<boost::uint8_t *>(malloc((this-> uni_particle_count * 4) * sizeof(boost::uint8_t)));
-	memset(uni_par_colours, 180, (this-> uni_particle_count * 4) * sizeof(boost::uint8_t));
+	memset(uni_par_colours, 40, (this-> uni_particle_count * 4) * sizeof(boost::uint8_t));
 	uint_t curr_point = 0, offset = 4;
 
 	printf("please wait this might take some time. :)\n");
@@ -45,7 +46,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 
 	cl_int any_error = CL_SUCCESS;
 
-	cl_ulong cam_offsets[3] = {
+	uint_t cam_offsets[3] = {
 		player_info.xaxis,
 		player_info.yaxis,
 		player_info.zaxis
@@ -75,13 +76,14 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 			throw;
 		}
 
-		cam_offsets_buff = clCreateBuffer(this-> opencl.context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 3 * sizeof(cl_ulong), cam_offsets, &any_error);
+
+		cam_offsets_buff = clCreateBuffer(this-> opencl.context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, 3 * sizeof(uint_t), cam_offsets, &any_error);
 		if (any_error != CL_SUCCESS) {
 			fprintf(stderr, "opencl: failed to create 'cam_offsets_buff', error code: %d\n", any_error);
 			throw;
 		}
 
-		uni_xlen_buff = clCreateBuffer(this-> opencl.context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(cl_ulong), const_cast<uint_t *>(&real_uni_xlen), &any_error);
+		uni_xlen_buff = clCreateBuffer(this-> opencl.context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(uint_t), const_cast<uint_t *>(&real_uni_xlen), &any_error);
 		if (any_error != CL_SUCCESS) {
 			fprintf(stderr, "opencl: failed to create 'uni_xlen_buff', error code: %d\n", any_error);
 			throw;
@@ -121,7 +123,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 		goto end;
 	}
 
-	any_error = clSetKernelArg(cam_kernel, 3, sizeof(uint_t), (void *)&uni_xlen_buff);
+	any_error = clSetKernelArg(cam_kernel, 3, sizeof(cl_mem), (void *)&uni_xlen_buff);
 	if (any_error != CL_SUCCESS) {
 		fprintf(stderr, "opencl: failed to set 'uni_xlen' arg, error code: %d\n", any_error);
 		goto end;
@@ -190,7 +192,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 		}
 
 		boost::int8_t sock_result;
-		sock_result = this-> cl_tcp_stream.recv(__sock, serialize.get_data(), ss);
+		sock_result = this-> cl_tcp_stream.recv(__sock, serialize.get_serial(), ss);
 
 		player_info.achieve(serialize);
 		serialize.reset();
@@ -231,7 +233,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 
 	close(__sock);
 }
-
+# include "types/colour_t.hpp"
 boost::int8_t mdl::ffly_server::begin() {
 	//boost::thread * dum = nullptr;
 	//dum = new boost::thread(boost::bind(&ffly_server::uni_wmanager, this));
@@ -240,6 +242,16 @@ boost::int8_t mdl::ffly_server::begin() {
 	if (this-> cl_udp_stream.init(10198) == -1) return -1;
 
 	boost::thread * cl = nullptr;
+
+	//firefly::graphics::draw_rect(this-> uni_par_colours, 0, 0, 50, 50, colour, this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, &this-> opencl);
+
+	// 200x200
+	boost::uint8_t *temp = (boost::uint8_t *)malloc(160000);
+	memset(temp, 244, 160000);
+
+	firefly::graphics::draw_pixmap(0, 0, this-> uni_par_colours, this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, temp, 200, 200, &this-> opencl);
+
+	std::free(temp);
 
 	this-> opencl.load_source("../src/render_camera.cl");
 	this-> opencl.build_prog();

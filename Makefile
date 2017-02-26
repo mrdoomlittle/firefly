@@ -1,10 +1,12 @@
 SHELL :=/bin/bash
 CURR_PATH=${CURDIR}
-CXXFLAGS=-Ieint_t/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstrcmb/lib
+DEFINES=
+CXXFLAGS=$(DEFINES) -Ieint_t/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstrcmb/lib
 LDFLAGS=
 LLFLAGS=
 ARC=-DARC64
 CUDA=-I/usr/local/cuda-8.0/include -L/usr/local/cuda-8.0/lib64
+
 src/graphics/x11_window.o: src/graphics/x11_window.cpp
 	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) -o src/graphics/x11_window.o src/graphics/x11_window.cpp
 
@@ -56,14 +58,17 @@ src/maths/rotate_point.o: src/maths/rotate_point.cpp
 src/graphics/scale_pixmap.o: src/graphics/scale_pixmap.cu
 	nvcc -c -std=c++11 $(CXXFLAGS) $(ARC) $(CUDA) -o src/graphics/scale_pixmap.o src/graphics/scale_pixmap.cu
 
+src/opencl_helper.o: src/opencl_helper.cpp
+	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) -o src/opencl_helper.o src/opencl_helper.cpp
+
 required:
 	cd intlen; make ARC64 EINT_T_INC=$(CURR_PATH)/eint_t/inc; cd ../;
 	cd getdigit; make ARC64 EINT_T_INC=$(CURR_PATH)/eint_t/inc INTLEN_INC=$(CURR_PATH)/intlen/inc INTLEN_LIB=$(CURR_PATH)/intlen/lib; cd ../;
 	cd to_string; make ECHAR_T=$(CURR_PATH)/echar_t/inc EINT_T_INC=$(CURR_PATH)/eint_t/inc GETDIGIT_INC=$(CURR_PATH)/getdigit/inc INTLEN_INC=$(CURR_PATH)/intlen/inc GETDIGIT_LIB=$(CURR_PATH)/getdigit/lib INTLEN_LIB=$(CURR_PATH)/intlen/lib; cd ../;
 	cd strcmb; make EINT_T_INC=$(CURR_PATH)/echar_t/inc EINT_T_INC=$(CURR_PATH)/eint_t/inc ARC=$(ARC); cd ../;
 
-ffly_server: required src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o
-	ld -r -o lib/ffly_server.o src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o
+ffly_server: required src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o
+	ld -r -o lib/ffly_server.o src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o
 
 	ar rcs lib/libffly_server.a lib/ffly_server.o
 	rm lib/ffly_server.o
@@ -121,6 +126,7 @@ move_headers:
 
 	cp $(CURR_PATH)/src/tests/*.hpp $(CURR_PATH)/inc/firefly/tests
 
+	cp $(CURR_PATH)/src/types/*.h $(CURR_PATH)/inc/firefly/types
 	cp $(CURR_PATH)/src/types/*.hpp $(CURR_PATH)/inc/firefly/types
 
 	cp $(CURR_PATH)/src/*.hpp $(CURR_PATH)/inc/firefly
@@ -134,13 +140,13 @@ move_headers:
 
 example_client: required src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o \
 	src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o
-	g++ -std=c++11 $(CXXFLAGS) $(CUDA) -Wall $(ARC) -o bin/example_client.exec example_client.cpp src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o \
+	g++ -std=c++11 $(CXXFLAGS) -DUSING_CUDA $(CUDA) -Wall $(ARC) -o bin/example_client.exec example_client.cpp src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o \
 	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
 	-lto_string -lgetdigit -lintlen -lstrcmb -lemu2d -lpulse -lpulse-simple -lpng16 -lcuda -lcudart -lboost_system -lboost_filesystem -lpthread -lboost_thread -lX11 -lGL -lGLU -lglut
 
-example_server: src/uni_worker.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o
-	g++ -std=c++11 $(CXXFLAGS) -L/usr/local/lib/x86_64/sdk -Wall $(ARC) -o bin/example_server.exec example_server.cpp \
-	src/uni_worker.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o \
+example_server: src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o
+	g++ -std=c++11 $(CXXFLAGS) -DUSING_OPENCL -L/usr/local/lib/x86_64/sdk -Wall $(ARC) -o bin/example_server.exec example_server.cpp \
+	src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o \
 	-lpng16 -lboost_system -lemu2d -lOpenCL -lboost_filesystem -lpthread -lboost_thread
 
 uni_worker: src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o

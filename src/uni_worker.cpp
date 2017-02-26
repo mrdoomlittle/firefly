@@ -35,8 +35,9 @@ boost::int8_t mdl::firefly::uni_worker::begin(char const *__server_ipaddr) {
 		} 
 	} while(1);
 }
-
+/*
 int main() {
 	mdl::firefly::uni_worker uni_worker;
 	uni_worker.begin("192.168.0.100");
 }
+*/
