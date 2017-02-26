@@ -9,11 +9,11 @@
 # include <unistd.h>
 # include <string.h>
 # include <math.h>
+# include <errno.h>
 # include <eint_t.hpp>
 # include <boost/cstdint.hpp>
 # include "../pk_config.hpp"
 # include "../defaults.hpp"
-//# define PACKET_SIZE 54000
 
 namespace mdl {
 namespace firefly {
@@ -24,6 +24,8 @@ class udp_client
 	boost::int8_t init(char const * __ip_addr, boost::uint16_t __port_num);
 	boost::int8_t send(boost::uint8_t *__buff, uint_t __buff_len);
 	boost::int8_t recv(boost::uint8_t *__buff, uint_t __buff_len);
+	boost::int8_t send_ack();
+	boost::int8_t recv_ack();
 
 	private:
 	int sock, wbuff_size = WBUFFER_SIZE, rbuff_size = RBUFFER_SIZE;

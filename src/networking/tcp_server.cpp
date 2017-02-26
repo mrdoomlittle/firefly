@@ -10,10 +10,28 @@ boost::int8_t mdl::firefly::networking::tcp_server::init(boost::uint16_t __port_
 
 	if (bind(this-> sock, (struct sockaddr*)&this-> serveraddr, this-> len) == -1) return -1;
 
-	if (listen(this-> sock, 20) == -1) return -1;
 	len = sizeof(this-> clientaddr);
 
+	struct timeval tv = {
+		.tv_sec = 2,
+		.tv_usec = 0
+	};
+
+	if (setsockopt(this-> sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof(struct timeval)) < 0) {
+		printf("failed to set send time out.\n");
+		return -1;
+	}
+
+	if (setsockopt(this-> sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval)) < 0) {
+		printf("failed to set recv time out.\n");
+		return -1;
+	}
+
 	return 0;
+}
+
+boost::int8_t mdl::firefly::networking::tcp_server::listen() {
+	if (::listen(this-> sock, 20) == -1) return -1;
 }
 
 boost::int8_t mdl::firefly::networking::tcp_server::accept(int& __sock) {

@@ -61,6 +61,12 @@ src/graphics/scale_pixmap.o: src/graphics/scale_pixmap.cu
 src/opencl_helper.o: src/opencl_helper.cpp
 	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) -o src/opencl_helper.o src/opencl_helper.cpp
 
+src/worker_manager.o: src/worker_manager.cpp
+	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) -o src/worker_manager.o src/worker_manager.cpp
+
+src/memory/alloc_pixmap.o:src/memory/alloc_pixmap.cpp
+	g++ -c -std=c++11 $(CXXFLAGS) -Wall $(ARC) -o src/memory/alloc_pixmap.o src/memory/alloc_pixmap.cpp
+
 required:
 	cd intlen; make ARC64 EINT_T_INC=$(CURR_PATH)/eint_t/inc; cd ../;
 	cd getdigit; make ARC64 EINT_T_INC=$(CURR_PATH)/eint_t/inc INTLEN_INC=$(CURR_PATH)/intlen/inc INTLEN_LIB=$(CURR_PATH)/intlen/lib; cd ../;
@@ -144,14 +150,14 @@ example_client: required src/ffly_client.o src/graphics/x11_window.o src/graphic
 	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
 	-lto_string -lgetdigit -lintlen -lstrcmb -lemu2d -lpulse -lpulse-simple -lpng16 -lcuda -lcudart -lboost_system -lboost_filesystem -lpthread -lboost_thread -lX11 -lGL -lGLU -lglut
 
-example_server: src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o
+example_server: src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o src/worker_manager.o src/memory/alloc_pixmap.o
 	g++ -std=c++11 $(CXXFLAGS) -DUSING_OPENCL -L/usr/local/lib/x86_64/sdk -Wall $(ARC) -o bin/example_server.exec example_server.cpp \
-	src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o \
+	src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o src/worker_manager.o src/memory/alloc_pixmap.o \
 	-lpng16 -lboost_system -lemu2d -lOpenCL -lboost_filesystem -lpthread -lboost_thread
 
-uni_worker: src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o
+uni_worker: src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o src/memory/alloc_pixmap.o
 	g++ -std=c++11 $(CXXFLAGS) -L/usr/local/lib/x86_64/sdk -Wall $(ARC) -o bin/uni_worker.exec src/uni_worker.cpp src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o \
-	-lpng16 -lboost_system -lemu2d -lOpenCL -lboost_filesystem -lpthread -lboost_thread
+	src/memory/alloc_pixmap.o -lpng16 -lboost_system -lemu2d -lOpenCL -lboost_filesystem -lpthread -lboost_thread
 
 skel_creator: src/graphics/x11_window.o
 	nvcc -c -std=c++11 -DARC64 $(CUDA) -o draw_grid.o draw_grid.cu

@@ -19,17 +19,17 @@ boost::int8_t mdl::firefly::networking::udp_client::init(char const * __ip_addr,
 		return -1;
 	}
 
-	struct timeval tv;
+	struct timeval tv = {
+		.tv_sec = 20,
+		.tv_usec = 0
+	};
 
-	tv.tv_sec = 2;
-	tv.tv_usec = 0;
-
-	if (setsockopt(this-> sock, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) < 0) {
+	if (setsockopt(this-> sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof(struct timeval)) < 0) {
 		printf("failed to set send time out.\n");
 		return -1;
 	}
 
-	if (setsockopt(this-> sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+	if (setsockopt(this-> sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval)) < 0) {
 		printf("failed to set recv time out.\n");
 		return -1;
 	}
@@ -42,28 +42,55 @@ boost::int8_t mdl::firefly::networking::udp_client::init(char const * __ip_addr,
 	return 0;
 }
 
+boost::int8_t mdl::firefly::networking::udp_client::send_ack() {
+	boost::uint8_t null_val = 0;
+	mdl::int_t sock_result = 0;
+
+	sock_result = sendto(this-> sock, &null_val, 1, 0, (struct sockaddr*)&this-> serveraddr, this-> sock_len);
+
+	if (sock_result >= 0) {
+		if (sock_result < 1) return -1;
+	} else return sock_result;
+
+	return 0;
+}
+
+boost::int8_t mdl::firefly::networking::udp_client::recv_ack() {
+	boost::uint8_t null_val = 0;
+	mdl::int_t sock_result = 0;
+
+	sock_result = recvfrom(this-> sock, &null_val, 1, NULL, (struct sockaddr*)&this-> serveraddr, &this-> sock_len);
+
+	if (sock_result >= 0) {
+		if (sock_result < 1) return -1;
+	} else return sock_result;
+
+	return 0;
+}
+
 boost::int8_t mdl::firefly::networking::udp_client::send(boost::uint8_t *__buff, uint_t __buff_len) {
 	std::size_t amount_of_packets = ceil(float(__buff_len) / PACKET_SIZE);
 	uint_t amount_to_send = __buff_len;
 
-	boost::uint8_t null_val = 0;
 	std::size_t o = 0;
-	mdl::int_t sock_result = 0;
+	int_t sock_result = 0;
 	while (o != amount_of_packets) {
-		sock_result = recvfrom(this-> sock, &null_val, 1, 0, (struct sockaddr*)&this-> serveraddr, &this-> sock_len);
-		if (sock_result >= 0) {
-			if (sock_result < 1) return -1;
-		} else return sock_result;
-
 		uint_t bytes_to_send = PACKET_SIZE;
 
 		if (amount_to_send < PACKET_SIZE)
 			bytes_to_send = amount_to_send;
 
-		sock_result = sendto(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_send, 0, (struct sockaddr*)&this-> serveraddr, this-> sock_len);
+		sock_result = sendto(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_send, NULL, (struct sockaddr*)&this-> serveraddr, this-> sock_len);
+
 		if (sock_result >= 0) {
-			if (sock_result < bytes_to_send) return -1;
+			if (sock_result < bytes_to_send) {
+				fprintf(stderr, "failed to send packet to server, sock result: %d, errno: %d\n", sock_result, errno);
+				fprintf(stderr, "packet failed to send at stage: %d and %d bytes where meant to be sent.\n", o, bytes_to_send);
+				return -1;
+			}
 		} else return sock_result;
+
+		if (this-> recv_ack() == -1) return -1;
 
 		amount_to_send -= PACKET_SIZE;
         o ++;
@@ -74,23 +101,23 @@ boost::int8_t mdl::firefly::networking::udp_client::recv(boost::uint8_t *__buff,
 	std::size_t amount_of_packets = ceil(float(__buff_len) / PACKET_SIZE);
 	uint_t amount_to_recv = __buff_len;
 
-	boost::uint8_t null_val = 0;
 	std::size_t o = 0;
-	mdl::int_t sock_result = 0;
+	int_t sock_result = 0;
 	while (o != amount_of_packets) {
-		sock_result = sendto(this-> sock, &null_val, 1, 0, (struct sockaddr*)&this-> serveraddr, this-> sock_len);
-		if (sock_result >= 0) {
-			if (sock_result < 1) return -1;
-		} else return sock_result;
+		if (this-> send_ack() == -1) return -1;
 
 		uint_t bytes_to_recv = PACKET_SIZE;
 
 		if (amount_to_recv < PACKET_SIZE)
 			bytes_to_recv = amount_to_recv;
 
-		sock_result = recvfrom(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_recv, 0, (struct sockaddr*)&this-> serveraddr, &this-> sock_len);
+		sock_result = recvfrom(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_recv, NULL, (struct sockaddr*)&this-> serveraddr, &this-> sock_len);
 		if (sock_result >= 0) {
-			if (sock_result < bytes_to_recv) return -1;
+			if (sock_result < bytes_to_recv) {
+				fprintf(stderr, "failed to recv packet from server, sock result: %d, errno: %d\n", sock_result, errno);
+				fprintf(stderr, "packet failed to recv at stage: %d and %d bytes where meant to be received.\n", o, bytes_to_recv);
+				return -1;
+			}
 		} else return sock_result;
 
 		amount_to_recv -= PACKET_SIZE;

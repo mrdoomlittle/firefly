@@ -3,7 +3,7 @@
 boost::int8_t mdl::ffly_server::init() {
 	this-> uni_particles = static_cast<firefly::types::uni_par_t *>(calloc(this-> uni_particle_count, sizeof(firefly::types::uni_par_t)));
 	this-> uni_par_colours = static_cast<boost::uint8_t *>(malloc((this-> uni_particle_count * 4) * sizeof(boost::uint8_t)));
-	memset(uni_par_colours, 40, (this-> uni_particle_count * 4) * sizeof(boost::uint8_t));
+	memset(uni_par_colours, 255, (this-> uni_particle_count * 4) * sizeof(boost::uint8_t));
 	uint_t curr_point = 0, offset = 4;
 
 	printf("please wait this might take some time. :)\n");
@@ -19,13 +19,6 @@ boost::int8_t mdl::ffly_server::init() {
 	}
 
 	if (this-> opencl.init() == -1) return -1;
-}
-
-// this will be used later
-void mdl::ffly_server::uni_wmanager() {
-	do {
-
-	} while(true);
 }
 
 void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
@@ -130,6 +123,8 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 	}
 
 	do {
+		while(this-> worker_manager.insufficient()) { }
+
 		for (std::size_t y = player_info.yaxis; y != player_info.yaxis + 16; y ++) {
 			if ((player_info.yaxis + 17) >= (this-> uni_ylen * FFLY_UNI_PAR_XLEN)) break;
 			for (std::size_t x = player_info.xaxis; x != player_info.xaxis + 16; x ++) {
@@ -235,9 +230,6 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 }
 # include "types/colour_t.hpp"
 boost::int8_t mdl::ffly_server::begin() {
-	//boost::thread * dum = nullptr;
-	//dum = new boost::thread(boost::bind(&ffly_server::uni_wmanager, this));
-
 	if (this-> cl_tcp_stream.init(21299) == -1) return -1;
 	if (this-> cl_udp_stream.init(10198) == -1) return -1;
 
@@ -247,7 +239,7 @@ boost::int8_t mdl::ffly_server::begin() {
 
 	// 200x200
 	boost::uint8_t *temp = (boost::uint8_t *)malloc(160000);
-	memset(temp, 244, 160000);
+	memset(temp, 50, 160000);
 
 	firefly::graphics::draw_pixmap(0, 0, this-> uni_par_colours, this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, temp, 200, 200, &this-> opencl);
 
@@ -256,7 +248,12 @@ boost::int8_t mdl::ffly_server::begin() {
 	this-> opencl.load_source("../src/render_camera.cl");
 	this-> opencl.build_prog();
 
+	if (this-> worker_manager.begin_listening() == FFLY_FAILURE) return FFLY_FAILURE;
+
 	do {
+		// if there are no workers then we cant accept players
+		while(this-> worker_manager.insufficient()) { }
+
 		int sock;
 		printf("waiting for player/s to connect.\n");
 		this-> cl_tcp_stream.accept(sock);

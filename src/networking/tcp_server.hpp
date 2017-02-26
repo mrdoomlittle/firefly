@@ -21,6 +21,7 @@ class tcp_server
 	boost::int8_t send(int __sock, boost::uint8_t *__buff, uint_t __buff_len);
 	boost::int8_t recv(int __sock, boost::uint8_t *__buff, uint_t __buff_len);
 
+	boost::int8_t listen();
 	void close(int __sock) {
 		::close(__sock);
 	}

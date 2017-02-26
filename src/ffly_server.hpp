@@ -13,17 +13,23 @@
 # define FFLY_UNI_PAR_XLEN 2
 # define FFLY_UNI_PAR_YLEN 2
 # define FFLY_UNI_PAR_ZLEN 1
+
+# define FFLY_MAX_WORKERS 8
+# define FFLY_MIN_WORKERS 3
+
 # include <boost/numeric/ublas/vector.hpp>
 namespace ublas = boost::numeric::ublas;
 # include "keycodes.h"
 # include <fstream>
+# include "types/status.hpp"
 # include <CL/cl.hpp>
+# include "worker_manager.hpp"
 namespace mdl { class ffly_server
 {
 	public:
 	ffly_server(uint_t __uni_xlen, uint_t __uni_ylen, uint_t __uni_zlen)
 	: uni_xlen(__uni_xlen), uni_ylen(__uni_ylen), uni_zlen(__uni_zlen),
-	uni_particle_count((__uni_xlen * FFLY_UNI_PAR_XLEN) * (__uni_ylen * FFLY_UNI_PAR_YLEN) * (__uni_zlen * FFLY_UNI_PAR_ZLEN)) {}
+	uni_particle_count((__uni_xlen * FFLY_UNI_PAR_XLEN) * (__uni_ylen * FFLY_UNI_PAR_YLEN) * (__uni_zlen * FFLY_UNI_PAR_ZLEN)), worker_manager(FFLY_MIN_WORKERS, FFLY_MAX_WORKERS) {}
 
 	~ffly_server() {
 		std::free(uni_particles);
@@ -37,11 +43,7 @@ namespace mdl { class ffly_server
 		return pixmap;
 	}
 
-
-
-	void uni_wmanager();
-	void client_handler(int __sock, uint_t player_id);
-
+	//void client_handler(int __sock, uint_t player_id);
 	void player_handler(int __sock, uint_t player_id);
 
 	uint_t add_player() {
@@ -62,6 +64,7 @@ namespace mdl { class ffly_server
 
 	private:
 	uint_t uni_dimensions = 3;
+	firefly::worker_manager worker_manager;
 
 	ublas::vector<firefly::types::player_info_t> player_index;
 
@@ -69,8 +72,8 @@ namespace mdl { class ffly_server
 
 	firefly::opencl opencl;
 
-	firefly::networking::tcp_server cl_tcp_stream;
-	firefly::networking::udp_server cl_udp_stream;
+	firefly::networking::tcp_server cl_tcp_stream, wk_tcp_stream;
+	firefly::networking::udp_server cl_udp_stream, wk_udp_stream;
 
 	uint_t const uni_particle_count = 0;
 

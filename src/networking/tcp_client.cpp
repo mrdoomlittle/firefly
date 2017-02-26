@@ -7,10 +7,10 @@ boost::int8_t mdl::firefly::networking::tcp_client::init(char const * __ip_addr,
 	this-> serveraddr.sin_port = htons(__portno);
 	inet_pton(AF_INET, __ip_addr, &(this-> serveraddr.sin_addr));
 
-	struct timeval tv;
-
-	tv.tv_sec = 2;
-	tv.tv_usec = 0;
+	struct timeval tv {
+		.tv_sec = 2,
+		.tv_usec = 0
+	};
 
 	if (setsockopt(this-> sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv, sizeof(struct timeval)) < 0) {
 		printf("failed to set send time out.\n");
