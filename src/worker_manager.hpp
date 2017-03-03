@@ -8,13 +8,17 @@
 # include <boost/thread.hpp>
 # include <boost/numeric/ublas/vector.hpp>
 namespace ublas = boost::numeric::ublas;
+# include "ffly_config.hpp"
 # include <utility>
 # include "types/worker_config_t.hpp"
 # include <serializer.hpp>
+# include "types/player_info_t.hpp"
 # include "memory/alloc_pixmap.hpp"
 # define FFLY_WORKER_CHUNK_XLEN 256
 # define FFLY_WORKER_CHUNK_YLEN 256
 # define FFLY_WORKER_CHUNK_ZLEN 1
+# include "networking/conn_status.h"
+# include <tuple>
 namespace mdl {
 namespace firefly {
 class worker_manager {
@@ -26,29 +30,38 @@ class worker_manager {
 		if (this-> tcp_stream.init(21298) == FFLY_FAILURE) return FFLY_FAILURE;
 		if (this-> udp_stream.init(10197) == FFLY_FAILURE) return FFLY_FAILURE;
 		//this-> udp_stream.recv_ack();
+
 		boost::thread(boost::bind(&worker_manager::listen, this));
 	}
 
-	void worker_handler(int __sock, uint_t __worker_id);
+	void worker_handler(int __sock, uint_t *__worker_id);
 
 	void listen();
 
 	~worker_manager() {
-		for (std::size_t o = 0; o != this-> worker_index.size(); o ++)
-			std::free(this-> worker_index[o].first);
+		for (std::size_t o = 0; o != this-> worker_index.size(); o ++) {
+			std::free(std::get<0>(this-> worker_index[o]));
+			std::free(std::get<2>(this-> worker_index[o]));
+		}
 	}
 
-	uint_t add_worker() {
-		uint_t worker_id = this-> worker_index.size();
+	uint_t* add_worker() {
+		uint_t *_worker_id = static_cast<uint_t *>(malloc(sizeof(uint_t)));
+		uint_t& worker_id = *_worker_id;
+
+		worker_id = this-> worker_index.size();
+
 		this-> worker_index.resize(this-> worker_index.size() + 1);
 
-		this-> worker_index[worker_id].first = memory::alloc_pixmap(
+		std::get<0>(this-> worker_index[worker_id]) = memory::alloc_pixmap(
 			FFLY_WORKER_CHUNK_XLEN,
 			FFLY_WORKER_CHUNK_YLEN,
 			FFLY_WORKER_CHUNK_ZLEN
 		);
 
-		types::worker_config_t& worker_config = this-> worker_index[worker_id].second;
+		memset(std::get<0>(this-> worker_index[worker_id]), 244, (FFLY_WORKER_CHUNK_XLEN * FFLY_WORKER_CHUNK_YLEN * FFLY_WORKER_CHUNK_ZLEN) * 4);
+
+		types::worker_config_t& worker_config = std::get<1>(this-> worker_index[worker_id]);
 
 		worker_config.chunk_xlen = FFLY_WORKER_CHUNK_XLEN;
 		worker_config.chunk_ylen = FFLY_WORKER_CHUNK_YLEN;
@@ -59,20 +72,29 @@ class worker_manager {
 		worker_config.chunk_zaxis = 0;
 
 		this-> connected_workers ++;
-		return worker_id;
+
+		std::get<2>(this-> worker_index[worker_id]) = _worker_id;
+
+		return _worker_id;
 	}
 
-	void del_worker(uint_t __worker_id) {
-		if (__worker_id == this-> worker_index.size() - 1) {
-			std::free(this-> worker_index[__worker_id].first);
+	void del_worker(uint_t *__worker_id) {
+		uint_t& worker_id = *__worker_id;
+
+		if (worker_id == this-> worker_index.size() - 1) {
+			std::free(std::get<0>(this-> worker_index[worker_id]));
+			std::free(std::get<2>(this-> worker_index[worker_id]));
 			this-> worker_index.resize(this-> worker_index.size() - 1);
 		} else {
 			uint_t end_worker_id = this-> worker_index.size() - 1;
 
-			std::free(this-> worker_index[__worker_id].first);
+			std::free(std::get<0>(this-> worker_index[worker_id]));
+			std::free(std::get<2>(this-> worker_index[worker_id]));
 
-			this-> worker_index[__worker_id].first = this-> worker_index[end_worker_id].first;
-			this-> worker_index[__worker_id].second = this-> worker_index[end_worker_id].second;
+			std::get<0>(this-> worker_index[worker_id]) = std::get<0>(this-> worker_index[end_worker_id]);
+			std::get<1>(this-> worker_index[worker_id]) = std::get<1>(this-> worker_index[end_worker_id]);
+			std::get<2>(this-> worker_index[worker_id]) = std::get<2>(this-> worker_index[end_worker_id]);
+
 			this-> worker_index.resize(this-> worker_index.size() - 1);
 		}
 
@@ -83,13 +105,16 @@ class worker_manager {
 		return this-> connected_workers >= this-> min_workers? false : true;
 	}
 
-	ublas::vector<std::pair<boost::uint8_t *, types::worker_config_t>> worker_index;
+	//ublas::vector<std::pair<boost::uint8_t *, types::worker_config_t>> worker_index;
+	ublas::vector<std::tuple<boost::uint8_t *, types::worker_config_t, uint_t *>> worker_index;
 
 	firefly::networking::tcp_server tcp_stream;
 	firefly::networking::udp_server udp_stream;
 
 	uint_t const min_workers, max_workers;
 	uint_t connected_workers = 0;
+
+	ublas::vector<types::player_info_t> *player_index;
 };
 
 

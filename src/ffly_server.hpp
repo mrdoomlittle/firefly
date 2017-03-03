@@ -2,28 +2,35 @@
 # define __ffly__server__hpp
 # include "networking/tcp_server.hpp"
 # include "networking/tcp_client.hpp"
+
 # include "networking/udp_server.hpp"
 # include "networking/udp_client.hpp"
+
 # include <eint_t.hpp>
 # include "types/uni_par_t.hpp"
 # include <boost/thread.hpp>
 # include "opencl_helper.hpp"
 # include <serializer.hpp>
+# include "types/client_info_t.hpp"
 # include "types/player_info_t.hpp"
+# include "types/worker_config_t.hpp"
 # define FFLY_UNI_PAR_XLEN 2
 # define FFLY_UNI_PAR_YLEN 2
 # define FFLY_UNI_PAR_ZLEN 1
-
-# define FFLY_MAX_WORKERS 8
-# define FFLY_MIN_WORKERS 3
-
+# include "ffly_config.hpp"
+//# define FFLY_MAX_WORKERS 8
+//# define FFLY_MIN_WORKERS 0
+# include <signal.h>
+# include <stdlib.h>
 # include <boost/numeric/ublas/vector.hpp>
 namespace ublas = boost::numeric::ublas;
 # include "keycodes.h"
 # include <fstream>
+# include <tuple>
 # include "types/status.hpp"
 # include <CL/cl.hpp>
 # include "worker_manager.hpp"
+# include "graphics/draw_pixmap.hpp"
 namespace mdl { class ffly_server
 {
 	public:
@@ -62,6 +69,19 @@ namespace mdl { class ffly_server
 		this-> connected_players --;
 	}
 
+	void draw_woker_pixmaps() {
+		for (std::size_t o = 0; o != this-> worker_manager.worker_index.size(); o ++) {
+			if (std::get<0>(this-> worker_manager.worker_index[o]) != nullptr) {
+				firefly::types::worker_config_t& worker_config = std::get<1>(this-> worker_manager.worker_index[o]);
+
+				firefly::graphics::draw_pixmap(worker_config.chunk_xaxis, worker_config.chunk_yaxis, this-> uni_par_colours, 
+				this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, std::get<0>(this-> worker_manager.worker_index[o]), worker_config.chunk_xlen, worker_config.chunk_ylen, &this-> opencl);
+			}
+		}
+	}
+
+	//private:
+	bool accepting_players = false;
 	private:
 	uint_t uni_dimensions = 3;
 	firefly::worker_manager worker_manager;
@@ -70,6 +90,7 @@ namespace mdl { class ffly_server
 
 	uint_t connected_players = 0;
 
+	bool shutdown_queued = false;
 	firefly::opencl opencl;
 
 	firefly::networking::tcp_server cl_tcp_stream, wk_tcp_stream;

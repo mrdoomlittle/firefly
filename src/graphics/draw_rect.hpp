@@ -125,7 +125,7 @@ boost::int8_t draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b
 	}
 
 	if (_b_xcoord != __b_xcoord) {
-		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, b_xcoord, CL_TRUE, 0, sizeof(uint_t), &_b_xcoord, 0, NULL, NULL)) != CL_SUCCESS) {
+		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, b_xcoord, CL_TRUE, 0, sizeof(uint_t), &__b_xcoord, 0, NULL, NULL)) != CL_SUCCESS) {
 			fprintf(stderr, "opencl: failed to write 'b_xcoord' to buffer, error code: %d, from 'draw_rect'\n", any_error);
 			return FFLY_FAILURE;
 		}
@@ -134,7 +134,7 @@ boost::int8_t draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b
 	}
 
 	if (_b_ycoord != __b_ycoord) {
-		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, b_ycoord, CL_TRUE, 0, sizeof(uint_t), &_b_ycoord, 0, NULL, NULL)) != CL_SUCCESS) {
+		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, b_ycoord, CL_TRUE, 0, sizeof(uint_t), &__b_ycoord, 0, NULL, NULL)) != CL_SUCCESS) {
 			fprintf(stderr, "opencl: failed to write 'b_ycoord' to buffer, error code: %d, from 'draw_rect'\n", any_error);
 			return FFLY_FAILURE;
 		}
@@ -143,7 +143,7 @@ boost::int8_t draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b
 	}
 
 	if (_e_xcoord != __e_xcoord) {
-		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, e_xcoord, CL_TRUE, 0, sizeof(uint_t), &_e_xcoord, 0, NULL, NULL)) != CL_SUCCESS) {
+		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, e_xcoord, CL_TRUE, 0, sizeof(uint_t), &__e_xcoord, 0, NULL, NULL)) != CL_SUCCESS) {
 			fprintf(stderr, "opencl: failed to write 'e_xcoord' to buffer, error code: %d, from 'draw_rect'\n", any_error);
 			return FFLY_FAILURE;
 		}
@@ -152,7 +152,7 @@ boost::int8_t draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b
 	}
 
 	if (_e_ycoord != __e_ycoord) {
-		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, e_ycoord, CL_TRUE, 0, sizeof(uint_t), &_e_ycoord, 0, NULL, NULL)) != CL_SUCCESS) {
+		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, e_ycoord, CL_TRUE, 0, sizeof(uint_t), &__e_ycoord, 0, NULL, NULL)) != CL_SUCCESS) {
 			fprintf(stderr, "opencl: failed to write 'e_ycoord' to buffer, error code: %d, from 'draw_rect'\n", any_error);
 			return FFLY_FAILURE;
 		}
@@ -161,7 +161,7 @@ boost::int8_t draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b
 	}
 
 	if (_pb_xlen != __pb_xlen) {
-		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, pb_xlen, CL_TRUE, 0, sizeof(uint_t), &_pb_xlen, 0, NULL, NULL)) != CL_SUCCESS) {
+		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, pb_xlen, CL_TRUE, 0, sizeof(uint_t), &__pb_xlen, 0, NULL, NULL)) != CL_SUCCESS) {
 			fprintf(stderr, "opencl: failed to write 'pb_xlen' to buffer, error code: %d, from 'draw_rect'\n", any_error);
 			return FFLY_FAILURE;
 		}
@@ -170,7 +170,7 @@ boost::int8_t draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b
 	}
 
 	if (_colour.r != __colour.r || _colour.g != __colour.g || _colour.b != __colour.b || _colour.a != __colour.a) {
-		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, colour, CL_TRUE, 0, sizeof(colour_t), &_colour, 0, NULL, NULL)) != CL_SUCCESS) {
+		if ((any_error = clEnqueueWriteBuffer(__opencl-> command_queue, colour, CL_TRUE, 0, sizeof(colour_t), &__colour, 0, NULL, NULL)) != CL_SUCCESS) {
 			fprintf(stderr, "opencl: failed to write 'colour' to buffer, error code: %d, from 'draw_rect'\n", any_error);
 			return FFLY_FAILURE;
 		}

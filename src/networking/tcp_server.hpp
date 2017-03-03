@@ -10,7 +10,13 @@
 # include <string.h>
 # include <sys/time.h>
 # include <eint_t.hpp>
+# include <boost/thread.hpp>
 # include <boost/cstdint.hpp>
+# include "conn_status.h"
+# include <chrono>
+# include <atomic>
+# include <poll.h>
+# include <set>
 namespace mdl { 
 namespace firefly {
 namespace networking {
@@ -20,6 +26,14 @@ class tcp_server
 	boost::int8_t init(boost::uint16_t __port_num);
 	boost::int8_t send(int __sock, boost::uint8_t *__buff, uint_t __buff_len);
 	boost::int8_t recv(int __sock, boost::uint8_t *__buff, uint_t __buff_len);
+
+	void poll_handler(int __sock, boost::int8_t *__sock_state, uint_t const __delay_ns);
+	boost::int8_t* begin_poll(int __sock, uint_t const __delay_ns);
+
+	std::atomic<bool> can_poll;
+	std::atomic<bool> poll_lock;
+	bool polling_enabled = false;
+	std::set<int> poll_sock;
 
 	boost::int8_t listen();
 	void close(int __sock) {

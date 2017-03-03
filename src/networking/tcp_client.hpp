@@ -8,8 +8,11 @@
 # include <stdlib.h>
 # include <unistd.h>
 # include <string.h>
+# include <atomic>
 # include <eint_t.hpp>
+# include <boost/thread.hpp>
 # include <boost/cstdint.hpp>
+# include <chrono>
 namespace mdl { 
 namespace firefly {
 namespace networking {
@@ -20,6 +23,15 @@ class tcp_client
 
 	boost::int8_t send(boost::uint8_t *__buff, uint_t __buff_len);
 	boost::int8_t recv(boost::uint8_t *__buff, uint_t __buff_len);
+	//void poll_handler(int __sock, boost::int8_t *__sock_state, uint_t const __delay_us);
+	//boost::int8_t* begin_poll(int __sock, uint_t const __delay_us);
+
+	void poll_handler(uint_t __delay_ns);
+	void begin_poll(uint_t __delay_ns);
+
+	std::atomic<bool> can_poll;
+	std::atomic<bool> poll_lock;
+	bool polling_enabled = false;
 
 	template<typename __T>
 	boost::int8_t send(__T __data) {

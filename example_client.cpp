@@ -1,4 +1,4 @@
-# include "src/engine.hpp"
+# include "src/ffly_engine.hpp"
 # include "src/graphics/draw_text.hpp"
 # include "src/graphics/draw_skelmap.hpp"
 # include "src/graphics/skelmap_loader.hpp"
@@ -7,6 +7,7 @@
 # include "src/graphics/fill_pixmap.hpp"
 # include <to_string.hpp>
 # include <strcmb.hpp>
+# include "src/memory/mem_alloc.h"
 # include "src/types/colour_t.hpp"
 static mdl::firefly::types::skelfont_t *skelfont;
 void game_loop(boost::int8_t __info, mdl::ffly_client::portal_t *__portal) {
@@ -14,19 +15,27 @@ void game_loop(boost::int8_t __info, mdl::ffly_client::portal_t *__portal) {
 		__portal-> connect_to_server("192.168.0.100", 0, 1);
 
 	if (!__portal-> server_connected()) return;
+
+	printf("%d FPS\n", __portal->fps_count());
 }
 
 # include "src/skelfont.hpp"
 int main(int argc, char const *argv[]) {
-	mdl::ffly_client client(640, 640);
+	mdl::ffly_client * client = new mdl::ffly_client(640, 640);
 
 //	skelfont = mdl::firefly::load_skelfont("../assets/my_skelfont", &client.asset_manager);
-	client.layer.add_layer(640, 640, 0, 0);
-	client.layer.add_layer(256, 256, 0, 0);
+	client->layer.add_layer(640, 640, 0, 0);
+	client->layer.add_layer(256, 256, 0, 0);
 	mdl::firefly::graphics::colour_t colour = {38, 60, 94, 255};
-	mdl::firefly::graphics::fill_pixmap(client.layer.get_layer_pixmap(0), 640, 640, colour);
+	mdl::firefly::graphics::fill_pixmap(client-> layer.get_layer_pixmap(0), 640, 640, colour);
+	client->init();
+	client->begin("Example Game", game_loop);
 
-	client.begin("Example Game", game_loop);
+	delete client;
+# ifdef DEBUG_ENABLED
+	if (mdl::firefly::memory::alloc_amount != mdl::firefly::memory::free_amount)
+		fprintf(stderr, "theres a memory leak, allocc: %d, freec: %d\n", mdl::firefly::memory::alloc_count, mdl::firefly::memory::free_count);
+# endif
 
 	return 0;
 }

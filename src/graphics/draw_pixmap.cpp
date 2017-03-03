@@ -1,22 +1,7 @@
-# ifndef __graphics__draw__pixmap__hpp
-# define __graphics__draw__pixmap__hpp
-# include <eint_t.hpp>
-# include <cstdio>
-# include <boost/cstdint.hpp>
-//# define USING_OPENCL
-# ifdef USING_OPENCL
-	# include <CL/cl.hpp>
-	# include "../opencl_helper.hpp"
-# endif
+# include "draw_pixmap.hpp"
 
-# include "../types/status.hpp"
-namespace mdl {
-namespace firefly {
-namespace graphics {
 # ifdef USING_OPENCL
-// need to find a way to clean up after exit.
-boost::int8_t draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, boost::uint8_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen, opencl *__opencl);
-/*
+boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, boost::uint8_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen, opencl *__opencl) {
 	if ((__xoffset + __pm_xlen) > __pb_xlen || (__yoffset + __pm_ylen) > __pb_ylen) {
 		fprintf(stderr, "error: pixmap is out of bounds.\n");
 		return FFLY_FAILURE;
@@ -173,12 +158,4 @@ boost::int8_t draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__
 	}
 
 }
-*/
-# elif defined(USING_CUDA)
-boost::int8_t draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, boost::uint8_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen);
 # endif
-}
-}
-}
-
-# endif /*__graphics__draw__pixmap__hpp*/

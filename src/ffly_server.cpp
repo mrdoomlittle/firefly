@@ -1,12 +1,26 @@
 # include "ffly_server.hpp"
-# include "graphics/draw_pixmap.hpp"
+static mdl::ffly_server *ffly_sptr = nullptr;
+static bool *shutdown_queued = nullptr;
+static cl_program draw_cam_program;
+void ctrl_c(int sig) {
+	if (shutdown_queued == nullptr) {
+		fprintf(stderr, "the ctrl_c was to fast. init has not been called yet, try later.");
+		return;
+	}
+
+    printf("caught ctrl c event now shuting down.\n");
+	*shutdown_queued = true;
+
+    ffly_sptr-> accepting_players = false;
+}
+
 boost::int8_t mdl::ffly_server::init() {
 	this-> uni_particles = static_cast<firefly::types::uni_par_t *>(calloc(this-> uni_particle_count, sizeof(firefly::types::uni_par_t)));
 	this-> uni_par_colours = static_cast<boost::uint8_t *>(malloc((this-> uni_particle_count * 4) * sizeof(boost::uint8_t)));
 	memset(uni_par_colours, 255, (this-> uni_particle_count * 4) * sizeof(boost::uint8_t));
 	uint_t curr_point = 0, offset = 4;
 
-	printf("please wait this might take some time. :)\n");
+	printf("we are currently configuring the universe, this might take some time to do :)\n");
 	while (curr_point != this-> uni_particle_count) {
 		uint_t begin_point = (curr_point * offset);
 
@@ -19,20 +33,37 @@ boost::int8_t mdl::ffly_server::init() {
 	}
 
 	if (this-> opencl.init() == -1) return -1;
+	ffly_sptr = this;
+
+	::shutdown_queued = &this-> shutdown_queued;
+
+	struct sigaction sig_handler;
+
+	sig_handler.sa_handler = ctrl_c;
+
+	sigemptyset(&sig_handler.sa_mask);
+
+	sig_handler.sa_flags = 0;
+
+	sigaction(SIGINT, &sig_handler, NULL);
 }
 
 void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 	firefly::types::player_info_t& player_info = this-> player_index[__player_id];
 	printf("player with the id of %d. thread began.\n");
 
+	firefly::types::client_info_t client_info;
+
 	serializer serialize('\0');
 
-	std::size_t ss = serialize.get_size(&player_info);
+	std::size_t ss = serialize.get_size(&client_info);
 	serialize.init(ss);
 
 	serialize | 'w';
 
-	player_info.key_code = 0x0;
+	client_info.key_code = 0x0;
+
+
 	player_info.xaxis = 0;
 	player_info.yaxis = 0;
 	player_info.zaxis = 0;
@@ -92,7 +123,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 
 	uint_t camera_coords[3] = {0, 0, 0};
 
-	cl_kernel cam_kernel = clCreateKernel(this-> opencl.program, "render_camera", &any_error);
+	cl_kernel cam_kernel = clCreateKernel(draw_cam_program, "render_camera", &any_error);
 	if (any_error != CL_SUCCESS) {
 		fprintf(stderr, "opencl: failed to create camera kernel, error code: %d\n", any_error);
 		goto end;
@@ -123,8 +154,15 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 	}
 
 	do {
-		while(this-> worker_manager.insufficient()) { }
+		if (this-> shutdown_queued) break;
 
+		while(this-> worker_manager.insufficient()) {
+			if (this-> shutdown_queued) break;
+		}
+
+		// this will be moved some were else later
+		this-> draw_woker_pixmaps();
+/*
 		for (std::size_t y = player_info.yaxis; y != player_info.yaxis + 16; y ++) {
 			if ((player_info.yaxis + 17) >= (this-> uni_ylen * FFLY_UNI_PAR_XLEN)) break;
 			for (std::size_t x = player_info.xaxis; x != player_info.xaxis + 16; x ++) {
@@ -135,7 +173,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 				this-> uni_par_colours[point + 3] = 180;
 			}
 		}
-
+*/
 		if (player_info.xaxis <= round(camera_xlen/2)) {
 			camera_coords[0] = 0;
 		} else {
@@ -189,7 +227,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 		boost::int8_t sock_result;
 		sock_result = this-> cl_tcp_stream.recv(__sock, serialize.get_serial(), ss);
 
-		player_info.achieve(serialize);
+		client_info.achieve(serialize);
 		serialize.reset();
 
 		if (sock_result == -1 || sock_result == 0) break;
@@ -198,7 +236,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 		if (sock_result == -1 || sock_result == 0) break;
 
 		printf("X: %d, Y: %d, Z: %d\n", player_info.xaxis, player_info.yaxis, player_info.zaxis);
-		switch(player_info.key_code) {
+		switch(client_info.key_code) {
 			case X11_LT_W:
 				if (player_info.yaxis != 0)
 					player_info.yaxis --;
@@ -216,7 +254,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 		}
 
 		// dont remove or edit
-		player_info.key_code = 0x0;
+		client_info.key_code = 0x0;
 
 	} while(true);
 
@@ -228,40 +266,58 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 
 	close(__sock);
 }
+
 # include "types/colour_t.hpp"
 boost::int8_t mdl::ffly_server::begin() {
 	if (this-> cl_tcp_stream.init(21299) == -1) return -1;
 	if (this-> cl_udp_stream.init(10198) == -1) return -1;
+	this-> cl_tcp_stream.listen();
 
+	this-> accepting_players = true;
 	boost::thread * cl = nullptr;
 
 	//firefly::graphics::draw_rect(this-> uni_par_colours, 0, 0, 50, 50, colour, this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, &this-> opencl);
 
 	// 200x200
-	boost::uint8_t *temp = (boost::uint8_t *)malloc(160000);
-	memset(temp, 50, 160000);
+	boost::uint8_t *temp = (boost::uint8_t *)malloc(16384);
+	memset(temp, 80, 16384);
 
-	firefly::graphics::draw_pixmap(0, 0, this-> uni_par_colours, this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, temp, 200, 200, &this-> opencl);
+	//firefly::graphics::draw_pixmap(5, 5, this-> uni_par_colours, this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, temp, 64, 64, &this-> opencl);
+	//firefly::graphics::draw_pixmap(64 + 5, 5, this-> uni_par_colours, this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, temp, 64, 64, &this-> opencl);
+	//firefly::graphics::draw_pixmap(64 + 64, 64 + 64, this-> uni_par_colours, this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, temp, 64, 64, &this-> opencl);
+
+//	firefly::graphics::draw_pixmap((64 + 64 + 64) + 64, 0, this-> uni_par_colours, this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, temp, 64, 64, &this-> opencl);
 
 	std::free(temp);
 
 	this-> opencl.load_source("../src/render_camera.cl");
 	this-> opencl.build_prog();
 
+	draw_cam_program = this-> opencl.program;
+
+	this-> worker_manager.player_index = &this-> player_index;
 	if (this-> worker_manager.begin_listening() == FFLY_FAILURE) return FFLY_FAILURE;
 
 	do {
+		if (this-> shutdown_queued) break;
 		// if there are no workers then we cant accept players
-		while(this-> worker_manager.insufficient()) { }
+		while(this-> worker_manager.insufficient()) { 
+			if (!this-> accepting_players) return 0;
+			if (this-> shutdown_queued) break;
+		}
 
 		int sock;
-		printf("waiting for player/s to connect.\n");
-		this-> cl_tcp_stream.accept(sock);
+		printf("waiting for player/s to connect to the server.\n");
+		if (this-> cl_tcp_stream.accept(sock) == -1) return -1; 
 
 		uint_t player_id = this-> add_player();
 
 		cl = new boost::thread(boost::bind(&ffly_server::player_handler, this, sock, player_id));
 
 		printf("player has connected to server.\n\n");
-	} while(true);
+	} while(true);//this-> accepting_players);
+
+	printf("ending begin.\n");
+
+	return 0;
 }

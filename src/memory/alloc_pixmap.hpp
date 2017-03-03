@@ -2,6 +2,7 @@
 # define __alloc__pixmap__hpp
 # include <boost/cstdint.hpp>
 # include <eint_t.hpp>
+# include "mem_alloc.h"
 namespace mdl {
 namespace firefly {
 namespace memory {

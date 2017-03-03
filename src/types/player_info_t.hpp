@@ -7,11 +7,16 @@ namespace firefly {
 namespace types {
 
 typedef struct player_info {
-	int key_code = 0;
 	uint_t xaxis, yaxis, zaxis;
 	void achieve(serializer& __arc) {
-		__arc & sizeof(int);
-		__arc << key_code;
+		__arc & sizeof(uint_t);
+		__arc << xaxis;
+
+		__arc & sizeof(uint_t);
+		__arc << yaxis;
+
+		__arc & sizeof(uint_t);
+		__arc << zaxis;
 	}
 } player_info_t;
 
