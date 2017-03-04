@@ -11,11 +11,11 @@
 # include "src/types/colour_t.hpp"
 static mdl::firefly::types::skelfont_t *skelfont;
 void game_loop(boost::int8_t __info, mdl::ffly_client::portal_t *__portal) {
-	if (!__portal-> server_connected())
-		__portal-> connect_to_server("192.168.0.100", 0, 1);
+//	if (!__portal-> server_connected())
+//		__portal-> connect_to_server("192.168.0.100", 0, 1);
 
-	if (!__portal-> server_connected()) return;
-
+//	if (!__portal-> server_connected()) return;
+	usleep(1000);
 	printf("%d FPS\n", __portal->fps_count());
 }
 

@@ -28,7 +28,7 @@ class uni_worker
 	}
 
 	~uni_worker() {
-		if (uni_chunk != nullptr) memory::mem_free(this-> uni_chunk);
+		if (this-> uni_chunk != nullptr) memory::mem_free(this-> uni_chunk);
 	}
 
 	void handle_player(uint_t __player_id);
@@ -38,6 +38,10 @@ class uni_worker
 
 	bool is_running = false;
 	bool shutdown_queued = false;
+
+	bool thread_dead = false;
+	bool thread_shutdown = false;
+	uint_t thread_id = 0;
 
 	boost::int8_t init();
 	boost::int8_t begin(char const *__server_ipaddr);

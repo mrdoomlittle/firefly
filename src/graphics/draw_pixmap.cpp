@@ -145,6 +145,7 @@ boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yof
 	if ((any_error = clEnqueueNDRangeKernel(__opencl-> command_queue, kernel, 2, NULL, gwork_size, lwork_size, 0, NULL, NULL)) != CL_SUCCESS) {
 		fprintf(stderr, "opencl: failed to set nd range, error code: %d, from 'draw_pixmap'\n", any_error);
 		return FFLY_FAILURE;
+
 	}
 
 	if ((any_error = clEnqueueTask(__opencl-> command_queue, kernel, 0, NULL, NULL)) != CL_SUCCESS) {

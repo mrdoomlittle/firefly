@@ -1,4 +1,8 @@
 # include "udp_server.hpp"
+/*
+NOTE: take a look at the BSD socket docs to see what func take a refrence for the sock
+*/
+
 boost::int8_t mdl::firefly::networking::udp_server::init(boost::uint16_t __port_num) {
 	this-> sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (this-> sock == -1) return -1;
@@ -47,11 +51,11 @@ boost::int8_t mdl::firefly::networking::udp_server::init(boost::uint16_t __port_
 	return 0;
 }
 
-boost::int8_t mdl::firefly::networking::udp_server::send_ack() {
+boost::int8_t mdl::firefly::networking::udp_server::send_ack(struct sockaddr_in& __clientaddr) {
 	boost::uint8_t null_val = 0;
 	int_t sock_result = 0;
 
-	sock_result = sendto(this-> sock, &null_val, 1, NULL, (struct sockaddr*)&this-> clientaddr, this-> clientlen);
+	sock_result = sendto(this-> sock, &null_val, 1, NULL, (struct sockaddr*)&__clientaddr, this-> clientlen);
 
 	if (sock_result >= 0) {
 		if (sock_result < 1) {
@@ -63,11 +67,11 @@ boost::int8_t mdl::firefly::networking::udp_server::send_ack() {
 	return 0;
 }
 
-boost::int8_t mdl::firefly::networking::udp_server::recv_ack() {
+boost::int8_t mdl::firefly::networking::udp_server::recv_ack(struct sockaddr_in& __clientaddr) {
 	boost::uint8_t null_val = 0;
 	int_t sock_result = 0;
 
-	sock_result = recvfrom(this-> sock, &null_val, 1, NULL, (struct sockaddr*)&this-> clientaddr, &this-> clientlen);
+	sock_result = recvfrom(this-> sock, &null_val, 1, NULL, (struct sockaddr*)&__clientaddr, &this-> clientlen);
 
 	if (sock_result >= 0) {
 		if (sock_result < 1) {
@@ -79,21 +83,21 @@ boost::int8_t mdl::firefly::networking::udp_server::recv_ack() {
 	return 0;
 }
 
-boost::int8_t mdl::firefly::networking::udp_server::send(boost::uint8_t *__buff, uint_t __buff_len) {
+boost::int8_t mdl::firefly::networking::udp_server::send(boost::uint8_t *__buff, uint_t __buff_len, struct sockaddr_in& __clientaddr) {
 	std::size_t amount_of_packets = ceil(float(__buff_len) / PACKET_SIZE);
     uint_t amount_to_send = __buff_len;
 
     std::size_t o = 0;
 	int_t sock_result = 0;
     while (o != amount_of_packets) {
-		if (this-> recv_ack() == -1) return -1;
+		if (this-> recv_ack(__clientaddr) == -1) return -1;
 
 		uint_t bytes_to_send = PACKET_SIZE;
 
 		if (amount_to_send < PACKET_SIZE)
 			bytes_to_send = amount_to_send;
 
-		sock_result = sendto(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_send, NULL, (struct sockaddr*)&this-> clientaddr, this-> clientlen);
+		sock_result = sendto(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_send, NULL, (struct sockaddr*)&__clientaddr, this-> clientlen);
 
 		if (sock_result >= 0) {
 			if (sock_result < bytes_to_send) {
@@ -108,7 +112,7 @@ boost::int8_t mdl::firefly::networking::udp_server::send(boost::uint8_t *__buff,
     }
 }
 
-boost::int8_t mdl::firefly::networking::udp_server::recv(boost::uint8_t *__buff, uint_t __buff_len) {
+boost::int8_t mdl::firefly::networking::udp_server::recv(boost::uint8_t *__buff, uint_t __buff_len, struct sockaddr_in& __clientaddr) {
 	std::size_t amount_of_packets = ceil(float(__buff_len) / PACKET_SIZE);
     uint_t amount_to_recv = __buff_len;
 
@@ -120,7 +124,7 @@ boost::int8_t mdl::firefly::networking::udp_server::recv(boost::uint8_t *__buff,
 		if (amount_to_recv < PACKET_SIZE)
 			bytes_to_recv = amount_to_recv;
 
-		sock_result = recvfrom(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_recv, NULL, (struct sockaddr*)&this-> clientaddr, &this-> clientlen);
+		sock_result = recvfrom(this-> sock, __buff + (o * PACKET_SIZE), bytes_to_recv, NULL, (struct sockaddr*)&__clientaddr, &this-> clientlen);
 		if (sock_result >= 0) {
 			if (sock_result < bytes_to_recv) {
 				fprintf(stderr, "failed to recv packet from client, sock result: %d, errno: %d\n", sock_result, errno);
@@ -129,7 +133,7 @@ boost::int8_t mdl::firefly::networking::udp_server::recv(boost::uint8_t *__buff,
 			}
 		} else return sock_result;
 
-		if (this-> send_ack() == -1) return -1;
+		if (this-> send_ack(__clientaddr) == -1) return -1;
 
 		amount_to_recv -= PACKET_SIZE;
 		o ++;

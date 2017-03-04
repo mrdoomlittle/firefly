@@ -46,6 +46,9 @@ boost::int8_t mdl::ffly_server::init() {
 	sig_handler.sa_flags = 0;
 
 	sigaction(SIGINT, &sig_handler, NULL);
+
+	if (this-> worker_manager.init() == FFLY_FAILURE)
+		return FFLY_FAILURE;
 }
 
 void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
@@ -259,6 +262,7 @@ void mdl::ffly_server::player_handler(int __sock, uint_t __player_id) {
 	} while(true);
 
 	end:
+	this-> del_player(__player_id);
 
 	std::free(camera_pixmap);
 

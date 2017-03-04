@@ -1,6 +1,6 @@
 # include "src/ffly_server.hpp"
 int main() {
-	mdl::ffly_server server(800, 800, 1);
+	mdl::ffly_server server(768, 768, 1);
 	if (server.init() == -1) {
 		fprintf(stderr, "init error.\n");
 		return 1;

@@ -76,7 +76,7 @@ class x11_window
 	private:
 	uint_t wd_xlen, wd_ylen;
 	char const *frame_title;
-	std::size_t fps_mark = 60;
+	std::size_t fps_mark = 120;
 } ;
 }
 }

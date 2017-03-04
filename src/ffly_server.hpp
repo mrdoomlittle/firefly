@@ -36,7 +36,8 @@ namespace mdl { class ffly_server
 	public:
 	ffly_server(uint_t __uni_xlen, uint_t __uni_ylen, uint_t __uni_zlen)
 	: uni_xlen(__uni_xlen), uni_ylen(__uni_ylen), uni_zlen(__uni_zlen),
-	uni_particle_count((__uni_xlen * FFLY_UNI_PAR_XLEN) * (__uni_ylen * FFLY_UNI_PAR_YLEN) * (__uni_zlen * FFLY_UNI_PAR_ZLEN)), worker_manager(FFLY_MIN_WORKERS, FFLY_MAX_WORKERS) {}
+	uni_particle_count((__uni_xlen * FFLY_UNI_PAR_XLEN) * (__uni_ylen * FFLY_UNI_PAR_YLEN) * (__uni_zlen * FFLY_UNI_PAR_ZLEN)), 
+	worker_manager(FFLY_MIN_WORKERS, FFLY_MAX_WORKERS, (__uni_xlen * FFLY_UNI_PAR_XLEN), (__uni_ylen * FFLY_UNI_PAR_YLEN), (__uni_zlen * FFLY_UNI_PAR_ZLEN)) {}
 
 	~ffly_server() {
 		std::free(uni_particles);
@@ -72,7 +73,7 @@ namespace mdl { class ffly_server
 	void draw_woker_pixmaps() {
 		for (std::size_t o = 0; o != this-> worker_manager.worker_index.size(); o ++) {
 			if (std::get<0>(this-> worker_manager.worker_index[o]) != nullptr) {
-				firefly::types::worker_config_t& worker_config = std::get<1>(this-> worker_manager.worker_index[o]);
+				firefly::types::worker_config_t& worker_config = *std::get<1>(this-> worker_manager.worker_index[o]);
 
 				firefly::graphics::draw_pixmap(worker_config.chunk_xaxis, worker_config.chunk_yaxis, this-> uni_par_colours, 
 				this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, std::get<0>(this-> worker_manager.worker_index[o]), worker_config.chunk_xlen, worker_config.chunk_ylen, &this-> opencl);

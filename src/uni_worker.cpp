@@ -1,6 +1,4 @@
 # include "uni_worker.hpp"
-//static bool *_is_running;
-
 static bool *shutdown_queued = nullptr;
 
 void mdl::firefly::uni_worker::handle_player(uint_t __player_id) {
@@ -9,12 +7,17 @@ void mdl::firefly::uni_worker::handle_player(uint_t __player_id) {
 	types::worker_config_t& worker_config = *this-> _worker_config;
 	do {
 		if (this-> shutdown_queued) break;
+		if (this-> thread_shutdown && this-> thread_id == __player_id) {
+			this-> thread_dead = true;
+			break;
+		}
+
 
 		while (!this-> can_handle) {
 			if (this-> shutdown_queued) break;
 			if (!this-> is_running) break;
 		}
-
+/*
 		//printf("player-x: %d, player-y: %d\n", player_info.xaxis, player_info.yaxis);
 		for (std::size_t y = player_info.yaxis; y != player_info.yaxis + 16; y ++) {
 			for (std::size_t x = player_info.xaxis; x != player_info.xaxis + 16; x ++) {
@@ -25,6 +28,19 @@ void mdl::firefly::uni_worker::handle_player(uint_t __player_id) {
 				this-> uni_chunk[point + 3] = 100;
 			}
 		}
+*/
+		std::size_t xpoint = player_info.xaxis - worker_config.chunk_xaxis;
+		std::size_t ypoint = player_info.yaxis - worker_config.chunk_yaxis;
+		for (std::size_t y = ypoint; y != ypoint + 16; y ++) {
+			for (std::size_t x = xpoint; x != xpoint + 16; x ++) {
+				uint_t point = (x + (y * worker_config.chunk_xlen)) * 4;
+				this-> uni_chunk[point] = 255;
+				this-> uni_chunk[point + 1] = 0;
+				this-> uni_chunk[point + 2] = 0;
+				this-> uni_chunk[point + 3] = 100;
+			}
+		}
+
 		this-> handle_done = true;
 
 	} while(this-> is_running);
@@ -50,6 +66,8 @@ boost::int8_t mdl::firefly::uni_worker::begin(char const *__server_ipaddr) {
 	serializer serialize('\0');
 
 	int sock;
+
+	uint_t l_in_range_players = 0;
 
 	tcp_stream.begin_poll(1000000000);
 
@@ -78,6 +96,9 @@ boost::int8_t mdl::firefly::uni_worker::begin(char const *__server_ipaddr) {
 				fprintf(stderr, "failed to connect to server. attempt: %d\n", this-> connect_trys);
 				goto skip;
 			}
+
+			udp_stream.send_ack();
+			udp_stream.recv_ack();
 
 			serialize.init(cf_size);
 			serialize | 'w';
@@ -109,6 +130,18 @@ boost::int8_t mdl::firefly::uni_worker::begin(char const *__server_ipaddr) {
 			printf("0, rr: %d\n", in_range_players);
 			this-> clean_up();
 			return -1;
+		}
+		if (in_range_players < l_in_range_players) {
+			for (std::size_t o = in_range_players; o != l_in_range_players; o ++) {
+				this-> thread_id = o;
+				this-> thread_shutdown = true;
+
+				while(!this-> thread_dead) {}
+				this-> thread_dead = false;
+			}
+
+			this-> thread_shutdown = false;
+			this-> thread_id = NULL;
 		}
 
 		if (player_index.size() != in_range_players) {

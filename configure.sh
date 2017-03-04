@@ -70,6 +70,8 @@ fi
 
 export CXX_IFLAGS="$CXX_IFLAGS"
 export CXX_LFLAGS="$CXX_LFLAGS"
+export CUDART_INC="$CUDART_INC"
+export CUDART_LIB="$CUDART_LIB"
 
 export ARC="-DARC$(getconf LONG_BIT)"
 #export CXXFLAGS="$CXXFLAGS $ARC"

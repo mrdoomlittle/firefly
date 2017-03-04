@@ -88,7 +88,7 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 	firefly::graphics::x11_window _x11_window;
 	_x11_window.begin(this-> win_xlen, this-> win_ylen, __frame_title);
 
-	_x11_window.set_fps_mark(8);
+	_x11_window.set_fps_mark(240);
 
 	while(!_x11_window.is_wd_flag(X11_WD_OPEN)) {
 		if (this-> to_shutdown) return 0;
