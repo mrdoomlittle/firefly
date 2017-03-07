@@ -9,7 +9,7 @@
 	# include "../opencl_helper.hpp"
 # endif
 
-# include "../types/status.hpp"
+# include "../system/errno.h"
 namespace mdl {
 namespace firefly {
 namespace graphics {

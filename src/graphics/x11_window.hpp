@@ -11,6 +11,7 @@
 # include "../memory/alloc_pixmap.hpp"
 # include "../memory/mem_free.h"
 # include "../types.hpp"
+# include "../types/pixmap_t.h"
 # define X11_WD_TO_CLOSE 16
 # define X11_WD_CLOSED 1
 # define X11_WD_OPEN 2
@@ -32,7 +33,7 @@ class x11_window
 	window_coords_t window_coords;
 	mouse_coords_t mouse_coords;
 
-	boost::uint8_t *pixbuff = nullptr;
+	types::pixmap_t pixbuff = nullptr;
 
 	int button_code = 0x0;
 	bool button_press = false;

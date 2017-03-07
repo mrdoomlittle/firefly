@@ -1,4 +1,6 @@
 # include "x11_window.hpp"
+
+// NOTE: clean up
 boost::int8_t mdl::firefly::graphics::x11_window::init(uint_t __wd_xlen, uint_t __wd_ylen, char const *__frame_title) {
 //	if (this-> init_called) return 1;
 

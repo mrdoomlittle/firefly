@@ -6,22 +6,19 @@ namespace ublas = boost::numeric::ublas;
 # include "graphics/draw_pixmap.hpp"
 # include <utility>
 # include <string.h>
+# include "types/layer_info_t.hpp"
 # include "memory/alloc_pixmap.hpp"
 # include "memory/mem_free.h"
+# include "types/pixmap_t.h"
 namespace mdl {
 namespace firefly {
 class layer {
 	public:
-	typedef struct {
-		uint_t xaxis_len, yaxis_len, xoffset, yoffset;
-
-	} layer_info_t;
-
 	uint_t add_layer(uint_t __xlen, uint_t __ylen, uint_t __xoffset, uint_t __yoffset){//, boost::uint8_t *__pixmap = nullptr) {
 		uint_t layer_id = layers.size();
 		layers.resize(layers.size() + 1);
 
-		layer_info_t layer_info = {
+		types::layer_info_t layer_info = {
 			.xaxis_len = __xlen,
 			.yaxis_len = __ylen,
 			.xoffset = __xoffset,
@@ -42,18 +39,30 @@ class layer {
 		return layer_id;
 	}
 
+	bool does_layer_exist(uint_t __layer_id) {
+		return this-> layers.size() >= (__layer_id + 1)? true : false;
+	}
+
 	boost::uint8_t* get_layer_pixmap(uint_t __layer_id) {
 		return this-> layers[__layer_id].second;
 	}
 
-	void draw_layers(boost::uint8_t *__pixbuff, uint_t __xlen, uint_t __ylen) {
+	types::layer_info_t get_layer_info(uint_t __layer_id) {
+		return this-> layers[__layer_id].first;
+	}
+
+	// change to int8_t
+	boost::int8_t draw_layers(types::pixmap_t __pixbuff, uint_t __xlen, uint_t __ylen) {
 		for (std::size_t o = 0; o != layers.size(); o ++) {
-			layer_info_t layer_info = this-> layers[o].first;
-			boost::uint8_t *pixmap = this-> layers[o].second;
+			types::layer_info_t layer_info = this-> layers[o].first;
+			types::pixmap_t pixmap = this-> layers[o].second;
 
-			graphics::draw_pixmap(layer_info.xoffset, layer_info.yoffset, __pixbuff, __xlen, __ylen, pixmap, layer_info.xaxis_len, layer_info.yaxis_len);
-
+			if (graphics::draw_pixmap(layer_info.xoffset, layer_info.yoffset, __pixbuff, __xlen, __ylen, pixmap, layer_info.xaxis_len, layer_info.yaxis_len) == FFLY_FAILURE) {
+				fprintf(stderr, "failed to draw a layer.\n");
+				return FFLY_FAILURE;
+			}
 		}
+		return FFLY_SUCCESS;
 	}
 
 	~layer() {
@@ -62,7 +71,7 @@ class layer {
 			memory::mem_free(layers[o].second);
 	}
 
-	ublas::vector<std::pair<layer_info_t, boost::uint8_t *>> layers;
+	ublas::vector<std::pair<types::layer_info_t, types::pixmap_t>> layers;
 };
 }
 }

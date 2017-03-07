@@ -60,7 +60,7 @@ boost::int8_t mdl::ffly_client::send_client_info() {
 }
 
 boost::int8_t mdl::ffly_client::recv_cam_frame() {
-	if (this-> udp_stream.recv(this-> layer.get_layer_pixmap(this-> cam_layer_id), this-> cam_frame_size) == FFLY_FAILURE) {
+	if (this-> udp_stream.recv(this-> layer.get_layer_pixmap(this-> cam_layer_id), this-> cam_pm_size) == FFLY_FAILURE) {
 		fprintf(stderr, "failed to recv camera feed from server, errno: %d\n", errno);
 		return FFLY_FAILURE;
 	}
@@ -69,49 +69,64 @@ boost::int8_t mdl::ffly_client::recv_cam_frame() {
 }
 
 void ctrl_c(int __sig) {
-	printf("look like ctrl_c was called bye bye...\n");
+	printf("looks like ctrl_c was called bye bye...\n");
 	*_to_shutdown = true;
 }
 
-boost::int8_t mdl::ffly_client::init() {
-	_to_shutdown = &this-> to_shutdown;
+boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) {
+	::_to_shutdown = &this-> _to_shutdown;
 
 	struct sigaction sig_handler;
 
 	sig_handler.sa_handler = ctrl_c;
+
 	sigemptyset(&sig_handler.sa_mask);
+
 	sig_handler.sa_flags = 0;
 	sigaction(SIGINT, &sig_handler, NULL);
+
+	if (!__init_options.cam_xlen % 2 || !__init_options.cam_ylen % 2) {
+		fprintf(stderr, "failed to set the camera x and y length, as one is not divisible by 2\n");
+		return FFLY_FAILURE;
+	}
+
+	this-> init_options = __init_options;
+	this-> cam_xlen = __init_options.cam_xlen;
+	this-> cam_ylen = __init_options.cam_ylen;
+	this-> cam_pm_size = (this-> cam_xlen * this-> cam_ylen) * 4;
+
+	return FFLY_SUCCESS;
 }
 
 boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __extern_loop)(boost::int8_t, portal_t *)) {
-	firefly::graphics::x11_window _x11_window;
-	_x11_window.begin(this-> win_xlen, this-> win_ylen, __frame_title);
+	firefly::graphics::window window;
 
-	_x11_window.set_fps_mark(240);
+	if (window.init(this-> win_xlen, this-> win_ylen, __frame_title) != FFLY_SUCCESS) return FFLY_FAILURE;
 
-	while(!_x11_window.is_wd_flag(X11_WD_OPEN)) {
-		if (this-> to_shutdown) return 0;
+	if (window.begin() != FFLY_SUCCESS) return FFLY_FAILURE;
+
+	window.wd_handler.set_fps_mark(240);
+
+	while(!window.wd_handler.is_wd_flag(WD_OPEN)) {
+		if (this-> _to_shutdown) return 0;
 	}
 
 	auto begin = std::chrono::high_resolution_clock::now();
 	auto end = std::chrono::high_resolution_clock::now();
-	this-> portal.pixbuff = _x11_window.pixbuff;
+	this-> portal.pixbuff = window.get_pixbuff();//_x11_window.pixbuff;
 	this-> portal._this = this;
-
-	uint_t pix_count = (this-> cam_xaxis_len * this-> cam_yaxis_len) * 4;
 
 	int sock;
 	do {
-		if (_x11_window.is_wd_flag(X11_WD_CLOSED)) {
+		if (window.wd_handler.is_wd_flag(WD_CLOSED)) {
 			printf("window has been closed.\n");
 			break;
 		}
 
-		if (!_x11_window.is_wd_flag(X11_WD_WAITING)) continue;
-		if (_x11_window.is_wd_flag(X11_WD_DONE_DRAW)) continue;
+		if (!window.wd_handler.is_wd_flag(WD_WAITING)) continue;
+		if (window.wd_handler.is_wd_flag(WD_DONE_DRAW)) continue;
 
-		client_info.key_code = _x11_window.key_code;
+		client_info.key_code = window.wd_handler.key_code;
 
 		if (this-> server_connected) {
 			if (this-> send_client_info() == FFLY_FAILURE) break;
@@ -126,10 +141,10 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 
 		skip:
 
-		this-> layer.draw_layers(_x11_window.pixbuff, this-> win_xlen, this-> win_ylen);
+		this-> layer.draw_layers(window.get_pixbuff(), this-> win_xlen, this-> win_ylen);
 
-		_x11_window.add_wd_flag(X11_WD_DONE_DRAW);
-		_x11_window.rm_wd_flag(X11_WD_WAITING);
+		window.wd_handler.add_wd_flag(WD_DONE_DRAW);
+		window.wd_handler.rm_wd_flag(WD_WAITING);
 
 		end = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
@@ -140,11 +155,11 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 			this-> fps_counter = 0;
 		} else this-> fps_counter++;
 
-	} while (!this-> to_shutdown);
+	} while (!this-> _to_shutdown);
 
-	_x11_window.add_wd_flag(X11_WD_TO_CLOSE);
+	window.wd_handler.add_wd_flag(WD_TO_CLOSE);
 
-	while(!_x11_window.is_wd_flag(X11_WD_CLOSED)){}
+	while(!window.wd_handler.is_wd_flag(WD_CLOSED)){}
 
 	return 0;
 }

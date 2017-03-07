@@ -25,7 +25,7 @@ else ifeq ($(FFLY_TARGET), -DFFLY_SERVER)
 else ifeq ($(FFLY_TARGET), -DFFLY_CLIENT)
 	FFLY_OBJECTS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/x11_window.o src/graphics/png_loader.o \
 	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o \
-	src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o
+	src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o
 	LDFLAGS += -lX11 -lGL -lGLU -lglut
 else
 	FFLY_OBJECTS=
@@ -49,7 +49,9 @@ else ifeq ($(FFLY_TARGET), -DFFLY_CLIENT)
 all: ffly_client
 endif
 
-FFLY_DEFINES=$(GPU_CL_TYPE) $(ARC)
+# using x11 for now
+
+FFLY_DEFINES=$(GPU_CL_TYPE) $(ARC) -DUSING_X11
 
 src/graphics/x11_window.o: src/graphics/x11_window.cpp
 	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/x11_window.o src/graphics/x11_window.cpp
@@ -122,6 +124,9 @@ src/memory/mem_alloc.o: src/memory/mem_alloc.cpp
 
 src/memory/mem_free.o: src/memory/mem_free.cpp
 	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.o src/memory/mem_free.cpp
+
+src/graphics/window.o: src/graphics/window.cpp
+	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/window.o src/graphics/window.cpp
 
 relocate_headers:
 	if ! [ -d $(CURR_DIR)/inc/firefly ]; then \

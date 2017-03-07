@@ -158,5 +158,6 @@ boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yof
 		return FFLY_FAILURE;
 	}
 
+	return FFLY_SUCCESS;
 }
 # endif

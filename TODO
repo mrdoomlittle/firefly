@@ -1,1 +1,2 @@
 -> rename networking / *_server *_client to *server_poxix *client_poxix
+-> when user uses ctrl_c have it so if its pressed 2 times it will force the program to close.

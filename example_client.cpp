@@ -28,7 +28,16 @@ int main(int argc, char const *argv[]) {
 	client->layer.add_layer(256, 256, 0, 0);
 	mdl::firefly::graphics::colour_t colour = {38, 60, 94, 255};
 	mdl::firefly::graphics::fill_pixmap(client-> layer.get_layer_pixmap(0), 640, 640, colour);
-	client->init();
+
+
+	mdl::firefly::types::init_opt_t init_options  = {
+//	init_options.cam_xlen = 256,
+//	init_options.cam_ylen = 256;
+		.cam_xlen = 256,
+		.cam_ylen = 256
+	};
+
+	client->init(init_options);
 	client->begin("Example Game", game_loop);
 
 	delete client;

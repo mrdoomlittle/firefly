@@ -6,6 +6,8 @@
 # include <string>
 # include <fstream>
 # include <boost/cstdint.hpp>
+# include <strcmb.hpp>
+# include "system/errno.h"
 # define MAX_SOURCE_FILE_SIZE (0x100000)
 namespace mdl {
 namespace firefly {

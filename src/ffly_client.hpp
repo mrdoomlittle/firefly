@@ -1,6 +1,5 @@
 # ifndef __ffly__client__hpp
 # define __ffly__client__hpp
-# include "graphics/x11_window.hpp"
 # include "networking/tcp_client.hpp"
 # include "networking/udp_client.hpp"
 # include <chrono>
@@ -15,7 +14,10 @@
 # include <cuda_runtime.h>
 # include "defaults.hpp"
 # include <errno.h>
-# include "types/status.hpp"
+# include "system/errno.h"
+# include "types/init_opt_t.hpp"
+# include "graphics/window.hpp"
+# include "types/layer_info_t.hpp"
 namespace mdl { class ffly_client
 {
 	public:
@@ -38,17 +40,31 @@ namespace mdl { class ffly_client
 			return _this-> curr_fps;
 		}
 
-		void connect_to_server(char const *__addr, boost::uint16_t __portno, uint_t __layer_id) {
+		boost::int8_t connect_to_server(char const *__addr, boost::uint16_t __portno, uint_t __layer_id) {
+			if (_this-> layer.does_layer_exist(__layer_id)) {
+				fprintf(stderr, "error the layer for the camera does not exist.\n");
+				return FFLY_FAILURE;
+			}
+
+			firefly::types::layer_info_t layer_info = _this-> layer.get_layer_info(__layer_id);
+
+			if (layer_info.xaxis_len != _this-> cam_xlen || layer_info.yaxis_len != _this-> cam_ylen) {
+				fprintf(stderr, "error layer size does not match the camera size.\n");
+				return FFLY_FAILURE;
+			}
+
 			_this-> server_ipaddr = __addr;
 			_this-> server_portno = __portno;
 			_this-> cam_layer_id = __layer_id;
+
+			return FFLY_SUCCESS;
 		}
 
 		bool server_connected() {
 			return _this-> server_connected;
 		}
 
-		boost::uint8_t *pixbuff = nullptr;
+		firefly::types::pixmap_t pixbuff = nullptr;
 
 		mdl::ffly_client *_this;
 	} portal_t;
@@ -59,8 +75,10 @@ namespace mdl { class ffly_client
 	boost::uint16_t server_portno = 0;
 	bool server_connected = false;
 
-	bool to_shutdown = false;
-	boost::int8_t init();
+	bool _to_shutdown = false;
+
+	boost::int8_t init(firefly::types::init_opt_t __init_options);
+
 	boost::uint8_t begin(char const *__frame_title, void (* __o)(boost::int8_t, portal_t*));
 
 	portal_t portal;
@@ -69,12 +87,13 @@ namespace mdl { class ffly_client
 	uint_t curr_fps = 0;
 	uint_t fps_counter = 0;
 
-	uint_t cam_xaxis_len = 256, cam_yaxis_len = 256; 
-	uint_t cam_frame_size = (cam_xaxis_len * cam_yaxis_len) * 4;
+	uint_t cam_xlen = 0, cam_ylen = 0;
+	uint_t cam_pm_size = 0;
 	uint_t connect_trys = 0;
 
 	firefly::asset_manager asset_manager;
 	private:
+	firefly::types::init_opt_t init_options;
 	firefly::types::client_info_t client_info;
 
 	firefly::networking::tcp_client tcp_stream;
@@ -84,3 +103,4 @@ namespace mdl { class ffly_client
 }
 
 # endif /*__ffly__client__hpp*/
+

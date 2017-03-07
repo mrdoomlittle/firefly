@@ -4,7 +4,7 @@
 namespace mdl {
 namespace firefly {
 namespace types {
-typedef (boost::uint8_t *) pixmap_t;
+typedef boost::uint8_t* pixmap_t;
 }
 }
 }

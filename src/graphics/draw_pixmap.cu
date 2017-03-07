@@ -30,17 +30,17 @@ boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yof
 	if (!initialized) {
 		if ((any_error = cudaMalloc((void **)&xoffset, sizeof(uint_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
-			return -1;
+			return FFLY_FAILURE;
 		}
 	
 		if ((any_error = cudaMalloc((void **)&yoffset, sizeof(uint_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
-			return -1;
+			return FFLY_FAILURE;
 		}
 
 		if ((any_error = cudaMalloc((void **)&pb_xlen, sizeof(uint_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
-			return -1;
+			return FFLY_FAILURE;
 		}
 
 		// if the any of thease are 0 then it will skip the memcpy so in the kernel we could end up having some junk memory
@@ -48,21 +48,21 @@ boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yof
 		if (__xoffset == 0) {
 			if ((any_error = cudaMemcpy(xoffset, &__xoffset, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-				return -1;
+				return FFLY_FAILURE;
 			}
 		}
 
 		if (__yoffset == 0) {
 			if ((any_error = cudaMemcpy(yoffset, &__yoffset, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-				return -1;
+				return FFLY_FAILURE;
 			}
 		}
 
 		if (__pm_xlen == 0) {
 			if ((any_error = cudaMemcpy(pb_xlen, &__pb_xlen, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-				return -1;
+				return FFLY_FAILURE;
 			}
 		}
 
@@ -79,7 +79,7 @@ boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yof
 
 		if ((any_error = cudaMalloc((void **)&pixbuff, pixbuff_size * sizeof(boost::uint8_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
-			return -1;
+			return FFLY_FAILURE;
 		}
 
 		_pixbuff_size = pixbuff_size;
@@ -92,7 +92,7 @@ boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yof
 
 		if ((any_error = cudaMalloc((void **)&pixmap, pixmap_size * sizeof(boost::uint8_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
-			return -1;
+			return FFLY_FAILURE;
 		}
 
 		_pixmap_size = pixmap_size;
@@ -103,7 +103,7 @@ boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yof
 	if (_xoffset != __xoffset) {
 		if ((any_error = cudaMemcpy(xoffset, &__xoffset, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-			return -1;
+			return FFLY_FAILURE;
 		}
 
 		_xoffset = __xoffset;
@@ -115,7 +115,7 @@ boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yof
 	if (_yoffset != __yoffset) {
 		if ((any_error = cudaMemcpy(yoffset, &__yoffset, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-			return -1;
+			return FFLY_FAILURE;
 		}
 
 		_yoffset = __yoffset;
@@ -127,7 +127,7 @@ boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yof
 	if (_pb_xlen != __pb_xlen) { 
 		if ((any_error = cudaMemcpy(pb_xlen, &__pb_xlen, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-			return -1;
+			return FFLY_FAILURE;
 		}
 
 		_pb_xlen = __pb_xlen;
@@ -135,22 +135,20 @@ boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yof
 
 	if ((any_error = cudaMemcpy(pixbuff, __pixbuff, pixbuff_size * sizeof(boost::uint8_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-		return -1;
+		return FFLY_FAILURE;
 	}
 
 	if ((any_error = cudaMemcpy(pixmap, __pixmap, pixmap_size * sizeof(boost::uint8_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-		return -1;
+		return FFLY_FAILURE;
 	}
 
 	cu_draw_pixmap<<<__pm_ylen, __pm_xlen>>>(xoffset, yoffset, pixbuff, pb_xlen, pixmap);
 
 	if ((any_error = cudaMemcpy(__pixbuff, pixbuff, pixbuff_size * sizeof(boost::uint8_t), cudaMemcpyDeviceToHost)) != cudaSuccess) {
 		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-		return -1;
+		return FFLY_FAILURE;
 	}
 
-	return 0;
-//	cudaFree(pixbuff);
-//	cudaFree(pixmap);
+	return FFLY_SUCCESS;
 }
