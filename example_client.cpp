@@ -3,7 +3,7 @@
 # include "src/graphics/draw_skelmap.hpp"
 # include "src/graphics/skelmap_loader.hpp"
 # include "src/types/skelfont_t.hpp"
-# include "src/layer.hpp"
+# include "src/layer_manager.hpp"
 # include "src/graphics/fill_pixmap.hpp"
 # include <to_string.hpp>
 # include <strcmb.hpp>
@@ -26,9 +26,16 @@ int main(int argc, char const *argv[]) {
 //	skelfont = mdl::firefly::load_skelfont("../assets/my_skelfont", &client.asset_manager);
 	client->layer.add_layer(640, 640, 0, 0);
 	client->layer.add_layer(256, 256, 0, 0);
+	client->layer.add_layer(256, 256, 128, 128);
 	mdl::firefly::graphics::colour_t colour = {38, 60, 94, 255};
 	mdl::firefly::graphics::fill_pixmap(client-> layer.get_layer_pixmap(0), 640, 640, colour);
+	colour.r = 0;
+	colour.b = 0;
+	mdl::firefly::graphics::fill_pixmap(client-> layer.get_layer_pixmap(1), 256, 256, colour);
+	colour.r = 244;
+	mdl::firefly::graphics::fill_pixmap(client-> layer.get_layer_pixmap(2), 256, 256, colour);
 
+	client->layer.pull_backwards(2);
 
 	mdl::firefly::types::init_opt_t init_options  = {
 //	init_options.cam_xlen = 256,

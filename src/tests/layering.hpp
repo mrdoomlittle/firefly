@@ -1,6 +1,6 @@
 # ifndef __layering__hpp
 # define __layering__hpp
-# include "../layer.hpp"
+# include "../layer_manager.hpp"
 # include <stdlib.h>
 # include <cstdio>
 # include <boost/cstdint.hpp>

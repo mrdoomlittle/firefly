@@ -127,13 +127,13 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(uint_t __wd_xlen, uint_t 
 				this-> key_code = _xevent.xkey.keycode;
 			} else if (_xevent.type == KeyRelease) {
 				this-> key_press = false;
-				this-> key_code = 0x0;
+				this-> key_code = _xevent.xkey.keycode;
 			} else if (_xevent.type == ButtonPress) {
 				this-> button_press = true;
 				this-> button_code = _xevent.xbutton.button;
 			} else if (_xevent.type == ButtonRelease) {
 				this-> button_press = false;
-				this-> button_code = 0x0;
+				this-> button_code = _xevent.xbutton.button;
 			}
 
 			if (this-> key_press) printf("key press: %d\n", this-> key_code);

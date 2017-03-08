@@ -99,7 +99,7 @@ boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) 
 }
 
 boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __extern_loop)(boost::int8_t, portal_t *)) {
-	firefly::graphics::window window;
+//	firefly::graphics::window window;
 
 	if (window.init(this-> win_xlen, this-> win_ylen, __frame_title) != FFLY_SUCCESS) return FFLY_FAILURE;
 
@@ -125,6 +125,7 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 
 		if (!window.wd_handler.is_wd_flag(WD_WAITING)) continue;
 		if (window.wd_handler.is_wd_flag(WD_DONE_DRAW)) continue;
+		this-> window.clear_pixbuff();
 
 		client_info.key_code = window.wd_handler.key_code;
 

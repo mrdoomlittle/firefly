@@ -11,6 +11,8 @@
 # include "../system/errno.h"
 # include "../types/pixmap_t.h"
 # include "draw_pixmap.hpp"
+# include "fill_pixmap.hpp"
+# include "../types/colour_t.hpp"
 # define WD_TO_CLOSE 16
 # define WD_CLOSED 1
 # define WD_OPEN 2
@@ -27,6 +29,15 @@ class window {
 	types::pixmap_t get_pixbuff();
 
 	boost::int8_t set_pixbuff(types::pixmap_t __pixmap, uint_t __xlen = 0, uint_t __ylen = 0);
+
+	void clear_pixbuff() {
+		colour_t colour = { 0, 0, 0, 0 };
+		this-> clear_pixbuff(colour);
+	}
+
+	void clear_pixbuff(colour_t __colour) {
+		fill_pixmap(this-> get_pixbuff(), this-> wd_xlen, this-> wd_ylen, __colour);
+	}
 
 	private:
 	bool init_report = FFLY_FAILURE;

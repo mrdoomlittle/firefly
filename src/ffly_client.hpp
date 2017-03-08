@@ -9,7 +9,7 @@
 # include "types/client_info_t.hpp"
 # include "types/player_info_t.hpp"
 # include "asset_manager.hpp"
-# include "layer.hpp"
+# include "layer_manager.hpp"
 # include <serializer.hpp>
 # include <cuda_runtime.h>
 # include "defaults.hpp"
@@ -18,6 +18,7 @@
 # include "types/init_opt_t.hpp"
 # include "graphics/window.hpp"
 # include "types/layer_info_t.hpp"
+# include "system/event.hpp"
 namespace mdl { class ffly_client
 {
 	public:
@@ -38,6 +39,10 @@ namespace mdl { class ffly_client
 	typedef struct {
 		uint_t fps_count() {
 			return _this-> curr_fps;
+		}
+
+		bool poll_event(firefly::system::event& __event) {
+			return this-> _this-> poll_event(__event);
 		}
 
 		boost::int8_t connect_to_server(char const *__addr, boost::uint16_t __portno, uint_t __layer_id) {
@@ -79,7 +84,34 @@ namespace mdl { class ffly_client
 
 	boost::int8_t init(firefly::types::init_opt_t __init_options);
 
-	boost::uint8_t begin(char const *__frame_title, void (* __o)(boost::int8_t, portal_t*));
+	boost::uint8_t begin(char const *__frame_title,
+		void (* __extern_loop)(boost::int8_t, portal_t*)
+	);
+
+	firefly::graphics::window window;
+
+	bool poll_event(firefly::system::event& __event) {
+		static bool init = false;
+		if (init) {
+			__event.key_code = 0x0;
+			init = false;
+			return false;
+		}
+
+		if (this-> window.wd_handler.key_press) {
+			__event.key_code = this-> window.wd_handler.key_code;
+			__event.event_type = firefly::system::event::KEY_PRESSED;
+		} else if(!this-> window.wd_handler.key_press) {
+			__event.key_code = this-> window.wd_handler.key_code;
+			__event.event_type = firefly::system::event::KEY_RELEASED;
+		} else {
+			__event.event_type = firefly::system::event::NULL_EVENT;
+			return false;
+		}
+
+		init = true;
+		return true;
+	}
 
 	portal_t portal;
 

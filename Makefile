@@ -25,7 +25,8 @@ else ifeq ($(FFLY_TARGET), -DFFLY_SERVER)
 else ifeq ($(FFLY_TARGET), -DFFLY_CLIENT)
 	FFLY_OBJECTS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/x11_window.o src/graphics/png_loader.o \
 	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o \
-	src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o
+	src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o \
+	src/layer_manager.o src/obj_manager.o
 	LDFLAGS += -lX11 -lGL -lGLU -lglut
 else
 	FFLY_OBJECTS=
@@ -128,6 +129,12 @@ src/memory/mem_free.o: src/memory/mem_free.cpp
 src/graphics/window.o: src/graphics/window.cpp
 	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/window.o src/graphics/window.cpp
 
+src/layer_manager.o: src/layer_manager.cpp
+	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/layer_manager.o src/layer_manager.cpp
+
+src/obj_manager.o: src/obj_manager.cpp
+	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/obj_manager.o src/obj_manager.cpp
+
 relocate_headers:
 	if ! [ -d $(CURR_DIR)/inc/firefly ]; then \
 		mkdir $(CURR_DIR)/inc/firefly; \
@@ -155,6 +162,25 @@ relocate_headers:
 		mkdir $(CURR_DIR)/inc/firefly/maths; \
 	fi
 
+	if ! [ -d $(CURR_DIR)/inc/firefly/system ]; then \
+		mkdir $(CURR_DIR)/inc/firefly/system; \
+	fi
+
+	if ! [ -d $(CURR_DIR)/inc/firefly/memory ]; then \
+		mkdir $(CURR_DIR)/inc/firefly/memory; \
+	fi
+
+	if ! [ -d $(CURR_DIR)/inc/firefly/system ]; then \
+		mkdir $(CURR_DIR)/inc/firefly/system; \
+	fi
+
+	cp $(CURR_DIR)/src/system/*.hpp $(CURR_DIR)/inc/firefly/system
+
+	cp $(CURR_DIR)/src/memory/*.h $(CURR_DIR)/inc/firefly/memory
+	cp $(CURR_DIR)/src/memory/*.hpp $(CURR_DIR)/inc/firefly/memory
+
+	cp $(CURR_DIR)/src/system/*.h $(CURR_DIR)/inc/firefly/system
+
 	cp $(CURR_DIR)/src/maths/*.h $(CURR_DIR)/inc/firefly/maths
 	cp $(CURR_DIR)/src/maths/*.hpp $(CURR_DIR)/inc/firefly/maths
 
@@ -163,6 +189,7 @@ relocate_headers:
 	cp $(CURR_DIR)/src/types/*.h $(CURR_DIR)/inc/firefly/types
 	cp $(CURR_DIR)/src/types/*.hpp $(CURR_DIR)/inc/firefly/types
 
+	cp $(CURR_DIR)/src/*.h $(CURR_DIR)/inc/firefly
 	cp $(CURR_DIR)/src/*.hpp $(CURR_DIR)/inc/firefly
 
 	cp $(CURR_DIR)/eint_t/inc/*.hpp $(CURR_DIR)/inc

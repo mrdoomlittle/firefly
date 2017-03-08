@@ -24,7 +24,7 @@ boost::int8_t mdl::firefly::graphics::fill_pixmap(boost::uint8_t *__pixmap, uint
 	}
 
 	if (_pixmap_size != pixmap_size) {
-		if (pixmap == nullptr) cudaFree(pixmap);
+		if (pixmap != nullptr) cudaFree(pixmap);
 
 		if ((any_error = cudaMalloc((void **)&pixmap, pixmap_size * sizeof(boost::uint8_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
@@ -44,6 +44,8 @@ boost::int8_t mdl::firefly::graphics::fill_pixmap(boost::uint8_t *__pixmap, uint
 				return -1;
 			}
 		}
+
+		initialized = true;
 	}
 
 	cudaMemcpy(pixmap, __pixmap, pixmap_size * sizeof(boost::uint8_t), cudaMemcpyHostToDevice);

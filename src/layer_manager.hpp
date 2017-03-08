@@ -17,6 +17,10 @@ class layer {
 	uint_t add_layer(uint_t __xlen, uint_t __ylen, uint_t __xoffset, uint_t __yoffset){//, boost::uint8_t *__pixmap = nullptr) {
 		uint_t layer_id = layers.size();
 		layers.resize(layers.size() + 1);
+		render_arrm.resize(render_arrm.size() + 1);
+
+
+		render_arrm[layer_id] = layer_id;
 
 		types::layer_info_t layer_info = {
 			.xaxis_len = __xlen,
@@ -25,7 +29,7 @@ class layer {
 			.yoffset = __yoffset
 		};
 
-		printf("hello\n");
+		//printf("hello\n");
 		layers[layer_id].first = layer_info;
 
 //		if (__pixmap != nullptr) {
@@ -54,8 +58,9 @@ class layer {
 	// change to int8_t
 	boost::int8_t draw_layers(types::pixmap_t __pixbuff, uint_t __xlen, uint_t __ylen) {
 		for (std::size_t o = 0; o != layers.size(); o ++) {
-			types::layer_info_t layer_info = this-> layers[o].first;
-			types::pixmap_t pixmap = this-> layers[o].second;
+			uint_t layer_id = this-> render_arrm[o];
+			types::layer_info_t layer_info = this-> layers[layer_id].first;
+			types::pixmap_t pixmap = this-> layers[layer_id].second;
 
 			if (graphics::draw_pixmap(layer_info.xoffset, layer_info.yoffset, __pixbuff, __xlen, __ylen, pixmap, layer_info.xaxis_len, layer_info.yaxis_len) == FFLY_FAILURE) {
 				fprintf(stderr, "failed to draw a layer.\n");
@@ -65,12 +70,17 @@ class layer {
 		return FFLY_SUCCESS;
 	}
 
+
+	boost::int8_t push_forwards(uint_t __layer_id);
+	boost::int8_t pull_backwards(uint_t __layer_id);
+	boost::int8_t swap(uint_t __layer_ida, uint_t __layer_idb);
 	~layer() {
 		/* free alloced pixmap for each payer */
 		for (std::size_t o = 0; o != layers.size(); o ++)
 			memory::mem_free(layers[o].second);
 	}
 
+	ublas::vector<uint_t> render_arrm; // render arrangement
 	ublas::vector<std::pair<types::layer_info_t, types::pixmap_t>> layers;
 };
 }

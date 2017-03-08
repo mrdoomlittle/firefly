@@ -21,6 +21,7 @@ __global__ void cu_draw_pixmap(mdl::uint_t *__xoffset, mdl::uint_t *__yoffset, b
 	}
 }
 
+// NOTE: not thread safe
 boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, boost::uint8_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen) {
 	static uint_t *xoffset = nullptr, *yoffset = nullptr, *pb_xlen = nullptr;
 	static boost::uint8_t *pixbuff = nullptr, *pixmap = nullptr;
