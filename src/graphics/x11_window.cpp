@@ -1,22 +1,22 @@
 # include "x11_window.hpp"
 
 // NOTE: clean up
-boost::int8_t mdl::firefly::graphics::x11_window::init(uint_t __wd_xlen, uint_t __wd_ylen, char const *__frame_title) {
+boost::int8_t mdl::firefly::graphics::x11_window::init(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
 //	if (this-> init_called) return 1;
 
 	this-> add_wd_flag(X11_WD_OPEN, true);
 
-	this-> wd_xlen = __wd_xlen;
-	this-> wd_ylen = __wd_ylen;
+	this-> wd_xaxis_len = __wd_xaxis_len;
+	this-> wd_yaxis_len = __wd_yaxis_len;
 	this-> frame_title = __frame_title;
 
-	this-> pixbuff = memory::alloc_pixmap(__wd_xlen, __wd_ylen, 1);
-	//this-> pixbuff = static_cast<boost::uint8_t *>(malloc((__wd_xlen * __wd_ylen) * 4));
-	bzero(this-> pixbuff, (__wd_xlen * __wd_ylen) * 4);
+	this-> pixbuff = memory::alloc_pixmap(__wd_xaxis_len, __wd_yaxis_len, 1);
+	//this-> pixbuff = static_cast<boost::uint8_t *>(malloc((__wd_xaxis_len * __wd_yaxis_len) * 4));
+	bzero(this-> pixbuff, (__wd_xaxis_len * __wd_yaxis_len) * 4);
 
 	XVisualInfo * _vis_info;
 
-	printf("creating window with size %dx%d and a title of '%s'\n", __wd_ylen, __wd_xlen, __frame_title);
+	printf("creating window with size %dx%d and a title of '%s'\n", __wd_yaxis_len, __wd_xaxis_len, __frame_title);
 
 	GLint att[] = {GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None};
 
@@ -45,7 +45,7 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(uint_t __wd_xlen, uint_t 
     _win_att.colormap = _color_map;
     _win_att.event_mask = ExposureMask | KeyPressMask;
 
-    _window = XCreateWindow(_display, _rwindow, 0, 0, __wd_xlen, __wd_ylen, 0, _vis_info-> depth, InputOutput, _vis_info-> visual, CWColormap | CWEventMask, &_win_att);
+    _window = XCreateWindow(_display, _rwindow, 0, 0, __wd_xaxis_len, __wd_yaxis_len, 0, _vis_info-> depth, InputOutput, _vis_info-> visual, CWColormap | CWEventMask, &_win_att);
 
 	XSelectInput(_display, _window, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask);
 
@@ -59,8 +59,8 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(uint_t __wd_xlen, uint_t 
 
     XSizeHints _size_hints;
 
-    _size_hints.width = _size_hints.min_width = _size_hints.max_width = __wd_xlen;
-    _size_hints.height = _size_hints.min_height = _size_hints.max_height = __wd_ylen;
+    _size_hints.width = _size_hints.min_width = _size_hints.max_width = __wd_xaxis_len;
+    _size_hints.height = _size_hints.min_height = _size_hints.max_height = __wd_yaxis_len;
 
     _size_hints.flags = PSize | PMinSize | PMaxSize | PPosition;
 
@@ -77,13 +77,13 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(uint_t __wd_xlen, uint_t 
         r_windows[i] = XRootWindow(_display, i);
     }
 
-	glViewport(0, 0, __wd_xlen, __wd_ylen);
+	glViewport(0, 0, __wd_xaxis_len, __wd_yaxis_len);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	glOrtho(0, __wd_xlen, 0, __wd_ylen, 0.1, 1);
+	glOrtho(0, __wd_xaxis_len, 0, __wd_yaxis_len, 0.1, 1);
 	glPixelZoom(1, -1);
-	glRasterPos3f(0, __wd_ylen, -0.3);
+	glRasterPos3f(0, __wd_yaxis_len, -0.3);
 
 	int w_xpos, w_ypos, m_xpos, m_ypos, r_mxpos, r_mypos;
 	int unsigned w_width, w_height, w_border_width, w_depth, m_mask;
@@ -109,8 +109,8 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(uint_t __wd_xlen, uint_t 
 			if (resault) break;
 		}
 
-		if ((this-> mouse_coords.s_xaxis > this-> window_coords.xaxis && this-> mouse_coords.s_xaxis < (this-> window_coords.xaxis + __wd_xlen))
-		&& (this-> mouse_coords.s_yaxis > this-> window_coords.yaxis && this-> mouse_coords.s_yaxis < (this-> window_coords.yaxis + __wd_ylen))) {
+		if ((this-> mouse_coords.s_xaxis > this-> window_coords.xaxis && this-> mouse_coords.s_xaxis < (this-> window_coords.xaxis + __wd_xaxis_len))
+		&& (this-> mouse_coords.s_yaxis > this-> window_coords.yaxis && this-> mouse_coords.s_yaxis < (this-> window_coords.yaxis + __wd_yaxis_len))) {
 
 			this-> mouse_coords.w_xaxis = (this-> mouse_coords.s_xaxis - this-> window_coords.xaxis);
 			this-> mouse_coords.w_yaxis = (this-> mouse_coords.s_yaxis - this-> window_coords.yaxis);
@@ -141,7 +141,7 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(uint_t __wd_xlen, uint_t 
 
 		if (!this-> is_wd_flag(X11_WD_DONE_DRAW)) continue;
 
-		glDrawPixels(__wd_xlen, __wd_ylen, GL_RGBA, GL_UNSIGNED_BYTE, this-> pixbuff);
+		glDrawPixels(__wd_xaxis_len, __wd_yaxis_len, GL_RGBA, GL_UNSIGNED_BYTE, this-> pixbuff);
 
 		glXSwapBuffers(_display, _window);
 
@@ -165,6 +165,6 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(uint_t __wd_xlen, uint_t 
 	this-> add_wd_flag(X11_WD_CLOSED, true);
 }
 
-boost::int8_t mdl::firefly::graphics::x11_window::begin(uint_t __wd_xlen, uint_t __wd_ylen, char const *__frame_title) {
-	boost::thread(boost::bind(&x11_window::init, this, __wd_xlen, __wd_ylen, __frame_title));
+boost::int8_t mdl::firefly::graphics::x11_window::begin(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
+	boost::thread(boost::bind(&x11_window::init, this, __wd_xaxis_len, __wd_yaxis_len, __frame_title));
 }

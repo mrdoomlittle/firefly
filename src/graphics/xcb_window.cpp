@@ -1,7 +1,7 @@
 # include "xcb_window.hpp"
 /* change uint_t to boost::uint16_t as it seems like we dont need to use uint_t
 */
-boost::int8_t mdl::firefly::graphics::xcb_window::init(uint_t __wd_xlen, uint_t __wd_ylen, char const *__frame_title) {
+boost::int8_t mdl::firefly::graphics::xcb_window::init(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
 	Display *display;
 	int def_screen;
 
@@ -56,7 +56,7 @@ boost::int8_t mdl::firefly::graphics::xcb_window::init(uint_t __wd_xlen, uint_t 
 	boost::uint32_t valuelist[] = { eventmask, colormap, 0 };
 	boost::uint32_t valuemask = XCB_CW_EVENT_MASK | XCB_CW_COLORMAP;
 
-	xcb_create_window(conn, XCB_COPY_FROM_PARENT, window, screen-> root, 0, 0, __wd_xlen, __wd_ylen, 0,
+	xcb_create_window(conn, XCB_COPY_FROM_PARENT, window, screen-> root, 0, 0, __wd_xaxis_len, __wd_yaxis_len, 0,
 	XCB_WINDOW_CLASS_INPUT_OUTPUT, vis_id, valuemask, valuelist);
 
 	xcb_map_window(conn, window);

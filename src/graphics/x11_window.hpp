@@ -23,8 +23,8 @@ namespace graphics {
 class x11_window
 {
 	public:
-	boost::int8_t init(uint_t __wd_xlen, uint_t __wd_ylen, char const *__frame_title);
-	boost::int8_t begin(uint_t __wd_xlen, uint_t __wd_ylen, char const *__frame_title);
+	boost::int8_t init(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title);
+	boost::int8_t begin(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title);
 
 	void set_fps_mark(std::size_t __fps_mark) {
 		this-> fps_mark = __fps_mark;
@@ -49,12 +49,12 @@ class x11_window
 		return to_compare == __wd_flag? true : false;
 	}
 
-	uint_t get_wd_xlen() {
-		return this-> wd_xlen;
+	boost::uint16_t get_wd_xaxis_len() {
+		return this-> wd_xaxis_len;
 	}
 
-	uint_t get_wd_ylen() {
-		return this-> wd_ylen;
+	boost::uint16_t get_wd_yaxis_len() {
+		return this-> wd_yaxis_len;
 	}
 
 	char const* get_frame_title() {
@@ -75,7 +75,7 @@ class x11_window
 	}
 
 	private:
-	uint_t wd_xlen, wd_ylen;
+	boost::uint16_t wd_xaxis_len, wd_yaxis_len;
 	char const *frame_title;
 	std::size_t fps_mark = 120;
 } ;

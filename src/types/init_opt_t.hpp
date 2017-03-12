@@ -19,11 +19,15 @@ typedef struct {
 typedef struct {
 	uint_t cam_xlen, cam_ylen;
 } init_opt_t;
-}
-}
-}
+# elif defined(FFLY_STUDIO)
+typedef struct {
+
+} init_opt_t;
 # else
 #	error ""
 # endif
+}
+}
+}
 
 # endif /*__init__opt__hpp*/

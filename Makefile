@@ -26,8 +26,13 @@ else ifeq ($(FFLY_TARGET), -DFFLY_CLIENT)
 	FFLY_OBJECTS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/x11_window.o src/graphics/png_loader.o \
 	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o \
 	src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o \
-	src/layer_manager.o src/obj_manager.o
+	src/layer_manager.o src/obj_manager.o src/maths/cal_dist.o src/maths/squar_rt.o src/maths/squar.o src/gravy_manager.o src/flip_direction.o
 	LDFLAGS += -lX11 -lGL -lGLU -lglut
+else ifeq ($(FFLY_TARGET), -DFFLY_STUDIO)
+	FFLY_OBJECTS += src/graphics/x11_window.o src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
+	src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o #src/ffly_studio.o
+	LDFLAGS += -lX11 -lGL -lGLU -lglut -lfreetype -lm
+	CXX_IFLAGS += -I/usr/include/freetype2 $(CUDART_INC)
 else
 	FFLY_OBJECTS=
 	FFLY_TARGET=-DFFLY_NONE
@@ -48,6 +53,8 @@ else ifeq ($(FFLY_TARGET), -DFFLY_SERVER)
 all: ffly_server
 else ifeq ($(FFLY_TARGET), -DFFLY_CLIENT)
 all: ffly_client
+else ifeq ($(FFLY_TARGET), -DFFLY_STUDIO)
+all: ffly_studio
 endif
 
 # using x11 for now
@@ -135,6 +142,30 @@ src/layer_manager.o: src/layer_manager.cpp
 src/obj_manager.o: src/obj_manager.cpp
 	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/obj_manager.o src/obj_manager.cpp
 
+src/maths/cal_dist.o: src/maths/cal_dist.cpp
+	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/cal_dist.o src/maths/cal_dist.cpp
+
+src/maths/squar_rt.o: src/maths/squar_rt.cpp
+	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/squar_rt.o src/maths/squar_rt.cpp
+
+src/maths/squar.o: src/maths/squar.cpp
+	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/squar.o src/maths/squar.cpp
+
+src/gravy_manager.o: src/gravy_manager.cpp
+	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/gravy_manager.o src/gravy_manager.cpp
+
+src/flip_direction.o: src/flip_direction.cpp
+	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/flip_direction.o src/flip_direction.cpp
+
+src/ffly_studio.o: src/ffly_studio.cpp
+	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_studio.o src/ffly_studio.cpp
+
+src/gui/btn_manager.o: src/gui/btn_manager.cpp
+	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/gui/btn_manager.o src/gui/btn_manager.cpp
+
+src/graphics/draw_bitmap.o: src/graphics/draw_bitmap.cu
+	nvcc -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_bitmap.o src/graphics/draw_bitmap.cu
+
 relocate_headers:
 	if ! [ -d $(CURR_DIR)/inc/firefly ]; then \
 		mkdir $(CURR_DIR)/inc/firefly; \
@@ -173,6 +204,13 @@ relocate_headers:
 	if ! [ -d $(CURR_DIR)/inc/firefly/system ]; then \
 		mkdir $(CURR_DIR)/inc/firefly/system; \
 	fi
+
+	if ! [ -d $(CURR_DIR)/inc/firefly/gui ]; then \
+		mkdir $(CURR_DIR)/inc/firefly/gui; \
+	fi
+
+	cp $(CURR_DIR)/src/gui/*.h $(CURR_DIR)/inc/firefly/gui
+	cp $(CURR_DIR)/src/gui/*.hpp $(CURR_DIR)/inc/firefly/gui
 
 	cp $(CURR_DIR)/src/system/*.hpp $(CURR_DIR)/inc/firefly/system
 
@@ -220,6 +258,12 @@ ffly_client: libraries $(FFLY_OBJECTS)
 	ld -r -o lib/ffly_client.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
 	ar rcs lib/libffly_client.a lib/ffly_client.o
 	make relocate_headers
+
+ffly_studio: libraries $(FFLY_OBJECTS) src/ffly_studio.o
+	ld -r -o lib/ffly_studio.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
+	ar rcs lib/libffly_studio.a lib/ffly_studio.o
+	make relocate_headers
+	#g++ -std=c++11 -Iinc -Llib -Wall -o bin/ffly_studio src/ffly_studio.o -lffly_studio
 
 #ffly_server: required src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o
 #	ld -r -o lib/ffly_server.o src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o
@@ -294,5 +338,5 @@ clean:
 	cd to_string; make clean; cd ../;
 	cd strcmb; make clean; cd ../;
 
-	rm -f src/memory/*.o src/graphics/*.o src/networking/*.o src/maths/*.o src/tests/*.o src/*.o *.exec #bin/*.exec
+	rm -f src/gui/*.o src/memory/*.o src/graphics/*.o src/networking/*.o src/maths/*.o src/tests/*.o src/*.o *.exec #bin/*.exec
 	rm -rf $(CURR_DIR)/inc/* $(CURR_DIR)/lib/*
