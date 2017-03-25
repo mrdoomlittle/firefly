@@ -18,4 +18,8 @@
 # define FFLY_DIR_PULL -1
 # define FFLY_DIR_NONE 0
 
+# define UNI_PAR_XLEN 2
+# define UNI_PAR_YLEN 2
+# define UNI_PAR_ZLEN 2
+
 # endif /*__ffly__config__hpp*/

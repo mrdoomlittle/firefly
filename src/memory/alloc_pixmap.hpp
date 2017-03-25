@@ -3,10 +3,11 @@
 # include <boost/cstdint.hpp>
 # include <eint_t.hpp>
 # include "mem_alloc.h"
+# include "../types/pixmap_t.h"
 namespace mdl {
 namespace firefly {
 namespace memory {
-boost::uint8_t* alloc_pixmap(uint_t __xlen, uint_t __ylen, uint_t __zlen);
+types::pixmap_t alloc_pixmap(uint_t __xlen, uint_t __ylen, uint_t __zlen, uint_t __block_len = 4);
 }
 }
 }

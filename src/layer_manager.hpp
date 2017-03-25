@@ -14,12 +14,11 @@ namespace mdl {
 namespace firefly {
 class layer {
 	public:
-	uint_t add_layer(uint_t __xlen, uint_t __ylen, uint_t __xoffset, uint_t __yoffset){//, boost::uint8_t *__pixmap = nullptr) {
+	uint_t add_layer(uint_t __xlen, uint_t __ylen, uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixmap = nullptr) {
 		uint_t layer_id = layers.size();
 		layers.resize(layers.size() + 1);
+
 		render_arrm.resize(render_arrm.size() + 1);
-
-
 		render_arrm[layer_id] = layer_id;
 
 		types::layer_info_t layer_info = {
@@ -29,16 +28,19 @@ class layer {
 			.yoffset = __yoffset
 		};
 
-		//printf("hello\n");
 		layers[layer_id].first = layer_info;
 
-//		if (__pixmap != nullptr) {
-//			layers[layer_id].second = __pixmap;
-//		} else {
+		if (__pixmap != nullptr) {
+			layers[layer_id].second = __pixmap;
+		} else {
 			layers[layer_id].second = memory::alloc_pixmap(__xlen, __ylen, 1);
-			//layers[layer_id].second = static_cast<boost::uint8_t *>(malloc(((__xlen * __ylen) * 4) * sizeof(boost::uint8_t)));
+			if (layers[layer_id].second == NULL) {
+				fprintf(stderr, "layer_manager: failed to alloc memory for pixmap.\n");
+				return 0;
+			}
+
 			memset(layers[layer_id].second, 0x0, ((__xlen * __ylen) * 4 * sizeof(boost::uint8_t)));
-//		}
+		}
 
 		return layer_id;
 	}
@@ -47,7 +49,7 @@ class layer {
 		return this-> layers.size() >= (__layer_id + 1)? true : false;
 	}
 
-	boost::uint8_t* get_layer_pixmap(uint_t __layer_id) {
+	types::pixmap_t get_layer_pixmap(uint_t __layer_id) {
 		return this-> layers[__layer_id].second;
 	}
 
@@ -62,8 +64,10 @@ class layer {
 			types::layer_info_t layer_info = this-> layers[layer_id].first;
 			types::pixmap_t pixmap = this-> layers[layer_id].second;
 
+			if (pixmap == nullptr) continue;
+
 			if (graphics::draw_pixmap(layer_info.xoffset, layer_info.yoffset, __pixbuff, __xlen, __ylen, pixmap, layer_info.xaxis_len, layer_info.yaxis_len) == FFLY_FAILURE) {
-				fprintf(stderr, "failed to draw a layer.\n");
+				fprintf(stderr, "layer_manager: failed to draw a layer with gpu, using cpu instead.\n");
 				return FFLY_FAILURE;
 			}
 		}
@@ -74,8 +78,9 @@ class layer {
 	boost::int8_t push_forwards(uint_t __layer_id);
 	boost::int8_t pull_backwards(uint_t __layer_id);
 	boost::int8_t swap(uint_t __layer_ida, uint_t __layer_idb);
-	~layer() {
-		/* free alloced pixmap for each payer */
+	~layer() { this-> de_init(); }
+
+	boost::int8_t de_init() {
 		for (std::size_t o = 0; o != layers.size(); o ++)
 			memory::mem_free(layers[o].second);
 	}

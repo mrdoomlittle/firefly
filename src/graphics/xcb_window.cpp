@@ -5,9 +5,19 @@ boost::int8_t mdl::firefly::graphics::xcb_window::begin(boost::uint16_t __wd_xax
 	this-> wd_xaxis_len = __wd_xaxis_len;
 	this-> wd_yaxis_len = __wd_yaxis_len;
 	this-> frame_title = (char *)memory::mem_alloc(strlen(__frame_title));
+	if (this-> frame_title == NULL) {
+		fprintf(stderr, "xcb_window: failed to alloc memory for replacment frame title, errno: %d\n", errno);
+		return FFLY_FAILURE;
+	}
+
 	memcpy(this-> frame_title, __frame_title, strlen(__frame_title));
 
 	this-> pixbuff = memory::alloc_pixmap(__wd_xaxis_len, __wd_yaxis_len, 1);
+	if (this-> pixbuff == NULL) {
+		fprintf(stderr, "xcb_window: failed to alloc memory for pixbuff, errno: %d\n", errno);
+		return FFLY_FAILURE;
+	}
+
 	bzero(this-> pixbuff, (__wd_xaxis_len * __wd_yaxis_len) * 4);
 
 	printf("creating window with size %dx%d and a title of '%s'\n", __wd_yaxis_len, __wd_xaxis_len, __frame_title);
@@ -107,11 +117,21 @@ boost::int8_t mdl::firefly::graphics::xcb_window::begin(boost::uint16_t __wd_xax
 
 	uint_t time_each_frame = 100000000/this-> fps_mark;
 	do {
+		xcb_generic_error_t *any_error;
+
 		xcb_query_pointer_cookie_t qp_cookie = xcb_query_pointer(conn, window);
-		xcb_query_pointer_reply_t *qp_reply = xcb_query_pointer_reply(conn, qp_cookie, NULL);
+		xcb_query_pointer_reply_t *qp_reply = xcb_query_pointer_reply(conn, qp_cookie, &any_error);
+		if (any_error) {
+			fprintf(stderr, "xcb_window: failed to get reply for pointer query.\n");
+			break;
+		}
 
 		xcb_translate_coordinates_cookie_t tc_cookie = xcb_translate_coordinates(conn, window, screen-> root, 0, 0);
-		xcb_translate_coordinates_reply_t *tc_reply = xcb_translate_coordinates_reply(conn, tc_cookie, NULL);
+		xcb_translate_coordinates_reply_t *tc_reply = xcb_translate_coordinates_reply(conn, tc_cookie, &any_error);
+		if (any_error) {
+			fprintf(stderr, "xcb_window: failed to get reply for coordinates.\n");
+			break;
+		}
 
 		this-> wd_coords.xaxis = tc_reply-> dst_x;
 		this-> wd_coords.yaxis = tc_reply-> dst_y;

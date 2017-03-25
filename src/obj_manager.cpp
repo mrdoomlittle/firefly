@@ -12,7 +12,7 @@ void mdl::firefly::obj_manager::add_to_gravy_pool(uint_t __obj_id, uint_t __othe
 	//this-> thread_index[th_id]-> gravity_manager.add_to_pool(__obj_id, __other_id);
 }
 
-mdl::uint_t mdl::firefly::obj_manager::add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, types::pixmap_t __pixmap) {
+mdl::uint_t mdl::firefly::obj_manager::add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap) {
 	uint_t obj_id = 0;
 	if (!this-> unused_ids.empty()) {
 		std::set<uint_t>::iterator itor = this-> unused_ids.end();
@@ -26,6 +26,11 @@ mdl::uint_t mdl::firefly::obj_manager::add(types::coords_t<> __coords, types::sh
 	}
 
 	this-> obj_index[obj_id].first = (types::obj_info_t *)memory::mem_alloc(sizeof(types::obj_info_t));
+	if (this-> obj_index[obj_id].first == NULL) {
+		fprintf(stderr, "obj_manage: failed to alloc memory for obj_info_t, errno: %d\n", errno);
+		__any_error = FFLY_FAILURE;
+		return 0;
+	}
 
 	types::obj_info_t& obj_info = *this-> obj_index[obj_id].first;
 
@@ -56,41 +61,108 @@ mdl::uint_t mdl::firefly::obj_manager::add(types::coords_t<> __coords, types::sh
 
 	// for 2d
 	obj_info.bound_collision = (bool *)memory::mem_alloc(4);
+	if (obj_info.bound_collision == NULL) {
+		fprintf(stderr, "obj_manager: failed to alloc memory for 'bound_collision', errno: %d\n", errno);
+		__any_error = FFLY_FAILURE;
+		goto clean_up;
+	}
+
 	memset(obj_info.bound_collision, false, 4);
 
 	obj_info.collision.edge = (bool *)memory::mem_alloc(obj_info.edges);
+	if (obj_info.collision.edge == NULL) {
+		fprintf(stderr, "obj_manager: failed to alloc memory for 'collision.edge', errno: %d\n", errno);
+		__any_error = FFLY_FAILURE;
+		goto clean_up;
+	}
+
 	memset(obj_info.collision.edge, false, obj_info.edges);
 
 	obj_info.collision.face = (bool *)memory::mem_alloc(obj_info.faces);
+	if (obj_info.collision.face == NULL) {
+		fprintf(stderr, "obj_manager: failed to alloc memory for 'collision.face', errno: %d\n", errno);
+		__any_error = FFLY_FAILURE;
+		goto clean_up;
+	}
+
 	memset(obj_info.collision.face, false, obj_info.faces);
 
 	obj_info.collision.vertice = (bool *)memory::mem_alloc(obj_info.vertices);
+	if (obj_info.collision.vertice == NULL) {
+		fprintf(stderr, "obj_manager: failed to alloc memory for 'collision.vertice', errno: %d\n", errno);
+		__any_error = FFLY_FAILURE;
+		goto clean_up;
+	}
+
 	memset(obj_info.collision.vertice, false, obj_info.vertices);
 
 	obj_info.edge_coords = (types::coords_t<> **)memory::mem_alloc(obj_info.edges * sizeof(types::coords_t<> *));
+	if (obj_info.edge_coords == NULL) {
+		fprintf(stderr, "obj_manager: failed to alloc memory for 'edge_coords', errno: %d\n", errno);
+		__any_error = FFLY_FAILURE;
+		goto clean_up;
+	}
+
 	for (std::size_t o = 0; o != obj_info.edges; o ++) {
 		obj_info.face_coords[o] = (types::coords_t<> *)memory::mem_alloc(2 * sizeof(types::coords_t<>));
+		if (obj_info.face_coords[o] == NULL) {
+			fprintf(stderr, "obj_manager: failed to alloc memory for 'edge_coords', errno: %d\n", errno);
+			__any_error = FFLY_FAILURE;
+			goto clean_up;
+		}
+
 		obj_info.face_coords[o][0] = __shape_info.face_coords[o][0];
 		obj_info.face_coords[o][1] = __shape_info.face_coords[o][1];
 	}
 
 	obj_info.face_coords = (types::coords_t<> **)memory::mem_alloc(obj_info.faces * sizeof(types::coords_t<> *));
+	if (obj_info.face_coords == NULL) {
+		fprintf(stderr, "obj_manager: failed to alloc memory for 'face_coords', errno: %d\n", errno);
+		__any_error = FFLY_FAILURE;
+		goto clean_up;
+	}
+
 	for (std::size_t o = 0; o != obj_info.edges; o ++) {
 		obj_info.edge_coords[o] = (types::coords_t<> *)memory::mem_alloc(2 * sizeof(types::coords_t<>));
+		if (obj_info.edge_coords[o] == NULL) {
+			fprintf(stderr, "obj_manager: failed to alloc memory for 'face_coords', errno: %d\n", errno);
+			__any_error = FFLY_FAILURE;
+			goto clean_up;
+		}
+
 		obj_info.edge_coords[o][0] = __shape_info.edge_coords[o][0];
 		obj_info.edge_coords[o][1] = __shape_info.edge_coords[o][1];
 	}
 
 	obj_info.vertice_coords = (types::coords_t<> **)memory::mem_alloc(obj_info.vertices * sizeof(types::coords_t<> *));
+	if (obj_info.vertice_coords == NULL) {
+		fprintf(stderr, "obj_manager: failed to alloc memory for 'vertice_coords', errno: %d\n", errno);
+		__any_error = FFLY_FAILURE;
+		goto clean_up;
+	}
+
 	for (std::size_t o = 0; o != obj_info.vertices; o ++) {
 		obj_info.vertice_coords[o] = (types::coords_t<> *)memory::mem_alloc(2 * sizeof(types::coords_t<>));
+		if (obj_info.vertice_coords[o] == NULL) {
+			fprintf(stderr, "obj_manager: failed to alloc memory for 'vertice_coords', errno: %d\n", errno);
+			__any_error = FFLY_FAILURE;
+			goto clean_up;
+		}
+
 		obj_info.vertice_coords[o][0] = __shape_info.vertice_coords[o][0];
 		obj_info.vertice_coords[o][1] = __shape_info.vertice_coords[o][1];
 	}
 
 	if (__pixmap == nullptr) {
 		this-> obj_index[obj_id].second = (types::pixmap_t)memory::mem_alloc((__xaxis_len * __yaxis_len * __zaxis_len) * 4);
+		if (this-> obj_index[obj_id].second == NULL) {
+			fprintf(stderr, "obj_manager: failed to alloc memory for pixmap, errno: %d\n", errno);
+			__any_error = FFLY_FAILURE;
+			goto clean_up;
+		}
+
 		if (graphics::fill_pixmap(this-> obj_index[obj_id].second, __xaxis_len, __yaxis_len, obj_info.def_colour) != FFLY_SUCCESS) {
+			fprintf(stderr, "obj_manager: gpu failed to fill pixmap, using the cpu instead.\n");
 			for (uint_t pix_point = 0; pix_point != (__xaxis_len * __yaxis_len * __zaxis_len) * 4; pix_point += 4) {
 				this-> obj_index[obj_id].second[pix_point] = obj_info.def_colour.r;
 				this-> obj_index[obj_id].second[pix_point + 1] = obj_info.def_colour.g;
@@ -98,16 +170,53 @@ mdl::uint_t mdl::firefly::obj_manager::add(types::coords_t<> __coords, types::sh
 				this-> obj_index[obj_id].second[pix_point + 3] = obj_info.def_colour.a;
 			}
 		}
-	} else
-		this-> obj_index[obj_id].second = __pixmap;
+	} else {
+		if (__pixmap == nullptr) {
+			fprintf(stderr, "obj_manager: can't use pixmap provided as memory has not been allocated for it.\n");
+			__any_error = FFLY_FAILURE;
+			goto clean_up;
+		}
 
+		this-> obj_index[obj_id].second = __pixmap;
+	}
+
+	__any_error = FFLY_SUCCESS;
 	this-> obj_count ++;
 	return obj_id;
+
+	clean_up:
+	if (obj_info.bound_collision != NULL)
+		memory::mem_free(obj_info.bound_collision);
+
+	if (obj_info.collision.edge != NULL)
+		memory::mem_free(obj_info.collision.edge);
+
+	if (obj_info.collision.face != NULL)
+		memory::mem_free(obj_info.collision.face);
+
+	if (obj_info.collision.vertice != NULL)
+		memory::mem_free(obj_info.collision.vertice);
+
+	if (obj_info.edge_coords != NULL)
+		memory::mem_free(obj_info.edge_coords);
+
+	if (obj_info.face_coords != NULL)
+		memory::mem_free(obj_info.face_coords);
+
+	if (obj_info.vertice_coords != NULL)
+		memory::mem_free(obj_info.vertice_coords);
+
+	if (this-> obj_index[obj_id].first != NULL)
+		memory::mem_free(this-> obj_index[obj_id].first);
+
+	if (this-> obj_index[obj_id].second != NULL)
+		memory::mem_free(this-> obj_index[obj_id].second);
 }
 
 void mdl::firefly::obj_manager::del(uint_t __obj_id) {
 	types::obj_info_t& obj_info = *this-> obj_index[__obj_id].first;
 
+	memory::mem_free(obj_info.bound_collision);
 	memory::mem_free(obj_info.collision.edge);
 	memory::mem_free(obj_info.collision.face);
 	memory::mem_free(obj_info.collision.vertice);
@@ -332,11 +441,15 @@ void mdl::firefly::obj_manager::draw_objs() {
 
 	uint_t obj_id = 0;
 	while (obj_id != this-> obj_count) {
+		if (this-> obj_index[obj_id].first == nullptr || this-> obj_index[obj_id].second == nullptr) { obj_id ++; continue; }
+
 		types::obj_info_t& obj_info = *this-> obj_index[obj_id].first;
 		types::pixmap_t obj_pixmap = this-> obj_index[obj_id].second;
 
 		if (graphics::draw_pixmap(obj_info.coords.xaxis, obj_info.coords.yaxis, this-> pixbuff, this-> pb_xlen, this-> pb_ylen, obj_pixmap, obj_info.xaxis_len, obj_info.yaxis_len) == FFLY_FAILURE) {
-			fprintf(stderr, "failed to draw pixmap of object.\n");
+			fprintf(stderr, "obj_manager: failed to draw pixmap for obj with gpu, going to use cpu instead.\n");
+			// code
+
 			return;
 		}
 
@@ -352,6 +465,12 @@ boost::int8_t mdl::firefly::obj_manager::manage() {
 		this-> thread_index.resize(this-> thread_index.size() + 1);
 
 		thr_config_t *thread_config = (thr_config_t *)malloc(sizeof(thr_config_t));
+		if (thread_config == NULL) {
+			fprintf(stderr, "obj_manager: failed to alloc memory for 'thread_config', errno: %d\n", errno);
+			this-> thread_index.resize(this-> thread_index.size() - 1);
+			return FFLY_FAILURE;
+		}
+
 		thread_config-> amount = this-> obj_count;
 		thread_config-> offset = this-> thr_offset;
 		thread_config-> id = thread_id;

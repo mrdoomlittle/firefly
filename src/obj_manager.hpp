@@ -21,6 +21,7 @@
 # include "memory/mem_free.h"
 # include "types/pixmap_t.h"
 # include <set>
+# include <errno.h>
 # include <queue>
 # include <boost/array.hpp>
 # include "types/shape_info_t.hpp"
@@ -55,7 +56,7 @@ class obj_manager {
 		return this-> obj_index[__obj_id].second;
 	}
 
-	uint_t add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, types::pixmap_t __pixmap = nullptr);
+	uint_t add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap = nullptr);
 	void del(uint_t __obj_id);
 	//uint_t add(uint_t __xlen, uint_t __ylen, uint_t __zlen, uint_t __xaxis, uint_t __yaxis, uint_t __zaxis); // return obj_id
 /*

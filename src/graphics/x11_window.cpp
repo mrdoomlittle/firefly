@@ -4,9 +4,19 @@ boost::int8_t mdl::firefly::graphics::x11_window::begin(boost::uint16_t __wd_xax
 	this-> wd_xaxis_len = __wd_xaxis_len;
 	this-> wd_yaxis_len = __wd_yaxis_len;
 	this-> frame_title = (char *)memory::mem_alloc(strlen(__frame_title));
+	if (this-> frame_title == NULL) {
+		fprintf(stderr, "x11_window: failed to alloc memory for replacment frame title, errno: %d\n", errno);
+		return FFLY_FAILURE;
+	}
+
 	memcpy(this-> frame_title, __frame_title, strlen(__frame_title));
 
 	this-> pixbuff = memory::alloc_pixmap(__wd_xaxis_len, __wd_yaxis_len, 1);
+	if (this-> pixbuff == NULL) {
+		fprintf(stderr, "x11_window: failed to alloc memory for pixbuff, errno: %d\n", errno);
+		return FFLY_FAILURE;
+	}
+
 	bzero(this-> pixbuff, (__wd_xaxis_len * __wd_yaxis_len) * 4);
 
 	XVisualInfo * _vis_info;
@@ -74,7 +84,11 @@ boost::int8_t mdl::firefly::graphics::x11_window::begin(boost::uint16_t __wd_xax
 
 	int unsigned screen_count = XScreenCount(_display);
 
-    Window * r_windows = static_cast<Window *>(malloc(screen_count * sizeof(Window)));
+    Window *r_windows = static_cast<Window *>(malloc(screen_count * sizeof(Window)));
+	if (r_windows == NULL) {
+		fprintf(stderr, "x11_window: failed to alloc memory for 'r_windows', errno: %d\n", errno);
+		return FFLY_FAILURE;
+	}
 
     for (std::size_t i = 0; i != screen_count; i ++) {
         r_windows[i] = XRootWindow(_display, i);
