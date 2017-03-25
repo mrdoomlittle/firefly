@@ -3,12 +3,13 @@
 # include <eint_t.hpp>
 # include <boost/cstdint.hpp>
 # include "direction_t.hpp"
+# include <atomic>
 namespace mdl {
 namespace firefly {
 namespace types {
 typedef struct {
 	direction_t direction;
-	uint_t xaxis, yaxis, zaxis;
+	std::atomic<uint_t> xaxis, yaxis, zaxis;
 } velocity_t;
 
 }

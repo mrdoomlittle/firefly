@@ -1,5 +1,5 @@
 # include "cal_dist.hpp"
-mdl::uint_t mdl::firefly::maths::cal_dist(types::coords_t __obj_0, types::coords_t __obj_1) {
+mdl::uint_t mdl::firefly::maths::cal_dist(types::coords_t<> __obj_0, types::coords_t<> __obj_1) {
 	uint_t obj_x0 = 0, obj_y0 = 0;
 	uint_t obj_x1 = 0, obj_y1 = 0;
 

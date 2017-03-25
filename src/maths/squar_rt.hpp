@@ -5,7 +5,12 @@
 namespace mdl {
 namespace firefly {
 namespace maths {
-double squar_rt(double __no);
+//double squar_rt(double __no);
+
+__inline__ double squar_rt(double __no) {
+	return sqrt(__no);
+}
+
 }
 }
 }

@@ -11,7 +11,7 @@
 namespace mdl {
 namespace firefly {
 namespace graphics {
-boost::int8_t draw_bitmap(types::bitmap_t __bitmap, uint_t __bm_xlen, uint_t __bm_ylen, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::coords_t __coords, colour_t __colour);
+boost::int8_t draw_bitmap(types::bitmap_t __bitmap, uint_t __bm_xlen, uint_t __bm_ylen, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::coords_t<> __coords, colour_t __colour);
 }
 }
 }

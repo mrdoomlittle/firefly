@@ -4,6 +4,7 @@
 # include <eint_t.hpp>
 # include <boost/cstdint.hpp>
 # include <cstdio>
+# include "../system/errno.h"
 namespace mdl {
 namespace firefly {
 namespace graphics {

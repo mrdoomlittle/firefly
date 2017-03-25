@@ -20,7 +20,7 @@ boost::int8_t mdl::firefly::graphics::fill_pixmap(boost::uint8_t *__pixmap, uint
 
 	if (pixmap_size == 0) {
 		fprintf(stderr, "error pixmap size must not be zero.\n");
-		return -1;
+		return FFLY_FAILURE;
 	}
 
 	if (_pixmap_size != pixmap_size) {
@@ -28,20 +28,20 @@ boost::int8_t mdl::firefly::graphics::fill_pixmap(boost::uint8_t *__pixmap, uint
 
 		if ((any_error = cudaMalloc((void **)&pixmap, pixmap_size * sizeof(boost::uint8_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
-			return -1;
+			return FFLY_FAILURE;
 		} 
 	}
 
 	if (!initialized) {
 		if ((any_error = cudaMalloc((void **)&colour, sizeof(colour_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
-			return -1;
+			return FFLY_FAILURE;
 		}
 
 		if (__colour.r == 0 && __colour.g == 0 && __colour.b == 0 && __colour.a == 0) {
 			if ((any_error = cudaMemcpy(colour, &__colour, sizeof(colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-				return -1;
+				return FFLY_FAILURE;
 			}
 		}
 
@@ -55,7 +55,7 @@ boost::int8_t mdl::firefly::graphics::fill_pixmap(boost::uint8_t *__pixmap, uint
 	if (_colour.r != __colour.r || _colour.g != __colour.g || _colour.b != __colour.b || _colour.a != __colour.a) {
 		if ((any_error = cudaMemcpy(colour, &__colour, sizeof(colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-			return -1;
+			return FFLY_FAILURE;
 		}
 	}
 
@@ -63,5 +63,5 @@ boost::int8_t mdl::firefly::graphics::fill_pixmap(boost::uint8_t *__pixmap, uint
 
 	cudaMemcpy(__pixmap, pixmap, pixmap_size * sizeof(boost::uint8_t), cudaMemcpyDeviceToHost);
 
-	return 0;
+	return FFLY_SUCCESS;
 }

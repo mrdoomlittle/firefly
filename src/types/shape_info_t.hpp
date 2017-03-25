@@ -6,8 +6,8 @@ namespace mdl {
 namespace firefly {
 namespace types {
 typedef struct {
-	uint_t edges, faces;
-	coords_t **edge_coords, **face_coords;
+	uint_t edges, faces, vertices;
+	coords_t<> (*edge_coords)[2], (*face_coords)[2], (*vertice_coords)[2];
 } shape_info_t;
 
 }

@@ -98,9 +98,16 @@ boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) 
 	return FFLY_SUCCESS;
 }
 
-boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __extern_loop)(boost::int8_t, portal_t *)) {
-//	firefly::graphics::window window;
+boost::int8_t mdl::ffly_client::de_init() {
+# ifdef OBJ_MANAGER
+	if (this-> obj_manager != nullptr)
+		this-> obj_manager-> de_init();
+# endif
+}
 
+boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __extern_loop)(boost::int8_t, portal_t *, void *), void *__this) {
+//	firefly::graphics::window window;
+	printf("wx: %d, wy: %d\n", this-> win_xlen, this-> win_ylen);
 	if (window.init(this-> win_xlen, this-> win_ylen, __frame_title) != FFLY_SUCCESS) return FFLY_FAILURE;
 
 	if (window.begin() != FFLY_SUCCESS) return FFLY_FAILURE;
@@ -134,7 +141,7 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 			if (this-> recv_cam_frame() == FFLY_FAILURE) break;
 		}
 
-		__extern_loop(0, &this-> portal);
+		__extern_loop(0, &this-> portal, __this);
 
 		if (this-> server_ipaddr != nullptr && !this-> server_connected) {
 			if (this-> connect_to_server(sock) == -1) break;
@@ -161,6 +168,8 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 	window.wd_handler.add_wd_flag(WD_TO_CLOSE);
 
 	while(!window.wd_handler.is_wd_flag(WD_CLOSED)){}
+
+	this-> de_init();
 
 	return 0;
 }

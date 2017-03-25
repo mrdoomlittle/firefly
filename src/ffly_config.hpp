@@ -17,4 +17,5 @@
 # define FFLY_DIR_PUSH 1
 # define FFLY_DIR_PULL -1
 # define FFLY_DIR_NONE 0
+
 # endif /*__ffly__config__hpp*/

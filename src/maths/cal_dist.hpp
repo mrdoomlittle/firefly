@@ -8,7 +8,7 @@
 namespace mdl {
 namespace firefly {
 namespace maths {
-uint_t cal_dist(types::coords_t __obj_0, types::coords_t __obj_1);
+uint_t cal_dist(types::coords_t<> __obj_0, types::coords_t<> __obj_1);
 }
 }
 }

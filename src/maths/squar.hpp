@@ -4,7 +4,10 @@
 namespace mdl {
 namespace firefly {
 namespace maths {
-double squar(double __no);
+//double squar(double __no);
+__inline__ double squar(double __no) {
+	return __no * __no;
+}
 }
 }
 }

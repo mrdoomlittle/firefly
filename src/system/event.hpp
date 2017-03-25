@@ -21,7 +21,12 @@ class event {
 		KEY_RELEASED,
 		MOUSE_CLICK
 	};
-
+	enum {
+		WD_KEY_W = 25,
+		WD_KEY_A = 38,
+		WD_KEY_S = 39,
+		WD_KEY_D = 40
+	};
 };
 }
 }

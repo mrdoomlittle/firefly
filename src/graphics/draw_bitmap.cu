@@ -1,19 +1,21 @@
 # include "draw_bitmap.hpp"
-__global__ void cu_draw_bitmap(mdl::firefly::types::bitmap_t __bitmap, mdl::firefly::types::pixmap_t __pixbuff, mdl::uint_t *__pb_xlen, mdl::firefly::types::coords_t *__coords, mdl::firefly::graphics::colour_t *__colour) {
+__global__ void cu_draw_bitmap(mdl::firefly::types::bitmap_t __bitmap, mdl::firefly::types::pixmap_t __pixbuff, mdl::uint_t *__pb_xlen, mdl::firefly::types::coords_t<> *__coords, mdl::firefly::graphics::colour_t *__colour) {
 	mdl::uint_t bit_point = threadIdx.x + (blockIdx.x * blockDim.x);
 	mdl::uint_t pix_point = ((threadIdx.x + __coords-> xaxis) + ((blockIdx.x + __coords-> yaxis) * (*__pb_xlen))) * 4;
 
+if (!__bitmap[bit_point] == 0x0) {
 	__pixbuff[pix_point] = __colour-> r * __bitmap[bit_point] / 255;
 	__pixbuff[pix_point + 1] = __colour-> g * __bitmap[bit_point] / 255;
 	__pixbuff[pix_point + 2] = __colour-> b * __bitmap[bit_point] / 255;
-	__pixbuff[pix_point + 3] = __colour-> a * __bitmap[bit_point] / 255;
+	__pixbuff[pix_point + 3] = __colour-> a;
+}
 }
 
-boost::int8_t mdl::firefly::graphics::draw_bitmap(types::bitmap_t __bitmap, uint_t __bm_xlen, uint_t __bm_ylen, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::coords_t __coords, colour_t __colour) {
+boost::int8_t mdl::firefly::graphics::draw_bitmap(types::bitmap_t __bitmap, uint_t __bm_xlen, uint_t __bm_ylen, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::coords_t<> __coords, colour_t __colour) {
 	static types::bitmap_t bitmap = nullptr;
 	static types::pixmap_t pixbuff = nullptr;
 	static uint_t *pb_xlen = nullptr;
-	static types::coords_t *coords = nullptr;
+	static types::coords_t<> *coords = nullptr;
 	static colour_t *colour = nullptr;
 	static bool initialized = false;
 	cudaError_t any_error = cudaSuccess;
@@ -24,7 +26,7 @@ boost::int8_t mdl::firefly::graphics::draw_bitmap(types::bitmap_t __bitmap, uint
 			return FFLY_FAILURE;
 		}
 
-		if ((any_error = cudaMalloc((void **)&coords, sizeof(types::coords_t))) != cudaSuccess) {
+		if ((any_error = cudaMalloc((void **)&coords, sizeof(types::coords_t<>))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, errno: %d\n", any_error);
 			return FFLY_FAILURE;
 		}
@@ -45,7 +47,7 @@ boost::int8_t mdl::firefly::graphics::draw_bitmap(types::bitmap_t __bitmap, uint
 
 
 		if (__coords.xaxis == 0 && __coords.yaxis == 0) {
-			if ((any_error = cudaMemcpy(coords, &__coords, sizeof(types::coords_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+			if ((any_error = cudaMemcpy(coords, &__coords, sizeof(types::coords_t<>), cudaMemcpyHostToDevice)) != cudaSuccess) {
 				fprintf(stderr, "cuda: failed to call Memcpy, errno: %d\n", any_error);
 				return FFLY_FAILURE;
 			}
@@ -74,12 +76,12 @@ boost::int8_t mdl::firefly::graphics::draw_bitmap(types::bitmap_t __bitmap, uint
 		_pb_xlen = __pb_xlen;
 	}
 
-	static types::coords_t _coords = {
+	static types::coords_t<> _coords = {
 		.xaxis = 0,
 		.yaxis = 0
 	};
 	if (_coords.xaxis != __coords.xaxis || _coords.yaxis != __coords.yaxis) {
-		if ((any_error = cudaMemcpy(coords, &__coords, sizeof(types::coords_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+		if ((any_error = cudaMemcpy(coords, &__coords, sizeof(types::coords_t<>), cudaMemcpyHostToDevice)) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Memcpy, errno: %d\n", any_error);
 			return FFLY_FAILURE;
 		}

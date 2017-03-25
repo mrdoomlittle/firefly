@@ -1,17 +1,12 @@
 # include "x11_window.hpp"
 
-// NOTE: clean up
-boost::int8_t mdl::firefly::graphics::x11_window::init(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
-//	if (this-> init_called) return 1;
-
-	this-> add_wd_flag(X11_WD_OPEN, true);
-
+boost::int8_t mdl::firefly::graphics::x11_window::begin(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
 	this-> wd_xaxis_len = __wd_xaxis_len;
 	this-> wd_yaxis_len = __wd_yaxis_len;
-	this-> frame_title = __frame_title;
+	this-> frame_title = (char *)memory::mem_alloc(strlen(__frame_title));
+	memcpy(this-> frame_title, __frame_title, strlen(__frame_title));
 
 	this-> pixbuff = memory::alloc_pixmap(__wd_xaxis_len, __wd_yaxis_len, 1);
-	//this-> pixbuff = static_cast<boost::uint8_t *>(malloc((__wd_xaxis_len * __wd_yaxis_len) * 4));
 	bzero(this-> pixbuff, (__wd_xaxis_len * __wd_yaxis_len) * 4);
 
 	XVisualInfo * _vis_info;
@@ -28,26 +23,29 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(boost::uint16_t __wd_xaxi
     XEvent _xevent;
     Window _rwindow;
 
-	_display = XOpenDisplay(NULL);
-    if (_display == NULL) {
+    if ((_display = XOpenDisplay(NULL)) == NULL) {
         printf("display error.\n");
-        return -1;
+        return FFLY_FAILURE;
     }
 
 	int _screen = DefaultScreen(_display);
 
     _rwindow = XRootWindow(_display, 0);
 
-    _vis_info = glXChooseVisual(_display, 0, att);
+	if ((_vis_info = glXChooseVisual(_display, 0, att)) == NULL) {
+		fprintf(stderr, "failed to set visual info.\n");
+		return FFLY_FAILURE;
+	}
+
 
     _color_map = XCreateColormap(_display, _rwindow, _vis_info-> visual, AllocNone);
 
     _win_att.colormap = _color_map;
-    _win_att.event_mask = ExposureMask | KeyPressMask;
+    _win_att.event_mask = 0x0;
 
     _window = XCreateWindow(_display, _rwindow, 0, 0, __wd_xaxis_len, __wd_yaxis_len, 0, _vis_info-> depth, InputOutput, _vis_info-> visual, CWColormap | CWEventMask, &_win_att);
 
-	XSelectInput(_display, _window, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask);
+	XSelectInput(_display, _window, ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | StructureNotifyMask);
 
     XMapWindow(_display, _window);
 
@@ -67,6 +65,11 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(boost::uint16_t __wd_xaxi
     XSetWMNormalHints(_display, _window, &_size_hints);
 
     GLXContext _glx_context = glXCreateContext(_display, _vis_info, NULL, GL_TRUE);
+	if (!_glx_context) {
+		fprintf(stderr, "failed to create glx context.\n");
+		return FFLY_FAILURE;
+	}
+
     glXMakeCurrent(_display, _window, _glx_context);
 
 	int unsigned screen_count = XScreenCount(_display);
@@ -87,37 +90,105 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(boost::uint16_t __wd_xaxi
 
 	int w_xpos, w_ypos, m_xpos, m_ypos, r_mxpos, r_mypos;
 	int unsigned w_width, w_height, w_border_width, w_depth, m_mask;
-	Window child, root = XRootWindow(_display, 0);
 
-	auto begin = std::chrono::high_resolution_clock::now();
+	system::stop_watch fps_timer;
+	fps_timer.begin();
 
-	uint_t nanoseconds_in_sec = 100000000;
-	double time_each_frame = (double(nanoseconds_in_sec)/double(this-> fps_mark));
+	uint_t time_each_frame = 100000000/this-> fps_mark;
+
+	Window dmmy_child;
+	this-> add_wd_flag(FLG_WD_OPEN, true);
+	do {
+		XTranslateCoordinates(_display, _window, XRootWindow(_display, 0), 0, 0, &this-> wd_coords.xaxis, &this-> wd_coords.yaxis, &dmmy_child);
+
+		for (std::size_t o = 0; o != screen_count; o ++) {
+			Window dmmy_root;
+			int dmmy_xaxis, dmmy_yaxis;
+			if (XQueryPointer(_display, r_windows[o], &dmmy_root, &dmmy_child, &this-> mouse_coords.root.xaxis, &this-> mouse_coords.root.yaxis, &dmmy_xaxis, &dmmy_yaxis, &m_mask)) break;
+		}
+
+		if ((this-> mouse_coords.root.xaxis > this-> wd_coords.xaxis && this-> mouse_coords.root.xaxis < (this-> wd_coords.xaxis + __wd_xaxis_len))
+			&& (this-> mouse_coords.root.yaxis > this-> wd_coords.yaxis && this-> mouse_coords.root.yaxis < (this-> wd_coords.yaxis + __wd_yaxis_len))) {
+			this-> mouse_coords.wd.xaxis = (this-> mouse_coords.root.xaxis - this-> wd_coords.xaxis);
+			this-> mouse_coords.wd.yaxis = (this-> mouse_coords.root.yaxis - this-> wd_coords.yaxis);
+
+			this-> contains_pointer = true;
+		} else
+			this-> contains_pointer = false;
+
+		while (XPending(_display) > 0) {
+			XNextEvent(_display, &_xevent);
+			switch(_xevent.type) {
+				case ClientMessage:
+					goto end;
+
+				case KeyPress:
+					this-> key_press = true;
+					this-> key_code = _xevent.xkey.keycode;
+				break;
+
+				case KeyRelease:
+					this-> key_press = false;
+				break;
+
+				case ButtonPress:
+					this-> button_press = true;
+					this-> button_code = _xevent.xbutton.button;
+				break;
+
+				case ButtonRelease:
+					this-> button_press = false;
+				break;
+			}
+		}
+
+		fps_timer.time_point();
+		if (fps_timer.get_delta<std::chrono::nanoseconds>() < time_each_frame) continue;
+
+		this-> add_wd_flag(FLG_WD_WAITING);
+
+		if (!this-> is_wd_flag(FLG_WD_DONE_DRAW)) continue;
+
+		glDrawPixels(__wd_xaxis_len, __wd_yaxis_len, GL_RGBA, GL_UNSIGNED_BYTE, this-> pixbuff);
+		glXSwapBuffers(_display, _window);
+
+		this-> rm_wd_flag(FLG_WD_DONE_DRAW);
+
+		if (this-> is_wd_flag(FLG_WD_WAITING)) continue;
+
+		fps_timer.begin();
+	} while (!this-> is_wd_flag(FLG_WD_TO_CLOSE));
+/*
 	while(!this-> is_wd_flag(X11_WD_TO_CLOSE))
 	{
 		auto end = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
 		if (duration.count() < time_each_frame) continue;
 
-		this-> add_wd_flag(X11_WD_WAITING);
-		this-> rm_wd_flag(X11_WD_DONE_DRAW);
+//		this-> add_wd_flag(X11_WD_WAITING);
+//		this-> rm_wd_flag(X11_WD_DONE_DRAW);
 
-		XTranslateCoordinates(_display, _window, root, 0, 0, &this-> window_coords.xaxis, &this-> window_coords.yaxis, &child);
+		XTranslateCoordinates(_display, _window, XRootWindow(_display, 0), 0, 0, &this-> wd_coords.xaxis, &this-> wd_coords.yaxis, &dmmy_child);
 
 		for (std::size_t o = 0; o != screen_count; o ++) {
-			bool resault = XQueryPointer(_display, r_windows[o], &_rwindow, &child, &this-> mouse_coords.r_xaxis, &this-> mouse_coords.r_yaxis, &this-> mouse_coords.s_xaxis, &this-> mouse_coords.s_yaxis, &m_mask);
-			if (resault) break;
+			// X11 does not allow a null or nullptr to be passed thru without error
+			Window dmmy_root;
+			int dmmy_xaxis, dmmy_yaxis;
+			if (XQueryPointer(_display, r_windows[o], &dmmy_root, &dmmy_child, &this-> mouse_coords.root.xaxis, &this-> mouse_coords.root.yaxis, &dmmy_xaxis, &dmmy_yaxis, &m_mask)) break;
 		}
 
-		if ((this-> mouse_coords.s_xaxis > this-> window_coords.xaxis && this-> mouse_coords.s_xaxis < (this-> window_coords.xaxis + __wd_xaxis_len))
-		&& (this-> mouse_coords.s_yaxis > this-> window_coords.yaxis && this-> mouse_coords.s_yaxis < (this-> window_coords.yaxis + __wd_yaxis_len))) {
+		if ((this-> mouse_coords.root.xaxis > this-> wd_coords.xaxis && this-> mouse_coords.root.xaxis < (this-> wd_coords.xaxis + __wd_xaxis_len))
+			&& (this-> mouse_coords.root.yaxis > this-> wd_coords.yaxis && this-> mouse_coords.root.yaxis < (this-> wd_coords.yaxis + __wd_yaxis_len))) {
 
-			this-> mouse_coords.w_xaxis = (this-> mouse_coords.s_xaxis - this-> window_coords.xaxis);
-			this-> mouse_coords.w_yaxis = (this-> mouse_coords.s_yaxis - this-> window_coords.yaxis);
-		} else {
-			this-> mouse_coords.w_xaxis = 0;
-            this-> mouse_coords.w_yaxis = 0;
-		}
+			this-> mouse_coords.wd.xaxis = (this-> mouse_coords.root.xaxis - this-> wd_coords.xaxis);
+			this-> mouse_coords.wd.yaxis = (this-> mouse_coords.root.yaxis - this-> wd_coords.yaxis);
+
+			this-> mouse_inside_wd = true;
+		} else
+			this-> mouse_inside_wd = false;
+
+//		printf("mc_rx: %d, mc_ry: %d\n", this-> mouse_coords.root.xaxis, this-> mouse_coords.root.yaxis);
+//		printf("mc_wdx: %d, mc_wdy: %d\n", this-> mouse_coords.wd.xaxis, this-> mouse_coords.wd.yaxis);
 
 		while (XPending(_display) > 0) {
             XNextEvent(_display, &_xevent);
@@ -139,17 +210,16 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(boost::uint16_t __wd_xaxi
 			if (this-> key_press) printf("key press: %d\n", this-> key_code);
         }
 
-		if (!this-> is_wd_flag(X11_WD_DONE_DRAW)) continue;
+//		if (!this-> is_wd_flag(X11_WD_DONE_DRAW)) continue;
 
 		glDrawPixels(__wd_xaxis_len, __wd_yaxis_len, GL_RGBA, GL_UNSIGNED_BYTE, this-> pixbuff);
-
 		glXSwapBuffers(_display, _window);
 
 		begin = std::chrono::high_resolution_clock::now();
 
-		if (this-> is_wd_flag(X11_WD_WAITING)) continue;
+//		if (this-> is_wd_flag(X11_WD_WAITING)) continue;
 	}
-
+*/
 	end:
 
 	printf("closing window.\n");
@@ -160,11 +230,20 @@ boost::int8_t mdl::firefly::graphics::x11_window::init(boost::uint16_t __wd_xaxi
     XCloseDisplay(_display);
     std::free(r_windows);
 
+	memory::mem_free(this-> frame_title);
 	memory::mem_free(this-> pixbuff);
 
-	this-> add_wd_flag(X11_WD_CLOSED, true);
+	this-> add_wd_flag(FLG_WD_CLOSED, true);
+	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::firefly::graphics::x11_window::begin(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
-	boost::thread(boost::bind(&x11_window::init, this, __wd_xaxis_len, __wd_yaxis_len, __frame_title));
+boost::int8_t mdl::firefly::graphics::x11_window::open_in_thread(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
+	boost::thread(boost::bind(&x11_window::begin, this, __wd_xaxis_len, __wd_yaxis_len, __frame_title));
+	return FFLY_SUCCESS;
 }
+
+/*
+int main() {
+	mdl::firefly::graphics::x11_window x11_window;
+	x11_window.begin(640, 640, "Hello World");
+}*/

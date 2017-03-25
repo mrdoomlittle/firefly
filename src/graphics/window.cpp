@@ -25,7 +25,7 @@ boost::int8_t mdl::firefly::graphics::window::begin() {
 		return FFLY_FAILURE;
 	}
 
-	this-> wd_handler.begin(this-> wd_xaxis_len, this-> wd_yaxis_len, this-> frame_title);
+	this-> wd_handler.open_in_thread(this-> wd_xaxis_len, this-> wd_yaxis_len, this-> frame_title);
 }
 
 mdl::firefly::types::pixmap_t mdl::firefly::graphics::window::get_pixbuff() {
@@ -40,3 +40,14 @@ boost::int8_t mdl::firefly::graphics::window::set_pixbuff(types::pixmap_t __pixm
 
 	return FFLY_SUCCESS;
 }
+/*
+int main() {
+	mdl::firefly::graphics::window window;
+	window.init(640, 640, "Hello World");
+	window.begin();
+
+	do {
+//		printf("%d\n", window.wd_handler.key_code);
+//		printf("%d\n", window
+	} while (1);
+}*/

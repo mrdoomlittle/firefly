@@ -7,9 +7,11 @@ namespace mdl {
 namespace firefly {
 namespace types {
 typedef struct {
-	coords_t coords;
+	coords_t<> coords;
 	uint_t xaxis_len, yaxis_len;
 	bool enabled, hover_enabled, mouse_hovering;
+	bool press_enabled, already_pressed;
+	void (* press_fptr) (uint_t, int) = nullptr;
 	void (* hover_fptr) (uint_t) = nullptr;
 	pixmap_t pixmap;
 } btn_info_t;

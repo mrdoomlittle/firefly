@@ -175,7 +175,7 @@ boost::int8_t draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__
 }
 */
 # elif defined(USING_CUDA)
-boost::int8_t draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, boost::uint8_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen);
+boost::int8_t draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, boost::uint8_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen, boost::uint16_t __angle = 0);
 # endif
 }
 }

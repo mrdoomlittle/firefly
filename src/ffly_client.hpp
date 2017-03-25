@@ -19,6 +19,10 @@
 # include "graphics/window.hpp"
 # include "types/layer_info_t.hpp"
 # include "system/event.hpp"
+
+# ifdef OBJ_MANAGER
+#	include "obj_manager.hpp"
+# endif
 namespace mdl { class ffly_client
 {
 	public:
@@ -35,6 +39,8 @@ namespace mdl { class ffly_client
 	void cu_clean() {
 		cudaDeviceReset();
 	}
+
+	boost::int8_t de_init();
 
 	typedef struct {
 		uint_t fps_count() {
@@ -85,7 +91,7 @@ namespace mdl { class ffly_client
 	boost::int8_t init(firefly::types::init_opt_t __init_options);
 
 	boost::uint8_t begin(char const *__frame_title,
-		void (* __extern_loop)(boost::int8_t, portal_t*)
+		void (* __extern_loop)(boost::int8_t, portal_t*, void *), void *__this
 	);
 
 	firefly::graphics::window window;
@@ -124,13 +130,20 @@ namespace mdl { class ffly_client
 	uint_t connect_trys = 0;
 
 	firefly::asset_manager asset_manager;
+# ifdef OBJ_MANAGER
+	firefly::obj_manager *obj_manager = nullptr;
+	void manage_objs() {
+		if (this-> obj_manager == nullptr) return;
+		this-> obj_manager-> manage();
+	}
+# endif
 	private:
 	firefly::types::init_opt_t init_options;
 	firefly::types::client_info_t client_info;
 
 	firefly::networking::tcp_client tcp_stream;
 	firefly::networking::udp_client udp_stream;
-	uint_t win_xlen = 0, win_ylen = 0;
+	uint_t const win_xlen = 0, win_ylen = 0;
 };
 }
 

@@ -14,6 +14,7 @@
 # include "fill_pixmap.hpp"
 # include "../types/colour_t.hpp"
 # include "../types/coords_t.hpp"
+
 # define WD_TO_CLOSE 16
 # define WD_CLOSED 1
 # define WD_OPEN 2
@@ -40,20 +41,44 @@ class window {
 		fill_pixmap(this-> get_pixbuff(), this-> wd_xaxis_len, this-> wd_yaxis_len, __colour);
 	}
 
-	types::coords_t get_wd_coords() {
-		types::coords_t wd_coords = {
-			wd_handler.window_coords.xaxis,
-			wd_handler.window_coords.yaxis,
-		};
-		return wd_coords;
+	types::coords_t<boost::int16_t> get_wd_coords() {
+# if defined(USING_XCB)
+		return this-> wd_handler.wd_coords;
+# endif
+
+# if defined(USING_X11)
+
+	types::coords_t<boost::int16_t> wd_coords = {
+		.xaxis = (boost::int16_t)this-> wd_handler.wd_coords.xaxis,
+		.yaxis = (boost::int16_t)this-> wd_handler.wd_coords.yaxis
+	};
+
+	return wd_coords;
+# endif
 	}
 
-	types::coords_t get_mouse_coords() {
-		types::coords_t mouse_coords = {
-			wd_handler.mouse_coords.w_xaxis,
-			wd_handler.mouse_coords.w_yaxis
+	types::mouse_coords_t<boost::int16_t, boost::uint16_t> get_mouse_coords() {
+# if defined(USING_XCB)
+		return this-> wd_handler.mouse_coords;
+# endif
+
+# if defined(USING_X11)
+		types::coords_t<boost::uint16_t> wd_coords = {
+			.xaxis = (boost::uint16_t)this-> wd_handler.mouse_coords.wd.xaxis,
+			.yaxis = (boost::uint16_t)this-> wd_handler.mouse_coords.wd.yaxis
 		};
+
+		types::coords_t<boost::int16_t> root_coords = {
+			.xaxis = (boost::int16_t)this-> wd_handler.mouse_coords.root.xaxis,
+			.yaxis = (boost::int16_t)this-> wd_handler.mouse_coords.root.yaxis
+		};
+
+		types::mouse_coords_t<boost::int16_t, boost::uint16_t> mouse_coords;
+		mouse_coords.wd = wd_coords;
+		mouse_coords.root = root_coords;
+
 		return mouse_coords;
+# endif
 	}
 
 	private:

@@ -11,7 +11,8 @@ CURR_DIR=${CURDIR}
 
 #LIBRARY_OBJS=intlen/src/intlen.o to_string/src/to_string.o strcmb/src/strcmb.o getdigit/src/getdigit.
 FFLY_OBJECTS=
-
+FFLY_WINDOW=
+EXTRA_DEFINES=
 #tt:
 #	echo "$(CUDA)"
 
@@ -23,16 +24,19 @@ else ifeq ($(FFLY_TARGET), -DFFLY_SERVER)
 	src/worker_manager.o src/memory/alloc_pixmap.o src/graphics/draw_pixmap.clo
 
 else ifeq ($(FFLY_TARGET), -DFFLY_CLIENT)
-	FFLY_OBJECTS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/x11_window.o src/graphics/png_loader.o \
+	FFLY_OBJECTS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o \
 	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o \
 	src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o \
-	src/layer_manager.o src/obj_manager.o src/maths/cal_dist.o src/maths/squar_rt.o src/maths/squar.o src/gravy_manager.o src/flip_direction.o
+	src/layer_manager.o src/obj_manager.o src/maths/cal_dist.o src/gravy_manager.o src/flip_dir.o
 	LDFLAGS += -lX11 -lGL -lGLU -lglut
+	FFLY_WINDOW = -DUSING_X11
+	EXTRA_DEFINES= -DOBJ_MANAGER
 else ifeq ($(FFLY_TARGET), -DFFLY_STUDIO)
-	FFLY_OBJECTS += src/graphics/x11_window.o src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
-	src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o #src/ffly_studio.o
-	LDFLAGS += -lX11 -lGL -lGLU -lglut -lfreetype -lm
+	FFLY_OBJECTS += src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
+	src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o src/graphics/png_loader.o#src/ffly_studio.o
+	LDFLAGS += -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple
 	CXX_IFLAGS += -I/usr/include/freetype2 $(CUDART_INC)
+	FFLY_WINDOW = -DUSING_X11
 else
 	FFLY_OBJECTS=
 	FFLY_TARGET=-DFFLY_NONE
@@ -47,6 +51,12 @@ endif
 FFLY_OBJECTS += src/memory/mem_alloc.o src/memory/mem_free.o #src/memory/alloc_pixmap.o
 CXXFLAGS += $(FFLY_TARGET)
 
+ifeq ($(FFLY_WINDOW), -DUSING_X11)
+	FFLY_OBJECTS += src/graphics/x11_window.o
+else ifeq ($(FFLY_WINDOW), -DUSING_XCB)
+	FFLY_OBJECTS += src/graphics/xcb_window.o
+endif
+
 ifeq ($(FFLY_TARGET), -DFFLY_WORKER)
 all: ffly_worker
 else ifeq ($(FFLY_TARGET), -DFFLY_SERVER)
@@ -57,36 +67,34 @@ else ifeq ($(FFLY_TARGET), -DFFLY_STUDIO)
 all: ffly_studio
 endif
 
-# using x11 for now
-
-FFLY_DEFINES=$(GPU_CL_TYPE) $(ARC) -DUSING_X11
+FFLY_DEFINES=$(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
 
 src/graphics/x11_window.o: src/graphics/x11_window.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/x11_window.o src/graphics/x11_window.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/x11_window.o src/graphics/x11_window.cpp
 
 src/graphics/png_loader.o: src/graphics/png_loader.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/png_loader.o src/graphics/png_loader.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/png_loader.o src/graphics/png_loader.cpp
 
 src/networking/tcp_server.o: src/networking/tcp_server.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/networking/tcp_server.o src/networking/tcp_server.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/networking/tcp_server.o src/networking/tcp_server.cpp
 
 src/networking/tcp_client.o: src/networking/tcp_client.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/networking/tcp_client.o src/networking/tcp_client.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/networking/tcp_client.o src/networking/tcp_client.cpp
 
 src/networking/udp_server.o: src/networking/udp_server.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/networking/udp_server.o src/networking/udp_server.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/networking/udp_server.o src/networking/udp_server.cpp
 
 src/networking/udp_client.o: src/networking/udp_client.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/networking/udp_client.o src/networking/udp_client.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/networking/udp_client.o src/networking/udp_client.cpp
 
 src/ffly_worker.o: src/uni_worker.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_worker.o src/uni_worker.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_worker.o src/uni_worker.cpp
 
 src/ffly_server.o: src/ffly_server.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_server.o src/ffly_server.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_server.o src/ffly_server.cpp
 
 src/ffly_client.o: src/ffly_client.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) $(CUDART_INC) -o src/ffly_client.o src/ffly_client.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) $(CUDART_INC) -o src/ffly_client.o src/ffly_client.cpp
 
 src/graphics/draw_rect.o: src/graphics/draw_rect.cu
 	nvcc -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_rect.o src/graphics/draw_rect.cu
@@ -95,10 +103,10 @@ src/graphics/draw_skelmap.o: src/graphics/draw_skelmap.cu
 	nvcc -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_skelmap.o src/graphics/draw_skelmap.cu
 
 src/graphics/skelmap_loader.o: src/graphics/skelmap_loader.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/skelmap_loader.o src/graphics/skelmap_loader.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/skelmap_loader.o src/graphics/skelmap_loader.cpp
 
 src/asset_manager.o: src/asset_manager.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/asset_manager.o src/asset_manager.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/asset_manager.o src/asset_manager.cpp
 
 src/graphics/draw_pixmap.o: src/graphics/draw_pixmap.cu
 	nvcc -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_pixmap.o src/graphics/draw_pixmap.cu
@@ -107,64 +115,64 @@ src/graphics/fill_pixmap.o: src/graphics/fill_pixmap.cu
 	nvcc -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/fill_pixmap.o src/graphics/fill_pixmap.cu
 
 src/tests/layering.o: src/tests/layering.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/tests/layering.o src/tests/layering.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/tests/layering.o src/tests/layering.cpp
 
 src/maths/rotate_point.o: src/maths/rotate_point.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/rotate_point.o src/maths/rotate_point.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/rotate_point.o src/maths/rotate_point.cpp
 
 src/graphics/scale_pixmap.o: src/graphics/scale_pixmap.cu
 	nvcc -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/scale_pixmap.o src/graphics/scale_pixmap.cu
 
 src/opencl_helper.o: src/opencl_helper.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/opencl_helper.o src/opencl_helper.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/opencl_helper.o src/opencl_helper.cpp
 
 src/worker_manager.o: src/worker_manager.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/worker_manager.o src/worker_manager.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/worker_manager.o src/worker_manager.cpp
 
 src/memory/alloc_pixmap.o:src/memory/alloc_pixmap.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/alloc_pixmap.o src/memory/alloc_pixmap.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/alloc_pixmap.o src/memory/alloc_pixmap.cpp
 
 src/graphics/draw_pixmap.clo: src/graphics/draw_pixmap.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_pixmap.clo src/graphics/draw_pixmap.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_pixmap.clo src/graphics/draw_pixmap.cpp
 
 src/memory/mem_alloc.o: src/memory/mem_alloc.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_alloc.o src/memory/mem_alloc.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_alloc.o src/memory/mem_alloc.cpp
 
 src/memory/mem_free.o: src/memory/mem_free.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.o src/memory/mem_free.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.o src/memory/mem_free.cpp
 
 src/graphics/window.o: src/graphics/window.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/window.o src/graphics/window.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/window.o src/graphics/window.cpp
 
 src/layer_manager.o: src/layer_manager.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/layer_manager.o src/layer_manager.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/layer_manager.o src/layer_manager.cpp
 
 src/obj_manager.o: src/obj_manager.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/obj_manager.o src/obj_manager.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/obj_manager.o src/obj_manager.cpp
 
 src/maths/cal_dist.o: src/maths/cal_dist.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/cal_dist.o src/maths/cal_dist.cpp
-
-src/maths/squar_rt.o: src/maths/squar_rt.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/squar_rt.o src/maths/squar_rt.cpp
-
-src/maths/squar.o: src/maths/squar.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/squar.o src/maths/squar.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/cal_dist.o src/maths/cal_dist.cpp
 
 src/gravy_manager.o: src/gravy_manager.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/gravy_manager.o src/gravy_manager.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/gravy_manager.o src/gravy_manager.cpp
 
-src/flip_direction.o: src/flip_direction.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/flip_direction.o src/flip_direction.cpp
+src/flip_dir.o: src/flip_dir.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/flip_dir.o src/flip_dir.cpp
 
 src/ffly_studio.o: src/ffly_studio.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_studio.o src/ffly_studio.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_studio.o src/ffly_studio.cpp
 
 src/gui/btn_manager.o: src/gui/btn_manager.cpp
-	g++ -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/gui/btn_manager.o src/gui/btn_manager.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/gui/btn_manager.o src/gui/btn_manager.cpp
 
 src/graphics/draw_bitmap.o: src/graphics/draw_bitmap.cu
 	nvcc -c -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_bitmap.o src/graphics/draw_bitmap.cu
+
+src/pulse_audio.o: src/pulse_audio.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/pulse_audio.o src/pulse_audio.cpp
+
+src/graphics/xcb_window.o: src/graphics/xcb_window.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/xcb_window.o src/graphics/xcb_window.cpp
 
 relocate_headers:
 	if ! [ -d $(CURR_DIR)/inc/firefly ]; then \
@@ -209,7 +217,7 @@ relocate_headers:
 		mkdir $(CURR_DIR)/inc/firefly/gui; \
 	fi
 
-	cp $(CURR_DIR)/src/gui/*.h $(CURR_DIR)/inc/firefly/gui
+	#cp $(CURR_DIR)/src/gui/*.h $(CURR_DIR)/inc/firefly/gui
 	cp $(CURR_DIR)/src/gui/*.hpp $(CURR_DIR)/inc/firefly/gui
 
 	cp $(CURR_DIR)/src/system/*.hpp $(CURR_DIR)/inc/firefly/system

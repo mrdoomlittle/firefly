@@ -5,9 +5,10 @@
 namespace mdl {
 namespace firefly {
 namespace types {
-typedef struct {
-	uint_t xaxis, yaxis, zaxis;
-} coords_t;
+template <typename _T = uint_t>
+struct coords_t {
+	_T xaxis, yaxis, zaxis;
+};
 
 }
 }
