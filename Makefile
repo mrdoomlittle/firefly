@@ -352,5 +352,5 @@ clean:
 	cd strcmb; make clean; cd ../;
 	cd tagged_memory; make clean; cd ../;
 
-	rm -f src/gui/*.o src/memory/*.o src/graphics/*.o src/networking/*.o src/maths/*.o src/tests/*.o src/*.o *.exec #bin/*.exec
+	rm -f src/gui/*.o src/memory/*.o src/graphics/*.o src/graphics/*.clo src/networking/*.o src/maths/*.o src/tests/*.o src/*.o *.exec #bin/*.exec
 	rm -rf $(CURR_DIR)/inc/* $(CURR_DIR)/lib/*
