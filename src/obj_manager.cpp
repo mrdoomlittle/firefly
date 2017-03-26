@@ -448,9 +448,7 @@ void mdl::firefly::obj_manager::draw_objs() {
 
 		if (graphics::draw_pixmap(obj_info.coords.xaxis, obj_info.coords.yaxis, this-> pixbuff, this-> pb_xlen, this-> pb_ylen, obj_pixmap, obj_info.xaxis_len, obj_info.yaxis_len) == FFLY_FAILURE) {
 			fprintf(stderr, "obj_manager: failed to draw pixmap for obj with gpu, going to use cpu instead.\n");
-			// code
-
-			return;
+			graphics::cpu_draw_pixmap(obj_info.coords.xaxis, obj_info.coords.yaxis, this-> pixbuff, this-> pb_xlen, this-> pb_ylen, obj_pixmap, obj_info.xaxis_len, obj_info.yaxis_len);
 		}
 
 		obj_id ++;

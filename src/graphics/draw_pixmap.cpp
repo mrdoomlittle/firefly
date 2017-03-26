@@ -1,5 +1,34 @@
 # include "draw_pixmap.hpp"
 
+boost::int8_t mdl::firefly::graphics::cpu_draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, boost::uint8_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen) {
+	uint_t xaxis_point = 0, yaxis_point = 0;
+	while (yaxis_point != __pm_ylen) {
+		while (xaxis_point != __pm_xlen)
+		{
+			mdl::uint_t pixbuff_point = ((xaxis_point + __xoffset) + (yaxis_point * __pb_xlen)) * 4;
+			mdl::uint_t pixmap_point = (xaxis_point + (yaxis_point * __pm_xlen)) * 4;
+
+			boost::uint8_t alpha = __pixmap[pixmap_point + 3];
+			boost::uint8_t inv_alpha = 255 - __pixmap[pixmap_point + 3];
+
+			if (__pixmap[pixmap_point + 3] != 0x0) {
+				boost::uint8_t new_r = (boost::uint8_t)((alpha * __pixmap[pixmap_point] + inv_alpha * __pixbuff[pixbuff_point]) >> 8);
+				boost::uint8_t new_g = (boost::uint8_t)((alpha * __pixmap[pixmap_point + 1] + inv_alpha * __pixbuff[pixbuff_point + 1]) >> 8);
+				boost::uint8_t new_b = (boost::uint8_t)((alpha * __pixmap[pixmap_point + 2] + inv_alpha * __pixbuff[pixbuff_point + 2]) >> 8);
+
+				__pixbuff[pixbuff_point] = new_r;
+				__pixbuff[pixbuff_point + 1] = new_g;
+				__pixbuff[pixbuff_point + 2] = new_b;
+
+				//__pixbuff[pixbuff_pos + 3] = __pixmap[pixmap_pos + 3];
+			}
+
+			xaxis_point ++;
+		}
+		yaxis_point ++;
+	}
+}
+
 # ifdef USING_OPENCL
 boost::int8_t mdl::firefly::graphics::draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, boost::uint8_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen, opencl *__opencl) {
 	if ((__xoffset + __pm_xlen) > __pb_xlen || (__yoffset + __pm_ylen) > __pb_ylen) {

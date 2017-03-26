@@ -13,6 +13,9 @@
 namespace mdl {
 namespace firefly {
 namespace graphics {
+boost::int8_t cpu_draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, boost::uint8_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen);
+
+
 # ifdef USING_OPENCL
 // need to find a way to clean up after exit.
 boost::int8_t draw_pixmap(uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, boost::uint8_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen, opencl *__opencl);

@@ -21,5 +21,8 @@
 # define UNI_PAR_XLEN 2
 # define UNI_PAR_YLEN 2
 # define UNI_PAR_ZLEN 2
+# define UNI_CHUNK_XS 2
+# define UNI_CHUNK_YS 2
+# define UNI_CHUNK_ZY 2
 
 # endif /*__ffly__config__hpp*/

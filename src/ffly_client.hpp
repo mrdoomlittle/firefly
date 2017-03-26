@@ -23,6 +23,9 @@
 # ifdef OBJ_MANAGER
 #	include "obj_manager.hpp"
 # endif
+# ifdef UNI_MANAGER
+#	 include "uni_manager.hpp"
+# endif
 namespace mdl { class ffly_client
 {
 	public:
@@ -136,6 +139,9 @@ namespace mdl { class ffly_client
 		if (this-> obj_manager == nullptr) return;
 		this-> obj_manager-> manage();
 	}
+# endif
+# ifdef UNI_MANAGER
+	firefly::uni_manager uni_manager(UNI_CHUNK_XS, UNI_CHUNK_YS, UNI_CHUNK_ZS);
 # endif
 	private:
 	firefly::types::init_opt_t init_options;

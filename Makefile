@@ -12,7 +12,7 @@ CURR_DIR=${CURDIR}
 #LIBRARY_OBJS=intlen/src/intlen.o to_string/src/to_string.o strcmb/src/strcmb.o getdigit/src/getdigit.
 FFLY_OBJECTS=
 FFLY_WINDOW=
-EXTRA_DEFINES=
+EXTRA_DEFINES=-DUNI_MANAGER
 #tt:
 #	echo "$(CUDA)"
 
@@ -25,7 +25,7 @@ else ifeq ($(FFLY_TARGET), -DFFLY_SERVER)
 
 else ifeq ($(FFLY_TARGET), -DFFLY_CLIENT)
 	FFLY_OBJECTS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o \
-	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o \
+	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/draw_pixmap.clo \
 	src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o \
 	src/layer_manager.o src/obj_manager.o src/maths/cal_dist.o src/gravy_manager.o src/flip_dir.o
 	LDFLAGS += -lX11 -lGL -lGLU -lglut
@@ -247,10 +247,13 @@ relocate_headers:
 
 # core libraries that are needed by design
 libraries:
+	cd nibbles; make; cd ../;
+	cd termio; make; cd ../;
 	cd intlen; make ARC64 EINT_T_INC=$(CURR_DIR)/eint_t/inc; cd ../;
 	cd getdigit; make ARC64 EINT_T_INC=$(CURR_DIR)/eint_t/inc INTLEN_INC=$(CURR_DIR)/intlen/inc INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
 	cd to_string; make ECHAR_T=$(CURR_DIR)/echar_t/inc EINT_T_INC=$(CURR_DIR)/eint_t/inc GETDIGIT_INC=$(CURR_DIR)/getdigit/inc INTLEN_INC=$(CURR_DIR)/intlen/inc GETDIGIT_LIB=$(CURR_DIR)/getdigit/lib INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
 	cd strcmb; make EINT_T_INC=$(CURR_DIR)/echar_t/inc EINT_T_INC=$(CURR_DIR)/eint_t/inc ARC=$(ARC); cd ../;
+	cd tagged_memory; make LIB_PATH=$(CURR_DIR)/; cd ../;
 
 ffly_worker: libraries $(FFLY_OBJECTS)
 	ld -r -o lib/ffly_worker.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
@@ -341,10 +344,13 @@ skel_creator: src/graphics/x11_window.o
 	g++ -std=c++11 $(CUDA) -DARC64 -L/usr/local/lib -I/usr/local/include -o skel_creator.exec skel_creator.cpp draw_grid.o src/graphics/x11_window.o -lcuda -lcudart -lboost_system -lpthread -lboost_thread -lemu2d -lX11 -lGL -lGLU -lglut
 
 clean:
+	cd nibbles; make clean; cd ../;
+	cd termio; make clean; cd ../;
 	cd intlen; make clean; cd ../;
 	cd getdigit; make clean; cd ../;
 	cd to_string; make clean; cd ../;
 	cd strcmb; make clean; cd ../;
+	cd tagged_memory; make clean; cd ../;
 
 	rm -f src/gui/*.o src/memory/*.o src/graphics/*.o src/networking/*.o src/maths/*.o src/tests/*.o src/*.o *.exec #bin/*.exec
 	rm -rf $(CURR_DIR)/inc/* $(CURR_DIR)/lib/*

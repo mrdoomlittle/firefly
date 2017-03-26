@@ -19,3 +19,15 @@
 [submodule "qgdb"]
 	path = qgdb
 	url = git@github.com:mrdoomlittle/qgdb.git
+[submodule "tagged_memory"]
+	path = tagged_memory
+	url = git@github.com:mrdoomlittle/tagged_memory.git
+[submodule "termio"]
+	path = termio
+	url = git@github.com:mrdoomlittle/termio.git
+[submodule "echar_t"]
+	path = echar_t
+	url = git@github.com:mrdoomlittle/echar_t.git
+[submodule "nibbles"]
+	path = nibbles
+	url = git@github.com:mrdoomlittle/nibbles.git
