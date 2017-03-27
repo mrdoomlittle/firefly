@@ -1,6 +1,7 @@
 # ifndef __wd__flags__hpp
 # define __wd__flags__hpp
 # define FLG_WD_TO_CLOSE 16
+# define FLG_WD_KILLED 32
 # define FLG_WD_CLOSED 1
 # define FLG_WD_OPEN 2
 # define FLG_WD_WAITING 4

@@ -9,6 +9,7 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "memory/alloc_pixmap.hpp"
+# include "memory/mem_realloc.h"
 # include "system/errno.h"
 # include "types/pixmap_t.h"
 # include "types/uni_par_t.hpp"
@@ -41,11 +42,11 @@ class chunk_keeper {
 		}
 	}
 
-	types::chunk_info_t& get_chunk_info(uint_t *__chunk_id) {
+	types::chunk_info_t get_chunk_info(uint_t *__chunk_id) {
 		return this-> chunk_info[*__chunk_id];
 	}
 
-	types::chunk_data_t& get_chunk_data(uint_t *__chunk_id) {
+	types::chunk_data_t get_chunk_data(uint_t *__chunk_id) {
 		return this-> chunk_data[*__chunk_id];
 	}
 

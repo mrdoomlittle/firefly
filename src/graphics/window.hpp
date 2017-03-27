@@ -81,6 +81,15 @@ class window {
 # endif
 	}
 
+	boost::int8_t de_init() {
+
+		if (this-> wd_handler.de_init() != FFLY_SUCCESS) {
+			fprintf(stderr, "window: failed to 'de init' window handler.\n");
+			return FFLY_FAILURE;
+		}
+		return FFLY_SUCCESS;
+	}
+
 	private:
 	bool init_report = FFLY_FAILURE;
 	boost::uint16_t wd_xaxis_len = 0, wd_yaxis_len = 0;

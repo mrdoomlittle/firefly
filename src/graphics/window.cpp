@@ -33,7 +33,7 @@ mdl::firefly::types::pixmap_t mdl::firefly::graphics::window::get_pixbuff() {
 }
 
 boost::int8_t mdl::firefly::graphics::window::set_pixbuff(types::pixmap_t __pixmap, boost::uint16_t __xaxis_len, boost::uint16_t __yaxis_len) {
-	if ((__xaxis_len == 0 && __yaxis_len != 0) || __xaxis_len != 0 && __yaxis_len == 0) return FFLY_FAILURE;
+	if ((__xaxis_len == 0 && __yaxis_len != 0) || (__xaxis_len != 0 && __yaxis_len == 0)) return FFLY_FAILURE;
 
 	if (draw_pixmap(0, 0, this-> get_pixbuff(), this-> wd_xaxis_len, this-> wd_yaxis_len, __pixmap, __xaxis_len == 0?
 		this-> wd_xaxis_len : __xaxis_len, __yaxis_len == 0? this-> wd_yaxis_len : __yaxis_len) != FFLY_SUCCESS) return FFLY_FAILURE;

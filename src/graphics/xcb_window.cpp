@@ -2,6 +2,9 @@
 /* change uint_t to boost::uint16_t as it seems like we dont need to use uint_t
 */
 boost::int8_t mdl::firefly::graphics::xcb_window::begin(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
+	printf("thread has started.\n");
+	if (this-> is_wd_flag(FLG_WD_KILLED)) return FFLY_SUCCESS;
+
 	this-> wd_xaxis_len = __wd_xaxis_len;
 	this-> wd_yaxis_len = __wd_yaxis_len;
 	this-> frame_title = (char *)memory::mem_alloc(strlen(__frame_title));
@@ -211,15 +214,15 @@ boost::int8_t mdl::firefly::graphics::xcb_window::begin(boost::uint16_t __wd_xax
 	glXDestroyWindow(display, glx_window);
 	XCloseDisplay(display);
 
-	memory::mem_free(this-> frame_title);
-	memory::mem_free(this-> pixbuff);
-
 	this-> add_wd_flag(FLG_WD_CLOSED, true);
+	this-> add_wd_flag(FLG_WD_KILLED);
+	printf("thread has ended.\n");
 	return FFLY_SUCCESS;
 }
 
 boost::int8_t mdl::firefly::graphics::xcb_window::open_in_thread(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
-	boost::thread(boost::bind(&xcb_window::begin, this, __wd_xaxis_len, __wd_yaxis_len, __frame_title));
+	boost::thread th(boost::bind(&xcb_window::begin, this, __wd_xaxis_len, __wd_yaxis_len, __frame_title));
+	this-> native_handle = th.native_handle();
 	return FFLY_SUCCESS;
 }
 

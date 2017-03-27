@@ -95,10 +95,22 @@ boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) 
 	this-> cam_ylen = __init_options.cam_ylen;
 	this-> cam_pm_size = (this-> cam_xlen * this-> cam_ylen) * 4;
 
+	if (__init_options.add_bse_layer) {
+		this-> bse_layer_id = this-> layer.add_layer(this-> win_xlen, this-> win_ylen, 0, 0);
+		this-> layer.lock_layer(this-> bse_layer_id);
+	}
+
+# if defined(OBJ_MANAGER) && defined(UNI_MANAGER)
+	if (__init_options.obj_manger_ptr == nullptr) {
+//		static obj_manager _obj_manager();
+
+	}
+# endif
 	return FFLY_SUCCESS;
 }
 
 boost::int8_t mdl::ffly_client::de_init() {
+	this-> window.de_init();
 # ifdef OBJ_MANAGER
 	if (this-> obj_manager != nullptr)
 		this-> obj_manager-> de_init();
@@ -112,7 +124,7 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 
 	if (window.begin() != FFLY_SUCCESS) return FFLY_FAILURE;
 
-	window.wd_handler.set_fps_mark(240);
+	window.wd_handler.set_fps_mark(60);
 
 	while(!window.wd_handler.is_wd_flag(WD_OPEN)) {
 		if (this-> _to_shutdown) return 0;
@@ -164,10 +176,6 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 		} else this-> fps_counter++;
 
 	} while (!this-> _to_shutdown);
-
-	window.wd_handler.add_wd_flag(WD_TO_CLOSE);
-
-	while(!window.wd_handler.is_wd_flag(WD_CLOSED)){}
 
 	this-> de_init();
 

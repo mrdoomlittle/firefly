@@ -237,10 +237,26 @@ boost::int8_t mdl::firefly::obj_manager::de_init() {
 
 	printf("%d threads where killed.\n", unsigned(this-> active_threads));
 
+	uint_t any_error = FFLY_SUCCESS;
+	for (uint_t th_id = 0; th_id != this-> thread_index.size(); th_id ++) {
+		thr_config_t *th = this-> thread_index[th_id];
+
+		int th_err = 0;
+		if ((th_err = pthread_cancel(th-> native_handle)) != 0) {
+			if (th_err != ESRCH) {
+				fprintf(stderr, "obj_manager: failed to cancel posix thread.\n");
+				any_error = FFLY_FAILURE;
+			}
+		}
+	}
+
 	for (uint_t obj_id = 0; obj_id != this-> obj_index.size(); obj_id ++) {
 		if (this-> unused_ids.find(obj_id) != this-> unused_ids.end()) continue;
 		this-> del(obj_id);
 	}
+
+	if (any_error != FFLY_SUCCESS)
+		return FFLY_FAILURE;
 
 	return FFLY_SUCCESS;
 }
@@ -433,11 +449,9 @@ void mdl::firefly::obj_manager::handle_objs(thr_config_t *thread_config) {
 }
 
 // for now until i can make draw_pixmap thread safe i will be using this
-void mdl::firefly::obj_manager::draw_objs() {
-	if (this-> to_shutdown) return;
-	if (this-> obj_count == 0) {
-		return;
-	}
+boost::int8_t mdl::firefly::obj_manager::draw_objs() {
+	if (this-> to_shutdown) return FFLY_NOP;
+	if (this-> obj_count == 0) return FFLY_NOP;
 
 	uint_t obj_id = 0;
 	while (obj_id != this-> obj_count) {
@@ -475,8 +489,8 @@ boost::int8_t mdl::firefly::obj_manager::manage() {
 
 		this-> thread_index[thread_id] = thread_config;
 
-		//boost::thread *th = nullptr;
-		boost::thread(boost::bind(&obj_manager::handle_objs, this, thread_config));
+		boost::thread th(boost::bind(&obj_manager::handle_objs, this, thread_config));
+		thread_config-> native_handle = th.native_handle();
 
 		fist_bit = true;
 	}

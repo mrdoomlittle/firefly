@@ -42,13 +42,7 @@ class obj_manager {
 	obj_manager(types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, uint_t __pb_zlen)
 	: pixbuff(__pixbuff), pb_xlen(__pb_xlen), pb_ylen(__pb_ylen), pb_zlen(__pb_zlen) { this-> active_threads = 0; }
 
-	~obj_manager() {
-		printf("deleting all objects.\n");
-		for (std::size_t obj_id = 0; obj_id != this-> obj_index.size(); obj_id ++) {
-			if (this-> unused_ids.find(obj_id) != this-> unused_ids.end()) continue;
-			this-> del(obj_id);
-		}
-	}
+	~obj_manager();
 
 	boost::int8_t de_init();
 
@@ -260,10 +254,11 @@ class obj_manager {
 	typedef struct {
 		bool thread_state;
 		uint_t amount, offset, id;
+		boost::thread::native_handle_type native_handle;
 	} thr_config_t;
 
 	void handle_objs(thr_config_t *thread_config);
-	void draw_objs();
+	boost::int8_t draw_objs();
 
 	typedef struct {
 		boost::uint8_t command;

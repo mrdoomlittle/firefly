@@ -24,19 +24,25 @@
 #	include "obj_manager.hpp"
 # endif
 # ifdef UNI_MANAGER
-#	 include "uni_manager.hpp"
+#	include "uni_manager.hpp"
+#   include "types/uni_prop_t.hpp"
 # endif
 namespace mdl { class ffly_client
 {
 	public:
+# ifndef UNI_MANAGER
 	ffly_client(uint_t __win_xlen, uint_t __win_ylen) : win_xlen(__win_xlen), win_ylen(__win_ylen) {}
+# else
+	ffly_client(uint_t __win_xlen, uint_t __win_ylen, firefly::types::uni_prop_t uni_props)
+	: win_xlen(__win_xlen), win_ylen(__win_ylen), uni_manager(uni_props.xaxis_len, uni_props.yaxis_len, uni_props.zaxis_len) {}
+# endif
 	boost::int8_t connect_to_server(int& __sock);
 	boost::int8_t send_client_info();
 	boost::int8_t recv_cam_frame();
 
 	~ffly_client() {
 		printf("ffly_client has safly shutdown.\n");
-		cudaDeviceReset();
+		this-> cu_clean();
 	}
 
 	void cu_clean() {
@@ -83,6 +89,7 @@ namespace mdl { class ffly_client
 		mdl::ffly_client *_this;
 	} portal_t;
 
+	uint_t bse_layer_id = 0;
 	firefly::layer layer;
 
 	char const *server_ipaddr = nullptr;
@@ -100,6 +107,7 @@ namespace mdl { class ffly_client
 	firefly::graphics::window window;
 
 	bool poll_event(firefly::system::event& __event) {
+		if (_to_shutdown) return false;
 		static bool init = false;
 		if (init) {
 			__event.key_code = 0x0;
@@ -141,7 +149,7 @@ namespace mdl { class ffly_client
 	}
 # endif
 # ifdef UNI_MANAGER
-	firefly::uni_manager uni_manager(UNI_CHUNK_XS, UNI_CHUNK_YS, UNI_CHUNK_ZS);
+	firefly::uni_manager uni_manager;
 # endif
 	private:
 	firefly::types::init_opt_t init_options;

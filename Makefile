@@ -30,10 +30,10 @@ else ifeq ($(FFLY_TARGET), -DFFLY_CLIENT)
 	src/layer_manager.o src/obj_manager.o src/maths/cal_dist.o src/gravy_manager.o src/flip_dir.o
 	LDFLAGS += -lX11 -lGL -lGLU -lglut
 	FFLY_WINDOW = -DUSING_X11
-	EXTRA_DEFINES= -DOBJ_MANAGER
+	EXTRA_DEFINES += -DOBJ_MANAGER
 else ifeq ($(FFLY_TARGET), -DFFLY_STUDIO)
 	FFLY_OBJECTS += src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
-	src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o src/graphics/png_loader.o#src/ffly_studio.o
+	src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o src/graphics/png_loader.o src/room_manager.o #src/ffly_studio.o
 	LDFLAGS += -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple
 	CXX_IFLAGS += -I/usr/include/freetype2 $(CUDART_INC)
 	FFLY_WINDOW = -DUSING_X11
@@ -173,6 +173,9 @@ src/pulse_audio.o: src/pulse_audio.cpp
 
 src/graphics/xcb_window.o: src/graphics/xcb_window.cpp
 	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/xcb_window.o src/graphics/xcb_window.cpp
+
+src/room_manager.o: src/room_manager.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/room_manager.o src/room_manager.cpp
 
 relocate_headers:
 	if ! [ -d $(CURR_DIR)/inc/firefly ]; then \

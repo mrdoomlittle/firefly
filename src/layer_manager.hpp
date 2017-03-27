@@ -6,6 +6,7 @@ namespace ublas = boost::numeric::ublas;
 # include "graphics/draw_pixmap.hpp"
 # include <utility>
 # include <string.h>
+# include <set>
 # include "types/layer_info_t.hpp"
 # include "memory/alloc_pixmap.hpp"
 # include "memory/mem_free.h"
@@ -43,6 +44,22 @@ class layer {
 		}
 
 		return layer_id;
+	}
+
+	bool locked_layer(uint_t __layer_id) {
+		if (this-> locked_layers.find(__layer_id) != this-> locked_layers.end()) return false;
+		return true;
+	}
+
+	void lock_layer(uint_t __layer_id) {
+		this-> locked_layers.insert(__layer_id);
+	}
+
+	void ulock_layer(uint_t __layer_id) {
+		std::set<bool>::iterator itor = this-> locked_layers.find(__layer_id);
+		if (itor == this-> locked_layers.end()) return;
+
+		this-> locked_layers.erase(itor);
 	}
 
 	bool does_layer_exist(uint_t __layer_id) {
@@ -85,6 +102,7 @@ class layer {
 			memory::mem_free(layers[o].second);
 	}
 
+	std::set<bool> locked_layers;
 	ublas::vector<uint_t> render_arrm; // render arrangement
 	ublas::vector<std::pair<types::layer_info_t, types::pixmap_t>> layers;
 };

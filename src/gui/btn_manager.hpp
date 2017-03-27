@@ -47,6 +47,18 @@ class btn_manager {
 		return this-> btn_index[__btn_id].mouse_hovering;
 	}
 
+	void set_pixbuff(types::pixmap_t __pixbuff) {
+		this-> pixbuff = __pixbuff;
+	}
+
+	void set_pb_xlen(boost::uint16_t __pb_xaxis_len) {
+		this-> pb_xaxis_len = __pb_xaxis_len;
+	}
+
+	void set_pb_ylen(boost::uint16_t __pb_yaxis_len) {
+		this-> pb_yaxis_len = __pb_yaxis_len;
+	}
+
 	boost::int8_t manage(types::pixmap_t __pixbuff = nullptr);
 
 	bool *mouse_pressed;

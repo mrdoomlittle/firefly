@@ -32,7 +32,7 @@ boost::int8_t mdl::firefly::gui::btn_manager::manage(types::pixmap_t __pixbuff) 
 
 	while (btn_id != this-> btn_index.size()) {
 		types::btn_info_t& btn_info = this-> btn_index[btn_id];
-		if (!btn_info.enabled) {
+		if (!btn_info.enabled || (__pixbuff == nullptr && this-> pixbuff == nullptr)) {
 			update();
 			continue;
 		}

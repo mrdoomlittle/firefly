@@ -58,7 +58,27 @@ class xcb_window: public wd_flags
 	}
 
 	types::pixmap_t pixbuff = nullptr;
+
+	boost::int8_t de_init() {
+		this-> add_wd_flag(FLG_WD_TO_CLOSE);
+
+		while(!this-> is_wd_flag(FLG_WD_CLOSED)){}
+
+		memory::mem_free(pixbuff);
+		memory::mem_free(frame_title);
+
+		int th_err = 0;
+		if ((th_err = pthread_cancel(this-> native_handle)) != 0) {
+			if (th_err != ESRCH) {
+				fprintf(stderr, "xcb_window: failed to cancel posix thread.\n");
+				return FFLY_FAILURE;
+			}
+		}
+		return FFLY_SUCCESS;
+	}
+
 	private:
+	boost::thread::native_handle_type native_handle;
 	boost::uint16_t wd_xaxis_len, wd_yaxis_len;
 	char *frame_title;
 	std::size_t fps_mark = 120;
