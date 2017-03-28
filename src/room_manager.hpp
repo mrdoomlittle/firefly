@@ -24,10 +24,10 @@ class room_manager {
 		gui::btn_manager *btn_manager;
 	} room_data_t;
 
-	boost::int8_t create_btn();
+	boost::int8_t create_btn(uint_t *__room_id, uint_t& __btn_id, types::pixmap_t __pixmap, types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
 
 	bool id_inuse(uint_t *__room_id) {
-		if (this-> unused_ids.find(__room_id) == this-> unused_ids.end()) return false;
+		if (this-> unused_ids.find(__room_id) != this-> unused_ids.end()) return false;
 		return true;
 	}
 
@@ -43,8 +43,13 @@ class room_manager {
 		if (id_inuse(__room_id))
 			return this-> _room_data[*__room_id];
 	}
+
 	room_data_t& room_data(uint_t *__room_id) {
 		return this-> _room_data[*__room_id];
+	}
+
+	inline static gui::btn_manager& get_btn_manager(uint_t *__room_id, room_manager *__rm) {
+		return *__rm-> _room_data[*__room_id].btn_manager;
 	}
 
 	boost::int8_t add_room(uint_t*& __room_id, bool __overwrite);
@@ -58,14 +63,17 @@ class room_manager {
 		return FFLY_FAILURE;
 	}
 
-	boost::int8_t handle_room(uint_t *__room_id);
+	boost::int8_t draw_room(uint_t *__room_id = nullptr);
 
-	boost::int8_t init(graphics::window *__window = nullptr) {
+	boost::int8_t init(graphics::window *__window = nullptr, types::pixmap_t __pixbuff = nullptr) {
 		if (__window == nullptr) {
 			fprintf(stderr, "room_manager: you've passed a empty pointer for the window thru init.\n");
 			return FFLY_FAILURE;
 		} else
 			this-> window = __window;
+
+		if (__pixbuff != nullptr) this-> pixbuff = __pixbuff;
+
 		return FFLY_SUCCESS;
 	}
 
@@ -76,7 +84,7 @@ class room_manager {
 	types::coords_t<boost::int16_t> wd_coords;
 	types::coords_t<boost::uint16_t> mouse_coords;
 	graphics::window *window = nullptr;
-	types::pixmap_t pix_buff = nullptr;
+	types::pixmap_t pixbuff = nullptr;
 	uint_t *curr_room_id = NULL;
 	uint_t room_count = 0;
 	std::set<uint_t *> unused_ids;

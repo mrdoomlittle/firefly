@@ -3,6 +3,11 @@
 # include <string.h>
 # include "graphics/png_loader.hpp"
 # include "graphics/colour_blend.hpp"
+# include "memory/mem_alloc.h"
+# include "memory/mem_init.h"
+# include "types/pixmap_t.h"
+# include "types/colour_t.hpp"
+# include "gui/btn_manager.hpp"
 boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) {
 
 }
@@ -27,6 +32,23 @@ boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
 
 	this-> _room_manager.init(&window);
 
+	uint_t btn_xlen = 64, btn_ylen = 64;
+
+	uint_t btn_id;
+	uint_t msize = (btn_xlen * btn_ylen) * sizeof(boost::uint8_t);
+	msize *=4;
+
+	firefly::types::pixmap_t btn_pixmap = (firefly::types::pixmap_t)firefly::memory::mem_alloc(msize);
+	memset(btn_pixmap, 145, msize);
+
+	this-> _room_manager.create_btn(room_id, btn_id, btn_pixmap, firefly::types::coords<uint_t>(64, 64), 64, 64);
+
+	firefly::gui::btn_manager& btn_manager = firefly::room_manager::get_btn_manager(room_id, &this-> _room_manager);
+	btn_manager.set_pb_xlen(640);
+	btn_manager.set_pb_ylen(640);
+
+	//firefly::room_manager::get_btn_manager(room_id, &this-> _room_manager).btn_pixmap(btn_id) = btn_pixmap;
+	firefly::graphics::colour_t bg_colour = { 244, 244, 244, 244};
 	do {
 		if (window.wd_handler.is_wd_flag(WD_CLOSED)) {
 			break;
@@ -34,14 +56,17 @@ boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
 
 		if (!window.wd_handler.is_wd_flag(WD_WAITING)) continue;
 		if (window.wd_handler.is_wd_flag(WD_DONE_DRAW)) continue;
-		window.clear_pixbuff();
+		window.clear_pixbuff(bg_colour);
 
+		this-> _room_manager.draw_room(room_id);
 		this-> _room_manager.manage(room_id);
 
 		usleep(10000);
 		window.wd_handler.add_wd_flag(WD_DONE_DRAW);
 		window.wd_handler.rm_wd_flag(WD_WAITING);
 	} while(1);
+
+	this-> _room_manager.de_init();
 
 	cudaDeviceReset();
 

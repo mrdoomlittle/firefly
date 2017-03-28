@@ -7,6 +7,7 @@ bool mdl::firefly::gui::btn_manager::mouse_inside(types::coords_t<> __coords, ui
 }
 
 mdl::uint_t mdl::firefly::gui::btn_manager::create_btn(types::pixmap_t __pixmap, types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len) {
+//	printf("btn_manager: create btn %d\n", this-> btn_index.size())
 	uint_t btn_id = this-> btn_index.size();
 	this-> btn_index.resize(this-> btn_index.size() + 1);
 
@@ -18,10 +19,11 @@ mdl::uint_t mdl::firefly::gui::btn_manager::create_btn(types::pixmap_t __pixmap,
 
 	btn_info.pixmap = __pixmap;
 
-	btn_info.enabled = false;
+	btn_info.enabled = true;
 	btn_info.hover_enabled = false;
-	btn_info.press_enabled = true;
+	btn_info.press_enabled = false;
 	this-> btn_index(btn_id) = btn_info;
+	return btn_id;
 }
 
 boost::int8_t mdl::firefly::gui::btn_manager::manage(types::pixmap_t __pixbuff) {
