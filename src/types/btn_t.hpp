@@ -1,0 +1,23 @@
+# ifndef __btn__t__hpp
+# define __btn__t__hpp
+# include <eint_t.hpp>
+# include "pixmap_t.h"
+# include "coords_t.hpp"
+namespace mdl {
+namespace firefly {
+namespace types {
+typedef struct {
+	coords_t<> coords;
+	uint_t xaxis_len, yaxis_len;
+	bool enabled, hover_enabled, mouse_hovering;
+	bool press_enabled, already_pressed;
+	void (* press_fptr) (uint_t, int, void *) = nullptr;
+	void (* hover_fptr) (uint_t, void *) = nullptr;
+	pixmap_t pixmap;
+	void *voidptr = nullptr;
+} btn_t;
+}
+}
+}
+
+# endif /*__btn__t__hpp*/

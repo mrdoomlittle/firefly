@@ -8,10 +8,12 @@
 # include "../system/errno.h"
 # include <strcmb.hpp>
 # include "../types/pixmap_t.h"
+# include "../types/dsize_t.hpp"
 namespace mdl {
 namespace firefly {
 namespace graphics {
 boost::int8_t load_png_file(char const *__filedir, char const *__filename, types::pixmap_t&__pixmap, uint_t *__pm_size);
+boost::int8_t load_png_file(char const *__filedir, char const *__filename, types::pixmap_t&__pixmap, types::dsize_t& __pm_size);
 }
 }
 }

@@ -30,6 +30,38 @@ class window {
 
 	types::pixmap_t get_pixbuff();
 
+	bool is_key_press() {
+		return this-> wd_handler.key_press;
+	}
+
+	bool& key_press() {
+		return this-> wd_handler.key_press;
+	}
+
+	int get_key_code() {
+		return this-> wd_handler.key_code;
+	}
+
+	int& key_code() {
+		return this-> wd_handler.key_code;
+	}
+
+	bool is_button_press() {
+		return this-> wd_handler.button_press;
+	}
+
+	bool& button_press() {
+		return this-> wd_handler.button_press;
+	}
+
+	int get_button_code() {
+		return this-> wd_handler.button_code;
+	}
+
+	int& button_code() {
+		return this-> wd_handler.button_code;
+	}
+
 	boost::int8_t set_pixbuff(types::pixmap_t __pixmap, boost::uint16_t __xaxis_len = 0, boost::uint16_t __yaxis_len = 0);
 
 	void clear_pixbuff() {

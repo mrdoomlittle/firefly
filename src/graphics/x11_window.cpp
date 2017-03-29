@@ -79,7 +79,7 @@ boost::int8_t mdl::firefly::graphics::x11_window::begin(boost::uint16_t __wd_xax
 
     GLXContext _glx_context = glXCreateContext(_display, _vis_info, NULL, GL_TRUE);
 	if (!_glx_context) {
-		fprintf(stderr, "failed to create glx context.\n");
+		fprintf(stderr, "x11_window: failed to create glx context.\n");
 		return FFLY_FAILURE;
 	}
 

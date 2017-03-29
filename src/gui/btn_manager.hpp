@@ -6,6 +6,7 @@
 namespace ublas = boost::numeric::ublas;
 # include <eint_t.hpp>
 # include <boost/array.hpp>
+# include "../types/btn_t.hpp"
 # include "../types/btn_info_t.hpp"
 # include "../memory/mem_free.h"
 # include "../graphics/draw_pixmap.hpp"
@@ -21,11 +22,19 @@ class btn_manager {
 
 	uint_t create_btn(types::pixmap_t __pixmap, types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
 
-	void set_press_fptr(uint_t __btn_id, void (* __press_fptr)(uint_t, int)) {
+	uint_t create_btn(types::btn_info_t __btn_info) {
+		return this-> create_btn(__btn_info.pixmap, __btn_info.coords, __btn_info.xaxis_len, __btn_info.yaxis_len);
+	}
+
+	void set_voidptr(uint_t __btn_id, void *__ptr) {
+		this-> btn_index[__btn_id].voidptr = __ptr;
+	}
+
+	void set_press_fptr(uint_t __btn_id, void (* __press_fptr)(uint_t, int, void *)) {
 		this-> btn_index[__btn_id].press_fptr = __press_fptr;
 	}
 
-	void set_hover_fptr(uint_t __btn_id, void (* __hover_fptr)(uint_t)) {
+	void set_hover_fptr(uint_t __btn_id, void (* __hover_fptr)(uint_t, void *)) {
 		this-> btn_index[__btn_id].hover_fptr = __hover_fptr;
 	}
 
@@ -44,6 +53,10 @@ class btn_manager {
 
 	void disable_hover(uint_t __btn_id) {
 		this-> btn_index[__btn_id].hover_enabled = false;
+	}
+
+	void enable_press(uint_t __btn_id) {
+		this-> btn_index[__btn_id].press_enabled = true;
 	}
 
 	bool mouse_hovering(uint_t __btn_id) {
@@ -66,6 +79,10 @@ class btn_manager {
 		return btn_index[__btn_id].pixmap;
 	}
 
+	types::btn_t* get_btn(uint_t __btn_id) {
+		return &this-> btn_index[__btn_id];
+	}
+
 	boost::int8_t manage(types::pixmap_t __pixbuff = nullptr);
 	boost::int8_t de_init() {
 		printf("btn_manager: going to free all btn pixmaps.\n");
@@ -77,7 +94,7 @@ class btn_manager {
 	bool *mouse_pressed;
 	int *mouse_btn_id;
 	private:
-	ublas::vector<types::btn_info_t> btn_index;
+	ublas::vector<types::btn_t> btn_index;
 	types::pixmap_t pixbuff = nullptr;
 	types::coords_t<boost::int16_t> *wd_coords;
 	types::coords_t<boost::uint16_t> *mouse_coords;

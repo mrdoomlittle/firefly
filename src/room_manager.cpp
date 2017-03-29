@@ -29,7 +29,7 @@ boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __ov
 				else
 					this-> _room_info = room_info;
 			} else
-				this-> _room_info = room_info;
+				this-> _room_data = room_data;
 	}
 
 	room_info_t *room_info = nullptr;
@@ -57,8 +57,19 @@ boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __ov
 	if ((btn_manager = (gui::btn_manager *)memory::mem_alloc(sizeof(gui::btn_manager))) == NULL) {
 		fprintf(stderr, "room_manager: failed to alloc memory for 'btn_manager', errno: %d\n", errno);
 		goto mem_clean;
-	} else
-		room_data-> btn_manager = new (btn_manager) gui::btn_manager(nullptr, &this-> wd_coords, &this-> mouse_coords, 0, 0);
+	} else {
+		uint_t pb_xaxis_len = 0, pb_yaxis_len = 0;
+		if (this-> use_glob_pb_size) {
+			pb_xaxis_len = this-> pb_xaxis_len;
+			pb_yaxis_len = this-> pb_yaxis_len;
+		}
+
+		room_data-> btn_manager = new (btn_manager) gui::btn_manager(nullptr, &this-> wd_coords, &this-> mouse_coords, pb_xaxis_len, pb_yaxis_len);
+		if (this-> window != nullptr) {
+			room_data-> btn_manager-> mouse_pressed = &this-> window-> button_press();
+			room_data-> btn_manager-> mouse_btn_id = &this-> window-> button_code();
+ 		}
+	}
 
 	this-> room_count ++;
 
@@ -85,32 +96,55 @@ boost::int8_t mdl::firefly::room_manager::create_btn(uint_t *__room_id, uint_t& 
 
 	__btn_id = room_data.btn_manager-> create_btn(__pixmap, __coords, __xaxis_len, __yaxis_len);
 
+
+	return FFLY_SUCCESS;
 }
 
+// move to 'manage()'
 boost::int8_t mdl::firefly::room_manager::draw_room(uint_t *__room_id) {
 	uint_t *room_id = __room_id == nullptr? this-> curr_room_id : __room_id;
 	if (room_id == nullptr) return FFLY_FAILURE;
 
-	room_info_t& room_info = this-> _room_info[*__room_id];
-	room_data_t& room_data = this-> _room_data[*__room_id];
+	room_info_t& room_info = this-> _room_info[*room_id];
+	room_data_t& room_data = this-> _room_data[*room_id];
 
 	types::pixmap_t pixbuff = room_data.pixbuff == nullptr? this-> pixbuff : room_data.pixbuff;
 	if (pixbuff == nullptr) return FFLY_NOP;
 
-	if (room_data.btn_manager-> manage(pixbuff) != FFLY_SUCCESS) {
-		fprintf(stderr, "room_manager: failed to call 'btn_manager::manage'\n");
-		return FFLY_FAILURE;
+	if (room_data.btn_manager != nullptr) {
+		if (room_data.btn_manager-> manage(pixbuff) == FFLY_FAILURE) {
+			fprintf(stderr, "room_manager: failed to call 'btn_manager::manage'\n");
+			return FFLY_FAILURE;
+		}
 	}
 
+	return FFLY_SUCCESS;
 }
 
 boost::int8_t mdl::firefly::room_manager::rm_room(uint_t *__room_id, bool __hard) {
-
+	return FFLY_NOP;
 }
 
 boost::int8_t mdl::firefly::room_manager::manage(uint_t *__room_id) {
+	if (!this-> room_change.empty()) {
+		printf("room_manager: changing room to id with %d\n", *this-> room_change.front());
+		this-> curr_room_id = this->room_change.front();
+		this->room_change.pop();
+	}
+
 	uint_t *room_id = __room_id == nullptr? this-> curr_room_id : __room_id;
 	if (room_id == nullptr) return FFLY_FAILURE;
+
+	this-> wd_coords = this-> window-> get_wd_coords();
+	this-> mouse_coords = this-> window-> get_mouse_coords().wd;
+
+	// this will be removed a later version
+	if (this-> draw_room() == FFLY_FAILURE) {
+		fprintf(stderr, "room_manager: failed to draw.\n");
+		return FFLY_FAILURE;
+	}
+
+	return FFLY_SUCCESS;
 }
 
 boost::int8_t mdl::firefly::room_manager::de_init() {

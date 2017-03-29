@@ -3,6 +3,7 @@
 # include <boost/cstdint.hpp>
 # include <eint_t.hpp>
 # include <set>
+# include <queue>
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "memory/mem_realloc.h"
@@ -10,6 +11,7 @@
 # include "types/pixmap_t.h"
 # include "types/coords_t.hpp"
 # include "graphics/window.hpp"
+# include "types/btn_t.hpp"
 namespace mdl {
 namespace firefly {
 class room_manager {
@@ -52,12 +54,28 @@ class room_manager {
 		return *__rm-> _room_data[*__room_id].btn_manager;
 	}
 
+	void set_pixbuff(types::pixmap_t __pixbuff) {
+		this-> pixbuff = __pixbuff;
+	}
+
+	types::btn_t* get_btn(uint_t *__room_id, uint_t __btn_id) {
+		return this-> _room_data[*__room_id].btn_manager-> get_btn(__btn_id);
+	}
+
+	void set_glob_pb_xlen(uint_t __xaxis_len) {
+		this-> pb_xaxis_len = __xaxis_len;
+	}
+
+	void set_glob_pb_ylen(uint_t __yaxis_len) {
+		this-> pb_yaxis_len = __yaxis_len;
+	}
+
 	boost::int8_t add_room(uint_t*& __room_id, bool __overwrite);
 	boost::int8_t rm_room(uint_t *__room_id, bool __hard = false);
 
 	boost::int8_t change_room(uint_t *__room_id) {
 		if (id_inuse(__room_id)) {
-			this-> curr_room_id = __room_id;
+			this-> room_change.push(__room_id);
 			return FFLY_SUCCESS;
 		}
 		return FFLY_FAILURE;
@@ -80,16 +98,21 @@ class room_manager {
 	boost::int8_t de_init();
 
 	boost::int8_t manage(uint_t *__room_id = nullptr);
+
+	bool use_glob_pb_size = false;
 	private:
 	types::coords_t<boost::int16_t> wd_coords;
 	types::coords_t<boost::uint16_t> mouse_coords;
 	graphics::window *window = nullptr;
 	types::pixmap_t pixbuff = nullptr;
+
+	uint_t pb_xaxis_len = 0, pb_yaxis_len = 0;
 	uint_t *curr_room_id = NULL;
 	uint_t room_count = 0;
 	std::set<uint_t *> unused_ids;
 	room_info_t *_room_info = NULL;
 	room_data_t *_room_data = NULL;
+	std::queue<uint_t *> room_change;
 };
 
 }
