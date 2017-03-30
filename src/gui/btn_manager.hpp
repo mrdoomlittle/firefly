@@ -10,6 +10,8 @@ namespace ublas = boost::numeric::ublas;
 # include "../types/btn_info_t.hpp"
 # include "../memory/mem_free.h"
 # include "../graphics/draw_pixmap.hpp"
+# include "../types/id_t.hpp"
+# include "../asset_manager.hpp"
 namespace mdl {
 namespace firefly {
 namespace gui {
@@ -21,6 +23,7 @@ class btn_manager {
 	}
 
 	uint_t create_btn(types::pixmap_t __pixmap, types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
+	uint_t create_btn(types::id_t __asset_id, types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len, asset_manager *__asset_manger);
 
 	uint_t create_btn(types::btn_info_t __btn_info) {
 		return this-> create_btn(__btn_info.pixmap, __btn_info.coords, __btn_info.xaxis_len, __btn_info.yaxis_len);
@@ -87,7 +90,7 @@ class btn_manager {
 	boost::int8_t de_init() {
 		printf("btn_manager: going to free all btn pixmaps.\n");
 		for (uint_t btn_id = 0; btn_id != this-> btn_index.size(); btn_id ++)
-			if (this-> btn_index[btn_id].pixmap != nullptr)
+			if (this-> btn_index[btn_id].pixmap != nullptr && !this-> btn_index[btn_id].inde_pm_mem)
 				memory::mem_free(this-> btn_index[btn_id].pixmap);
 	}
 

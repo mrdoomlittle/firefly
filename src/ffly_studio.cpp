@@ -11,20 +11,23 @@
 # include "types/id_t.hpp"
 bool static *to_shutdown = nullptr;
 
-void btn_press(mdl::uint_t __btn_id, int __b, void *__e) {
-	printf("btn has been pressed, id: %d\n", __btn_id);
-	if (__btn_id == 0) *to_shutdown = true;
-
-	if (__btn_id == 1) {
-		mdl::ffly_studio *_this = (mdl::ffly_studio *)__e;
-		_this-> chnage_room(_this-> skelc_room);
-	}
-}
-
-void _btn_press(mdl::uint_t __btn_id, int __b, void *__e) {
-	if (__btn_id == 0) {
-		mdl::ffly_studio *_this = (mdl::ffly_studio *)__e;
-		_this-> chnage_room(_this-> base_room);
+void __btn_press(mdl::uint_t __btn_id, int __mbtn_id, void *__voidptr, mdl::uint_t *__room_id) {
+	mdl::ffly_studio *_this = __voidptr == nullptr? nullptr : (mdl::ffly_studio *)__voidptr;
+	if (__room_id == _this-> base_room_id) {
+		switch(__btn_id) {
+			case 0:
+				*to_shutdown = true;
+			break;
+			case 1:
+				_this-> chnage_room(_this-> skelc_room_id);
+			break;
+		}
+	} else if (__room_id == _this-> skelc_room_id) {
+		switch(__btn_id) {
+			case 0:
+				_this-> chnage_room(_this-> base_room_id);
+			break;
+		}
 	}
 }
 
@@ -34,18 +37,17 @@ boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) 
 	this-> _room_manager.set_glob_pb_xlen(640);
 	this-> _room_manager.set_glob_pb_ylen(640);
 
-
-	if (this-> _room_manager.add_room(this-> base_room, true) != FFLY_SUCCESS) {
+	if (this-> _room_manager.add_room(this-> base_room_id, true) != FFLY_SUCCESS) {
 		fprintf(stderr, "ffly_studio: failed to add room.\n");
 		return FFLY_FAILURE;
 	}
 
-	if (this-> _room_manager.add_room(this-> skelc_room, true) != FFLY_SUCCESS) {
+	if (this-> _room_manager.add_room(this-> skelc_room_id, true) != FFLY_SUCCESS) {
 		fprintf(stderr, "ffly_studio: failed to add room.\n");
 		return FFLY_FAILURE;
 	}
 
-	if (this-> _room_manager.change_room(this-> base_room) == FFLY_FAILURE) {
+	if (this-> _room_manager.change_room(this-> base_room_id) == FFLY_FAILURE) {
 		fprintf(stderr, "ffly_studio: failed to change room.\n");
 		return FFLY_FAILURE;
 	}
@@ -55,49 +57,40 @@ boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) 
 	firefly::gui::btn btn;
 	uint_t btn_id;
 
-	if (btn.fload_btn_pm("../assets/", "btn_exit") != FFLY_SUCCESS) {
-		return FFLY_FAILURE;
-	}
+	btn.load_btn_ast(this-> asset_manager.load_asset("../assets/btn_exit", firefly::asset_manager::AST_PNG_FILE), &this-> asset_manager);
+	btn.create_btn(btn_id, &firefly::room_manager::get_btn_manager(this-> base_room_id, &this-> _room_manager), firefly::types::coords<uint_t>(0, 1));
 
-	firefly::gui::btn_manager *btn_manager = &firefly::room_manager::get_btn_manager(this-> base_room, &this-> _room_manager);
+	this-> base_room.exit_btn = this-> _room_manager.get_btn(this-> base_room_id, btn_id);
+	this-> base_room.exit_btn-> voidptr = this;
+	this-> base_room.exit_btn-> press_fptr = this-> _room_manager.btn_press(&__btn_press);
+	this-> base_room.exit_btn-> hover_enabled = true;
+	this-> base_room.exit_btn-> press_enabled = true;
 
-	// exit button
-	btn.create_btn(btn_id, btn_manager, firefly::types::coords<uint_t>(122, 1));
+	btn.center_btn(this-> base_room.exit_btn, this-> wd_xaxis_len, 0);
 
-	firefly::types::btn_t *exit_btn = this-> _room_manager.get_btn(this-> base_room, btn_id);
 
-	exit_btn-> press_fptr = &btn_press;
-	exit_btn-> hover_enabled = true;
-	exit_btn-> press_enabled = true;
+	btn.load_btn_ast(this-> asset_manager.load_asset("../assets/btn_skel_creator", firefly::asset_manager::AST_PNG_FILE), &this-> asset_manager);
+	btn.create_btn(btn_id, &firefly::room_manager::get_btn_manager(this-> base_room_id, &this-> _room_manager), firefly::types::coords<uint_t>(0, 1 + btn.get_pm_size().yaxis_len + 1));
 
-	if (btn.fload_btn_pm("../assets/", "btn_skel_creator") != FFLY_SUCCESS) {
-		return FFLY_FAILURE;
-	}
+	this-> base_room.skelc_btn = this-> _room_manager.get_btn(this-> base_room_id, btn_id);
+	this-> base_room.skelc_btn-> voidptr = this;
+	this-> base_room.skelc_btn-> press_fptr = this-> _room_manager.btn_press(&__btn_press);
+	this-> base_room.skelc_btn-> hover_enabled = true;
+	this-> base_room.skelc_btn-> press_enabled = true;
 
-	// skelcreator button
-	btn.create_btn(btn_id, btn_manager, firefly::types::coords<uint_t>(1, 47));
+	btn.center_btn(this-> base_room.skelc_btn, this-> wd_xaxis_len, 0);
 
-	firefly::types::btn_t *skelc_btn = this-> _room_manager.get_btn(this-> base_room, btn_id);
-	skelc_btn-> voidptr = this;
-	skelc_btn-> press_fptr = &btn_press;
-	skelc_btn-> hover_enabled = true;
-	skelc_btn-> press_enabled = true;
 
-	btn_manager = &firefly::room_manager::get_btn_manager(this-> skelc_room, &this-> _room_manager);
+	btn.load_btn_ast(this-> asset_manager.load_asset("../assets/btn_main_menu", firefly::asset_manager::AST_PNG_FILE), &this-> asset_manager);
+	btn.create_btn(btn_id, &firefly::room_manager::get_btn_manager(this-> skelc_room_id, &this-> _room_manager), firefly::types::coords<uint_t>(0, 1));
 
-	if (btn.fload_btn_pm("../assets/", "btn_main_menu") != FFLY_SUCCESS) {
-		return FFLY_FAILURE;
-	}
+	this-> skelc_room.main_menu_btn = this-> _room_manager.get_btn(this-> skelc_room_id, btn_id);
+	this-> skelc_room.main_menu_btn-> voidptr = this;
+	this-> skelc_room.main_menu_btn-> press_fptr = this-> _room_manager.btn_press(&__btn_press);
+	this-> skelc_room.main_menu_btn-> hover_enabled = true;
+	this-> skelc_room.main_menu_btn-> press_enabled = true;
 
-	// main menu button
-	btn.create_btn(btn_id, btn_manager, firefly::types::coords<uint_t>(1, 1));
-
-	firefly::types::btn_t *mmenu_btn = this-> _room_manager.get_btn(this-> skelc_room, btn_id);
-
-	mmenu_btn-> voidptr = this;
-	mmenu_btn-> press_fptr = &_btn_press;
-	mmenu_btn-> hover_enabled = true;
-	mmenu_btn-> press_enabled = true;
+	btn.center_btn(this-> skelc_room.main_menu_btn, this-> wd_xaxis_len, 0);
 
 	return FFLY_SUCCESS;
 }
@@ -128,7 +121,7 @@ boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
 			this-> to_shutdown = true;
 		}
 
-		usleep(100);
+		usleep(10000);
 		window.wd_handler.add_wd_flag(WD_DONE_DRAW);
 		window.wd_handler.rm_wd_flag(WD_WAITING);
 	} while(!this-> to_shutdown);
@@ -139,6 +132,7 @@ boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
 	cudaDeviceReset();
 
 	window.de_init();
+	asset_manager.de_init();
 
 	printf("done.\n");
 	return FFLY_SUCCESS;

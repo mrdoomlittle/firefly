@@ -16,6 +16,7 @@ namespace mdl {
 namespace firefly {
 class room_manager {
 	public:
+	room_manager();
 	typedef struct {
 		uint_t *id = nullptr;
 	} room_info_t;
@@ -61,6 +62,17 @@ class room_manager {
 	types::btn_t* get_btn(uint_t *__room_id, uint_t __btn_id) {
 		return this-> _room_data[*__room_id].btn_manager-> get_btn(__btn_id);
 	}
+
+	void static (* _btn_press)(uint_t, int, void *, uint_t *);
+	void static (* _btn_hover)(uint_t, void *, uint_t *);
+
+	uint_t static **_room_id;
+
+	void static btn_pressf(uint_t __btn_id, int __mbtn_id, void *__voidptr);
+	void static btn_hoverf(uint_t __btn_id, void *__voidptr);
+
+	void (* btn_press(void (* __btn_press)(uint_t, int, void *, uint_t *)))(uint_t, int, void *);
+	void (* btn_hover(void (* __btn_hover)(uint_t, void *, uint_t *)))(uint_t, void *);
 
 	void set_glob_pb_xlen(uint_t __xaxis_len) {
 		this-> pb_xaxis_len = __xaxis_len;

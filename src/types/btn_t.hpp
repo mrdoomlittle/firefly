@@ -14,6 +14,7 @@ typedef struct {
 	void (* press_fptr) (uint_t, int, void *) = nullptr;
 	void (* hover_fptr) (uint_t, void *) = nullptr;
 	pixmap_t pixmap;
+	bool inde_pm_mem = false;
 	void *voidptr = nullptr;
 } btn_t;
 }

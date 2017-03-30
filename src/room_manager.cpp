@@ -1,4 +1,31 @@
 # include "room_manager.hpp"
+mdl::uint_t **mdl::firefly::room_manager::_room_id = nullptr;
+
+void (* mdl::firefly::room_manager::_btn_press)(uint_t, int, void *, uint_t *) = nullptr;
+void (* mdl::firefly::room_manager::_btn_hover)(uint_t, void *, uint_t *) = nullptr;
+
+mdl::firefly::room_manager::room_manager() {
+	room_manager::_room_id = &this-> curr_room_id;
+}
+
+void mdl::firefly::room_manager::btn_pressf(uint_t __btn_id, int __mbtn_id, void *__voidptr) {
+	room_manager::_btn_press(__btn_id, __mbtn_id, __voidptr, *room_manager::_room_id);
+}
+
+void mdl::firefly::room_manager::btn_hoverf(uint_t __btn_id, void *__voidptr) {
+	room_manager::_btn_hover(__btn_id, __voidptr, *room_manager::_room_id);
+}
+
+void (* mdl::firefly::room_manager::btn_press(void (* __btn_press)(uint_t, int, void *, uint_t *)))(uint_t, int, void *) {
+	room_manager::_btn_press = __btn_press;
+	return &room_manager::btn_pressf;
+}
+
+void (* mdl::firefly::room_manager::btn_hover(void (* __btn_hover)(uint_t, void *, uint_t *)))(uint_t, void *) {
+	room_manager::_btn_hover = __btn_hover;
+	return &room_manager::btn_hoverf;
+}
+
 boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __overwrite) {
 	if (__room_id != nullptr && !__overwrite) return FFLY_NOP;
 
@@ -111,12 +138,26 @@ boost::int8_t mdl::firefly::room_manager::draw_room(uint_t *__room_id) {
 	types::pixmap_t pixbuff = room_data.pixbuff == nullptr? this-> pixbuff : room_data.pixbuff;
 	if (pixbuff == nullptr) return FFLY_NOP;
 
+	/*
+		if __room_id has been set this will cause issues with the static btn_press, and btn_hover
+		as they depend on curr_room_id to be set.
+	*/
+
+	uint_t *tmp_room_id;
+	if (room_id == __room_id) {
+		tmp_room_id = this-> curr_room_id;
+		this-> curr_room_id = room_id;
+	}
+
 	if (room_data.btn_manager != nullptr) {
 		if (room_data.btn_manager-> manage(pixbuff) == FFLY_FAILURE) {
 			fprintf(stderr, "room_manager: failed to call 'btn_manager::manage'\n");
 			return FFLY_FAILURE;
 		}
 	}
+
+	if (room_id == __room_id)
+		this-> curr_room_id = tmp_room_id;
 
 	return FFLY_SUCCESS;
 }
@@ -126,10 +167,10 @@ boost::int8_t mdl::firefly::room_manager::rm_room(uint_t *__room_id, bool __hard
 }
 
 boost::int8_t mdl::firefly::room_manager::manage(uint_t *__room_id) {
-	if (!this-> room_change.empty()) {
+	if (!this-> room_change.empty() && !this-> window-> is_button_press()) {
 		printf("room_manager: changing room to id with %d\n", *this-> room_change.front());
 		this-> curr_room_id = this->room_change.front();
-		this->room_change.pop();
+		this-> room_change.pop();
 	}
 
 	uint_t *room_id = __room_id == nullptr? this-> curr_room_id : __room_id;

@@ -7,6 +7,11 @@
 # include <boost/cstdint.hpp>
 # include "../system/errno.h"
 # include "../types/dsize_t.hpp"
+# include "../types/btn_t.hpp"
+# include "../maths/find_center.hpp"
+# include "../asset_manager.hpp"
+# include "../types/id_t.hpp"
+# include <initializer_list>
 namespace mdl {
 namespace firefly {
 namespace gui {
@@ -20,9 +25,34 @@ class btn {
 			return FFLY_SUCCESS;
 		}
 
+		boost::int8_t load_btn_ast(types::id_t __asset_id, asset_manager *__asset_manager) {
+			if (__asset_manager-> asset(__asset_id).type == asset_manager::AST_PNG_FILE) {
+				this-> pm_size = *(types::dsize_t *)__asset_manager-> get_asset_info(__asset_id);
+				this-> pixmap = __asset_manager-> get_asset_data(__asset_id);
+			}
+		}
+
 		boost::int8_t create_btn(uint_t& __btn_id, btn_manager *__btn_manager, types::coords_t<> __coords) {
 			__btn_id = __btn_manager-> create_btn(this-> pixmap, __coords, this-> pm_size.xaxis_len, this-> pm_size.yaxis_len);
+			__btn_manager-> get_btn(__btn_id)-> inde_pm_mem = true;
 			return FFLY_SUCCESS;
+		}
+
+		void center_btn(std::initializer_list<types::btn_t *> __btn_id, uint_t __xmax = 0, uint_t __ymax = 0) {
+			for (std::initializer_list<types::btn_t *>::iterator itor = __btn_id.begin(); itor != __btn_id.end(); ++itor)
+				this-> center_btn(*itor, __xmax, __ymax);
+		}
+
+		void center_btn(types::btn_t *__btn, uint_t __xmax = 0, uint_t __ymax = 0) {
+			if (__xmax != 0)
+				__btn-> coords.xaxis = maths::find_center(__xmax) - maths::find_center(__btn-> xaxis_len);
+
+			if (__ymax != 0)
+				__btn-> coords.yaxis = maths::find_center(__ymax) - maths::find_center(__btn-> yaxis_len);
+		}
+
+		types::dsize_t get_pm_size() {
+			return pm_size;
 		}
 	private:
 	types::dsize_t pm_size;

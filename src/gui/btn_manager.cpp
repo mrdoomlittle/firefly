@@ -1,8 +1,8 @@
 # include "btn_manager.hpp"
 
 bool mdl::firefly::gui::btn_manager::mouse_inside(types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len) {
-	if ((this-> mouse_coords-> xaxis > __coords.xaxis && this-> mouse_coords-> xaxis < (__coords.xaxis + (int_t)__xaxis_len))
-	&& (this-> mouse_coords-> yaxis > __coords.yaxis && this-> mouse_coords-> yaxis < (__coords.yaxis + (int_t)__yaxis_len))) return true;
+	if ((this-> mouse_coords-> xaxis > __coords.xaxis && this-> mouse_coords-> xaxis <= (__coords.xaxis + __xaxis_len))
+	&& (this-> mouse_coords-> yaxis > __coords.yaxis && this-> mouse_coords-> yaxis <= (__coords.yaxis + __yaxis_len))) return true;
 	return false;
 }
 
@@ -24,7 +24,14 @@ mdl::uint_t mdl::firefly::gui::btn_manager::create_btn(types::pixmap_t __pixmap,
 	btn_info.enabled = true;
 	btn_info.hover_enabled = false;
 	btn_info.press_enabled = false;
+	btn_info.inde_pm_mem = false;
 	this-> btn_index(btn_id) = btn_info;
+	return btn_id;
+}
+
+mdl::uint_t mdl::firefly::gui::btn_manager::create_btn(types::id_t __asset_id, types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len, asset_manager *__asset_manager) {
+	uint_t btn_id = this-> create_btn(__asset_manager-> get_asset_data(__asset_id), __coords, __xaxis_len, __yaxis_len);
+	this-> btn_index[btn_id].inde_pm_mem = true;
 	return btn_id;
 }
 

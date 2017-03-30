@@ -1,2 +1,4 @@
 -> rename networking / *_server *_client to *server_poxix *client_poxix
 -> when user uses ctrl_c have it so if its pressed 2 times it will force the program to close.
+-> when getting the pointers for a btn_t from the btn_manager if a button has been added the pointer will change as 
+the vector gets resized, fix alloc memory for each btn_t and store it in the vector as a pointer.

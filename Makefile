@@ -33,7 +33,8 @@ else ifeq ($(FFLY_TARGET), -DFFLY_CLIENT)
 	EXTRA_DEFINES += -DOBJ_MANAGER
 else ifeq ($(FFLY_TARGET), -DFFLY_STUDIO)
 	FFLY_OBJECTS += src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
-	src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o src/graphics/png_loader.o src/room_manager.o #src/ffly_studio.o
+	src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
+	src/graphics/png_loader.o src/room_manager.o src/asset_manager.o src/system/time_stamp.o #src/ffly_studio.o
 	LDFLAGS += -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple
 	CXX_IFLAGS += -I/usr/include/freetype2 $(CUDART_INC)
 	FFLY_WINDOW = -DUSING_X11
@@ -176,6 +177,9 @@ src/graphics/xcb_window.o: src/graphics/xcb_window.cpp
 
 src/room_manager.o: src/room_manager.cpp
 	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/room_manager.o src/room_manager.cpp
+
+src/system/time_stamp.o: src/system/time_stamp.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/time_stamp.o src/system/time_stamp.cpp
 
 relocate_headers:
 	if ! [ -d $(CURR_DIR)/inc/firefly ]; then \
