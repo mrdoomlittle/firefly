@@ -1,6 +1,6 @@
 # include "layering.hpp"
 
-void mdl::firefly::tests::layering(uint_t __max_xlen, uint_t __min_xlen, uint_t __max_ylen, uint_t __min_ylen, layer *__layer_ptr, uint_t __amount, uint_t __spacing, boost::uint8_t __alpha) {
+void mdl::firefly::tests::layering(uint_t __max_xlen, uint_t __min_xlen, uint_t __max_ylen, uint_t __min_ylen, layer_manager *__layer_ptr, uint_t __amount, uint_t __spacing, boost::uint8_t __alpha) {
 	uint_t xaxis = 0;
 	uint_t yaxis = 0;
 

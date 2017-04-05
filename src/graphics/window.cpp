@@ -46,8 +46,9 @@ int main() {
 	window.init(640, 640, "Hello World");
 	window.begin();
 
-	do {
-//		printf("%d\n", window.wd_handler.key_code);
-//		printf("%d\n", window
-	} while (1);
+
+	usleep(1000000);
+	window.de_init();
+	printf("finished.\n");
+	return 0;
 }*/

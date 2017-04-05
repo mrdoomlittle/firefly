@@ -27,7 +27,7 @@ class room_manager {
 		gui::btn_manager *btn_manager;
 	} room_data_t;
 
-	boost::int8_t create_btn(uint_t *__room_id, uint_t& __btn_id, types::pixmap_t __pixmap, types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
+	boost::int8_t create_btn(uint_t *__room_id, uint_t& __btn_id, types::pixmap_t __pixmap, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
 
 	bool id_inuse(uint_t *__room_id) {
 		if (this-> unused_ids.find(__room_id) != this-> unused_ids.end()) return false;

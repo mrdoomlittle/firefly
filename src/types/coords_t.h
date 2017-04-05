@@ -6,4 +6,8 @@ typedef struct {
 	uint_t xaxis, yaxis, zaxis;
 } uint_coords_t;
 
+typedef struct {
+	int_t xaxis, yaxis, zaxis;
+} int_coords_t;
+
 # endif /*__coords__t__h*/

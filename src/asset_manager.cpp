@@ -3,14 +3,14 @@
 mdl::uint_t *mdl::firefly::asset_manager::load_asset(char const *__asset_file, uint_t __asset_type) {
 	uint_t *asset_id;
 	if (__asset_type == asset_manager::AST_PNG_FILE) {
-		types::dsize_t *dsize = (types::dsize_t *)memory::mem_alloc(sizeof(types::dsize_t));
+		types::_2d_dsize_t<> *dsize = (types::_2d_dsize_t<> *)memory::mem_alloc(sizeof(types::_2d_dsize_t<>));
 		types::pixmap_t pixmap;
 
 		if (graphics::load_png_file("", __asset_file, pixmap, *dsize) != FFLY_SUCCESS) {
-			return 0;
+			return nullptr;
 		}
 
-		asset_id = this-> add_asset(pixmap, __asset_type);
+		asset_id = this-> add_asset(pixmap, 0, __asset_type);
 
 		this-> asset_info(asset_id) = dsize;
 	}
@@ -18,7 +18,7 @@ mdl::uint_t *mdl::firefly::asset_manager::load_asset(char const *__asset_file, u
 	return asset_id;
 }
 
-mdl::uint_t *mdl::firefly::asset_manager::add_asset(boost::uint8_t *__data, uint_t __type) {
+mdl::uint_t *mdl::firefly::asset_manager::add_asset(boost::uint8_t *__data, uint_t __bytes, uint_t __type) {
 	uint_t *asset_id = (uint_t *)memory::mem_alloc(sizeof(uint_t));
 	this-> asset_indx.resize(this-> asset_indx.size() + 1);
 
@@ -26,6 +26,7 @@ mdl::uint_t *mdl::firefly::asset_manager::add_asset(boost::uint8_t *__data, uint
 	this-> asset_indx[*asset_id].id = asset_id;
 	this-> asset_indx[*asset_id].data = __data;
 	this-> asset_indx[*asset_id].type = __type;
+	this-> asset_indx[*asset_id].bytes = __bytes;
 
 	printf("adding asset, id: %d\n", *asset_id);
 

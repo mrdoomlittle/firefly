@@ -41,7 +41,7 @@ boost::int8_t mdl::firefly::graphics::load_png_file(char const *__filedir, char 
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::firefly::graphics::load_png_file(char const *__filedir, char const *__filename, types::pixmap_t&__pixmap, types::dsize_t& __pm_size) {
+boost::int8_t mdl::firefly::graphics::load_png_file(char const *__filedir, char const *__filename, types::pixmap_t&__pixmap, types::_2d_dsize_t<>& __pm_size) {
 	uint_t pm_size[2] = {0};
 	boost::int8_t result = load_png_file(__filedir, __filename, __pixmap, pm_size);
 	__pm_size.xaxis_len = pm_size[0];

@@ -32,8 +32,8 @@ class x11_window: public wd_flags
 		this-> fps_mark = __fps_mark;
 	}
 
-	types::coords_t<int> wd_coords;
-	types::mouse_coords_t<int, int> mouse_coords;
+	types::coords_t<int> wd_coords = {0, 0, 0};
+	types::mouse_coords_t<int, int> mouse_coords = {{0, 0, 0}, {0, 0, 0}};
 	bool contains_pointer = false;
 
 	types::pixmap_t pixbuff = nullptr;
@@ -64,6 +64,8 @@ class x11_window: public wd_flags
 		memory::mem_free(pixbuff);
 		memory::mem_free(frame_title);
 
+	// looks like we dont need this ... for now
+/*
 		int th_err = 0;
 		if ((th_err = pthread_cancel(this-> native_handle)) != 0) {
 			if (th_err != ESRCH) {
@@ -71,6 +73,7 @@ class x11_window: public wd_flags
 				return FFLY_FAILURE;
 			}
 		}
+*/
 		return FFLY_SUCCESS;
 	}
 

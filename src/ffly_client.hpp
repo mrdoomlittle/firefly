@@ -23,17 +23,23 @@
 # ifdef OBJ_MANAGER
 #	include "obj_manager.hpp"
 # endif
+
+# ifdef ROOM_MANAGER
+#	include "room_manager.hpp"
+# endif
+
 # ifdef UNI_MANAGER
 #	include "uni_manager.hpp"
 #   include "types/uni_prop_t.hpp"
 # endif
+# include "types/id_t.hpp"
 namespace mdl { class ffly_client
 {
 	public:
 # ifndef UNI_MANAGER
-	ffly_client(uint_t __win_xlen, uint_t __win_ylen) : win_xlen(__win_xlen), win_ylen(__win_ylen) {}
+	ffly_client(boost::uint16_t __win_xlen, boost::uint16_t __win_ylen) : win_xlen(__win_xlen), win_ylen(__win_ylen) {}
 # else
-	ffly_client(uint_t __win_xlen, uint_t __win_ylen, firefly::types::uni_prop_t uni_props)
+	ffly_client(boost::uint16_t __win_xlen, boost::uint16_t __win_ylen, firefly::types::uni_prop_t uni_props)
 	: win_xlen(__win_xlen), win_ylen(__win_ylen), uni_manager(uni_props.xaxis_len, uni_props.yaxis_len, uni_props.zaxis_len) {}
 # endif
 	boost::int8_t connect_to_server(int& __sock);
@@ -42,7 +48,7 @@ namespace mdl { class ffly_client
 
 	~ffly_client() {
 		printf("ffly_client has safly shutdown.\n");
-		this-> cu_clean();
+//		this-> cu_clean();
 	}
 
 	void cu_clean() {
@@ -89,14 +95,12 @@ namespace mdl { class ffly_client
 		mdl::ffly_client *_this;
 	} portal_t;
 
-	uint_t bse_layer_id = 0;
-	firefly::layer layer;
+	firefly::types::__id_t bse_layer_id = 0;
+	firefly::layer_manager layer;
 
 	char const *server_ipaddr = nullptr;
 	boost::uint16_t server_portno = 0;
 	bool server_connected = false;
-
-	bool _to_shutdown = false;
 
 	boost::int8_t init(firefly::types::init_opt_t __init_options);
 
@@ -106,30 +110,11 @@ namespace mdl { class ffly_client
 
 	firefly::graphics::window window;
 
-	bool poll_event(firefly::system::event& __event) {
-		if (_to_shutdown) return false;
-		static bool init = false;
-		if (init) {
-			__event.key_code = 0x0;
-			init = false;
-			return false;
-		}
+	bool poll_event(firefly::system::event& __event);
 
-		if (this-> window.wd_handler.key_press) {
-			__event.key_code = this-> window.wd_handler.key_code;
-			__event.event_type = firefly::system::event::KEY_PRESSED;
-		} else if(!this-> window.wd_handler.key_press) {
-			__event.key_code = this-> window.wd_handler.key_code;
-			__event.event_type = firefly::system::event::KEY_RELEASED;
-		} else {
-			__event.event_type = firefly::system::event::NULL_EVENT;
-			return false;
-		}
+	bool static to_shutdown;
 
-		init = true;
-		return true;
-	}
-
+	firefly::system::event *event = nullptr;
 	portal_t portal;
 
 	uint_t cam_layer_id = 0;
@@ -148,6 +133,12 @@ namespace mdl { class ffly_client
 		this-> obj_manager-> manage();
 	}
 # endif
+
+# ifdef ROOM_MANAGER
+	firefly::types::id_t bse_room_id;
+	firefly::room_manager room_manager;
+# endif
+
 # ifdef UNI_MANAGER
 	firefly::uni_manager uni_manager;
 # endif
@@ -157,7 +148,7 @@ namespace mdl { class ffly_client
 
 	firefly::networking::tcp_client tcp_stream;
 	firefly::networking::udp_client udp_stream;
-	uint_t const win_xlen = 0, win_ylen = 0;
+	boost::uint16_t const win_xlen, win_ylen;
 };
 }
 

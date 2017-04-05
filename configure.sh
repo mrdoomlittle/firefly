@@ -1,5 +1,5 @@
 #!/bin/sh
-CXX_IFLAGS="-Inibbles/inc -Itermio/inc -Ieint_t/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Itagged_memory/inc"
+CXX_IFLAGS="-I/usr/include/freetype2 -Inibbles/inc -Itermio/inc -Ieint_t/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Itagged_memory/inc"
 CXX_LFLAGS="-Lnibbles/lib -Ltermio/lib -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstrcmb/lib -Ltagged_memory/lib"
 CXXFLAGS="$CXX_IFLAGS $CXX_LFLAGS"
 LDFLAGS="-ltagged_memory -ltermio -lintlen -lgetdigit -lto_string -lstrcmb -lnibbles -lboost_system -lboost_filesystem -lpthread -lboost_thread"

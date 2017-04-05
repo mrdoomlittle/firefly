@@ -1,5 +1,5 @@
 # include "fill_pixmap.hpp"
-__global__ void cu_fill_pixmap(boost::uint8_t *__pixmap, mdl::firefly::graphics::colour_t *__colour) {
+__global__ void cu_fill_pixmap(mdl::firefly::types::pixmap_t __pixmap, mdl::firefly::graphics::colour_t *__colour) {
 	mdl::uint_t point = (threadIdx.x + (blockIdx.x * blockDim.x)) * 4;
 
 	__pixmap[point] =__colour-> r;
@@ -9,13 +9,13 @@ __global__ void cu_fill_pixmap(boost::uint8_t *__pixmap, mdl::firefly::graphics:
 }
 
 
-boost::int8_t mdl::firefly::graphics::fill_pixmap(boost::uint8_t *__pixmap, uint_t __xlen, uint_t __ylen, colour_t __colour) {
-	static boost::uint8_t *pixmap = nullptr;
+mdl::firefly::types::err_t mdl::firefly::graphics::fill_pixmap(types::pixmap_t __pixmap, uint_t __xaxis_len, uint_t __yaxis_len, colour_t __colour) {
+	static types::pixmap_t pixmap = nullptr;
 	static colour_t *colour = nullptr;
 	static bool initialized = false;
 	cudaError_t any_error = cudaSuccess;
 
-	uint_t pixmap_size = (__xlen * __ylen) * 4;
+	uint_t pixmap_size = (__xaxis_len * __yaxis_len) * 4;
 	static uint_t _pixmap_size = 0;
 
 	if (pixmap_size == 0) {
@@ -26,7 +26,7 @@ boost::int8_t mdl::firefly::graphics::fill_pixmap(boost::uint8_t *__pixmap, uint
 	if (_pixmap_size != pixmap_size) {
 		if (pixmap != nullptr) cudaFree(pixmap);
 
-		if ((any_error = cudaMalloc((void **)&pixmap, pixmap_size * sizeof(boost::uint8_t))) != cudaSuccess) {
+		if ((any_error = cudaMalloc((void **)&pixmap, pixmap_size * sizeof(types::__pixmap_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
 			return FFLY_FAILURE;
 		} 
@@ -48,7 +48,7 @@ boost::int8_t mdl::firefly::graphics::fill_pixmap(boost::uint8_t *__pixmap, uint
 		initialized = true;
 	}
 
-	cudaMemcpy(pixmap, __pixmap, pixmap_size * sizeof(boost::uint8_t), cudaMemcpyHostToDevice);
+	cudaMemcpy(pixmap, __pixmap, pixmap_size * sizeof(types::__pixmap_t), cudaMemcpyHostToDevice);
 
 	static colour_t _colour = {0, 0, 0, 0};
 
@@ -59,7 +59,7 @@ boost::int8_t mdl::firefly::graphics::fill_pixmap(boost::uint8_t *__pixmap, uint
 		}
 	}
 
-	cu_fill_pixmap<<<__ylen, __xlen>>>(pixmap, colour);
+	cu_fill_pixmap<<<__yaxis_len, __xaxis_len>>>(pixmap, colour);
 
 	cudaMemcpy(__pixmap, pixmap, pixmap_size * sizeof(boost::uint8_t), cudaMemcpyDeviceToHost);
 

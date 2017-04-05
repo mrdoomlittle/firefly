@@ -12,6 +12,15 @@ namespace ublas = boost::numeric::ublas;
 # include "../graphics/draw_pixmap.hpp"
 # include "../types/id_t.hpp"
 # include "../asset_manager.hpp"
+# include "../memory/mem_alloc.h"
+# include "../memory/alloc_pixmap.hpp"
+# include "../graphics/fill_pixmap.hpp"
+# include "../types/colour_t.hpp"
+# include "../types/err_t.h"
+# include "../font.hpp"
+# include "../types/bitmap_t.hpp"
+# include "../graphics/draw_bitmap.hpp"
+# include "../types/colour_t.hpp"
 namespace mdl {
 namespace firefly {
 namespace gui {
@@ -19,15 +28,17 @@ class btn_manager {
 	public:
 	btn_manager(types::pixmap_t __pixbuff, types::coords_t<boost::int16_t> *__wd_coords, types::coords_t<boost::uint16_t> *__mouse_coords, boost::uint16_t __pb_xaxis_len, boost::uint16_t __pb_yaxis_len)
 	: pixbuff(__pixbuff), wd_coords(__wd_coords), mouse_coords(__mouse_coords), pb_xaxis_len(__pb_xaxis_len), pb_yaxis_len(__pb_yaxis_len) {
-		this-> btn_index.resize(0);
 	}
 
-	uint_t create_btn(types::pixmap_t __pixmap, types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
-	uint_t create_btn(types::id_t __asset_id, types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len, asset_manager *__asset_manger);
+	types::err_t create_btn(uint_t& __btn_id, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
+	uint_t create_btn(types::pixmap_t __pixmap, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
+	uint_t create_btn(types::id_t __asset_id, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len, asset_manager *__asset_manger);
 
 	uint_t create_btn(types::btn_info_t __btn_info) {
 		return this-> create_btn(__btn_info.pixmap, __btn_info.coords, __btn_info.xaxis_len, __btn_info.yaxis_len);
 	}
+
+	types::err_t set_text(uint_t __btn_id, char const * __text, char const *__font,  uint_t __xoffset, uint_t __yoffset, std::size_t __spacing, bool __mid);
 
 	void set_voidptr(uint_t __btn_id, void *__ptr) {
 		this-> btn_index[__btn_id].voidptr = __ptr;
@@ -41,7 +52,7 @@ class btn_manager {
 		this-> btn_index[__btn_id].hover_fptr = __hover_fptr;
 	}
 
-	bool mouse_inside(types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
+	bool mouse_inside(types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
 	void enable_btn(uint_t __btn_id) {
 		this-> btn_index[__btn_id].enabled = true;
 	}
@@ -89,18 +100,21 @@ class btn_manager {
 	boost::int8_t manage(types::pixmap_t __pixbuff = nullptr);
 	boost::int8_t de_init() {
 		printf("btn_manager: going to free all btn pixmaps.\n");
-		for (uint_t btn_id = 0; btn_id != this-> btn_index.size(); btn_id ++)
-			if (this-> btn_index[btn_id].pixmap != nullptr && !this-> btn_index[btn_id].inde_pm_mem)
-				memory::mem_free(this-> btn_index[btn_id].pixmap);
+		for (uint_t btn_id = 0; btn_id != this-> btn_index.size(); btn_id ++) {
+			if (this-> btn_index[btn_id].texture != nullptr && !this-> btn_index[btn_id].inde_tx_mem)
+				memory::mem_free(this-> btn_index[btn_id].texture);
+			memory::mem_free(this-> btn_index[btn_id].text_bm);
+		}
 	}
 
 	bool *mouse_pressed;
 	int *mouse_btn_id;
+
+	types::coords_t<boost::int16_t> *wd_coords;
+    types::coords_t<boost::uint16_t> *mouse_coords;
 	private:
 	ublas::vector<types::btn_t> btn_index;
 	types::pixmap_t pixbuff = nullptr;
-	types::coords_t<boost::int16_t> *wd_coords;
-	types::coords_t<boost::uint16_t> *mouse_coords;
 	boost::uint16_t pb_xaxis_len, pb_yaxis_len;
 };
 }

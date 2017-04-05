@@ -1,5 +1,5 @@
 # include "ffly_client.hpp"
-static bool *_to_shutdown = nullptr;
+bool mdl::ffly_client::to_shutdown = false;
 
 boost::int8_t mdl::ffly_client::connect_to_server(int& __sock) {
 	for (; this-> connect_trys != FFLY_MAX_CONN_TRYS; this-> connect_trys++) {
@@ -70,12 +70,10 @@ boost::int8_t mdl::ffly_client::recv_cam_frame() {
 
 void ctrl_c(int __sig) {
 	printf("looks like ctrl_c was called bye bye...\n");
-	*_to_shutdown = true;
+	mdl::ffly_client::to_shutdown = true;
 }
 
 boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) {
-	::_to_shutdown = &this-> _to_shutdown;
-
 	struct sigaction sig_handler;
 
 	sig_handler.sa_handler = ctrl_c;
@@ -103,22 +101,79 @@ boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) 
 # if defined(OBJ_MANAGER) && defined(UNI_MANAGER)
 	if (__init_options.obj_manger_ptr == nullptr) {
 //		static obj_manager _obj_manager();
-
 	}
 # endif
+
+# ifdef ROOM_MANAGER
+	this-> room_manager.init(&window);
+
+	this-> room_manager.use_glob_pb_size = true;
+	this-> room_manager.set_glob_pb_xlen(this-> win_xlen);
+	this-> room_manager.set_glob_pb_ylen(this-> win_ylen);
+
+	if (__init_options.add_bse_room) {
+		if (this-> room_manager.add_room(this-> bse_room_id, true) != FFLY_SUCCESS) {
+			fprintf(stderr, "ffly_client: failed to add base room.\n");
+			return FFLY_FAILURE;
+		}
+	}
+
+	if (__init_options.change_room) {
+		if (this-> room_manager.change_room(this-> bse_room_id) != FFLY_SUCCESS) {
+			fprintf(stderr, "ffly_client: failed to change room.\n");
+			return FFLY_FAILURE;
+		}
+	}
+# endif
+
 	return FFLY_SUCCESS;
 }
 
 boost::int8_t mdl::ffly_client::de_init() {
 	this-> window.de_init();
+# ifdef ROOM_MANAGER
+	this-> room_manager.de_init();
+# endif
+
 # ifdef OBJ_MANAGER
 	if (this-> obj_manager != nullptr)
 		this-> obj_manager-> de_init();
 # endif
+
+	this-> asset_manager.de_init();
+	this-> cu_clean();
+}
+
+bool mdl::ffly_client::poll_event(firefly::system::event& __event) {
+	if (ffly_client::to_shutdown) return false;
+	static bool inited = false;
+
+	if (!inited) {
+		this-> event = &__event;
+		inited = true;
+	}
+
+	if (!__event.queue_empty()) {
+		__event.event_type = __event.event_queue.front().event_type;
+		switch (__event.event_type) {
+			case firefly::system::event::KEY_PRESSED:
+				__event.key_code = __event.event_queue.front().key_code;
+			break;
+
+			case firefly::system::event::KEY_RELEASED:
+				__event.key_code = __event.event_queue.front().key_code;
+			break;
+		}
+
+		__event.queue_rm();
+		return true;
+	} else
+		__event.event_type = firefly::system::event::NULL_EVENT;
+
+	return false;
 }
 
 boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __extern_loop)(boost::int8_t, portal_t *, void *), void *__this) {
-//	firefly::graphics::window window;
 	printf("wx: %d, wy: %d\n", this-> win_xlen, this-> win_ylen);
 	if (window.init(this-> win_xlen, this-> win_ylen, __frame_title) != FFLY_SUCCESS) return FFLY_FAILURE;
 
@@ -127,7 +182,7 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 	window.wd_handler.set_fps_mark(60);
 
 	while(!window.wd_handler.is_wd_flag(WD_OPEN)) {
-		if (this-> _to_shutdown) return 0;
+		if (ffly_client::to_shutdown) return 0;
 	}
 
 	auto begin = std::chrono::high_resolution_clock::now();
@@ -136,10 +191,18 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 	this-> portal._this = this;
 
 	int sock;
+
+# ifdef ROOM_MANAGER
+	if (this-> init_options.add_bse_layer)
+		this-> room_manager.set_pixbuff(this-> layer.get_layer_pixmap(this-> bse_layer_id));
+	else
+		this-> room_manager.set_pixbuff(this-> window.get_pixbuff());
+# endif
+
 	do {
 		if (window.wd_handler.is_wd_flag(WD_CLOSED)) {
 			printf("window has been closed.\n");
-			break;
+			ffly_client::to_shutdown = true;
 		}
 
 		if (!window.wd_handler.is_wd_flag(WD_WAITING)) continue;
@@ -153,6 +216,24 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 			if (this-> recv_cam_frame() == FFLY_FAILURE) break;
 		}
 
+		if (this-> event != nullptr) {
+			if (this-> window.wd_handler.key_press) {
+				firefly::system::event::event_t event;
+
+				event.key_code = this-> window.wd_handler.key_code;
+				event.event_type = firefly::system::event::KEY_PRESSED;
+
+				this-> event-> queue_add(event);
+			} else if (!this-> window.wd_handler.key_press && this-> event-> last_event == firefly::system::event::KEY_PRESSED) {
+				firefly::system::event::event_t event;
+
+				event.key_code = this-> window.wd_handler.key_code;
+				event.event_type = firefly::system::event::KEY_RELEASED;
+
+				this-> event-> queue_add(event);
+			}
+		}
+
 		__extern_loop(0, &this-> portal, __this);
 
 		if (this-> server_ipaddr != nullptr && !this-> server_connected) {
@@ -162,6 +243,9 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 		skip:
 
 		this-> layer.draw_layers(window.get_pixbuff(), this-> win_xlen, this-> win_ylen);
+# ifdef ROOM_MANAGER
+		this-> room_manager.manage();
+# endif
 
 		window.wd_handler.add_wd_flag(WD_DONE_DRAW);
 		window.wd_handler.rm_wd_flag(WD_WAITING);
@@ -175,7 +259,9 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 			this-> fps_counter = 0;
 		} else this-> fps_counter++;
 
-	} while (!this-> _to_shutdown);
+	} while (!ffly_client::to_shutdown);
+
+	//printf("ffly_client: closed.\n");
 
 	this-> de_init();
 

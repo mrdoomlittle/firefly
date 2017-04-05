@@ -7,7 +7,7 @@ namespace firefly {
 namespace maths {
 template<typename _T = uint_t>
 __inline__ _T find_center(_T __no) {
-	return (_T)floor(__no / 2);
+	return (_T)round(__no / 2);
 }
 }
 }

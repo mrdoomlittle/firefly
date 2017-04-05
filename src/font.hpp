@@ -9,27 +9,30 @@
 # include <math.h>
 # include "types/coords_t.hpp"
 # include "memory/mem_alloc.h"
+# include "asset_manager.hpp"
+# include "types/err_t.h"
+# include "types/id_t.hpp"
 namespace mdl {
 namespace firefly {
 class font {
 	public:
 	boost::int8_t init() {
-		if (FT_Init_FreeType(&this-> library)) {
+		if (FT_Init_FreeType(&this-> library))
 			return FFLY_FAILURE;
-		}
- 
+
 		return FFLY_SUCCESS;
 	}
 
 	boost::int8_t load_font(char const *__filedir, char const *__filename) {
 		char *file_pth = strcmb(const_cast<char *>(__filedir), const_cast<char *>(__filename), STRCMB_FREE_NONE);
-
-		if (FT_New_Face(library, file_pth, 0, &this-> face)) {
+		if (FT_New_Face(library, file_pth, 0, &this-> face))
 			return FFLY_FAILURE;
-		}
 
 		return FFLY_SUCCESS;
 	}
+
+	types::err_t load_font(boost::uint8_t *__data, uint_t __bytes);
+	types::err_t load_font(types::id_t __asset_id, asset_manager *__asset_manager);
 
 	void set_size(std::size_t __size) {
 		FT_Set_Pixel_Sizes(face, 0, __size);
@@ -38,6 +41,9 @@ class font {
 
 	types::bitmap_t make_bitmap(char const *__text, std::size_t __spacing, uint_t __xaxis_len, uint_t __yaxis_len) {
 		firefly::types::bitmap_t bitmap = (firefly::types::bitmap_t)memory::mem_alloc(__xaxis_len * __yaxis_len);
+		if (bitmap == NULL)
+			return nullptr;
+
 		bzero(bitmap, __xaxis_len * __yaxis_len);
 
 		std::size_t xoffset = 0;
@@ -66,8 +72,15 @@ class font {
 	}
 
 	types::coords_t<> center() {
-		types::coords_t<> cc = { (uint_t)(round(this-> xaxis_len/2) - round(((this-> text_len * (this-> size + this-> spacing)) - this-> spacing ))/2), (uint_t)(round((this-> yaxis_len/this-> size)/2) * 16), 0};
-		return cc;
+		uint_t xaxis, yaxis;
+		this-> center(xaxis, yaxis);
+		//types::coords_t<> cc = { (uint_t)(round(this-> xaxis_len/2) - round(((this-> text_len * (this-> size + this-> spacing)) - this-> spacing ))/2), (uint_t)(round((this-> yaxis_len/this-> size)/2) * 16), 0};
+		return types::coords<>(xaxis, yaxis);
+	}
+
+	void center(uint_t& __xaxis, uint_t& __yaxis) {
+		__xaxis = (uint_t)(round(this-> xaxis_len/2) - round(((this-> text_len * (this-> size + this-> spacing)) - this-> spacing ))/2);
+		__yaxis = (uint_t)(round((this-> yaxis_len/this-> size)/2) * 16);
 	}
 
 	private:

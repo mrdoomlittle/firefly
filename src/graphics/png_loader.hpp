@@ -13,7 +13,7 @@ namespace mdl {
 namespace firefly {
 namespace graphics {
 boost::int8_t load_png_file(char const *__filedir, char const *__filename, types::pixmap_t&__pixmap, uint_t *__pm_size);
-boost::int8_t load_png_file(char const *__filedir, char const *__filename, types::pixmap_t&__pixmap, types::dsize_t& __pm_size);
+boost::int8_t load_png_file(char const *__filedir, char const *__filename, types::pixmap_t&__pixmap, types::_2d_dsize_t<>& __pm_size);
 }
 }
 }

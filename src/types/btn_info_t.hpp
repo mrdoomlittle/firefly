@@ -8,7 +8,7 @@ namespace firefly {
 namespace types {
 typedef struct {
 	pixmap_t pixmap;
-	coords_t<> coords;
+	_2d_coords_t<> coords;
 	uint_t xaxis_len, yaxis_len;
 } btn_info_t;
 }

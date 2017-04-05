@@ -9,7 +9,7 @@
 namespace mdl {
 namespace firefly {
 namespace tests {
-void layering(uint_t __max_xlen, uint_t __min_xlen, uint_t __max_ylen, uint_t __min_ylen, layer *__layer_ptr, uint_t __amount, uint_t __spacing, boost::uint8_t __alpha = 111);
+void layering(uint_t __max_xlen, uint_t __min_xlen, uint_t __max_ylen, uint_t __min_ylen, layer_manager *__layer_ptr, uint_t __amount, uint_t __spacing, boost::uint8_t __alpha = 111);
 }
 }
 }

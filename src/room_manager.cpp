@@ -117,7 +117,7 @@ boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __ov
 	return FFLY_FAILURE;
 }
 
-boost::int8_t mdl::firefly::room_manager::create_btn(uint_t *__room_id, uint_t& __btn_id, types::pixmap_t __pixmap, types::coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len) {
+boost::int8_t mdl::firefly::room_manager::create_btn(uint_t *__room_id, uint_t& __btn_id, types::pixmap_t __pixmap, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len) {
 //	room_info_t& room_info = this-> _room_info[*__room_id];
 	room_data_t& room_data = this-> _room_data[*__room_id];
 
@@ -130,7 +130,7 @@ boost::int8_t mdl::firefly::room_manager::create_btn(uint_t *__room_id, uint_t& 
 // move to 'manage()'
 boost::int8_t mdl::firefly::room_manager::draw_room(uint_t *__room_id) {
 	uint_t *room_id = __room_id == nullptr? this-> curr_room_id : __room_id;
-	if (room_id == nullptr) return FFLY_FAILURE;
+	if (room_id == nullptr) return FFLY_NOP;
 
 	room_info_t& room_info = this-> _room_info[*room_id];
 	room_data_t& room_data = this-> _room_data[*room_id];
@@ -174,7 +174,7 @@ boost::int8_t mdl::firefly::room_manager::manage(uint_t *__room_id) {
 	}
 
 	uint_t *room_id = __room_id == nullptr? this-> curr_room_id : __room_id;
-	if (room_id == nullptr) return FFLY_FAILURE;
+	if (room_id == nullptr) return FFLY_NOP;
 
 	this-> wd_coords = this-> window-> get_wd_coords();
 	this-> mouse_coords = this-> window-> get_mouse_coords().wd;

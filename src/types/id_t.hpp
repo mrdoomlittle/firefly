@@ -4,6 +4,7 @@
 namespace mdl {
 namespace firefly {
 namespace types {
+typedef uint_t __id_t;
 typedef uint_t* id_t;
 }
 }

@@ -27,6 +27,9 @@
 # include "maths/find_center.hpp"
 # include "types/btn_t.hpp"
 # include "asset_manager.hpp"
+# include "graphics/draw_pixmap.hpp"
+# include "graphics/draw_outline.hpp"
+# include "graphics/png_loader.hpp"
 namespace mdl {
 class ffly_studio {
 	public:
@@ -51,7 +54,7 @@ class ffly_studio {
 		firefly::types::btn_t *main_menu_btn;
 	} skelc_room;
 
-	bool to_shutdown = false;
+	bool static to_shutdown;
 	private:
 	firefly::graphics::window window;
 	firefly::room_manager _room_manager;

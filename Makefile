@@ -12,7 +12,7 @@ CURR_DIR=${CURDIR}
 #LIBRARY_OBJS=intlen/src/intlen.o to_string/src/to_string.o strcmb/src/strcmb.o getdigit/src/getdigit.
 FFLY_OBJECTS=
 FFLY_WINDOW=
-EXTRA_DEFINES=-DUNI_MANAGER
+EXTRA_DEFINES=
 #tt:
 #	echo "$(CUDA)"
 
@@ -27,14 +27,16 @@ else ifeq ($(FFLY_TARGET), -DFFLY_CLIENT)
 	FFLY_OBJECTS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o \
 	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/draw_pixmap.clo \
 	src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o \
-	src/layer_manager.o src/obj_manager.o src/maths/cal_dist.o src/gravy_manager.o src/flip_dir.o
+	src/layer_manager.o src/obj_manager.o src/maths/cal_dist.o src/gravy_manager.o src/flip_dir.o src/system/time_stamp.o src/room_manager.o \
+	src/gui/btn_manager.o src/system/event.o src/graphics/draw_bitmap.o src/font.o
 	LDFLAGS += -lX11 -lGL -lGLU -lglut
 	FFLY_WINDOW = -DUSING_X11
-	EXTRA_DEFINES += -DOBJ_MANAGER
+#	EXTRA_DEFINES += -DOBJ_MANAGER
 else ifeq ($(FFLY_TARGET), -DFFLY_STUDIO)
 	FFLY_OBJECTS += src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
 	src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
-	src/graphics/png_loader.o src/room_manager.o src/asset_manager.o src/system/time_stamp.o #src/ffly_studio.o
+	src/graphics/png_loader.o src/room_manager.o src/asset_manager.o src/system/time_stamp.o  src/graphics/draw_rect.o \
+	src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o #src/ffly_studio.o
 	LDFLAGS += -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple
 	CXX_IFLAGS += -I/usr/include/freetype2 $(CUDART_INC)
 	FFLY_WINDOW = -DUSING_X11
@@ -180,6 +182,21 @@ src/room_manager.o: src/room_manager.cpp
 
 src/system/time_stamp.o: src/system/time_stamp.cpp
 	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/time_stamp.o src/system/time_stamp.cpp
+
+src/gui/wd_frame.o: src/gui/wd_frame.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/gui/wd_frame.o src/gui/wd_frame.cpp
+
+src/gui/window.o: src/gui/window.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/gui/window.o src/gui/window.cpp
+
+src/system/event.o: src/system/event.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/event.o src/system/event.cpp
+
+src/data/scale_pixmap.o: src/data/scale_pixmap.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/scale_pixmap.o src/data/scale_pixmap.cpp
+
+src/font.o: src/font.cpp
+	g++ -c -Wall -std=c++11 $(CXX_IFLAGS) $(FFLY_TARGET) $(FFLY_DEFINES) -o src/font.o src/font.cpp
 
 relocate_headers:
 	if ! [ -d $(CURR_DIR)/inc/firefly ]; then \
@@ -359,5 +376,5 @@ clean:
 	cd strcmb; make clean; cd ../;
 	cd tagged_memory; make clean; cd ../;
 
-	rm -f src/gui/*.o src/memory/*.o src/graphics/*.o src/graphics/*.clo src/networking/*.o src/maths/*.o src/tests/*.o src/*.o *.exec #bin/*.exec
+	rm -f src/gui/*.o src/memory/*.o src/graphics/*.o src/graphics/*.clo src/networking/*.o src/maths/*.o src/tests/*.o src/system/*.o src/*.o *.exec #bin/*.exec
 	rm -rf $(CURR_DIR)/inc/* $(CURR_DIR)/lib/*

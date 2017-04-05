@@ -9,7 +9,7 @@
 	# include <CL/cl.hpp>
 	# include "../opencl_helper.hpp"
 # endif
-
+# include "../types/coords_t.hpp"
 # include "../types/status.hpp"
 namespace mdl {
 namespace firefly {

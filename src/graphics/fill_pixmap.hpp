@@ -5,10 +5,12 @@
 # include <boost/cstdint.hpp>
 # include <cstdio>
 # include "../system/errno.h"
+# include "../types/pixmap_t.h"
+# include "../types/err_t.h"
 namespace mdl {
 namespace firefly {
 namespace graphics {
-boost::int8_t fill_pixmap(boost::uint8_t *__pixmap, uint_t __xlen, uint_t __ylen, colour_t __colour);
+types::err_t fill_pixmap(types::pixmap_t __pixmap, uint_t __xaxis_len, uint_t __yaxis_len, colour_t __colour);
 }
 }
 }

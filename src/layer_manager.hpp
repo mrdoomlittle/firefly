@@ -13,7 +13,7 @@ namespace ublas = boost::numeric::ublas;
 # include "types/pixmap_t.h"
 namespace mdl {
 namespace firefly {
-class layer {
+class layer_manager {
 	public:
 	uint_t add_layer(uint_t __xlen, uint_t __ylen, uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixmap = nullptr) {
 		uint_t layer_id = layers.size();
@@ -95,7 +95,7 @@ class layer {
 	boost::int8_t push_forwards(uint_t __layer_id);
 	boost::int8_t pull_backwards(uint_t __layer_id);
 	boost::int8_t swap(uint_t __layer_ida, uint_t __layer_idb);
-	~layer() { this-> de_init(); }
+	~layer_manager() { this-> de_init(); }
 
 	boost::int8_t de_init() {
 		for (std::size_t o = 0; o != layers.size(); o ++)

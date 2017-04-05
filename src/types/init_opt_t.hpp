@@ -18,9 +18,17 @@ typedef struct {
 
 typedef struct {
 	uint_t cam_xlen, cam_ylen;
+//# ifdef LAYER_MANAGER
 	uint_t bse_layer_id;
 	bool add_bse_layer;
+//# endif
+# ifdef OBJ_MANAGER
 	void *obj_manger_ptr;
+# endif
+# ifdef ROOM_MANAGER
+	bool add_bse_room;
+	bool change_room;
+# endif
 } init_opt_t;
 # elif defined(FFLY_STUDIO)
 typedef struct {

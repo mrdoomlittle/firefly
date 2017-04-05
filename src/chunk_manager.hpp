@@ -20,7 +20,7 @@ class chunk_manager {
 
 	uint_t* find_chunk_id(uint_t __xaxis, uint_t __yaxis, uint_t __zaxis) {
 		for (std::set<uint_t *>::iterator itor = this-> chunk_index.begin(); itor != this-> chunk_index.end(); ++itor) {
-			types::chunk_info_t& chunk_info = this-> _chunk_keeper.get_chunk_info(*itor);
+			types::chunk_info_t chunk_info = this-> _chunk_keeper.get_chunk_info(*itor);
 
 			if (chunk_info.coords.xaxis == __xaxis && chunk_info.coords.yaxis == __yaxis && chunk_info.coords.zaxis == __zaxis) {
 				return *itor;
@@ -30,7 +30,7 @@ class chunk_manager {
 
 	uint_t* coords_to_id(uint_t __xaxis, uint_t __yaxis, uint_t __zaxis) {
 		for (std::set<uint_t *>::iterator itor = this-> chunk_index.begin(); itor != this-> chunk_index.end(); ++itor) {
-			types::chunk_info_t& chunk_info = this-> _chunk_keeper.get_chunk_info(*itor);
+			types::chunk_info_t chunk_info = this-> _chunk_keeper.get_chunk_info(*itor);
 
 			types::coords_t<> coords = { __xaxis, __yaxis, __zaxis };
 			if (maths::is_inside(coords, chunk_info.coords,
@@ -44,11 +44,11 @@ class chunk_manager {
 		this-> _chunk_keeper.de_init();
 	}
 
-	types::chunk_info_t& chunk_info(uint_t *__chunk_id) {
+	types::chunk_info_t chunk_info(uint_t *__chunk_id) {
 		return this-> _chunk_keeper.get_chunk_info(__chunk_id);
 	}
 
-	types::chunk_data_t& chunk_data(uint_t *__chunk_id) {
+	types::chunk_data_t chunk_data(uint_t *__chunk_id) {
 		return this-> _chunk_keeper.get_chunk_data(__chunk_id);
 	}
 
