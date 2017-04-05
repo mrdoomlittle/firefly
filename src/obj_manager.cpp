@@ -241,6 +241,7 @@ boost::int8_t mdl::firefly::obj_manager::de_init() {
 	for (uint_t th_id = 0; th_id != this-> thread_index.size(); th_id ++) {
 		thr_config_t *th = this-> thread_index[th_id];
 
+/* not needed, for now
 		int th_err = 0;
 		if ((th_err = pthread_cancel(th-> native_handle)) != 0) {
 			if (th_err != ESRCH) {
@@ -248,6 +249,7 @@ boost::int8_t mdl::firefly::obj_manager::de_init() {
 				any_error = FFLY_FAILURE;
 			}
 		}
+*/
 	}
 
 	for (uint_t obj_id = 0; obj_id != this-> obj_index.size(); obj_id ++) {

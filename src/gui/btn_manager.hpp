@@ -21,6 +21,9 @@ namespace ublas = boost::numeric::ublas;
 # include "../types/bitmap_t.hpp"
 # include "../graphics/draw_bitmap.hpp"
 # include "../types/colour_t.hpp"
+# include "../types/btn_event_t.hpp"
+# include "../system/event.hpp"
+# include <queue>
 namespace mdl {
 namespace firefly {
 namespace gui {
@@ -40,7 +43,15 @@ class btn_manager {
 
 	types::err_t set_text(uint_t __btn_id, char const * __text, char const *__font,  uint_t __xoffset, uint_t __yoffset, std::size_t __spacing, bool __mid);
 
+	void voidptr_lock(uint_t __btn_id) {
+		this-> btn_index[__btn_id].voidptr_lock = true;
+	}
+
+	void static btn_press(uint_t __btn_id, int __mbtn_id, void *__voidptr);
+	void static btn_hover(uint_t __btn_id, void *__voidptr);
+
 	void set_voidptr(uint_t __btn_id, void *__ptr) {
+		if (this-> btn_index[__btn_id].voidptr_lock) return;
 		this-> btn_index[__btn_id].voidptr = __ptr;
 	}
 
@@ -51,6 +62,8 @@ class btn_manager {
 	void set_hover_fptr(uint_t __btn_id, void (* __hover_fptr)(uint_t, void *)) {
 		this-> btn_index[__btn_id].hover_fptr = __hover_fptr;
 	}
+
+	types::err_t event_bind(uint_t __btn_id);
 
 	bool mouse_inside(types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
 	void enable_btn(uint_t __btn_id) {
@@ -110,6 +123,7 @@ class btn_manager {
 	bool *mouse_pressed;
 	int *mouse_btn_id;
 
+	std::queue<types::btn_event_t> event_queue;
 	types::coords_t<boost::int16_t> *wd_coords;
     types::coords_t<boost::uint16_t> *mouse_coords;
 	private:

@@ -12,6 +12,8 @@
 # include "types/coords_t.hpp"
 # include "graphics/window.hpp"
 # include "types/btn_t.hpp"
+# include "types/btn_event_t.hpp"
+# include <queue>
 namespace mdl {
 namespace firefly {
 class room_manager {
@@ -112,6 +114,7 @@ class room_manager {
 	boost::int8_t manage(uint_t *__room_id = nullptr);
 
 	bool use_glob_pb_size = false;
+	std::queue<types::btn_event_t> btn_event_pool;
 	private:
 	types::coords_t<boost::int16_t> wd_coords;
 	types::coords_t<boost::uint16_t> mouse_coords;

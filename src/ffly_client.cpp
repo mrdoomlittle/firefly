@@ -144,6 +144,10 @@ boost::int8_t mdl::ffly_client::de_init() {
 	this-> cu_clean();
 }
 
+void mdl::ffly_client::shutdown() {
+	ffly_client::to_shutdown = true;
+}
+
 bool mdl::ffly_client::poll_event(firefly::system::event& __event) {
 	if (ffly_client::to_shutdown) return false;
 	static bool inited = false;
@@ -165,6 +169,7 @@ bool mdl::ffly_client::poll_event(firefly::system::event& __event) {
 			break;
 		}
 
+		__event.data = __event.event_queue.front().data;
 		__event.queue_rm();
 		return true;
 	} else
@@ -208,6 +213,22 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 		if (!window.wd_handler.is_wd_flag(WD_WAITING)) continue;
 		if (window.wd_handler.is_wd_flag(WD_DONE_DRAW)) continue;
 		this-> window.clear_pixbuff();
+
+# ifdef ROOM_MANAGER
+		if (!this-> room_manager.btn_event_pool.empty()) {
+			firefly::system::event::event_t event;
+			firefly::types::btn_event_t static btn_event;
+
+			btn_event = this-> room_manager.btn_event_pool.front();
+
+			event.event_type = btn_event.event_type;
+			event.data = &btn_event;
+
+			this-> event-> queue_add(event);
+
+			this-> room_manager.btn_event_pool.pop();
+		}
+# endif
 
 		client_info.key_code = window.wd_handler.key_code;
 

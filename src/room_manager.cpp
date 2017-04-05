@@ -179,6 +179,14 @@ boost::int8_t mdl::firefly::room_manager::manage(uint_t *__room_id) {
 	this-> wd_coords = this-> window-> get_wd_coords();
 	this-> mouse_coords = this-> window-> get_mouse_coords().wd;
 
+	gui::btn_manager *btn_manager = this-> _room_data[*room_id].btn_manager;
+	if (btn_manager != nullptr) {
+		if (!btn_manager-> event_queue.empty()) {
+			this-> btn_event_pool.push(btn_manager-> event_queue.front());
+			btn_manager-> event_queue.pop();
+		}
+	}
+
 	// this will be removed a later version
 	if (this-> draw_room() == FFLY_FAILURE) {
 		fprintf(stderr, "room_manager: failed to draw.\n");

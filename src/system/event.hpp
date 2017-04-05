@@ -2,16 +2,19 @@
 # define __system__event__hpp
 # include <eint_t.hpp>
 # include <queue>
+# include "../types/btn_event_t.hpp"
 namespace mdl {
 namespace firefly {
 namespace system {
 class event {
 	public:
-		typedef struct {
+	typedef struct {
 		int key_code;
 		uint_t event_type;
+		void *data;
 	} event_t;
 
+	void *data;
 	uint_t get_keycode() {
 
 	}
@@ -49,7 +52,10 @@ class event {
 		MSE_PRESSED,
 		MSE_RELEASED,
 		BTN_PRESSED,
-		BTN_RELEASED
+		BTN_RELEASED,
+		BTN_HOVER,
+		BTN_HOVERING,
+		BTN_PRESS
 	};
 
 	enum {

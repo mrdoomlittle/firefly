@@ -57,6 +57,7 @@ namespace mdl { class ffly_client
 
 	boost::int8_t de_init();
 
+	void shutdown();
 	typedef struct {
 		uint_t fps_count() {
 			return _this-> curr_fps;

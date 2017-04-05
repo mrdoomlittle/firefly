@@ -22,6 +22,7 @@ typedef struct {
 	bool draw_text_bm = false;
 	bool inde_tx_mem = false;
 	void *voidptr = nullptr;
+	bool voidptr_lock = false;
 } btn_t;
 }
 }

@@ -6,6 +6,36 @@ bool mdl::firefly::gui::btn_manager::mouse_inside(types::_2d_coords_t<> __coords
 	return false;
 }
 
+void mdl::firefly::gui::btn_manager::btn_press(uint_t __btn_id, int __mbtn_id, void *__voidptr) {
+	types::btn_event_t btn_event = {
+		.btn_id = __btn_id,
+		.mbtn_id = __mbtn_id,
+		.event_type = system::event::BTN_PRESS
+	};
+
+	((btn_manager *)__voidptr)-> event_queue.push(btn_event);
+}
+
+void mdl::firefly::gui::btn_manager::btn_hover(uint_t __btn_id, void *__voidptr) {
+	types::btn_event_t btn_event = {
+		.btn_id = __btn_id,
+		.mbtn_id = 0,
+		.event_type = system::event::BTN_HOVER
+	};
+
+	((btn_manager *)__voidptr)-> event_queue.push(btn_event);
+}
+
+mdl::firefly::types::err_t mdl::firefly::gui::btn_manager::event_bind(uint_t __btn_id) {
+	this-> set_press_fptr(__btn_id, &btn_manager::btn_press);
+	this-> set_hover_fptr(__btn_id, &btn_manager::btn_hover);
+
+	this-> set_voidptr(__btn_id, this);
+	this-> voidptr_lock(__btn_id);
+
+	return FFLY_SUCCESS;
+}
+
 mdl::firefly::types::err_t mdl::firefly::gui::btn_manager::create_btn(uint_t& __btn_id, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len) {
 	types::pixmap_t btn_pixmap;
 	if ((btn_pixmap = memory::alloc_pixmap(__xaxis_len, __yaxis_len)) == NULL) {
