@@ -1,1 +1,2 @@
-. ./compile.sh bin/ffly_studio src/ffly_studio.o FFLY_STUDIO ffly_studio
+#!/bin/sh
+. ./compile.sh bin/ffly_studio src/ffly_studio.o --ffly-studio "--with-room-manager --force-cuda"
