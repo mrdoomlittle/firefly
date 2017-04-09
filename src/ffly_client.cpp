@@ -98,7 +98,7 @@ boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) 
 		this-> layer.lock_layer(this-> bse_layer_id);
 	}
 
-# if defined(OBJ_MANAGER) && defined(UNI_MANAGER)
+# if defined(__WITH_OBJ_MANAGER) && defined(UNI_MANAGER)
 	if (__init_options.obj_manger_ptr == nullptr) {
 //		static obj_manager _obj_manager();
 	}
@@ -135,9 +135,13 @@ boost::int8_t mdl::ffly_client::de_init() {
 	this-> room_manager.de_init();
 # endif
 
-# ifdef OBJ_MANAGER
+# ifdef __WITH_OBJ_MANAGER
 	if (this-> obj_manager != nullptr)
 		this-> obj_manager-> de_init();
+# endif
+
+# ifndef __WITH_UNI_MANAGER
+
 # endif
 
 	this-> asset_manager.de_init();
@@ -263,10 +267,10 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 
 		skip:
 
-		this-> layer.draw_layers(window.get_pixbuff(), this-> win_xlen, this-> win_ylen);
 # ifdef ROOM_MANAGER
 		this-> room_manager.manage();
 # endif
+		this-> layer.draw_layers(window.get_pixbuff(), this-> win_xlen, this-> win_ylen);
 
 		window.wd_handler.add_wd_flag(WD_DONE_DRAW);
 		window.wd_handler.rm_wd_flag(WD_WAITING);

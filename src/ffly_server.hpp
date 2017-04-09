@@ -1,108 +1,55 @@
 # ifndef __ffly__server__hpp
 # define __ffly__server__hpp
+
 # include "networking/tcp_server.hpp"
 # include "networking/tcp_client.hpp"
 
 # include "networking/udp_server.hpp"
 # include "networking/udp_client.hpp"
-
 # include <eint_t.hpp>
-# include "types/uni_par_t.hpp"
-# include <boost/thread.hpp>
-# include "opencl_helper.hpp"
-# include <serializer.hpp>
-# include "types/client_info_t.hpp"
-# include "types/player_info_t.hpp"
-# include "types/worker_config_t.hpp"
-# define FFLY_UNI_PAR_XLEN 2
-# define FFLY_UNI_PAR_YLEN 2
-# define FFLY_UNI_PAR_ZLEN 1
-# include "ffly_config.hpp"
-//# define FFLY_MAX_WORKERS 8
-//# define FFLY_MIN_WORKERS 0
-# include <signal.h>
-# include <stdlib.h>
-# include <boost/numeric/ublas/vector.hpp>
-namespace ublas = boost::numeric::ublas;
-# include "keycodes.h"
-# include <fstream>
-# include <tuple>
-# include "types/status.hpp"
-# include <CL/cl.hpp>
+# ifdef __USING_OPENCL
+#	include "opencl_helper.hpp"
+#	include <CL/cl.hpp>
+# endif
+
+# include "types/uni_prop_t.hpp"
+# include "uni_manager.hpp"
+# include "types/err_t.h"
 # include "worker_manager.hpp"
-# include "graphics/draw_pixmap.hpp"
-namespace mdl { class ffly_server
-{
+# include "player_manager.hpp"
+# include <cstdio>
+namespace mdl {
+namespace firefly {
+extern types::err_t player_handler(player_manager *__player_manager, void *__this, int __sock, types::__id_t __player_id);
+}
+}
+//extern mdl::firefly::types::err_t mdl::firefly::player_handler(player_manager *__player_manager, void *__this, int __sock, types::__id_t __player_id);
+namespace mdl { class ffly_server {
 	public:
-	ffly_server(uint_t __uni_xlen, uint_t __uni_ylen, uint_t __uni_zlen)
-	: uni_xlen(__uni_xlen), uni_ylen(__uni_ylen), uni_zlen(__uni_zlen),
-	uni_particle_count((__uni_xlen * FFLY_UNI_PAR_XLEN) * (__uni_ylen * FFLY_UNI_PAR_YLEN) * (__uni_zlen * FFLY_UNI_PAR_ZLEN)), 
-	worker_manager(FFLY_MIN_WORKERS, FFLY_MAX_WORKERS, (__uni_xlen * FFLY_UNI_PAR_XLEN), (__uni_ylen * FFLY_UNI_PAR_YLEN), (__uni_zlen * FFLY_UNI_PAR_ZLEN)) {}
+	ffly_server(firefly::types::uni_prop_t __uni_prop): uni_prop(__uni_prop),
+	uni_manager(__uni_prop.xaxis_len, __uni_prop.yaxis_len, __uni_prop.zaxis_len),
+	worker_manager(0, 8, &uni_manager) {}
 
-	~ffly_server() {
-		std::free(uni_particles);
-	}
+	static bool to_shutdown;
 
-	boost::int8_t init();
-	boost::int8_t begin();
+	firefly::types::err_t init(uint_t __mn_players, uint_t __mx_players);
+	firefly::types::err_t begin(boost::uint16_t __tcp_port_no, boost::uint16_t __udp_port_no);
 
-	boost::uint8_t *create_pixmap(uint_t __xaxis_len, uint_t __yaxis_len, uint_t __offset) {
-		boost::uint8_t *pixmap = static_cast<boost::uint8_t *>(malloc(((__xaxis_len * __yaxis_len) * __offset) * sizeof(boost::uint8_t)));
-		return pixmap;
-	}
-
-	//void client_handler(int __sock, uint_t player_id);
-	void player_handler(int __sock, uint_t player_id);
-
-	uint_t add_player() {
-		uint_t player_id = this-> player_index.size();
-		this-> player_index.resize(this-> player_index.size() + 1);
-		this-> connected_players ++;
-		return player_id;
-	}
-
-	void del_player(uint_t __player_id) {
-		firefly::types::player_info_t temp = this-> player_index[__player_id];
-		if (this-> player_index.size() - 1 != 0) {
-			this-> player_index[__player_id] = this-> player_index[this-> player_index.size() - 1];
-		}
-		this-> player_index.resize(this-> player_index.size() - 1);
-		this-> connected_players --;
-	}
-
-	void draw_woker_pixmaps() {
-		for (std::size_t o = 0; o != this-> worker_manager.worker_index.size(); o ++) {
-			if (std::get<0>(this-> worker_manager.worker_index[o]) != nullptr) {
-				firefly::types::worker_config_t& worker_config = *std::get<1>(this-> worker_manager.worker_index[o]);
-
-				firefly::graphics::draw_pixmap(worker_config.chunk_xaxis, worker_config.chunk_yaxis, this-> uni_par_colours, 
-				this-> uni_xlen * FFLY_UNI_PAR_XLEN, this-> uni_ylen * FFLY_UNI_PAR_YLEN, std::get<0>(this-> worker_manager.worker_index[o]), worker_config.chunk_xlen, worker_config.chunk_ylen, &this-> opencl);
-			}
-		}
-	}
-
-	//private:
-	bool accepting_players = false;
+	protected:
+	uint_t mn_players, mx_players;
+	bool accepting_players;
 	private:
-	uint_t uni_dimensions = 3;
 	firefly::worker_manager worker_manager;
+	firefly::player_manager player_manager;
+# ifdef __USING_OPENCL
+	firefly::opencl opencl_helper;
+# endif
+	firefly::networking::tcp_server cl_tcp_server, wk_tcp_server;
+	firefly::networking::udp_server cl_udp_server, wk_udp_server;
 
-	ublas::vector<firefly::types::player_info_t> player_index;
+	firefly::uni_manager uni_manager;
 
-	uint_t connected_players = 0;
-
-	bool shutdown_queued = false;
-	firefly::opencl opencl;
-
-	firefly::networking::tcp_server cl_tcp_stream, wk_tcp_stream;
-	firefly::networking::udp_server cl_udp_stream, wk_udp_stream;
-
-	uint_t const uni_particle_count = 0;
-
-	firefly::types::uni_par_t * uni_particles = nullptr;
-	boost::uint8_t *uni_par_colours = nullptr;
-
-	uint_t const uni_xlen = 0, uni_ylen = 0, uni_zlen = 0;
+	firefly::types::uni_prop_t const uni_prop;
 };
 }
 

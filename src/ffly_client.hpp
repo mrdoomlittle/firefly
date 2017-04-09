@@ -20,7 +20,7 @@
 # include "types/layer_info_t.hpp"
 # include "system/event.hpp"
 
-# ifdef OBJ_MANAGER
+# ifdef __WITH_OBJ_MANAGER
 #	include "obj_manager.hpp"
 # endif
 
@@ -28,7 +28,7 @@
 #	include "room_manager.hpp"
 # endif
 
-# ifdef UNI_MANAGER
+# ifdef __WITH_UNI_MANAGER
 #	include "uni_manager.hpp"
 #   include "types/uni_prop_t.hpp"
 # endif
@@ -36,7 +36,7 @@
 namespace mdl { class ffly_client
 {
 	public:
-# ifndef UNI_MANAGER
+# ifndef __WITH_UNI_MANAGER
 	ffly_client(boost::uint16_t __win_xlen, boost::uint16_t __win_ylen) : win_xlen(__win_xlen), win_ylen(__win_ylen) {}
 # else
 	ffly_client(boost::uint16_t __win_xlen, boost::uint16_t __win_ylen, firefly::types::uni_prop_t uni_props)
@@ -127,7 +127,7 @@ namespace mdl { class ffly_client
 	uint_t connect_trys = 0;
 
 	firefly::asset_manager asset_manager;
-# ifdef OBJ_MANAGER
+# ifdef __WITH_OBJ_MANAGER
 	firefly::obj_manager *obj_manager = nullptr;
 	void manage_objs() {
 		if (this-> obj_manager == nullptr) return;
@@ -140,7 +140,7 @@ namespace mdl { class ffly_client
 	firefly::room_manager room_manager;
 # endif
 
-# ifdef UNI_MANAGER
+# ifdef __WITH_UNI_MANAGER
 	firefly::uni_manager uni_manager;
 # endif
 	private:

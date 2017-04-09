@@ -1,58 +1,31 @@
 # ifndef __uni__worker__hpp
 # define __uni__worker__hpp
-# include "defaults.hpp"
-# include "types/worker_config_t.hpp"
+# include "types/err_t.h"
+# include "system/errno.h"
+# include "ffly_config.hpp"
 # include "networking/tcp_client.hpp"
 # include "networking/udp_client.hpp"
+# include "types/worker_config_t.hpp"
 # include <serializer.hpp>
-# include <utility>
 # include <signal.h>
-# include <stdlib.h>
-# include <boost/thread.hpp>
-# include "memory/alloc_pixmap.hpp"
-# include "types/player_info_t.hpp"
-# include <boost/numeric/ublas/vector.hpp>
-# include "memory/mem_free.h"
-namespace ublas = boost::numeric::ublas;
 namespace mdl {
 namespace firefly {
-class uni_worker
-{
+class uni_worker {
 	public:
+	types::err_t init();
+	types::err_t begin();
+	types::err_t de_init();
+	types::err_t recv_config();
 
-	void clean_up() {
-		if (uni_chunk != nullptr) {
-			memory::mem_free(uni_chunk);
-			uni_chunk = nullptr;
-		}
-	}
+	types::err_t connect_ts(int& __sock, char const *__ip_addr, boost::uint16_t __tcp_port_no, boost::uint16_t __udp_port_no);
 
-	~uni_worker() {
-		if (this-> uni_chunk != nullptr) memory::mem_free(this-> uni_chunk);
-	}
-
-	void handle_player(uint_t __player_id);
-
-	bool can_handle = false;
-	bool handle_done = false;
-
-	bool is_running = false;
-	bool shutdown_queued = false;
-
-	bool thread_dead = false;
-	bool thread_shutdown = false;
-	uint_t thread_id = 0;
-
-	boost::int8_t init();
-	boost::int8_t begin(char const *__server_ipaddr);
-
-	ublas::vector<std::pair<types::player_info_t, bool>> player_index;
-	types::worker_config_t *_worker_config;
-
-	uint_t uni_chunk_size = 0;
-	boost::uint8_t *uni_chunk = nullptr;
-	uint_t connect_trys = 0;
-	bool server_connection = false;
+	static bool to_shutdown;
+	bool connected_ts = false;
+	boost::uint8_t connect_trys = 0;
+	private:
+	types::worker_config_t worker_config;
+	networking::tcp_client tcp_client;
+	networking::udp_client udp_client;
 };
 }
 }

@@ -29,29 +29,47 @@ fi
 if [ $(bash find.bash "$1" "--ffly-client") = "0" ]; then
 	LDFLAGS="$LDFLAGS -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple"
 	CXX_IFLAGS="$CXX_IFLAGS -I/usr/include/freetype2"
+elif [ $(bash find.bash "$1" "--ffly-server") = "0" ]; then
+	echo "0"
 elif [ $(bash find.bash "$1" "--ffly-studio") = "0" ]; then
 	LDFLAGS="$LDFLAGS -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple"
 	CXX_IFLAGS="$CXX_IFLAGS -I/usr/include/freetype2"
+elif [ $(bash find.bash "$1" "--ffly-worker") = "0" ]; then
+	echo "0"
 else
 	echo "sorry but we need to know what the target is :( e.g. --ffly-client, --ffly-studio etc"
 	return
 fi
 
-CXXFLAGS="$CXX_IFLAGS $CXX_LFLAGS"
 FFLY_ARGS=
 if [ $(bash find.bash "$1" "--with-room-manager") = "0" ];
 then
-	FFLY_ARGS+="--with-room-manager "
+	FFLY_ARGS="$FFLY_ARGS --with-room-manager"
+fi
+
+if [ $(bash find.bash "$1" "--with-obj-manager") = "0" ];
+then
+	FFLY_ARGS="$FFLY_ARGS --with-obj-manager"
+fi
+
+if [ $(bash find.bash "$1" "--rm-layering") = "0" ];
+then
+	FFLY_ARGS="$FFLY_ARGS --rm-layering"
+fi
+
+if [ $(bash find.bash "$1" "--with-uni-manager") = "0" ];
+then
+	FFLY_ARGS="$FFLY_ARGS --with-uni-manager"
 fi
 
 if [ $(bash find.bash "$1" "--using-x11") = "0" ];
 then
-	FFLY_ARGS+="--using-x11 "
+	FFLY_ARGS="$FFLY_ARGS --using-x11"
 elif [ $(bash find.bash "$1" "--using-xcb") = "0" ];
 then
-	FFLY_ARGS+="--using-xcb "
+	FFLY_ARGS="$FFLY_ARGS --using-xcb"
 else
-	FFLY_ARGS+="--using-x11 "
+	FFLY_ARGS="$FFLY_ARGS --using-x11"
 fi
 
 export FFLY_ARGS="$FFLY_ARGS"
@@ -96,10 +114,13 @@ else
 # check what type of cl library we are going to use e.g. opengl or cuda etc...
 if [ -f "$OPENCL_PATH/lib/x86_64-linux-gnu/libOpenCL.so.1" ]; then
 	GPU_CL_TYPE="-DUSING_OPENCL"
+	CXX_IFLAGS="$CXX_IFLAGS -D__USING_OPENCL"
 	LDFLAGS="$LDFLAGS -lOpenCL"
+	CXX_LFLAGS="$CXX_LFLAGS -L/usr/local/lib/x86_64/sdk"
 elif [ -f "$CUDA_PATH/lib/x86_64-linux-gnu/libcuda.so" ]; then
 	if [ -d "$CUDART_PATH" ]; then
 		GPU_CL_TYPE="-DUSING_CUDA"
+		CXX_IFLAGS="$CXX_IFLAGS -D__USING_CUDA"
 		LDFLAGS="$LDFLAGS -lcuda -lcudart"
 #		CXXFLAGS="$CXXFLAGS $CUDART_PATH/include $CUDART_PATH/lib64"
 	else
@@ -111,6 +132,7 @@ else
 fi
 fi
 
+CXXFLAGS="$CXX_IFLAGS $CXX_LFLAGS"
 export CXX_IFLAGS="$CXX_IFLAGS"
 export CXX_LFLAGS="$CXX_LFLAGS"
 export CUDART_INC="$CUDART_INC"

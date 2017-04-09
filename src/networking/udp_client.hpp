@@ -14,18 +14,20 @@
 # include <boost/cstdint.hpp>
 # include "../pk_config.hpp"
 # include "../defaults.hpp"
-
+# include "../types/byte_t.h"
+# include "../system/errno.h"
+# include "../types/err_t.h"
 namespace mdl {
 namespace firefly {
 namespace networking {
 class udp_client
 {
 	public:
-	boost::int8_t init(char const * __ip_addr, boost::uint16_t __port_num);
-	boost::int8_t send(boost::uint8_t *__buff, uint_t __buff_len);
-	boost::int8_t recv(boost::uint8_t *__buff, uint_t __buff_len);
-	boost::int8_t send_ack();
-	boost::int8_t recv_ack();
+	types::err_t init(char const * __ip_addr, boost::uint16_t __port_no);
+	types::err_t send(types::byte_t *__buff, uint_t __buff_len);
+	types::err_t recv(types::byte_t *__buff, uint_t __buff_len);
+	types::err_t send_ack();
+	types::err_t recv_ack();
 
 	private:
 	int sock, wbuff_size = WBUFFER_SIZE, rbuff_size = RBUFFER_SIZE;

@@ -83,6 +83,7 @@ boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __ov
 	gui::btn_manager *btn_manager;
 	if ((btn_manager = (gui::btn_manager *)memory::mem_alloc(sizeof(gui::btn_manager))) == NULL) {
 		fprintf(stderr, "room_manager: failed to alloc memory for 'btn_manager', errno: %d\n", errno);
+		btn_manager = nullptr;
 		goto mem_clean;
 	} else {
 		uint_t pb_xaxis_len = 0, pb_yaxis_len = 0;
@@ -98,6 +99,16 @@ boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __ov
  		}
 	}
 
+# ifdef __RM_LAYERING
+	layer_manager *_layer_manager;
+	if ((_layer_manager = (layer_manager *)memory::mem_alloc(sizeof(layer_manager))) == NULL) {
+		fprintf(stderr, "room_manager: failed to alloc memory for 'layer_manager', errno: %d\n", errno);
+		btn_manager = nullptr;
+		goto mem_clean;
+	} else
+		room_data-> _layer_manager = new (_layer_manager) layer_manager();
+# endif
+
 	this-> room_count ++;
 
 	return FFLY_SUCCESS;
@@ -105,6 +116,9 @@ boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __ov
 
 	if (__room_id != NULL)
 		memory::mem_free(__room_id);
+
+	if (btn_manager != nullptr)
+		memory::mem_free(btn_manager);
 
 	if (this-> room_count == 0) {
 		memory::mem_free(this-> _room_info);
@@ -156,6 +170,15 @@ boost::int8_t mdl::firefly::room_manager::draw_room(uint_t *__room_id) {
 		}
 	}
 
+# ifdef __RM_LAYERING
+	if (room_data._layer_manager != nullptr) {
+		if (room_data._layer_manager-> draw_layers(pixbuff, pb_xaxis_len, pb_yaxis_len) == FFLY_FAILURE) {
+			fprintf(stderr, "room_manager: failed to draw layers.\n");
+			return FFLY_FAILURE;
+		}
+	}
+# endif
+
 	if (room_id == __room_id)
 		this-> curr_room_id = tmp_room_id;
 
@@ -206,6 +229,9 @@ boost::int8_t mdl::firefly::room_manager::de_init() {
 		room_data_t& room_data = this-> _room_data[*room_id];
 
 		room_data.btn_manager-> de_init();
+# ifdef __RM_LAYERING
+		room_data._layer_manager-> de_init();
+# endif
 		memory::mem_free(room_data.btn_manager);
 
 		memory::mem_free(room_info.id);

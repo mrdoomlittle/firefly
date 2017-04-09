@@ -10,6 +10,8 @@
 # include <math.h>
 # include <cstdio>
 # include "types/coords_t.hpp"
+# include "memory/mem_alloc.h"
+# include "memory/mem_free.h"
 namespace mdl {
 namespace firefly {
 class uni_manager {
@@ -23,6 +25,14 @@ class uni_manager {
 		__xaxis = floor(__coords.xaxis / this-> _chunk_manager-> get_chunk_xlen());
 		__yaxis = floor(__coords.yaxis / this-> _chunk_manager-> get_chunk_ylen());
 		__zaxis = floor(__coords.zaxis / this-> _chunk_manager-> get_chunk_zlen());
+	}
+
+	boost::int8_t de_init() {
+		this-> _chunk_manager-> de_init();
+		memory::mem_free(this-> _chunk_manager);
+		memory::mem_free(this-> chunk_id_index);
+		memory::mem_free(this-> uni_pixmap);
+		memory::mem_free(this-> uni_particles);
 	}
 
 	types::pixmap_t chunk_pixmap(types::coords_t<> __coords) {

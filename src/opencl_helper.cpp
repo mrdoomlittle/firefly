@@ -55,7 +55,7 @@ boost::int8_t mdl::firefly::opencl::build_prog() {
 		return FFLY_FAILURE;
 	}
 
-# ifndef ARC64
+# ifdef ARC64
 	char const *arc = "-DARC64";
 # elif ARC32
 	char const *arc = "-DARC32";
@@ -65,7 +65,7 @@ boost::int8_t mdl::firefly::opencl::build_prog() {
 	char const *arc = "-DARC8";
 # endif
 
-	char *c_options = strcmb(arc, "-DUSING_OPENCL -DUSE_CL_TYPES -I../src/types -I../eint_t/inc", STRCMB_FREE_NONE);
+	char *c_options = strcmb(const_cast<char *>(arc), "-DUSING_OPENCL -DUSE_CL_TYPES -I../src/types -I../eint_t/inc", STRCMB_FREE_NONE);
 
 	if ((any_error = clBuildProgram(this-> program, 1, &device_id, c_options, NULL, NULL)) != CL_SUCCESS) {
 		fprintf(stderr, "failed to build opencl program: %d\n", any_error);

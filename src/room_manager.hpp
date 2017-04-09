@@ -14,6 +14,9 @@
 # include "types/btn_t.hpp"
 # include "types/btn_event_t.hpp"
 # include <queue>
+# ifdef __RM_LAYERING
+#	include "layer_manager.hpp"
+# endif
 namespace mdl {
 namespace firefly {
 class room_manager {
@@ -27,6 +30,9 @@ class room_manager {
 		uint_t pb_xaxis_len, pb_yaxis_len;
 		types::pixmap_t pixbuff = nullptr;
 		gui::btn_manager *btn_manager;
+# ifdef __RM_LAYERING
+		layer_manager *_layer_manager;
+# endif
 	} room_data_t;
 
 	boost::int8_t create_btn(uint_t *__room_id, uint_t& __btn_id, types::pixmap_t __pixmap, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);

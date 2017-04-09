@@ -1,5 +1,5 @@
-# ifndef __player__info__t__hpp
-# define __player__info__t__hpp
+# ifndef __player__t__hpp
+# define __player__t__hpp
 # include <serializer.hpp>
 # include <eint_t.hpp>
 namespace mdl {
@@ -18,10 +18,10 @@ typedef struct {
 		__arc & sizeof(uint_t);
 		__arc << zaxis;
 	}
-} player_info_t;
+} player_t;
 
 }
 }
 }
 
-# endif /*__player__info__t__hpp*/
+# endif /*__player__t__hpp*/
