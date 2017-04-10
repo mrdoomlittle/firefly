@@ -1,5 +1,6 @@
-all:
-	g++ -DARC64 -I../serializer/inc -L../serializer/lib -std=c++11 player_manager.cpp
+#all:
+
+##	g++ -DARC64 -I../serializer/inc -L../serializer/lib -std=c++11 player_manager.cpp
 
 #all:
 #	cd ../; \

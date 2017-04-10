@@ -36,6 +36,8 @@ elif [ $(bash find.bash "$1" "--ffly-studio") = "0" ]; then
 	CXX_IFLAGS="$CXX_IFLAGS -I/usr/include/freetype2"
 elif [ $(bash find.bash "$1" "--ffly-worker") = "0" ]; then
 	echo "0"
+elif [ $(bash find.bash "$1" "--ffly-test") = "0" ]; then
+	LDFLAGS="$LDFLAGS -lX11 -lGL -lGLU -lglut"
 else
 	echo "sorry but we need to know what the target is :( e.g. --ffly-client, --ffly-studio etc"
 	return
@@ -109,6 +111,7 @@ fi
 if [ $FORCE_CUDA -eq 1 ]; then
 	GPU_CL_TYPE="-DUSING_CUDA"
 	LDFLAGS="$LDFLAGS -lcuda -lcudart"
+	CXX_IFLAGS="$CXX_IFLAGS -I$CUDART_PATH/include"
 #	CXXFLAGS="$CXXFLAGS $CUDART_PATH/include"
 else
 # check what type of cl library we are going to use e.g. opengl or cuda etc...

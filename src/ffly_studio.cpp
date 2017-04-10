@@ -36,8 +36,8 @@ void __btn_press(mdl::uint_t __btn_id, int __mbtn_id, void *__voidptr, mdl::uint
 boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) {
 	this-> _room_manager.init(&window);
 	this-> _room_manager.use_glob_pb_size = true;
-	this-> _room_manager.set_glob_pb_xlen(640);
-	this-> _room_manager.set_glob_pb_ylen(640);
+	this-> _room_manager.set_glob_pb_xlen(this-> wd_xaxis_len);
+	this-> _room_manager.set_glob_pb_ylen(this-> wd_yaxis_len);
 
 	if (this-> _room_manager.add_room(this-> base_room_id, true) != FFLY_SUCCESS) {
 		fprintf(stderr, "ffly_studio: failed to add room.\n");
@@ -130,8 +130,8 @@ boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
 		mcoords = window.get_mouse_coords().wd;
 
 
-		firefly::graphics::draw_pixmap(0, 0, window.get_pixbuff(), 640, 640, tpm, pms.xaxis_len, pms.yaxis_len);
-		my_window.draw(window.get_pixbuff(), firefly::types::__dsize__(640, 640, 1));
+		firefly::graphics::draw_pixmap(0, 0, window.get_pixbuff(), this-> wd_xaxis_len, this-> wd_yaxis_len, tpm, pms.xaxis_len, pms.yaxis_len);
+		my_window.draw(window.get_pixbuff(), firefly::types::__dsize__(this-> wd_xaxis_len, this-> wd_yaxis_len, 1));
 
 		my_window.handle();
 

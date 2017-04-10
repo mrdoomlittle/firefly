@@ -13,6 +13,9 @@ elif [ $(bash find.bash "$3" "--ffly-studio") -eq 0 ]; then
 elif [ $(bash find.bash "$3" "--ffly-worker") -eq 0 ]; then
 	ffly_target="FFLY_WORKER"
 	ffly_linker=-lffly_worker
+elif [ $(bash find.bash "$3" "--ffly-test") -eq 0 ]; then
+	ffly_target="FFLY_TEST"
+	ffly_linker=-lffly_test
 fi
 
 . ./configure.sh "$3 $4"

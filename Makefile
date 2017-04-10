@@ -35,11 +35,13 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
  FFLY_OBJECTS += src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
  src/graphics/png_loader.o src/room_manager.o src/asset_manager.o src/system/time_stamp.o  src/graphics/draw_rect.o \
- src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o #src/ffly_studio.o
+ src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o src/graphics/draw_pixmap.clo #src/ffly_studio.o
  LDFLAGS += -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple
  CXX_IFLAGS += -I/usr/include/freetype2 $(CUDART_INC)
-else if ($(FFLY_TARGET), FFLY_WORKER)
+else ifeq ($(FFLY_TARGET), FFLY_WORKER)
  FFLY_OBJECTS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
+else ifeq ($(FFLY_TARGET), FFLY_TEST)
+ FFLY_OBJECTS += src/graphics/draw_pixmap.o
 else
  FFLY_OBJECTS=
  FFLY_TARGET=FFLY_NONE
@@ -48,13 +50,16 @@ endif
 ifeq ($(GPU_CL_TYPE), -DUSING_OPENCL)
  CXXFLAGS+= -L/usr/local/lib/x86_64/sdk
  FFLY_OBJECTS+= src/opencl_helper.o
+else ifeq ($(GPU_CL_TYPE), -DUSING_CUDA)
+ FFLY_OBJECTS+= src/cuda_helper.o
 endif
+
 
 ## core memory stuff
 FFLY_OBJECTS += src/memory/mem_alloc.o src/memory/mem_free.o #src/memory/alloc_pixmap.o
 CXXFLAGS += $(FFLY_TARGET)
 
-ifneq ($(FFLY_TARGET), $(filter $(FFLY_TARGET), FFLY_SERVER FFLY_WORKER))
+ifneq ($(FFLY_TARGET), $(filter $(FFLY_TARGET), FFLY_SERVER FFLY_WORKER FFLY_TEST))
 ifeq ($(FFLY_WINDOW), -DUSING_X11)
  FFLY_OBJECTS += src/graphics/x11_window.o
 else ifeq ($(FFLY_WINDOW), -DUSING_XCB)
@@ -70,6 +75,8 @@ else ifeq ($(FFLY_TARGET), FFLY_CLIENT)
 all: ffly_client
 else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
 all: ffly_studio
+else ifeq ($(FFLY_TARGET), FFLY_TEST)
+all: ffly_test
 endif
 
 FFLY_DEFINES=$(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
@@ -99,7 +106,10 @@ src/ffly_server.o: src/ffly_server.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_server.o src/ffly_server.cpp
 
 src/ffly_client.o: src/ffly_client.cpp
-	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) $(CUDART_INC) -o src/ffly_client.o src/ffly_client.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_client.o src/ffly_client.cpp
+
+src/cuda_helper.o: src/cuda_helper.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/cuda_helper.o src/cuda_helper.cpp
 
 src/graphics/draw_rect.o: src/graphics/draw_rect.cu
 	nvcc -c -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_rect.o src/graphics/draw_rect.cu
@@ -166,6 +176,9 @@ src/flip_dir.o: src/flip_dir.cpp
 
 src/ffly_studio.o: src/ffly_studio.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_studio.o src/ffly_studio.cpp
+
+src/ffly_test.o: src/ffly_test.o
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_test.o src/ffly_test.cpp
 
 src/gui/btn_manager.o: src/gui/btn_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/gui/btn_manager.o src/gui/btn_manager.cpp
@@ -312,6 +325,11 @@ ffly_studio: libraries $(FFLY_OBJECTS) src/ffly_studio.o
 	ld -r -o lib/ffly_studio.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
 	ar rcs lib/libffly_studio.a lib/ffly_studio.o
 	make relocate_headers
+
+ffly_test: libraries $(FFLY_OBJECTS) src/ffly_test.o
+	ld -r -o lib/ffly_test.o $(FFLY_OBJECTS)
+	ar rcs lib/libffly_test.a lib/ffly_test.o
+	make relocate_headers
 	#g++ -std=c++11 -Iinc -Llib -Wall -o bin/ffly_studio src/ffly_studio.o -lffly_studio
 
 #ffly_server: required src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o
@@ -390,5 +408,5 @@ clean:
 	cd strcmb; make clean; cd ../;
 	cd tagged_memory; make clean; cd ../;
 
-	rm -f src/gui/*.o src/memory/*.o src/graphics/*.o src/graphics/*.clo src/networking/*.o src/maths/*.o src/tests/*.o src/system/*.o src/*.o *.exec #bin/*.exec
+	rm -f src/gui/*.o src/memory/*.o src/graphics/*.o src/graphics/*.clo src/networking/*.o src/maths/*.o src/tests/*.o src/system/*.o src/*.o src/data/*.o *.exec #bin/*.exec
 	rm -rf $(CURR_DIR)/inc/* $(CURR_DIR)/lib/*
