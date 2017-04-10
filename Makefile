@@ -41,7 +41,7 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
  FFLY_OBJECTS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
 else ifeq ($(FFLY_TARGET), FFLY_TEST)
- FFLY_OBJECTS += src/graphics/draw_pixmap.o
+ FFLY_OBJECTS += src/system/task_handle.o src/system/task_worker.o
 else
  FFLY_OBJECTS=
  FFLY_TARGET=FFLY_NONE
@@ -80,6 +80,12 @@ all: ffly_test
 endif
 
 FFLY_DEFINES=$(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+
+src/system/task_handle.o: src/system/task_handle.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/task_handle.o src/system/task_handle.cpp
+
+src/system/task_worker.o: src/system/task_worker.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/task_worker.o src/system/task_worker.cpp
 
 src/graphics/x11_window.o: src/graphics/x11_window.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/x11_window.o src/graphics/x11_window.cpp

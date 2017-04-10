@@ -1,6 +1,7 @@
 # ifndef __ffly_vector__hpp
 # define __ffly_vector__hpp
 # include "errno.h"
+# include <cstdio>
 # include <eint_t.hpp>
 # include "../types/err_t.h"
 # include "../memory/mem_alloc.h"
@@ -28,6 +29,7 @@ struct vector {
 
 		if (this-> data == NULL)
 			return FFLY_FAILURE;
+
 		this-> _size = __size;
 
 		return FFLY_SUCCESS;
@@ -35,12 +37,12 @@ struct vector {
 
 	value_type& push_back() {
 		this-> resize(this-> size() + 1);
-		return *this-> end();
+		return *this-> begin();
 	}
 
-	value_type& operator[](uint_t __point) {return  this-> data[(this-> _size - 1) - __point];}
+	value_type& operator[](uint_t __point) {return this-> data[(this-> _size - 1) - __point];}
 
-	value_type *begin() {return this-> data + this-> size;}
+	value_type *begin() {return this-> data + (this-> _size - 1);}
 
 	value_type *end() {return this-> data;}
 	value_type *iterator;
