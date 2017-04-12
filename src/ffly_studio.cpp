@@ -65,6 +65,7 @@ boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) 
 	this-> base_room.exit_btn-> press_fptr = this-> _room_manager.btn_press(&__btn_press);
 	this-> base_room.exit_btn-> hover_enabled = true;
 	this-> base_room.exit_btn-> press_enabled = true;
+	this-> base_room.exit_btn-> enabled = true;
 
 	btn.center_btn(this-> base_room.exit_btn, this-> wd_xaxis_len, 0);
 
@@ -76,9 +77,9 @@ boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) 
 	this-> base_room.skelc_btn-> press_fptr = this-> _room_manager.btn_press(&__btn_press);
 	this-> base_room.skelc_btn-> hover_enabled = true;
 	this-> base_room.skelc_btn-> press_enabled = true;
+	this-> base_room.skelc_btn-> enabled = true;
 
 	btn.center_btn(this-> base_room.skelc_btn, this-> wd_xaxis_len, 0);
-
 
 	btn.load_btn_ast(this-> asset_manager.load_asset("../assets/btn_main_menu", firefly::asset_manager::AST_PNG_FILE), &this-> asset_manager);
 	btn.create_btn(btn_id, &firefly::room_manager::get_btn_manager(this-> skelc_room_id, &this-> _room_manager), firefly::types::__coords__<uint_t>(0, 1));
@@ -88,6 +89,7 @@ boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) 
 	this-> skelc_room.main_menu_btn-> press_fptr = this-> _room_manager.btn_press(&__btn_press);
 	this-> skelc_room.main_menu_btn-> hover_enabled = true;
 	this-> skelc_room.main_menu_btn-> press_enabled = true;
+	this-> skelc_room.main_menu_btn-> enabled = true;
 
 	btn.center_btn(this-> skelc_room.main_menu_btn, this-> wd_xaxis_len, 0);
 
@@ -136,7 +138,7 @@ boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
 		my_window.handle();
 
 		if (this-> _room_manager.manage() == FFLY_FAILURE) {
-			fprintf(stderr, "ffly_studio: room_manage failed to manage.\n");
+			fprintf(stderr, "ffly_studio: room_manager failed to manage.\n");
 			ffly_studio::to_shutdown = true;
 		}
 

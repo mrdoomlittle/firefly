@@ -1,16 +1,20 @@
 # include "vector.hpp"
 # include <cstdio>
+# include <cstdio>
+# include <queue>
 using namespace mdl::firefly::system;
 int main() {
-	vector<int> my_vec;
+	struct hi {
+		hi() : a(){
+			printf("%d\n", this-> x);
+		}
+		int x = 21;
+		std::queue<int> a;
+	};
 
-	//my_vec.resize();
-	//my_vec[11] = 21;
-	my_vec.push_back() = 1;
-	my_vec.push_back() = 2;
-	my_vec.push_back() = 3;
-	my_vec.push_back() = 4;
+	vector<hi> my_vec;
 
-	for (int o = 0; o != my_vec.size(); o ++)
-		printf("end %d.\n", my_vec[o]);
+	my_vec.resize(3);
+	new (my_vec.begin() - 1) hi();
+	printf("%d\n", my_vec[1].a.size());
 }

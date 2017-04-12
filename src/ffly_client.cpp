@@ -126,6 +126,10 @@ boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) 
 	}
 # endif
 
+# ifdef __WITH_UNI_MANAGER
+	this-> uni_manager.init(2, 2, 2);
+# endif
+
 	return FFLY_SUCCESS;
 }
 
@@ -140,8 +144,8 @@ boost::int8_t mdl::ffly_client::de_init() {
 		this-> obj_manager-> de_init();
 # endif
 
-# ifndef __WITH_UNI_MANAGER
-
+# ifdef __WITH_UNI_MANAGER
+	this-> uni_manager.de_init();
 # endif
 
 	this-> asset_manager.de_init();
@@ -233,7 +237,6 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 			this-> room_manager.btn_event_pool.pop();
 		}
 # endif
-
 		client_info.key_code = window.wd_handler.key_code;
 
 		if (this-> server_connected) {
@@ -271,6 +274,10 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 		this-> room_manager.manage();
 # endif
 		this-> layer.draw_layers(window.get_pixbuff(), this-> win_xlen, this-> win_ylen);
+
+# ifdef __WITH_UNI_MANAGER
+		this-> uni_manager.draw_chunk(0, 0, 0, this-> uni_manager._chunk_manager-> coords_to_id(0,0,0), window.get_pixbuff(), this-> win_xlen, this-> win_ylen);
+# endif
 
 		window.wd_handler.add_wd_flag(WD_DONE_DRAW);
 		window.wd_handler.rm_wd_flag(WD_WAITING);

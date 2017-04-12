@@ -17,10 +17,13 @@
 # include "../types/pixmap_t.h"
 # include "../types/err_t.h"
 # include "../system/errno.h"
+# ifdef __WITH_TASK_HANDLE
+#	include "../system/task_handle.hpp"
+# endif
 namespace mdl {
 namespace firefly {
 namespace graphics {
-types::err_t cpu_draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen);
+types::err_t cpu_draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, uint_t __pm_xfs, types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, uint_t __pm_rxlen);
 
 # if defined(__USING_OPENCL) || defined(USING_OPENCL)
 types::err_t draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, opencl *__opencl);

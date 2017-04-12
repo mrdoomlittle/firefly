@@ -63,11 +63,13 @@ boost::int8_t mdl::firefly::chunk_keeper::create_chunk(uint_t*& __chunk_id, bool
 	rxaxis_len = this-> xaxis_len * UNI_PAR_XLEN;
 	ryaxis_len = this-> yaxis_len * UNI_PAR_YLEN;
 	rzaixs_len = this-> zaxis_len * UNI_PAR_ZLEN;
-	chunk_data-> pixmap = memory::alloc_pixmap(rxaxis_len, ryaxis_len, rzaixs_len);//static_cast<boost::uint8_t>(memory::mem_alloc((rxaxis_len * ryaxis_len * rzaixs_len)*4));
-	if (chunk_data-> pixmap == NULL) {
+	if ((chunk_data-> pixmap = memory::alloc_pixmap(rxaxis_len, ryaxis_len, rzaixs_len)) == NULL) {
 		fprintf(stderr, "chunk_keeper: failed to alloc pixmap for chunk, errno: %d\n", errno);
 		goto mem_clean;
 	}
+
+	if (chunk_count == 0)
+		memset(chunk_data-> pixmap, 244, (rxaxis_len * ryaxis_len * rzaixs_len) * 4);
 
 	this-> chunk_count ++;
 

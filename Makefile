@@ -16,9 +16,9 @@ EXTRA_DEFINES=
 
 CXX_VERSION=c++11
 
-#ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-room-manager"), 0)
-# EXTRA_DEFINES+=-DROOM_MANAGER 
-#endif
+ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-uni-manager"), 0)
+ FFLY_OBJECTS+= src/uni_manager.o src/chunk_manager.o src/chunk_keeper.o
+endif
 
 ifeq ($(FFLY_TARGET), FFLY_SERVER)
  FFLY_OBJECTS += src/ffly_server.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/graphics/png_loader.o \
@@ -35,7 +35,7 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
  FFLY_OBJECTS += src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
  src/graphics/png_loader.o src/room_manager.o src/asset_manager.o src/system/time_stamp.o  src/graphics/draw_rect.o \
- src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o src/graphics/draw_pixmap.clo #src/ffly_studio.o
+ src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o src/graphics/draw_pixmap.clo src/system/task_handle.o src/system/task_worker.o #src/ffly_studio.o
  LDFLAGS += -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple
  CXX_IFLAGS += -I/usr/include/freetype2 $(CUDART_INC)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
@@ -46,6 +46,8 @@ else
  FFLY_OBJECTS=
  FFLY_TARGET=FFLY_NONE
 endif
+
+
 
 ifeq ($(GPU_CL_TYPE), -DUSING_OPENCL)
  CXXFLAGS+= -L/usr/local/lib/x86_64/sdk
@@ -79,7 +81,16 @@ else ifeq ($(FFLY_TARGET), FFLY_TEST)
 all: ffly_test
 endif
 
-FFLY_DEFINES=$(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+FFLY_DEFINES=-D__GCOMPUTE_CPU -D__WITH_TASK_HANDLE $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+
+src/uni_manager.o: src/uni_manager.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/uni_manager.o src/uni_manager.cpp
+
+src/chunk_manager.o: src/chunk_manager.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/chunk_manager.o src/chunk_manager.cpp
+
+src/chunk_keeper.o: src/chunk_keeper.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/chunk_keeper.o src/chunk_keeper.cpp
 
 src/system/task_handle.o: src/system/task_handle.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/task_handle.o src/system/task_handle.cpp

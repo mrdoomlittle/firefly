@@ -53,13 +53,21 @@ boost::int8_t mdl::firefly::uni_manager::init(uint_t __xaxis_split, uint_t __yax
 			for (uint_t xaxis = 0; xaxis != this-> xaxis_len; xaxis += chunk_xlen) {
 				uint_t *chunk_id = nullptr;
 				_chunk_manager.add_chunk(chunk_id, xaxis, yaxis, zaxis);
-				types::chunk_data_t *chunk_data = &_chunk_manager.chunk_data(chunk_id);
+				types::chunk_data_t& chunk_data = _chunk_manager.chunk_data(chunk_id);
 
-				this-> uni_pixmap[chunk_point] = chunk_data-> pixmap;
-				this-> uni_particles[chunk_point] = chunk_data-> particles;
+				this-> uni_pixmap[chunk_point] = chunk_data.pixmap;
+				this-> uni_particles[chunk_point] = chunk_data.particles;
 				this-> chunk_id_index[chunk_point] = chunk_id;
 			}
 		}
 	}
 	return FFLY_SUCCESS;
+}
+
+mdl::firefly::types::err_t mdl::firefly::uni_manager::draw_chunk(uint_t __xfs, uint_t __yfs, uint_t __zfs, types::id_t __chunk_id, types::pixmap_t __pixbuff, uint_t __xaxis_len, uint_t __yaxis_len) {
+	types::pixmap_t chunk_pixmap;
+	if ((chunk_pixmap = this-> _chunk_manager-> chunk_data(__chunk_id).pixmap) == nullptr) return FFLY_FAILURE;
+
+	graphics::draw_pixmap(__xfs, __yfs, __pixbuff, __xaxis_len, __yaxis_len,
+		chunk_pixmap, this-> _chunk_manager-> get_chunk_xlen(), this-> _chunk_manager-> get_chunk_ylen());
 }

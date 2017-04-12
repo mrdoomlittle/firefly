@@ -44,11 +44,11 @@ class chunk_manager {
 		this-> _chunk_keeper.de_init();
 	}
 
-	types::chunk_info_t chunk_info(uint_t *__chunk_id) {
+	types::chunk_info_t& chunk_info(uint_t *__chunk_id) {
 		return this-> _chunk_keeper.get_chunk_info(__chunk_id);
 	}
 
-	types::chunk_data_t chunk_data(uint_t *__chunk_id) {
+	types::chunk_data_t& chunk_data(uint_t *__chunk_id) {
 		return this-> _chunk_keeper.get_chunk_data(__chunk_id);
 	}
 

@@ -17,6 +17,7 @@
 # ifdef __RM_LAYERING
 #	include "layer_manager.hpp"
 # endif
+# include "types/id_t.hpp"
 namespace mdl {
 namespace firefly {
 class room_manager {
@@ -118,6 +119,10 @@ class room_manager {
 	boost::int8_t de_init();
 
 	boost::int8_t manage(uint_t *__room_id = nullptr);
+
+	types::id_t get_croom_id() {
+		return this-> curr_room_id;
+	}
 
 	bool use_glob_pb_size = false;
 	std::queue<types::btn_event_t> btn_event_pool;
