@@ -1,18 +1,20 @@
 # ifndef __colour__blend__hpp
 # define __colour__blend__hpp
-# include <boost/cstdint.hpp>
 # include "../types/colour_t.hpp"
+# include "../types/byte_t.h"
 namespace mdl {
 namespace firefly {
 namespace graphics {
-__inline__ colour_t colour_blend(colour_t& __a, colour_t& __b) {
-	colour_t n_colour = {
-		.r = (boost::uint8_t)(__a.r + __b.r / 2),
-		.g = (boost::uint8_t)(__a.g + __b.g / 2),
-		.b = (boost::uint8_t)(__a.b + __b.b / 2),
-		.a = (boost::uint8_t)(__a.a + __b.a / 2)
+__inline__ types::byte_t colour_blend(types::byte_t __a, types::byte_t __b) {
+	return (types::byte_t)(__a + __b / 2);
+}
+__inline__ rgb_colour_t colour_blend(rgb_colour_t& __a, rgb_colour_t& __b) {
+	rgb_colour_t nw_colour = {
+		.r = colour_blend(__a.r, __b.r),
+		.g = colour_blend(__a.g, __b.g),
+		.b = colour_blend(__a.b, __b.b)
 	};
-	return n_colour;
+	return nw_colour;
 }
 }
 }

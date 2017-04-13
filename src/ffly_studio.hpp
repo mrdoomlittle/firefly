@@ -30,6 +30,7 @@
 # include "graphics/draw_pixmap.hpp"
 # include "graphics/draw_outline.hpp"
 # include "graphics/png_loader.hpp"
+# include "ffly_system.hpp"
 namespace mdl {
 class ffly_studio {
 	public:
@@ -40,7 +41,7 @@ class ffly_studio {
 	boost::int8_t begin(char const *__frame_title);
 
 	firefly::types::id_t skelc_room_id = nullptr;
-	firefly::types::id_t base_room_id = nullptr;
+	firefly::types::id_t bse_room_id = nullptr;
 
 	void chnage_room(firefly::types::id_t __room_id) {
 		this-> _room_manager.change_room(__room_id);
@@ -48,7 +49,7 @@ class ffly_studio {
 
 	struct {
 		firefly::types::btn_t *exit_btn, *skelc_btn;
-	} base_room;
+	} bse_room;
 
 	struct {
 		firefly::types::btn_t *main_menu_btn;

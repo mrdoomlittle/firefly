@@ -15,7 +15,7 @@ bool mdl::ffly_studio::to_shutdown = false;
 
 void __btn_press(mdl::uint_t __btn_id, int __mbtn_id, void *__voidptr, mdl::uint_t *__room_id) {
 	mdl::ffly_studio *_this = __voidptr == nullptr? nullptr : (mdl::ffly_studio *)__voidptr;
-	if (__room_id == _this-> base_room_id) {
+	if (__room_id == _this-> bse_room_id) {
 		switch(__btn_id) {
 			case 0:
 				mdl::ffly_studio::to_shutdown = true;
@@ -27,19 +27,22 @@ void __btn_press(mdl::uint_t __btn_id, int __mbtn_id, void *__voidptr, mdl::uint
 	} else if (__room_id == _this-> skelc_room_id) {
 		switch(__btn_id) {
 			case 0:
-				_this-> chnage_room(_this-> base_room_id);
+				_this-> chnage_room(_this-> bse_room_id);
 			break;
 		}
 	}
 }
 
 boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) {
-	this-> _room_manager.init(&window);
+	ffly_system::init();
+	ffly_graphics::init();
+
+	this-> _room_manager.init(&this-> window);
 	this-> _room_manager.use_glob_pb_size = true;
 	this-> _room_manager.set_glob_pb_xlen(this-> wd_xaxis_len);
 	this-> _room_manager.set_glob_pb_ylen(this-> wd_yaxis_len);
 
-	if (this-> _room_manager.add_room(this-> base_room_id, true) != FFLY_SUCCESS) {
+	if (this-> _room_manager.add_room(this-> bse_room_id, true) != FFLY_SUCCESS) {
 		fprintf(stderr, "ffly_studio: failed to add room.\n");
 		return FFLY_FAILURE;
 	}
@@ -49,7 +52,7 @@ boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) 
 		return FFLY_FAILURE;
 	}
 
-	if (this-> _room_manager.change_room(this-> base_room_id) == FFLY_FAILURE) {
+	if (this-> _room_manager.change_room(this-> bse_room_id) == FFLY_FAILURE) {
 		fprintf(stderr, "ffly_studio: failed to change room.\n");
 		return FFLY_FAILURE;
 	}
@@ -57,31 +60,37 @@ boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) 
 	firefly::gui::btn btn;
 	uint_t btn_id;
 
-	btn.load_btn_ast(this-> asset_manager.load_asset("../assets/btn_exit", firefly::asset_manager::AST_PNG_FILE), &this-> asset_manager);
-	btn.create_btn(btn_id, &firefly::room_manager::get_btn_manager(this-> base_room_id, &this-> _room_manager), firefly::types::__coords__<uint_t>(0, 1));
+	char const *img_files[3] = {
+		"../assets/btn_exit",
+		"../assets/btn_skel_creator",
+		"../assets/btn_main_menu"
+	};
 
-	this-> base_room.exit_btn = this-> _room_manager.get_btn(this-> base_room_id, btn_id);
-	this-> base_room.exit_btn-> voidptr = this;
-	this-> base_room.exit_btn-> press_fptr = this-> _room_manager.btn_press(&__btn_press);
-	this-> base_room.exit_btn-> hover_enabled = true;
-	this-> base_room.exit_btn-> press_enabled = true;
-	this-> base_room.exit_btn-> enabled = true;
+	btn.load_btn_ast(this-> asset_manager.load_asset(img_files[0], firefly::asset_manager::AST_PNG_FILE), &this-> asset_manager);
+	btn.create_btn(btn_id, &firefly::room_manager::get_btn_manager(this-> bse_room_id, &this-> _room_manager), firefly::types::__coords__<uint_t>(0, 1));
 
-	btn.center_btn(this-> base_room.exit_btn, this-> wd_xaxis_len, 0);
+	this-> bse_room.exit_btn = this-> _room_manager.get_btn(this-> bse_room_id, btn_id);
+	this-> bse_room.exit_btn-> voidptr = this;
+	this-> bse_room.exit_btn-> press_fptr = this-> _room_manager.btn_press(&__btn_press);
+	this-> bse_room.exit_btn-> hover_enabled = true;
+	this-> bse_room.exit_btn-> press_enabled = true;
+	this-> bse_room.exit_btn-> enabled = true;
 
-	btn.load_btn_ast(this-> asset_manager.load_asset("../assets/btn_skel_creator", firefly::asset_manager::AST_PNG_FILE), &this-> asset_manager);
-	btn.create_btn(btn_id, &firefly::room_manager::get_btn_manager(this-> base_room_id, &this-> _room_manager), firefly::types::__coords__<uint_t>(0, 1 + btn.get_pm_size().yaxis_len + 1));
+	btn.center_btn(this-> bse_room.exit_btn, this-> wd_xaxis_len, 0);
 
-	this-> base_room.skelc_btn = this-> _room_manager.get_btn(this-> base_room_id, btn_id);
-	this-> base_room.skelc_btn-> voidptr = this;
-	this-> base_room.skelc_btn-> press_fptr = this-> _room_manager.btn_press(&__btn_press);
-	this-> base_room.skelc_btn-> hover_enabled = true;
-	this-> base_room.skelc_btn-> press_enabled = true;
-	this-> base_room.skelc_btn-> enabled = true;
+	btn.load_btn_ast(this-> asset_manager.load_asset(img_files[1], firefly::asset_manager::AST_PNG_FILE), &this-> asset_manager);
+	btn.create_btn(btn_id, &firefly::room_manager::get_btn_manager(this-> bse_room_id, &this-> _room_manager), firefly::types::__coords__<uint_t>(0, 1 + btn.get_pm_size().yaxis_len + 1));
 
-	btn.center_btn(this-> base_room.skelc_btn, this-> wd_xaxis_len, 0);
+	this-> bse_room.skelc_btn = this-> _room_manager.get_btn(this-> bse_room_id, btn_id);
+	this-> bse_room.skelc_btn-> voidptr = this;
+	this-> bse_room.skelc_btn-> press_fptr = this-> _room_manager.btn_press(&__btn_press);
+	this-> bse_room.skelc_btn-> hover_enabled = true;
+	this-> bse_room.skelc_btn-> press_enabled = true;
+	this-> bse_room.skelc_btn-> enabled = true;
 
-	btn.load_btn_ast(this-> asset_manager.load_asset("../assets/btn_main_menu", firefly::asset_manager::AST_PNG_FILE), &this-> asset_manager);
+	btn.center_btn(this-> bse_room.skelc_btn, this-> wd_xaxis_len, 0);
+
+	btn.load_btn_ast(this-> asset_manager.load_asset(img_files[2], firefly::asset_manager::AST_PNG_FILE), &this-> asset_manager);
 	btn.create_btn(btn_id, &firefly::room_manager::get_btn_manager(this-> skelc_room_id, &this-> _room_manager), firefly::types::__coords__<uint_t>(0, 1));
 
 	this-> skelc_room.main_menu_btn = this-> _room_manager.get_btn(this-> skelc_room_id, btn_id);
@@ -104,6 +113,7 @@ boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
 		return FFLY_FAILURE;
 
 	while(window.wd_handler.is_wd_flag(WD_CLOSED)) {}
+	while(window.get_pixbuff() == nullptr){}
 
 	_room_manager.set_pixbuff(window.get_pixbuff());
 
@@ -119,8 +129,8 @@ boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
 
 	firefly::graphics::load_png_file("../assets/", "test", tpm, pms);
 
-	firefly::data::scale_pixmap(tpm, pms.xaxis_len, pms.yaxis_len, 20, 20, CUBIC_SCALE);
-
+	firefly::data::scale_pixmap(tpm, pms.xaxis_len, pms.yaxis_len, 20, 1, LINEAR_SCALE);
+	firefly::data::scale_pixmap(tpm, pms.xaxis_len, pms.yaxis_len, 1, 64, CUBIC_SCALE);
 	do {
 		if (window.wd_handler.is_wd_flag(WD_CLOSED)) {
 			ffly_studio::to_shutdown = true;

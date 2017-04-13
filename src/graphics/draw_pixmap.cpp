@@ -29,18 +29,31 @@ mdl::firefly::types::err_t mdl::firefly::graphics::cpu_draw_pixmap(uint_t __xfs,
 	}
 	return FFLY_SUCCESS;
 }
-static bool nongpu = true;
+
 mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, boost::uint16_t __angle) {
 # if !defined(__GCOMPUTE_GPU) && !defined(__GCOMPUTE_CPU)
+	fprintf(stderr, "draw_pixmap: warning, in order for this to work '__GCOMPUTE_GPU' or '__GCOMPUTE_CPU' needs to be defined at compile time.\n")
 	return FFLY_NOP;
 # endif
+//	printf("%d\n", *((__pixbuff + ((__pb_xlen * __pb_ylen)*4)) - 1 ));
+//	printf("%d, %d, %d, %d, %d, %d\n", __xfs, __yfs, __pb_xlen, __pb_ylen, __pm_xlen, __pm_ylen);
+//return FFLY_SUCCESS;
+//	__xfs = 0;
+//	__yfs = 0;
+//	__pm_xlen = 10;
+//	__pm_ylen = 10;
 
-//	if (__pm_xlen != 320) return FFLY_SUCCESS;
+//	printf("%d\n", *((__pixmap + (__pm_xlen * __pm_ylen) * 4) -1) );
+//	if (__pm_xlen == 120) return FFLY_SUCCESS;
+# if defined(__GCOMPUTE_GPU) && !defined(__GCOMPUTE_CPU)
+	if (!ffly_graphics::inited) {
+		fprintf(stderr, "draw_pixmap: failed to draw as 'gpu::inited' is false.\n");
+		return FFLY_NOP;
+	}
+# endif
 
-	static bool inited = false;
-	static uint_t mx_threads;
 # if defined(__WITH_TASK_HANDLE) && defined(__GCOMPUTE_CPU)
-	static std::atomic<uint_t> finished;
+	static std::atomic<uint_t> finished{0};
 	static auto _cpu_draw_pixmap = [](void *__args) -> void * {
 		void **args = (void **)__args;
 		cpu_draw_pixmap(*(uint_t*)*args, *(uint_t*)*(args + 1), (types::pixmap_t)*(args + 2), *(uint_t*)*(args + 3), *(uint_t*)*(args + 4),
@@ -48,19 +61,24 @@ mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(uint_t __xfs, uin
 		(*(std::atomic<uint_t> *)*(args + 10))++;
 	};
 # endif
-	if (!inited) {
-		system::_task_handle.init(12);
-		finished = 0;
-		max_threads(mx_threads);
-		inited = true;
-	}
-
-	if (__pm_xlen + __xfs > __pb_xlen)
+	if (__pm_xlen + __xfs > __pb_xlen) {
 		__pm_xlen -= (__pm_xlen + __xfs) - __pb_xlen;
+	}
 	if (__pm_ylen + __yfs > __pb_ylen)
 		__pm_ylen -= (__pm_ylen + __yfs) - __pb_ylen;
 
-	uint_t xblock_len = 66, yblock_len = 66;
+# if defined(__GCOMPUTE_GPU) && defined(__GCOMPUTE_GPU)
+	uint_t xblock_len = ffly_graphics::inited != true? _CPU_MX_X : gpu::mx_threads, yblock_len = ffly_graphics::inited != true? _CPU_MX_Y : gpu::mx_blocks;
+# endif
+
+# if defined(__GCOMPUTE_CPU) && !defined(__GCOMPUTE_GPU)
+	uint_t xblock_len = _CPU_MX_X, yblock_len = _CPU_MX_Y;
+# endif
+
+# if !defined(__GCOMPUTE_CPU) && defined(__GCOMPUTE_GPU)
+	uint_t xblock_len = gpu::mx_threads, yblock_len = gpu::mx_blocks;
+# endif
+
 	uint_t xblock_c = 1, yblock_c = 1;
 
 	if (__pm_xlen > xblock_len)
@@ -76,30 +94,50 @@ mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(uint_t __xfs, uin
 	} arg_holder;
 	arg_holder args[xblock_c*yblock_c];
 # endif
-	uint_t cc = 0;
 	uint_t _pm_xlen = xblock_c != 1? xblock_len : __pm_xlen, _pm_ylen = yblock_c != 1? yblock_len : __pm_ylen;
 	for (uint_t y = 0; y != yblock_c; y ++) {
-		if ((y + 1) * yblock_len >= __pm_ylen)
+		if ((y + 1) * yblock_len >= __pm_ylen && xblock_c != 1)
 			_pm_ylen = __pm_ylen - (y * yblock_len);
 
 		_pm_xlen = xblock_c != 1? xblock_len : __pm_xlen;
 		for (uint_t x = 0; x != xblock_c; x ++) {
-			if ((x + 1) * xblock_len >= __pm_xlen)
+			if ((x + 1) * xblock_len >= __pm_xlen && yblock_c != 1)
 				_pm_xlen = __pm_xlen - (x * xblock_len);
-			cc++;
-# if defined(__GCOMPUTE_GPU)
-			if (gpu_draw_pixmap(__xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen, __angle) == FFLY_FAILURE)
-# ifndef __GCOMPUTE_CPU
-				return FFLY_FAILURE;
-# endif
-# endif
-
-# ifdef __WITH_TASK_HANDLE
 # ifdef __GCOMPUTE_GPU
-			{
+//			if (gpu_draw_pixmap(__xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen, __angle) == FFLY_FAILURE)
+//			printf("%d - %d\n", xblock_c, yblock_c);
+			if (ffly_graphics::inited) {
+				if (gpu_draw_pixmap(__xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen, __angle) == FFLY_FAILURE) {
+# ifndef __GCOMPUTE_CPU
+					return FFLY_FAILURE;
 # endif
-# ifdef __GCOMPUTE_CPU
-				if (system::_task_handle.inited) {
+# if defined(__WITH_TASK_HANDLE) && defined(__GCOMPUTE_CPU)
+					goto cpu_muli_compute;
+# endif /*__GCOMPUTE_CPU*/
+
+# if !defined(__WITH_TASK_HANDLE) && defined(__GCOMPUTE_CPU)
+					if (cpu_draw_pixmap(__xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen) == FFLY_FAILURE)
+						return FFLY_FAILURE;
+# endif
+				}
+			}
+# endif /*__GCOMPUTE_GPU*/
+# if defined(__WITH_TASK_HANDLE) && defined(__GCOMPUTE_CPU)
+# ifdef __GCOMPUTE_GPU
+			else {
+				cpu_muli_compute:
+# endif /*__GCOMPUTE_GPU*/
+			if (system::_task_handle.inited) {
+/*
+				args[wk_c] = {
+					.args = {&args[wk_c].xfs, &args[wk_c].yfs, __pixbuff, &__pb_xlen, &__pb_ylen, &args[wk_c].pm_xfs, __pixmap, &args[wk_c].pm_xlen, &args[wk_c].pm_ylen, &__pm_xlen, &finished},
+					.xfs = __xfs + (x * xblock_len),
+					.yfs = __yfs + (y * yblock_len),
+					.pm_xlen = _pm_xlen,
+					.pm_ylen = _pm_ylen,
+					.pm_xfs = x * xblock_len
+				};
+*/
 					args[wk_c].xfs = __xfs + (x * xblock_len);
 					args[wk_c].yfs = __yfs + (y * yblock_len);
 					args[wk_c].pm_xlen = _pm_xlen;
@@ -118,19 +156,18 @@ mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(uint_t __xfs, uin
 					args[wk_c].args[9] = &__pm_xlen;
 					args[wk_c].args[10] = &finished;
 
-					system::_task_handle.handle(_cpu_draw_pixmap, args[wk_c].args, true, true);
-					wk_c++;
-				} else
-					cpu_draw_pixmap(__xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen);
-# endif
+				if (system::_task_handle.handle(_cpu_draw_pixmap, args[wk_c].args, true, true) == FFLY_FAILURE) {
+					finished = 0;
+					return FFLY_FAILURE;
+				}
+				wk_c++;
+			} else
+				if (cpu_draw_pixmap(__xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen) == FFLY_FAILURE)
+					return FFLY_FAILURE;
 # ifdef __GCOMPUTE_GPU
 			}
-# endif
-# else
-# ifdef __GCOMPUTE_CPU
-			cpu_draw_pixmap(__xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen);
-# endif
-# endif
+# endif /*__GCOMPUTE_GPU*/
+# endif /*defined(__WITH_TASK_HANDLE) && defined(__GCOMPUTE_CPU)*/
 		}
 		__pixmap+=(_pm_ylen * __pm_xlen) * 4;
 	}
@@ -147,7 +184,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(uint_t __xfs, uin
 
 // code need fixing
 # if defined(__USING_OPENCL) || defined(USING_OPENCL)
-mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen, opencl *__opencl) {
+mdl::firefly::types::err_t mdl::firefly::graphics::gpu_draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen, opencl *__opencl) {
 	if ((__xfs + __pm_xlen) > __pb_xlen || (__yfs + __pm_ylen) > __pb_ylen) {
 		fprintf(stderr, "error: pixmap is out of bounds.\n");
 		return FFLY_FAILURE;

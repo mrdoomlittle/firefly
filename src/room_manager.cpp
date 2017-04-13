@@ -109,6 +109,8 @@ boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __ov
 		room_data-> _layer_manager = new (_layer_manager) layer_manager();
 # endif
 
+	room_data-> pixbuff = nullptr;
+
 	this-> room_count ++;
 
 	return FFLY_SUCCESS;

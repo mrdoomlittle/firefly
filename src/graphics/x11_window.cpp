@@ -50,7 +50,6 @@ boost::int8_t mdl::firefly::graphics::x11_window::begin(boost::uint16_t __wd_xax
 		return FFLY_FAILURE;
 	}
 
-
     _color_map = XCreateColormap(_display, _rwindow, _vis_info-> visual, AllocNone);
 
     _win_att.colormap = _color_map;

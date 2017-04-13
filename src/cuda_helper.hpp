@@ -4,12 +4,12 @@
 # include <cuda_runtime.h>
 # include "types/err_t.h"
 # include "system/errno.h"
-# define CU_MAX_BLOCKS 12
+# define _CU_MAX_BLOCKS 65535
 namespace mdl {
 namespace firefly {
-namespace graphics {
+namespace gpu {
 types::err_t get_device_c(uint_t& __device_c);
-types::err_t max_threads(uint_t& __mx_threads);
+types::err_t get_mx_threads(uint_t& __mx_threads);
 }
 }
 }

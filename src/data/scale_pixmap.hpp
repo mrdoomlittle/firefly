@@ -9,6 +9,8 @@
 # include <string.h>
 # include <cstdio>
 # include <math.h>
+# include "../graphics/colour_blend.hpp"
+# include "../types/byte_t.h"
 # define CUBIC_SCALE 0
 // i was trying but failed to do this
 # define LINEAR_SCALE 1

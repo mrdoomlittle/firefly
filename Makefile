@@ -81,7 +81,12 @@ else ifeq ($(FFLY_TARGET), FFLY_TEST)
 all: ffly_test
 endif
 
-FFLY_DEFINES=-D__GCOMPUTE_CPU -D__WITH_TASK_HANDLE $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+FFLY_OBJECTS+= src/firefly.o
+
+FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+
+src/firefly.o: src/firefly.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/firefly.o src/firefly.cpp
 
 src/uni_manager.o: src/uni_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/uni_manager.o src/uni_manager.cpp
