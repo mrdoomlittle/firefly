@@ -74,6 +74,9 @@ void ctrl_c(int __sig) {
 }
 
 boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) {
+	ffly_system::init();
+	ffly_graphics::init();
+
 	struct sigaction sig_handler;
 
 	sig_handler.sa_handler = ctrl_c;
@@ -98,9 +101,11 @@ boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) 
 		this-> layer.lock_layer(this-> bse_layer_id);
 	}
 
-# if defined(__WITH_OBJ_MANAGER) && defined(UNI_MANAGER)
+# if defined(__WITH_OBJ_MANAGER) && defined(__WITH_UNI_MANAGER)
 	if (__init_options.obj_manger_ptr == nullptr) {
-//		static obj_manager _obj_manager();
+		//uint_t layer_id = this-> layer.add_layer(this-> win_xlen, this-> win_ylen, 0, 0);
+		static firefly::obj_manager _obj_manager(&this-> uni_manager);//(this-> layer.get_layer_pixmap(layer_id), this-> win_xlen, this-> win_ylen, 1);
+		this-> obj_manager = &_obj_manager;
 	}
 # endif
 
@@ -149,6 +154,8 @@ boost::int8_t mdl::ffly_client::de_init() {
 # endif
 
 	this-> asset_manager.de_init();
+	ffly_system::de_init();
+	ffly_graphics::de_init();
 	this-> cu_clean();
 }
 
@@ -211,7 +218,6 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 	else
 		this-> room_manager.set_pixbuff(this-> window.get_pixbuff());
 # endif
-
 	do {
 		if (window.wd_handler.is_wd_flag(WD_CLOSED)) {
 			printf("window has been closed.\n");
@@ -276,9 +282,12 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 		this-> layer.draw_layers(window.get_pixbuff(), this-> win_xlen, this-> win_ylen);
 
 # ifdef __WITH_UNI_MANAGER
-		this-> uni_manager.draw_chunk(0, 0, 0, this-> uni_manager._chunk_manager-> coords_to_id(0,0,0), window.get_pixbuff(), this-> win_xlen, this-> win_ylen);
+		//this-> uni_manager.draw_chunk(0, 0, 0, this-> uni_manager._chunk_manager-> coords_to_id(0,0,0), window.get_pixbuff(), this-> win_xlen, this-> win_ylen);
 # endif
 
+# ifdef __WITH_OBJ_MANAGER
+		this-> manage_objs();
+# endif
 		window.wd_handler.add_wd_flag(WD_DONE_DRAW);
 		window.wd_handler.rm_wd_flag(WD_WAITING);
 

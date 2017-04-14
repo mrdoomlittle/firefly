@@ -20,6 +20,10 @@ ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-uni-manager"), 0)
  FFLY_OBJECTS+= src/uni_manager.o src/chunk_manager.o src/chunk_keeper.o
 endif
 
+ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-obj-manager"), 0)
+ FFLY_OBJECTS+= src/obj_manager.o src/gravy_manager.o
+endif
+
 ifeq ($(FFLY_TARGET), FFLY_SERVER)
  FFLY_OBJECTS += src/ffly_server.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/graphics/png_loader.o \
  src/worker_manager.o src/memory/alloc_pixmap.o src/graphics/draw_pixmap.clo src/player_manager.o src/player_handler.o src/worker_handler.o
@@ -28,8 +32,9 @@ else ifeq ($(FFLY_TARGET), FFLY_CLIENT)
  FFLY_OBJECTS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o \
  src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/draw_pixmap.clo \
  src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o \
- src/layer_manager.o src/obj_manager.o src/maths/cal_dist.o src/gravy_manager.o src/flip_dir.o src/system/time_stamp.o src/room_manager.o \
- src/gui/btn_manager.o src/system/event.o src/graphics/draw_bitmap.o src/font.o
+ src/layer_manager.o src/maths/cal_dist.o src/flip_dir.o src/system/time_stamp.o src/room_manager.o \
+ src/gui/btn_manager.o src/system/event.o src/graphics/draw_bitmap.o src/font.o src/system/task_handle.o src/system/task_worker.o \
+ src/ui/camera.o src/graphics/crop_pixmap.o
 
 else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
  FFLY_OBJECTS += src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
@@ -41,7 +46,7 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
  FFLY_OBJECTS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
 else ifeq ($(FFLY_TARGET), FFLY_TEST)
- FFLY_OBJECTS += src/system/task_handle.o src/system/task_worker.o
+ FFLY_OBJECTS += src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
 else
  FFLY_OBJECTS=
  FFLY_TARGET=FFLY_NONE
@@ -84,6 +89,12 @@ endif
 FFLY_OBJECTS+= src/firefly.o
 
 FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+
+src/ui/camera.o: src/ui/camera.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ui/camera.o src/ui/camera.cpp
+
+src/graphics/crop_pixmap.o: src/graphics/crop_pixmap.cu
+	nvcc -c -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/crop_pixmap.o src/graphics/crop_pixmap.cu
 
 src/firefly.o: src/firefly.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/firefly.o src/firefly.cpp
@@ -289,6 +300,12 @@ relocate_headers:
 	if ! [ -d $(CURR_DIR)/inc/firefly/gui ]; then \
 		mkdir $(CURR_DIR)/inc/firefly/gui; \
 	fi
+
+	if ! [ -d $(CURR_DIR)/inc/firefly/ui ]; then \
+		mkdir $(CURR_DIR)/inc/firefly/ui; \
+	fi
+
+	cp $(CURR_DIR)/src/ui/*.hpp $(CURR_DIR)/inc/firefly/ui
 
 	#cp $(CURR_DIR)/src/gui/*.h $(CURR_DIR)/inc/firefly/gui
 	cp $(CURR_DIR)/src/gui/*.hpp $(CURR_DIR)/inc/firefly/gui

@@ -22,7 +22,7 @@ typedef struct {
 	uint_t bse_layer_id;
 	bool add_bse_layer;
 //# endif
-# ifdef OBJ_MANAGER
+# ifdef __WITH_OBJ_MANAGER
 	void *obj_manger_ptr;
 # endif
 # ifdef ROOM_MANAGER

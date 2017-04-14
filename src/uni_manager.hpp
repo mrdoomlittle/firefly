@@ -26,7 +26,7 @@ class uni_manager {
 
 	boost::int8_t init(uint_t __xaxis_split, uint_t __yaxis_split, uint_t __zaxis_split);
 
-	void get_chunk_coords(types::coords_t<> __coords, uint_t& __xaxis, uint_t& __yaxis, uint_t& __zaxis) {
+	void get_chunk_coords(types::_3d_coords_t<> __coords, uint_t& __xaxis, uint_t& __yaxis, uint_t& __zaxis) {
 		__xaxis = floor(__coords.xaxis / this-> _chunk_manager-> get_chunk_xlen());
 		__yaxis = floor(__coords.yaxis / this-> _chunk_manager-> get_chunk_ylen());
 		__zaxis = floor(__coords.zaxis / this-> _chunk_manager-> get_chunk_zlen());
@@ -43,17 +43,19 @@ class uni_manager {
 			memory::mem_free(this-> uni_particles);
 	}
 
-	types::pixmap_t chunk_pixmap(types::coords_t<> __coords) {
+	types::pixmap_t chunk_pixmap(types::_3d_coords_t<> __coords) {
 		uint_t xchunk, ychunk, zchunk;
 		this-> get_chunk_coords(__coords, xchunk, ychunk, zchunk);
 		return this-> uni_pixmap[xchunk * ychunk * zchunk];
 	}
 
-	types::uni_par_t* chunk_particles(types::coords_t<> __coords) {
+	types::uni_par_t* chunk_particles(types::_3d_coords_t<> __coords) {
 		uint_t xchunk, ychunk, zchunk;
 		this-> get_chunk_coords(__coords, xchunk, ychunk, zchunk);
 		return this-> uni_particles[xchunk * ychunk * zchunk];
 	}
+
+
 
 	types::err_t draw_chunk(uint_t __xfs, uint_t __yfs, uint_t __zfs, types::id_t __chunk_id, types::pixmap_t __pixbuff, uint_t __xaxis_len, uint_t __yaxis_len);
 

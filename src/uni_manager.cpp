@@ -58,6 +58,7 @@ boost::int8_t mdl::firefly::uni_manager::init(uint_t __xaxis_split, uint_t __yax
 				this-> uni_pixmap[chunk_point] = chunk_data.pixmap;
 				this-> uni_particles[chunk_point] = chunk_data.particles;
 				this-> chunk_id_index[chunk_point] = chunk_id;
+				chunk_point++;
 			}
 		}
 	}

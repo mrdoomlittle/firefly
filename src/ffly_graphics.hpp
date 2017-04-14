@@ -34,6 +34,8 @@ static firefly::types::err_t init() {
 	firefly::gpu::mx_blocks = _CU_MAX_BLOCKS;
 	inited = true;
 }
+static firefly::types::err_t de_init() {
+}
 }
 }
 

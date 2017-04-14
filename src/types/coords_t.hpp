@@ -41,7 +41,6 @@ static _2d_coords_t<_T> __coords__(_T __xaxis, _T __yaxis) {
 		.xaxis = __xaxis,
 		.yaxis = __yaxis
 	};
-
 	return _coords;
 }
 
@@ -60,7 +59,6 @@ static _3d_coords_t<_T> __coords__(_T __xaxis, _T __yaxis, _T __zaxis) {
 		.yaxis = __yaxis,
 		.zaxis = __zaxis
 	};
-
 	return _coords;
 }
 # endif

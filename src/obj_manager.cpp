@@ -462,10 +462,10 @@ boost::int8_t mdl::firefly::obj_manager::draw_objs() {
 		types::obj_info_t& obj_info = *this-> obj_index[obj_id].first;
 		types::pixmap_t obj_pixmap = this-> obj_index[obj_id].second;
 
-		if (graphics::draw_pixmap(obj_info.coords.xaxis, obj_info.coords.yaxis, this-> pixbuff, this-> pb_xlen, this-> pb_ylen, obj_pixmap, obj_info.xaxis_len, obj_info.yaxis_len) == FFLY_FAILURE) {
-			fprintf(stderr, "obj_manager: failed to draw pixmap for obj with gpu, going to use cpu instead.\n");
-			graphics::cpu_draw_pixmap(obj_info.coords.xaxis, obj_info.coords.yaxis, this-> pixbuff, this-> pb_xlen, this-> pb_ylen, obj_pixmap, obj_info.xaxis_len, obj_info.yaxis_len);
-		}
+		uint_t chunk_xlen = this-> _uni_manager-> _chunk_manager-> get_chunk_xlen();
+		uint_t chunk_ylen = this-> _uni_manager-> _chunk_manager-> get_chunk_ylen();
+		if (graphics::draw_pixmap(obj_info.coords.xaxis, obj_info.coords.yaxis, this-> _uni_manager-> chunk_pixmap(types::__coords__<uint_t>((uint_t)obj_info.coords.xaxis, (uint_t)obj_info.coords.yaxis, 0)), chunk_xlen, chunk_ylen, obj_pixmap, obj_info.xaxis_len, obj_info.yaxis_len) == FFLY_FAILURE)
+			return FFLY_FAILURE;
 
 		obj_id ++;
 	}

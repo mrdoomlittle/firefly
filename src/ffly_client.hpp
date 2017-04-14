@@ -19,7 +19,9 @@
 # include "graphics/window.hpp"
 # include "types/layer_info_t.hpp"
 # include "system/event.hpp"
-
+# include "ffly_system.hpp"
+# include "ffly_graphics.hpp"
+# include "entity_manager.hpp"
 # ifdef __WITH_OBJ_MANAGER
 #	include "obj_manager.hpp"
 # endif

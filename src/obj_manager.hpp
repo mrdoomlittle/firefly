@@ -29,7 +29,7 @@
 # include <mutex>
 // how many obj's will be handled in 1 thread
 # define BLOCK_SIZE 12
-
+# include "uni_manager.hpp"
 // edge, face, edge,
 // face        face
 // edge, face, edge,
@@ -39,10 +39,12 @@ namespace firefly {
 class gravy_manager;
 class obj_manager {
 	public:
-	obj_manager(types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, uint_t __pb_zlen)
-	: pixbuff(__pixbuff), pb_xlen(__pb_xlen), pb_ylen(__pb_ylen), pb_zlen(__pb_zlen) { this-> active_threads = 0; }
+	obj_manager(uni_manager *__uni_manager) : _uni_manager(__uni_manager) {};
 
-	~obj_manager();
+//	obj_manager(types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, uint_t __pb_zlen)
+//	: pixbuff(__pixbuff), pb_xlen(__pb_xlen), pb_ylen(__pb_ylen), pb_zlen(__pb_zlen) { this-> active_threads = 0; }
+
+	~obj_manager() {}
 
 	boost::int8_t de_init();
 
@@ -51,6 +53,9 @@ class obj_manager {
 	}
 
 	uint_t add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap = nullptr);
+	uint_t add_obj(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap = nullptr) {
+		this-> add(__coords, __shape_info, __xaxis_len, __yaxis_len, __zaxis_len, __any_error, __pixmap);
+	}
 	void del(uint_t __obj_id);
 	//uint_t add(uint_t __xlen, uint_t __ylen, uint_t __zlen, uint_t __xaxis, uint_t __yaxis, uint_t __zaxis); // return obj_id
 /*
@@ -271,10 +276,11 @@ class obj_manager {
 	std::atomic<uint_t> active_threads;
 	bool th_waiting = false;
 	uint_t th_id_to_wait = 0;
+	uni_manager *_uni_manager;
 
 	ublas::vector<thr_config_t *> thread_index;
 	types::pixmap_t pixbuff = nullptr;
-	uint_t const pb_xlen, pb_ylen, pb_zlen;
+//	uint_t const pb_xlen, pb_ylen, pb_zlen;
 	uint_t obj_count = 0, thr_offset = 0;
 	std::set<uint_t> unused_ids;
 	std::queue<gravy_queue_t> gravy_queue;
