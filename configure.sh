@@ -37,7 +37,7 @@ elif [ $(bash find.bash "$1" "--ffly-studio") = "0" ]; then
 elif [ $(bash find.bash "$1" "--ffly-worker") = "0" ]; then
 	echo "0"
 elif [ $(bash find.bash "$1" "--ffly-test") = "0" ]; then
-	LDFLAGS="$LDFLAGS -lX11 -lGL -lGLU -lglut"
+	LDFLAGS="$LDFLAGS -lX11 -lGL -lGLU -lglut -lpulse -lpulse-simple -lasound -lm"
 else
 	echo "sorry but we need to know what the target is :( e.g. --ffly-client, --ffly-studio etc"
 	return

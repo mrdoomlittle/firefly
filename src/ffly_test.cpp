@@ -1,13 +1,7 @@
-# include <cstdio>
-# include "cuda_helper.hpp"
-# include <eint_t.hpp>
-# include <math.h>
-# include "system/task_handle.hpp"
-# include "graphics/crop_pixmap.hpp"
-using namespace mdl::firefly::system;
-# include <atomic>
-# include "types/byte_t.h"
-# include <string.h>
+# include "pulse_audio.hpp"
+# include "alsa_audio.hpp"
+# include "ffly_audio.hpp"
+using namespace mdl::firefly;
 /*
 int unsigned c = 0;
 static std::atomic<int unsigned> o;
@@ -43,6 +37,7 @@ for (;;) {
 	_task_handle.de_init();
 }
 */
+/*
 # include "memory/alloc_pixmap.hpp"
 # include <cuda_runtime.h>
 # include "system/timer.hpp"
@@ -84,4 +79,10 @@ int main() {
 	std::free(pb);
 	std::free(pm);
 	cudaDeviceReset();
+}
+*/
+# include <cstdio>
+int main() {
+	pulse_audio _pulse_audio;
+	_pulse_audio.play_sample("", "test.wav", system::WAV, system::FLOAT32_LE);
 }

@@ -48,5 +48,5 @@ if [ $(bash find.bash "$FFLY_ARGS" "--with-uni-manager") -eq 0 ]; then
 	extra_defines="$extra_defines -D__WITH_UNI_MANAGER"
 fi
 
-make -j4 FFLY_TARGET=$ffly_target FFLY_WINDOW=$ffly_window EXTRA_DEFINES="$extra_defines"
+make FFLY_TARGET=$ffly_target FFLY_WINDOW=$ffly_window EXTRA_DEFINES="$extra_defines"
 g++ -std=c++11 $ARC $CXXFLAGS -D$ffly_target $ffly_window $extra_defines $GPU_CL_TYPE $CUDART_INC $CUDART_LIB -Iinc -Llib -Wall -o $1 $2 $ffly_linker $LDFLAGS

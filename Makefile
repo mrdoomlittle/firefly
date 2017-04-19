@@ -45,7 +45,7 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
  FFLY_OBJECTS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
 else ifeq ($(FFLY_TARGET), FFLY_TEST)
- FFLY_OBJECTS += src/memory/alloc_pixmap.o src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
+ FFLY_OBJECTS+= src/alsa_audio.o src/pulse_audio.o #src/memory/alloc_pixmap.o src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
 else
  FFLY_OBJECTS=
  FFLY_TARGET=FFLY_NONE
@@ -88,6 +88,10 @@ endif
 FFLY_OBJECTS+= src/firefly.o
 
 FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+
+
+src/alsa_audio.o: src/alsa_audio.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/alsa_audio.o src/alsa_audio.cpp
 
 src/entity_manager.o: src/entity_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/entity_manager.o src/entity_manager.cpp
