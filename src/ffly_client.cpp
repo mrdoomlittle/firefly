@@ -101,11 +101,16 @@ boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) 
 		this-> layer.lock_layer(this-> bse_layer_id);
 	}
 
+# ifdef __WITH_UNI_MANAGER
+    this-> uni_manager.init(2, 2, 2);
+# endif
+
 # if defined(__WITH_OBJ_MANAGER) && defined(__WITH_UNI_MANAGER)
 	if (__init_options.obj_manger_ptr == nullptr) {
 		//uint_t layer_id = this-> layer.add_layer(this-> win_xlen, this-> win_ylen, 0, 0);
 		static firefly::obj_manager _obj_manager(&this-> uni_manager);//(this-> layer.get_layer_pixmap(layer_id), this-> win_xlen, this-> win_ylen, 1);
 		this-> obj_manager = &_obj_manager;
+		this-> entity_manager.init(&_obj_manager, &this-> uni_manager);
 	}
 # endif
 
@@ -129,10 +134,6 @@ boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) 
 			return FFLY_FAILURE;
 		}
 	}
-# endif
-
-# ifdef __WITH_UNI_MANAGER
-	this-> uni_manager.init(2, 2, 2);
 # endif
 
 	return FFLY_SUCCESS;
@@ -287,6 +288,7 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 
 # ifdef __WITH_OBJ_MANAGER
 		this-> manage_objs();
+		this-> entity_manager.manage();
 # endif
 		window.wd_handler.add_wd_flag(WD_DONE_DRAW);
 		window.wd_handler.rm_wd_flag(WD_WAITING);

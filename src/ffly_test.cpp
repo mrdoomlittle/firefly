@@ -43,25 +43,45 @@ for (;;) {
 	_task_handle.de_init();
 }
 */
-
+# include "memory/alloc_pixmap.hpp"
+# include <cuda_runtime.h>
+# include "system/timer.hpp"
+using namespace mdl::firefly;
 int main() {
-	mdl::firefly::types::byte_t a[16384];
-	mdl::firefly::types::byte_t b[1024];
-	memset(a, 'X', 16384);
-	memset(b, 'O', 1024);
+	types::_2d_pm_t pm = memory::alloc_2d_cmem_pm(200, 200, 1);
+	for (mdl::uint_t y{}; y != 200; y ++) {
+		for (mdl::uint_t x{}; x != 200; x ++)
+			pm[y][x] = 'X';
+	}
 
-	a[0] = 'B';
-	a[(64 + 1)*4] = 'A';
-	mdl::firefly::graphics::crop_pixmap(0, 0, b, 16, 16, a, 64, 64, 4);
+	pm[0][0] = 'D';
+	pm[1][1] = 'D';
 
-	for (int y = 0; y != 16; y ++) {
-		for (int x = 0; x != 16; x ++) {
-			int point = (x + (y * 16))*4;
-			printf("%c", b[point]);
-			printf("%c", b[point + 1]);
-			printf("%c", b[point + 2]);
-			printf("%c", b[point + 3]);
+	types::_2d_pm_t pb = memory::alloc_2d_cmem_pm(64, 64, 1);
+	for (mdl::uint_t y{}; y != 64; y ++) {
+		for (mdl::uint_t x{}; x != 64; x ++)
+			pb[y][x] = 'O';
+	}
+
+	if (graphics::crop_2d_pm(1, 1, pb, 64, 64, pm, 200, 200, 1) != FFLY_SUCCESS) {
+		printf("hekrjeohrijuehriheirheu\n");
+		return 0;
+	}
+
+
+	for (mdl::uint_t y{}; y != 64; y ++) {
+		for (mdl::uint_t x{}; x != 64; x ++) {
+			printf("%c", pb[y][x]);
 		}
 		printf("\n");
 	}
+
+	char o = 'A';
+	std::cin >> o;
+
+	std::free(pb[0]);
+	std::free(pm[0]);
+	std::free(pb);
+	std::free(pm);
+	cudaDeviceReset();
 }

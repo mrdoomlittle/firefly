@@ -2,6 +2,7 @@
 # define __camera__hpp
 # include <eint_t.hpp>
 # include <errno.h>
+# include <cstdio>
 # include "../graphics/draw_pixmap.hpp"
 # include "../types/err_t.h"
 # include "../uni_manager.hpp"
@@ -14,6 +15,7 @@ namespace firefly {
 namespace ui {
 class camera {
 	public:
+//	camera() {}
 	camera(uni_manager *__uni_manager) : _uni_manager(__uni_manager){}
 
 	types::err_t init(uint_t __xaxis_len, uint_t __yaxis_len);
@@ -21,6 +23,9 @@ class camera {
 	types::err_t handle();
 
 	types::err_t draw_camera(uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen);
+
+	uint_t get_xaxis_len() {return this-> xaxis_len;}
+	uint_t get_yaxis_len() {return this-> yaxis_len;}
 
 	void xaxis_pull() {this-> set_xaxis(this-> xaxis + 1);}
 	void xaxis_push() {this-> set_xaxis(this-> xaxis - 1);}
@@ -53,7 +58,9 @@ class camera {
 		};
 		return coords;
 	}
+	bool inited = false;
 	private:
+	types::_2d_pm_t 2d_pm;
 	types::pixmap_t pixmap;
 	uni_manager *_uni_manager;
 	uint_t xaxis = 0, yaxis = 0, zaxis = 0;

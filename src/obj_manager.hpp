@@ -23,6 +23,7 @@
 # include <set>
 # include <errno.h>
 # include <queue>
+# include "types/id_t.hpp"
 # include <boost/array.hpp>
 # include "types/shape_info_t.hpp"
 # include "flip_dir.hpp"
@@ -67,6 +68,9 @@ class obj_manager {
 		this-> set_zaxis(this-> get_zaxis() - __amount);
 	}
 */
+	uint_t get_xaxis_len(types::__id_t __obj_id) {return this-> obj_index[__obj_id].first-> xaxis_len;}
+	uint_t get_yaxis_len(types::__id_t __obj_id) {return this-> obj_index[__obj_id].first-> yaxis_len;}
+	uint_t get_zaxis_len(types::__id_t __obj_id) {return this-> obj_index[__obj_id].first-> zaxis_len;}
 	void add_to_gravy_pool(uint_t __obj_id, uint_t __other_id);
 
 	types::coords_t<> get_coords(uint_t __obj_id) {
@@ -136,7 +140,7 @@ class obj_manager {
 	}
 
 	void pull_xaxis(uint_t __obj_id, uint_t __amount) {
-		this-> set_xaxis(__obj_id, this-> get_xaxis(__obj_id) - __amount);
+		this-> set_xaxis(__obj_id, (int_t)this-> get_xaxis(__obj_id) - (int_t)__amount);
 	}
 
 	void push_yaxis(uint_t __obj_id, uint_t __amount) {
@@ -144,7 +148,7 @@ class obj_manager {
 	}
 
 	void pull_yaxis(uint_t __obj_id, uint_t __amount) {
-		this-> set_yaxis(__obj_id, this-> get_yaxis(__obj_id) - __amount);
+		this-> set_yaxis(__obj_id, (int_t)this-> get_yaxis(__obj_id) - (int_t)__amount);
 	}
 
 	uint_t get_xaxis(uint_t __obj_id) {
@@ -173,14 +177,14 @@ class obj_manager {
 		this-> obj_index[__obj_id].first-> gravity_enabled = false;
 	}
 
-	void set_xaxis(uint_t __obj_id, uint_t __xaxis) {
+	void set_xaxis(uint_t __obj_id, int_t __xaxis) {
 		if (this-> obj_index[__obj_id].first-> bound_enabled) {
 			if (__xaxis < this-> obj_index[__obj_id].first-> xaxis_bound[0] || (__xaxis + this-> obj_index[__obj_id].first-> xaxis_len) >= obj_index[__obj_id].first-> xaxis_bound[1]) return;
 		}
 
 //		this-> collision_handler(__obj_id);
-
-		this-> obj_index[__obj_id].first-> coords.xaxis = __xaxis;
+		if (__xaxis < 0) return;
+		this-> obj_index[__obj_id].first-> coords.xaxis = (uint_t)__xaxis;
 	}
 
 	void enable_bound(std::initializer_list<uint_t> __obj_id) {
@@ -201,14 +205,14 @@ class obj_manager {
 		this-> obj_index[__obj_id].first-> bound_enabled = false;
 	}
 
-	void set_yaxis(uint_t __obj_id, uint_t __yaxis) {
+	void set_yaxis(uint_t __obj_id, int_t __yaxis) {
 		if (this-> obj_index[__obj_id].first-> bound_enabled) {
 			if (__yaxis < this-> obj_index[__obj_id].first-> yaxis_bound[0] || (__yaxis + this-> obj_index[__obj_id].first-> yaxis_len) >= obj_index[__obj_id].first-> yaxis_bound[1]) return;
 		}
 
 //		this-> collision_handler(__obj_id);
-
-		this-> obj_index[__obj_id].first-> coords.yaxis = __yaxis;
+		if (__yaxis < 0) return;
+		this-> obj_index[__obj_id].first-> coords.yaxis = (uint_t)__yaxis;
 	}
 
 	boost::int8_t set_xaxis_bound(std::initializer_list<uint_t> __obj_id, std::initializer_list<uint_t> __xaxis_min, std::initializer_list<uint_t> __xaxis_max) {

@@ -171,6 +171,7 @@ mdl::uint_t mdl::firefly::obj_manager::add(types::coords_t<> __coords, types::sh
 			}
 		}
 	} else {
+// fix this
 		if (__pixmap == nullptr) {
 			fprintf(stderr, "obj_manager: can't use pixmap provided as memory has not been allocated for it.\n");
 			__any_error = FFLY_FAILURE;
@@ -308,7 +309,7 @@ void mdl::firefly::obj_manager::handle_objs(thr_config_t *thread_config) {
 		types::pixmap_t obj_pixmap = this-> obj_index[obj_id].second;
 
 		uint_t obj_gr_id = (obj_id - thread_config-> offset);
-		if (obj_pixmap == nullptr || this-> pixbuff == nullptr) {
+		if (obj_pixmap == nullptr){// || this-> pixbuff == nullptr) {
 			fprintf(stderr, "obj pixmap is null.\n");
 			break;
 		}
@@ -464,11 +465,16 @@ boost::int8_t mdl::firefly::obj_manager::draw_objs() {
 
 		uint_t chunk_xlen = this-> _uni_manager-> _chunk_manager-> get_chunk_xlen();
 		uint_t chunk_ylen = this-> _uni_manager-> _chunk_manager-> get_chunk_ylen();
-		if (graphics::draw_pixmap(obj_info.coords.xaxis, obj_info.coords.yaxis, this-> _uni_manager-> chunk_pixmap(types::__coords__<uint_t>((uint_t)obj_info.coords.xaxis, (uint_t)obj_info.coords.yaxis, 0)), chunk_xlen, chunk_ylen, obj_pixmap, obj_info.xaxis_len, obj_info.yaxis_len) == FFLY_FAILURE)
+		uint_t xaxis = obj_info.coords.xaxis - floor(obj_info.coords.xaxis/chunk_xlen) * chunk_xlen;
+		uint_t yaxis = obj_info.coords.yaxis - floor(obj_info.coords.yaxis/chunk_ylen) * chunk_ylen;
+		//printf("%d - %dx%dx%d -> r: %d\n", obj_id, unsigned(obj_info.coords.xaxis), unsigned(obj_info.coords.yaxis), unsigned(obj_info.coords.zaxis), *this-> _uni_manager-> chunk_pixmap(types::__coords__<uint_t>((uint_t)obj_info.coords.xaxis, (uint_t)obj_info.coords.yaxis, (uint_t)obj_info.coords.zaxis)));
+		if (graphics::draw_pixmap(xaxis, yaxis, this-> _uni_manager-> chunk_pixmap(types::__coords__<uint_t>((uint_t)obj_info.coords.xaxis, (uint_t)obj_info.coords.yaxis, (uint_t)obj_info.coords.zaxis)), chunk_xlen, chunk_ylen, obj_pixmap, obj_info.xaxis_len, obj_info.yaxis_len) == FFLY_FAILURE)
 			return FFLY_FAILURE;
 
+		//memset(this-> _uni_manager-> chunk_pixmap(types::__coords__<uint_t>((uint_t)obj_info.coords.xaxis, (uint_t)obj_info.coords.yaxis, (uint_t)obj_info.coords.zaxis)), 100, 6366);
 		obj_id ++;
 	}
+	return FFLY_SUCCESS;
 }
 
 boost::int8_t mdl::firefly::obj_manager::manage() {

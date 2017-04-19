@@ -43,19 +43,29 @@ class uni_manager {
 			memory::mem_free(this-> uni_particles);
 	}
 
+	types::pixmap_t chunk_pixmap(uint_t __xchunk, uint_t __ychunk, uint_t __zchunk) {
+		return this-> uni_pixmap[__xchunk + (__ychunk * this-> chunk_xcount) + (__zchunk * this-> chunk_xcount * this-> chunk_ycount)];
+	}
+
 	types::pixmap_t chunk_pixmap(types::_3d_coords_t<> __coords) {
 		uint_t xchunk, ychunk, zchunk;
 		this-> get_chunk_coords(__coords, xchunk, ychunk, zchunk);
-		return this-> uni_pixmap[xchunk * ychunk * zchunk];
+		return this-> chunk_pixmap(xchunk, ychunk, zchunk);
+	}
+
+	types::uni_par_t* chunk_particles(uint_t __xchunk, uint_t __ychunk, uint_t __zchunk) {
+		return this-> uni_particles[__xchunk + (__ychunk * this-> chunk_xcount) + (__zchunk * this-> chunk_xcount * this-> chunk_ycount)];
 	}
 
 	types::uni_par_t* chunk_particles(types::_3d_coords_t<> __coords) {
 		uint_t xchunk, ychunk, zchunk;
 		this-> get_chunk_coords(__coords, xchunk, ychunk, zchunk);
-		return this-> uni_particles[xchunk * ychunk * zchunk];
+		return this-> chunk_particles(xchunk, ychunk, zchunk);
 	}
 
-
+	__inline__ uint_t get_chunk_xlen() {return this-> _chunk_manager-> get_chunk_xlen();}
+	__inline__ uint_t get_chunk_ylen() {return this-> _chunk_manager-> get_chunk_ylen();}
+	__inline__ uint_t get_chunk_zlen() {return this-> _chunk_manager-> get_chunk_zlen();}
 
 	types::err_t draw_chunk(uint_t __xfs, uint_t __yfs, uint_t __zfs, types::id_t __chunk_id, types::pixmap_t __pixbuff, uint_t __xaxis_len, uint_t __yaxis_len);
 

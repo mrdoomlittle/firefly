@@ -34,8 +34,7 @@ else ifeq ($(FFLY_TARGET), FFLY_CLIENT)
  src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o \
  src/layer_manager.o src/maths/cal_dist.o src/flip_dir.o src/system/time_stamp.o src/room_manager.o \
  src/gui/btn_manager.o src/system/event.o src/graphics/draw_bitmap.o src/font.o src/system/task_handle.o src/system/task_worker.o \
- src/ui/camera.o src/graphics/crop_pixmap.o
-
+ src/ui/camera.o src/graphics/crop_pixmap.o src/entity_manager.o
 else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
  FFLY_OBJECTS += src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
@@ -46,7 +45,7 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
  FFLY_OBJECTS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
 else ifeq ($(FFLY_TARGET), FFLY_TEST)
- FFLY_OBJECTS += src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
+ FFLY_OBJECTS += src/memory/alloc_pixmap.o src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
 else
  FFLY_OBJECTS=
  FFLY_TARGET=FFLY_NONE
@@ -89,6 +88,9 @@ endif
 FFLY_OBJECTS+= src/firefly.o
 
 FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+
+src/entity_manager.o: src/entity_manager.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/entity_manager.o src/entity_manager.cpp
 
 src/ui/camera.o: src/ui/camera.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ui/camera.o src/ui/camera.cpp
@@ -447,5 +449,5 @@ clean:
 	cd strcmb; make clean; cd ../;
 	cd tagged_memory; make clean; cd ../;
 
-	rm -f src/gui/*.o src/memory/*.o src/graphics/*.o src/graphics/*.clo src/networking/*.o src/maths/*.o src/tests/*.o src/system/*.o src/*.o src/data/*.o *.exec #bin/*.exec
+	rm -f src/ui/*.o src/gui/*.o src/memory/*.o src/graphics/*.o src/graphics/*.clo src/networking/*.o src/maths/*.o src/tests/*.o src/system/*.o src/*.o src/data/*.o *.exec #bin/*.exec
 	rm -rf $(CURR_DIR)/inc/* $(CURR_DIR)/lib/*

@@ -48,9 +48,9 @@ boost::int8_t mdl::firefly::uni_manager::init(uint_t __xaxis_split, uint_t __yax
 	static chunk_manager _chunk_manager(chunk_xlen, chunk_ylen, chunk_zlen);
 	this-> _chunk_manager = &_chunk_manager;
 	uint_t chunk_point = 0;
-	for (uint_t zaxis = 0; zaxis != this-> zaxis_len; zaxis += chunk_zlen) {
-		for (uint_t yaxis = 0; yaxis != this-> yaxis_len; yaxis += chunk_ylen) {
-			for (uint_t xaxis = 0; xaxis != this-> xaxis_len; xaxis += chunk_xlen) {
+	for (uint_t zaxis{}; zaxis != this-> zaxis_len; zaxis += chunk_zlen) {
+		for (uint_t yaxis{}; yaxis != this-> yaxis_len; yaxis += chunk_ylen) {
+			for (uint_t xaxis{}; xaxis != this-> xaxis_len; xaxis += chunk_xlen) {
 				uint_t *chunk_id = nullptr;
 				_chunk_manager.add_chunk(chunk_id, xaxis, yaxis, zaxis);
 				types::chunk_data_t& chunk_data = _chunk_manager.chunk_data(chunk_id);
@@ -62,13 +62,12 @@ boost::int8_t mdl::firefly::uni_manager::init(uint_t __xaxis_split, uint_t __yax
 			}
 		}
 	}
+	printf("uni_manager: there are %d chunk in this uni.\n", chunk_point);
 	return FFLY_SUCCESS;
 }
 
 mdl::firefly::types::err_t mdl::firefly::uni_manager::draw_chunk(uint_t __xfs, uint_t __yfs, uint_t __zfs, types::id_t __chunk_id, types::pixmap_t __pixbuff, uint_t __xaxis_len, uint_t __yaxis_len) {
 	types::pixmap_t chunk_pixmap;
 	if ((chunk_pixmap = this-> _chunk_manager-> chunk_data(__chunk_id).pixmap) == nullptr) return FFLY_FAILURE;
-
-	graphics::draw_pixmap(__xfs, __yfs, __pixbuff, __xaxis_len, __yaxis_len,
-		chunk_pixmap, this-> _chunk_manager-> get_chunk_xlen(), this-> _chunk_manager-> get_chunk_ylen());
+	graphics::draw_pixmap(__xfs, __yfs, __pixbuff, __xaxis_len, __yaxis_len, chunk_pixmap, this-> _chunk_manager-> get_chunk_xlen(), this-> _chunk_manager-> get_chunk_ylen());
 }

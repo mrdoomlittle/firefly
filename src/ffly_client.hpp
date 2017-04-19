@@ -145,6 +145,8 @@ namespace mdl { class ffly_client
 # ifdef __WITH_UNI_MANAGER
 	firefly::uni_manager uni_manager;
 # endif
+
+	firefly::entity_manager entity_manager;
 	private:
 	firefly::types::init_opt_t init_options;
 	firefly::types::client_info_t client_info;

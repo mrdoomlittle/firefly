@@ -68,8 +68,10 @@ boost::int8_t mdl::firefly::chunk_keeper::create_chunk(uint_t*& __chunk_id, bool
 		goto mem_clean;
 	}
 
-	if (chunk_count == 0)
+	if (chunk_count == 1)
 		memset(chunk_data-> pixmap, 244, (rxaxis_len * ryaxis_len * rzaixs_len) * 4);
+	//if (chunk_count == 1)
+	//	memset(chunk_data-> pixmap, 244, (rxaxis_len * ryaxis_len * rzaixs_len) * 4);
 
 	this-> chunk_count ++;
 

@@ -1,4 +1,4 @@
 # include "alloc_pixmap.hpp"
-mdl::firefly::types::pixmap_t mdl::firefly::memory::alloc_pixmap(uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, uint_t __block_len) {
-	return static_cast<types::pixmap_t>(mem_alloc(((__xaxis_len * __yaxis_len * __zaxis_len) * __block_len) * sizeof(types::__pixmap_t)));
+mdl::firefly::types::_1d_pm_t mdl::firefly::memory::alloc_pixmap(uint_t __xa_len, uint_t __ya_len, uint_t __za_len, u8_t __chn_c) {
+	return static_cast<types::_1d_pm_t>(mem_alloc(((__xa_len * __ya_len * __za_len) * __chn_c) * sizeof(types::__pixmap_t)));
 }
