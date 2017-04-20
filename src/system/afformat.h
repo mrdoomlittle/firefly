@@ -1,16 +1,16 @@
-# ifndef __aformat__h
-# define __aformat__h
+# ifndef __afformat__h
+# define __afformat__h
 # ifdef __cplusplus
 # include <eint_t.hpp>
 namespace mdl {
 namespace firefly {
 namespace system {
-enum aformat : u16_t {
-	S16_LE,
-	FLOAT32_LE
+enum afformat : u16_t {
+	WAV,
+	MP3
 };
 }
 }
 }
 # endif
-# endif /*__aformat__h*/
+# endif /*__afformat__h*/

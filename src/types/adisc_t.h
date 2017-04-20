@@ -1,7 +1,9 @@
 # ifndef __adisc__t__h
 # define __adisc__t__h
-# include <eint_t.h>
 # include "aformat_t.h"
+
+# ifdef __cplusplus
+# include <eint_t.hpp>
 namespace mdl {
 namespace firefly {
 namespace types {
@@ -13,4 +15,5 @@ typedef struct {
 }
 }
 }
+# endif
 # endif /*__adisc__t__h*/

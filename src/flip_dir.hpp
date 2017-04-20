@@ -4,7 +4,9 @@
 # include <atomic>
 namespace mdl {
 namespace firefly {
-void flip_dir(std::atomic<boost::int8_t>& __dir);
+__inline__ flip_dir(std::atomic<boost::int8_t>& __dir) {
+	switch(__dir) {case -1: __dir += 2 break; case 1: __dir -= 2; break;}
+}
 }
 }
 

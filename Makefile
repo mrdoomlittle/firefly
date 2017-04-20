@@ -32,7 +32,7 @@ else ifeq ($(FFLY_TARGET), FFLY_CLIENT)
  FFLY_OBJECTS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o \
  src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/draw_pixmap.clo \
  src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o \
- src/layer_manager.o src/maths/cal_dist.o src/flip_dir.o src/system/time_stamp.o src/room_manager.o \
+ src/layer_manager.o src/maths/cal_dist.o src/system/time_stamp.o src/room_manager.o \
  src/gui/btn_manager.o src/system/event.o src/graphics/draw_bitmap.o src/font.o src/system/task_handle.o src/system/task_worker.o \
  src/ui/camera.o src/graphics/crop_pixmap.o src/entity_manager.o
 else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
@@ -45,7 +45,7 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
  FFLY_OBJECTS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
 else ifeq ($(FFLY_TARGET), FFLY_TEST)
- FFLY_OBJECTS+= src/alsa_audio.o src/pulse_audio.o #src/memory/alloc_pixmap.o src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
+ FFLY_OBJECTS+= src/ffly_audio.o src/alsa_audio.o src/pulse_audio.o #src/memory/alloc_pixmap.o src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
 else
  FFLY_OBJECTS=
  FFLY_TARGET=FFLY_NONE
@@ -89,6 +89,8 @@ FFLY_OBJECTS+= src/firefly.o
 
 FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
 
+src/ffly_audio.o: src/ffly_audio.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_audio.o src/ffly_audio.cpp
 
 src/alsa_audio.o: src/alsa_audio.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/alsa_audio.o src/alsa_audio.cpp
@@ -209,9 +211,6 @@ src/maths/cal_dist.o: src/maths/cal_dist.cpp
 
 src/gravy_manager.o: src/gravy_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/gravy_manager.o src/gravy_manager.cpp
-
-src/flip_dir.o: src/flip_dir.cpp
-	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/flip_dir.o src/flip_dir.cpp
 
 src/ffly_studio.o: src/ffly_studio.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_studio.o src/ffly_studio.cpp

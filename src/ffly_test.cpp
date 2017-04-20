@@ -84,5 +84,7 @@ int main() {
 # include <cstdio>
 int main() {
 	pulse_audio _pulse_audio;
-	_pulse_audio.play_sample("", "test.wav", system::WAV, system::FLOAT32_LE);
+	_pulse_audio.play_sample("", "test", system::WAV, system::FLOAT32_LE);
+//	alsa_audio _alsa_audio;
+//	_alsa_audio.play_sample("", "test", system::WAV, system::FLOAT32_LE);
 }
