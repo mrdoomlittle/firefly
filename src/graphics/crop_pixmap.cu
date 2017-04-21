@@ -16,7 +16,8 @@ __global__ void cu_crop_2d_pm(mdl::uint_t *__xfs, mdl::firefly::types::_1d_pm_t 
 	for (mdl::u8_t chn{}; chn != *__chn_c; chn ++) pb_row[(threadIdx.x * *__chn_c) + chn] = pm_row[((threadIdx.x + *__xfs) * *__chn_c) + chn];
 }
 
-mdl::firefly::types::err_t mdl::firefly::graphics::gpu_crop_2d_pm(uint_t __xfs, uint_t __yfs, types::_2d_pm_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::_2d_pm_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, u8_t __chn_c) {
+mdl::firefly::types::err_t mdl::firefly::graphics::gpu_crop_2d_pm(uint_t __xfs, uint_t __yfs, types::_2d_pm_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, uint_t __pb_rxlen,
+	types::_2d_pm_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, uint_t __pm_rxlen, u8_t __chn_c) {
 	bool static inited = false;
 	types::_1d_pm_t static pixbuff = nullptr, pixmap = nullptr;
 	uint_t static *xfs = nullptr;
@@ -24,7 +25,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_crop_2d_pm(uint_t __xfs, 
 
 	cudaError_t any_err = cudaSuccess;
 	uint_t pb_size = __pb_xlen * __pb_ylen * __chn_c;
-	uint_t pm_size = __pb_ylen * __pm_xlen * __chn_c;
+	uint_t pm_size = __pm_xlen * __pm_ylen * __chn_c;
 	if (!inited) {
 		if ((any_err = cudaMalloc((void **)&xfs, sizeof(uint_t))) != cudaSuccess) {
 			fprintf(stderr, "crop_pixmap: cuda, failed to alloc memory for 'xfs', errno: %d\n", any_err);
@@ -93,12 +94,12 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_crop_2d_pm(uint_t __xfs, 
 		_chn_c = __chn_c;
 	}
 
-	if ((any_err = cudaMemcpy2D(pixbuff, pb_pitch, __pixbuff[0], __pb_xlen * __chn_c, __pb_xlen * __chn_c, __pb_ylen, cudaMemcpyHostToDevice)) != cudaSuccess) {
+	if ((any_err = cudaMemcpy2D(pixbuff, pb_pitch, __pixbuff[0], __pb_rxlen * __chn_c, __pb_xlen * __chn_c, __pb_ylen, cudaMemcpyHostToDevice)) != cudaSuccess) {
 		fprintf(stderr, "crop_pixmap: cuda, failed to copy memory for 'pixbuff' to device, errno: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
 
-	if ((any_err = cudaMemcpy2D(pixmap, pm_pitch, __pixmap[__yfs], __pm_xlen * __chn_c, __pm_xlen * __chn_c, __pb_ylen - __yfs, cudaMemcpyHostToDevice)) != cudaSuccess) {
+	if ((any_err = cudaMemcpy2D(pixmap, pm_pitch, __pixmap[__yfs], __pm_rxlen * __chn_c, __pm_xlen * __chn_c, __pb_ylen - __yfs, cudaMemcpyHostToDevice)) != cudaSuccess) {
 		fprintf(stderr, "crop_pixmap: cuda, failed to copy memory for 'pixmap' to device, errno: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
@@ -112,7 +113,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_crop_2d_pm(uint_t __xfs, 
 		return FFLY_FAILURE;
 	}
 */
-	if ((any_err = cudaMemcpy2D(__pixbuff[0], __pb_xlen * __chn_c * sizeof(types::__pixmap_t), pixbuff, pb_pitch, __pb_xlen * __chn_c * sizeof(types::__pixmap_t), __pb_ylen, cudaMemcpyDeviceToHost)) != cudaSuccess) {
+	if ((any_err = cudaMemcpy2D(__pixbuff[0], __pb_rxlen * __chn_c, pixbuff, pb_pitch, __pb_xlen * __chn_c, __pb_ylen, cudaMemcpyDeviceToHost)) != cudaSuccess) {
 		fprintf(stderr, "crop_pixmap: cuda, failed to copy memory for 'pixmap' to host, errno: %d\n", any_err);
 	}
 

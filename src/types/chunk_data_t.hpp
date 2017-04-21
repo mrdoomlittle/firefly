@@ -8,7 +8,8 @@ namespace firefly {
 namespace types {
 typedef struct {
 	uni_par_t *particles = nullptr;
-	pixmap_t pixmap = nullptr;
+	_1d_pm_t _1d_pm = nullptr;
+	_3d_pm_t _3d_pm = nullptr;
 } chunk_data_t;
 }
 }

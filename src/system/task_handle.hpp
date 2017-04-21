@@ -18,7 +18,6 @@ namespace firefly {
 namespace system {
 class task_handle;
 extern void* task_worker(void *__task_handle);
-
 class task_handle {
 	friend void* task_worker(void *__task_handle);
 	public:
@@ -123,7 +122,7 @@ class task_handle {
 	private:
 	vector<tsk_worker_t> wk_indx;
 };
-static task_handle _task_handle;
+extern task_handle __task_handle__;
 }
 }
 }

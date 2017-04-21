@@ -1,6 +1,8 @@
 # include "pulse_audio.hpp"
 # include "alsa_audio.hpp"
 # include "ffly_audio.hpp"
+# include "memory/mem_alloc.h"
+# include "memory/alloc_pixmap.hpp"
 using namespace mdl::firefly;
 /*
 int unsigned c = 0;
@@ -81,10 +83,27 @@ int main() {
 	cudaDeviceReset();
 }
 */
+# include <string.h>
 # include <cstdio>
 int main() {
-	pulse_audio _pulse_audio;
-	_pulse_audio.play_sample("", "test", system::WAV, system::FLOAT32_LE);
+	types::_1d_pm_t _1dpm = memory::alloc_pixmap((mdl::uint_t)8, (mdl::uint_t)8, (mdl::uint_t)8, (mdl::u8_t)4);
+	memset(_1dpm, 0, 8*8*8*4);
+	memset(_1dpm + 8*8, 1, 8*8);
+
+	types::_3d_pm_t _3dpm = memory::make_3d_pm(_1dpm, 4, 4, 4, (mdl::u8_t)4);
+
+	for (mdl::uint_t za{}; za != 4; za ++) {
+		for (mdl::uint_t ya{}; ya != 4; ya ++) {
+			for (mdl::uint_t xa{}; xa != 4*4; xa ++) {
+				printf("%d", _3dpm[za][ya][xa]);
+			}
+			printf("\n");
+		}
+		printf("\n");
+	}
+
+//	pulse_audio _pulse_audio;
+//	_pulse_audio.play_sample("", "test", system::WAV, system::FLOAT32_LE);
 //	alsa_audio _alsa_audio;
 //	_alsa_audio.play_sample("", "test", system::WAV, system::FLOAT32_LE);
 }

@@ -8,7 +8,7 @@ mdl::firefly::types::err_t mdl::firefly::entity_manager::draw_cam(types::__id_t 
 mdl::firefly::types::err_t mdl::firefly::entity_manager::manage(types::__id_t __entity_id) {
 	if (this-> entity_indx[__entity_id].second-> inited) {
 		types::__id_t obj_id = this-> entity_indx[__entity_id].first;
-		uint_t cnk_xlen = this-> _uni_manager-> get_chunk_xlen(), cnk_ylen = this-> _uni_manager-> get_chunk_ylen();
+		uint_t cnk_xlen = this-> _uni_manager-> get_cnk_xlen(), cnk_ylen = this-> _uni_manager-> get_cnk_ylen();
 
 		uint_t enty_cxfs = floor(this-> _obj_manager-> get_xaxis(obj_id)/cnk_xlen) * cnk_xlen;
 		uint_t enty_cyfs = floor(this-> _obj_manager-> get_yaxis(obj_id)/cnk_ylen) * cnk_ylen;

@@ -11,13 +11,14 @@
 # include "../maths/find_center.hpp"
 # include "../asset_manager.hpp"
 # include "../types/id_t.hpp"
+# include "../types/err_t.h"
 # include <initializer_list>
 namespace mdl {
 namespace firefly {
 namespace gui {
 class btn {
 	public:
-		boost::int8_t fload_btn_pm(char const *__filedir, char const *__filename) {
+		types::err_t fload_btn_pm(char const *__filedir, char const *__filename) {
 			if (graphics::load_png_file(__filedir, __filename, this-> pixmap, this-> pm_size) != FFLY_SUCCESS) {
 				fprintf(stderr, "btn: failed to load btn pixmap from file.\n");
 				return FFLY_FAILURE;
@@ -25,14 +26,14 @@ class btn {
 			return FFLY_SUCCESS;
 		}
 
-		boost::int8_t load_btn_ast(types::id_t __asset_id, asset_manager *__asset_manager) {
+		types::err_t load_btn_ast(types::id_t __asset_id, asset_manager *__asset_manager) {
 			if (__asset_manager-> asset(__asset_id).type == asset_manager::AST_PNG_FILE) {
 				this-> pm_size = *(types::_2d_dsize_t<> *)__asset_manager-> get_asset_info(__asset_id);
 				this-> pixmap = __asset_manager-> get_asset_data(__asset_id);
 			}
 		}
 
-		boost::int8_t create_btn(uint_t& __btn_id, btn_manager *__btn_manager, types::_2d_coords_t<> __coords) {
+		types::err_t create_btn(uint_t& __btn_id, btn_manager *__btn_manager, types::_2d_coords_t<> __coords) {
 			__btn_id = __btn_manager-> create_btn(this-> pixmap, __coords, this-> pm_size.xaxis_len, this-> pm_size.yaxis_len);
 			__btn_manager-> get_btn(__btn_id)-> inde_tx_mem = true;
 			return FFLY_SUCCESS;

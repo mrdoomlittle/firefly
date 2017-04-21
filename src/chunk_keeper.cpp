@@ -1,61 +1,60 @@
 # include "chunk_keeper.hpp"
-boost::int8_t mdl::firefly::chunk_keeper::create_chunk(uint_t*& __chunk_id, bool __overwrite) {
-	if (__chunk_id != nullptr && !__overwrite) return FFLY_NOP;
+mdl::firefly::types::err_t mdl::firefly::chunk_keeper::create_cnk(types::id_t& __cnk_id, bool __overwrite) {
+	if (__cnk_id != nullptr && !__overwrite) return FFLY_NOP;
 
-	if (this-> chunk_count == 0) {
-		if ((this-> chunk_info = (types::chunk_info_t *)memory::mem_alloc(sizeof(types::chunk_info_t))) == NULL) {
+	if (this-> cnk_c == 0) {
+		if ((this-> cnk_info = (types::chunk_info_t *)memory::mem_alloc(sizeof(types::chunk_info_t))) == NULL) {
 			fprintf(stderr, "chunk_keeper: failed to alloc memory for 'chunk_info', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 
-		if ((this-> chunk_data = (types::chunk_data_t *)memory::mem_alloc(sizeof(types::chunk_data_t))) == NULL) {
+		if ((this-> cnk_data = (types::chunk_data_t *)memory::mem_alloc(sizeof(types::chunk_data_t))) == NULL) {
 			fprintf(stderr, "chunk_keeper: failed to alloc memory for 'chunk_data', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 	} else {
-		types::chunk_info_t *chunk_info = NULL;
-		if ((chunk_info = (types::chunk_info_t *)memory::mem_realloc(this-> chunk_info, (this-> chunk_count + 1) * sizeof(types::chunk_info_t))) == NULL) {
+		types::chunk_info_t *cnk_info = NULL;
+		if ((cnk_info = (types::chunk_info_t *)memory::mem_realloc(this-> cnk_info, (this-> cnk_c + 1) * sizeof(types::chunk_info_t))) == NULL) {
 			fprintf(stderr, "chunk_keeper: failed to realloc memory for 'chunk_info', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		} else
-			this-> chunk_info = chunk_info;
+			this-> cnk_info = cnk_info;
 
-		types::chunk_data_t *chunk_data = NULL;
-		if ((chunk_data = (types::chunk_data_t *)memory::mem_realloc(this-> chunk_data, (this-> chunk_count + 1) * sizeof(types::chunk_data_t))) == NULL) {
+		types::chunk_data_t *cnk_data = NULL;
+		if ((cnk_data = (types::chunk_data_t *)memory::mem_realloc(this-> cnk_data, (this-> cnk_c + 1) * sizeof(types::chunk_data_t))) == NULL) {
 			fprintf(stderr, "chunk_keeper: failed to realloc memory for 'chunk_data', errno: %d\n", errno);
-			chunk_info = NULL;
-			if ((chunk_info = (types::chunk_info_t *)memory::mem_realloc(this-> chunk_info, (this-> chunk_count - 1) * sizeof(types::chunk_info_t))) == NULL)
+			cnk_info = NULL;
+			if ((cnk_info = (types::chunk_info_t *)memory::mem_realloc(this-> cnk_info, (this-> cnk_c - 1) * sizeof(types::chunk_info_t))) == NULL)
 				return FFLY_FAILURE;
 			else
-				this-> chunk_info = chunk_info;
+				this-> cnk_info = cnk_info;
 		} else
-			this-> chunk_data = chunk_data;
+			this-> cnk_data = cnk_data;
 	}
 
-	types::chunk_info_t *chunk_info = nullptr;
-	types::chunk_data_t *chunk_data = nullptr;
+	types::chunk_info_t *cnk_info = nullptr;
+	types::chunk_data_t *cnk_data = nullptr;
 	uint_t rxaxis_len, ryaxis_len, rzaixs_len;
 
 	if (!this-> unused_ids.empty()) {
 		std::set<uint_t *>::iterator itor = this-> unused_ids.end();
 		--itor;
 
-		__chunk_id = *itor;
+		__cnk_id = *itor;
 		this-> unused_ids.erase(itor);
 	} else {
-		this-> chunk_info[this-> chunk_count].id, __chunk_id = (uint_t *)memory::mem_alloc(sizeof(uint_t));
-		if (__chunk_id == NULL) {
+		this-> cnk_info[this-> cnk_c].id, __cnk_id = (types::id_t)memory::mem_alloc(sizeof(types::__id_t));
+		if (__cnk_id == NULL) {
 			fprintf(stderr, "chunk_keeper: failed to alloc memory for 'chunk_id', errno: %d\n", errno);
 			goto mem_clean;
 		} else
-			*this-> chunk_info[this-> chunk_count].id, *__chunk_id = this-> chunk_count;
+			*this-> cnk_info[this-> cnk_c].id, *__cnk_id = this-> cnk_c;
 	}
 
-	chunk_info = &this-> chunk_info[*__chunk_id];
-	chunk_data = &this-> chunk_data[*__chunk_id];
+	cnk_info = &this-> cnk_info[*__cnk_id];
+	cnk_data = &this-> cnk_data[*__cnk_id];
 
-	chunk_data-> particles = static_cast<types::uni_par_t *>(memory::mem_alloc(this-> xaxis_len * this-> yaxis_len * this-> zaxis_len));
-	if (chunk_data-> particles == NULL) {
+	if ((cnk_data-> particles = (types::uni_par_t *)memory::mem_alloc(this-> xaxis_len * this-> yaxis_len * this-> zaxis_len)) == NULL) {
 		fprintf(stderr, "chunk_keeper: failed to alloc memory for chunk particles, errno: %d\n", errno);
 		goto mem_clean;
 	}
@@ -63,75 +62,70 @@ boost::int8_t mdl::firefly::chunk_keeper::create_chunk(uint_t*& __chunk_id, bool
 	rxaxis_len = this-> xaxis_len * UNI_PAR_XLEN;
 	ryaxis_len = this-> yaxis_len * UNI_PAR_YLEN;
 	rzaixs_len = this-> zaxis_len * UNI_PAR_ZLEN;
-	if ((chunk_data-> pixmap = memory::alloc_pixmap(rxaxis_len, ryaxis_len, rzaixs_len)) == NULL) {
+	if ((cnk_data-> _1d_pm = memory::alloc_pixmap(rxaxis_len, ryaxis_len, rzaixs_len)) == NULL) {
 		fprintf(stderr, "chunk_keeper: failed to alloc pixmap for chunk, errno: %d\n", errno);
 		goto mem_clean;
 	}
 
-	if (chunk_count == 1)
-		memset(chunk_data-> pixmap, 244, (rxaxis_len * ryaxis_len * rzaixs_len) * 4);
-	//if (chunk_count == 1)
-	//	memset(chunk_data-> pixmap, 244, (rxaxis_len * ryaxis_len * rzaixs_len) * 4);
+	cnk_data-> _3d_pm = memory::make_3d_pm(cnk_data-> _1d_pm, rxaxis_len, ryaxis_len, rzaixs_len);
 
-	this-> chunk_count ++;
+	if (this-> cnk_c == 1)
+		memset(cnk_data-> _1d_pm, 244, (rxaxis_len * ryaxis_len * rzaixs_len) * 4);
+
+	this-> cnk_c ++;
 
 	return FFLY_SUCCESS;
 	mem_clean:
 
-	if (this-> chunk_count == 0) {
-		memory::mem_free(this-> chunk_info);
-		memory::mem_free(this-> chunk_data);
+	if (this-> cnk_c == 0) {
+		memory::mem_free(this-> cnk_info);
+		memory::mem_free(this-> cnk_data);
 	} else {
-		this-> chunk_info = (types::chunk_info_t *)memory::mem_realloc(this-> chunk_info, (this-> chunk_count - 1) * sizeof(types::chunk_info_t));
-		this-> chunk_data = (types::chunk_data_t *)memory::mem_realloc(this-> chunk_data, (this-> chunk_count - 1) * sizeof(types::chunk_data_t));
+		this-> cnk_info = (types::chunk_info_t *)memory::mem_realloc(this-> cnk_info, (this-> cnk_c - 1) * sizeof(types::chunk_info_t));
+		this-> cnk_data = (types::chunk_data_t *)memory::mem_realloc(this-> cnk_data, (this-> cnk_c - 1) * sizeof(types::chunk_data_t));
 	}
 
-	if (__chunk_id != NULL)
-		memory::mem_free(__chunk_id);
+	if (__cnk_id != NULL) memory::mem_free(__cnk_id);
 
-	if (chunk_data-> particles != NULL)
-		memory::mem_free(chunk_data-> particles);
-
-	if (chunk_data-> pixmap != NULL)
-		memory::mem_free(chunk_data-> pixmap);
-
+	if (this-> cnk_data-> particles != NULL)
+		memory::mem_free(cnk_data-> particles);
+	if (this-> cnk_data-> _1d_pm != NULL)
+		memory::mem_free(cnk_data-> _1d_pm);
 	return FFLY_FAILURE;
 }
 
-boost::int8_t mdl::firefly::chunk_keeper::del_chunk(uint_t *__chunk_id, bool __hard) {
-	if (__chunk_id == nullptr) return FFLY_NOP;
+mdl::firefly::types::err_t mdl::firefly::chunk_keeper::del_cnk(types::id_t __cnk_id, bool __hard) {
+	if (__cnk_id == nullptr) return FFLY_NOP;
 
-	types::chunk_info_t& chunk_info = this-> chunk_info[*__chunk_id];
-	types::chunk_data_t& chunk_data = this-> chunk_data[*__chunk_id];
+	types::chunk_info_t& cnk_info = this-> cnk_info[*__cnk_id];
+	types::chunk_data_t& cnk_data = this-> cnk_data[*__cnk_id];
 
-	if (__hard)
-		memory::mem_free(chunk_info.id);
+	if (__hard) memory::mem_free(cnk_info.id);
 
-	memory::mem_free(chunk_data.particles);
-	memory::mem_free(chunk_data.pixmap);
+	memory::mem_free(cnk_data.particles);
+	memory::mem_free(cnk_data._1d_pm);
 
 	if (__hard) {
-		uint_t end_id = this-> chunk_count;
-		this-> chunk_count --;
+		uint_t end_id = this-> cnk_c;
+		this-> cnk_c --;
 
-		if (*__chunk_id == end_id) return FFLY_SUCCESS;
+		if (*__cnk_id == end_id) return FFLY_SUCCESS;
 
-		chunk_info = this-> chunk_info[end_id];
-		chunk_data = this-> chunk_data[end_id];
+		cnk_info = this-> cnk_info[end_id];
+		cnk_data = this-> cnk_data[end_id];
 
-		this-> chunk_info = (types::chunk_info_t *)realloc(this-> chunk_info, this-> chunk_count * sizeof(types::chunk_info_t));
-		if (this-> chunk_info == NULL) {
+		this-> cnk_info = (types::chunk_info_t *)realloc(this-> cnk_info, this-> cnk_c * sizeof(types::chunk_info_t));
+		if (this-> cnk_info == NULL) {
 			fprintf(stderr, "failed to relocate memory for 'chunk_info', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 
-		this-> chunk_data = (types::chunk_data_t *)realloc(this-> chunk_data, this-> chunk_count * sizeof(types::chunk_data_t));
-		if (this-> chunk_data == NULL) {
+		this-> cnk_data = (types::chunk_data_t *)realloc(this-> cnk_data, this-> cnk_c * sizeof(types::chunk_data_t));
+		if (this-> cnk_data == NULL) {
 			fprintf(stderr, "failed to relocate memory for 'chunk_data', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 	} else
-		this-> unused_ids.insert(__chunk_id);
-
+		this-> unused_ids.insert(__cnk_id);
 	return FFLY_SUCCESS;
 }

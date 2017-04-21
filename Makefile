@@ -45,13 +45,11 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
  FFLY_OBJECTS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
 else ifeq ($(FFLY_TARGET), FFLY_TEST)
- FFLY_OBJECTS+= src/ffly_audio.o src/alsa_audio.o src/pulse_audio.o #src/memory/alloc_pixmap.o src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
+ FFLY_OBJECTS+= src/memory/alloc_pixmap.o src/ffly_audio.o src/alsa_audio.o src/pulse_audio.o #src/memory/alloc_pixmap.o src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
 else
  FFLY_OBJECTS=
  FFLY_TARGET=FFLY_NONE
 endif
-
-
 
 ifeq ($(GPU_CL_TYPE), -DUSING_OPENCL)
  CXXFLAGS+= -L/usr/local/lib/x86_64/sdk
@@ -59,7 +57,6 @@ ifeq ($(GPU_CL_TYPE), -DUSING_OPENCL)
 else ifeq ($(GPU_CL_TYPE), -DUSING_CUDA)
  FFLY_OBJECTS+= src/cuda_helper.o
 endif
-
 
 ## core memory stuff
 FFLY_OBJECTS += src/memory/mem_alloc.o src/memory/mem_free.o #src/memory/alloc_pixmap.o
@@ -342,38 +339,38 @@ relocate_headers:
 
 # core libraries that are needed by design
 libraries:
-	cd nibbles; make EINT_T_INC=$(CURR_DIR)/eint_t/inc; cd ../;
 	cd termio; make; cd ../;
 	cd intlen; make ARC64 EINT_T_INC=$(CURR_DIR)/eint_t/inc; cd ../;
+	cd nibbles; make EINT_T_INC=$(CURR_DIR)/eint_t/inc; cd ../;
 	cd getdigit; make ARC64 EINT_T_INC=$(CURR_DIR)/eint_t/inc INTLEN_INC=$(CURR_DIR)/intlen/inc INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
 	cd to_string; make ECHAR_T=$(CURR_DIR)/echar_t/inc EINT_T_INC=$(CURR_DIR)/eint_t/inc GETDIGIT_INC=$(CURR_DIR)/getdigit/inc INTLEN_INC=$(CURR_DIR)/intlen/inc GETDIGIT_LIB=$(CURR_DIR)/getdigit/lib INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
 	cd strcmb; make EINT_T_INC=$(CURR_DIR)/echar_t/inc EINT_T_INC=$(CURR_DIR)/eint_t/inc ARC=$(ARC); cd ../;
 	cd tagged_memory; make LIB_PATH=$(CURR_DIR)/; cd ../;
 
-ffly_worker: libraries $(FFLY_OBJECTS)
+ffly_worker: $(FFLY_OBJECTS)
 	ld -r -o lib/ffly_worker.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
 	ar rcs lib/libffly_worker.a lib/ffly_worker.o
-	make relocate_headers
+#	make relocate_headers
 
-ffly_server: libraries $(FFLY_OBJECTS)
+ffly_server: $(FFLY_OBJECTS)
 	ld -r -o lib/ffly_server.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
 	ar rcs lib/libffly_server.a lib/ffly_server.o
-	make relocate_headers
+#	make relocate_headers
 
-ffly_client: libraries $(FFLY_OBJECTS)
+ffly_client: $(FFLY_OBJECTS)
 	ld -r -o lib/ffly_client.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
 	ar rcs lib/libffly_client.a lib/ffly_client.o
-	make relocate_headers
+#	make relocate_headers
 
-ffly_studio: libraries $(FFLY_OBJECTS) src/ffly_studio.o
+ffly_studio: $(FFLY_OBJECTS) src/ffly_studio.o
 	ld -r -o lib/ffly_studio.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
 	ar rcs lib/libffly_studio.a lib/ffly_studio.o
-	make relocate_headers
+#	make relocate_headers
 
-ffly_test: libraries $(FFLY_OBJECTS) src/ffly_test.o
+ffly_test: $(FFLY_OBJECTS) src/ffly_test.o
 	ld -r -o lib/ffly_test.o $(FFLY_OBJECTS)
 	ar rcs lib/libffly_test.a lib/ffly_test.o
-	make relocate_headers
+#	make relocate_headers
 	#g++ -std=c++11 -Iinc -Llib -Wall -o bin/ffly_studio src/ffly_studio.o -lffly_studio
 
 #ffly_server: required src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o

@@ -60,7 +60,7 @@ class camera {
 	}
 	bool inited = false;
 	private:
-	types::_2d_pm_t 2d_pm;
+	types::_2d_pm_t _2d_pm;
 	types::pixmap_t pixmap;
 	uni_manager *_uni_manager;
 	uint_t xaxis = 0, yaxis = 0, zaxis = 0;

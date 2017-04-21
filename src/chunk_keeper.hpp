@@ -7,6 +7,8 @@
 # include <set>
 # include <errno.h>
 # include <string.h>
+# include "types/err_t.h"
+# include "types/id_t.hpp"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "memory/alloc_pixmap.hpp"
@@ -24,43 +26,42 @@ class chunk_keeper {
 	chunk_keeper(uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len)
 	: xaxis_len(__xaxis_len), yaxis_len(__yaxis_len), zaxis_len(__zaxis_len) {}
 
-	boost::int8_t create_chunk(uint_t*& __chunk_id, bool __overwrite = false);
-	boost::int8_t del_chunk(uint_t *__chunk_id, bool __hard = false);
+	types::err_t create_cnk(types::id_t& __cnk_id, bool __overwrite = false);
+	types::err_t del_cnk(types::id_t __cnk_id, bool __hard = false);
 
-	boost::int8_t de_init() {
-		for (uint_t chunk_id = 0; chunk_id != this-> chunk_count; chunk_id ++) {
-			if (this-> unused_ids.find(this-> chunk_info[chunk_id].id) != this-> unused_ids.end()) {
-				memory::mem_free(this-> chunk_info[chunk_id].id);
+	types::err_t de_init() {
+		for (uint_t cnk_id{}; cnk_id != this-> cnk_c; cnk_id ++) {
+			if (this-> unused_ids.find(this-> cnk_info[cnk_id].id) != this-> unused_ids.end()) {
+				memory::mem_free(this-> cnk_info[cnk_id].id);
 				continue;
 			}
 
-			types::chunk_info_t& chunk_info = this-> chunk_info[chunk_id];
-			types::chunk_data_t& chunk_data = this-> chunk_data[chunk_id];
+			types::chunk_info_t& cnk_info = this-> cnk_info[cnk_id];
+			types::chunk_data_t& cnk_data = this-> cnk_data[cnk_id];
 
-			memory::mem_free(chunk_info.id);
-			memory::mem_free(chunk_data.particles);
-			memory::mem_free(chunk_data.pixmap);
+			memory::mem_free(cnk_info.id);
+			memory::mem_free(cnk_data.particles);
+			memory::mem_free(cnk_data._1d_pm);
 		}
 	}
 
-	types::chunk_info_t& get_chunk_info(uint_t *__chunk_id) {
-		return this-> chunk_info[*__chunk_id];
+	__inline__ types::chunk_info_t& get_cnk_info(types::id_t __cnk_id) {
+		return this-> cnk_info[*__cnk_id];
 	}
 
-	types::chunk_data_t& get_chunk_data(uint_t *__chunk_id) {
-		return this-> chunk_data[*__chunk_id];
+	__inline__ types::chunk_data_t& get_cnk_data(types::id_t __cnk_id) {
+		return this-> cnk_data[*__cnk_id];
 	}
 
-	uint_t get_chunk_xlen() { return this-> xaxis_len; }
-	uint_t get_chunk_ylen() { return this-> yaxis_len; }
-	uint_t get_chunk_zlen() { return this-> zaxis_len; }
+	__inline__ uint_t get_cnk_xlen() { return this-> xaxis_len; }
+	__inline__ uint_t get_cnk_ylen() { return this-> yaxis_len; }
+	__inline__ uint_t get_cnk_zlen() { return this-> zaxis_len; }
 
 	private:
-	std::set<uint_t *> unused_ids;
-
-	uint_t chunk_count = 0;
-	types::chunk_info_t *chunk_info = nullptr;
-	types::chunk_data_t *chunk_data = nullptr;
+	std::set<types::id_t> unused_ids;
+	uint_t cnk_c = 0;
+	types::chunk_info_t *cnk_info = nullptr;
+	types::chunk_data_t *cnk_data = nullptr;
 	uint_t const xaxis_len, yaxis_len, zaxis_len;
 };
 }

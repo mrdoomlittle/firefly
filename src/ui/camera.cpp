@@ -23,10 +23,9 @@ mdl::firefly::types::err_t mdl::firefly::ui::camera::de_init() {
 }
 
 mdl::firefly::types::err_t mdl::firefly::ui::camera::handle() {
-//	printf("%d - %d - %d - %d - %d\n", this-> xaxis, this-> yaxis, this-> zaxis, this-> xaxis_len, this-> yaxis_len);
-	types::pixmap_t chunk_pm = this-> _uni_manager-> chunk_pixmap(types::__coords__<>(this-> xaxis, this-> yaxis, this-> zaxis));
-
-	uint_t cnk_xlen = this-> _uni_manager-> _chunk_manager-> get_chunk_xlen(), cnk_ylen = this-> _uni_manager-> _chunk_manager-> get_chunk_ylen();
+	types::_1d_pm_t _1d_cnk_pm = this-> _uni_manager-> _1d_cnk_pm(types::__coords__<>(this-> xaxis, this-> yaxis, this-> zaxis));
+	types::_3d_pm_t _3d_cnk_pm = this-> _uni_manager-> _3d_cnk_pm(types::__coords__<>(this-> xaxis, this-> yaxis, this-> zaxis));
+	uint_t cnk_xlen = this-> _uni_manager-> _chunk_manager-> get_cnk_xlen(), cnk_ylen = this-> _uni_manager-> _chunk_manager-> get_cnk_ylen();
 
 	uint_t cxfs = floor(this-> xaxis / cnk_xlen) * cnk_xlen;
 	uint_t cyfs = floor(this-> yaxis / cnk_ylen) * cnk_ylen;
@@ -39,8 +38,15 @@ mdl::firefly::types::err_t mdl::firefly::ui::camera::handle() {
 	if (yaxis + this-> yaxis_len > cyfs + cnk_ylen)
 		yt = (yaxis + this-> yaxis_len) - (cyfs + cnk_ylen);
 
-	if (graphics::crop_pixmap(xaxis, yaxis, this-> pixmap, this-> xaxis_len - xt, this-> yaxis_len - yt, chunk_pm,
-		this-> _uni_manager-> _chunk_manager-> get_chunk_xlen(), this-> _uni_manager-> _chunk_manager-> get_chunk_ylen(), 4) == FFLY_FAILURE) return FFLY_FAILURE;
+	if (xt == 0 && yt == 0) {
+		if (graphics::crop_pixmap(xaxis, yaxis, this-> pixmap, this-> xaxis_len, this-> yaxis_len, _1d_cnk_pm, cnk_xlen, cnk_ylen, 4) == FFLY_FAILURE) return FFLY_FAILURE;
+	} else {
+
+		if (xt != 0)
+			if (graphics::crop_2d_pm(xaxis, yaxis, this-> _2d_pm, this-> xaxis_len - xt, this-> yaxis_len, this-> xaxis_len, _3d_cnk_pm[0], cnk_xlen, cnk_ylen, cnk_xlen, 4) == FFLY_FAILURE) return FFLY_FAILURE;
+
+	}
+
 	return FFLY_SUCCESS;
 }
 

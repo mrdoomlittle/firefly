@@ -34,7 +34,7 @@ class layer_manager {
 		if (__pixmap != nullptr) {
 			layers[layer_id].second = __pixmap;
 		} else {
-			layers[layer_id].second = memory::alloc_pixmap(__xlen, __ylen, 1);
+			layers[layer_id].second = memory::alloc_pixmap(__xlen, __ylen);
 			if (layers[layer_id].second == NULL) {
 				fprintf(stderr, "layer_manager: failed to alloc memory for pixmap.\n");
 				return 0;

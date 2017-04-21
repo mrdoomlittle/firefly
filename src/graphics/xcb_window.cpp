@@ -15,7 +15,7 @@ boost::int8_t mdl::firefly::graphics::xcb_window::begin(boost::uint16_t __wd_xax
 
 	memcpy(this-> frame_title, __frame_title, strlen(__frame_title));
 
-	this-> pixbuff = memory::alloc_pixmap(__wd_xaxis_len, __wd_yaxis_len, 1);
+	this-> pixbuff = memory::alloc_pixmap((uint_t)__wd_xaxis_len, (uint_t)__wd_yaxis_len);
 	if (this-> pixbuff == NULL) {
 		fprintf(stderr, "xcb_window: failed to alloc memory for pixbuff, errno: %d\n", errno);
 		return FFLY_FAILURE;

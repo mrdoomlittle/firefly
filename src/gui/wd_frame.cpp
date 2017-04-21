@@ -1,6 +1,6 @@
 # include "wd_frame.hpp"
 static const mdl::firefly::graphics::colour_t ol_colour = {36, 37, 38, 244};
-boost::int8_t mdl::firefly::gui::wd_frame::init(boost::uint16_t __xaxis, boost::uint16_t __yaxis, boost::uint16_t __xaxis_len, boost::uint16_t __yaxis_len, char const *__title) {
+mdl::firefly::types::err_t mdl::firefly::gui::wd_frame::init(boost::uint16_t __xaxis, boost::uint16_t __yaxis, boost::uint16_t __xaxis_len, boost::uint16_t __yaxis_len, char const *__title) {
 	if (this-> pixmap == nullptr) {
 		if ((this-> pixmap = memory::alloc_pixmap(__xaxis_len + (OUTLINE_WIDTH * 2), __yaxis_len + (OUTLINE_WIDTH * 2), 1)) == NULL) {
 			fprintf(stderr, "wd_frame: failed to alloc memory for frame pixmap, errno: %d\n", errno);
@@ -14,8 +14,8 @@ boost::int8_t mdl::firefly::gui::wd_frame::init(boost::uint16_t __xaxis, boost::
 	if (this-> pixmap == nullptr)
 		memset(this-> pixmap, 22, (this-> pm_size.xaxis_len * this-> pm_size.yaxis_len) * 4);
 
-	graphics::draw_outline(this-> pixmap, types::coords<uint_t>(__xaxis + OUTLINE_WIDTH, __yaxis + OUTLINE_WIDTH, 0),
-		types::coords<uint_t>((__xaxis + __xaxis_len) + OUTLINE_WIDTH, (__yaxis + __yaxis_len) + OUTLINE_WIDTH, 0), OUTLINE_WIDTH, this-> pm_size, ol_colour);
+	if (graphics::draw_outline(this-> pixmap, types::coords<uint_t>(__xaxis + OUTLINE_WIDTH, __yaxis + OUTLINE_WIDTH, 0),
+		types::coords<uint_t>((__xaxis + __xaxis_len) + OUTLINE_WIDTH, (__yaxis + __yaxis_len) + OUTLINE_WIDTH, 0), OUTLINE_WIDTH, this-> pm_size, ol_colour) != FFLY_SUCCESS) return FFLY_FAILURE;
 
 	this-> coords.xaxis = __xaxis;
 	this-> coords.yaxis = __yaxis;
@@ -40,9 +40,11 @@ boost::int8_t mdl::firefly::gui::wd_frame::init(boost::uint16_t __xaxis, boost::
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::firefly::gui::wd_frame::draw(types::pixmap_t __pixbuff, types::dsize_t __pb_size) {
-	graphics::draw_pixmap(this-> coords.xaxis, this-> coords.yaxis, __pixbuff, __pb_size.xaxis_len, __pb_size.yaxis_len, this-> pixmap, this-> pm_size.xaxis_len, this-> pm_size.yaxis_len);
+mdl::firefly::types::err_t mdl::firefly::gui::wd_frame::draw(types::pixmap_t __pixbuff, types::dsize_t __pb_size) {
+	if (graphics::draw_pixmap(this-> coords.xaxis, this-> coords.yaxis, __pixbuff, __pb_size.xaxis_len, __pb_size.yaxis_len, this-> pixmap, this-> pm_size.xaxis_len, this-> pm_size.yaxis_len) != FFLY_SUCCESS)
+		return FFLY_FAILURE;
 	this-> pb_size = __pb_size;
+	return FFLY_SUCCESS;
 }
 
 bool mdl::firefly::gui::wd_frame::is_inside() {
@@ -53,7 +55,7 @@ bool mdl::firefly::gui::wd_frame::is_inside() {
 	return false;
 }
 
-boost::int8_t mdl::firefly::gui::wd_frame::handle() {
+mdl::firefly::types::err_t mdl::firefly::gui::wd_frame::handle() {
 	static bool frame_clock = false;
 	static uint_t xaxis_dist = 0, yaxis_dist = 0;
 	if (this-> is_inside() && *this-> mouse_press && *this-> mouse_btn_id == 1) {
@@ -94,5 +96,5 @@ boost::int8_t mdl::firefly::gui::wd_frame::handle() {
 		} else
 			ex_btn_pressed = false;
 	}
-
+	return FFLY_SUCCESS;
 }

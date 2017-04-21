@@ -23,6 +23,7 @@
 # include <set>
 # include <errno.h>
 # include <queue>
+# include "types/err_t.h"
 # include "types/id_t.hpp"
 # include <boost/array.hpp>
 # include "types/shape_info_t.hpp"
@@ -47,30 +48,26 @@ class obj_manager {
 
 	~obj_manager() {}
 
-	boost::int8_t de_init();
+	types::err_t de_init();
 
 	types::pixmap_t get_pixmap(uint_t __obj_id) {
 		return this-> obj_index[__obj_id].second;
 	}
 
-	uint_t add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap = nullptr);
-	uint_t add_obj(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap = nullptr) {
+	types::__id_t add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap = nullptr);
+
+	// change ^ to this
+	types::__id_t add_obj(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap = nullptr) {
 		this-> add(__coords, __shape_info, __xaxis_len, __yaxis_len, __zaxis_len, __any_error, __pixmap);
 	}
+
 	void del(uint_t __obj_id);
 	//uint_t add(uint_t __xlen, uint_t __ylen, uint_t __zlen, uint_t __xaxis, uint_t __yaxis, uint_t __zaxis); // return obj_id
-/*
-	void move_forwards(uint_t __obj_id, uint_t __amount) {
-		this-> set_zaxis(this-> get_zaxis() + __amount);
-	}
 
-	void move_backwards(uint_t __obj_id, uint_t __amount) {
-		this-> set_zaxis(this-> get_zaxis() - __amount);
-	}
-*/
 	uint_t get_xaxis_len(types::__id_t __obj_id) {return this-> obj_index[__obj_id].first-> xaxis_len;}
 	uint_t get_yaxis_len(types::__id_t __obj_id) {return this-> obj_index[__obj_id].first-> yaxis_len;}
 	uint_t get_zaxis_len(types::__id_t __obj_id) {return this-> obj_index[__obj_id].first-> zaxis_len;}
+
 	void add_to_gravy_pool(uint_t __obj_id, uint_t __other_id);
 
 	types::coords_t<> get_coords(uint_t __obj_id) {
@@ -81,7 +78,6 @@ class obj_manager {
 		};
 		return coords;
 	}
-
 
 	void set_mass(uint_t __obj_id, uint_t __mass) {
 		this-> obj_index[__obj_id].first-> mass = __mass;
@@ -215,12 +211,11 @@ class obj_manager {
 		this-> obj_index[__obj_id].first-> coords.yaxis = (uint_t)__yaxis;
 	}
 
-	boost::int8_t set_xaxis_bound(std::initializer_list<uint_t> __obj_id, std::initializer_list<uint_t> __xaxis_min, std::initializer_list<uint_t> __xaxis_max) {
-		uint_t obj_id_c = __obj_id.size();
+	types::err_t set_xaxis_bound(std::initializer_list<uint_t> __obj_id, std::initializer_list<uint_t> __xaxis_min, std::initializer_list<uint_t> __xaxis_max) {
+		std::size_t obj_id_c = __obj_id.size();
 		if (obj_id_c != __xaxis_min.size() || obj_id_c != __xaxis_max.size()) return FFLY_FAILURE;
 
-		for (std::size_t o = 0; o != obj_id_c; o ++)
-			this-> set_xaxis_bound(*(__obj_id.begin() + o), *(__xaxis_min.begin() + o), *(__xaxis_max.begin() + o));
+		for (std::size_t o = 0; o != obj_id_c; o ++) this-> set_xaxis_bound(*(__obj_id.begin() + o), *(__xaxis_min.begin() + o), *(__xaxis_max.begin() + o));
 		return FFLY_SUCCESS;
 	}
 
@@ -234,12 +229,11 @@ class obj_manager {
 		this-> obj_index[__obj_id].first-> xaxis_bound[1] = __xaxis_max;
 	}
 
-	boost::int8_t set_yaxis_bound(std::initializer_list<uint_t> __obj_id, std::initializer_list<uint_t> __yaxis_min, std::initializer_list<uint_t> __yaxis_max) {
-		uint_t obj_id_c = __obj_id.size();
+	types::err_t set_yaxis_bound(std::initializer_list<uint_t> __obj_id, std::initializer_list<uint_t> __yaxis_min, std::initializer_list<uint_t> __yaxis_max) {
+		std::size_t obj_id_c = __obj_id.size();
 		if (obj_id_c != __yaxis_min.size() || obj_id_c != __yaxis_max.size()) return FFLY_FAILURE;
 
-		for (std::size_t o = 0; o != obj_id_c; o ++)
-			this-> set_yaxis_bound(*(__obj_id.begin() + o), *(__yaxis_min.begin() + o), *(__yaxis_max.begin() + o));
+		for (std::size_t o = 0; o != obj_id_c; o ++) this-> set_yaxis_bound(*(__obj_id.begin() + o), *(__yaxis_min.begin() + o), *(__yaxis_max.begin() + o));
 		return FFLY_SUCCESS;
 	}
 

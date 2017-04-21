@@ -14,14 +14,15 @@ namespace ublas = boost::numeric::ublas;
 # include "maths/squar_rt.hpp"
 # include "flip_dir.hpp"
 # include "ffly_config.hpp"
+# include "types/err_t.h"
 namespace mdl {
 namespace firefly {
 class obj_manager;
 class gravy_manager {
 	public:
-	boost::int8_t init(uint_t __obj_c);
-	boost::int8_t manage(obj_manager *__obj_manager, uint_t __obj_id, uint_t __gravity_speed, bool __gravity_enabled);
-	boost::int8_t de_init();
+	types::err_t init(uint_t __obj_c);
+	types::err_t manage(obj_manager *__obj_manager, uint_t __obj_id, uint_t __gravy_speed, bool __gravy_enabled);
+	types::err_t de_init();
 
 	void add_to_pool(uint_t __obj_id, uint_t __other_id) {
 		printf("added obj with id: %d to a obj pool.\n", __other_id);

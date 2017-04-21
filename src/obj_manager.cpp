@@ -12,7 +12,7 @@ void mdl::firefly::obj_manager::add_to_gravy_pool(uint_t __obj_id, uint_t __othe
 	//this-> thread_index[th_id]-> gravity_manager.add_to_pool(__obj_id, __other_id);
 }
 
-mdl::uint_t mdl::firefly::obj_manager::add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap) {
+mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap) {
 	uint_t obj_id = 0;
 	if (!this-> unused_ids.empty()) {
 		std::set<uint_t>::iterator itor = this-> unused_ids.end();
@@ -171,7 +171,6 @@ mdl::uint_t mdl::firefly::obj_manager::add(types::coords_t<> __coords, types::sh
 			}
 		}
 	} else {
-// fix this
 		if (__pixmap == nullptr) {
 			fprintf(stderr, "obj_manager: can't use pixmap provided as memory has not been allocated for it.\n");
 			__any_error = FFLY_FAILURE;
@@ -231,7 +230,7 @@ void mdl::firefly::obj_manager::del(uint_t __obj_id) {
 	this-> obj_count --;
 }
 
-boost::int8_t mdl::firefly::obj_manager::de_init() {
+mdl::firefly::types::err_t mdl::firefly::obj_manager::de_init() {
 	this-> to_shutdown = true;
 	printf("waiting for all obj thread to be killed.\n");
 	while (this-> active_threads != 0) {}
@@ -452,7 +451,7 @@ void mdl::firefly::obj_manager::handle_objs(thr_config_t *thread_config) {
 }
 
 // for now until i can make draw_pixmap thread safe i will be using this
-boost::int8_t mdl::firefly::obj_manager::draw_objs() {
+mdl::firefly::types::err_t mdl::firefly::obj_manager::draw_objs() {
 	if (this-> to_shutdown) return FFLY_NOP;
 	if (this-> obj_count == 0) return FFLY_NOP;
 
@@ -463,12 +462,13 @@ boost::int8_t mdl::firefly::obj_manager::draw_objs() {
 		types::obj_info_t& obj_info = *this-> obj_index[obj_id].first;
 		types::pixmap_t obj_pixmap = this-> obj_index[obj_id].second;
 
-		uint_t chunk_xlen = this-> _uni_manager-> _chunk_manager-> get_chunk_xlen();
-		uint_t chunk_ylen = this-> _uni_manager-> _chunk_manager-> get_chunk_ylen();
-		uint_t xaxis = obj_info.coords.xaxis - floor(obj_info.coords.xaxis/chunk_xlen) * chunk_xlen;
-		uint_t yaxis = obj_info.coords.yaxis - floor(obj_info.coords.yaxis/chunk_ylen) * chunk_ylen;
+		uint_t cnk_xlen = this-> _uni_manager-> _chunk_manager-> get_cnk_xlen();
+		uint_t cnk_ylen = this-> _uni_manager-> _chunk_manager-> get_cnk_ylen();
+
+		uint_t xaxis = obj_info.coords.xaxis - floor(obj_info.coords.xaxis/cnk_xlen) * cnk_xlen;
+		uint_t yaxis = obj_info.coords.yaxis - floor(obj_info.coords.yaxis/cnk_ylen) * cnk_ylen;
 		//printf("%d - %dx%dx%d -> r: %d\n", obj_id, unsigned(obj_info.coords.xaxis), unsigned(obj_info.coords.yaxis), unsigned(obj_info.coords.zaxis), *this-> _uni_manager-> chunk_pixmap(types::__coords__<uint_t>((uint_t)obj_info.coords.xaxis, (uint_t)obj_info.coords.yaxis, (uint_t)obj_info.coords.zaxis)));
-		if (graphics::draw_pixmap(xaxis, yaxis, this-> _uni_manager-> chunk_pixmap(types::__coords__<uint_t>((uint_t)obj_info.coords.xaxis, (uint_t)obj_info.coords.yaxis, (uint_t)obj_info.coords.zaxis)), chunk_xlen, chunk_ylen, obj_pixmap, obj_info.xaxis_len, obj_info.yaxis_len) == FFLY_FAILURE)
+		if (graphics::draw_pixmap(xaxis, yaxis, this-> _uni_manager-> _1d_cnk_pm(types::__coords__<uint_t>((uint_t)obj_info.coords.xaxis, (uint_t)obj_info.coords.yaxis, (uint_t)obj_info.coords.zaxis)), cnk_xlen, cnk_ylen, obj_pixmap, obj_info.xaxis_len, obj_info.yaxis_len) == FFLY_FAILURE)
 			return FFLY_FAILURE;
 
 		//memset(this-> _uni_manager-> chunk_pixmap(types::__coords__<uint_t>((uint_t)obj_info.coords.xaxis, (uint_t)obj_info.coords.yaxis, (uint_t)obj_info.coords.zaxis)), 100, 6366);
@@ -477,7 +477,7 @@ boost::int8_t mdl::firefly::obj_manager::draw_objs() {
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::firefly::obj_manager::manage() {
+mdl::firefly::types::err_t mdl::firefly::obj_manager::manage() {
 	if (this-> to_shutdown) return FFLY_NOP;
 	static bool fist_bit = false;
 	if (this-> obj_count > 0 && !fist_bit && this-> obj_count < BLOCK_SIZE) {

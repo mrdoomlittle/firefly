@@ -46,6 +46,8 @@ mdl::firefly::types::err_t mdl::firefly::system::task_handle::de_init() {
 	return FFLY_SUCCESS;
 }
 
+mdl::firefly::system::task_handle ___task_handle__;
+
 
 
 

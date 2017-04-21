@@ -24,60 +24,68 @@ class uni_manager {
 	uni_manager(uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len)
 	: xaxis_len(__xaxis_len), yaxis_len(__yaxis_len), zaxis_len(__zaxis_len) {}
 
-	boost::int8_t init(uint_t __xaxis_split, uint_t __yaxis_split, uint_t __zaxis_split);
-
-	void get_chunk_coords(types::_3d_coords_t<> __coords, uint_t& __xaxis, uint_t& __yaxis, uint_t& __zaxis) {
-		__xaxis = floor(__coords.xaxis / this-> _chunk_manager-> get_chunk_xlen());
-		__yaxis = floor(__coords.yaxis / this-> _chunk_manager-> get_chunk_ylen());
-		__zaxis = floor(__coords.zaxis / this-> _chunk_manager-> get_chunk_zlen());
+	types::err_t init(uint_t __xa_split, uint_t __ya_split, uint_t __za_split);
+	void get_cnk_coords(types::_3d_coords_t<> __coords, uint_t& __xa, uint_t& __ya, uint_t& __za) {
+		__xa = floor(__coords.xaxis / this-> _chunk_manager-> get_cnk_xlen());
+		__ya = floor(__coords.yaxis / this-> _chunk_manager-> get_cnk_ylen());
+		__za = floor(__coords.zaxis / this-> _chunk_manager-> get_cnk_zlen());
 	}
 
-	boost::int8_t de_init() {
-		printf("decontructing uni.\n");
+	types::err_t de_init() {
 		this-> _chunk_manager-> de_init();
-		if (this-> chunk_id_index != nullptr)
-			memory::mem_free(this-> chunk_id_index);
-		if (this-> uni_pixmap != nullptr)
-			memory::mem_free(this-> uni_pixmap);
+		if (this-> cnk_id_indx != nullptr)
+			memory::mem_free(this-> cnk_id_indx);
+		if (this-> _1d_uni_pm != nullptr)
+			memory::mem_free(this-> _1d_uni_pm);
 		if (this-> uni_particles != nullptr)
 			memory::mem_free(this-> uni_particles);
+		return FFLY_SUCCESS;
 	}
 
-	types::pixmap_t chunk_pixmap(uint_t __xchunk, uint_t __ychunk, uint_t __zchunk) {
-		return this-> uni_pixmap[__xchunk + (__ychunk * this-> chunk_xcount) + (__zchunk * this-> chunk_xcount * this-> chunk_ycount)];
+	types::_1d_pm_t _1d_cnk_pm(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
+		return this-> _1d_uni_pm[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];
 	}
 
-	types::pixmap_t chunk_pixmap(types::_3d_coords_t<> __coords) {
-		uint_t xchunk, ychunk, zchunk;
-		this-> get_chunk_coords(__coords, xchunk, ychunk, zchunk);
-		return this-> chunk_pixmap(xchunk, ychunk, zchunk);
+	types::_3d_pm_t _3d_cnk_pm(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
+		return this-> _3d_uni_pm[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];
 	}
 
-	types::uni_par_t* chunk_particles(uint_t __xchunk, uint_t __ychunk, uint_t __zchunk) {
-		return this-> uni_particles[__xchunk + (__ychunk * this-> chunk_xcount) + (__zchunk * this-> chunk_xcount * this-> chunk_ycount)];
+	types::_1d_pm_t _1d_cnk_pm(types::_3d_coords_t<> __coords) {
+		uint_t xcnk, ycnk, zcnk;
+		this-> get_cnk_coords(__coords, xcnk, ycnk, zcnk);
+		return this-> _1d_cnk_pm(xcnk, ycnk, zcnk);
 	}
 
-	types::uni_par_t* chunk_particles(types::_3d_coords_t<> __coords) {
-		uint_t xchunk, ychunk, zchunk;
-		this-> get_chunk_coords(__coords, xchunk, ychunk, zchunk);
-		return this-> chunk_particles(xchunk, ychunk, zchunk);
+	types::_3d_pm_t _3d_cnk_pm(types::_3d_coords_t<> __coords) {
+		uint_t xcnk, ycnk, zcnk;
+		this-> get_cnk_coords(__coords, xcnk, ycnk, zcnk);
+		return this-> _3d_cnk_pm(xcnk, ycnk, zcnk);
 	}
 
-	__inline__ uint_t get_chunk_xlen() {return this-> _chunk_manager-> get_chunk_xlen();}
-	__inline__ uint_t get_chunk_ylen() {return this-> _chunk_manager-> get_chunk_ylen();}
-	__inline__ uint_t get_chunk_zlen() {return this-> _chunk_manager-> get_chunk_zlen();}
+	types::uni_par_t* cnk_particles(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
+		return this-> uni_particles[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];
+	}
 
-	types::err_t draw_chunk(uint_t __xfs, uint_t __yfs, uint_t __zfs, types::id_t __chunk_id, types::pixmap_t __pixbuff, uint_t __xaxis_len, uint_t __yaxis_len);
+	types::uni_par_t* cnk_particles(types::_3d_coords_t<> __coords) {
+		uint_t xcnk, ycnk, zcnk;
+		this-> get_cnk_coords(__coords, xcnk, ycnk, zcnk);
+		return this-> cnk_particles(xcnk, ycnk, zcnk);
+	}
 
-	boost::int8_t save();
-	boost::int8_t load();
+	__inline__ uint_t get_cnk_xlen() {return this-> _chunk_manager-> get_cnk_xlen();}
+	__inline__ uint_t get_cnk_ylen() {return this-> _chunk_manager-> get_cnk_ylen();}
+	__inline__ uint_t get_cnk_zlen() {return this-> _chunk_manager-> get_cnk_zlen();}
+
+	types::err_t draw_cnk(uint_t __xfs, uint_t __yfs, uint_t __zfs, types::id_t __chunk_id, types::pixmap_t __pixbuff, uint_t __xaxis_len, uint_t __yaxis_len);
 
 	chunk_manager *_chunk_manager = nullptr;
 	private:
-	uint_t chunk_xcount, chunk_ycount, chunk_zcount;
+	uint_t cnk_xc, cnk_yc, cnk_zc;
 	uint_t const xaxis_len, yaxis_len, zaxis_len;
-	uint_t **chunk_id_index = nullptr;
-	types::pixmap_t *uni_pixmap = nullptr;
+	uint_t **cnk_id_indx = nullptr;
+	types::_1d_pm_t *_1d_uni_pm = nullptr;
+	types::_3d_pm_t *_3d_uni_pm = nullptr;
+
 	types::uni_par_t **uni_particles = nullptr;
 };
 }

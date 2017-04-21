@@ -11,6 +11,7 @@
 # include "../system/errno.h"
 # include "../graphics/draw_pixmap.hpp"
 # include <errno.h>
+# include "../types/err_t.h"
 # include "../maths/is_inside.hpp"
 # define OUTLINE_WIDTH 14
 namespace mdl {
@@ -18,10 +19,10 @@ namespace firefly {
 namespace gui {
 class wd_frame {
 	public:
-	boost::int8_t init(boost::uint16_t __xaxis, boost::uint16_t __yaxis, boost::uint16_t __xaxis_len, boost::uint16_t __yaxis_len, char const *__title);
+	types::err_t init(boost::uint16_t __xaxis, boost::uint16_t __yaxis, boost::uint16_t __xaxis_len, boost::uint16_t __yaxis_len, char const *__title);
 
-	boost::int8_t draw(types::pixmap_t __pixbuff, types::dsize_t __pb_size);
-	boost::int8_t handle();
+	types::err_t draw(types::pixmap_t __pixbuff, types::dsize_t __pb_size);
+	types::err_t handle();
 	bool *mouse_press;
 	int *mouse_btn_id;
 
@@ -35,7 +36,7 @@ class wd_frame {
 		return this-> coords;
 	}
 
-	boost::int8_t de_init() {
+	types::err_t de_init() {
 		if (this-> pixmap != nullptr) {
 			memory::mem_free(this-> pixmap);
 			this-> pixmap = nullptr;

@@ -1,21 +1,25 @@
 # include "gravy_manager.hpp"
-boost::int8_t mdl::firefly::gravy_manager::init(uint_t __obj_c) {
-	for (std::size_t o = 0; o != __obj_c; o ++) {
+mdl::firefly::types::err_t mdl::firefly::gravy_manager::init(uint_t __obj_c) {
+	for (std::size_t o = 0; o != __obj_c; o ++)
 		this-> obj_timer[o].begin();
-	}
+
 	this-> obj_c = __obj_c;
 	return FFLY_SUCCESS;
 }
-boost::int8_t mdl::firefly::gravy_manager::de_init() {
+mdl::firefly::types::err_t mdl::firefly::gravy_manager::de_init() {
 	for (std::size_t o = 0; o != BLOCK_SIZE; o ++)
 		this-> gravy_pool[o].clear();
 }
-
+/*
+	NOTE:
+	im leaning this so lots might be wrong or incorrect.
+*/
 # define GCONST 212//8129
-boost::int8_t mdl::firefly::gravy_manager::manage(obj_manager *__obj_manager, uint_t __obj_id, uint_t __gravity_speed, bool __gravity_enabled) {
-	if (!__gravity_enabled) return FFLY_SUCCESS;
+mdl::firefly::types::err_t mdl::firefly::gravy_manager::manage(obj_manager *__obj_manager, uint_t __obj_id, uint_t __gravy_speed, bool __gravy_enabled) {
+	if (!__gravy_enabled) return FFLY_SUCCESS;
+
 	this-> obj_timer[__obj_id].time_point();
-	if (this-> obj_timer[__obj_id].get_delta<std::chrono::nanoseconds>() >= (1000000000 / __gravity_speed)) {
+	if (this-> obj_timer[__obj_id].get_delta<std::chrono::nanoseconds>() >= (1000000000 / __gravy_speed)) {
 		__obj_manager-> push_yaxis(__obj_id, 1);
 		this-> obj_timer[__obj_id].begin();
 	}
