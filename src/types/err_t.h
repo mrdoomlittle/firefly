@@ -1,18 +1,19 @@
-# ifndef __err__t__hpp
-# define __err__t__hpp
+# ifndef __err__t__h
+# define __err__t__h
 
 # ifdef __cplusplus
-# include <boost/cstdint.hpp>
+# include <eint_t.hpp>
 namespace mdl {
 namespace firefly {
 namespace types {
-typedef boost::int8_t err_t;
+typedef i8_t err_t;
 }
 }
 }
+typedef mdl::i8_t ffly_err_t;
 # else
-# include <stdint.h>
-typedef int8_t ffly_err_t;
+# include <eint_t.h>
+typedef mdl_i8_t ffly_err_t;
 # endif
 
-# endif /*__err__t__hpp*/
+# endif /*__err__t__h*/

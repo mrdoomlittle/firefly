@@ -83,9 +83,11 @@ int main() {
 	cudaDeviceReset();
 }
 */
+# include "firefly.hpp"
 # include <string.h>
 # include <cstdio>
 int main() {
+	mdl::firefly::init();
 	types::_1d_pm_t _1dpm = memory::alloc_pixmap((mdl::uint_t)8, (mdl::uint_t)8, (mdl::uint_t)8, (mdl::u8_t)4);
 	memset(_1dpm, 0, 8*8*8*4);
 	memset(_1dpm + 8*8, 1, 8*8);
@@ -101,6 +103,10 @@ int main() {
 		}
 		printf("\n");
 	}
+
+	printf("%d\n", mdl::ffly_memory::get_mem_usage());
+
+	mdl::firefly::de_init();
 
 //	pulse_audio _pulse_audio;
 //	_pulse_audio.play_sample("", "test", system::WAV, system::FLOAT32_LE);

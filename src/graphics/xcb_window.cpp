@@ -1,7 +1,5 @@
 # include "xcb_window.hpp"
-/* change uint_t to boost::uint16_t as it seems like we dont need to use uint_t
-*/
-boost::int8_t mdl::firefly::graphics::xcb_window::begin(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
+mdl::firefly::types::err_t mdl::firefly::graphics::xcb_window::begin(u16_t __wd_xaxis_len, u16_t __wd_yaxis_len, char const *__frame_title) {
 	printf("thread has started.\n");
 	if (this-> is_wd_flag(FLG_WD_KILLED)) return FFLY_SUCCESS;
 
@@ -75,9 +73,9 @@ boost::int8_t mdl::firefly::graphics::xcb_window::begin(boost::uint16_t __wd_xax
 	xcb_window_t window = xcb_generate_id(conn);
 
 	xcb_create_colormap(conn, XCB_COLORMAP_ALLOC_NONE, colormap, screen-> root, vis_id);
-	boost::uint32_t eventmask = XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE;
-	boost::uint32_t valuelist[] = { eventmask, colormap, 0 };
-	boost::uint32_t valuemask = XCB_CW_EVENT_MASK | XCB_CW_COLORMAP;
+	u32_t eventmask = XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE;
+	u32_t valuelist[] = { eventmask, colormap, 0 };
+	u32_t valuemask = XCB_CW_EVENT_MASK | XCB_CW_COLORMAP;
 
 	xcb_create_window(conn, XCB_COPY_FROM_PARENT, window, screen-> root, 0, 0, __wd_xaxis_len, __wd_yaxis_len, 0,
 	XCB_WINDOW_CLASS_INPUT_OUTPUT, vis_id, valuemask, valuelist);
@@ -220,7 +218,7 @@ boost::int8_t mdl::firefly::graphics::xcb_window::begin(boost::uint16_t __wd_xax
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::firefly::graphics::xcb_window::open_in_thread(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
+mdl::firefly::types::err_t mdl::firefly::graphics::xcb_window::open_in_thread(u16_t __wd_xaxis_len, u16_t __wd_yaxis_len, char const *__frame_title) {
 	boost::thread th(boost::bind(&xcb_window::begin, this, __wd_xaxis_len, __wd_yaxis_len, __frame_title));
 	this-> native_handle = th.native_handle();
 	return FFLY_SUCCESS;

@@ -22,14 +22,15 @@
 # include "../memory/mem_free.h"
 # include "wd_flags.hpp"
 # include "../system/stop_watch.hpp"
+# include "../types/err_t.h"
 namespace mdl {
 namespace firefly {
 namespace graphics {
 class xcb_window: public wd_flags
 {
 	public:
-	boost::int8_t begin(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title);
-	boost::int8_t open_in_thread(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title);
+	types::err_t begin(u16_t__wd_xaxis_len, u16_t__wd_yaxis_len, char const *__frame_title);
+	types::err_t open_in_thread(u16_t__wd_xaxis_len, u16_t__wd_yaxis_len, char const *__frame_title);
 
 	void set_fps_mark(std::size_t __fps_mark) {
 		this-> fps_mark = __fps_mark;
@@ -45,11 +46,11 @@ class xcb_window: public wd_flags
 	bool button_press = false;
 	int button_code = 0x0;
 
-	boost::uint16_t get_wd_xaxis_len() {
+	u16_tget_wd_xaxis_len() {
 		return this-> wd_xaxis_len;
 	}
 
-	boost::uint16_t get_wd_yaxis_len() {
+	u16_tget_wd_yaxis_len() {
 		return this-> wd_yaxis_len;
 	}
 
@@ -59,14 +60,14 @@ class xcb_window: public wd_flags
 
 	types::pixmap_t pixbuff = nullptr;
 
-	boost::int8_t de_init() {
+	types::err_t de_init() {
 		this-> add_wd_flag(FLG_WD_TO_CLOSE);
 
 		while(!this-> is_wd_flag(FLG_WD_CLOSED)){}
 
 		memory::mem_free(pixbuff);
 		memory::mem_free(frame_title);
-
+/*
 		int th_err = 0;
 		if ((th_err = pthread_cancel(this-> native_handle)) != 0) {
 			if (th_err != ESRCH) {
@@ -74,12 +75,13 @@ class xcb_window: public wd_flags
 				return FFLY_FAILURE;
 			}
 		}
+*/
 		return FFLY_SUCCESS;
 	}
 
 	private:
 	boost::thread::native_handle_type native_handle;
-	boost::uint16_t wd_xaxis_len, wd_yaxis_len;
+	u16_twd_xaxis_len, wd_yaxis_len;
 	char *frame_title;
 	std::size_t fps_mark = 120;
 };

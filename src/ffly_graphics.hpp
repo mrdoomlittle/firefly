@@ -28,13 +28,15 @@ find a diffrent name for mdl::firefly::gpu::init()
 namespace mdl {
 namespace ffly_graphics {
 bool extern inited;
-static firefly::types::err_t init() {
+firefly::types::err_t static init() {
 	firefly::gpu::get_device_c(firefly::gpu::device_c);
 	firefly::gpu::get_mx_threads(firefly::gpu::mx_threads);
 	firefly::gpu::mx_blocks = _CU_MAX_BLOCKS;
 	inited = true;
+	return FFLY_SUCCESS;
 }
-static firefly::types::err_t de_init() {
+firefly::types::err_t static de_init() {
+	return FFLY_SUCCESS;
 }
 }
 }

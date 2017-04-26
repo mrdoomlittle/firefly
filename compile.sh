@@ -47,6 +47,17 @@ fi
 if [ $(bash find.bash "$FFLY_ARGS" "--with-uni-manager") -eq 0 ]; then
 	extra_defines="$extra_defines -D__WITH_UNI_MANAGER"
 fi
+
+if [ $(bash find.bash "$FFLY_ARGS" "--debug-enabled") -eq 0 ]; then
+	echo "--debug-enabled is not surported."
+	return
+	extra_defines="$extra_defines -D__DEBUG_ENABLED"
+fi
+
+if [ $(bash find.bash "$FFLY_ARGS" "--with-mem-tracker") -eq 0 ]; then
+	extra_defines="$extra_defines -D__WITH_MEM_TRACKER"
+fi
+
 make libraries;
 make relocate_headers;
 

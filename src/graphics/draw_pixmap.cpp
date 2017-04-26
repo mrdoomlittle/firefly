@@ -30,7 +30,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::cpu_draw_pixmap(uint_t __xfs,
 	return FFLY_SUCCESS;
 }
 
-mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, boost::uint16_t __angle) {
+mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(types::gpu_dr_pm_mem_t& __gpu_dr_pm_mem, uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, boost::uint16_t __angle) {
 # if !defined(__GCOMPUTE_GPU) && !defined(__GCOMPUTE_CPU)
 	fprintf(stderr, "draw_pixmap: warning, in order for this to work '__GCOMPUTE_GPU' or '__GCOMPUTE_CPU' needs to be defined at compile time.\n")
 	return FFLY_NOP;
@@ -107,7 +107,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(uint_t __xfs, uin
 //			if (gpu_draw_pixmap(__xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen, __angle) == FFLY_FAILURE)
 //			printf("%d - %d\n", xblock_c, yblock_c);
 			if (ffly_graphics::inited) {
-				if (gpu_draw_pixmap(__xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen, __angle) == FFLY_FAILURE) {
+				if (gpu_draw_pixmap(__gpu_dr_pm_mem, __xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen, __angle) == FFLY_FAILURE) {
 # ifndef __GCOMPUTE_CPU
 					return FFLY_FAILURE;
 # endif
@@ -181,6 +181,10 @@ mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(uint_t __xfs, uin
 	return FFLY_SUCCESS;
 }
 
+mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, boost::uint16_t __angle) {
+	types::gpu_dr_pm_mem_t static gpu_dr_pm_mem;
+	return draw_pixmap(gpu_dr_pm_mem, __xfs, __yfs, __pixbuff, __pb_xlen, __pb_ylen, __pixmap, __pm_xlen, __pm_ylen, __angle);
+}
 
 // code need fixing
 # if defined(__USING_OPENCL) || defined(USING_OPENCL)

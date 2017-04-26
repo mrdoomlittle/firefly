@@ -3,22 +3,31 @@
 # ifdef __WITH_TASK_HANDLE
 #	include "system/task_handle.hpp"
 # endif
+# ifdef __WITH_MEM_TRACKER
+#	include "system/mem_tracker.h"
+# endif
 # include "types/err_t.h"
 # define _TH_THREADS 12
 namespace mdl {
 namespace ffly_system {
-static firefly::types::err_t init() {
+firefly::types::err_t static init() {
 # ifdef __WITH_TASK_HANDLE
 	if (firefly::system::_task_handle.init(_TH_THREADS) == FFLY_FAILURE)
 		return FFLY_FAILURE;
 # endif
+# ifdef __WITH_MEM_TRACKER
+	ffly_mem_track_init(&__ffly_mem_track__);
+# endif
 	return FFLY_SUCCESS;
 }
 
-static firefly::types::err_t de_init() {
+firefly::types::err_t static de_init() {
 # ifdef __WITH_TASK_HANDLE
 	if (firefly::system::_task_handle.de_init() == FFLY_FAILURE)
 		return FFLY_FAILURE;
+# endif
+# ifdef __WITH_MEM_TRACKER
+	ffly_mem_track_de_init(&__ffly_mem_track__);
 # endif
 	return FFLY_SUCCESS;
 }

@@ -64,6 +64,16 @@ then
 	FFLY_ARGS="$FFLY_ARGS --with-uni-manager"
 fi
 
+if [ $(bash find.bash "$1" "--debug-enabled") = "0" ];
+then
+	FFLY_ARGS="$FFLY_ARGS --debug-enabled"
+fi
+
+if [ $(bash find.bash "$1" "--with-mem-tracker") = "0" ];
+then
+	FFLY_ARGS="$FFLY_ARGS --with-mem-tracker"
+fi
+
 if [ $(bash find.bash "$1" "--using-x11") = "0" ];
 then
 	FFLY_ARGS="$FFLY_ARGS --using-x11"

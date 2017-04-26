@@ -9,6 +9,7 @@
 # include <strcmb.hpp>
 # include "../types/pixmap_t.h"
 # include "../types/dsize_t.hpp"
+# include "../memory/mem_alloc.h"
 namespace mdl {
 namespace firefly {
 namespace graphics {

@@ -27,7 +27,7 @@ boost::int8_t mdl::firefly::graphics::load_png_file(char const *__filedir, char 
 
 	if (bit_depth != 8 || color_type != PNG_COLOR_TYPE_RGB_ALPHA) return FFLY_FAILURE;
 
-	types::pixmap_t pixmap = static_cast<types::pixmap_t>(malloc((__pm_size[0] * __pm_size[1]) * 4));
+	types::pixmap_t pixmap = static_cast<types::pixmap_t>(memory::mem_alloc((__pm_size[0] * __pm_size[1]) * 4));
 	bzero(pixmap, (__pm_size[0] * __pm_size[1]) * 4);
 
 	for (std::size_t y = 0; y != __pm_size[1]; y ++)

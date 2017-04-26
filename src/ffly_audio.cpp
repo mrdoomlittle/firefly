@@ -111,7 +111,7 @@ mdl::firefly::types::wav_disc_t mdl::ffly_audio::get_wav_fdisc(u8_t *__raw_data,
 }
 
 mdl::firefly::types::wav_disc_t mdl::ffly_audio::get_wav_fdisc(char const *__fdir, char const *__fname, firefly::types::err_t& __any_err) {
-	char *fpth = strcmb(const_cast<char *>(__fdir), strcmb(const_cast<char *>(__fname), ".wav", STRCMB_FREE_NONE), STRCMB_FREE_SECOND);
+	char *fpth = strcmb(const_cast<char *>(__fdir), strcmb(const_cast<char *>(__fname), const_cast<char *>(".wav"), STRCMB_FREE_NONE), STRCMB_FREE_SECOND);
 	firefly::types::wav_disc_t wav_disc;
 
 	int fd;

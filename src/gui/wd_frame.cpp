@@ -1,8 +1,8 @@
 # include "wd_frame.hpp"
 static const mdl::firefly::graphics::colour_t ol_colour = {36, 37, 38, 244};
-mdl::firefly::types::err_t mdl::firefly::gui::wd_frame::init(boost::uint16_t __xaxis, boost::uint16_t __yaxis, boost::uint16_t __xaxis_len, boost::uint16_t __yaxis_len, char const *__title) {
+mdl::firefly::types::err_t mdl::firefly::gui::wd_frame::init(u16_t __xaxis, u16_t __yaxis, u16_t __xaxis_len, u16_t __yaxis_len, char const *__title) {
 	if (this-> pixmap == nullptr) {
-		if ((this-> pixmap = memory::alloc_pixmap(__xaxis_len + (OUTLINE_WIDTH * 2), __yaxis_len + (OUTLINE_WIDTH * 2), 1)) == NULL) {
+		if ((this-> pixmap = memory::alloc_pixmap(static_cast<uint_t>(__xaxis_len + (OUTLINE_WIDTH * 2)), static_cast<uint_t>(__yaxis_len + (OUTLINE_WIDTH * 2)))) == NULL) {
 			fprintf(stderr, "wd_frame: failed to alloc memory for frame pixmap, errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}

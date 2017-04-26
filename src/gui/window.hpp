@@ -8,15 +8,14 @@
 # include "../system/errno.h"
 # include "../memory/mem_alloc.h"
 # include "../maths/is_inside.hpp"
+# include "../types/err_t.h"
 namespace mdl {
 namespace firefly {
 namespace gui {
 class window {
 	public:
-
-	boost::int8_t init(boost::uint16_t __xaxis, boost::uint16_t __yaxis, boost::uint16_t __xaxis_len, boost::uint16_t __yaxis_len);
-
-	void set_ptrs(bool *__mouse_press, int *__mouse_btn_id, types::coords_t<boost::uint16_t> *__mouse_coords) {
+	types::err_t init(u16_t __xaxis, u16_t __yaxis, u16_t __xaxis_len, u16_t __yaxis_len);
+	void set_ptrs(bool *__mouse_press, int *__mouse_btn_id, types::coords_t<u16_t> *__mouse_coords) {
 		this-> mouse_press = this-> _wd_frame.mouse_press = __mouse_press;
 		this-> mouse_btn_id = this-> _wd_frame.mouse_btn_id = __mouse_btn_id;
 		this-> mouse_coords = this-> _wd_frame.mouse_coords = __mouse_coords;
@@ -24,34 +23,40 @@ class window {
 
 	bool *mouse_press;
 	int *mouse_btn_id;
-	types::coords_t<boost::uint16_t> *mouse_coords;
+	types::coords_t<u16_t> *mouse_coords;
 
-	boost::int8_t draw(types::pixmap_t __pixbuff, types::dsize_t __pb_size);
-	boost::int8_t handle();
+	types::err_t draw(types::pixmap_t __pixbuff, types::dsize_t __pb_size);
+	types::err_t handle();
+	types::_1d_pm_t *get_wpm() {
+		return this-> wpm;
+	}
 
-	boost::int8_t de_init() {
+	types::err_t de_init() {
 		if (this-> pixmap != nullptr) {
 			memory::mem_free(this-> pixmap);
 			this-> pixmap = nullptr;
 		}
 
-		if (this-> wpixmap != nullptr) {
-			memory::mem_free(this-> wpixmap);
-			this-> wpixmap = nullptr;
+		if (this-> wpm != nullptr) {
+			memory::mem_free(this-> wpm);
+			this-> wpm = nullptr;
 		}
+		return FFLY_SUCCESS;
 	}
 
 	static void exit_btn(void *_this);
 	bool is_closed = false;
-	types::coords_t<boost::uint16_t> pointer_coords;
+	types::coords_t<u16_t> pointer_coords;
 	private:
-	types::pixmap_t pixmap;
-	types::pixmap_t *wpixmap;
+	types::_1d_pm_t pixmap;
+	// this will be added later
+	types::_2d_pm_t _2d_wpm;
+	types::_1d_pm_t *wpm;
 	wd_frame _wd_frame;
 	types::dsize_t pm_size;
 	types::dsize_t wd_size;
-	types::coords_t<boost::uint16_t> wd_coords;
-	types::coords_t<boost::uint16_t> coords;
+	types::coords_t<u16_t> wd_coords;
+	types::coords_t<u16_t> coords;
 };
 }
 }

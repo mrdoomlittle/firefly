@@ -1,18 +1,6 @@
 # include "ffly_studio.hpp"
-# include <math.h>
-# include <string.h>
-# include "graphics/png_loader.hpp"
-# include "graphics/colour_blend.hpp"
-# include "memory/mem_alloc.h"
-# include "memory/mem_init.h"
-# include "types/pixmap_t.h"
-# include "types/colour_t.hpp"
-# include "gui/btn_manager.hpp"
-# include "types/id_t.hpp"
-# include "gui/window.hpp"
-# include "data/scale_pixmap.hpp"
 bool mdl::ffly_studio::to_shutdown = false;
-
+# include "graphics/draw_grid.hpp"
 void __btn_press(mdl::uint_t __btn_id, int __mbtn_id, void *__voidptr, mdl::uint_t *__room_id) {
 	mdl::ffly_studio *_this = __voidptr == nullptr? nullptr : (mdl::ffly_studio *)__voidptr;
 	if (__room_id == _this-> bse_room_id) {
@@ -33,9 +21,8 @@ void __btn_press(mdl::uint_t __btn_id, int __mbtn_id, void *__voidptr, mdl::uint
 	}
 }
 
-boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) {
-	ffly_system::init();
-	ffly_graphics::init();
+mdl::firefly::types::err_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) {
+	firefly::init();
 
 	this-> _room_manager.init(&this-> window);
 	this-> _room_manager.use_glob_pb_size = true;
@@ -58,8 +45,7 @@ boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) 
 	}
 
 	firefly::gui::btn btn;
-	uint_t btn_id;
-
+	firefly::types::__id_t btn_id;
 	char const *img_files[3] = {
 		"../assets/btn_exit",
 		"../assets/btn_skel_creator",
@@ -105,7 +91,7 @@ boost::int8_t mdl::ffly_studio::init(firefly::types::init_opt_t __init_options) 
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
+mdl::firefly::types::err_t mdl::ffly_studio::begin(char const *__frame_title) {
 	if (window.init(this-> wd_xaxis_len, this-> wd_yaxis_len, __frame_title) != FFLY_SUCCESS)
 		return FFLY_FAILURE;
 
@@ -131,6 +117,7 @@ boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
 
 	firefly::data::scale_pixmap(tpm, pms.xaxis_len, pms.yaxis_len, 20, 1, LINEAR_SCALE);
 	firefly::data::scale_pixmap(tpm, pms.xaxis_len, pms.yaxis_len, 1, 64, CUBIC_SCALE);
+
 	do {
 		if (window.wd_handler.is_wd_flag(WD_CLOSED)) {
 			ffly_studio::to_shutdown = true;
@@ -138,19 +125,19 @@ boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
 
 		if (!window.wd_handler.is_wd_flag(WD_WAITING)) continue;
 		if (window.wd_handler.is_wd_flag(WD_DONE_DRAW)) continue;
-		window.clear_pixbuff(bg_colour);
-		mcoords = window.get_mouse_coords().wd;
+//		window.clear_pixbuff(bg_colour);
+//		mcoords = window.get_mouse_coords().wd;
 
 
-		firefly::graphics::draw_pixmap(0, 0, window.get_pixbuff(), this-> wd_xaxis_len, this-> wd_yaxis_len, tpm, pms.xaxis_len, pms.yaxis_len);
-		my_window.draw(window.get_pixbuff(), firefly::types::__dsize__(this-> wd_xaxis_len, this-> wd_yaxis_len, 1));
+//		firefly::graphics::draw_pixmap(0, 0, window.get_pixbuff(), this-> wd_xaxis_len, this-> wd_yaxis_len, tpm, pms.xaxis_len, pms.yaxis_len);
+//		my_window.draw(window.get_pixbuff(), firefly::types::__dsize__(this-> wd_xaxis_len, this-> wd_yaxis_len, 1));
 
-		my_window.handle();
+//		my_window.handle();
 
-		if (this-> _room_manager.manage() == FFLY_FAILURE) {
-			fprintf(stderr, "ffly_studio: room_manager failed to manage.\n");
-			ffly_studio::to_shutdown = true;
-		}
+//		if (this-> _room_manager.manage() == FFLY_FAILURE) {
+//			fprintf(stderr, "ffly_studio: room_manager failed to manage.\n");
+//			ffly_studio::to_shutdown = true;
+//		}
 
 		window.wd_handler.add_wd_flag(WD_DONE_DRAW);
 		window.wd_handler.rm_wd_flag(WD_WAITING);
@@ -172,6 +159,10 @@ boost::int8_t mdl::ffly_studio::begin(char const *__frame_title) {
 	return FFLY_SUCCESS;
 }
 
+mdl::firefly::types::err_t mdl::ffly_studio::de_init() {
+
+}
+
 int main(int argc, char const *argv[]) {
 	mdl::ffly_studio ffly_s(640, 640);
 	mdl::firefly::types::init_opt_t init_options;
@@ -180,6 +171,7 @@ int main(int argc, char const *argv[]) {
 	}
 
 	ffly_s.begin("Firefly Studio");
+	ffly_s.de_init();
 	printf("Hello\n");
 	return 0;
 }

@@ -14,7 +14,7 @@
 # include "fill_pixmap.hpp"
 # include "../types/colour_t.hpp"
 # include "../types/coords_t.hpp"
-
+# include "../types/err_t.h"
 # define WD_TO_CLOSE 16
 # define WD_CLOSED 1
 # define WD_OPEN 2
@@ -25,8 +25,8 @@ namespace firefly {
 namespace graphics {
 class window {
 	public:
-	boost::int8_t init(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title);
-	boost::int8_t begin();
+	types::err_t init(u16_t __wd_xaxis_len, u16_t __wd_yaxis_len, char const *__frame_title);
+	types::err_t begin();
 
 	types::pixmap_t get_pixbuff();
 
@@ -62,7 +62,7 @@ class window {
 		return this-> wd_handler.button_code;
 	}
 
-	boost::int8_t set_pixbuff(types::pixmap_t __pixmap, boost::uint16_t __xaxis_len = 0, boost::uint16_t __yaxis_len = 0);
+	types::err_t set_pixbuff(types::pixmap_t __pixmap, u16_t __xaxis_len = 0, u16_t __yaxis_len = 0);
 
 	void clear_pixbuff() {
 		colour_t colour = { 0, 0, 0, 0 };
@@ -73,39 +73,39 @@ class window {
 		fill_pixmap(this-> get_pixbuff(), this-> wd_xaxis_len, this-> wd_yaxis_len, __colour);
 	}
 
-	types::coords_t<boost::int16_t> get_wd_coords() {
+	types::coords_t<i16_t> get_wd_coords() {
 # if defined(USING_XCB)
 		return this-> wd_handler.wd_coords;
 # endif
 
 # if defined(USING_X11)
 
-	types::coords_t<boost::int16_t> wd_coords = {
-		.xaxis = (boost::int16_t)this-> wd_handler.wd_coords.xaxis,
-		.yaxis = (boost::int16_t)this-> wd_handler.wd_coords.yaxis
+	types::coords_t<i16_t> wd_coords = {
+		.xaxis = (i16_t)this-> wd_handler.wd_coords.xaxis,
+		.yaxis = (i16_t)this-> wd_handler.wd_coords.yaxis
 	};
 
 	return wd_coords;
 # endif
 	}
 
-	types::mouse_coords_t<boost::int16_t, boost::uint16_t> get_mouse_coords() {
+	types::mouse_coords_t<i16_t, u16_t> get_mouse_coords() {
 # if defined(USING_XCB)
 		return this-> wd_handler.mouse_coords;
 # endif
 
 # if defined(USING_X11)
-		types::coords_t<boost::uint16_t> wd_coords = {
-			.xaxis = (boost::uint16_t)this-> wd_handler.mouse_coords.wd.xaxis,
-			.yaxis = (boost::uint16_t)this-> wd_handler.mouse_coords.wd.yaxis
+		types::coords_t<u16_t> wd_coords = {
+			.xaxis = (u16_t)this-> wd_handler.mouse_coords.wd.xaxis,
+			.yaxis = (u16_t)this-> wd_handler.mouse_coords.wd.yaxis
 		};
 
-		types::coords_t<boost::int16_t> root_coords = {
-			.xaxis = (boost::int16_t)this-> wd_handler.mouse_coords.root.xaxis,
-			.yaxis = (boost::int16_t)this-> wd_handler.mouse_coords.root.yaxis
+		types::coords_t<i16_t> root_coords = {
+			.xaxis = (i16_t)this-> wd_handler.mouse_coords.root.xaxis,
+			.yaxis = (i16_t)this-> wd_handler.mouse_coords.root.yaxis
 		};
 
-		types::mouse_coords_t<boost::int16_t, boost::uint16_t> mouse_coords;
+		types::mouse_coords_t<i16_t, u16_t> mouse_coords;
 		mouse_coords.wd = wd_coords;
 		mouse_coords.root = root_coords;
 
@@ -113,8 +113,7 @@ class window {
 # endif
 	}
 
-	boost::int8_t de_init() {
-
+	types::err_t de_init() {
 		if (this-> wd_handler.de_init() != FFLY_SUCCESS) {
 			fprintf(stderr, "window: failed to 'de init' window handler.\n");
 			return FFLY_FAILURE;
@@ -124,7 +123,7 @@ class window {
 
 	private:
 	bool init_report = FFLY_FAILURE;
-	boost::uint16_t wd_xaxis_len = 0, wd_yaxis_len = 0;
+	u16_t wd_xaxis_len = 0, wd_yaxis_len = 0;
 	char const *frame_title = nullptr;
 	public:
 # if defined(USING_X11)

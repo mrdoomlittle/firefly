@@ -30,15 +30,24 @@
 # include "graphics/draw_pixmap.hpp"
 # include "graphics/draw_outline.hpp"
 # include "graphics/png_loader.hpp"
-# include "ffly_system.hpp"
+# include "firefly.hpp"
+# include "types/err_t.h"
+# include <string.h>
+# include <math.h>
+# include "graphics/colour_blend.hpp"
+# include "memory/mem_init.h"
+# include "types/pixmap_t.h"
+# include "gui/window.hpp"
+# include "data/scale_pixmap.hpp"
 namespace mdl {
 class ffly_studio {
 	public:
-	ffly_studio(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len)
+	ffly_studio(u16_t __wd_xaxis_len, u16_t __wd_yaxis_len)
 	: wd_xaxis_len(__wd_xaxis_len), wd_yaxis_len(__wd_yaxis_len) {}
 
-	boost::int8_t init(firefly::types::init_opt_t __init_options);
-	boost::int8_t begin(char const *__frame_title);
+	firefly::types::err_t init(firefly::types::init_opt_t __init_options);
+	firefly::types::err_t de_init();
+	firefly::types::err_t begin(char const *__frame_title);
 
 	firefly::types::id_t skelc_room_id = nullptr;
 	firefly::types::id_t bse_room_id = nullptr;
@@ -60,7 +69,7 @@ class ffly_studio {
 	firefly::graphics::window window;
 	firefly::room_manager _room_manager;
 	firefly::asset_manager asset_manager;
-	boost::uint16_t const wd_xaxis_len, wd_yaxis_len;
+	u16_t const wd_xaxis_len, wd_yaxis_len;
 };
 }
 

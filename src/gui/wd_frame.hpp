@@ -19,7 +19,7 @@ namespace firefly {
 namespace gui {
 class wd_frame {
 	public:
-	types::err_t init(boost::uint16_t __xaxis, boost::uint16_t __yaxis, boost::uint16_t __xaxis_len, boost::uint16_t __yaxis_len, char const *__title);
+	types::err_t init(u16_t __xaxis, u16_t __yaxis, u16_t __xaxis_len, u16_t __yaxis_len, char const *__title);
 
 	types::err_t draw(types::pixmap_t __pixbuff, types::dsize_t __pb_size);
 	types::err_t handle();
@@ -32,7 +32,7 @@ class wd_frame {
 		this-> pixmap = __pixmap;
 	}
 
-	types::coords_t<boost::uint16_t> get_coords() {
+	types::coords_t<u16_t> get_coords() {
 		return this-> coords;
 	}
 
@@ -41,16 +41,17 @@ class wd_frame {
 			memory::mem_free(this-> pixmap);
 			this-> pixmap = nullptr;
 		}
+		return FFLY_SUCCESS;
 	}
 
 	void (* ex_fptr)(void *) = nullptr;
 	void *ex_arg = nullptr;
 
-	types::coords_t<boost::uint16_t> *mouse_coords = nullptr;
+	types::coords_t<u16_t> *mouse_coords = nullptr;
 	private:
-	types::coords_t<boost::uint8_t> ex_btn_coords;
+	types::coords_t<u8_t> ex_btn_coords;
 	types::dsize_t ex_btn_size;
-	types::coords_t<boost::uint16_t> coords;
+	types::coords_t<u16_t> coords;
 	types::dsize_t pm_size = {0, 0, 0};
 	types::dsize_t pb_size = {0, 0, 0};
 	types::pixmap_t pixmap = nullptr;

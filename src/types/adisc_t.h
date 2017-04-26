@@ -10,7 +10,7 @@ namespace types {
 typedef struct {
 	aformat_t format;
 	u32_t rate;
-	u8_t chn_c;
+	u16_t chn_c;
 } adisc_t;
 }
 }

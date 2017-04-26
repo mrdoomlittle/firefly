@@ -1,6 +1,6 @@
 # include "x11_window.hpp"
 
-boost::int8_t mdl::firefly::graphics::x11_window::begin(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
+mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_xaxis_len, u16_t __wd_yaxis_len, char const *__frame_title) {
 	printf("thread started.\n");
 	if (this-> is_wd_flag(FLG_WD_KILLED)) return FFLY_SUCCESS;
 
@@ -252,7 +252,7 @@ boost::int8_t mdl::firefly::graphics::x11_window::begin(boost::uint16_t __wd_xax
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::firefly::graphics::x11_window::open_in_thread(boost::uint16_t __wd_xaxis_len, boost::uint16_t __wd_yaxis_len, char const *__frame_title) {
+mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::open_in_thread(u16_t __wd_xaxis_len, u16_t __wd_yaxis_len, char const *__frame_title) {
 	static boost::thread th(boost::bind(&x11_window::begin, this, __wd_xaxis_len, __wd_yaxis_len, __frame_title));
 	this-> native_handle = th.native_handle();
 	return FFLY_SUCCESS;

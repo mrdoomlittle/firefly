@@ -33,14 +33,14 @@ class asset_manager
 	boost::int8_t de_init();
 
 	bool valid_asset_id(uint_t *__asset_id);
-	uint_t *add_asset(boost::uint8_t *__data, uint_t __bytes, uint_t __type);
-	uint_t *load_asset(char const *__asset_file, uint_t __asset_type);
+	uint_t* add_asset(boost::uint8_t *__data, uint_t __bytes, uint_t __type);
+	uint_t* load_asset(char const *__asset_file, uint_t __asset_type);
 	void del_asset(uint_t *__asset_id);
 	boost::uint8_t* get_asset_data(uint_t *__asset_id);
 	asset_t get_asset(uint_t *__asset_id) noexcept;
 	asset_t& asset(uint_t *__asset_id);
 
-	void *get_asset_info(uint_t *__asset_id);
+	void* get_asset_info(uint_t *__asset_id);
 	void*& asset_info(uint_t *__asset_id);
 
 	private:
