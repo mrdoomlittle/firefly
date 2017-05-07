@@ -6,8 +6,19 @@
 # endif
 
 # ifdef __cplusplus
+# ifdef __USING_CUDA
+#	include <cuda_runtime.h>
+# endif
+# ifdef __USING_OPENCL
+#	include <CL/cl.hpp>
+#	include "../opencl_helper.hpp"
+# endif
+# endif
+# ifdef __cplusplus
 # include <cstddef>
 # include <eint_t.hpp>
+# include "../types/err_t.h"
+# include "../system/errno.h"
 namespace mdl {
 namespace firefly {
 namespace memory {
@@ -15,6 +26,27 @@ namespace memory {
 extern std::size_t alloc_bc;
 extern std::size_t alloc_c;
 # endif
+
+# ifdef __USING_OPENCL
+extern cl_mem_flags __cl_mem_flags__;
+cl_mem gpu_mem_alloc(void*& __mptr, std::size_t __bc, cl_mem_flags __mem_flags, cl_context __context, types::err_t& __any_err);
+
+
+cl_mem __inline__ gpu_mem_alloc(void*& __mptr, std::size_t __bc, types::err_t& __any_err) {
+	return gpu_mem_alloc(__mptr, __bc, __cl_mem_flags__, __opencl_helper__.context, __any_err);
+}
+/*
+void __inline__ gpu_mem_alloc(void*& __mptr, std::size_t __bc, cl_mem_flags __mem_flags) {
+	gpu_mem_alloc(__mptr, __bc, __mem_flags, __opencl_helper__.context);
+}
+void __inline__ gpu_mem_alloc(void*& __mptr, std::size_t __bc, cl_context __context) {
+	gpu_mem_alloc(__mptr, __bc, __cl_mem_flags__, __context);
+}*/
+
+# else
+void gpu_mem_alloc(void*& __mptr, std::size_t __bc, types::err_t& __any_err);
+# endif
+
 # ifdef __WITH_MEM_TRACKER
 void* mem_alloc(std::size_t __bc, bool __track_bypass = false);
 # else

@@ -53,9 +53,9 @@ class chunk_keeper {
 		return this-> cnk_data[*__cnk_id];
 	}
 
-	__inline__ uint_t get_cnk_xlen() { return this-> xaxis_len; }
-	__inline__ uint_t get_cnk_ylen() { return this-> yaxis_len; }
-	__inline__ uint_t get_cnk_zlen() { return this-> zaxis_len; }
+	__inline__ uint_t get_cnk_xlen() { return this-> xaxis_len*UNI_PAR_XLEN; }
+	__inline__ uint_t get_cnk_ylen() { return this-> yaxis_len*UNI_PAR_YLEN; }
+	__inline__ uint_t get_cnk_zlen() { return this-> zaxis_len*UNI_PAR_ZLEN; }
 
 	private:
 	std::set<types::id_t> unused_ids;

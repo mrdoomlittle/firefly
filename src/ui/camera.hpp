@@ -10,6 +10,7 @@
 # include "../memory/alloc_pixmap.hpp"
 # include "../memory/mem_free.h"
 # include "../graphics/crop_pixmap.hpp"
+# include "../graphics/fill_pixmap.hpp"
 namespace mdl {
 namespace firefly {
 namespace ui {

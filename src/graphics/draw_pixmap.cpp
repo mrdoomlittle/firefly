@@ -188,6 +188,10 @@ mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(uint_t __xfs, uin
 
 // code need fixing
 # if defined(__USING_OPENCL) || defined(USING_OPENCL)
+mdl::firefly::types::err_t static mdl::firefly::graphics::gpu_draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen) {
+//	gpu_draw_pixmap(__xfs, __yfs, __pixbuff, __pm_xlen, __pb_ylen, __pixmap, __pm_xlen, __pm_ylen, __opencl_helper__);
+}
+
 mdl::firefly::types::err_t mdl::firefly::graphics::gpu_draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t *__pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t *__pixmap, uint_t __pm_xlen, uint_t __pm_ylen, opencl *__opencl) {
 	if ((__xfs + __pm_xlen) > __pb_xlen || (__yfs + __pm_ylen) > __pb_ylen) {
 		fprintf(stderr, "error: pixmap is out of bounds.\n");

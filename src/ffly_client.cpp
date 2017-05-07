@@ -102,7 +102,7 @@ boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) 
 	}
 
 # ifdef __WITH_UNI_MANAGER
-    this-> uni_manager.init(2, 2, 2);
+    this-> uni_manager.init(4, 4, 2);
 # endif
 
 # if defined(__WITH_OBJ_MANAGER) && defined(__WITH_UNI_MANAGER)

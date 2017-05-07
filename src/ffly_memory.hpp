@@ -9,6 +9,8 @@
 namespace mdl {
 namespace ffly_memory {
 # ifdef __DEBUG_ENABLED
+
+// might change this
 __inline__ uint_t get_mem_usage() {
 	/*
 	* firefly::memory::alloc_bc -> c++

@@ -29,9 +29,11 @@ namespace mdl {
 namespace ffly_graphics {
 bool extern inited;
 firefly::types::err_t static init() {
+# if defined(__USING_CUDA) || defined(USING_CUDA)
 	firefly::gpu::get_device_c(firefly::gpu::device_c);
 	firefly::gpu::get_mx_threads(firefly::gpu::mx_threads);
 	firefly::gpu::mx_blocks = _CU_MAX_BLOCKS;
+# endif
 	inited = true;
 	return FFLY_SUCCESS;
 }

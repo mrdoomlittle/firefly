@@ -37,7 +37,7 @@ elif [ $(bash find.bash "$1" "--ffly-studio") = "0" ]; then
 elif [ $(bash find.bash "$1" "--ffly-worker") = "0" ]; then
 	echo "0"
 elif [ $(bash find.bash "$1" "--ffly-test") = "0" ]; then
-	LDFLAGS="$LDFLAGS -lX11 -lGL -lGLU -lglut -lpulse -lpulse-simple -lasound -lm"
+	LDFLAGS="$LDFLAGS"
 else
 	echo "sorry but we need to know what the target is :( e.g. --ffly-client, --ffly-studio etc"
 	return
@@ -146,6 +146,7 @@ fi
 fi
 
 CXXFLAGS="$CXX_IFLAGS $CXX_LFLAGS"
+C_IFLAGS="$CXX_IFLAGS"
 export CXX_IFLAGS="$CXX_IFLAGS"
 export CXX_LFLAGS="$CXX_LFLAGS"
 export CUDART_INC="$CUDART_INC"
@@ -155,5 +156,7 @@ export ARC="$ARC"
 #export CXXFLAGS="$CXXFLAGS $ARC"
 
 export CXXFLAGS="$CXXFLAGS $GPU_CL_TYPE $ARC"
+export C_IFLAGS="$C_IFLAGS"
+
 export LDFLAGS="$LDFLAGS"
 export GPU_CL_TYPE="$GPU_CL_TYPE"

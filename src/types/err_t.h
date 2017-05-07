@@ -3,10 +3,23 @@
 
 # ifdef __cplusplus
 # include <eint_t.hpp>
+
+# ifdef __USING_OPENCL
+#	include <CL/cl.hpp>
+# endif
+# ifdef __USING_CUDA
+#	include <cuda_runtime.h>
+# endif
 namespace mdl {
 namespace firefly {
 namespace types {
 typedef i8_t err_t;
+# ifdef __USING_OPENCL
+typedef cl_int cl_err_t;
+# endif
+# ifdef __USING_CUDA
+typedef cudaError_t cu_err_t;
+# endif
 }
 }
 }

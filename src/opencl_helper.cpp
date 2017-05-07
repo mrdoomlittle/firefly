@@ -1,6 +1,5 @@
 # include "opencl_helper.hpp"
-
-boost::int8_t mdl::firefly::opencl::init() {
+mdl::firefly::types::err_t mdl::firefly::opencl_helper::init() {
 	cl_int any_error = CL_SUCCESS;
 
 	if ((any_error = clGetPlatformIDs(1, &this-> platform_id, &this-> platform_count)) != CL_SUCCESS) {
@@ -28,7 +27,7 @@ boost::int8_t mdl::firefly::opencl::init() {
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::firefly::opencl::load_source(char const *__file_path) {
+mdl::firefly::types::err_t mdl::firefly::opencl_helper::load_source(char const *__file_path) {
 	FILE *src_file = fopen(__file_path, "r");
 
 	if (!src_file) {
@@ -46,7 +45,7 @@ boost::int8_t mdl::firefly::opencl::load_source(char const *__file_path) {
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::firefly::opencl::build_prog() {
+mdl::firefly::types::err_t mdl::firefly::opencl_helper::build_prog() {
 	cl_int any_error = CL_SUCCESS;
 
 	this-> program = clCreateProgramWithSource(this-> context, 1, (char const **)&this-> prog_source, (std::size_t const *)&this-> prog_size, &any_error);
@@ -56,17 +55,15 @@ boost::int8_t mdl::firefly::opencl::build_prog() {
 	}
 
 # ifdef ARC64
-	char const *arc = "-DARC64";
+	char const *arc = "-D__ARC64";
 # elif ARC32
-	char const *arc = "-DARC32";
+	char const *arc = "-D__ARC32";
 # elif ARC16
-	char const *arc = "-DARC16";
+	char const *arc = "-D__ARC16";
 # elif ARC8
-	char const *arc = "-DARC8";
+	char const *arc = "-D__ARC8";
 # endif
-
-	char *c_options = strcmb(const_cast<char *>(arc), "-DUSING_OPENCL -DUSE_CL_TYPES -I../src/types -I../eint_t/inc", STRCMB_FREE_NONE);
-
+	char *c_options = strcmb(const_cast<char *>(arc), "-D__USING_OPENCL -D__OPENCL_LNG_TYPES -Itypes -I../eint_t/inc", STRCMB_FREE_NONE);
 	if ((any_error = clBuildProgram(this-> program, 1, &device_id, c_options, NULL, NULL)) != CL_SUCCESS) {
 		fprintf(stderr, "failed to build opencl program: %d\n", any_error);
 		return FFLY_FAILURE;
@@ -74,3 +71,5 @@ boost::int8_t mdl::firefly::opencl::build_prog() {
 
 	return FFLY_SUCCESS;
 }
+
+mdl::firefly::opencl_helper mdl::firefly::__opencl_helper__;

@@ -5,24 +5,25 @@
 # include <vector>
 # include <string>
 # include <fstream>
-# include <boost/cstdint.hpp>
 # include <strcmb.hpp>
+# include "types/err_t.h"
 # include "system/errno.h"
 # define MAX_SOURCE_FILE_SIZE (0x100000)
 namespace mdl {
 namespace firefly {
-class opencl {
+class opencl_helper {
 	public:
-	boost::int8_t init();
+	types::err_t init();
 
-	boost::int8_t load_source(char const *__file_path);
+	types::err_t load_source(char const *__file_path);
 
-	boost::int8_t build_prog();
+	types::err_t build_prog();
 
 	cl_context context;
 	cl_command_queue command_queue;
 
 	cl_program program;
+
 
 	char *prog_source = nullptr;
 	std::size_t prog_size = 0;
@@ -32,7 +33,7 @@ class opencl {
 	cl_device_id device_id;
 	cl_uint device_count;
 };
-
+extern opencl_helper __opencl_helper__;
 }
 }
 

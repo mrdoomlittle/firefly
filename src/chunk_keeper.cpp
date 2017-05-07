@@ -54,7 +54,7 @@ mdl::firefly::types::err_t mdl::firefly::chunk_keeper::create_cnk(types::id_t& _
 	cnk_info = &this-> cnk_info[*__cnk_id];
 	cnk_data = &this-> cnk_data[*__cnk_id];
 
-	if ((cnk_data-> particles = (types::uni_par_t *)memory::mem_alloc(this-> xaxis_len * this-> yaxis_len * this-> zaxis_len)) == NULL) {
+	if ((cnk_data-> particles = (types::uni_par_t *)memory::mem_alloc((this-> xaxis_len * this-> yaxis_len * this-> zaxis_len) * sizeof(types::uni_par_t))) == NULL) {
 		fprintf(stderr, "chunk_keeper: failed to alloc memory for chunk particles, errno: %d\n", errno);
 		goto mem_clean;
 	}
@@ -62,16 +62,19 @@ mdl::firefly::types::err_t mdl::firefly::chunk_keeper::create_cnk(types::id_t& _
 	rxaxis_len = this-> xaxis_len * UNI_PAR_XLEN;
 	ryaxis_len = this-> yaxis_len * UNI_PAR_YLEN;
 	rzaixs_len = this-> zaxis_len * UNI_PAR_ZLEN;
-	if ((cnk_data-> _1d_pm = memory::alloc_pixmap(rxaxis_len, ryaxis_len, rzaixs_len)) == NULL) {
+	if ((cnk_data-> _1d_pm = memory::alloc_pixmap(rxaxis_len, ryaxis_len, rzaixs_len, 4)) == NULL) {
 		fprintf(stderr, "chunk_keeper: failed to alloc pixmap for chunk, errno: %d\n", errno);
 		goto mem_clean;
 	}
 
-	cnk_data-> _3d_pm = memory::make_3d_pm(cnk_data-> _1d_pm, rxaxis_len, ryaxis_len, rzaixs_len);
+	cnk_data-> _3d_pm = memory::make_3d_pm(cnk_data-> _1d_pm, rxaxis_len, ryaxis_len, rzaixs_len, 4);
 
 	if (this-> cnk_c == 1)
 		memset(cnk_data-> _1d_pm, 244, (rxaxis_len * ryaxis_len * rzaixs_len) * 4);
+	else
+		memset(cnk_data-> _1d_pm, 100, (rxaxis_len * ryaxis_len * rzaixs_len) * 4);
 
+	for (int y{}; y != 80; y ++) {memset(cnk_data-> _3d_pm[0][y], 244, 80*4);}
 	this-> cnk_c ++;
 
 	return FFLY_SUCCESS;

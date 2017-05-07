@@ -16,15 +16,18 @@ mdl::firefly::types::err_t mdl::firefly::entity_manager::manage(types::__id_t __
 		uint_t enty_cxaxis = this-> _obj_manager-> get_xaxis(obj_id) - enty_cxfs;
 		uint_t enty_cyaxis = this-> _obj_manager-> get_yaxis(obj_id) - enty_cyfs;
 
-		int_t nw_cam_xaxis = enty_cxaxis - (floor(this-> entity_indx[__entity_id].second-> get_xaxis_len()/2) + floor(this-> _obj_manager-> get_xaxis_len(obj_id)/2));
-		if (nw_cam_xaxis > 0) this-> entity_indx[__entity_id].second-> set_xaxis(enty_cxfs + nw_cam_xaxis);
+		int_t nw_cam_xaxis = ((int_t)enty_cxaxis - floor(this-> entity_indx[__entity_id].second-> get_xaxis_len()/2)) + floor(this-> _obj_manager-> get_xaxis_len(obj_id)/2);
+		if (nw_cam_xaxis > 0) this-> entity_indx[__entity_id].second-> set_xaxis(nw_cam_xaxis + enty_cxfs);
 		else
 			this-> entity_indx[__entity_id].second-> set_xaxis(enty_cxfs);
 
-		int_t nw_cam_yaxis = enty_cyaxis - (floor(this-> entity_indx[__entity_id].second-> get_yaxis_len()/2) + floor(this-> _obj_manager-> get_yaxis_len(obj_id)/2));
-		if (nw_cam_yaxis > 0) this-> entity_indx[__entity_id].second-> set_yaxis(enty_cyfs + nw_cam_yaxis);
+		int_t nw_cam_yaxis = ((int_t)enty_cyaxis - floor(this-> entity_indx[__entity_id].second-> get_yaxis_len()/2)) + floor(this-> _obj_manager-> get_yaxis_len(obj_id)/2);
+		if (nw_cam_yaxis > 0) this-> entity_indx[__entity_id].second-> set_yaxis(nw_cam_yaxis + enty_cyfs);
 		else
 			this-> entity_indx[__entity_id].second-> set_yaxis(enty_cyfs);
+
+
+		printf("player yaxis: %d\n", this-> _obj_manager-> get_yaxis(obj_id));
 /*
 		uint_t cam_xaxis = this-> entity_indx[__entity_id].second-> get_xaxis();
 		uint_t cam_yaxis = this-> entity_indx[__entity_id].second-> get_yaxis();

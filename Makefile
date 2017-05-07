@@ -17,7 +17,7 @@ EXTRA_DEFINES=
 CXX_VERSION=c++11
 C_VERSION=c11
 ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-uni-manager"), 0)
- FFLY_OBJECTS+= src/uni_manager.o src/chunk_manager.o src/chunk_keeper.o
+ FFLY_OBJECTS+= src/uni_manager.o src/chunk_manager.o src/chunk_keeper.o src/data/uni_dlen_val.o
 endif
 
 ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-obj-manager"), 0)
@@ -45,7 +45,7 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
  FFLY_OBJECTS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
 else ifeq ($(FFLY_TARGET), FFLY_TEST)
- FFLY_OBJECTS+= src/graphics/draw_pixmap.o src/memory/alloc_pixmap.o src/ffly_audio.o src/alsa_audio.o src/pulse_audio.o #src/memory/alloc_pixmap.o src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
+ FFLY_OBJECTS+= src/graphics/crop_pixmap.o src/memory/alloc_pixmap.o #src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
 else
  FFLY_OBJECTS=
  FFLY_TARGET=FFLY_NONE
@@ -88,6 +88,9 @@ all: ffly_test
 endif
 
 FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+
+src/data/uni_dlen_val.o: src/data/uni_dlen_val.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/uni_dlen_val.o src/data/uni_dlen_val.cpp
 
 src/graphics/draw_grid.o: src/graphics/draw_grid.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_grid.o src/graphics/draw_grid.cpp
@@ -204,16 +207,16 @@ src/memory/mem_alloc.o: src/memory/mem_alloc.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_alloc.o src/memory/mem_alloc.cpp
 
 src/memory/mem_alloc.co: src/memory/mem_alloc.c
-	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_alloc.co src/memory/mem_alloc.c
+	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_alloc.co src/memory/mem_alloc.c
 
 src/memory/mem_free.o: src/memory/mem_free.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.o src/memory/mem_free.cpp
 
 src/memory/mem_free.co: src/memory/mem_free.c
-	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.co src/memory/mem_free.c
+	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.co src/memory/mem_free.c
 
 src/memory/mem_realloc.co: src/memory/mem_realloc.c
-	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_realloc.co src/memory/mem_realloc.c
+	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_realloc.co src/memory/mem_realloc.c
 
 src/graphics/window.o: src/graphics/window.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/window.o src/graphics/window.cpp
@@ -328,25 +331,31 @@ relocate_headers:
 		mkdir $(CURR_DIR)/inc/firefly/ui; \
 	fi
 
+	if ! [ -d $(CURR_DIR)/inc/firefly/data ]; then \
+		mkdir $(CURR_DIR)/inc/firefly/data; \
+	fi
+
+	cp $(CURR_DIR)/src/data/*.hpp $(CURR_DIR)/inc/firefly/data 2>/dev/null
+	cp $(CURR_DIR)/src/data/*.h $(CURR_DIR)/inc/firefly/data 2>/dev/null
+
 	cp $(CURR_DIR)/src/ui/*.hpp $(CURR_DIR)/inc/firefly/ui
 
 	#cp $(CURR_DIR)/src/gui/*.h $(CURR_DIR)/inc/firefly/gui
 	cp $(CURR_DIR)/src/gui/*.hpp $(CURR_DIR)/inc/firefly/gui
 
+	cp $(CURR_DIR)/src/system/*.h $(CURR_DIR)/inc/firefly/system
 	cp $(CURR_DIR)/src/system/*.hpp $(CURR_DIR)/inc/firefly/system
 
 	cp $(CURR_DIR)/src/memory/*.h $(CURR_DIR)/inc/firefly/memory
 	cp $(CURR_DIR)/src/memory/*.hpp $(CURR_DIR)/inc/firefly/memory
-
-	cp $(CURR_DIR)/src/system/*.h $(CURR_DIR)/inc/firefly/system
 
 	cp $(CURR_DIR)/src/maths/*.h $(CURR_DIR)/inc/firefly/maths
 	cp $(CURR_DIR)/src/maths/*.hpp $(CURR_DIR)/inc/firefly/maths
 
 	cp $(CURR_DIR)/src/tests/*.hpp $(CURR_DIR)/inc/firefly/tests
 
-	cp $(CURR_DIR)/src/types/*.h $(CURR_DIR)/inc/firefly/types
-	cp $(CURR_DIR)/src/types/*.hpp $(CURR_DIR)/inc/firefly/types
+	cp $(CURR_DIR)/src/types/*.h $(CURR_DIR)/inc/firefly/types 2>/dev/null
+	cp $(CURR_DIR)/src/types/*.hpp $(CURR_DIR)/inc/firefly/types 2>/dev/null
 
 	cp $(CURR_DIR)/src/*.h $(CURR_DIR)/inc/firefly
 	cp $(CURR_DIR)/src/*.hpp $(CURR_DIR)/inc/firefly

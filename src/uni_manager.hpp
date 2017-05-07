@@ -17,12 +17,14 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "graphics/draw_pixmap.hpp"
+# include "types/uni_dlen_t.hpp"
+# include "data/uni_dlen_val.hpp"
 namespace mdl {
 namespace firefly {
 class uni_manager {
 	public:
-	uni_manager(uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len)
-	: xaxis_len(__xaxis_len), yaxis_len(__yaxis_len), zaxis_len(__zaxis_len) {}
+	uni_manager(types::uni_dlen_t __xaxis_len, types::uni_dlen_t __yaxis_len, types::uni_dlen_t __zaxis_len)
+	: xaxis_len(data::uni_dlen_val(__xaxis_len)), yaxis_len(data::uni_dlen_val(__yaxis_len)), zaxis_len(data::uni_dlen_val(__zaxis_len)) {}
 
 	types::err_t init(uint_t __xa_split, uint_t __ya_split, uint_t __za_split);
 	void get_cnk_coords(types::_3d_coords_t<> __coords, uint_t& __xa, uint_t& __ya, uint_t& __za) {

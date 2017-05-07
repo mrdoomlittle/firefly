@@ -19,6 +19,7 @@ mdl::firefly::types::err_t mdl::firefly::ui::camera::init(uint_t __xaxis_len, ui
 
 mdl::firefly::types::err_t mdl::firefly::ui::camera::de_init() {
 	memory::mem_free(this-> pixmap);
+	memory::mem_free(this-> _2d_pm);
 	return FFLY_SUCCESS;
 }
 
@@ -27,26 +28,43 @@ mdl::firefly::types::err_t mdl::firefly::ui::camera::handle() {
 	types::_3d_pm_t _3d_cnk_pm = this-> _uni_manager-> _3d_cnk_pm(types::__coords__<>(this-> xaxis, this-> yaxis, this-> zaxis));
 	uint_t cnk_xlen = this-> _uni_manager-> _chunk_manager-> get_cnk_xlen(), cnk_ylen = this-> _uni_manager-> _chunk_manager-> get_cnk_ylen();
 
-	uint_t cxfs = floor(this-> xaxis / cnk_xlen) * cnk_xlen;
-	uint_t cyfs = floor(this-> yaxis / cnk_ylen) * cnk_ylen;
+	uint_t cxfs = floor(this-> xaxis/cnk_xlen) * cnk_xlen;
+	uint_t cyfs = floor(this-> yaxis/cnk_ylen) * cnk_ylen;
 
 	uint_t xaxis = this-> xaxis - cxfs, yaxis = this-> yaxis - cyfs;
 
-	uint_t xt{}, yt{};
+	int_t xt{}, yt{};
 	if (xaxis + this-> xaxis_len > cxfs + cnk_xlen)
 		xt = (xaxis + this-> xaxis_len) - (cxfs + cnk_xlen);
 	if (yaxis + this-> yaxis_len > cyfs + cnk_ylen)
 		yt = (yaxis + this-> yaxis_len) - (cyfs + cnk_ylen);
 
-	if (xt == 0 && yt == 0) {
+	// remove this later
+	graphics::fill_pixmap(this-> pixmap, this-> xaxis_len, this-> yaxis_len, graphics::__colour__(204, 255, 0, 244));
+
+	if (xt == 0 && yt == 0)
+		//if (graphics::crop_2d_pm(xaxis, yaxis, this-> _2d_pm, this-> xaxis_len, this-> yaxis_len, this-> xaxis_len, _3d_cnk_pm[0], cnk_xlen, cnk_ylen, cnk_xlen, 0, 0, 4)) return FFLY_FAILURE;
 		if (graphics::crop_pixmap(xaxis, yaxis, this-> pixmap, this-> xaxis_len, this-> yaxis_len, _1d_cnk_pm, cnk_xlen, cnk_ylen, 4) == FFLY_FAILURE) return FFLY_FAILURE;
-	} else {
+	else {
+		if (xt > 0 || yt > 0)
+			if (graphics::crop_2d_pm(xaxis, yaxis, this-> _2d_pm, xt > 0? this-> xaxis_len - xt : this-> xaxis_len, yt > 0? this-> yaxis_len - yt : this-> yaxis_len, this-> xaxis_len, _3d_cnk_pm[0], cnk_xlen, cnk_ylen, cnk_xlen, 0, 0, 4) == FFLY_FAILURE) return FFLY_FAILURE;
 
-		if (xt != 0)
-			if (graphics::crop_2d_pm(xaxis, yaxis, this-> _2d_pm, this-> xaxis_len - xt, this-> yaxis_len, this-> xaxis_len, _3d_cnk_pm[0], cnk_xlen, cnk_ylen, cnk_xlen, 4) == FFLY_FAILURE) return FFLY_FAILURE;
+		if (xt > 0 && yt == 0) {
+			types::_3d_pm_t nx = this-> _uni_manager-> _3d_cnk_pm(types::__coords__<>(this-> xaxis + this-> xaxis_len, this-> yaxis, this-> zaxis));
+			uint_t nx_cxfs = floor((this-> xaxis + this-> xaxis_len) / cnk_xlen) * cnk_xlen;
+			uint_t nx_x = (this-> xaxis + this-> xaxis_len) - nx_cxfs;
 
+			if (graphics::crop_2d_pm(0, yaxis, this-> _2d_pm, this-> xaxis_len, this-> yaxis_len, this-> xaxis_len, nx[0], cnk_xlen, cnk_ylen, cnk_xlen, this-> xaxis_len - xt, 0, 4) == FFLY_FAILURE) return FFLY_FAILURE;
+		}
+
+		if (xt == 0 && yt > 0) {
+			types::_3d_pm_t nx = this-> _uni_manager-> _3d_cnk_pm(types::__coords__<>(this-> xaxis, this-> yaxis + this-> yaxis_len, this-> zaxis));
+			uint_t nx_cyfs = floor((this-> yaxis + this-> yaxis_len) / cnk_ylen) * cnk_ylen;
+			uint_t nx_y = (this-> yaxis + this-> yaxis_len) - nx_cyfs;
+
+			if (graphics::crop_2d_pm(xaxis, 0, this-> _2d_pm, this-> xaxis_len, this-> yaxis_len, this-> xaxis_len, nx[0], cnk_xlen, cnk_ylen, cnk_xlen, 0, this-> yaxis_len - yt, 4) == FFLY_FAILURE) return FFLY_FAILURE;
+		}
 	}
-
 	return FFLY_SUCCESS;
 }
 
