@@ -3,19 +3,30 @@
 # include "types/err_t.h"
 # include "types/pixmap_t.h"
 # include "memory/mem_alloc.h"
+# include "memory/mem_free.h"
+# include "memory/mem_init.h"
 # include <eint_t.hpp>
 # include "system/errno.h"
 # include <errno.h>
+# include <math.h>
+# include "graphics/draw_rect.hpp"
+# include "graphics/draw_pixmap.hpp"
+# include "graphics/draw_grid.hpp"
 # include "types/colour_t.hpp"
+# include "memory/alloc_pixmap.hpp"
 namespace mdl {
 namespace firefly {
 class skel_creator {
-	types::err_t init();
+	public:
+	types::err_t init(uint_t __pm_xlen, uint_t __pm_ylen, uint_t __xsplit, uint_t __ysplit);
 	types::err_t de_init();
-	types::err_t tick();
-	types::err_t draw(types::_1d_pixmap_t __pixbuff);
+	types::err_t tick(u16_t __mx_axis, u16_t __my_axis, bool __mpress, int __button_code);
+	types::err_t draw(types::_1d_pm_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen);
 	private:
-	types::_1d_pixmap_t grid_pm = nullptr;
+	u8_t *blk_st;
+	uint_t xsplit, ysplit;
+	uint_t bpm_xa_len, bpm_ya_len;
+	types::_1d_pm_t bse_pm = nullptr;
 };
 }
 }

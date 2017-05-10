@@ -45,12 +45,10 @@ class uni_manager {
 	}
 
 	types::_1d_pm_t _1d_cnk_pm(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
-		return this-> _1d_uni_pm[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];
-	}
+		return this-> _1d_uni_pm[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];}
 
 	types::_3d_pm_t _3d_cnk_pm(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
-		return this-> _3d_uni_pm[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];
-	}
+		return this-> _3d_uni_pm[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];}
 
 	types::_1d_pm_t _1d_cnk_pm(types::_3d_coords_t<> __coords) {
 		uint_t xcnk, ycnk, zcnk;
@@ -65,8 +63,7 @@ class uni_manager {
 	}
 
 	types::uni_par_t* cnk_particles(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
-		return this-> uni_particles[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];
-	}
+		return this-> uni_particles[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];}
 
 	types::uni_par_t* cnk_particles(types::_3d_coords_t<> __coords) {
 		uint_t xcnk, ycnk, zcnk;
@@ -74,12 +71,11 @@ class uni_manager {
 		return this-> cnk_particles(xcnk, ycnk, zcnk);
 	}
 
-	__inline__ uint_t get_cnk_xlen() {return this-> _chunk_manager-> get_cnk_xlen();}
-	__inline__ uint_t get_cnk_ylen() {return this-> _chunk_manager-> get_cnk_ylen();}
-	__inline__ uint_t get_cnk_zlen() {return this-> _chunk_manager-> get_cnk_zlen();}
+	uint_t get_cnk_xlen() {return this-> _chunk_manager-> get_cnk_xlen();}
+	uint_t get_cnk_ylen() {return this-> _chunk_manager-> get_cnk_ylen();}
+	uint_t get_cnk_zlen() {return this-> _chunk_manager-> get_cnk_zlen();}
 
 	types::err_t draw_cnk(uint_t __xfs, uint_t __yfs, uint_t __zfs, types::id_t __chunk_id, types::pixmap_t __pixbuff, uint_t __xaxis_len, uint_t __yaxis_len);
-
 	chunk_manager *_chunk_manager = nullptr;
 	private:
 	uint_t cnk_xc, cnk_yc, cnk_zc;

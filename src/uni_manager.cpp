@@ -78,5 +78,7 @@ mdl::firefly::types::err_t mdl::firefly::uni_manager::init(uint_t __xa_split, ui
 mdl::firefly::types::err_t mdl::firefly::uni_manager::draw_cnk(uint_t __xfs, uint_t __yfs, uint_t __zfs, types::id_t __cnk_id, types::pixmap_t __pixbuff, uint_t __xaxis_len, uint_t __yaxis_len) {
 	types::pixmap_t cnk_pixmap;
 	if ((cnk_pixmap = this-> _chunk_manager-> cnk_data(__cnk_id)._1d_pm) == nullptr) return FFLY_FAILURE;
-	graphics::draw_pixmap(__xfs, __yfs, __pixbuff, __xaxis_len, __yaxis_len, cnk_pixmap, this-> _chunk_manager-> get_cnk_xlen(), this-> _chunk_manager-> get_cnk_ylen());
+
+	types::err_t any_err;
+	if ((any_err = graphics::draw_pixmap(__xfs, __yfs, __pixbuff, __xaxis_len, __yaxis_len, cnk_pixmap, this-> _chunk_manager-> get_cnk_xlen(), this-> _chunk_manager-> get_cnk_ylen())) != FFLY_SUCCESS) return any_err;
 }

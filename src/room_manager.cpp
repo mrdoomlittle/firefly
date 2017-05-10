@@ -1,32 +1,27 @@
 # include "room_manager.hpp"
-mdl::uint_t **mdl::firefly::room_manager::_room_id = nullptr;
+mdl::firefly::types::id_t *mdl::firefly::room_manager::_room_id = nullptr;
 
-void (* mdl::firefly::room_manager::_btn_press)(uint_t, int, void *, uint_t *) = nullptr;
-void (* mdl::firefly::room_manager::_btn_hover)(uint_t, void *, uint_t *) = nullptr;
+void (* mdl::firefly::room_manager::_btn_press)(uint_t, int, void *, types::id_t) = nullptr;
+void (* mdl::firefly::room_manager::_btn_hover)(uint_t, void *, types::id_t) = nullptr;
 
-mdl::firefly::room_manager::room_manager() {
-	room_manager::_room_id = &this-> curr_room_id;
-}
-
+mdl::firefly::room_manager::room_manager() {room_manager::_room_id = &this-> curr_room_id;}
 void mdl::firefly::room_manager::btn_pressf(uint_t __btn_id, int __mbtn_id, void *__voidptr) {
-	room_manager::_btn_press(__btn_id, __mbtn_id, __voidptr, *room_manager::_room_id);
-}
+	room_manager::_btn_press(__btn_id, __mbtn_id, __voidptr, *room_manager::_room_id);}
 
 void mdl::firefly::room_manager::btn_hoverf(uint_t __btn_id, void *__voidptr) {
-	room_manager::_btn_hover(__btn_id, __voidptr, *room_manager::_room_id);
-}
+	room_manager::_btn_hover(__btn_id, __voidptr, *room_manager::_room_id);}
 
-void (* mdl::firefly::room_manager::btn_press(void (* __btn_press)(uint_t, int, void *, uint_t *)))(uint_t, int, void *) {
+void (* mdl::firefly::room_manager::btn_press(void (* __btn_press)(uint_t, int, void *, types::id_t)))(uint_t, int, void *) {
 	room_manager::_btn_press = __btn_press;
 	return &room_manager::btn_pressf;
 }
 
-void (* mdl::firefly::room_manager::btn_hover(void (* __btn_hover)(uint_t, void *, uint_t *)))(uint_t, void *) {
+void (* mdl::firefly::room_manager::btn_hover(void (* __btn_hover)(uint_t, void *, types::id_t)))(uint_t, void *) {
 	room_manager::_btn_hover = __btn_hover;
 	return &room_manager::btn_hoverf;
 }
 
-boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __overwrite) {
+mdl::firefly::types::err_t mdl::firefly::room_manager::add_room(types::id_t& __room_id, bool __overwrite) {
 	if (__room_id != nullptr && !__overwrite) return FFLY_NOP;
 
 	if (this-> room_count == 0) {
@@ -63,13 +58,13 @@ boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __ov
 	room_data_t *room_data = nullptr;
 
 	if (!this-> unused_ids.empty()) {
-		std::set<uint_t *>::iterator itor = this-> unused_ids.end();
+		std::set<types::id_t>::iterator itor = this-> unused_ids.end();
 		--itor;
 
 		__room_id = *itor;
 		this-> unused_ids.erase(itor);
 	} else {
-		this-> _room_info[this-> room_count].id = __room_id = (uint_t *)memory::mem_alloc(sizeof(uint_t));
+		this-> _room_info[this-> room_count].id = __room_id = (types::id_t)memory::mem_alloc(sizeof(types::__id_t));
 		if (__room_id == NULL) {
 			fprintf(stderr, "room_manager: failed to alloc memory for 'room_id', errno: %d\n", errno);
 			goto mem_clean;
@@ -116,11 +111,8 @@ boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __ov
 	return FFLY_SUCCESS;
 	mem_clean:
 
-	if (__room_id != NULL)
-		memory::mem_free(__room_id);
-
-	if (btn_manager != nullptr)
-		memory::mem_free(btn_manager);
+	if (__room_id != NULL) memory::mem_free(__room_id);
+	if (btn_manager != nullptr) memory::mem_free(btn_manager);
 
 	if (this-> room_count == 0) {
 		memory::mem_free(this-> _room_info);
@@ -133,19 +125,18 @@ boost::int8_t mdl::firefly::room_manager::add_room(uint_t*& __room_id, bool __ov
 	return FFLY_FAILURE;
 }
 
-boost::int8_t mdl::firefly::room_manager::create_btn(uint_t *__room_id, uint_t& __btn_id, types::pixmap_t __pixmap, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len) {
+mdl::firefly::types::err_t mdl::firefly::room_manager::create_btn(types::id_t __room_id, uint_t& __btn_id, types::pixmap_t __pixmap, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len) {
 //	room_info_t& room_info = this-> _room_info[*__room_id];
 	room_data_t& room_data = this-> _room_data[*__room_id];
+	types::err_t any_err;
 
-	__btn_id = room_data.btn_manager-> create_btn(__pixmap, __coords, __xaxis_len, __yaxis_len);
-
-
+	if ((any_err = __btn_id = room_data.btn_manager-> create_btn(__pixmap, __coords, __xaxis_len, __yaxis_len)) != FFLY_SUCCESS) return any_err;
 	return FFLY_SUCCESS;
 }
 
 // move to 'manage()'
-boost::int8_t mdl::firefly::room_manager::draw_room(uint_t *__room_id) {
-	uint_t *room_id = __room_id == nullptr? this-> curr_room_id : __room_id;
+mdl::firefly::types::err_t mdl::firefly::room_manager::draw_room(types::id_t __room_id) {
+	types::id_t room_id = __room_id == nullptr? this-> curr_room_id : __room_id;
 	if (room_id == nullptr) return FFLY_NOP;
 
 	room_info_t& room_info = this-> _room_info[*room_id];
@@ -159,24 +150,25 @@ boost::int8_t mdl::firefly::room_manager::draw_room(uint_t *__room_id) {
 		as they depend on curr_room_id to be set.
 	*/
 
-	uint_t *tmp_room_id;
+	types::id_t tmp_room_id;
 	if (room_id == __room_id) {
 		tmp_room_id = this-> curr_room_id;
 		this-> curr_room_id = room_id;
 	}
 
+	mdl::firefly::types::err_t any_err;
 	if (room_data.btn_manager != nullptr) {
-		if (room_data.btn_manager-> manage(pixbuff) == FFLY_FAILURE) {
+		if ((any_err = room_data.btn_manager-> manage(pixbuff)) != FFLY_SUCCESS) {
 			fprintf(stderr, "room_manager: failed to call 'btn_manager::manage'\n");
-			return FFLY_FAILURE;
+			return any_err;
 		}
 	}
 
 # ifdef __RM_LAYERING
 	if (room_data._layer_manager != nullptr) {
-		if (room_data._layer_manager-> draw_layers(pixbuff, pb_xaxis_len, pb_yaxis_len) == FFLY_FAILURE) {
+		if ((any_err = room_data._layer_manager-> draw_layers(pixbuff, pb_xaxis_len, pb_yaxis_len)) != FFLY_SUCCESS) {
 			fprintf(stderr, "room_manager: failed to draw layers.\n");
-			return FFLY_FAILURE;
+			return any_err;
 		}
 	}
 # endif
@@ -187,18 +179,18 @@ boost::int8_t mdl::firefly::room_manager::draw_room(uint_t *__room_id) {
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::firefly::room_manager::rm_room(uint_t *__room_id, bool __hard) {
+mdl::firefly::types::err_t mdl::firefly::room_manager::rm_room(types::id_t __room_id, bool __hard) {
 	return FFLY_NOP;
 }
 
-boost::int8_t mdl::firefly::room_manager::manage(uint_t *__room_id) {
+mdl::firefly::types::err_t mdl::firefly::room_manager::manage(types::id_t __room_id) {
 	if (!this-> room_change.empty() && !this-> window-> is_button_press()) {
 		printf("room_manager: changing room to id with %d\n", *this-> room_change.front());
 		this-> curr_room_id = this->room_change.front();
 		this-> room_change.pop();
 	}
 
-	uint_t *room_id = __room_id == nullptr? this-> curr_room_id : __room_id;
+	types::id_t room_id = __room_id == nullptr? this-> curr_room_id : __room_id;
 	if (room_id == nullptr) return FFLY_NOP;
 
 	this-> wd_coords = this-> window-> get_wd_coords();
@@ -212,16 +204,17 @@ boost::int8_t mdl::firefly::room_manager::manage(uint_t *__room_id) {
 		}
 	}
 
+	mdl::firefly::types::err_t any_err;
 	// this will be removed a later version
-	if (this-> draw_room() == FFLY_FAILURE) {
-		fprintf(stderr, "room_manager: failed to draw.\n");
-		return FFLY_FAILURE;
+	if ((any_err = this-> draw_room()) != FFLY_SUCCESS) {
+		fprintf(stderr, "room_manager: failed to draw room.\n");
+		return any_err;
 	}
 
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::firefly::room_manager::de_init() {
+mdl::firefly::types::err_t mdl::firefly::room_manager::de_init() {
 	printf("room_manager: going to free all memory for rooms\n");
 	for (uint_t _room_id = 0; _room_id != this-> room_count; _room_id ++) {
 		uint_t *room_id = (this-> _room_info + _room_id)-> id;

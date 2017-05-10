@@ -1,7 +1,7 @@
 # include "asset_manager.hpp"
 
-mdl::uint_t *mdl::firefly::asset_manager::load_asset(char const *__asset_file, uint_t __asset_type) {
-	uint_t *asset_id;
+mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char const *__asset_file, uint_t __asset_type) {
+	types::id_t asset_id;
 	if (__asset_type == asset_manager::AST_PNG_FILE) {
 		types::_2d_dsize_t<> *dsize = (types::_2d_dsize_t<> *)memory::mem_alloc(sizeof(types::_2d_dsize_t<>));
 		types::pixmap_t pixmap;
@@ -18,8 +18,8 @@ mdl::uint_t *mdl::firefly::asset_manager::load_asset(char const *__asset_file, u
 	return asset_id;
 }
 
-mdl::uint_t *mdl::firefly::asset_manager::add_asset(boost::uint8_t *__data, uint_t __bytes, uint_t __type) {
-	uint_t *asset_id = (uint_t *)memory::mem_alloc(sizeof(uint_t));
+mdl::firefly::types::id_t mdl::firefly::asset_manager::add_asset(u8_t *__data, uint_t __bytes, uint_t __type) {
+	types::id_t asset_id = (types::id_t)memory::mem_alloc(sizeof(types::__id_t));
 	this-> asset_indx.resize(this-> asset_indx.size() + 1);
 
 	*asset_id = this-> asset_indx.size() - 1;
@@ -34,7 +34,7 @@ mdl::uint_t *mdl::firefly::asset_manager::add_asset(boost::uint8_t *__data, uint
 	return asset_id;
 }
 
-boost::int8_t mdl::firefly::asset_manager::de_init() {
+mdl::firefly::types::err_t mdl::firefly::asset_manager::de_init() {
 	for (std::size_t o = 0; o != this-> asset_indx.size(); o ++) {
 		printf("%s - asset_manager: freed memory for asset with id: %d\n", system::time_stamp(), o);
 		if (this-> asset_indx[o].id != nullptr)
@@ -46,8 +46,8 @@ boost::int8_t mdl::firefly::asset_manager::de_init() {
 	}
 }
 
-void mdl::firefly::asset_manager::del_asset(uint_t *__asset_id) {
-	std::set<uint_t *>::iterator itor = this-> asset_ids.find(__asset_id);
+void mdl::firefly::asset_manager::del_asset(types::id_t __asset_id) {
+	std::set<types::id_t>::iterator itor = this-> asset_ids.find(__asset_id);
 	if (itor == this-> asset_ids.end()) {
 		printf("failed to look up asset, id? %d\n", *__asset_id);
 		return;
@@ -65,32 +65,27 @@ void mdl::firefly::asset_manager::del_asset(uint_t *__asset_id) {
 	this-> asset_ids.erase(itor);
 }
 
-bool mdl::firefly::asset_manager::valid_asset_id(uint_t *__asset_id) {
-	return this-> asset_ids.find(__asset_id) == this-> asset_ids.end()? false : true;
-}
+bool mdl::firefly::asset_manager::valid_asset_id(types::id_t __asset_id) {
+	return this-> asset_ids.find(__asset_id) == this-> asset_ids.end()? false : true;}
 
-boost::uint8_t* mdl::firefly::asset_manager::get_asset_data(uint_t *__asset_id) {
+boost::uint8_t* mdl::firefly::asset_manager::get_asset_data(types::id_t__asset_id) {
 	if (!this-> valid_asset_id(__asset_id)) return nullptr;
 	return this-> asset_indx[*__asset_id].data;
 }
 
-mdl::firefly::asset_manager::asset_t mdl::firefly::asset_manager::get_asset(uint_t *__asset_id) noexcept {
+mdl::firefly::asset_manager::asset_t mdl::firefly::asset_manager::get_asset(types::id_t __asset_id) noexcept {
 	if (!this-> valid_asset_id(__asset_id)) throw;
 	return this-> asset_indx[*__asset_id];
 }
 
-mdl::firefly::asset_manager::asset_t& mdl::firefly::asset_manager::asset(uint_t *__asset_id) {
-	return this-> asset_indx[*__asset_id];
-}
+mdl::firefly::asset_manager::asset_t& mdl::firefly::asset_manager::asset(types::id_t __asset_id) {
+	return this-> asset_indx[*__asset_id];}
 
-void * mdl::firefly::asset_manager::get_asset_info(uint_t *__asset_id) {
-	return this-> asset_indx[*__asset_id].info;
-}
+void * mdl::firefly::asset_manager::get_asset_info(types::id_t __asset_id) {
+	return this-> asset_indx[*__asset_id].info;}
 
-void*& mdl::firefly::asset_manager::asset_info(uint_t *__asset_id) {
-	return this-> asset_indx[*__asset_id].info;
-}
-
+void*& mdl::firefly::asset_manager::asset_info(types::id_t __asset_id) {
+	return this-> asset_indx[*__asset_id].info;}
 /*
 int main() {
 	mdl::firefly::asset_manager ast_manager;

@@ -39,6 +39,7 @@
 # include "types/pixmap_t.h"
 # include "gui/window.hpp"
 # include "data/scale_pixmap.hpp"
+# include "skel_creator.hpp"
 namespace mdl {
 class ffly_studio {
 	public:

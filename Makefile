@@ -36,7 +36,7 @@ else ifeq ($(FFLY_TARGET), FFLY_CLIENT)
  src/gui/btn_manager.o src/system/event.o src/graphics/draw_bitmap.o src/font.o src/system/task_handle.o src/system/task_worker.o \
  src/ui/camera.o src/graphics/crop_pixmap.o src/entity_manager.o
 else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
- FFLY_OBJECTS += src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
+ FFLY_OBJECTS += src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
  src/graphics/png_loader.o src/room_manager.o src/asset_manager.o src/system/time_stamp.o  src/graphics/draw_rect.o \
  src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o src/graphics/draw_pixmap.clo src/system/task_handle.o src/system/task_worker.o #src/ffly_studio.o
@@ -88,6 +88,9 @@ all: ffly_test
 endif
 
 FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+
+src/skel_creator.o: src/skel_creator.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/skel_creator.o src/skel_creator.cpp
 
 src/data/uni_dlen_val.o: src/data/uni_dlen_val.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/uni_dlen_val.o src/data/uni_dlen_val.cpp

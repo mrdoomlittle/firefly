@@ -22,7 +22,6 @@ namespace mdl {
 namespace firefly {
 class chunk_keeper {
 	public:
-
 	chunk_keeper(uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len)
 	: xaxis_len(__xaxis_len), yaxis_len(__yaxis_len), zaxis_len(__zaxis_len) {}
 
@@ -45,18 +44,17 @@ class chunk_keeper {
 		}
 	}
 
-	__inline__ types::chunk_info_t& get_cnk_info(types::id_t __cnk_id) {
+	types::chunk_info_t __inline__& get_cnk_info(types::id_t __cnk_id) {
 		return this-> cnk_info[*__cnk_id];
 	}
 
-	__inline__ types::chunk_data_t& get_cnk_data(types::id_t __cnk_id) {
+	types::chunk_data_t __inline__& get_cnk_data(types::id_t __cnk_id) {
 		return this-> cnk_data[*__cnk_id];
 	}
 
-	__inline__ uint_t get_cnk_xlen() { return this-> xaxis_len*UNI_PAR_XLEN; }
-	__inline__ uint_t get_cnk_ylen() { return this-> yaxis_len*UNI_PAR_YLEN; }
-	__inline__ uint_t get_cnk_zlen() { return this-> zaxis_len*UNI_PAR_ZLEN; }
-
+	uint_t __inline__ get_cnk_xlen() { return this-> xaxis_len*UNI_PAR_XLEN; }
+	uint_t __inline__ get_cnk_ylen() { return this-> yaxis_len*UNI_PAR_YLEN; }
+	uint_t __inline__ get_cnk_zlen() { return this-> zaxis_len*UNI_PAR_ZLEN; }
 	private:
 	std::set<types::id_t> unused_ids;
 	uint_t cnk_c = 0;

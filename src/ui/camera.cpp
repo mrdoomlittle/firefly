@@ -41,10 +41,11 @@ mdl::firefly::types::err_t mdl::firefly::ui::camera::handle() {
 
 	// remove this later
 	graphics::fill_pixmap(this-> pixmap, this-> xaxis_len, this-> yaxis_len, graphics::__colour__(204, 255, 0, 244));
+	types::err_t any_err;
 
 	if (xt == 0 && yt == 0)
 		//if (graphics::crop_2d_pm(xaxis, yaxis, this-> _2d_pm, this-> xaxis_len, this-> yaxis_len, this-> xaxis_len, _3d_cnk_pm[0], cnk_xlen, cnk_ylen, cnk_xlen, 0, 0, 4)) return FFLY_FAILURE;
-		if (graphics::crop_pixmap(xaxis, yaxis, this-> pixmap, this-> xaxis_len, this-> yaxis_len, _1d_cnk_pm, cnk_xlen, cnk_ylen, 4) == FFLY_FAILURE) return FFLY_FAILURE;
+		if ((any_err = graphics::crop_pixmap(xaxis, yaxis, this-> pixmap, this-> xaxis_len, this-> yaxis_len, _1d_cnk_pm, cnk_xlen, cnk_ylen, 4)) != FFLY_SUCCESS) return any_err;
 	else {
 		if (xt > 0 || yt > 0)
 			if (graphics::crop_2d_pm(xaxis, yaxis, this-> _2d_pm, xt > 0? this-> xaxis_len - xt : this-> xaxis_len, yt > 0? this-> yaxis_len - yt : this-> yaxis_len, this-> xaxis_len, _3d_cnk_pm[0], cnk_xlen, cnk_ylen, cnk_xlen, 0, 0, 4) == FFLY_FAILURE) return FFLY_FAILURE;
@@ -54,7 +55,7 @@ mdl::firefly::types::err_t mdl::firefly::ui::camera::handle() {
 			uint_t nx_cxfs = floor((this-> xaxis + this-> xaxis_len) / cnk_xlen) * cnk_xlen;
 			uint_t nx_x = (this-> xaxis + this-> xaxis_len) - nx_cxfs;
 
-			if (graphics::crop_2d_pm(0, yaxis, this-> _2d_pm, this-> xaxis_len, this-> yaxis_len, this-> xaxis_len, nx[0], cnk_xlen, cnk_ylen, cnk_xlen, this-> xaxis_len - xt, 0, 4) == FFLY_FAILURE) return FFLY_FAILURE;
+			if ((any_err = graphics::crop_2d_pm(0, yaxis, this-> _2d_pm, this-> xaxis_len, this-> yaxis_len, this-> xaxis_len, nx[0], cnk_xlen, cnk_ylen, cnk_xlen, this-> xaxis_len - xt, 0, 4)) != FFLY_SUCCESS) return any_err;
 		}
 
 		if (xt == 0 && yt > 0) {
@@ -62,7 +63,7 @@ mdl::firefly::types::err_t mdl::firefly::ui::camera::handle() {
 			uint_t nx_cyfs = floor((this-> yaxis + this-> yaxis_len) / cnk_ylen) * cnk_ylen;
 			uint_t nx_y = (this-> yaxis + this-> yaxis_len) - nx_cyfs;
 
-			if (graphics::crop_2d_pm(xaxis, 0, this-> _2d_pm, this-> xaxis_len, this-> yaxis_len, this-> xaxis_len, nx[0], cnk_xlen, cnk_ylen, cnk_xlen, 0, this-> yaxis_len - yt, 4) == FFLY_FAILURE) return FFLY_FAILURE;
+			if ((any_err = graphics::crop_2d_pm(xaxis, 0, this-> _2d_pm, this-> xaxis_len, this-> yaxis_len, this-> xaxis_len, nx[0], cnk_xlen, cnk_ylen, cnk_xlen, 0, this-> yaxis_len - yt, 4)) != FFLY_SUCCESS) return any_err;
 		}
 	}
 	return FFLY_SUCCESS;

@@ -69,12 +69,15 @@ mdl::firefly::types::err_t mdl::firefly::chunk_keeper::create_cnk(types::id_t& _
 
 	cnk_data-> _3d_pm = memory::make_3d_pm(cnk_data-> _1d_pm, rxaxis_len, ryaxis_len, rzaixs_len, 4);
 
+	// ignore
 	if (this-> cnk_c == 1)
 		memset(cnk_data-> _1d_pm, 244, (rxaxis_len * ryaxis_len * rzaixs_len) * 4);
 	else
 		memset(cnk_data-> _1d_pm, 100, (rxaxis_len * ryaxis_len * rzaixs_len) * 4);
 
 	for (int y{}; y != 80; y ++) {memset(cnk_data-> _3d_pm[0][y], 244, 80*4);}
+	//
+
 	this-> cnk_c ++;
 
 	return FFLY_SUCCESS;
@@ -89,11 +92,8 @@ mdl::firefly::types::err_t mdl::firefly::chunk_keeper::create_cnk(types::id_t& _
 	}
 
 	if (__cnk_id != NULL) memory::mem_free(__cnk_id);
-
-	if (this-> cnk_data-> particles != NULL)
-		memory::mem_free(cnk_data-> particles);
-	if (this-> cnk_data-> _1d_pm != NULL)
-		memory::mem_free(cnk_data-> _1d_pm);
+	if (this-> cnk_data-> particles != NULL) memory::mem_free(cnk_data-> particles);
+	if (this-> cnk_data-> _1d_pm != NULL) memory::mem_free(cnk_data-> _1d_pm);
 	return FFLY_FAILURE;
 }
 

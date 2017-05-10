@@ -16,7 +16,6 @@ namespace firefly {
 namespace ui {
 class camera {
 	public:
-//	camera() {}
 	camera(uni_manager *__uni_manager) : _uni_manager(__uni_manager){}
 
 	types::err_t init(uint_t __xaxis_len, uint_t __yaxis_len);

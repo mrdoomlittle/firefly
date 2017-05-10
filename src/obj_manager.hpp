@@ -80,16 +80,13 @@ class obj_manager {
 	}
 
 	void set_mass(uint_t __obj_id, uint_t __mass) {
-		this-> obj_index[__obj_id].first-> mass = __mass;
-	}
+		this-> obj_index[__obj_id].first-> mass = __mass;}
 
 	uint_t get_mass(uint_t __obj_id) {
-		return this-> obj_index[__obj_id].first-> mass;
-	}
+		return this-> obj_index[__obj_id].first-> mass;}
 
 	uint_t& mass(uint_t __obj_id) {
-		return this-> obj_index[__obj_id].first-> mass;
-	}
+		return this-> obj_index[__obj_id].first-> mass;}
 
 	std::atomic<boost::int8_t>& xaxis_direction(uint_t __obj_id) {
 		return this-> obj_index[__obj_id].first-> velocity.direction.xaxis;

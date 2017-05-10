@@ -1,7 +1,7 @@
 # include "entity_manager.hpp"
-
 mdl::firefly::types::err_t mdl::firefly::entity_manager::draw_cam(types::__id_t __entity_id, uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen) {
-	this-> entity_indx[__entity_id].second-> draw_camera(__xfs, __yfs, __pixbuff, __pb_xlen, __pb_ylen);
+	types::err_t any_err;
+	if ((any_err = this-> entity_indx[__entity_id].second-> draw_camera(__xfs, __yfs, __pixbuff, __pb_xlen, __pb_ylen)) != FFLY_SUCCESS) return any_err;
 	return FFLY_SUCCESS;
 }
 
@@ -40,7 +40,8 @@ mdl::firefly::types::err_t mdl::firefly::entity_manager::manage(types::__id_t __
 		if (cam_yaxis + this-> entity_indx[__entity_id].second-> get_yaxis_len() > cam_cyfs + cnk_ylen)
 			this-> entity_indx[__entity_id].second-> set_yaxis(cam_cyfs + cnk_ylen - 1);
 */
-		this-> entity_indx[__entity_id].second-> handle();
+		types::err_t any_err;
+		if ((any_err = this-> entity_indx[__entity_id].second-> handle()) != FFLY_SUCCESS) return any_err;
 	}
 	return FFLY_SUCCESS;
 }

@@ -57,7 +57,6 @@ class entity_manager {
 	void push_xaxis(types::__id_t __entity_id, uint_t __amount) {this-> _obj_manager-> push_xaxis(this-> entity_indx[__entity_id].first, __amount);}
 	void pull_yaxis(types::__id_t __entity_id, uint_t __amount) {this-> _obj_manager-> pull_yaxis(this-> entity_indx[__entity_id].first, __amount);}
 	void push_yaxis(types::__id_t __entity_id, uint_t __amount) {this-> _obj_manager-> push_yaxis(this-> entity_indx[__entity_id].first, __amount);}
-
 	private:
 	system::vector<std::pair<types::__id_t, ui::camera *>> entity_indx;
 	obj_manager *_obj_manager = nullptr;
