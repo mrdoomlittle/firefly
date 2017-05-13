@@ -27,24 +27,24 @@ class window {
 
 	types::err_t draw(types::pixmap_t __pixbuff, types::dsize_t __pb_size);
 	types::err_t handle();
-	types::_1d_pm_t *get_wpm() {
-		return this-> wpm;
-	}
+	types::_1d_pm_t *get_wpm() {return this-> wpm;}
 
 	types::err_t de_init() {
-		if (this-> pixmap != nullptr) {
+		if (this-> pixmap) {
 			memory::mem_free(this-> pixmap);
 			this-> pixmap = nullptr;
-		}
+		} else
+			printf("window: info, pixmap already freed. skipping - de_init.\n")
 
-		if (this-> wpm != nullptr) {
+		if (this-> wpm) {
 			memory::mem_free(this-> wpm);
 			this-> wpm = nullptr;
-		}
+		} else
+			printf("window: info, wpm already freed. skipping - de_init.\n");
 		return FFLY_SUCCESS;
 	}
 
-	static void exit_btn(void *_this);
+	void static exit_btn(void *_this);
 	bool is_closed = false;
 	types::coords_t<u16_t> pointer_coords;
 	private:

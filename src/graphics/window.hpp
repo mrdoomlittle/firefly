@@ -59,7 +59,6 @@ class window {
 # endif
 
 # if defined(USING_X11)
-
 	types::coords_t<i16_t> wd_coords = {
 		.xaxis = (i16_t)this-> wd_handler.wd_coords.xaxis,
 		.yaxis = (i16_t)this-> wd_handler.wd_coords.yaxis
@@ -94,15 +93,16 @@ class window {
 	}
 
 	types::err_t de_init() {
-		if (this-> wd_handler.de_init() != FFLY_SUCCESS) {
+		types::err_t any_err;
+		if ((any_err = this-> wd_handler.de_init()) != FFLY_SUCCESS) {
 			fprintf(stderr, "window: failed to 'de init' window handler.\n");
-			return FFLY_FAILURE;
+			return any_err;
 		}
 		return FFLY_SUCCESS;
 	}
 
 	private:
-	bool init_report = FFLY_FAILURE;
+	types::err_t init_report = FFLY_FAILURE;
 	u16_t wd_xaxis_len = 0, wd_yaxis_len = 0;
 	char const *frame_title = nullptr;
 	public:

@@ -24,16 +24,19 @@ namespace ublas = boost::numeric::ublas;
 # include "../types/btn_event_t.hpp"
 # include "../system/event.hpp"
 # include <queue>
+# include "../types/err_t.h"
+# include "../data/enable.hpp"
+# include "../data/disable.hpp"
 namespace mdl {
 namespace firefly {
 namespace gui {
 class btn_manager {
 	public:
-	btn_manager(types::pixmap_t __pixbuff, types::coords_t<boost::int16_t> *__wd_coords, types::coords_t<boost::uint16_t> *__mouse_coords, boost::uint16_t __pb_xaxis_len, boost::uint16_t __pb_yaxis_len)
+	btn_manager(types::pixmap_t __pixbuff, types::coords_t<i16_t> *__wd_coords, types::coords_t<u16_t> *__mouse_coords, u16_t __pb_xaxis_len, u16_t __pb_yaxis_len)
 	: pixbuff(__pixbuff), wd_coords(__wd_coords), mouse_coords(__mouse_coords), pb_xaxis_len(__pb_xaxis_len), pb_yaxis_len(__pb_yaxis_len) {
 	}
 
-	types::err_t create_btn(uint_t& __btn_id, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
+	types::err_t create_btn(types::__id_t& __btn_id, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
 	uint_t create_btn(types::pixmap_t __pixmap, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
 	uint_t create_btn(types::id_t __asset_id, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len, asset_manager *__asset_manger);
 
@@ -44,8 +47,7 @@ class btn_manager {
 	types::err_t set_text(uint_t __btn_id, char const * __text, char const *__font,  uint_t __xoffset, uint_t __yoffset, std::size_t __spacing, bool __mid);
 
 	void voidptr_lock(uint_t __btn_id) {
-		this-> btn_index[__btn_id].voidptr_lock = true;
-	}
+		this-> btn_index[__btn_id].voidptr_lock = true;}
 
 	void static btn_press(uint_t __btn_id, int __mbtn_id, void *__voidptr);
 	void static btn_hover(uint_t __btn_id, void *__voidptr);
@@ -55,63 +57,46 @@ class btn_manager {
 		this-> btn_index[__btn_id].voidptr = __ptr;
 	}
 
-	void set_press_fptr(uint_t __btn_id, void (* __press_fptr)(uint_t, int, void *)) {
-		this-> btn_index[__btn_id].press_fptr = __press_fptr;
-	}
+	void set_press_fptr(types::__id_t __btn_id, void (* __press_fptr)(uint_t, int, void *)) {
+		this-> btn_index[__btn_id].press_fptr = __press_fptr;}
 
-	void set_hover_fptr(uint_t __btn_id, void (* __hover_fptr)(uint_t, void *)) {
-		this-> btn_index[__btn_id].hover_fptr = __hover_fptr;
-	}
+	void set_hover_fptr(types::__id_t __btn_id, void (* __hover_fptr)(uint_t, void *)) {
+		this-> btn_index[__btn_id].hover_fptr = __hover_fptr;}
 
-	types::err_t event_bind(uint_t __btn_id);
+	types::err_t event_bind(types::__id_t __btn_id);
 
 	bool mouse_inside(types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
-	void enable_btn(uint_t __btn_id) {
-		this-> btn_index[__btn_id].enabled = true;
-	}
 
-	void disable_btn(uint_t __btn_id) {
-		this-> btn_index[__btn_id].enabled = false;
-	}
+	void enable_btn(types::__id_t __btn_id) {
+		data::enable(this-> btn_index[__btn_id].enabled);}
+	void disable_btn(types::__id_t __btn_id) {
+		data::disable(this-> btn_index[__btn_id].enabled);}
 
-	void enable_hover(uint_t __btn_id) {
-		this-> btn_index[__btn_id].hover_enabled = true;
-	}
+	void enable_hover(types::__id_t __btn_id) {
+		data::enable(this-> btn_index[__btn_id].hover_enabled);}
+	void disable_hover(types::__id_t __btn_id) {
+		data::disable(this-> btn_index[__btn_id].hover_enabled);}
 
-	void disable_hover(uint_t __btn_id) {
-		this-> btn_index[__btn_id].hover_enabled = false;
-	}
-
-	void enable_press(uint_t __btn_id) {
-		this-> btn_index[__btn_id].press_enabled = true;
-	}
+	void enable_press(types::__id_t __btn_id) {
+		data::enable(this-> btn_index[__btn_id].press_enabled);}
 
 	bool mouse_hovering(uint_t __btn_id) {
-		return this-> btn_index[__btn_id].mouse_hovering;
-	}
+		return this-> btn_index[__btn_id].mouse_hovering;}
 
 	void set_pixbuff(types::pixmap_t __pixbuff) {
-		this-> pixbuff = __pixbuff;
-	}
+		this-> pixbuff = __pixbuff;}
 
-	void set_pb_xlen(boost::uint16_t __pb_xaxis_len) {
-		this-> pb_xaxis_len = __pb_xaxis_len;
-	}
-
-	void set_pb_ylen(boost::uint16_t __pb_yaxis_len) {
-		this-> pb_yaxis_len = __pb_yaxis_len;
-	}
+	void set_pb_xlen(u16_t __pb_xaxis_len) {this-> pb_xaxis_len = __pb_xaxis_len;}
+	void set_pb_ylen(u16_t __pb_yaxis_len) {this-> pb_yaxis_len = __pb_yaxis_len;}
 
 	types::pixmap_t& btn_pixmap(uint_t __btn_id) {
-		return btn_index[__btn_id].pixmap;
-	}
+		return btn_index[__btn_id].pixmap;}
 
 	types::btn_t* get_btn(uint_t __btn_id) {
-		return &this-> btn_index[__btn_id];
-	}
+		return &this-> btn_index[__btn_id];}
 
-	boost::int8_t manage(types::pixmap_t __pixbuff = nullptr);
-	boost::int8_t de_init() {
+	types::err_t manage(types::pixmap_t __pixbuff = nullptr);
+	types::err_t de_init() {
 		printf("btn_manager: going to free all btn pixmaps.\n");
 		for (uint_t btn_id = 0; btn_id != this-> btn_index.size(); btn_id ++) {
 			if (this-> btn_index[btn_id].texture != nullptr && !this-> btn_index[btn_id].inde_tx_mem)
@@ -124,12 +109,12 @@ class btn_manager {
 	int *mouse_btn_id;
 
 	std::queue<types::btn_event_t> event_queue;
-	types::coords_t<boost::int16_t> *wd_coords;
-    types::coords_t<boost::uint16_t> *mouse_coords;
+	types::coords_t<i16_t> *wd_coords;
+    types::coords_t<u16_t> *mouse_coords;
 	private:
 	ublas::vector<types::btn_t> btn_index;
 	types::pixmap_t pixbuff = nullptr;
-	boost::uint16_t pb_xaxis_len, pb_yaxis_len;
+	u16_t pb_xaxis_len, pb_yaxis_len;
 };
 }
 }

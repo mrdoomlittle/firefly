@@ -58,7 +58,7 @@ else ifeq ($(GPU_CL_TYPE), -DUSING_CUDA)
  FFLY_OBJECTS+= src/cuda_helper.o
 endif
 
-FFLY_OBJECTS += src/firefly.o src/ffly_memory.o
+FFLY_OBJECTS += src/firefly.o src/ffly_memory.o src/system/errno.o
 ## core memory stuff
 FFLY_OBJECTS += src/memory/mem_alloc.o src/memory/mem_alloc.co src/memory/mem_free.o src/memory/mem_free.co src/memory/mem_realloc.co #src/memory/alloc_pixmap.o
 CXXFLAGS += $(FFLY_TARGET)
@@ -88,6 +88,9 @@ all: ffly_test
 endif
 
 FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+
+src/system/errno.o: src/system/errno.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/errno.o src/system/errno.c
 
 src/skel_creator.o: src/skel_creator.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/skel_creator.o src/skel_creator.cpp
@@ -379,6 +382,8 @@ libraries:
 	cd to_string; make ECHAR_T=$(CURR_DIR)/echar_t/inc EINT_T_INC=$(CURR_DIR)/eint_t/inc GETDIGIT_INC=$(CURR_DIR)/getdigit/inc INTLEN_INC=$(CURR_DIR)/intlen/inc GETDIGIT_LIB=$(CURR_DIR)/getdigit/lib INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
 	cd strcmb; make EINT_T_INC=$(CURR_DIR)/echar_t/inc EINT_T_INC=$(CURR_DIR)/eint_t/inc ARC=$(ARC); cd ../;
 	cd tagged_memory; make LIB_PATH=$(CURR_DIR)/; cd ../;
+	cd emu2d; make ARC=$(ARC) EINT_T_INC=$(CURR_DIR)/eint_t/inc; cd ../;
+	cd emu3d; make ARC=$(ARC) EINT_T_INC=$(CURR_DIR)/eint_t/inc; cd ../;
 
 ffly_worker: $(FFLY_OBJECTS)
 	ld -r -o lib/ffly_worker.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)

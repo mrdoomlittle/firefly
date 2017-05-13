@@ -137,13 +137,13 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::create_btn(types::id_t __
 // move to 'manage()'
 mdl::firefly::types::err_t mdl::firefly::room_manager::draw_room(types::id_t __room_id) {
 	types::id_t room_id = __room_id == nullptr? this-> curr_room_id : __room_id;
-	if (room_id == nullptr) return FFLY_NOP;
+	if (!room_id) return FFLY_NOP;
 
 	room_info_t& room_info = this-> _room_info[*room_id];
 	room_data_t& room_data = this-> _room_data[*room_id];
 
 	types::pixmap_t pixbuff = room_data.pixbuff == nullptr? this-> pixbuff : room_data.pixbuff;
-	if (pixbuff == nullptr) return FFLY_NOP;
+	if (!pixbuff) return FFLY_NOP;
 
 	/*
 		if __room_id has been set this will cause issues with the static btn_press, and btn_hover
@@ -165,7 +165,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::draw_room(types::id_t __r
 	}
 
 # ifdef __RM_LAYERING
-	if (room_data._layer_manager != nullptr) {
+	if (room_data._layer_manager) {
 		if ((any_err = room_data._layer_manager-> draw_layers(pixbuff, pb_xaxis_len, pb_yaxis_len)) != FFLY_SUCCESS) {
 			fprintf(stderr, "room_manager: failed to draw layers.\n");
 			return any_err;
@@ -175,7 +175,6 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::draw_room(types::id_t __r
 
 	if (room_id == __room_id)
 		this-> curr_room_id = tmp_room_id;
-
 	return FFLY_SUCCESS;
 }
 
@@ -191,7 +190,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::manage(types::id_t __room
 	}
 
 	types::id_t room_id = __room_id == nullptr? this-> curr_room_id : __room_id;
-	if (room_id == nullptr) return FFLY_NOP;
+	if (!room_id) return FFLY_NOP;
 
 	this-> wd_coords = this-> window-> get_wd_coords();
 	this-> mouse_coords = this-> window-> get_mouse_coords().wd;
@@ -204,8 +203,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::manage(types::id_t __room
 		}
 	}
 
-	mdl::firefly::types::err_t any_err;
-	// this will be removed a later version
+	types::err_t any_err;
 	if ((any_err = this-> draw_room()) != FFLY_SUCCESS) {
 		fprintf(stderr, "room_manager: failed to draw room.\n");
 		return any_err;

@@ -2,10 +2,37 @@
 # define __system__event__hpp
 # include <eint_t.hpp>
 # include <queue>
+# include "../data/pair.hpp"
 # include "../types/btn_event_t.hpp"
 namespace mdl {
 namespace firefly {
 namespace system {
+namespace xevent {
+enum event_id {
+	KEY_PRESSED,
+	KEY_RELEASED,
+	MOUSE_CLICK,
+	MSE_PRESSED,
+	MSE_RELEASED,
+	BTN_PRESSED,
+	BTN_RELEASED,
+	BTN_HOVER,
+	BTN_HOVERING,
+	BTN_PRESS
+};
+
+typedef enum event_id event_id_t;
+
+types::err_t event_add(event_id_t __event_id, void *__event_data);
+void* nxt_event(event_id_t& __event_id);
+void event_pop();
+
+uint_t max_queue_size();
+void max_queue_size(uint_t __queue_size);
+
+std::queue<data::pair<event_id_t, void*>> extern event_queue;
+}
+
 class event {
 	public:
 	typedef struct {

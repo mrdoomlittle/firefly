@@ -19,6 +19,7 @@
 # include "graphics/draw_pixmap.hpp"
 # include "types/uni_dlen_t.hpp"
 # include "data/uni_dlen_val.hpp"
+# include "ffly_graphics.hpp"
 namespace mdl {
 namespace firefly {
 class uni_manager {
@@ -27,11 +28,9 @@ class uni_manager {
 	: xaxis_len(data::uni_dlen_val(__xaxis_len)), yaxis_len(data::uni_dlen_val(__yaxis_len)), zaxis_len(data::uni_dlen_val(__zaxis_len)) {}
 
 	types::err_t init(uint_t __xa_split, uint_t __ya_split, uint_t __za_split);
-	void get_cnk_coords(types::_3d_coords_t<> __coords, uint_t& __xa, uint_t& __ya, uint_t& __za) {
-		__xa = floor(__coords.xaxis / this-> _chunk_manager-> get_cnk_xlen());
-		__ya = floor(__coords.yaxis / this-> _chunk_manager-> get_cnk_ylen());
-		__za = floor(__coords.zaxis / this-> _chunk_manager-> get_cnk_zlen());
-	}
+	void get_cnk_coords(uint_t __xa, uint_t __ya, uint_t __za, uint_t& __cnk_xa, uint_t& __cnk_ya, uint_t& __cnk_za);
+	void __inline__ get_cnk_coords(types::_3d_coords_t<> __coords, uint_t& __cnk_xa, uint_t& __cnk_ya, uint_t& __cnk_za) {
+		this-> get_cnk_coords(__coords.xaxis, __coords.yaxis, __coords.zaxis, __cnk_xa, __cnk_ya, __cnk_za);}
 
 	types::err_t de_init() {
 		this-> _chunk_manager-> de_init();
@@ -46,21 +45,16 @@ class uni_manager {
 
 	types::_1d_pm_t _1d_cnk_pm(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
 		return this-> _1d_uni_pm[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];}
-
 	types::_3d_pm_t _3d_cnk_pm(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
 		return this-> _3d_uni_pm[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];}
 
-	types::_1d_pm_t _1d_cnk_pm(types::_3d_coords_t<> __coords) {
-		uint_t xcnk, ycnk, zcnk;
-		this-> get_cnk_coords(__coords, xcnk, ycnk, zcnk);
-		return this-> _1d_cnk_pm(xcnk, ycnk, zcnk);
-	}
+	types::_1d_pm_t get_1d_cnk_pm(uint_t __xa, uint_t __ya, uint_t __za);
+	types::_3d_pm_t get_3d_cnk_pm(uint_t __xa, uint_t __ya, uint_t __za);
 
-	types::_3d_pm_t _3d_cnk_pm(types::_3d_coords_t<> __coords) {
-		uint_t xcnk, ycnk, zcnk;
-		this-> get_cnk_coords(__coords, xcnk, ycnk, zcnk);
-		return this-> _3d_cnk_pm(xcnk, ycnk, zcnk);
-	}
+	types::_1d_pm_t __inline__ _1d_cnk_pm(types::_3d_coords_t<> __coords) {
+		return this-> get_1d_cnk_pm(__coords.xaxis, __coords.yaxis, __coords.zaxis);}
+	types::_3d_pm_t __inline__ _3d_cnk_pm(types::_3d_coords_t<> __coords) {
+		return this-> get_3d_cnk_pm(__coords.xaxis, __coords.yaxis, __coords.zaxis);}
 
 	types::uni_par_t* cnk_particles(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
 		return this-> uni_particles[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];}
@@ -70,6 +64,9 @@ class uni_manager {
 		this-> get_cnk_coords(__coords, xcnk, ycnk, zcnk);
 		return this-> cnk_particles(xcnk, ycnk, zcnk);
 	}
+
+	void set_par_colour(uint_t __xa, uint_t __ya, uint_t __za, u8_t __r, u8_t __g, u8_t __b, u8_t __a);
+	void get_par_colour(uint_t __xa, uint_t __ya, uint_t __za, u8_t& __r, u8_t& __g, u8_t& __b, u8_t& __a);
 
 	uint_t get_cnk_xlen() {return this-> _chunk_manager-> get_cnk_xlen();}
 	uint_t get_cnk_ylen() {return this-> _chunk_manager-> get_cnk_ylen();}

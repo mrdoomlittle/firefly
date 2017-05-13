@@ -53,7 +53,7 @@ class x11_window: public wd_flags
 		return this-> wd_yaxis_len;
 	}
 
-	char * get_frame_title() {
+	char* get_frame_title() {
 		return this-> frame_title;
 	}
 
@@ -83,7 +83,7 @@ class x11_window: public wd_flags
 	u16_t wd_xaxis_len, wd_yaxis_len;
 	char *frame_title;
 	std::size_t fps_mark = 120;
-} ;
+};
 }
 }
 }

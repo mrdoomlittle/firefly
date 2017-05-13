@@ -14,6 +14,7 @@
 # include <cuda_runtime.h>
 # include "defaults.hpp"
 # include <errno.h>
+# include "types/err_t.h"
 # include "system/errno.h"
 # include "types/init_opt_t.hpp"
 # include "graphics/window.hpp"
@@ -22,6 +23,7 @@
 # include "ffly_system.hpp"
 # include "ffly_graphics.hpp"
 # include "entity_manager.hpp"
+# include "types/err_t.h"
 # ifdef __WITH_OBJ_MANAGER
 #	include "obj_manager.hpp"
 # endif
@@ -39,14 +41,14 @@ namespace mdl { class ffly_client
 {
 	public:
 # ifndef __WITH_UNI_MANAGER
-	ffly_client(boost::uint16_t __win_xlen, boost::uint16_t __win_ylen) : win_xlen(__win_xlen), win_ylen(__win_ylen) {}
+	ffly_client(u16_t __wd_xa_len, u16_t __wd_ya_len) : wd_xa_len(__wd_xa_len), wd_ya_len(__wd_ya_len) {}
 # else
-	ffly_client(boost::uint16_t __win_xlen, boost::uint16_t __win_ylen, firefly::types::uni_prop_t uni_props)
-	: win_xlen(__win_xlen), win_ylen(__win_ylen), uni_manager(uni_props.xaxis_len, uni_props.yaxis_len, uni_props.zaxis_len) {}
+	ffly_client(u16_t __wd_xa_len, u16_t __wd_ya_len, firefly::types::uni_prop_t uni_props)
+	: wd_xa_len(__wd_xa_len), wd_ya_len(__wd_ya_len), uni_manager(uni_props.xaxis_len, uni_props.yaxis_len, uni_props.zaxis_len) {}
 # endif
-	boost::int8_t connect_to_server(int& __sock);
-	boost::int8_t send_client_info();
-	boost::int8_t recv_cam_frame();
+	firefly::types::err_t connect_to_server(int& __sockd);
+	firefly::types::err_t send_client_info();
+	firefly::types::err_t recv_cam_frame();
 
 	~ffly_client() {
 		printf("ffly_client has safly shutdown.\n");
@@ -57,7 +59,7 @@ namespace mdl { class ffly_client
 		cudaDeviceReset();
 	}
 
-	boost::int8_t de_init();
+	firefly::types::err_t de_init();
 
 	void shutdown();
 	typedef struct {
@@ -69,7 +71,7 @@ namespace mdl { class ffly_client
 			return this-> _this-> poll_event(__event);
 		}
 
-		boost::int8_t connect_to_server(char const *__addr, boost::uint16_t __portno, uint_t __layer_id) {
+		firefly::types::err_t connect_to_server(char const *__addr, u16_t __portno, uint_t __layer_id) {
 			if (_this-> layer.does_layer_exist(__layer_id)) {
 				fprintf(stderr, "error the layer for the camera does not exist.\n");
 				return FFLY_FAILURE;
@@ -102,12 +104,12 @@ namespace mdl { class ffly_client
 	firefly::layer_manager layer;
 
 	char const *server_ipaddr = nullptr;
-	boost::uint16_t server_portno = 0;
+	u16_t server_portno = 0;
 	bool server_connected = false;
 
-	boost::int8_t init(firefly::types::init_opt_t __init_options);
+	firefly::types::err_t init(firefly::types::init_opt_t __init_options);
 
-	boost::uint8_t begin(char const *__frame_title,
+	firefly::types::err_t begin(char const *__frame_title,
 		void (* __extern_loop)(boost::int8_t, portal_t*, void *), void *__this
 	);
 
@@ -153,7 +155,7 @@ namespace mdl { class ffly_client
 
 	firefly::networking::tcp_client tcp_stream;
 	firefly::networking::udp_client udp_stream;
-	boost::uint16_t const win_xlen, win_ylen;
+	u16_t const wd_xa_len, wd_ya_len;
 };
 }
 

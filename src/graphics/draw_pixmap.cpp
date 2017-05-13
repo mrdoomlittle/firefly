@@ -94,6 +94,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(types::gpu_dr_pm_
 	} arg_holder;
 	arg_holder args[xblock_c*yblock_c];
 # endif
+	types::err_t any_err;
 	uint_t _pm_xlen = xblock_c != 1? xblock_len : __pm_xlen, _pm_ylen = yblock_c != 1? yblock_len : __pm_ylen;
 	for (uint_t y = 0; y != yblock_c; y ++) {
 		if ((y + 1) * yblock_len >= __pm_ylen && xblock_c != 1)
@@ -107,9 +108,9 @@ mdl::firefly::types::err_t mdl::firefly::graphics::draw_pixmap(types::gpu_dr_pm_
 //			if (gpu_draw_pixmap(__xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen, __angle) == FFLY_FAILURE)
 //			printf("%d - %d\n", xblock_c, yblock_c);
 			if (ffly_graphics::inited) {
-				if (gpu_draw_pixmap(__gpu_dr_pm_mem, __xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen, __angle) == FFLY_FAILURE) {
+				if ((any_err = gpu_draw_pixmap(__gpu_dr_pm_mem, __xfs + (x * xblock_len), __yfs + (y * yblock_len), __pixbuff, __pb_xlen, __pb_ylen, x * xblock_len, __pixmap, _pm_xlen, _pm_ylen, __pm_xlen, __angle)) != FFLY_SUCCESS) {
 # ifndef __GCOMPUTE_CPU
-					return FFLY_FAILURE;
+					return any_err;
 # endif
 # if defined(__WITH_TASK_HANDLE) && defined(__GCOMPUTE_CPU)
 					goto cpu_muli_compute;

@@ -20,7 +20,6 @@ namespace gui {
 class wd_frame {
 	public:
 	types::err_t init(u16_t __xaxis, u16_t __yaxis, u16_t __xaxis_len, u16_t __yaxis_len, char const *__title);
-
 	types::err_t draw(types::pixmap_t __pixbuff, types::dsize_t __pb_size);
 	types::err_t handle();
 	bool *mouse_press;
@@ -28,19 +27,15 @@ class wd_frame {
 
 	bool is_inside();
 
-	void set_pixmap(types::pixmap_t __pixmap) {
-		this-> pixmap = __pixmap;
-	}
-
-	types::coords_t<u16_t> get_coords() {
-		return this-> coords;
-	}
+	void set_pixmap(types::pixmap_t __pixmap) {this-> pixmap = __pixmap;}
+	types::coords_t<u16_t> get_coords() {return this-> coords;}
 
 	types::err_t de_init() {
-		if (this-> pixmap != nullptr) {
+		if (this-> pixmap) {
 			memory::mem_free(this-> pixmap);
 			this-> pixmap = nullptr;
-		}
+		} else
+			printf("wd_frame: info, pixmap already freed. skipping - de_init.\n");
 		return FFLY_SUCCESS;
 	}
 

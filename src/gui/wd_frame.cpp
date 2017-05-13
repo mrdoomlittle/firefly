@@ -1,21 +1,22 @@
 # include "wd_frame.hpp"
 static const mdl::firefly::graphics::colour_t ol_colour = {36, 37, 38, 244};
 mdl::firefly::types::err_t mdl::firefly::gui::wd_frame::init(u16_t __xaxis, u16_t __yaxis, u16_t __xaxis_len, u16_t __yaxis_len, char const *__title) {
-	if (this-> pixmap == nullptr) {
+	if (!this-> pixmap) {
 		if ((this-> pixmap = memory::alloc_pixmap(static_cast<uint_t>(__xaxis_len + (OUTLINE_WIDTH * 2)), static_cast<uint_t>(__yaxis_len + (OUTLINE_WIDTH * 2)))) == NULL) {
 			fprintf(stderr, "wd_frame: failed to alloc memory for frame pixmap, errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 	}
 
-	this-> pm_size.xaxis_len = __xaxis_len + (OUTLINE_WIDTH * 2);
-	this-> pm_size.yaxis_len = __yaxis_len + (OUTLINE_WIDTH * 2);
+	this-> pm_size.xaxis_len = __xaxis_len + OUTLINE_WIDTH * 2;
+	this-> pm_size.yaxis_len = __yaxis_len + OUTLINE_WIDTH * 2;
 
-	if (this-> pixmap == nullptr)
+	if (!this-> pixmap)
 		memset(this-> pixmap, 22, (this-> pm_size.xaxis_len * this-> pm_size.yaxis_len) * 4);
 
-	if (graphics::draw_outline(this-> pixmap, types::coords<uint_t>(__xaxis + OUTLINE_WIDTH, __yaxis + OUTLINE_WIDTH, 0),
-		types::coords<uint_t>((__xaxis + __xaxis_len) + OUTLINE_WIDTH, (__yaxis + __yaxis_len) + OUTLINE_WIDTH, 0), OUTLINE_WIDTH, this-> pm_size, ol_colour) != FFLY_SUCCESS) return FFLY_FAILURE;
+	types::err_t any_err;
+	if ((any_err = graphics::draw_outline(this-> pixmap, types::coords<uint_t>(__xaxis + OUTLINE_WIDTH, __yaxis + OUTLINE_WIDTH, 0),
+		types::coords<uint_t>(__xaxis + __xaxis_len + OUTLINE_WIDTH, __yaxis + __yaxis_len + OUTLINE_WIDTH, 0), OUTLINE_WIDTH, this-> pm_size, ol_colour)) != FFLY_SUCCESS) return any_err;
 
 	this-> coords.xaxis = __xaxis;
 	this-> coords.yaxis = __yaxis;
@@ -24,9 +25,8 @@ mdl::firefly::types::err_t mdl::firefly::gui::wd_frame::init(u16_t __xaxis, u16_
 	this-> ex_btn_coords.xaxis = floor(OUTLINE_WIDTH/3);
 	this-> ex_btn_coords.yaxis = floor(OUTLINE_WIDTH/3);
 
-	this-> ex_btn_size.xaxis_len = OUTLINE_WIDTH - (floor(OUTLINE_WIDTH/3)*2);
-	this-> ex_btn_size.yaxis_len = OUTLINE_WIDTH - (floor(OUTLINE_WIDTH/3)*2);
-
+	this-> ex_btn_size.xaxis_len = OUTLINE_WIDTH - floor(OUTLINE_WIDTH/3) * 2;
+	this-> ex_btn_size.yaxis_len = OUTLINE_WIDTH - floor(OUTLINE_WIDTH/3) * 2;
 	for (uint_t y = this-> ex_btn_coords.yaxis; y != OUTLINE_WIDTH - floor(OUTLINE_WIDTH/3); y ++) {
 		for (uint_t x = this-> ex_btn_coords.xaxis; x != OUTLINE_WIDTH - floor(OUTLINE_WIDTH/3); x ++) {
 			uint_t point = (x + (y * this-> pm_size.xaxis_len)) * 4;
@@ -36,13 +36,12 @@ mdl::firefly::types::err_t mdl::firefly::gui::wd_frame::init(u16_t __xaxis, u16_
 			this-> pixmap[point + 3] = 244;
 		}
 	}
-
 	return FFLY_SUCCESS;
 }
 
 mdl::firefly::types::err_t mdl::firefly::gui::wd_frame::draw(types::pixmap_t __pixbuff, types::dsize_t __pb_size) {
-	if (graphics::draw_pixmap(this-> coords.xaxis, this-> coords.yaxis, __pixbuff, __pb_size.xaxis_len, __pb_size.yaxis_len, this-> pixmap, this-> pm_size.xaxis_len, this-> pm_size.yaxis_len) != FFLY_SUCCESS)
-		return FFLY_FAILURE;
+	types::err_t any_err;
+	if ((any_err = graphics::draw_pixmap(this-> coords.xaxis, this-> coords.yaxis, __pixbuff, __pb_size.xaxis_len, __pb_size.yaxis_len, this-> pixmap, this-> pm_size.xaxis_len, this-> pm_size.yaxis_len)) != FFLY_SUCCESS) return any_err;
 	this-> pb_size = __pb_size;
 	return FFLY_SUCCESS;
 }
@@ -66,8 +65,7 @@ mdl::firefly::types::err_t mdl::firefly::gui::wd_frame::handle() {
 		}
 	}
 
-	if (!*this-> mouse_press)
-		frame_clock = false;
+	if (!*this-> mouse_press) frame_clock = false;
 
 	if (frame_clock) {
 		int_t n_xaxis = (int_t)this-> mouse_coords-> xaxis - (int_t)xaxis_dist;

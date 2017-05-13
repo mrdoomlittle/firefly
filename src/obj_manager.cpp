@@ -12,7 +12,7 @@ void mdl::firefly::obj_manager::add_to_gravy_pool(uint_t __obj_id, uint_t __othe
 	//this-> thread_index[th_id]-> gravity_manager.add_to_pool(__obj_id, __other_id);
 }
 
-mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap) {
+mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, types::err_t& __any_err, types::pixmap_t __pixmap) {
 	uint_t obj_id = 0;
 	if (!this-> unused_ids.empty()) {
 		std::set<uint_t>::iterator itor = this-> unused_ids.end();
@@ -28,7 +28,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 	this-> obj_index[obj_id].first = (types::obj_info_t *)memory::mem_alloc(sizeof(types::obj_info_t));
 	if (this-> obj_index[obj_id].first == NULL) {
 		fprintf(stderr, "obj_manage: failed to alloc memory for obj_info_t, errno: %d\n", errno);
-		__any_error = FFLY_FAILURE;
+		__any_err = FFLY_FAILURE;
 		return 0;
 	}
 
@@ -63,7 +63,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 	obj_info.bound_collision = (bool *)memory::mem_alloc(4);
 	if (obj_info.bound_collision == NULL) {
 		fprintf(stderr, "obj_manager: failed to alloc memory for 'bound_collision', errno: %d\n", errno);
-		__any_error = FFLY_FAILURE;
+		__any_err = FFLY_FAILURE;
 		goto clean_up;
 	}
 
@@ -72,7 +72,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 	obj_info.collision.edge = (bool *)memory::mem_alloc(obj_info.edges);
 	if (obj_info.collision.edge == NULL) {
 		fprintf(stderr, "obj_manager: failed to alloc memory for 'collision.edge', errno: %d\n", errno);
-		__any_error = FFLY_FAILURE;
+		__any_err = FFLY_FAILURE;
 		goto clean_up;
 	}
 
@@ -81,7 +81,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 	obj_info.collision.face = (bool *)memory::mem_alloc(obj_info.faces);
 	if (obj_info.collision.face == NULL) {
 		fprintf(stderr, "obj_manager: failed to alloc memory for 'collision.face', errno: %d\n", errno);
-		__any_error = FFLY_FAILURE;
+		__any_err = FFLY_FAILURE;
 		goto clean_up;
 	}
 
@@ -90,7 +90,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 	obj_info.collision.vertice = (bool *)memory::mem_alloc(obj_info.vertices);
 	if (obj_info.collision.vertice == NULL) {
 		fprintf(stderr, "obj_manager: failed to alloc memory for 'collision.vertice', errno: %d\n", errno);
-		__any_error = FFLY_FAILURE;
+		__any_err = FFLY_FAILURE;
 		goto clean_up;
 	}
 
@@ -99,7 +99,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 	obj_info.edge_coords = (types::coords_t<> **)memory::mem_alloc(obj_info.edges * sizeof(types::coords_t<> *));
 	if (obj_info.edge_coords == NULL) {
 		fprintf(stderr, "obj_manager: failed to alloc memory for 'edge_coords', errno: %d\n", errno);
-		__any_error = FFLY_FAILURE;
+		__any_err = FFLY_FAILURE;
 		goto clean_up;
 	}
 
@@ -107,7 +107,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 		obj_info.face_coords[o] = (types::coords_t<> *)memory::mem_alloc(2 * sizeof(types::coords_t<>));
 		if (obj_info.face_coords[o] == NULL) {
 			fprintf(stderr, "obj_manager: failed to alloc memory for 'edge_coords', errno: %d\n", errno);
-			__any_error = FFLY_FAILURE;
+			__any_err = FFLY_FAILURE;
 			goto clean_up;
 		}
 
@@ -118,7 +118,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 	obj_info.face_coords = (types::coords_t<> **)memory::mem_alloc(obj_info.faces * sizeof(types::coords_t<> *));
 	if (obj_info.face_coords == NULL) {
 		fprintf(stderr, "obj_manager: failed to alloc memory for 'face_coords', errno: %d\n", errno);
-		__any_error = FFLY_FAILURE;
+		__any_err = FFLY_FAILURE;
 		goto clean_up;
 	}
 
@@ -126,7 +126,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 		obj_info.edge_coords[o] = (types::coords_t<> *)memory::mem_alloc(2 * sizeof(types::coords_t<>));
 		if (obj_info.edge_coords[o] == NULL) {
 			fprintf(stderr, "obj_manager: failed to alloc memory for 'face_coords', errno: %d\n", errno);
-			__any_error = FFLY_FAILURE;
+			__any_err = FFLY_FAILURE;
 			goto clean_up;
 		}
 
@@ -137,7 +137,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 	obj_info.vertice_coords = (types::coords_t<> **)memory::mem_alloc(obj_info.vertices * sizeof(types::coords_t<> *));
 	if (obj_info.vertice_coords == NULL) {
 		fprintf(stderr, "obj_manager: failed to alloc memory for 'vertice_coords', errno: %d\n", errno);
-		__any_error = FFLY_FAILURE;
+		__any_err = FFLY_FAILURE;
 		goto clean_up;
 	}
 
@@ -145,7 +145,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 		obj_info.vertice_coords[o] = (types::coords_t<> *)memory::mem_alloc(2 * sizeof(types::coords_t<>));
 		if (obj_info.vertice_coords[o] == NULL) {
 			fprintf(stderr, "obj_manager: failed to alloc memory for 'vertice_coords', errno: %d\n", errno);
-			__any_error = FFLY_FAILURE;
+			__any_err = FFLY_FAILURE;
 			goto clean_up;
 		}
 
@@ -157,7 +157,7 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 		this-> obj_index[obj_id].second = (types::pixmap_t)memory::mem_alloc((__xaxis_len * __yaxis_len * __zaxis_len) * 4);
 		if (this-> obj_index[obj_id].second == NULL) {
 			fprintf(stderr, "obj_manager: failed to alloc memory for pixmap, errno: %d\n", errno);
-			__any_error = FFLY_FAILURE;
+			__any_err = FFLY_FAILURE;
 			goto clean_up;
 		}
 
@@ -173,14 +173,14 @@ mdl::firefly::types::__id_t mdl::firefly::obj_manager::add(types::coords_t<> __c
 	} else {
 		if (__pixmap == nullptr) {
 			fprintf(stderr, "obj_manager: can't use pixmap provided as memory has not been allocated for it.\n");
-			__any_error = FFLY_FAILURE;
+			__any_err = FFLY_FAILURE;
 			goto clean_up;
 		}
 
 		this-> obj_index[obj_id].second = __pixmap;
 	}
 
-	__any_error = FFLY_SUCCESS;
+	__any_err = FFLY_SUCCESS;
 	this-> obj_count ++;
 	return obj_id;
 

@@ -13,7 +13,7 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/time_stamp.hpp"
-# include "types/id_t.h"
+# include "types/id_t.hpp"
 namespace ublas = boost::numeric::ublas;
 namespace mdl {
 namespace firefly {
@@ -25,25 +25,26 @@ class asset_manager
 	};
 
 	typedef struct {
-		uint_t *id, type;
+		types::id_t id;
+		uint_t type;
 
 		uint_t bytes;
-		boost::uint8_t *data;
+		u8_t *data;
 		void *info;
 	} asset_t;
 
 	types::err_t de_init();
 
 	bool valid_asset_id(types::id_t __asset_id);
-	uint_t* add_asset(u8_t *__data, uint_t __bytes, uint_t __type);
-	uint_t* load_asset(char const *__asset_file, uint_t __asset_type);
+	types::id_t add_asset(u8_t *__data, uint_t __bytes, uint_t __type);
+	types::id_t load_asset(char const *__asset_file, uint_t __asset_type);
 	void del_asset(types::id_t __asset_id);
-	u8_t* get_asset_data(uint_t *__asset_id);
+	u8_t* get_asset_data(types::id_t __asset_id);
 	asset_t get_asset(types::id_t __asset_id) noexcept;
 	asset_t& asset(types::id_t __asset_id);
 
-	void* get_asset_info(uint_t *__asset_id);
-	void*& asset_info(uint_t *__asset_id);
+	void* get_asset_info(types::id_t __asset_id);
+	void*& asset_info(types::id_t _asset_id);
 
 	private:
 	uint_t amount_of_assets = 0;

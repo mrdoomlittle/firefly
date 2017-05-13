@@ -1,10 +1,15 @@
 # include "window.hpp"
 mdl::firefly::types::err_t mdl::firefly::gui::window::init(u16_t __xaxis, u16_t __yaxis, u16_t __xaxis_len, u16_t __yaxis_len) {
 	if ((this-> pixmap = memory::alloc_pixmap(static_cast<uint_t>(__xaxis_len + (OUTLINE_WIDTH * 2)), static_cast<uint_t>(__yaxis_len + (OUTLINE_WIDTH * 2)))) == NULL) {
+		fprintf(stderr, "window: failed to alloc pixmap under 'gui/window.cpp'.\n");
 		return FFLY_FAILURE;
 	}
 
-	this-> wpm = (types::_1d_pm_t *)memory::mem_alloc(((__xaxis_len * __yaxis_len) * 4) * sizeof(types::_1d_pm_t));
+	if ((this-> wpm = (types::_1d_pm_t *)memory::mem_alloc(((__xaxis_len * __yaxis_len) * 4) * sizeof(types::_1d_pm_t))) == NULL) {
+
+		return FFLY_FAILURE;
+	}
+
 	for (uint_t y = 0; y != __yaxis_len; y ++) {
 		for (uint_t x = 0; x != __xaxis_len; x ++) {
 			uint_t point = ((x + OUTLINE_WIDTH) + ((y + OUTLINE_WIDTH) * (__xaxis_len + (OUTLINE_WIDTH * 2)))) * 4;
@@ -29,11 +34,16 @@ mdl::firefly::types::err_t mdl::firefly::gui::window::init(u16_t __xaxis, u16_t 
 
 	this-> wd_size.xaxis_len = __xaxis_len;
 	this-> wd_size.yaxis_len = __yaxis_len;
+	return FFLY_SUCCESS;
 }
 
 mdl::firefly::types::err_t mdl::firefly::gui::window::draw(types::pixmap_t __pixbuff, types::dsize_t __pb_size) {
 	if (this-> is_closed) return FFLY_SUCCESS;
-	graphics::draw_pixmap(this-> coords.xaxis, this-> coords.yaxis, __pixbuff, __pb_size.xaxis_len, __pb_size.yaxis_len, this-> pixmap, this-> pm_size.xaxis_len, this-> pm_size.yaxis_len);
+	types::err_t any_err;
+	if ((any_err = graphics::draw_pixmap(this-> coords.xaxis, this-> coords.yaxis, __pixbuff, __pb_size.xaxis_len, __pb_size.yaxis_len, this-> pixmap, this-> pm_size.xaxis_len, this-> pm_size.yaxis_len)) != FFLY_SUCCESS)
+		return any_err;
+
+	return FFLY_SUCCESS;
 }
 
 void mdl::firefly::gui::window::exit_btn(void *__arg) {
@@ -58,4 +68,5 @@ mdl::firefly::types::err_t mdl::firefly::gui::window::handle() {
 		this-> pointer_coords.xaxis = 0;
 		this-> pointer_coords.yaxis = 0;
 	}
+	return FFLY_SUCCESS;
 }

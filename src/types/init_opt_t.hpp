@@ -29,6 +29,9 @@ typedef struct {
 	bool add_bse_room;
 	bool change_room;
 # endif
+# ifdef __WITH_UNI_MANAGER
+	bool uni_init;
+# endif
 } init_opt_t;
 # elif defined(FFLY_STUDIO)
 typedef struct {

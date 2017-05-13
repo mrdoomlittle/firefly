@@ -1,7 +1,6 @@
 # include "ffly_client.hpp"
 bool mdl::ffly_client::to_shutdown = false;
-
-boost::int8_t mdl::ffly_client::connect_to_server(int& __sock) {
+mdl::firefly::types::err_t mdl::ffly_client::connect_to_server(int& __sockd) {
 	for (; this-> connect_trys != FFLY_MAX_CONN_TRYS; this-> connect_trys++) {
 		if (this-> connect_trys != 0) {
 			fprintf(stderr, "failed to connected to server, attempt: %d\n", this-> connect_trys);
@@ -10,7 +9,7 @@ boost::int8_t mdl::ffly_client::connect_to_server(int& __sock) {
 
 		this-> server_connected = true;
 
-		if (this-> tcp_stream.init(this-> server_ipaddr, 21299, __sock) == FFLY_FAILURE) {
+		if (this-> tcp_stream.init(this-> server_ipaddr, 21299, __sockd) == FFLY_FAILURE) {
 			this-> server_connected = false;
 			fprintf(stderr, "failed to init tcp stream, errno: %d\n", errno);
 			continue;
@@ -38,7 +37,7 @@ boost::int8_t mdl::ffly_client::connect_to_server(int& __sock) {
 	return FFLY_FAILURE;
 }
 
-boost::int8_t mdl::ffly_client::send_client_info() {
+mdl::firefly::types::err_t mdl::ffly_client::send_client_info() {
 	static serializer serialize('\0');
 	static std::size_t size = serialize.get_size(&this-> client_info);
 	static bool initialized = false;
@@ -59,7 +58,7 @@ boost::int8_t mdl::ffly_client::send_client_info() {
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::ffly_client::recv_cam_frame() {
+mdl::firefly::types::err_t mdl::ffly_client::recv_cam_frame() {
 	if (this-> udp_stream.recv(this-> layer.get_layer_pixmap(this-> cam_layer_id), this-> cam_pm_size) == FFLY_FAILURE) {
 		fprintf(stderr, "failed to recv camera feed from server, errno: %d\n", errno);
 		return FFLY_FAILURE;
@@ -73,9 +72,17 @@ void ctrl_c(int __sig) {
 	mdl::ffly_client::to_shutdown = true;
 }
 
-boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) {
-	ffly_system::init();
-	ffly_graphics::init();
+mdl::firefly::types::err_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) {
+	firefly::types::err_t any_err;
+	if ((any_err = ffly_system::init()) != FFLY_SUCCESS) {
+		fprintf(stderr, "ffly_client: failed to init ffly system, ffly_errno: %d\n", ffly_errno);
+		return any_err;
+	}
+
+	if ((any_err = ffly_graphics::init()) != FFLY_SUCCESS) {
+		fprintf(stderr, "ffly_client: failed to init ffly graphics, ffly_errno: %d\n", ffly_errno);
+		return any_err;
+	}
 
 	struct sigaction sig_handler;
 
@@ -94,70 +101,106 @@ boost::int8_t mdl::ffly_client::init(firefly::types::init_opt_t __init_options) 
 	this-> init_options = __init_options;
 	this-> cam_xlen = __init_options.cam_xlen;
 	this-> cam_ylen = __init_options.cam_ylen;
-	this-> cam_pm_size = (this-> cam_xlen * this-> cam_ylen) * 4;
+	this-> cam_pm_size = this-> cam_xlen * this-> cam_ylen * 4;
 
 	if (__init_options.add_bse_layer) {
-		this-> bse_layer_id = this-> layer.add_layer(this-> win_xlen, this-> win_ylen, 0, 0);
+		this-> bse_layer_id = this-> layer.add_layer(this-> wd_xa_len, this-> wd_ya_len, 0, 0);
 		this-> layer.lock_layer(this-> bse_layer_id);
 	}
 
 # ifdef __WITH_UNI_MANAGER
-    this-> uni_manager.init(4, 4, 2);
+    if (__init_options.uni_init) {
+		if ((any_err = this-> uni_manager.init(4, 4, 2)) != FFLY_SUCCESS) {
+			fprintf(stderr, "ffly_client: failed to init uni manager, ffly_errno: %d\n");
+			return any_err;
+		}
+	}
 # endif
 
 # if defined(__WITH_OBJ_MANAGER) && defined(__WITH_UNI_MANAGER)
-	if (__init_options.obj_manger_ptr == nullptr) {
-		//uint_t layer_id = this-> layer.add_layer(this-> win_xlen, this-> win_ylen, 0, 0);
-		static firefly::obj_manager _obj_manager(&this-> uni_manager);//(this-> layer.get_layer_pixmap(layer_id), this-> win_xlen, this-> win_ylen, 1);
+	if (!__init_options.obj_manger_ptr) {
+		//uint_t layer_id = this-> layer.add_layer(this-> wd_xa_len, this-> wd_ya_len, 0, 0);
+		static firefly::obj_manager _obj_manager(&this-> uni_manager);//(this-> layer.get_layer_pixmap(layer_id), this-> wd_xa_len, this-> wd_ya_len, 1);
 		this-> obj_manager = &_obj_manager;
-		this-> entity_manager.init(&_obj_manager, &this-> uni_manager);
+		if ((any_err = this-> entity_manager.init(&_obj_manager, &this-> uni_manager)) != FFLY_SUCCESS) {
+			fprintf(stderr, "ffly_client: failed to init entity manager, ffly_errno: %d\n", ffly_errno);
+			return any_err;
+		}
 	}
 # endif
 
 # ifdef ROOM_MANAGER
-	this-> room_manager.init(&window);
+	if ((any_err = this-> room_manager.init(&window)) != FFLY_SUCCESS) {
+		fprintf(stderr, "ffly_client: failed to init room manager, ffly_errno: %d\n", ffly_errno);
+		return any_err;
+	}
 
 	this-> room_manager.use_glob_pb_size = true;
-	this-> room_manager.set_glob_pb_xlen(this-> win_xlen);
-	this-> room_manager.set_glob_pb_ylen(this-> win_ylen);
-
+	this-> room_manager.set_glob_pb_xlen(this-> wd_xa_len);
+	this-> room_manager.set_glob_pb_ylen(this-> wd_ya_len);
 	if (__init_options.add_bse_room) {
-		if (this-> room_manager.add_room(this-> bse_room_id, true) != FFLY_SUCCESS) {
-			fprintf(stderr, "ffly_client: failed to add base room.\n");
-			return FFLY_FAILURE;
+		if ((any_err = this-> room_manager.add_room(this-> bse_room_id, true)) != FFLY_SUCCESS) {
+			fprintf(stderr, "ffly_client: room_manager, failed to add base room, ffly_errno: %d\n", ffly_errno);
+			return any_err;
 		}
 	}
 
 	if (__init_options.change_room) {
-		if (this-> room_manager.change_room(this-> bse_room_id) != FFLY_SUCCESS) {
-			fprintf(stderr, "ffly_client: failed to change room.\n");
-			return FFLY_FAILURE;
+		if ((any_err = this-> room_manager.change_room(this-> bse_room_id)) != FFLY_SUCCESS) {
+			fprintf(stderr, "ffly_client: room_manager, failed to change room, ffly_errno: %d\n", ffly_errno);
+			return any_err;
+		}
+	}
+# endif
+	return FFLY_SUCCESS;
+}
+
+mdl::firefly::types::err_t mdl::ffly_client::de_init() {
+	firefly::types::err_t any_err;
+	if ((any_err = this-> window.de_init()) != FFLY_SUCCESS) {
+		fprintf(stderr, "ffly_client: failed to de_init window, ffly_errno: %d\n", ffly_errno);
+		return any_err;
+	}
+# ifdef ROOM_MANAGER
+	if ((any_err = this-> room_manager.de_init()) != FFLY_SUCCESS) {
+		fprintf(stderr, "ffly_client: failed to de_init room manager, ffly_errno: %d\n", ffly_errno);
+		return any_err;
+	}
+# endif
+
+# ifdef __WITH_OBJ_MANAGER
+	if (this-> obj_manager) {
+		if ((any_err = this-> obj_manager-> de_init()) != FFLY_SUCCESS) {
+			fprintf(stderr, "ffly_client: failed to de_init obj manager, ffly_errno: %d\n", ffly_errno);
+			return any_err;
 		}
 	}
 # endif
 
-	return FFLY_SUCCESS;
-}
-
-boost::int8_t mdl::ffly_client::de_init() {
-	this-> window.de_init();
-# ifdef ROOM_MANAGER
-	this-> room_manager.de_init();
-# endif
-
-# ifdef __WITH_OBJ_MANAGER
-	if (this-> obj_manager != nullptr)
-		this-> obj_manager-> de_init();
-# endif
-
 # ifdef __WITH_UNI_MANAGER
-	this-> uni_manager.de_init();
+	if ((any_err = this-> uni_manager.de_init()) != FFLY_SUCCESS) {
+		fprintf(stderr, "ffly_client: failed to de_init uni manager, ffly_errno: %d\n", ffly_errno);
+		return any_err;
+	}
 # endif
 
-	this-> asset_manager.de_init();
-	ffly_system::de_init();
-	ffly_graphics::de_init();
+	if ((any_err = this-> asset_manager.de_init()) != FFLY_SUCCESS) {
+		fprintf(stderr, "ffly_client: failed to de_init asset manager, ffly_errno: %d\n", ffly_errno);
+		return any_err;
+	}
+
+	if ((any_err = ffly_system::de_init()) != FFLY_SUCCESS) {
+		fprintf(stderr, "ffly_client: failed to de_init ffly system, ffly_errno: %d\n", ffly_errno);
+		return any_err;
+	}
+
+	if ((any_err = ffly_graphics::de_init()) != FFLY_SUCCESS) {
+		fprintf(stderr, "ffly_client: failed to de_init ffly graphics, ffly_errno: %d\n", ffly_errno);
+		return any_err;
+	}
+
 	this-> cu_clean();
+	return FFLY_SUCCESS;
 }
 
 void mdl::ffly_client::shutdown() {
@@ -194,9 +237,13 @@ bool mdl::ffly_client::poll_event(firefly::system::event& __event) {
 	return false;
 }
 
-boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __extern_loop)(boost::int8_t, portal_t *, void *), void *__this) {
-	printf("wx: %d, wy: %d\n", this-> win_xlen, this-> win_ylen);
-	if (window.init(this-> win_xlen, this-> win_ylen, __frame_title) != FFLY_SUCCESS) return FFLY_FAILURE;
+mdl::firefly::types::err_t mdl::ffly_client::begin(char const * __frame_title, void (* __extern_loop)(boost::int8_t, portal_t *, void *), void *__this) {
+	printf("wx: %d, wy: %d\n", this-> wd_xa_len, this-> wd_ya_len);
+	firefly::types::err_t any_err;
+	if ((any_err = window.init(this-> wd_xa_len, this-> wd_ya_len, __frame_title)) != FFLY_SUCCESS) {
+		fprintf(stderr, "ffly_client: failed to init window, ffly_errno: %d\n", ffly_errno);
+		return any_err;
+	}
 
 	if (window.begin() != FFLY_SUCCESS) return FFLY_FAILURE;
 
@@ -280,10 +327,10 @@ boost::uint8_t mdl::ffly_client::begin(char const * __frame_title, void (* __ext
 # ifdef ROOM_MANAGER
 		this-> room_manager.manage();
 # endif
-		this-> layer.draw_layers(window.get_pixbuff(), this-> win_xlen, this-> win_ylen);
+		this-> layer.draw_layers(window.get_pixbuff(), this-> wd_xa_len, this-> wd_ya_len);
 
 # ifdef __WITH_UNI_MANAGER
-		//this-> uni_manager.draw_chunk(0, 0, 0, this-> uni_manager._chunk_manager-> coords_to_id(0,0,0), window.get_pixbuff(), this-> win_xlen, this-> win_ylen);
+		//this-> uni_manager.draw_chunk(0, 0, 0, this-> uni_manager._chunk_manager-> coords_to_id(0,0,0), window.get_pixbuff(), this-> wd_xa_len, this-> wd_ya_len);
 # endif
 
 # ifdef __WITH_OBJ_MANAGER

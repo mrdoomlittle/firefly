@@ -54,7 +54,7 @@ class obj_manager {
 		return this-> obj_index[__obj_id].second;
 	}
 
-	types::__id_t add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap = nullptr);
+	types::__id_t add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, types::err_t& __any_err, types::pixmap_t __pixmap = nullptr);
 
 	// change ^ to this
 	types::__id_t add_obj(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap = nullptr) {
@@ -258,10 +258,10 @@ class obj_manager {
 	} thr_config_t;
 
 	void handle_objs(thr_config_t *thread_config);
-	boost::int8_t draw_objs();
+	i8_t draw_objs();
 
 	typedef struct {
-		boost::uint8_t command;
+		u8_t command;
 		uint_t obj_id, block_id;
 		uint_t add_to_pool;
 	} gravy_queue_t;

@@ -77,8 +77,107 @@ mdl::firefly::types::err_t mdl::firefly::uni_manager::init(uint_t __xa_split, ui
 
 mdl::firefly::types::err_t mdl::firefly::uni_manager::draw_cnk(uint_t __xfs, uint_t __yfs, uint_t __zfs, types::id_t __cnk_id, types::pixmap_t __pixbuff, uint_t __xaxis_len, uint_t __yaxis_len) {
 	types::pixmap_t cnk_pixmap;
-	if ((cnk_pixmap = this-> _chunk_manager-> cnk_data(__cnk_id)._1d_pm) == nullptr) return FFLY_FAILURE;
+	if (!(cnk_pixmap = this-> _chunk_manager-> cnk_data(__cnk_id)._1d_pm)) return FFLY_FAILURE;
 
 	types::err_t any_err;
 	if ((any_err = graphics::draw_pixmap(__xfs, __yfs, __pixbuff, __xaxis_len, __yaxis_len, cnk_pixmap, this-> _chunk_manager-> get_cnk_xlen(), this-> _chunk_manager-> get_cnk_ylen())) != FFLY_SUCCESS) return any_err;
+	return FFLY_SUCCESS;
+}
+
+mdl::firefly::types::_1d_pm_t mdl::firefly::uni_manager::get_1d_cnk_pm(uint_t __xa, uint_t __ya, uint_t __za) {
+	uint_t cnk_xa, cnk_ya, cnk_za;
+	this-> get_cnk_coords(__xa, __ya, __za, cnk_xa, cnk_ya, cnk_za);
+	return this-> _1d_cnk_pm(cnk_xa, cnk_ya, cnk_za);
+}
+
+mdl::firefly::types::_3d_pm_t mdl::firefly::uni_manager::get_3d_cnk_pm(uint_t __xa, uint_t __ya, uint_t __za) {
+	uint_t cnk_xa, cnk_ya, cnk_za;
+	this-> get_cnk_coords(__xa, __ya, __za, cnk_xa, cnk_ya, cnk_za);
+	return this-> _3d_cnk_pm(cnk_xa, cnk_ya, cnk_za);
+}
+
+void mdl::firefly::uni_manager::get_cnk_coords(uint_t __xa, uint_t __ya, uint_t __za, uint_t& __cnk_xa, uint_t& __cnk_ya, uint_t& __cnk_za) {
+	__cnk_xa = floor(__xa / this-> _chunk_manager-> get_cnk_xlen());
+	__cnk_ya = floor(__ya / this-> _chunk_manager-> get_cnk_ylen());
+	__cnk_za = floor(__za / this-> _chunk_manager-> get_cnk_zlen());
+}
+
+void mdl::firefly::uni_manager::set_par_colour(uint_t __xa, uint_t __ya, uint_t __za, u8_t __r, u8_t __g, u8_t __b, u8_t __a) {
+	uint_t xa = __xa * UNI_PAR_XLEN, ya = __ya * UNI_PAR_YLEN, za = __za * UNI_PAR_ZLEN;
+
+	types::_3d_pm_t pm[8] = {
+		this-> get_3d_cnk_pm(xa, ya, za),
+		this-> get_3d_cnk_pm(xa + UNI_PAR_XLEN, ya, za),
+		this-> get_3d_cnk_pm(xa, ya + UNI_PAR_YLEN, za),
+		this-> get_3d_cnk_pm(xa, ya, za + UNI_PAR_ZLEN),
+
+		this-> get_3d_cnk_pm(xa + UNI_PAR_XLEN, ya + UNI_PAR_YLEN, za),
+
+		this-> get_3d_cnk_pm(xa + UNI_PAR_XLEN, ya, za + UNI_PAR_ZLEN),
+
+		this-> get_3d_cnk_pm(xa, ya + UNI_PAR_YLEN, za + UNI_PAR_ZLEN),
+		this-> get_3d_cnk_pm(xa + UNI_PAR_XLEN, ya + UNI_PAR_YLEN, za + UNI_PAR_ZLEN)
+	};
+
+	uint_t xe_pad = 0, ye_pad = 0, ze_pad = 0;
+	if (xa + UNI_PAR_XLEN > this-> _chunk_manager-> get_cnk_xlen())
+		xe_pad = (xa + UNI_PAR_XLEN) - this-> _chunk_manager-> get_cnk_xlen();
+	if (ya + UNI_PAR_YLEN > this-> _chunk_manager-> get_cnk_ylen())
+		ye_pad = (ya + UNI_PAR_YLEN) - this-> _chunk_manager-> get_cnk_ylen();
+	if (za + UNI_PAR_ZLEN > this-> _chunk_manager-> get_cnk_zlen())
+		ze_pad = (za + UNI_PAR_ZLEN) - this-> _chunk_manager-> get_cnk_zlen();
+
+	for (uint_t _za{xa}; _za != (za + UNI_PAR_ZLEN) - ze_pad; _za ++) {
+		for (uint_t _ya{ya}; _ya != (ya + UNI_PAR_YLEN) - ye_pad; _ya ++) {
+			for (uint_t _xa{xa}; _xa != (xa + UNI_PAR_XLEN) - xe_pad; _xa ++)
+				graphics::rgba_set_pm_pix(__r, __g, __b, __a, pm[0], _xa, _ya, _za);
+
+			if (pm[1] != pm[0])
+				for (uint_t _xa{}; _xa != xe_pad; _xa ++)
+					graphics::rgba_set_pm_pix(__r, __g, __b, __a, pm[1], _xa, _ya, _za);
+		}
+		if (pm[2] != pm[0]) {
+			for (uint_t _ya{}; _ya != ye_pad; _ya ++) {
+				for (uint_t _xa{xa}; _xa != (xa + UNI_PAR_XLEN) - xe_pad; _xa ++)
+					graphics::rgba_set_pm_pix(__r, __g, __b, __a, pm[2], _xa, _ya, _za);
+
+				if (pm[4] != pm[2])
+					for (uint_t _xa{}; _xa != xe_pad; _xa ++)
+						graphics::rgba_set_pm_pix(__r, __g, __b, __a, pm[4], _xa, _ya, _za);
+			}
+		}
+	}
+
+	if (pm[3] != pm[0]) {
+		for (uint_t _za{}; _za != ze_pad; _za ++) {
+			for (uint_t _ya{ya}; _ya != (ya + UNI_PAR_YLEN) - ye_pad; _ya ++) {
+				for (uint_t _xa{xa}; _xa != (xa + UNI_PAR_XLEN) - xe_pad; _xa ++)
+					graphics::rgba_set_pm_pix(__r, __g, __b, __a, pm[3], _xa, _ya, _za);
+
+				if (pm[5] != pm[3])
+					for (uint_t _xa{}; _xa != xe_pad; _xa ++)
+						graphics::rgba_set_pm_pix(__r, __g, __b, __a, pm[5], _xa, _ya, _za);
+			}
+
+
+			if (pm[6] != pm[3]) {
+				for (uint_t _ya{}; _ya != ye_pad; _ya ++) {
+					for (uint_t _xa{xa}; _xa != (xa + UNI_PAR_XLEN) - xe_pad; _xa ++)
+						graphics::rgba_set_pm_pix(__r, __g, __b, __a, pm[3], _xa, _ya, _za);
+
+					if (pm[7] != pm[6])
+						for (uint_t _xa{}; _xa != xe_pad; _xa ++)
+							graphics::rgba_set_pm_pix(__r, __g, __b, __a, pm[7], _xa, _ya, _za);
+				}
+			}
+		}
+	}
+}
+
+void mdl::firefly::uni_manager::get_par_colour(uint_t __xa, uint_t __ya, uint_t __za, u8_t& __r, u8_t& __g, u8_t& __b, u8_t& __a) {
+	types::_3d_pm_t pm = this-> get_3d_cnk_pm(__xa, __ya, __za);
+	__r = pm[__za][__ya][__xa];
+	__g = pm[__za][__ya][__xa + 1];
+	__b = pm[__za][__ya][__xa + 2];
+	__a = pm[__za][__ya][__xa + 3];
 }

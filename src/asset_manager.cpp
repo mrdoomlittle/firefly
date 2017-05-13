@@ -68,7 +68,7 @@ void mdl::firefly::asset_manager::del_asset(types::id_t __asset_id) {
 bool mdl::firefly::asset_manager::valid_asset_id(types::id_t __asset_id) {
 	return this-> asset_ids.find(__asset_id) == this-> asset_ids.end()? false : true;}
 
-boost::uint8_t* mdl::firefly::asset_manager::get_asset_data(types::id_t__asset_id) {
+mdl::u8_t* mdl::firefly::asset_manager::get_asset_data(types::id_t __asset_id) {
 	if (!this-> valid_asset_id(__asset_id)) return nullptr;
 	return this-> asset_indx[*__asset_id].data;
 }
@@ -81,7 +81,7 @@ mdl::firefly::asset_manager::asset_t mdl::firefly::asset_manager::get_asset(type
 mdl::firefly::asset_manager::asset_t& mdl::firefly::asset_manager::asset(types::id_t __asset_id) {
 	return this-> asset_indx[*__asset_id];}
 
-void * mdl::firefly::asset_manager::get_asset_info(types::id_t __asset_id) {
+void* mdl::firefly::asset_manager::get_asset_info(types::id_t __asset_id) {
 	return this-> asset_indx[*__asset_id].info;}
 
 void*& mdl::firefly::asset_manager::asset_info(types::id_t __asset_id) {
