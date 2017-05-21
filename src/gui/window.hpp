@@ -34,7 +34,7 @@ class window {
 			memory::mem_free(this-> pixmap);
 			this-> pixmap = nullptr;
 		} else
-			printf("window: info, pixmap already freed. skipping - de_init.\n")
+			printf("window: info, pixmap already freed. skipping - de_init.\n");
 
 		if (this-> wpm) {
 			memory::mem_free(this-> wpm);

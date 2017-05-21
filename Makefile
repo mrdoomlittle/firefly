@@ -39,7 +39,8 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
  FFLY_OBJECTS += src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
  src/graphics/png_loader.o src/room_manager.o src/asset_manager.o src/system/time_stamp.o  src/graphics/draw_rect.o \
- src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o src/graphics/draw_pixmap.clo src/system/task_handle.o src/system/task_worker.o #src/ffly_studio.o
+ src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o src/graphics/draw_pixmap.clo src/system/task_handle.o src/system/task_worker.o \
+ src/system/smem_buff.o src/system/event.o
  LDFLAGS += -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple
  CXX_IFLAGS += -I/usr/include/freetype2 $(CUDART_INC)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
