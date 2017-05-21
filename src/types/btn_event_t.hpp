@@ -7,7 +7,6 @@ namespace types {
 typedef struct {
 	uint_t btn_id;
 	int mbtn_id;
-	uint_t event_type;
 } btn_event_t;
 }
 }

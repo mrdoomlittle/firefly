@@ -25,7 +25,7 @@ extern struct ffly_mem_track_t __ffly_mem_track__;
 # ifdef __DEBUG_ENABLED
 void ffly_mem_track_dmp_ptr_lst(struct ffly_mem_track_t *);
 # endif
-void *ffly_mem_track_get_nxt(struct ffly_mem_track_t *);
+void* ffly_mem_track_get_nxt(struct ffly_mem_track_t *);
 void ffly_mem_track_reset(struct ffly_mem_track_t *);
 void ffly_mem_track_update(struct ffly_mem_track_t *, void *, void *);
 ffly_err_t ffly_mem_track_init(struct ffly_mem_track_t *);

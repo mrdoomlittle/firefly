@@ -5,16 +5,18 @@ size_t ffly_mem_free_c;
 # endif
 
 # ifdef __WITH_MEM_TRACKER
-void ffly_mem_free(void *__mptr, mdl_u8_t __track_bypass) {
+void ffly_mem_free(void *__mem_ptr, mdl_u8_t __track_bypass) {
 	if (!__track_bypass)
-		ffly_mem_track_free(&__ffly_mem_track__, __mptr, 0);
+		ffly_mem_track_free(&__ffly_mem_track__, __mem_ptr, 0);
 # else
-void ffly_mem_free(void *__mptr) {
+void ffly_mem_free(void *__mem_ptr) {
 # endif
 # ifdef __DEBUG_ENABLED
-	ffly_mem_free_c ++;
-	__mptr -= sizeof(size_t);
-	ffly_mem_free_bc += *(size_t *)__mptr;
+	ffly_mem_free_c++;
+	mdl_u8_t *mem_ptr = ((mdl_u8_t*)__mem_ptr) - sizeof(size_t);
+	ffly_mem_free_bc += *(size_t*)mem_ptr;
+	free((void*)mem_ptr);
+# else
+	free(__mem_ptr);
 # endif
-	free(__mptr);
 }

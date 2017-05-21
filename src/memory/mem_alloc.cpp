@@ -38,20 +38,20 @@ void* mdl::firefly::memory::mem_alloc(std::size_t __bc, bool __track_bypass) {
 # else
 void* mdl::firefly::memory::mem_alloc(std::size_t __bc) {
 # endif
-	void *mptr;
+	u8_t *mem_ptr;
 # ifdef __DEBUG_ENABLED
-	mptr = malloc(__bc + sizeof(std::size_t));
-	*((std::size_t *)mptr) = __bc;
+	mem_ptr = (u8_t*)malloc(__bc + sizeof(std::size_t));
+	*((std::size_t *)mem_ptr) = __bc;
 	alloc_bc += __bc;
 	alloc_c ++;
 
-	mptr += sizeof(std::size_t);
+	mem_ptr += sizeof(std::size_t);
 # else
-	mptr = malloc(__bc);
+	mem_ptr = (u8_t*)malloc(__bc);
 # endif
 # ifdef __WITH_MEM_TRACKER
 	if (!__track_bypass)
-		ffly_mem_track_alloc(&__ffly_mem_track__, mptr);
+		ffly_mem_track_alloc(&__ffly_mem_track__, (void*)mem_ptr);
 # endif
-	return mptr;
+	return (void*)mem_ptr;
 }

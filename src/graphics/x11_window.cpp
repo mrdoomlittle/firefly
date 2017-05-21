@@ -9,6 +9,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_
 	this-> frame_title = (char *)memory::mem_alloc(strlen(__frame_title));
 	if (this-> frame_title == NULL) {
 		fprintf(stderr, "x11_window: failed to alloc memory for replacment frame title, errno: %d\n", errno);
+		this-> init_report = FFLY_FAILURE;
 		return FFLY_FAILURE;
 	}
 
@@ -17,6 +18,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_
 	this-> pixbuff = memory::alloc_pixmap((uint_t)__wd_xaxis_len, (uint_t)__wd_yaxis_len);
 	if (this-> pixbuff == NULL) {
 		fprintf(stderr, "x11_window: failed to alloc memory for pixbuff, errno: %d\n", errno);
+		this-> init_report = FFLY_FAILURE;
 		return FFLY_FAILURE;
 	}
 
@@ -37,6 +39,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_
     Window _rwindow;
 
     if ((_display = XOpenDisplay(NULL)) == NULL) {
+		this-> init_report = FFLY_FAILURE;
         printf("display error.\n");
         return FFLY_FAILURE;
     }
@@ -46,6 +49,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_
     _rwindow = XRootWindow(_display, 0);
 
 	if ((_vis_info = glXChooseVisual(_display, 0, att)) == NULL) {
+		this-> init_report = FFLY_FAILURE;
 		fprintf(stderr, "failed to set visual info.\n");
 		return FFLY_FAILURE;
 	}
@@ -78,6 +82,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_
 
     GLXContext _glx_context = glXCreateContext(_display, _vis_info, NULL, GL_TRUE);
 	if (!_glx_context) {
+		this-> init_report = FFLY_FAILURE;
 		fprintf(stderr, "x11_window: failed to create glx context.\n");
 		return FFLY_FAILURE;
 	}
@@ -88,6 +93,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_
 
     Window *r_windows = static_cast<Window *>(malloc(screen_count * sizeof(Window)));
 	if (r_windows == NULL) {
+		this-> init_report = FFLY_FAILURE;
 		fprintf(stderr, "x11_window: failed to alloc memory for 'r_windows', errno: %d\n", errno);
 		return FFLY_FAILURE;
 	}
@@ -114,6 +120,10 @@ mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_
 
 	Window dmmy_child;
 	this-> add_wd_flag(FLG_WD_OPEN, true);
+
+	if (!this-> ev_queue)
+		fprintf(stdout, "x11_window: warning event queue is empty.\n");
+
 	do {
 		XTranslateCoordinates(_display, _window, XRootWindow(_display, 0), 0, 0, &this-> wd_coords.xaxis, &this-> wd_coords.yaxis, &dmmy_child);
 
@@ -133,29 +143,52 @@ mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_
 			this-> contains_pointer = false;
 
 		while (XPending(_display) > 0) {
+			if (this-> ev_queue != nullptr)
+				if (this-> ev_queue-> size() > system::config.mx_queue_size) break;
+
 			XNextEvent(_display, &_xevent);
+			data::pair<types::event_disc_t, uint_t> event;
+			bool unreg_event = false;
 			switch(_xevent.type) {
 				case ClientMessage:
 					goto end;
 
 				case KeyPress:
+					event.first.event_id = system::KEY_EID;
 					this-> key_press = true;
 					this-> key_code = _xevent.xkey.keycode;
+					event.second = _xevent.xkey.keycode;
+					event.first.event_type = system::KEY_PRESS;
 				break;
 
 				case KeyRelease:
+					event.first.event_id = system::KEY_EID;
 					this-> key_press = false;
+					event.second = _xevent.xkey.keycode;
+					event.first.event_type = system::KEY_RELEASE;
 				break;
 
 				case ButtonPress:
+					event.first.event_id = system::BTN_EID;
 					this-> button_press = true;
 					this-> button_code = _xevent.xbutton.button;
+					event.second = _xevent.xbutton.button;
+					event.first.event_type = system::BTN_PRESS;
 				break;
 
 				case ButtonRelease:
+					event.first.event_id = system::BTN_EID;
 					this-> button_press = false;
+					event.second = _xevent.xbutton.button;
+					event.first.event_type = system::BTN_RELEASE;
+				break;
+				default:
+					unreg_event = true;
 				break;
 			}
+
+			if (this-> ev_queue != nullptr && !unreg_event)
+				this-> ev_queue-> push(event);
 		}
 
 		fps_timer.time_point();
@@ -248,13 +281,25 @@ mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_
 
 	this-> add_wd_flag(FLG_WD_CLOSED, true);
 	this-> add_wd_flag(FLG_WD_KILLED);
-	printf("thread ended.\n");
+	printf("x11_window: window thread killed.\n");
 	return FFLY_SUCCESS;
 }
 
 mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::open_in_thread(u16_t __wd_xaxis_len, u16_t __wd_yaxis_len, char const *__frame_title) {
 	static boost::thread th(boost::bind(&x11_window::begin, this, __wd_xaxis_len, __wd_yaxis_len, __frame_title));
 	this-> native_handle = th.native_handle();
+	fprintf(stdout, "x11_window: note, waiting for window to open.\n");
+	while(!this-> is_wd_flag(FLG_WD_OPEN)){
+		if (this-> init_report != FFLY_SUCCESS) {
+			fprintf(stderr, "x11_window: failed to open window.\n");
+			return FFLY_FAILURE;
+		}
+
+		if (this-> is_wd_flag(FLG_WD_KILLED)) {
+			fprintf(stderr, "x11_window: window was killed.\n");
+			return FFLY_FAILURE;
+		}
+	}
 	return FFLY_SUCCESS;
 }
 

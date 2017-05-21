@@ -23,11 +23,14 @@
 # include "wd_flags.hpp"
 # include "../system/stop_watch.hpp"
 # include "../types/err_t.h"
+/*do not include graphics/window.hpp in this header file*/
 namespace mdl {
 namespace firefly {
 namespace graphics {
+class window;
 class xcb_window: public wd_flags
 {
+	friend class window;
 	public:
 	types::err_t begin(u16_t__wd_xaxis_len, u16_t__wd_yaxis_len, char const *__frame_title);
 	types::err_t open_in_thread(u16_t__wd_xaxis_len, u16_t__wd_yaxis_len, char const *__frame_title);

@@ -3,7 +3,7 @@
 namespace mdl {
 namespace firefly {
 namespace data {
-void disable(bool& __val) {__val = false;}
+void __inline__ disable(bool& __val) {__val = false;}
 }
 }
 }

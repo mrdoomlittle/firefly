@@ -39,4 +39,19 @@ void ffly_mem_free(void *, mdl_u8_t);
 void ffly_mem_free(void *);
 # endif /*__WITH_MEM_TRACKER*/
 # endif
+
+# if defined(__WITH_MEM_TRACKER) && !defined(__cplusplus)
+#	ifdef __cplusplus
+#		define __ffly_mem_free(__MEM_PTR) mdl::firefly::memory::mem_free(__MEM_PTR, 0) 
+#	else
+#		define __ffly_mem_free(__MEM_PTR) ffly_mem_free(__MEM_PTR, 0)
+#	endif
+# else
+#	ifdef __cplusplus
+#		define __ffly_mem_free(__MEM_PTR) mdl::firefly::memory::mem_free(__MEM_PTR) 
+#   else
+#		define __ffly_mem_free(__MEM_PTR) ffly_mem_free(__MEM_PTR)
+#	endif
+# endif
+
 # endif /*__mem__free__h*/

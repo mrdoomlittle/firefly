@@ -24,6 +24,8 @@
 # include "ffly_graphics.hpp"
 # include "entity_manager.hpp"
 # include "types/err_t.h"
+# include "system/smem_buff.h"
+# include "types/event_t.hpp"
 # ifdef __WITH_OBJ_MANAGER
 #	include "obj_manager.hpp"
 # endif
@@ -31,7 +33,7 @@
 # ifdef ROOM_MANAGER
 #	include "room_manager.hpp"
 # endif
-
+# include "firefly.hpp"
 # ifdef __WITH_UNI_MANAGER
 #	include "uni_manager.hpp"
 #   include "types/uni_prop_t.hpp"
@@ -55,6 +57,10 @@ namespace mdl { class ffly_client
 //		this-> cu_clean();
 	}
 
+	/* forward all events e.g. window, obj, etc. to the core event queue.
+	*/
+	firefly::types::err_t forward_events();
+
 	void cu_clean() {
 		cudaDeviceReset();
 	}
@@ -67,9 +73,9 @@ namespace mdl { class ffly_client
 			return _this-> curr_fps;
 		}
 
-		bool poll_event(firefly::system::event& __event) {
-			return this-> _this-> poll_event(__event);
-		}
+//		bool poll_event(firefly::system::event& __event) {
+//			return this-> _this-> poll_event(__event);
+//		}
 
 		firefly::types::err_t connect_to_server(char const *__addr, u16_t __portno, uint_t __layer_id) {
 			if (_this-> layer.does_layer_exist(__layer_id)) {
@@ -115,11 +121,11 @@ namespace mdl { class ffly_client
 
 	firefly::graphics::window window;
 
-	bool poll_event(firefly::system::event& __event);
+//	bool poll_event(firefly::system::event& __event);
 
 	bool static to_shutdown;
 
-	firefly::system::event *event = nullptr;
+//	firefly::system::event *event = nullptr;
 	portal_t portal;
 
 	uint_t cam_layer_id = 0;

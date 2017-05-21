@@ -10,6 +10,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __wd_xaxis
 		return FFLY_FAILURE;
 	}
 
+	this-> wd_handler.ev_queue = &this-> ev_queue;
 	this-> wd_xaxis_len = __wd_xaxis_len;
 	this-> wd_yaxis_len = __wd_yaxis_len;
 	this-> frame_title = __frame_title;
@@ -20,10 +21,16 @@ mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __wd_xaxis
 
 mdl::firefly::types::err_t mdl::firefly::graphics::window::begin() {
 	if (this-> init_report != FFLY_SUCCESS) {
-		fprintf(stderr, "failed to begin window, because init failed.");
+		fprintf(stderr, "window: failed to begin window, init failed.");
 		return FFLY_FAILURE;
 	}
-	this-> wd_handler.open_in_thread(this-> wd_xaxis_len, this-> wd_yaxis_len, this-> frame_title);
+
+	types::err_t any_err;
+	if ((any_err = this-> wd_handler.open_in_thread(this-> wd_xaxis_len, this-> wd_yaxis_len, this-> frame_title)) != FFLY_SUCCESS) {
+		fprintf(stderr, "window: failed to open window, ffly_errno: %d\n", ffly_errno);
+		return any_err;
+	}
+	return FFLY_SUCCESS;
 }
 
 mdl::firefly::types::pixmap_t mdl::firefly::graphics::window::get_pixbuff() {

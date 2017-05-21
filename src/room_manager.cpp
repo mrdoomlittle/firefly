@@ -21,6 +21,14 @@ void (* mdl::firefly::room_manager::btn_hover(void (* __btn_hover)(uint_t, void 
 	return &room_manager::btn_hoverf;
 }
 
+bool mdl::firefly::room_manager::btn_event_poll(types::btn_event_t& __btn_event, uint_t& __event_type) {
+	if (this-> btn_event_pool.empty()) return false;
+	__btn_event = this-> btn_event_pool.front().first;
+	__event_type = this-> btn_event_pool.front().second;
+	this-> btn_event_pool.pop();
+	return true;
+}
+
 mdl::firefly::types::err_t mdl::firefly::room_manager::add_room(types::id_t& __room_id, bool __overwrite) {
 	if (__room_id != nullptr && !__overwrite) return FFLY_NOP;
 

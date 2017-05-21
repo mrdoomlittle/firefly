@@ -34,7 +34,7 @@ else ifeq ($(FFLY_TARGET), FFLY_CLIENT)
  src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o \
  src/layer_manager.o src/maths/cal_dist.o src/system/time_stamp.o src/room_manager.o \
  src/gui/btn_manager.o src/system/event.o src/graphics/draw_bitmap.o src/font.o src/system/task_handle.o src/system/task_worker.o \
- src/ui/camera.o src/graphics/crop_pixmap.o src/entity_manager.o
+ src/ui/camera.o src/graphics/crop_pixmap.o src/entity_manager.o src/system/smem_buff.o
 else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
  FFLY_OBJECTS += src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
@@ -58,7 +58,7 @@ else ifeq ($(GPU_CL_TYPE), -DUSING_CUDA)
  FFLY_OBJECTS+= src/cuda_helper.o
 endif
 
-FFLY_OBJECTS += src/firefly.o src/ffly_memory.o src/system/errno.o
+FFLY_OBJECTS += src/system/config.o src/firefly.o src/ffly_memory.o src/system/errno.o
 ## core memory stuff
 FFLY_OBJECTS += src/memory/mem_alloc.o src/memory/mem_alloc.co src/memory/mem_free.o src/memory/mem_free.co src/memory/mem_realloc.co #src/memory/alloc_pixmap.o
 CXXFLAGS += $(FFLY_TARGET)
@@ -88,6 +88,12 @@ all: ffly_test
 endif
 
 FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+
+src/system/smem_buff.o: src/system/smem_buff.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/smem_buff.o src/system/smem_buff.c
+
+src/system/config.o: src/system/config.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/config.o src/system/config.cpp
 
 src/system/errno.o: src/system/errno.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/errno.o src/system/errno.c

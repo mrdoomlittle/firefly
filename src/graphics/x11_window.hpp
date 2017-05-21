@@ -5,7 +5,6 @@
 # include <cstdio>
 # include <chrono>
 # include <eint_t.hpp>
-//# include "/home/daniel-robson/Projects/eint_t/inc/eint_t.hpp"
 # include <boost/thread.hpp>
 # include <boost/cstdint.hpp>
 # include "../memory/alloc_pixmap.hpp"
@@ -17,14 +16,23 @@
 # include "../types/mouse_coords_t.hpp"
 # include "../system/errno.h"
 # include "wd_flags.hpp"
+# include "../system/config.hpp"
 # include <errno.h>
+# include "../data/pair.hpp"
 # include "../system/stop_watch.hpp"
+# include "../system/mq_mask.hpp"
+# include "../types/event_disc_t.hpp"
 # include "../types/err_t.h"
+# include "../system/timer.hpp"
+# include "../system/event_types.hpp"
+/*do not include graphics/window.hpp in this header file*/
 namespace mdl {
 namespace firefly {
 namespace graphics {
+class window;
 class x11_window: public wd_flags
 {
+	friend class window;
 	public:
 	types::err_t begin(u16_t __wd_xaxis_len, u16_t __wd_yaxis_len, char const *__frame_title);
 	types::err_t open_in_thread(u16_t __wd_xaxis_len, u16_t __wd_yaxis_len, char const *__frame_title);
@@ -78,7 +86,10 @@ class x11_window: public wd_flags
 		return FFLY_SUCCESS;
 	}
 
+	types::err_t init_report = FFLY_SUCCESS;
 	private:
+	system::mq_mask<data::pair<types::event_disc_t, uint_t>> *ev_queue;
+//	std::queue<data::pair<types::event_disc_t, uint_t>> *ev_queue;
 	boost::thread::native_handle_type native_handle;
 	u16_t wd_xaxis_len, wd_yaxis_len;
 	char *frame_title;

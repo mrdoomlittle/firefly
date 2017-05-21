@@ -1,19 +1,26 @@
 # include "btn_manager.hpp"
-
 bool mdl::firefly::gui::btn_manager::mouse_inside(types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len) {
 	if ((this-> mouse_coords-> xaxis > __coords.xaxis && this-> mouse_coords-> xaxis <= __coords.xaxis + __xaxis_len)
 	&& (this-> mouse_coords-> yaxis > __coords.yaxis && this-> mouse_coords-> yaxis <= __coords.yaxis + __yaxis_len)) return true;
 	return false;
 }
 
+bool ev_queue_mx(mdl::uint_t __size) {
+	bool res = __size >= mdl::firefly::system::config.mx_queue_size? true : false;
+	printf("btn_manager: info, btn event queue is over the global max limit, no more events will be captured untill queue size decreases.\n");
+	return res;
+}
+
 void mdl::firefly::gui::btn_manager::btn_press(types::__id_t __btn_id, int __mbtn_id, void *__voidptr) {
-	types::btn_event_t btn_event = {.btn_id = __btn_id, .mbtn_id = __mbtn_id, .event_type = system::event::BTN_PRESS};
-	((btn_manager *)__voidptr)-> event_queue.push(btn_event);
+	if (ev_queue_mx(((btn_manager *)__voidptr)-> event_queue.size())) return;
+	types::btn_event_t btn_event = {.btn_id = __btn_id, .mbtn_id = __mbtn_id};
+	((btn_manager *)__voidptr)-> event_queue.push(data::__pair__<types::btn_event_t, uint_t>(btn_event, system::GUI_BTN_PRESS));
 }
 
 void mdl::firefly::gui::btn_manager::btn_hover(types::__id_t __btn_id, void *__voidptr) {
-	types::btn_event_t btn_event = {.btn_id = __btn_id, .mbtn_id = 0, .event_type = system::event::BTN_HOVER};
-	((btn_manager *)__voidptr)-> event_queue.push(btn_event);
+	if (ev_queue_mx(((btn_manager *)__voidptr)-> event_queue.size())) return;
+	types::btn_event_t btn_event = {.btn_id = __btn_id, .mbtn_id = 0};
+	((btn_manager *)__voidptr)-> event_queue.push(data::__pair__<types::btn_event_t, uint_t>(btn_event, system::GUI_BTN_HOVER));
 }
 
 mdl::firefly::types::err_t mdl::firefly::gui::btn_manager::event_bind(types::__id_t __btn_id) {
@@ -108,6 +115,14 @@ mdl::uint_t mdl::firefly::gui::btn_manager::create_btn(types::id_t __asset_id, t
 	types::__id_t btn_id = this-> create_btn(__asset_manager-> get_asset_data(__asset_id), __coords, __xaxis_len, __yaxis_len);
 	this-> btn_index[btn_id].inde_tx_mem = true;
 	return btn_id;
+}
+
+bool mdl::firefly::gui::btn_manager::poll_event(types::btn_event_t& __btn_event, uint_t& __event_type) {
+	if (this-> event_queue.empty()) return false;
+	__btn_event = this-> event_queue.front().first;
+	__event_type = this-> event_queue.front().second;
+	this-> event_queue.pop();
+	return true;
 }
 
 mdl::firefly::types::err_t mdl::firefly::gui::btn_manager::manage(types::pixmap_t __pixbuff) {

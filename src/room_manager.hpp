@@ -13,6 +13,7 @@
 # include "graphics/window.hpp"
 # include "types/btn_t.hpp"
 # include "types/btn_event_t.hpp"
+# include "data/pair.hpp"
 # include <queue>
 # include "types/err_t.h"
 # ifdef __RM_LAYERING
@@ -110,8 +111,10 @@ class room_manager {
 	types::id_t __inline__ get_curr_room_id() {return this-> curr_room_id;}
 
 	bool use_glob_pb_size = false;
-	std::queue<types::btn_event_t> btn_event_pool;
+	bool btn_event_poll(types::btn_event_t& __btn_event, uint_t& __event_type);
+
 	private:
+	std::queue<data::pair<types::btn_event_t, uint_t>> btn_event_pool;
 	types::coords_t<boost::int16_t> wd_coords;
 	types::coords_t<boost::uint16_t> mouse_coords;
 	graphics::window *window = nullptr;

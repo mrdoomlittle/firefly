@@ -41,7 +41,7 @@ class btn {
 		}
 
 		void center_btn(std::initializer_list<types::btn_t *> __btn_list, uint_t __xmax = 0, uint_t __ymax = 0) {
-			for (std::initializer_list<types::btn_t *>::iterator itor = __btn_list.begin(); itor != __btn_id.end(); ++itor)
+			for (std::initializer_list<types::btn_t *>::iterator itor = __btn_list.begin(); itor != __btn_list.end(); ++itor)
 				this-> center_btn(*itor, __xmax, __ymax);
 		}
 

@@ -1,10 +1,38 @@
 # include "mem_allocr.h"
+struct allocr_mblk {
+	mdl_uint_t bc;
+	mdl_u8_t *ptr;
+	mdl_u8_t state;
+	mdl_uint_t above_fs;
+	struct allocr_mblk *above, *below;
+};
 
+enum mstate {
+	MEM_USED,
+	MEM_FREE
+};
+
+struct allocr_mhead {struct allocr_mblk *mblk_ptr;};
+# define ALLOCR_PAGE_SIZE 20
+struct allocr_mblk **mblk_indx = NULL;
+struct allocr_mblk **free_mblks = NULL;
+mdl_uint_t free_mblk_pc = 0;
+mdl_uint_t free_mblk_c = 0;
+
+struct allocr_mblk **uu_mblks = NULL;
+mdl_uint_t uu_mblk_pc = 0;
+mdl_uint_t uu_mblk_c = 0;
+
+mdl_uint_t mblk_indx_pc = 0;
+mdl_uint_t used_mblk_c = 0;
 ffly_err_t ffly_mem_allocr_init(struct ffly_mem_allocr_t *__mem_allocr) {
-	if ((__mem_allocr-> mem_stack = ffly_mem_alloc(__mem_allocr-> stack_size, 0)) == NULL) {
+	if ((__mem_allocr-> mem_stack = __ffly_mem_alloc(__mem_allocr-> stack_size)) == NULL) {
 		fprintf(stderr, "mem_allocr: failed to alloc mem stack, errno: %d\n", errno);
 		return FFLY_FAILURE;
 	}
+
+	__mem_allocr-> stack_fs = 0;
+	__mem_allocr-> alloc_c = 0;
 	__mem_allocr-> nxt_addr = __mem_allocr-> mem_stack;
 	__mem_allocr-> mem_free = __mem_allocr-> stack_size;
 	__mem_allocr-> mem_used = 0;
@@ -12,29 +40,221 @@ ffly_err_t ffly_mem_allocr_init(struct ffly_mem_allocr_t *__mem_allocr) {
 }
 
 ffly_err_t ffly_mem_allocr_de_init(struct ffly_mem_allocr_t *__mem_allocr) {
-	ffly_mem_free(__mem_allocr-> mem_stack);
+	ffly_mem_free(__mem_allocr-> mem_stack, 0);
+	for (struct allocr_mblk** itor = mblk_indx; itor != mblk_indx + (mblk_indx_pc*ALLOCR_PAGE_SIZE); itor++)
+		ffly_mem_free(*itor, 0);
+	if (mblk_indx != NULL) ffly_mem_free(mblk_indx, 0);
+	if (free_mblks != NULL) ffly_mem_free(free_mblks, 0);
+	if (uu_mblks != NULL) ffly_mem_free(uu_mblks, 0);
+}
+
+mdl_u8_t no_mblk_set = 0;
+mdl_uint_t last_alloc_point = 0;
+ffly_err_t add_mblk(struct ffly_mem_allocr_t *__mem_allocr, struct allocr_mblk **__mblk_ptr, mdl_u8_t *__ptr, mdl_uint_t __bc) {
+//	printf("%d - %d\n", free_mblk_pc, free_mblk_c);
+
+	if (!uu_mblk_c) {
+		if (!used_mblk_c && !mblk_indx) {
+			mblk_indx = (struct allocr_mblk**)__ffly_mem_alloc(ALLOCR_PAGE_SIZE*sizeof(struct allocr_mblk*));
+			for (struct allocr_mblk** itor = mblk_indx; itor != mblk_indx + ALLOCR_PAGE_SIZE; itor++)
+				*itor = (struct allocr_mblk*)__ffly_mem_alloc(sizeof(struct allocr_mblk));
+			mblk_indx_pc++;
+		} else {
+			if (used_mblk_c > (mblk_indx_pc * ALLOCR_PAGE_SIZE)) {
+				mblk_indx = (struct allocr_mblk**)ffly_mem_realloc(mblk_indx, ((mblk_indx_pc+1)*ALLOCR_PAGE_SIZE)*sizeof(struct allocr_mblk*));
+				for (struct allocr_mblk** itor = mblk_indx + (mblk_indx_pc*ALLOCR_PAGE_SIZE); itor != mblk_indx + ALLOCR_PAGE_SIZE; itor++)
+					*itor = (struct allocr_mblk*)__ffly_mem_alloc(sizeof(struct allocr_mblk));
+				mblk_indx_pc++;
+			}
+		}
+	}
+
+	struct allocr_mblk *mblk = !uu_mblk_c? *(mblk_indx + used_mblk_c) : *uu_mblks;
+
+	if (!no_mblk_set) {
+		mblk-> above_fs = __ptr == __mem_allocr-> mem_stack? 0 : __mem_allocr-> stack_fs - last_alloc_point;
+		struct allocr_mhead *mhead = __ptr == __mem_allocr-> mem_stack? NULL : (struct allocr_mhead*)(__ptr - mblk-> above_fs);
+		mblk-> above = mhead == NULL? NULL : mhead-> mblk_ptr;
+		if (mhead != NULL) mhead-> mblk_ptr-> below = mblk;
+	} else {
+		mblk-> above = NULL;
+		mblk-> below = NULL;
+	}
+
+	mblk-> bc = __bc;
+	mblk-> ptr = __ptr;
+	mblk-> state = MEM_USED;
+	if (uu_mblk_c > 0) {
+		*uu_mblks = uu_mblks[uu_mblk_c];
+		uu_mblk_c--;
+	}
+
+	*__mblk_ptr = mblk;
+	used_mblk_c++;
+}
+
+ffly_err_t rm_mblk(struct allocr_mblk *__ptr) {
+//	printf("hellow world.\n");
+/*
+	if (used_mblk_c == 1)
+		ffly_mem_free(mblk_indx, 0);
+	else {
+		if (mblk_indx_pc < ceil(used_mblk_c/ALLOCR_PAGE_SIZE)) {
+			mblk_indx = (struct allocr_mblk**)ffly_mem_realloc(mblk_indx, sizeof(struct allocr_mblk*) * ((mblk_indx_pc-1)*ALLOCR_PAGE_SIZE));
+			mblk_indx_pc--;
+		}
+	}
+*/
+	if (!uu_mblks && !uu_mblk_c) {
+		uu_mblks = __ffly_mem_alloc(ALLOCR_PAGE_SIZE*sizeof(struct allocr_mblk*));
+		uu_mblk_pc++;
+	} else {
+		if (uu_mblk_c > (uu_mblk_pc*ALLOCR_PAGE_SIZE)) {
+			uu_mblks = ffly_mem_realloc(uu_mblks, (uu_mblk_pc*ALLOCR_PAGE_SIZE)*sizeof(struct allocr_mblk*));
+			uu_mblk_pc++;
+		}
+	}
+
+	memset(__ptr, 0x0, sizeof(struct allocr_mblk));
+	__ptr-> above = NULL;
+	__ptr-> below = NULL;
+
+	uu_mblks[uu_mblk_c] = __ptr;
+	uu_mblk_c++;
+	used_mblk_c--;
+}
+
+void debug() {
+
+	printf("-> free memory blocks - %d\n", free_mblk_c);
+	if (free_mblks != NULL) {
+		for (mdl_uint_t o = 0; o != free_mblk_c; o ++) {
+			if (*(free_mblks+o) == NULL) continue;
+			printf("	bc: %d\n", (*(free_mblks+o))->bc);
+		}
+	}
+
+	printf("-> unused memory blocks - %d\n", uu_mblk_c);
+	if (uu_mblks != NULL) {
+		for (mdl_uint_t o = 0; o != uu_mblk_c; o ++) {
+	//		printf("	bc: %d\n", (*(uu_mblks+o))->bc);
+		}
+	}
+
+	printf("-> used memory blocks - %d\n", used_mblk_c);
+	if (mblk_indx != NULL) {
+		for (mdl_uint_t o = 0; o != used_mblk_c; o ++) {
+			if (*(mblk_indx+o) == NULL) continue;
+			printf("    bc: %d\n", (*(mblk_indx+o))->bc);
+		}
+	}
+
+	printf("\n");
 }
 
 ffly_err_t ffly_mem_allocr_alloc(struct ffly_mem_allocr_t *__mem_allocr, void **__mptr, mdl_uint_t __bc) {
-	if (__mem_allocr-> mem_free < __bc) {
-		fprintf(stderr, "mem_allocr: no memory left on stack.\n");
-		return FFLY_FAILURE;
+//	debug();
+	mdl_u8_t free_mem = 0;
+	mdl_uint_t bc = __bc + sizeof(struct allocr_mhead);
+	if (free_mblks != NULL) {
+		if ((*free_mblks)-> bc >= bc) free_mem = 1;
 	}
 
-	*(mdl_uint_t *)__mem_allocr-> nxt_addr = __bc;
-	*__mptr = __mem_allocr-> nxt_addr + sizeof(mdl_uint_t);
-	__mem_allocr-> nxt_addr += __bc;
-	__mem_allocr-> mem_free -= __bc;
-	__mem_allocr-> mem_used += __bc;
+	if (!free_mem) {
+		if (__mem_allocr-> mem_free < bc) {
+			fprintf(stderr, "mem_allocr: no memory left on stack.\n");
+			return FFLY_FAILURE;
+		}
+	}
+
+	mdl_u8_t *stack_ptr = !free_mem? __mem_allocr-> nxt_addr : (*free_mblks)-> ptr;
+	*__mptr = stack_ptr + sizeof(struct allocr_mhead);
+
+	struct allocr_mhead *mhead = (struct allocr_mhead*)stack_ptr;
+	if (free_mem) mhead-> mblk_ptr-> state = MEM_USED;
+	if (!free_mem) {
+		add_mblk(__mem_allocr, &mhead-> mblk_ptr, stack_ptr, bc);
+		last_alloc_point = __mem_allocr-> stack_fs;
+		__mem_allocr-> stack_fs += bc;
+ 		__mem_allocr-> nxt_addr += bc;
+		__mem_allocr-> alloc_c++;
+	}
+
+	if (free_mem) {
+		if (free_mblk_c == 1) {
+			ffly_mem_free(free_mblks, 0);
+			free_mblks = NULL;
+			free_mblk_c = 0;
+		} else {
+			if ((*free_mblks)-> bc - bc > 0) {
+				struct allocr_mhead *_mhead = (struct allocr_mhead*)((*free_mblks)-> ptr + bc);
+
+				mdl_u8_t under_blk = 0;
+				if (mhead-> mblk_ptr-> below != NULL)
+					if (mhead-> mblk_ptr-> below-> state == MEM_FREE) under_blk = 1;
+
+				if (under_blk) {
+					_mhead-> mblk_ptr = mhead-> mblk_ptr-> below;
+					_mhead-> mblk_ptr-> bc += (*free_mblks)-> bc - bc;
+					_mhead-> mblk_ptr-> ptr = (*free_mblks)-> ptr + bc;
+					_mhead-> mblk_ptr-> state = MEM_FREE;
+					_mhead-> mblk_ptr-> above = *free_mblks;
+				} else {
+					no_mblk_set = 1;
+					add_mblk(__mem_allocr, &_mhead-> mblk_ptr, (*free_mblks)-> ptr + bc, (*free_mblks)-> bc - bc);
+					_mhead-> mblk_ptr-> state = MEM_FREE;
+					no_mblk_set = 0;
+				}
+				mhead-> mblk_ptr-> bc = bc;
+			} else {
+				//*free_mblks = free_mblks[free_mblk_c];
+				//free_mblks = (struct allocr_mblk**)ffly_mem_realloc(free_mblks, (free_mblk_c - 1)*sizeof(struct allocr_mblk*));
+			}
+			*free_mblks = free_mblks[free_mblk_c];
+			free_mblk_c--;
+		}
+	}
+	__mem_allocr-> mem_free -= bc;
+	__mem_allocr-> mem_used += bc;
+//	debug();
 	return FFLY_SUCCESS;
 }
 
-
-
 ffly_err_t ffly_mem_allocr_free(struct ffly_mem_allocr_t *__mem_allocr, void *__mptr) {
-	mdl_uint_t bc = *(mdl_uint_t *)__mptr;
+	struct allocr_mhead *mhead = (struct allocr_mhead*)(__mptr - sizeof(struct allocr_mhead));
 
-	__mem_allocr-> mem_free += bc;
-	__mem_allocr-> mem_used -= bc;
+	if (!free_mblks && !free_mblk_c) {
+		free_mblks = __ffly_mem_alloc(sizeof(struct allocr_mblk*)*ALLOCR_PAGE_SIZE);
+		free_mblk_pc++;
+	} else {
+		if (free_mblk_c > (free_mblk_pc*ALLOCR_PAGE_SIZE)) {
+			free_mblks = ffly_mem_realloc(free_mblks, (free_mblk_pc + 1)*ALLOCR_PAGE_SIZE);
+			free_mblk_pc++;
+		}
+	}
+
+	struct allocr_mblk *mblk_ptr = mhead-> mblk_ptr;
+	if (mhead-> mblk_ptr-> above != NULL) {
+		if (mhead-> mblk_ptr-> above-> state == MEM_FREE) {
+			mblk_ptr = mhead-> mblk_ptr-> above;
+			mblk_ptr-> bc += mhead-> mblk_ptr-> bc;
+		}
+	}
+
+	mblk_ptr-> below = mhead-> mblk_ptr-> below;
+	if (mhead-> mblk_ptr-> below != NULL) {
+		if (mhead-> mblk_ptr-> below-> state == MEM_FREE) {
+			mblk_ptr-> bc += mhead-> mblk_ptr-> below-> bc;
+			rm_mblk(mhead-> mblk_ptr-> below-> below);
+		}
+	}
+
+	if (mhead-> mblk_ptr != mblk_ptr) rm_mblk(mhead-> mblk_ptr);
+
+	mblk_ptr-> state = MEM_FREE;
+	*free_mblks = mblk_ptr;
+	free_mblk_c++;
+	__mem_allocr-> mem_free += mhead-> mblk_ptr-> bc;
+	__mem_allocr-> mem_used -= mhead-> mblk_ptr-> bc;
 	return FFLY_SUCCESS;
 }

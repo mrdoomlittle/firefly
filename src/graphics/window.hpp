@@ -15,6 +15,10 @@
 # include "../types/colour_t.hpp"
 # include "../types/coords_t.hpp"
 # include "../types/err_t.h"
+# include "../types/event_disc_t.hpp"
+//# include <queue>
+# include "../system/mq_mask.hpp"
+# include "../data/pair.hpp"
 # define WD_TO_CLOSE 16
 # define WD_CLOSED 1
 # define WD_OPEN 2
@@ -24,6 +28,11 @@ namespace mdl {
 namespace firefly {
 namespace graphics {
 class window {
+# if defined(USING_X11)
+	friend class x11_window;
+# elif defined(USING_XCB)
+	friend class xcb_window;
+# endif
 	public:
 	types::err_t init(u16_t __wd_xaxis_len, u16_t __wd_yaxis_len, char const *__frame_title);
 	types::err_t begin();
@@ -101,7 +110,21 @@ class window {
 		return FFLY_SUCCESS;
 	}
 
+	types::err_t nxt_event(types::event_disc_t& __event_disc, uint_t& __event_data) {
+		if (this-> ev_queue.empty()) {
+			ffly_errno = FF_ERR_WDEQE;
+			return FFLY_FAILURE;
+		}
+		__event_disc = this-> ev_queue.front().first;
+		__event_data = this-> ev_queue.front().second;
+		return FFLY_SUCCESS;
+	}
+
+	void event_pop() {this-> ev_queue.pop();}
+
 	private:
+	system::mq_mask<data::pair<types::event_disc_t, uint_t>> ev_queue;
+//	std::queue<data::pair<types::event_disc_t, uint_t>> ev_queue;
 	types::err_t init_report = FFLY_FAILURE;
 	u16_t wd_xaxis_len = 0, wd_yaxis_len = 0;
 	char const *frame_title = nullptr;

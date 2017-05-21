@@ -23,8 +23,8 @@ namespace mdl {
 namespace firefly {
 namespace memory {
 # ifdef __DEBUG_ENABLED
-extern std::size_t alloc_bc;
-extern std::size_t alloc_c;
+std::size_t extern alloc_bc;
+std::size_t extern alloc_c;
 # endif
 
 # ifdef __USING_OPENCL
@@ -49,6 +49,7 @@ void gpu_mem_alloc(void*& __mptr, std::size_t __bc, types::err_t& __any_err);
 
 # ifdef __WITH_MEM_TRACKER
 void* mem_alloc(std::size_t __bc, bool __track_bypass = false);
+void __inline__* mem_alloc(std::size_t __bc) {return mem_alloc(__bc, false);}
 # else
 void* mem_alloc(std::size_t __bc);
 # endif /*__WITH_MEM_TRACKER*/
@@ -73,5 +74,18 @@ void *ffly_mem_alloc(size_t);
 # endif /*__WITH_MEM_TRACKER*/
 # endif
 
+# if defined(__WITH_MEM_TRACKER) && !defined(__cplusplus)
+# 	ifdef __cplusplus
+#		define __ffly_mem_alloc(__MEM_PTR) mdl::firefly::memory::mem_alloc(__MEM_PTR, 0)
+# 	else
+#		define __ffly_mem_alloc(__MEM_PTR) ffly_mem_alloc(__MEM_PTR, 0)
+# 	endif
+# else
+#   ifdef __cplusplus
+#		define __ffly_mem_alloc(__MEM_PTR) mdl::firefly::memory::mem_alloc(__MEM_PTR)
+# 	else
+#		define __ffly_mem_alloc(__MEM_PTR) ffly_mem_alloc(__MEM_PTR)
+# 	endif
+# endif
 
 # endif /*__mem__alloc__h*/

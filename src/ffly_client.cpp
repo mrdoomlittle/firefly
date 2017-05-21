@@ -206,7 +206,7 @@ mdl::firefly::types::err_t mdl::ffly_client::de_init() {
 void mdl::ffly_client::shutdown() {
 	ffly_client::to_shutdown = true;
 }
-
+/*
 bool mdl::ffly_client::poll_event(firefly::system::event& __event) {
 	if (ffly_client::to_shutdown) return false;
 	static bool inited = false;
@@ -214,8 +214,8 @@ bool mdl::ffly_client::poll_event(firefly::system::event& __event) {
 	if (!inited) {
 		this-> event = &__event;
 		inited = true;
-	}
-
+	}*/
+/*
 	if (!__event.queue_empty()) {
 		__event.event_type = __event.event_queue.front().event_type;
 		switch (__event.event_type) {
@@ -233,8 +233,56 @@ bool mdl::ffly_client::poll_event(firefly::system::event& __event) {
 		return true;
 	} else
 		__event.event_type = firefly::system::event::NULL_EVENT;
+*/
+//	return false;
+//}
 
-	return false;
+mdl::firefly::types::err_t mdl::ffly_client::forward_events() {
+	firefly::types::err_t any_err;
+# ifdef ROOM_MANAGER
+	if (!ffly_smem_buff_full(firefly::gui_btn_ev_dbuff)) {
+		firefly::types::btn_event_t btn_event;
+		uint_t event_type;
+		if (this-> room_manager.btn_event_poll(btn_event, event_type)) {
+			ffly_smem_buff_push(firefly::gui_btn_ev_dbuff, &btn_event);
+			void *btn_ev_dptr = NULL;
+			ffly_smem_buff_ptr(firefly::gui_btn_ev_dbuff, &btn_ev_dptr);
+			firefly::types::event_disc_t event_disc = {
+				.event_id = firefly::system::GUI_BTN_EID,
+				.event_type = event_type
+			};
+
+			if (firefly::system::event::event_add(event_disc, btn_ev_dptr) != FFLY_SUCCESS) {
+				ffly_smem_buff_pop(firefly::gui_btn_ev_dbuff, NULL);
+				if (ffly_errno != FF_ERR_CEBF) ffly_client::to_shutdown = true;
+			}
+		}
+	} else
+		printf("ffly_client: info, btn event smem buff is full.\n");
+# endif
+	if (!ffly_smem_buff_full(firefly::wd_ev_dbuff)) {
+		uint_t event_data;
+		firefly::types::event_disc_t event_disc;
+		if ((any_err = this-> window.nxt_event(event_disc, event_data)) != FFLY_SUCCESS) {
+			if (ffly_errno != FF_ERR_WDEQE) return any_err;
+		} else if (ffly_errno == FF_ERR_WDEQE) ffly_errno = FF_ERR_NULL;
+
+		if (ffly_errno != FF_ERR_WDEQE) {
+			this-> window.event_pop();
+
+			void *wd_ev_dptr = NULL;
+			ffly_smem_buff_push(firefly::wd_ev_dbuff, &event_data);
+			ffly_smem_buff_ptr(firefly::wd_ev_dbuff, &wd_ev_dptr);
+			printf("wd event added: data: %d - id: %d, type: %d\n", event_data, event_disc.event_id, event_disc.event_type);
+			if (firefly::system::event::event_add(event_disc, wd_ev_dptr) != FFLY_SUCCESS) {
+				ffly_smem_buff_pop(firefly::wd_ev_dbuff, NULL);
+				if (ffly_errno != FF_ERR_CEBF) ffly_client::to_shutdown = true;
+			}
+		}
+	} else
+		printf("ffly_client: info, wd event smem buff is full.\n");
+
+	return FFLY_SUCCESS;
 }
 
 mdl::firefly::types::err_t mdl::ffly_client::begin(char const * __frame_title, void (* __extern_loop)(boost::int8_t, portal_t *, void *), void *__this) {
@@ -276,28 +324,15 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(char const * __frame_title, v
 		if (window.wd_handler.is_wd_flag(WD_DONE_DRAW)) continue;
 		this-> window.clear_pixbuff();
 
-# ifdef ROOM_MANAGER
-		if (!this-> room_manager.btn_event_pool.empty()) {
-			firefly::system::event::event_t event;
-			firefly::types::btn_event_t static btn_event;
+		this-> forward_events();
 
-			btn_event = this-> room_manager.btn_event_pool.front();
-
-			event.event_type = btn_event.event_type;
-			event.data = &btn_event;
-
-			this-> event-> queue_add(event);
-
-			this-> room_manager.btn_event_pool.pop();
-		}
-# endif
 		client_info.key_code = window.wd_handler.key_code;
 
 		if (this-> server_connected) {
 			if (this-> send_client_info() == FFLY_FAILURE) break;
 			if (this-> recv_cam_frame() == FFLY_FAILURE) break;
 		}
-
+/*
 		if (this-> event != nullptr) {
 			if (this-> window.wd_handler.key_press) {
 				firefly::system::event::event_t event;
@@ -315,7 +350,7 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(char const * __frame_title, v
 				this-> event-> queue_add(event);
 			}
 		}
-
+*/
 		__extern_loop(0, &this-> portal, __this);
 
 		if (this-> server_ipaddr != nullptr && !this-> server_connected) {

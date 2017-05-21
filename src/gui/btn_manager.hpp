@@ -23,7 +23,10 @@ namespace ublas = boost::numeric::ublas;
 # include "../types/colour_t.hpp"
 # include "../types/btn_event_t.hpp"
 # include "../system/event.hpp"
+# include "../data/pair.hpp"
+# include "../system/event_types.hpp"
 # include <queue>
+# include "../system/config.hpp"
 # include "../types/err_t.h"
 # include "../data/enable.hpp"
 # include "../data/disable.hpp"
@@ -41,8 +44,7 @@ class btn_manager {
 	uint_t create_btn(types::id_t __asset_id, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len, asset_manager *__asset_manger);
 
 	uint_t create_btn(types::btn_info_t __btn_info) {
-		return this-> create_btn(__btn_info.pixmap, __btn_info.coords, __btn_info.xaxis_len, __btn_info.yaxis_len);
-	}
+		return this-> create_btn(__btn_info.pixmap, __btn_info.coords, __btn_info.xaxis_len, __btn_info.yaxis_len);}
 
 	types::err_t set_text(uint_t __btn_id, char const * __text, char const *__font,  uint_t __xoffset, uint_t __yoffset, std::size_t __spacing, bool __mid);
 
@@ -105,13 +107,16 @@ class btn_manager {
 		}
 	}
 
+	bool poll_event(types::btn_event_t& __btn_event, uint_t& __event_type);
+
 	bool *mouse_pressed;
 	int *mouse_btn_id;
 
-	std::queue<types::btn_event_t> event_queue;
 	types::coords_t<i16_t> *wd_coords;
     types::coords_t<u16_t> *mouse_coords;
-	private:
+//	private:
+	std::queue<data::pair<types::btn_event_t, uint_t>> event_queue;
+	public:
 	ublas::vector<types::btn_t> btn_index;
 	types::pixmap_t pixbuff = nullptr;
 	u16_t pb_xaxis_len, pb_yaxis_len;
