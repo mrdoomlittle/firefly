@@ -247,12 +247,12 @@ mdl::firefly::types::err_t mdl::ffly_client::forward_events() {
 			ffly_smem_buff_push(firefly::gui_btn_ev_dbuff, &btn_event);
 			void *btn_ev_dptr = NULL;
 			ffly_smem_buff_ptr(firefly::gui_btn_ev_dbuff, &btn_ev_dptr);
-			firefly::types::event_disc_t event_disc = {
+			firefly::types::event_desc_t event_desc = {
 				.event_id = firefly::system::GUI_BTN_EID,
 				.event_type = event_type
 			};
 
-			if (firefly::system::event::event_add(event_disc, btn_ev_dptr) != FFLY_SUCCESS) {
+			if (firefly::system::event::event_add(event_desc, btn_ev_dptr) != FFLY_SUCCESS) {
 				ffly_smem_buff_pop(firefly::gui_btn_ev_dbuff, NULL);
 				if (ffly_errno != FF_ERR_CEBF) ffly_client::to_shutdown = true;
 			}
@@ -262,8 +262,8 @@ mdl::firefly::types::err_t mdl::ffly_client::forward_events() {
 # endif
 	if (!ffly_smem_buff_full(firefly::wd_ev_dbuff)) {
 		uint_t event_data;
-		firefly::types::event_disc_t event_disc;
-		if ((any_err = this-> window.nxt_event(event_disc, event_data)) != FFLY_SUCCESS) {
+		firefly::types::event_desc_t event_desc;
+		if ((any_err = this-> window.nxt_event(event_desc, event_data)) != FFLY_SUCCESS) {
 			if (ffly_errno != FF_ERR_WDEQE) return any_err;
 		} else if (ffly_errno == FF_ERR_WDEQE) ffly_errno = FF_ERR_NULL;
 
@@ -273,8 +273,8 @@ mdl::firefly::types::err_t mdl::ffly_client::forward_events() {
 			void *wd_ev_dptr = NULL;
 			ffly_smem_buff_push(firefly::wd_ev_dbuff, &event_data);
 			ffly_smem_buff_ptr(firefly::wd_ev_dbuff, &wd_ev_dptr);
-			printf("wd event added: data: %d - id: %d, type: %d\n", event_data, event_disc.event_id, event_disc.event_type);
-			if (firefly::system::event::event_add(event_disc, wd_ev_dptr) != FFLY_SUCCESS) {
+			printf("wd event added: data: %d - id: %d, type: %d\n", event_data, event_desc.event_id, event_desc.event_type);
+			if (firefly::system::event::event_add(event_desc, wd_ev_dptr) != FFLY_SUCCESS) {
 				ffly_smem_buff_pop(firefly::wd_ev_dbuff, NULL);
 				if (ffly_errno != FF_ERR_CEBF) ffly_client::to_shutdown = true;
 			}
@@ -303,9 +303,12 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(char const * __frame_title, v
 
 	auto begin = std::chrono::high_resolution_clock::now();
 	auto end = std::chrono::high_resolution_clock::now();
-	this-> portal.pixbuff = window.get_pixbuff();//_x11_window.pixbuff;
-	this-> portal._this = this;
-
+	if ((any_err = this-> portal.init(this)) != FFLY_SUCCESS) {
+		fprintf(stderr, "ffly_client: failed to init portal, ffly_errno: %d\n", ffly_errno);
+		return FFLY_FAILURE;
+	}
+//	this-> portal.pixbuff = window.get_pixbuff();//_x11_window.pixbuff;
+//	this-> portal._this = this;
 	int sock;
 
 # ifdef ROOM_MANAGER

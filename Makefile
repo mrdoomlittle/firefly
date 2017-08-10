@@ -61,7 +61,7 @@ endif
 
 FFLY_OBJECTS += src/system/config.o src/firefly.o src/ffly_memory.o src/system/errno.o
 ## core memory stuff
-FFLY_OBJECTS += src/memory/mem_alloc.o src/memory/mem_alloc.co src/memory/mem_free.o src/memory/mem_free.co src/memory/mem_realloc.co #src/memory/alloc_pixmap.o
+FFLY_OBJECTS += src/memory/mem_alloc.o src/memory/mem_alloc.co src/memory/mem_free.co src/memory/mem_realloc.co #src/memory/alloc_pixmap.o
 CXXFLAGS += $(FFLY_TARGET)
 
 ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-mem-tracker"), 0)
@@ -222,8 +222,8 @@ src/memory/mem_alloc.o: src/memory/mem_alloc.cpp
 src/memory/mem_alloc.co: src/memory/mem_alloc.c
 	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_alloc.co src/memory/mem_alloc.c
 
-src/memory/mem_free.o: src/memory/mem_free.cpp
-	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.o src/memory/mem_free.cpp
+#src/memory/mem_free.o: src/memory/mem_free.cpp
+#	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.o src/memory/mem_free.cpp
 
 src/memory/mem_free.co: src/memory/mem_free.c
 	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.co src/memory/mem_free.c

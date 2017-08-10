@@ -9,13 +9,13 @@ mdl::firefly::types::err_t mdl::firefly::pulse_audio::play_sample(types::afforma
 	switch(__afformat) {
 		case system::WAV: {
 			types::wav_disc_t *wav_disc = (types::wav_disc_t *)this-> aud_disc;
-			types::adisc_t adisc = {
+			types::adesc_t adesc = {
 				.format = __aformat,
 				.rate = wav_disc-> sample_rate,
 				.chn_c = wav_disc-> chn_c
 			};
 
-			this-> play_sample(adisc);
+			this-> play_sample(adesc);
 			break;
 		}
 		default:
@@ -52,13 +52,13 @@ mdl::firefly::types::err_t mdl::firefly::pulse_audio::configure(types::afformat_
 	return FFLY_SUCCESS;
 }
 
-mdl::firefly::types::err_t mdl::firefly::pulse_audio::play_sample(types::adisc_t __adisc, u8_t *__abuff, std::size_t __abuff_size) {
+mdl::firefly::types::err_t mdl::firefly::pulse_audio::play_sample(types::adesc_t __adesc, u8_t *__abuff, std::size_t __abuff_size) {
 	pa_sample_spec *sample_spec = (pa_sample_spec *)memory::mem_alloc(sizeof(pa_sample_spec));
 	if (sample_spec == NULL) return FFLY_FAILURE;
 
 	pa_sample_format_t format;
 
-	switch (__adisc.format) {
+	switch (__adesc.format) {
 		case system::S16_LE:
 			format = PA_SAMPLE_S16LE;
 		break;
@@ -72,8 +72,8 @@ mdl::firefly::types::err_t mdl::firefly::pulse_audio::play_sample(types::adisc_t
 	}
 
 	sample_spec-> format = format;
-	sample_spec-> rate = __adisc.rate;
-	sample_spec-> channels = __adisc.chn_c;
+	sample_spec-> rate = __adesc.rate;
+	sample_spec-> channels = __adesc.chn_c;
 
 	if (this-> play_sample("firefly-audio", "firefly-stream", sample_spec, __abuff, __abuff_size) == FFLY_FAILURE) {
 		fprintf(stderr, "pulse_audio: failed to play sample.\n");

@@ -1,5 +1,5 @@
-# ifndef __adisc__t__h
-# define __adisc__t__h
+# ifndef __adesc__t__h
+# define __adesc__t__h
 # include "aformat_t.h"
 
 # ifdef __cplusplus
@@ -11,9 +11,9 @@ typedef struct {
 	aformat_t format;
 	u32_t rate;
 	u16_t chn_c;
-} adisc_t;
+} adesc_t;
 }
 }
 }
 # endif
-# endif /*__adisc__t__h*/
+# endif /*__adesc__t__h*/

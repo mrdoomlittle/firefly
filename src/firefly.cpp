@@ -16,7 +16,7 @@ namespace firefly {
 struct ffly_smem_buff_t *gui_btn_ev_dbuff = ffly_smem_buff_ninst(26, sizeof(types::btn_event_t));
 struct ffly_smem_buff_t *wd_ev_dbuff = ffly_smem_buff_ninst(26, sizeof(uint_t));
 bool poll_event(types::event_t& __event) {
-	if (!(__event.event_data = system::event::nxt_event(__event.event_disc))) return false;
+	if (!(__event.event_data = system::event::nxt_event(__event.event_desc))) return false;
 	system::event::event_pop();
 	return true;
 }

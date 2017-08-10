@@ -6,7 +6,7 @@ typedef struct {
 	uchar r, g, b, a;
 } colour_t;
 # else
-	# include <stdint.h>
+# include <stdint.h>
 typedef struct {
 	uint8_t r, g, b, a;
 } colour_t;

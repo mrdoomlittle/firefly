@@ -68,14 +68,15 @@ namespace mdl { class ffly_client
 	firefly::types::err_t de_init();
 
 	void shutdown();
-	typedef struct {
-		uint_t fps_count() {
-			return _this-> curr_fps;
+	struct portal_t {
+		firefly::types::err_t init(ffly_client *__ffc_ptr) {
+			this-> ffc_ptr = this-> _this = __ffc_ptr;
+			this-> pixbuff = __ffc_ptr-> window.get_pixbuff();
+			this-> wd_handle = &__ffc_ptr-> window.wd_handler;
+			return FFLY_SUCCESS;
 		}
 
-//		bool poll_event(firefly::system::event& __event) {
-//			return this-> _this-> poll_event(__event);
-//		}
+		uint_t fps_count() {return _this-> curr_fps;}
 
 		firefly::types::err_t connect_to_server(char const *__addr, u16_t __portno, uint_t __layer_id) {
 			if (_this-> layer.does_layer_exist(__layer_id)) {
@@ -103,8 +104,10 @@ namespace mdl { class ffly_client
 
 		firefly::types::pixmap_t pixbuff = nullptr;
 
-		mdl::ffly_client *_this;
-	} portal_t;
+		decltype(firefly::graphics::window::wd_handler) *wd_handle;
+		ffly_client *_this;
+		ffly_client *ffc_ptr;
+	};
 
 	firefly::types::__id_t bse_layer_id = 0;
 	firefly::layer_manager layer;

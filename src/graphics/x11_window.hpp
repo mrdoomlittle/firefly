@@ -21,7 +21,7 @@
 # include "../data/pair.hpp"
 # include "../system/stop_watch.hpp"
 # include "../system/mq_mask.hpp"
-# include "../types/event_disc_t.hpp"
+# include "../types/event_desc_t.hpp"
 # include "../types/err_t.h"
 # include "../system/timer.hpp"
 # include "../system/event_types.hpp"
@@ -86,10 +86,12 @@ class x11_window: public wd_flags
 		return FFLY_SUCCESS;
 	}
 
+	Display *display;
+
 	types::err_t init_report = FFLY_SUCCESS;
 	private:
-	system::mq_mask<data::pair<types::event_disc_t, uint_t>> *ev_queue;
-//	std::queue<data::pair<types::event_disc_t, uint_t>> *ev_queue;
+	system::mq_mask<data::pair<types::event_desc_t, uint_t>> *ev_queue;
+//	std::queue<data::pair<types::event_desc_t, uint_t>> *ev_queue;
 	boost::thread::native_handle_type native_handle;
 	u16_t wd_xaxis_len, wd_yaxis_len;
 	char *frame_title;

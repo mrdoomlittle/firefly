@@ -15,7 +15,7 @@
 # include "../types/colour_t.hpp"
 # include "../types/coords_t.hpp"
 # include "../types/err_t.h"
-# include "../types/event_disc_t.hpp"
+# include "../types/event_desc_t.hpp"
 //# include <queue>
 # include "../system/mq_mask.hpp"
 # include "../data/pair.hpp"
@@ -110,12 +110,12 @@ class window {
 		return FFLY_SUCCESS;
 	}
 
-	types::err_t nxt_event(types::event_disc_t& __event_disc, uint_t& __event_data) {
+	types::err_t nxt_event(types::event_desc_t& __event_desc, uint_t& __event_data) {
 		if (this-> ev_queue.empty()) {
 			ffly_errno = FF_ERR_WDEQE;
 			return FFLY_FAILURE;
 		}
-		__event_disc = this-> ev_queue.front().first;
+		__event_desc = this-> ev_queue.front().first;
 		__event_data = this-> ev_queue.front().second;
 		return FFLY_SUCCESS;
 	}
@@ -123,8 +123,8 @@ class window {
 	void event_pop() {this-> ev_queue.pop();}
 
 	private:
-	system::mq_mask<data::pair<types::event_disc_t, uint_t>> ev_queue;
-//	std::queue<data::pair<types::event_disc_t, uint_t>> ev_queue;
+	system::mq_mask<data::pair<types::event_desc_t, uint_t>> ev_queue;
+//	std::queue<data::pair<types::event_desc_t, uint_t>> ev_queue;
 	types::err_t init_report = FFLY_FAILURE;
 	u16_t wd_xaxis_len = 0, wd_yaxis_len = 0;
 	char const *frame_title = nullptr;

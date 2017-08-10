@@ -10,7 +10,7 @@
 # include "memory/mem_free.h"
 # include "system/errno.h"
 # include "types/err_t.h"
-# include "types/adisc_t.h"
+# include "types/adesc_t.h"
 # include "types/afformat_t.h"
 # include "ffly_audio.hpp"
 # include "types/audio/wav_disc_t.h"
@@ -46,7 +46,7 @@ class pulse_audio {
 
 	types::err_t configure(types::afformat_t __afformat, types::aformat_t __aformat);
 
-	types::err_t play_sample(types::adisc_t __adisc, u8_t *__abuff = nullptr, std::size_t __abuff_size = 0);
+	types::err_t play_sample(types::adesc_t __adesc, u8_t *__abuff = nullptr, std::size_t __abuff_size = 0);
 
 	types::err_t play_sample(char const *__name, char const *__stream_name, struct pa_sample_spec *__sample_spec = nullptr, u8_t *__abuff = nullptr, std::size_t __abuff_size = 0);
 	private:

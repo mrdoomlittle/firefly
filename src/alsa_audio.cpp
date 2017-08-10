@@ -27,7 +27,7 @@ mdl::firefly::types::err_t mdl::firefly::alsa_audio::configure(types::afformat_t
 	return FFLY_SUCCESS;
 }
 
-mdl::firefly::types::err_t mdl::firefly::alsa_audio::play_sample(types::adisc_t __adisc, types::aformat_t __aformat, uint_t __period_c, snd_pcm_uframes_t __period_size) {
+mdl::firefly::types::err_t mdl::firefly::alsa_audio::play_sample(types::adesc_t __adesc, types::aformat_t __aformat, uint_t __period_c, snd_pcm_uframes_t __period_size) {
 	snd_pcm_t *pcm_handle = NULL;
 	snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;
 	snd_pcm_hw_params_t *hw_params;
@@ -72,12 +72,12 @@ mdl::firefly::types::err_t mdl::firefly::alsa_audio::play_sample(types::adisc_t 
 		return FFLY_FAILURE;
 	}
 
-	if ((any_err = snd_pcm_hw_params_set_rate(pcm_handle, hw_params, __adisc.rate, 0)) < 0) {
+	if ((any_err = snd_pcm_hw_params_set_rate(pcm_handle, hw_params, __adesc.rate, 0)) < 0) {
 		fprintf(stderr, "alsa_audio: bit rate is not surported or ?, errno: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
 
-	if ((any_err = snd_pcm_hw_params_set_channels(pcm_handle, hw_params, __adisc.chn_c)) < 0) {
+	if ((any_err = snd_pcm_hw_params_set_channels(pcm_handle, hw_params, __adesc.chn_c)) < 0) {
 		fprintf(stderr, "alsa_audio: failed to set channels, errno: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
@@ -102,7 +102,7 @@ mdl::firefly::types::err_t mdl::firefly::alsa_audio::play_sample(types::adisc_t 
 		return FFLY_FAILURE;
 	}
 
-	blk_len = __adisc.chn_c * blk_len;
+	blk_len = __adesc.chn_c * blk_len;
 
 	uint_t frame_c = __period_size >> 2;
 	uint_t fs = blk_len * frame_c;

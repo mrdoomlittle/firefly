@@ -1,5 +1,4 @@
 # include "x11_window.hpp"
-
 mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_xaxis_len, u16_t __wd_yaxis_len, char const *__frame_title) {
 	printf("thread started.\n");
 	if (this-> is_wd_flag(FLG_WD_KILLED)) return FFLY_SUCCESS;
@@ -43,6 +42,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_
         printf("display error.\n");
         return FFLY_FAILURE;
     }
+	this-> display = _display;
 
 	int _screen = DefaultScreen(_display);
 
@@ -147,7 +147,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::x11_window::begin(u16_t __wd_
 				if (this-> ev_queue-> size() > system::config.mx_queue_size) break;
 
 			XNextEvent(_display, &_xevent);
-			data::pair<types::event_disc_t, uint_t> event;
+			data::pair<types::event_desc_t, uint_t> event;
 			bool unreg_event = false;
 			switch(_xevent.type) {
 				case ClientMessage:
