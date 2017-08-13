@@ -1,27 +1,27 @@
 # include "scale_pixmap.hpp"
 
-mdl::firefly::types::err_t mdl::firefly::data::cpu_scale_pixmap(types::pixmap_t& __pixmap, uint_t& __xaxis_len, uint_t& __yaxis_len, int_t __xscale, int_t __yscale, boost::int8_t __type) {
+mdl::firefly::types::err_t mdl::firefly::data::cpu_scale_pixmap(types::pixmap_t& __pixmap, uint_t& __xa_len, uint_t& __ya_len, int_t __xscale, int_t __yscale, boost::int8_t __type) {
 	if (__xscale < 1 && __yscale < 1) return FFLY_NOP;
-	uint_t xaxis_len = __xaxis_len * __xscale;
-	uint_t yaxis_len = __yaxis_len * __yscale;
+	uint_t xa_len = __xa_len*__xscale;
+	uint_t ya_len = __ya_len*__yscale;
 
 	types::pixmap_t pixmap;
-	if ((pixmap = memory::alloc_pixmap(xaxis_len, yaxis_len)) == NULL) {
+	if ((pixmap = memory::alloc_pixmap(xa_len, ya_len)) == NULL) {
 		return FFLY_FAILURE;
 	}
 
 	if (__type == CUBIC_SCALE) {
-		uint_t __xaxis = 0, __yaxis = 0;
-		uint_t xaxis = 0, yaxis = 0;
-		while(yaxis != __yaxis_len) {
-			__xaxis = 0;
-			xaxis = 0;
-			while(xaxis != __xaxis_len) {
-				uint_t pix_point = (xaxis + (yaxis * __xaxis_len)) * 4;
+		uint_t __xa = 0, __ya = 0;
+		uint_t xa = 0, ya = 0;
+		while(ya != __ya_len) {
+			__xa = 0;
+			xa = 0;
+			while(xa != __xa_len) {
+				uint_t pix_point = (xa + (ya * __xa_len)) * 4;
 
-				for (uint_t _yaxis = __yaxis; _yaxis != __yaxis + __yscale; _yaxis ++) {
-					for (uint_t _xaxis = __xaxis; _xaxis != __xaxis + __xscale; _xaxis ++) {
-						uint_t _pix_point = (_xaxis + (_yaxis * xaxis_len)) * 4;
+				for (uint_t _ya = __ya; _ya != __ya + __yscale; _ya ++) {
+					for (uint_t _xa = __xa; _xa != __xa + __xscale; _xa ++) {
+						uint_t _pix_point = (_xa + (_ya * xa_len)) * 4;
 
 						pixmap[_pix_point] = __pixmap[pix_point];
 						pixmap[_pix_point + 1] = __pixmap[pix_point + 1];
@@ -29,67 +29,96 @@ mdl::firefly::types::err_t mdl::firefly::data::cpu_scale_pixmap(types::pixmap_t&
 						pixmap[_pix_point + 3] = __pixmap[pix_point + 3];
 					}
 				}
-				__xaxis += __xscale;
-				xaxis ++;
+				__xa += __xscale;
+				xa ++;
 			}
-			__yaxis += __yscale;
-			yaxis ++;
+			__ya += __yscale;
+			ya ++;
 		}
 
 		goto finish;
 	}
 
 	if (__type == LINEAR_SCALE) {
-		return FFLY_NOP;
-		uint_t __xaxis = 0, __yaxis = 0;
-		uint_t xaxis = 0, yaxis = 0;
+		uint_t __xa{}, __ya{};
+		uint_t xa{}, ya{};
+		while(ya != __ya_len) {
+			__xa = 0;
+			xa = 0;
+			while(xa != __xa_len) {
+				uint_t pix_loc = (xa+(ya*__xa_len))*4;
+				float tl_eg_r, tl_eg_g, tl_eg_b, tl_eg_a;
+				float tr_eg_r, tr_eg_g, tr_eg_b, tr_eg_a;
+				float bl_eg_r, bl_eg_g, bl_eg_b, bl_eg_a;
+				float br_eg_r, br_eg_g, br_eg_b, br_eg_a;
 
-		while(yaxis != __yaxis_len) {
-			__xaxis = 0;
-			xaxis = 0;
-			while(xaxis != __xaxis_len) {
-				uint_t pix_point = (xaxis + (yaxis * __xaxis_len)) * 4;
+				tl_eg_r = (float)__pixmap[pix_loc];
+				tl_eg_g = (float)__pixmap[pix_loc+1];
+				tl_eg_b = (float)__pixmap[pix_loc+2];
+				tl_eg_a = (float)__pixmap[pix_loc+3];
 
-				uint_t y_fs = 0;
-				for (uint_t _yaxis = __yaxis; _yaxis != __yaxis + __yscale; _yaxis ++) {
-					uint_t x_fs = 0;
-					for (uint_t _xaxis = __xaxis; _xaxis != __xaxis + __xscale; _xaxis ++) {
-						uint_t _pix_point = (_xaxis + (_yaxis * xaxis_len)) * 4;
+				tr_eg_r = (float)__pixmap[pix_loc+4];
+				tr_eg_g = (float)__pixmap[pix_loc+4+1];
+				tr_eg_b = (float)__pixmap[pix_loc+4+2];
+				tr_eg_a = (float)__pixmap[pix_loc+4+3];
 
-						if (xaxis == __xaxis_len - 1){
-							pixmap[_pix_point] = __pixmap[pix_point];
-							pixmap[_pix_point + 1] = __pixmap[pix_point + 1];
-							pixmap[_pix_point + 2] = __pixmap[pix_point + 2];
-							pixmap[_pix_point + 3] = __pixmap[pix_point + 3];
-							continue;
-						}
+				bl_eg_r = (float)__pixmap[pix_loc+(__xa_len*4)];
+				bl_eg_g = (float)__pixmap[pix_loc+(__xa_len*4)+1];
+				bl_eg_b = (float)__pixmap[pix_loc+(__xa_len*4)+2];
+				bl_eg_a = (float)__pixmap[pix_loc+(__xa_len*4)+3];
 
-						pixmap[_pix_point] = pixmap[_pix_point+1] = pixmap[_pix_point +2] = 0;
+				br_eg_r = (float)__pixmap[pix_loc+(__xa_len*4)+4];
+				br_eg_g = (float)__pixmap[pix_loc+(__xa_len*4)+4+1];
+				br_eg_b = (float)__pixmap[pix_loc+(__xa_len*4)+4+2];
+				br_eg_a = (float)__pixmap[pix_loc+(__xa_len*4)+4+3];
 
-						float _1c, _2c, _3c, _4c, _5c, _6c;
+				for (uint_t _ya{__ya}; _ya != __ya+__yscale; _ya++) {
+					for (uint_t _xa{__xa}; _xa != __xa+__xscale; _xa++) {
+						uint_t _pix_loc = (_xa+(_ya*xa_len))*4;
+						float xa_dist = (float)_xa-(float)__xa;
+						float ya_dist = (float)_ya-(float)__ya;
 
-						_1c = ((float)__pixmap[pix_point] / (float)__xscale) * ((float)__xscale - (float)x_fs);
-						_2c = ((float)__pixmap[pix_point + 4] / (float)__xscale) * (float)x_fs;
-						pixmap[_pix_point] = (types::byte_t)((float)__pixmap[pix_point] * (_1c + _2c) / 255);
+						float _tr = (((((float)__xscale-(float)xa_dist)*(tl_eg_r/(float)__xscale))*tl_eg_r)+(((float)xa_dist*(tr_eg_r/(float)__xscale))*tr_eg_r))/255.0;
+						float _br = (((((float)__xscale-(float)xa_dist)*(bl_eg_r/(float)__xscale))*bl_eg_r)+(((float)xa_dist*(br_eg_r/(float)__xscale))*br_eg_r))/255.0;
 
-						_1c = ((float)__pixmap[pix_point + 1] / (float)__xscale) * ((float)__xscale - (float)x_fs);
-						_2c = ((float)__pixmap[pix_point + 4 + 1] / (float)__xscale) * (float)x_fs;
-						pixmap[_pix_point + 1] = (types::byte_t)((float)__pixmap[pix_point + 1] * (_1c + _2c) / 255);
+						float _lr = (((((float)__yscale-(float)ya_dist)*(tl_eg_r/(float)__yscale))*tl_eg_r)+(((float)ya_dist*(bl_eg_r/(float)__yscale))*bl_eg_r))/255.0;
+						float _rr = (((((float)__yscale-(float)ya_dist)*(tr_eg_r/(float)__yscale))*tr_eg_r)+(((float)ya_dist*(br_eg_r/(float)__yscale))*br_eg_r))/255.0;
 
-						_1c = ((float)__pixmap[pix_point + 2] / (float)__xscale) * ((float)__xscale - (float)x_fs);
-						_2c = ((float)__pixmap[pix_point + 4 + 2] / (float)__xscale) * (float)x_fs;
-						pixmap[_pix_point + 2] = (types::byte_t)((float)__pixmap[pix_point + 2] * (_1c + _2c) / 255);
+						float r = ((((float)__xscale-(float)xa_dist)*(_lr/(float)__xscale))*_lr)+(((float)xa_dist*(_rr/(float)__xscale))*_rr)+((((float)__yscale-(float)ya_dist)*(_tr/(float)__yscale))*_tr)+(((float)ya_dist*(_br/(float)__yscale))*_br);
+						r /= 2;
 
-						pixmap[_pix_point + 3] = __pixmap[pix_point + 3];
-						x_fs ++;
+						float _tg = (((((float)__xscale-(float)xa_dist)*(tl_eg_g/(float)__xscale))*tl_eg_g)+(((float)xa_dist*(tr_eg_g/(float)__xscale))*tr_eg_g))/255.0;
+						float _bg = (((((float)__xscale-(float)xa_dist)*(bl_eg_g/(float)__xscale))*bl_eg_g)+(((float)xa_dist*(br_eg_g/(float)__xscale))*br_eg_g))/255.0;
+
+						float _lg = (((((float)__yscale-(float)ya_dist)*(tl_eg_g/(float)__yscale))*tl_eg_g)+(((float)ya_dist*(bl_eg_g/(float)__yscale))*bl_eg_g))/255.0;
+						float _rg = (((((float)__yscale-(float)ya_dist)*(tr_eg_g/(float)__yscale))*tr_eg_g)+(((float)ya_dist*(br_eg_g/(float)__yscale))*br_eg_g))/255.0;
+
+						float g = ((((float)__xscale-(float)xa_dist)*(_lg/(float)__xscale))*_lg)+(((float)xa_dist*(_rg/(float)__xscale))*_rg)+((((float)__yscale-(float)ya_dist)*(_tg/(float)__yscale))*_tg)+(((float)ya_dist*(_bg/(float)__yscale))*_bg);
+						g /= 2;
+
+						float _tb = (((((float)__xscale-(float)xa_dist)*(tl_eg_b/(float)__xscale))*tl_eg_b)+(((float)xa_dist*(tr_eg_b/(float)__xscale))*tr_eg_b))/255.0;
+						float _bb = (((((float)__xscale-(float)xa_dist)*(bl_eg_b/(float)__xscale))*bl_eg_b)+(((float)xa_dist*(br_eg_b/(float)__xscale))*br_eg_b))/255.0;
+
+						float _lb = (((((float)__yscale-(float)ya_dist)*(tl_eg_b/(float)__yscale))*tl_eg_b)+(((float)ya_dist*(bl_eg_b/(float)__yscale))*bl_eg_b))/255.0;
+						float _rb = (((((float)__yscale-(float)ya_dist)*(tr_eg_b/(float)__yscale))*tr_eg_b)+(((float)ya_dist*(br_eg_b/(float)__yscale))*br_eg_b))/255.0;
+
+						float b = ((((float)__xscale-(float)xa_dist)*(_lb/(float)__xscale))*_lb)+(((float)xa_dist*(_rb/(float)__xscale))*_rb)+((((float)__yscale-(float)ya_dist)*(_tb/(float)__yscale))*_tb)+(((float)ya_dist*(_bb/(float)__yscale))*_bb);
+						b /= 2;
+
+
+						pixmap[_pix_loc] = (types::byte_t)(r/255.0);
+						pixmap[_pix_loc+1] = (types::byte_t)(g/255.0);
+						pixmap[_pix_loc+2] = (types::byte_t)(b/255.0);
+						pixmap[_pix_loc+3] = 255;
+
+						//printf("r: %u,	g: %u,	b: %u,	a: %u\n", pixmap[_pix_loc], pixmap[_pix_loc+1], pixmap[_pix_loc+2], pixmap[_pix_loc+3]);
 					}
-					y_fs ++;
 				}
-				__xaxis += __xscale;
-				xaxis ++;
+				__xa += __xscale;
+				xa++;
 			}
-			__yaxis += __yscale;
-			yaxis ++;
+			__ya += __yscale;
+			ya++;
 		}
 		goto finish;
 	}
@@ -101,8 +130,8 @@ mdl::firefly::types::err_t mdl::firefly::data::cpu_scale_pixmap(types::pixmap_t&
 	memory::mem_free(__pixmap);
 	__pixmap = pixmap;
 
-	__xaxis_len = xaxis_len;
-	__yaxis_len = yaxis_len;
+	__xa_len = xa_len;
+	__ya_len = ya_len;
 
 	return FFLY_SUCCESS;
 }
