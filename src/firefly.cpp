@@ -1,4 +1,5 @@
 # include "firefly.hpp"
+struct mdl::firefly::_core_portal mdl::firefly::core_portal;
 mdl::firefly::types::err_t mdl::firefly::init() {
 	ffly_memory::init();
 	ffly_system::init();
@@ -13,9 +14,18 @@ mdl::firefly::types::err_t mdl::firefly::de_init() {
 
 namespace mdl {
 namespace firefly {
+types::err_t init_core_portal(graphics::window *__window) {
+	core_portal = (struct mdl::firefly::_core_portal) {
+		pointer_coords:&__window->pointer_coords,
+		wd_coords:&__window->wd_coords,
+		wd_xa_len:&__window->wd_xaxis_len,
+		wd_ya_len:&__window->wd_yaxis_len
+	};
+}
+
 struct ffly_smem_buff_t *gui_btn_ev_dbuff = ffly_smem_buff_ninst(26, sizeof(types::btn_event_t));
 struct ffly_smem_buff_t *wd_ev_dbuff = ffly_smem_buff_ninst(26, sizeof(uint_t));
-bool poll_event(types::event_t& __event) {
+types::bool_t poll_event(types::event_t& __event) {
 	if (!(__event.event_data = system::event::nxt_event(__event.event_desc))) return false;
 	system::event::event_pop();
 	return true;
@@ -23,13 +33,13 @@ bool poll_event(types::event_t& __event) {
 
 void pev_collapse(types::event_id_t __event_id) {
 	switch(__event_id) {
-		case system::GUI_BTN_EID:
+		case system::event_id::gui_btn:
 			ffly_smem_buff_pop(gui_btn_ev_dbuff, NULL);
 		break;
-		case system::KEY_EID:
+		case system::event_id::key:
 			ffly_smem_buff_pop(wd_ev_dbuff, NULL);
 		break;
-		case system::BTN_EID:
+		case system::event_id::btn:
 			ffly_smem_buff_pop(wd_ev_dbuff, NULL);
 		break;
 	}

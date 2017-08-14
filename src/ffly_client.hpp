@@ -39,6 +39,7 @@
 #   include "types/uni_prop_t.hpp"
 # endif
 # include "types/id_t.hpp"
+# include "system/io.h"
 namespace mdl { class ffly_client
 {
 	public:
@@ -54,7 +55,6 @@ namespace mdl { class ffly_client
 
 	~ffly_client() {
 		printf("ffly_client has safly shutdown.\n");
-//		this-> cu_clean();
 	}
 
 	/* forward all events e.g. window, obj, etc. to the core event queue.
@@ -70,41 +70,38 @@ namespace mdl { class ffly_client
 	void shutdown();
 	struct portal_t {
 		firefly::types::err_t init(ffly_client *__ffc_ptr) {
-			this-> ffc_ptr = this-> _this = __ffc_ptr;
-			this-> pixbuff = __ffc_ptr-> window.get_pixbuff();
-			this-> wd_handle = &__ffc_ptr-> window.wd_handler;
+			this->ffc_ptr = this->_this = __ffc_ptr;
+			this->pixbuff = __ffc_ptr->window.get_pixbuff();
+			this->wd_handle = &__ffc_ptr->window.wd_handle;
 			return FFLY_SUCCESS;
 		}
 
-		uint_t fps_count() {return _this-> curr_fps;}
+		uint_t fps_count() {return _this->curr_fps;}
 
 		firefly::types::err_t connect_to_server(char const *__addr, u16_t __portno, uint_t __layer_id) {
-			if (_this-> layer.does_layer_exist(__layer_id)) {
+			if (_this->layer.does_layer_exist(__layer_id)) {
 				fprintf(stderr, "error the layer for the camera does not exist.\n");
 				return FFLY_FAILURE;
 			}
 
-			firefly::types::layer_info_t layer_info = _this-> layer.get_layer_info(__layer_id);
+			firefly::types::layer_info_t layer_info = _this->layer.get_layer_info(__layer_id);
 
-			if (layer_info.xaxis_len != _this-> cam_xlen || layer_info.yaxis_len != _this-> cam_ylen) {
+			if (layer_info.xaxis_len != _this->cam_xlen || layer_info.yaxis_len != _this->cam_ylen) {
 				fprintf(stderr, "error layer size does not match the camera size.\n");
 				return FFLY_FAILURE;
 			}
 
-			_this-> server_ipaddr = __addr;
-			_this-> server_portno = __portno;
-			_this-> cam_layer_id = __layer_id;
+			_this->server_ipaddr = __addr;
+			_this->server_portno = __portno;
+			_this->cam_layer_id = __layer_id;
 
 			return FFLY_SUCCESS;
 		}
 
-		bool server_connected() {
-			return _this-> server_connected;
-		}
-
+		bool server_connected() {return _this->server_connected;}
 		firefly::types::pixmap_t pixbuff = nullptr;
 
-		decltype(firefly::graphics::window::wd_handler) *wd_handle;
+		decltype(firefly::graphics::window::wd_handle) *wd_handle;
 		ffly_client *_this;
 		ffly_client *ffc_ptr;
 	};
@@ -133,7 +130,6 @@ namespace mdl { class ffly_client
 
 	uint_t cam_layer_id = 0;
 	uint_t curr_fps = 0;
-	uint_t fps_counter = 0;
 
 	uint_t cam_xlen = 0, cam_ylen = 0;
 	uint_t cam_pm_size = 0;
@@ -143,8 +139,8 @@ namespace mdl { class ffly_client
 # ifdef __WITH_OBJ_MANAGER
 	firefly::obj_manager *obj_manager = nullptr;
 	void manage_objs() {
-		if (this-> obj_manager == nullptr) return;
-		this-> obj_manager-> manage();
+		if (this->obj_manager == nullptr) return;
+		this->obj_manager->manage();
 	}
 # endif
 

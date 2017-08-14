@@ -59,7 +59,7 @@ else ifeq ($(GPU_CL_TYPE), -DUSING_CUDA)
  FFLY_OBJECTS+= src/cuda_helper.o
 endif
 
-FFLY_OBJECTS += src/system/config.o src/firefly.o src/ffly_memory.o src/system/errno.o
+FFLY_OBJECTS += src/system/vec.o src/data/swp.o src/data/byte_ncpy.o src/system/time.o src/system/config.o src/firefly.o src/ffly_memory.o src/system/errno.o src/system/io.o
 ## core memory stuff
 FFLY_OBJECTS += src/memory/mem_alloc.o src/memory/mem_alloc.co src/memory/mem_free.co src/memory/mem_realloc.co #src/memory/alloc_pixmap.o
 CXXFLAGS += $(FFLY_TARGET)
@@ -89,6 +89,24 @@ all: ffly_test
 endif
 
 FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+
+src/system/vec.o: src/system/vec.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/vec.o src/system/vec.c
+
+src/data/swp.o: src/data/swp.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/swp.o src/data/swp.c
+
+src/system/vec.o: src/system/vec.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/vec.o src/system/vec.c
+
+src/data/byte_ncpy.o: src/data/byte_ncpy.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/byte_ncpy.o src/data/byte_ncpy.c
+
+src/system/time.o: src/system/time.c
+	gcc -c -Wall -std=gnu11 -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/time.o src/system/time.c
+
+src/system/io.o: src/system/io.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/io.o src/system/io.c
 
 src/system/smem_buff.o: src/system/smem_buff.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/smem_buff.o src/system/smem_buff.c
@@ -305,7 +323,9 @@ relocate_headers:
 	if ! [ -d $(CURR_DIR)/inc/firefly/graphics ]; then \
 		mkdir $(CURR_DIR)/inc/firefly/graphics; \
 	fi
+
 	cp $(CURR_DIR)/src/graphics/*.hpp $(CURR_DIR)/inc/firefly/graphics
+	cp $(CURR_DIR)/src/graphics/*.h $(CURR_DIR)/inc/firefly/graphics
 
 	if ! [ -d $(CURR_DIR)/inc/firefly/networking ]; then \
 		mkdir $(CURR_DIR)/inc/firefly/networking; \

@@ -30,47 +30,49 @@ class uni_manager {
 	types::err_t init(uint_t __xa_split, uint_t __ya_split, uint_t __za_split);
 	void get_cnk_coords(uint_t __xa, uint_t __ya, uint_t __za, uint_t& __cnk_xa, uint_t& __cnk_ya, uint_t& __cnk_za);
 	void __inline__ get_cnk_coords(types::_3d_coords_t<> __coords, uint_t& __cnk_xa, uint_t& __cnk_ya, uint_t& __cnk_za) {
-		this-> get_cnk_coords(__coords.xaxis, __coords.yaxis, __coords.zaxis, __cnk_xa, __cnk_ya, __cnk_za);}
+		this->get_cnk_coords(__coords.xaxis, __coords.yaxis, __coords.zaxis, __cnk_xa, __cnk_ya, __cnk_za);}
 
 	types::err_t de_init() {
-		this-> _chunk_manager-> de_init();
-		if (this-> cnk_id_indx != nullptr)
-			memory::mem_free(this-> cnk_id_indx);
-		if (this-> _1d_uni_pm != nullptr)
-			memory::mem_free(this-> _1d_uni_pm);
-		if (this-> uni_particles != nullptr)
-			memory::mem_free(this-> uni_particles);
+		if (this->_chunk_manager != nullptr)
+			this->_chunk_manager->de_init();
+
+		if (this->cnk_id_indx != nullptr)
+			memory::mem_free(this->cnk_id_indx);
+		if (this->_1d_uni_pm != nullptr)
+			memory::mem_free(this->_1d_uni_pm);
+		if (this->uni_particles != nullptr)
+			memory::mem_free(this->uni_particles);
 		return FFLY_SUCCESS;
 	}
 
 	types::_1d_pm_t _1d_cnk_pm(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
-		return this-> _1d_uni_pm[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];}
+		return this->_1d_uni_pm[__xcnk + (__ycnk * this->cnk_xc) + (__zcnk * this->cnk_xc * this->cnk_yc)];}
 	types::_3d_pm_t _3d_cnk_pm(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
-		return this-> _3d_uni_pm[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];}
+		return this->_3d_uni_pm[__xcnk + (__ycnk * this->cnk_xc) + (__zcnk * this->cnk_xc * this->cnk_yc)];}
 
 	types::_1d_pm_t get_1d_cnk_pm(uint_t __xa, uint_t __ya, uint_t __za);
 	types::_3d_pm_t get_3d_cnk_pm(uint_t __xa, uint_t __ya, uint_t __za);
 
 	types::_1d_pm_t __inline__ _1d_cnk_pm(types::_3d_coords_t<> __coords) {
-		return this-> get_1d_cnk_pm(__coords.xaxis, __coords.yaxis, __coords.zaxis);}
+		return this->get_1d_cnk_pm(__coords.xaxis, __coords.yaxis, __coords.zaxis);}
 	types::_3d_pm_t __inline__ _3d_cnk_pm(types::_3d_coords_t<> __coords) {
-		return this-> get_3d_cnk_pm(__coords.xaxis, __coords.yaxis, __coords.zaxis);}
+		return this->get_3d_cnk_pm(__coords.xaxis, __coords.yaxis, __coords.zaxis);}
 
 	types::uni_par_t* cnk_particles(uint_t __xcnk, uint_t __ycnk, uint_t __zcnk) {
-		return this-> uni_particles[__xcnk + (__ycnk * this-> cnk_xc) + (__zcnk * this-> cnk_xc * this-> cnk_yc)];}
+		return this->uni_particles[__xcnk + (__ycnk * this->cnk_xc) + (__zcnk * this->cnk_xc * this->cnk_yc)];}
 
 	types::uni_par_t* cnk_particles(types::_3d_coords_t<> __coords) {
 		uint_t xcnk, ycnk, zcnk;
-		this-> get_cnk_coords(__coords, xcnk, ycnk, zcnk);
-		return this-> cnk_particles(xcnk, ycnk, zcnk);
+		this->get_cnk_coords(__coords, xcnk, ycnk, zcnk);
+		return this->cnk_particles(xcnk, ycnk, zcnk);
 	}
 
 	void set_par_colour(uint_t __xa, uint_t __ya, uint_t __za, u8_t __r, u8_t __g, u8_t __b, u8_t __a);
 	void get_par_colour(uint_t __xa, uint_t __ya, uint_t __za, u8_t& __r, u8_t& __g, u8_t& __b, u8_t& __a);
 
-	uint_t get_cnk_xlen() {return this-> _chunk_manager-> get_cnk_xlen();}
-	uint_t get_cnk_ylen() {return this-> _chunk_manager-> get_cnk_ylen();}
-	uint_t get_cnk_zlen() {return this-> _chunk_manager-> get_cnk_zlen();}
+	uint_t get_cnk_xlen() {return this->_chunk_manager->get_cnk_xlen();}
+	uint_t get_cnk_ylen() {return this->_chunk_manager->get_cnk_ylen();}
+	uint_t get_cnk_zlen() {return this->_chunk_manager->get_cnk_zlen();}
 
 	types::err_t draw_cnk(uint_t __xfs, uint_t __yfs, uint_t __zfs, types::id_t __chunk_id, types::pixmap_t __pixbuff, uint_t __xaxis_len, uint_t __yaxis_len);
 	chunk_manager *_chunk_manager = nullptr;

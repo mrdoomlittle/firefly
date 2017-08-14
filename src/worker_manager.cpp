@@ -10,7 +10,7 @@ mdl::firefly::types::err_t mdl::firefly::worker_manager::add_worker(types::id_t&
 	*worker_id = this-> worker_indx.size();
 	__worker_id = worker_id;
 
-	this-> worker_indx.resize(this-> worker_indx.size() + 1);
+	this-> worker_indx.resize(this-> worker_indx.size()+1);
 
 	if ((std::get<0>(this-> worker_indx[*worker_id]) = memory::alloc_pixmap(
 		this-> chunk_xaxis_len,

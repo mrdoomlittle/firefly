@@ -13,6 +13,8 @@
 # include <errno.h>
 # include "../types/err_t.h"
 # include "../maths/is_inside.hpp"
+# include "../system/io.hpp"
+# include "../core_portal.h"
 # define OUTLINE_WIDTH 14
 namespace mdl {
 namespace firefly {
@@ -27,22 +29,23 @@ class wd_frame {
 
 	bool is_inside();
 
-	void set_pixmap(types::pixmap_t __pixmap) {this-> pixmap = __pixmap;}
-	types::coords_t<u16_t> get_coords() {return this-> coords;}
+	void set_pixmap(types::pixmap_t __pixmap) {this->pixmap = __pixmap;}
+	types::coords_t<u16_t> get_coords() {return this->coords;}
 
 	types::err_t de_init() {
-		if (this-> pixmap) {
-			memory::mem_free(this-> pixmap);
-			this-> pixmap = nullptr;
+		if (this->pixmap) {
+			memory::mem_free(this->pixmap);
+			this->pixmap = nullptr;
 		} else
 			printf("wd_frame: info, pixmap already freed. skipping - de_init.\n");
 		return FFLY_SUCCESS;
 	}
 
-	void (* ex_fptr)(void *) = nullptr;
+	void (*ex_fptr)(void*) = nullptr;
 	void *ex_arg = nullptr;
 
-	types::coords_t<u16_t> *mouse_coords = nullptr;
+	types::coords_t<u16_t> *mouse_coords;
+
 	private:
 	types::coords_t<u8_t> ex_btn_coords;
 	types::dsize_t ex_btn_size;

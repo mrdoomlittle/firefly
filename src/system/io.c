@@ -8,7 +8,7 @@ mdl::u8_t static ffly_arg_id(char *__arg) {
 	}
 }
 */
-void ffly_printf(FILE *__stream, char *__str, ...) {
+void ffly_printf(FILE *__stream, char const *__str, ...) {
 	va_list args;
 	va_start(args, __str);
 /*

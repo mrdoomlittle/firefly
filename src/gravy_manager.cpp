@@ -59,12 +59,12 @@ mdl::firefly::types::err_t mdl::firefly::gravy_manager::manage(obj_manager *__ob
 		uint_t me_y = __obj_manager-> get_yaxis(__obj_id), other_y = __obj_manager-> get_yaxis(pool_ele.obj_id);
 
 		if (me_y < other_y)
-			delta_y = other_y - me_y;
+			delta_y = other_y-me_y;
 		else
-			delta_y = me_y - other_y;
+			delta_y = me_y-other_y;
 
-		uint_t deltaerr = abs(delta_y / delta_x);
-		uint_t error = deltaerr - 0.5;
+		uint_t deltaerr = abs(delta_y/delta_x);
+		uint_t error = deltaerr-0.5;
 
 		if (me_x < other_x) {
 			if (__obj_manager-> xaxis_direction(__obj_id) != FFLY_DIR_PUSH) {
@@ -107,7 +107,7 @@ mdl::firefly::types::err_t mdl::firefly::gravy_manager::manage(obj_manager *__ob
 		printf("velos [x: %d, y: %d]\n", __obj_manager-> get_xaxis_velos(__obj_id), __obj_manager-> get_yaxis_velos(__obj_id));
 
 		pool_ele.inited = false;
-		o ++;
+		o++;
 	}
 
 	return FFLY_SUCCESS;

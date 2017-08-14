@@ -29,7 +29,7 @@
 # include "types/shape_info_t.hpp"
 # include "flip_dir.hpp"
 # include <mutex>
-// how many obj's will be handled in 1 thread
+// how many obj's will be handled by 1 thread
 # define BLOCK_SIZE 12
 # include "uni_manager.hpp"
 // edge, face, edge,
@@ -44,175 +44,174 @@ class obj_manager {
 	obj_manager(uni_manager *__uni_manager) : _uni_manager(__uni_manager) {};
 
 //	obj_manager(types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, uint_t __pb_zlen)
-//	: pixbuff(__pixbuff), pb_xlen(__pb_xlen), pb_ylen(__pb_ylen), pb_zlen(__pb_zlen) { this-> active_threads = 0; }
+//	: pixbuff(__pixbuff), pb_xlen(__pb_xlen), pb_ylen(__pb_ylen), pb_zlen(__pb_zlen) { this->active_threads = 0; }
 
 	~obj_manager() {}
 
 	types::err_t de_init();
 
 	types::pixmap_t get_pixmap(uint_t __obj_id) {
-		return this-> obj_index[__obj_id].second;
+		return this->obj_index[__obj_id].second;
 	}
 
 	types::__id_t add(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, types::err_t& __any_err, types::pixmap_t __pixmap = nullptr);
 
 	// change ^ to this
 	types::__id_t add_obj(types::coords_t<> __coords, types::shape_info_t __shape_info, uint_t __xaxis_len, uint_t __yaxis_len, uint_t __zaxis_len, boost::int8_t& __any_error, types::pixmap_t __pixmap = nullptr) {
-		this-> add(__coords, __shape_info, __xaxis_len, __yaxis_len, __zaxis_len, __any_error, __pixmap);
+		this->add(__coords, __shape_info, __xaxis_len, __yaxis_len, __zaxis_len, __any_error, __pixmap);
 	}
 
 	void del(uint_t __obj_id);
 	//uint_t add(uint_t __xlen, uint_t __ylen, uint_t __zlen, uint_t __xaxis, uint_t __yaxis, uint_t __zaxis); // return obj_id
 
-	uint_t get_xaxis_len(types::__id_t __obj_id) {return this-> obj_index[__obj_id].first-> xaxis_len;}
-	uint_t get_yaxis_len(types::__id_t __obj_id) {return this-> obj_index[__obj_id].first-> yaxis_len;}
-	uint_t get_zaxis_len(types::__id_t __obj_id) {return this-> obj_index[__obj_id].first-> zaxis_len;}
+	uint_t get_xaxis_len(types::__id_t __obj_id) {return this->obj_index[__obj_id].first->xaxis_len;}
+	uint_t get_yaxis_len(types::__id_t __obj_id) {return this->obj_index[__obj_id].first->yaxis_len;}
+	uint_t get_zaxis_len(types::__id_t __obj_id) {return this->obj_index[__obj_id].first->zaxis_len;}
 
 	void add_to_gravy_pool(uint_t __obj_id, uint_t __other_id);
 
-	types::coords_t<> get_coords(uint_t __obj_id) {
-		types::coords_t<> coords = {
-			.xaxis = this-> obj_index[__obj_id].first-> coords.xaxis,
-			.yaxis = this-> obj_index[__obj_id].first-> coords.yaxis,
-			.zaxis = this-> obj_index[__obj_id].first-> coords.zaxis
+	types::coords_t<> get_coords(types::__id_t __obj_id) {
+		return (types::coords_t<>) {
+			.xaxis = this->obj_index[__obj_id].first->coords.xaxis,
+			.yaxis = this->obj_index[__obj_id].first->coords.yaxis,
+			.zaxis = this->obj_index[__obj_id].first->coords.zaxis
 		};
-		return coords;
 	}
 
 	void set_mass(uint_t __obj_id, uint_t __mass) {
-		this-> obj_index[__obj_id].first-> mass = __mass;}
+		this->obj_index[__obj_id].first->mass = __mass;}
 
 	uint_t get_mass(uint_t __obj_id) {
-		return this-> obj_index[__obj_id].first-> mass;}
+		return this->obj_index[__obj_id].first->mass;}
 
 	uint_t& mass(uint_t __obj_id) {
-		return this-> obj_index[__obj_id].first-> mass;}
+		return this->obj_index[__obj_id].first->mass;}
 
-	std::atomic<boost::int8_t>& xaxis_direction(uint_t __obj_id) {
-		return this-> obj_index[__obj_id].first-> velocity.direction.xaxis;
+	std::atomic<i8_t>& xaxis_direction(uint_t __obj_id) {
+		return this->obj_index[__obj_id].first->velocity.direction.xaxis;
 	}
 
-	std::atomic<boost::int8_t>& yaxis_direction(uint_t __obj_id) {
-		return this-> obj_index[__obj_id].first-> velocity.direction.yaxis;
+	std::atomic<i8_t>& yaxis_direction(uint_t __obj_id) {
+		return this->obj_index[__obj_id].first->velocity.direction.yaxis;
 	}
 
 	void add_xaxis_velos(uint_t __obj_id, uint_t __amount) {
-		this-> set_xaxis_velos(__obj_id, this-> get_xaxis_velos(__obj_id) + __amount);
+		this->set_xaxis_velos(__obj_id, this->get_xaxis_velos(__obj_id) + __amount);
 	}
 
 	void rm_xaxis_velos(uint_t __obj_id, uint_t __amount) {
-		this-> set_xaxis_velos(__obj_id, ((int_t)this-> get_xaxis_velos(__obj_id) - (int_t)__amount) < 0? 0 : (this-> get_xaxis_velos(__obj_id) - __amount));
+		this->set_xaxis_velos(__obj_id, ((int_t)this->get_xaxis_velos(__obj_id) - (int_t)__amount) < 0? 0 : (this->get_xaxis_velos(__obj_id) - __amount));
 	}
 
 	void add_yaxis_velos(uint_t __obj_id, uint_t __amount) {
-		this-> set_yaxis_velos(__obj_id, this-> get_yaxis_velos(__obj_id) + __amount);
+		this->set_yaxis_velos(__obj_id, this->get_yaxis_velos(__obj_id) + __amount);
 	}
 
 	void rm_yaxis_velos(uint_t __obj_id, uint_t __amount) {
-		this-> set_yaxis_velos(__obj_id, ((int_t)this-> get_yaxis_velos(__obj_id) - (int_t)__amount) < 0? 0 : (this-> get_yaxis_velos(__obj_id) - __amount));
+		this->set_yaxis_velos(__obj_id, ((int_t)this->get_yaxis_velos(__obj_id) - (int_t)__amount) < 0? 0 : (this->get_yaxis_velos(__obj_id) - __amount));
 	}
 
 	void set_xaxis_velos(uint_t __obj_id, uint_t __velos) {
-		this-> obj_index[__obj_id].first-> velocity.xaxis = __velos;
+		this->obj_index[__obj_id].first->velocity.xaxis = __velos;
 	}
 
 	uint_t get_xaxis_velos(uint_t __obj_id) {
-		return this-> obj_index[__obj_id].first-> velocity.xaxis;
+		return this->obj_index[__obj_id].first->velocity.xaxis;
 	}
 
 	void set_yaxis_velos(uint_t __obj_id, uint_t __velos) {
-		this-> obj_index[__obj_id].first-> velocity.yaxis = __velos;
+		this->obj_index[__obj_id].first->velocity.yaxis = __velos;
 	}
 
 	uint_t get_yaxis_velos(uint_t __obj_id) {
-		return this-> obj_index[__obj_id].first-> velocity.yaxis;
+		return this->obj_index[__obj_id].first->velocity.yaxis;
 	}
 
 	void push_xaxis(uint_t __obj_id, uint_t __amount) {
-		this-> set_xaxis(__obj_id, this-> get_xaxis(__obj_id) + __amount);
+		this->set_xaxis(__obj_id, this->get_xaxis(__obj_id) + __amount);
 	}
 
 	void pull_xaxis(uint_t __obj_id, uint_t __amount) {
-		this-> set_xaxis(__obj_id, (int_t)this-> get_xaxis(__obj_id) - (int_t)__amount);
+		this->set_xaxis(__obj_id, (int_t)this->get_xaxis(__obj_id) - (int_t)__amount);
 	}
 
 	void push_yaxis(uint_t __obj_id, uint_t __amount) {
-		this-> set_yaxis(__obj_id, this-> get_yaxis(__obj_id) + __amount);
+		this->set_yaxis(__obj_id, this->get_yaxis(__obj_id) + __amount);
 	}
 
 	void pull_yaxis(uint_t __obj_id, uint_t __amount) {
-		this-> set_yaxis(__obj_id, (int_t)this-> get_yaxis(__obj_id) - (int_t)__amount);
+		this->set_yaxis(__obj_id, (int_t)this->get_yaxis(__obj_id) - (int_t)__amount);
 	}
 
 	uint_t get_xaxis(uint_t __obj_id) {
-		return this-> obj_index[__obj_id].first-> coords.xaxis;
+		return this->obj_index[__obj_id].first->coords.xaxis;
 	}
 
 	uint_t get_yaxis(uint_t __obj_id) {
-		return this-> obj_index[__obj_id].first-> coords.yaxis;
+		return this->obj_index[__obj_id].first->coords.yaxis;
 	}
 
 	void enable_gravity(std::initializer_list<uint_t> __obj_id) {
 		for (std::initializer_list<uint_t>::iterator itor = __obj_id.begin(); itor != __obj_id.end(); ++itor)
-			this-> enable_gravity(*itor);
+			this->enable_gravity(*itor);
 	}
 
 	void enable_gravity(uint_t __obj_id) {
-		this-> obj_index[__obj_id].first-> gravity_enabled = true;
+		this->obj_index[__obj_id].first->gravity_enabled = true;
 	}
 
 	void disable_gravity(std::initializer_list<uint_t> __obj_id) {
 		for (std::initializer_list<uint_t>::iterator itor = __obj_id.begin(); itor != __obj_id.end(); ++itor)
-			this-> disable_gravity(*itor);
+			this->disable_gravity(*itor);
 	}
 
 	void disable_gravity(uint_t __obj_id) {
-		this-> obj_index[__obj_id].first-> gravity_enabled = false;
+		this->obj_index[__obj_id].first->gravity_enabled = false;
 	}
 
 	void set_xaxis(uint_t __obj_id, int_t __xaxis) {
-		if (this-> obj_index[__obj_id].first-> bound_enabled) {
-			if (__xaxis < this-> obj_index[__obj_id].first-> xaxis_bound[0] || (__xaxis + this-> obj_index[__obj_id].first-> xaxis_len) >= obj_index[__obj_id].first-> xaxis_bound[1]) return;
+		if (this->obj_index[__obj_id].first->bound_enabled) {
+			if (__xaxis < this->obj_index[__obj_id].first->xaxis_bound[0] || (__xaxis + this->obj_index[__obj_id].first->xaxis_len) >= obj_index[__obj_id].first->xaxis_bound[1]) return;
 		}
 
-//		this-> collision_handler(__obj_id);
+//		this->collision_handler(__obj_id);
 		if (__xaxis < 0) return;
-		this-> obj_index[__obj_id].first-> coords.xaxis = (uint_t)__xaxis;
+		this->obj_index[__obj_id].first->coords.xaxis = (uint_t)__xaxis;
 	}
 
 	void enable_bound(std::initializer_list<uint_t> __obj_id) {
 		for (std::initializer_list<uint_t>::iterator itor = __obj_id.begin(); itor != __obj_id.end(); ++itor)
-			this-> enable_bound(*itor);
+			this->enable_bound(*itor);
 	}
 
 	void enable_bound(uint_t __obj_id) {
-		this-> obj_index[__obj_id].first-> bound_enabled = true;
+		this->obj_index[__obj_id].first->bound_enabled = true;
 	}
 
 	void disable_bound(std::initializer_list<uint_t> __obj_id) {
 		for (std::initializer_list<uint_t>::iterator itor = __obj_id.begin(); itor != __obj_id.end(); ++itor)
-			this-> disable_bound(*itor);
+			this->disable_bound(*itor);
 	}
 
 	void disable_bound(uint_t __obj_id) {
-		this-> obj_index[__obj_id].first-> bound_enabled = false;
+		this->obj_index[__obj_id].first->bound_enabled = false;
 	}
 
 	void set_yaxis(uint_t __obj_id, int_t __yaxis) {
-		if (this-> obj_index[__obj_id].first-> bound_enabled) {
-			if (__yaxis < this-> obj_index[__obj_id].first-> yaxis_bound[0] || (__yaxis + this-> obj_index[__obj_id].first-> yaxis_len) >= obj_index[__obj_id].first-> yaxis_bound[1]) return;
+		if (this->obj_index[__obj_id].first->bound_enabled) {
+			if (__yaxis < this->obj_index[__obj_id].first->yaxis_bound[0] || (__yaxis + this->obj_index[__obj_id].first->yaxis_len) >= obj_index[__obj_id].first->yaxis_bound[1]) return;
 		}
 
-//		this-> collision_handler(__obj_id);
+//		this->collision_handler(__obj_id);
 		if (__yaxis < 0) return;
-		this-> obj_index[__obj_id].first-> coords.yaxis = (uint_t)__yaxis;
+		this->obj_index[__obj_id].first->coords.yaxis = (uint_t)__yaxis;
 	}
 
 	types::err_t set_xaxis_bound(std::initializer_list<uint_t> __obj_id, std::initializer_list<uint_t> __xaxis_min, std::initializer_list<uint_t> __xaxis_max) {
 		std::size_t obj_id_c = __obj_id.size();
 		if (obj_id_c != __xaxis_min.size() || obj_id_c != __xaxis_max.size()) return FFLY_FAILURE;
 
-		for (std::size_t o = 0; o != obj_id_c; o ++) this-> set_xaxis_bound(*(__obj_id.begin() + o), *(__xaxis_min.begin() + o), *(__xaxis_max.begin() + o));
+		for (std::size_t o = 0; o != obj_id_c; o ++) this->set_xaxis_bound(*(__obj_id.begin() + o), *(__xaxis_min.begin() + o), *(__xaxis_max.begin() + o));
 		return FFLY_SUCCESS;
 	}
 
@@ -222,31 +221,31 @@ class obj_manager {
 	}
 
 	void set_xaxis_bound(uint_t __obj_id, uint_t __xaxis_min, uint_t __xaxis_max) {
-		this-> obj_index[__obj_id].first-> xaxis_bound[0] = __xaxis_min;
-		this-> obj_index[__obj_id].first-> xaxis_bound[1] = __xaxis_max;
+		this->obj_index[__obj_id].first->xaxis_bound[0] = __xaxis_min;
+		this->obj_index[__obj_id].first->xaxis_bound[1] = __xaxis_max;
 	}
 
 	types::err_t set_yaxis_bound(std::initializer_list<uint_t> __obj_id, std::initializer_list<uint_t> __yaxis_min, std::initializer_list<uint_t> __yaxis_max) {
 		std::size_t obj_id_c = __obj_id.size();
 		if (obj_id_c != __yaxis_min.size() || obj_id_c != __yaxis_max.size()) return FFLY_FAILURE;
 
-		for (std::size_t o = 0; o != obj_id_c; o ++) this-> set_yaxis_bound(*(__obj_id.begin() + o), *(__yaxis_min.begin() + o), *(__yaxis_max.begin() + o));
+		for (std::size_t o = 0; o != obj_id_c; o ++) this->set_yaxis_bound(*(__obj_id.begin() + o), *(__yaxis_min.begin() + o), *(__yaxis_max.begin() + o));
 		return FFLY_SUCCESS;
 	}
 
 	void set_yaxis_bound(std::initializer_list<uint_t> __obj_id, uint_t __yaxis_min, uint_t __yaxis_max) {
 		for (std::initializer_list<uint_t>::iterator itor = __obj_id.begin(); itor != __obj_id.end(); ++itor)
-			this-> set_yaxis_bound(*itor, __yaxis_min, __yaxis_max);
+			this->set_yaxis_bound(*itor, __yaxis_min, __yaxis_max);
 	}
 
 	void set_yaxis_bound(uint_t __obj_id, uint_t __yaxis_min, uint_t __yaxis_max) {
-		this-> obj_index[__obj_id].first-> yaxis_bound[0] = __yaxis_min;
-		this-> obj_index[__obj_id].first-> yaxis_bound[1] = __yaxis_max;
+		this->obj_index[__obj_id].first->yaxis_bound[0] = __yaxis_min;
+		this->obj_index[__obj_id].first->yaxis_bound[1] = __yaxis_max;
 	}
 
 	void set_zaxis_bound(uint_t __obj_id, uint_t __zaxis_min, uint_t __zaxis_max) {
-		this-> obj_index[__obj_id].first-> zaxis_bound[0] = __zaxis_min;
-		this-> obj_index[__obj_id].first-> zaxis_bound[1] = __zaxis_min;
+		this->obj_index[__obj_id].first->zaxis_bound[0] = __zaxis_min;
+		this->obj_index[__obj_id].first->zaxis_bound[1] = __zaxis_min;
 	}
 
 	boost::int8_t manage();

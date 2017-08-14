@@ -18,6 +18,7 @@
 # include <poll.h>
 # include <set>
 # include <errno.h>
+# include "../system/io.hpp"
 # include "../types/byte_t.h"
 # include "../system/errno.h"
 # include "../types/err_t.h"
@@ -45,7 +46,7 @@ class tcp_server
 
 	static bool to_shutdown;
 
-	void poll_handler(int __sock, boost::int8_t *__sock_state, uint_t const __delay_ns);
+	void poll_handler(int __sock, mdl::i8_t *__sock_state, uint_t const __delay_ns);
 	boost::int8_t* begin_poll(int __sock, uint_t const __delay_ns);
 
 	std::atomic<uint_t> poll_th_c;

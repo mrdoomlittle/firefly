@@ -1,5 +1,7 @@
 # ifndef __types__hpp
 # define __types__hpp
+
+// needs removing&moving
 namespace mdl {
 typedef struct {
 	int r_xaxis, r_yaxis;

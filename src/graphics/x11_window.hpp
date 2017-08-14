@@ -25,6 +25,7 @@
 # include "../types/err_t.h"
 # include "../system/timer.hpp"
 # include "../system/event_types.hpp"
+# include "pointer_coords.h"
 /*do not include graphics/window.hpp in this header file*/
 namespace mdl {
 namespace firefly {
@@ -41,7 +42,9 @@ class x11_window: public wd_flags
 		this-> fps_mark = __fps_mark;
 	}
 
-	types::coords_t<int> wd_coords = {0, 0, 0};
+	_pointer_coords<i32_t, i32_t> *pointer_coords;
+	types::_2d_coords_t<i32_t> *wd_coords;
+
 	types::mouse_coords_t<int, int> mouse_coords = {{0, 0, 0}, {0, 0, 0}};
 	bool contains_pointer = false;
 
@@ -54,16 +57,13 @@ class x11_window: public wd_flags
 	int button_code = 0x0;
 
 	u16_t get_wd_xaxis_len() {
-		return this-> wd_xaxis_len;
-	}
+		return this-> wd_xaxis_len;}
 
 	u16_t get_wd_yaxis_len() {
-		return this-> wd_yaxis_len;
-	}
+		return this-> wd_yaxis_len;}
 
 	char* get_frame_title() {
-		return this-> frame_title;
-	}
+		return this-> frame_title;}
 
 	types::err_t de_init() {
 		this-> add_wd_flag(FLG_WD_TO_CLOSE);
@@ -95,7 +95,7 @@ class x11_window: public wd_flags
 	boost::thread::native_handle_type native_handle;
 	u16_t wd_xaxis_len, wd_yaxis_len;
 	char *frame_title;
-	std::size_t fps_mark = 120;
+	std::size_t fps_mark = 30;
 };
 }
 }

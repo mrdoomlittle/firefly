@@ -39,38 +39,38 @@ class window {
 
 	types::pixmap_t get_pixbuff();
 
-	bool __inline__ is_key_press() {return this-> wd_handler.key_press;}
-	bool __inline__& key_press() {return this-> wd_handler.key_press;}
+	bool __inline__ is_key_press() {return this->wd_handle.key_press;}
+	bool __inline__& key_press() {return this->wd_handle.key_press;}
 
-	int __inline__ get_key_code() {return this-> wd_handler.key_code;}
-	int __inline__& key_code() {return this-> wd_handler.key_code;}
+	int __inline__ get_key_code() {return this->wd_handle.key_code;}
+	int __inline__& key_code() {return this->wd_handle.key_code;}
 
-	bool __inline__ is_button_press() {return this-> wd_handler.button_press;}
-	bool __inline__& button_press() {return this-> wd_handler.button_press;}
+	bool __inline__ is_button_press() {return this->wd_handle.button_press;}
+	bool __inline__& button_press() {return this->wd_handle.button_press;}
 
-	int __inline__ get_button_code() {return this-> wd_handler.button_code;}
-	int __inline__& button_code() {return this-> wd_handler.button_code;}
+	int __inline__ get_button_code() {return this->wd_handle.button_code;}
+	int __inline__& button_code() {return this->wd_handle.button_code;}
 
 	types::err_t set_pixbuff(types::pixmap_t __pixmap, u16_t __xaxis_len = 0, u16_t __yaxis_len = 0);
 
 	void clear_pixbuff() {
 		colour_t colour = { 0, 0, 0, 0 };
-		this-> clear_pixbuff(colour);
+		this->clear_pixbuff(colour);
 	}
 
 	void clear_pixbuff(colour_t __colour) {
-		fill_pixmap(this-> get_pixbuff(), this-> wd_xaxis_len, this-> wd_yaxis_len, __colour);
+		fill_pixmap(this->get_pixbuff(), this->wd_xaxis_len, this->wd_yaxis_len, __colour);
 	}
 
 	types::coords_t<i16_t> get_wd_coords() {
 # if defined(USING_XCB)
-		return this-> wd_handler.wd_coords;
+		return this->wd_coords;
 # endif
 
 # if defined(USING_X11)
 	types::coords_t<i16_t> wd_coords = {
-		.xaxis = (i16_t)this-> wd_handler.wd_coords.xaxis,
-		.yaxis = (i16_t)this-> wd_handler.wd_coords.yaxis
+		.xaxis = (i16_t)this->wd_coords.xaxis,
+		.yaxis = (i16_t)this->wd_coords.yaxis
 	};
 
 	return wd_coords;
@@ -79,18 +79,18 @@ class window {
 
 	types::mouse_coords_t<i16_t, u16_t> get_mouse_coords() {
 # if defined(USING_XCB)
-		return this-> wd_handler.mouse_coords;
+		return this->pointer_coords;
 # endif
 
 # if defined(USING_X11)
 		types::coords_t<u16_t> wd_coords = {
-			.xaxis = (u16_t)this-> wd_handler.mouse_coords.wd.xaxis,
-			.yaxis = (u16_t)this-> wd_handler.mouse_coords.wd.yaxis
+			.xaxis = (u16_t)this->pointer_coords.wd.xaxis,
+			.yaxis = (u16_t)this->pointer_coords.wd.yaxis
 		};
 
 		types::coords_t<i16_t> root_coords = {
-			.xaxis = (i16_t)this-> wd_handler.mouse_coords.root.xaxis,
-			.yaxis = (i16_t)this-> wd_handler.mouse_coords.root.yaxis
+			.xaxis = (i16_t)this->pointer_coords.root.xaxis,
+			.yaxis = (i16_t)this->pointer_coords.root.yaxis
 		};
 
 		types::mouse_coords_t<i16_t, u16_t> mouse_coords;
@@ -103,7 +103,7 @@ class window {
 
 	types::err_t de_init() {
 		types::err_t any_err;
-		if ((any_err = this-> wd_handler.de_init()) != FFLY_SUCCESS) {
+		if ((any_err = this->wd_handle.de_init()) != FFLY_SUCCESS) {
 			fprintf(stderr, "window: failed to 'de init' window handler.\n");
 			return any_err;
 		}
@@ -111,28 +111,29 @@ class window {
 	}
 
 	types::err_t nxt_event(types::event_desc_t& __event_desc, uint_t& __event_data) {
-		if (this-> ev_queue.empty()) {
+		if (this->ev_queue.empty()) {
 			ffly_errno = FF_ERR_WDEQE;
 			return FFLY_FAILURE;
 		}
-		__event_desc = this-> ev_queue.front().first;
-		__event_data = this-> ev_queue.front().second;
+		__event_desc = this->ev_queue.front().first;
+		__event_data = this->ev_queue.front().second;
 		return FFLY_SUCCESS;
 	}
 
-	void event_pop() {this-> ev_queue.pop();}
+	void event_pop() {this->ev_queue.pop();}
 
-	private:
+	_pointer_coords<i32_t, i32_t> pointer_coords;
+    types::_2d_coords_t<i32_t> wd_coords;
+
 	system::mq_mask<data::pair<types::event_desc_t, uint_t>> ev_queue;
-//	std::queue<data::pair<types::event_desc_t, uint_t>> ev_queue;
 	types::err_t init_report = FFLY_FAILURE;
 	u16_t wd_xaxis_len = 0, wd_yaxis_len = 0;
 	char const *frame_title = nullptr;
 	public:
 # if defined(USING_X11)
-	x11_window wd_handler;
+	x11_window wd_handle;
 # elif defined(USING_XCB)
-	xcb_window wd_handler;
+	xcb_window wd_handle;
 # endif
 };
 }

@@ -1,0 +1,164 @@
+# ifndef __queue__hpp
+# define __queue__hpp
+# include <cstdio>
+# include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
+# include "../memory/mem_realloc.h"
+# include "../types/err_t.h"
+# include "../errno.h"
+# include <errno.h>
+# include <math.h>
+/*
+	element_c = amount of elements in queue?
+*/
+# define _QUEUE_MAX_SIZE 1024
+# define _QUEUE_PAGE_SIZE 32 // dont change
+namespace mdl {
+namespace firefly {
+namespace system {
+template<typename _T>
+struct queue {
+	typedef _T* itorator;
+
+	// size in byte of one page
+	uint_t const page_bc = _QUEUE_PAGE_SIZE*sizeof(_T);
+	size_t __inline__ get_element_c() {return this->element_c;}
+
+	void dump() {
+		if (!this->element_c)return;
+		for (uint_t ic{}; ic != this->page_c*_QUEUE_PAGE_SIZE; ic++)
+			printf("%d, ", this->mem_ptr[ic]);
+		printf("\n");
+	}
+
+	_T __inline__* begin() {return this->mem_ptr;}
+	_T __inline__* end() {return this->mem_ptr+(this->element_c+this->end_off_fs);}
+	_T __inline__ front() {return *(this->mem_ptr+this->end_off_fs);}
+
+	mdl_u8_t first_push = 1;
+	types::err_t push(_T __element) {
+		if (this->end_off == this->begin_off && !first_push) {
+			printf("queue full.\n");
+			return FFLY_NOP;
+		}
+
+//		printf("size: %u, page_size: %u\n", this->size*sizeof(_T), this->page_c*page_bc);
+		mdl_u8_t resize_needed = 0;
+		mdl_uint_t old_pgc = this->page_c;
+		if (!this->mem_ptr && !this->size) {
+			if ((this->mem_ptr = (_T**)memory::mem_alloc((this->page_c = ceil((double)sizeof(_T)/(double)page_bc))*sizeof(_T*))) == NULL) {
+				fprintf(stderr, "queue: failed to alloc memory, errno: %d, ffly_errno: %d\n", errno, ffly_errno);
+				return FFLY_FAILURE;
+			}
+			goto _init_pages;
+		}
+
+		if ((this->size+1)*sizeof(_T) > this->page_c*page_bc) {
+			resize_needed = 1;
+			while(this->page_c*page_bc < (this->size+1)*sizeof(_T)){this->page_c++;}
+		}
+
+		if (resize_needed) {
+			if ((this->mem_ptr = (_T**)memory::mem_realloc(this->mem_ptr, this->page_c*sizeof(_T*))) == NULL) {
+				fprintf(stderr, "queue: failed to realloc memory, errno: %d, ffly_errno: %d\n", errno, ffly_errno);
+				return FFLY_FAILURE;
+			}
+			printf("resize. %u\n", this->page_c-old_pgc);
+			goto _init_pages;
+		}
+
+		goto _sk_init_pages;
+		_init_pages:
+		for (_T **itr = this->mem_ptr+(this->end_off >> 5); itr != this->mem_ptr+(this->end_off >> 5)+(this->page_c-old_pgc);itr++) {
+			if ((*itr = (_T*)memory::mem_alloc(page_bc)) == NULL) {
+				fprintf(stderr, "queue: failed to alloc memory.\n");
+				return FFLY_FAILURE;
+			}
+		}
+		_sk_init_pages:
+
+		if (this->begin_off > 0 && end_off > _QUEUE_MAX_SIZE)
+			end_off = 0;
+
+		mdl_uint_t page = this->end_off >> 5;
+//		printf("page: %u, off: %u\n", page, end_off-(page*_QUEUE_PAGE_SIZE));
+		(*(this->mem_ptr+page))[this->end_off-(page*_QUEUE_PAGE_SIZE)] = __element;
+		this->end_off++;
+
+		if (first_push) first_push = 0;
+		this->size++;
+		return FFLY_SUCCESS;
+	}
+
+	_T pop(types::err_t& __any_err) noexcept {
+		if (!this->mem_ptr || !this->size) {
+			fprintf(stderr, "queue pop failed.\n");
+			__any_err = FFLY_FAILURE;
+			throw;
+		}
+
+		mdl_uint_t page = this->begin_off >> 5;
+		_T ret_val = (*(this->mem_ptr+page))[begin_off-(page*_QUEUE_PAGE_SIZE)];
+//		printf("page: %u, off: %u\n", page, begin_off-(page*_QUEUE_PAGE_SIZE));
+
+		if (!(size-1)) {
+			memory::mem_free(this->mem_ptr);
+			this->mem_ptr = nullptr;
+			this->page_c--;
+		} else {
+			mdl_u8_t resize_needed = 0;
+			mdl_uint_t old_pgc = this->page_c;
+			if (this->begin_off*sizeof(_T) == (((this->begin_off-1)>>5)+1)*page_bc){
+
+			}
+
+/*
+			if ((this->size-1)*sizeof(_T) < (this->page_c-1)*page_bc) {
+				resize_needed = 1;
+				while((this->size-1)*sizeof(_T) < this->page_c*page_bc && this->page_c >= (this->size >> 5)+1) {this->page_c--;}
+				if (old_pgc == this->page_c) resize_needed = 0;
+			}
+
+			if (resize_needed) {
+				_T **end_itr = this->mem_ptr+old_pgc;
+				for (_T **itr = this->mem_ptr; itr != this->mem_ptr+(old_pgc-this->page_c);itr++) {
+					memory::mem_free(*itr);
+					*itr = *end_itr;
+					*end_itr = NULL;
+
+					end_itr--;
+				}
+
+				if ((this->mem_ptr = (_T**)memory::mem_realloc(this->mem_ptr, this->page_c*sizeof(_T*))) == NULL) {
+					fprintf(stderr, "queue: failed to realloc memory, errno: %d, ffly_errno: %d\n", errno, ffly_errno);
+					return FFLY_FAILURE;
+				}
+				printf("pop resize. %u\n", this->page_c);
+			}
+*/
+		}
+
+		if (this->begin_off >= this->page_c*page_bc)
+			this->begin_off = 0;
+		else
+			this->begin_off++;
+
+		this->size--;
+		__any_err = FFLY_SUCCESS;
+		return ret_val;
+	}
+
+	void de_init() {
+		memory::mem_free(this->mem_ptr);
+		this->mem_ptr = nullptr;
+	}
+
+	uint_t begin_off = 0, end_off = 0;
+	uint_t size = 0, page_c = 0;
+	_T **mem_ptr = nullptr;
+};
+}
+}
+}
+
+# endif /*__queue__hpp*/

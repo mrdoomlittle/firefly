@@ -1,6 +1,6 @@
 # ifndef __task__handle__hpp
 # define __task__handle__hpp
-# include "vector.hpp"
+# include "vec.h"
 # include <eint_t.hpp>
 # include "errno.h"
 # include <pthread.h>
@@ -39,7 +39,7 @@ class task_handle {
 		pthread_mutex_t mutex, dmutex;
 		types::vp_pair_t arg;
 		std::deque<task_t> tsk_queue;
-		vector<task_t> tsk_indx;
+		vec<task_t> tsk_indx;
 	};
 
 	bool inited = false;
@@ -120,7 +120,7 @@ class task_handle {
 	}
 
 	private:
-	vector<tsk_worker_t> wk_indx;
+	vec<tsk_worker_t> wk_indx;
 };
 extern task_handle __task_handle__;
 }

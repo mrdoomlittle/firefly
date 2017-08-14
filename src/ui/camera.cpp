@@ -1,19 +1,19 @@
 # include "camera.hpp"
 mdl::firefly::types::err_t mdl::firefly::ui::camera::init(uint_t __xaxis_len, uint_t __yaxis_len) {
-	if ((this-> pixmap = memory::alloc_pixmap(__xaxis_len, __yaxis_len)) == NULL) {
-		fprintf(stderr, "camera: failed to alloc memory for pixmap, errno: %d\n", errno);
+	if ((this->pixmap = memory::alloc_pixmap(__xaxis_len, __yaxis_len)) == NULL) {
+		system::io::printf(stderr, "camera: failed to alloc memory for pixel map, errno: %d\n", errno);
 		return FFLY_FAILURE;
 	}
 
-	this-> xaxis = this-> yaxis = this-> zaxis = 0;
-	this-> xaxis_len = __xaxis_len;
-	this-> yaxis_len = __yaxis_len;
-	if ((this-> _2d_pm = memory::make_2d_pm(this-> pixmap, __xaxis_len, __yaxis_len)) == NULL) {
-		fprintf(stderr, "camera: failed to make 2d pixmap from 1d pixmap, errno: %d\n", errno);
+	this->xaxis = this->yaxis = this->zaxis = 0;
+	this->xaxis_len = __xaxis_len;
+	this->yaxis_len = __yaxis_len;
+	if ((this->_2d_pm = memory::make_2d_pm(this->pixmap, __xaxis_len, __yaxis_len)) == NULL) {
+		system::io::printf(stderr, "camera: failed to make 2d pixel map from 1d pixel map, ffly_errno: %d\n", ffly_errno);
 		return FFLY_FAILURE;
 	}
 
-	this-> inited = true;
+	this->inited = true;
 	return FFLY_SUCCESS;
 }
 
@@ -24,12 +24,12 @@ mdl::firefly::types::err_t mdl::firefly::ui::camera::de_init() {
 }
 
 mdl::firefly::types::err_t mdl::firefly::ui::camera::handle() {
-	types::_1d_pm_t _1d_cnk_pm = this-> _uni_manager-> _1d_cnk_pm(types::__coords__<>(this-> xaxis, this-> yaxis, this-> zaxis));
-	types::_3d_pm_t _3d_cnk_pm = this-> _uni_manager-> _3d_cnk_pm(types::__coords__<>(this-> xaxis, this-> yaxis, this-> zaxis));
-	uint_t cnk_xlen = this-> _uni_manager-> _chunk_manager-> get_cnk_xlen(), cnk_ylen = this-> _uni_manager-> _chunk_manager-> get_cnk_ylen();
+	types::_1d_pm_t _1d_cnk_pm = this->_uni_manager-> _1d_cnk_pm(types::__coords__<>(this->xaxis, this->yaxis, this->zaxis));
+	types::_3d_pm_t _3d_cnk_pm = this->_uni_manager-> _3d_cnk_pm(types::__coords__<>(this->xaxis, this->yaxis, this->zaxis));
+	uint_t cnk_xlen = this->_uni_manager->_chunk_manager->get_cnk_xlen(), cnk_ylen = this->_uni_manager->_chunk_manager->get_cnk_ylen();
 
-	uint_t cxfs = floor(this-> xaxis/cnk_xlen) * cnk_xlen;
-	uint_t cyfs = floor(this-> yaxis/cnk_ylen) * cnk_ylen;
+	uint_t cxfs = floor(this->xaxis/cnk_xlen)*cnk_xlen;
+	uint_t cyfs = floor(this->yaxis/cnk_ylen)*cnk_ylen;
 
 	uint_t xaxis = this-> xaxis - cxfs, yaxis = this-> yaxis - cyfs;
 

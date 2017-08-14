@@ -5,10 +5,10 @@ namespace mdl {
 namespace firefly {
 namespace system {
 enum event_id {
-	NULL_EID,
-	GUI_BTN_EID,
-	KEY_EID,
-	BTN_EID
+	null,
+	gui_btn,
+	key,
+	btn
 };
 }
 }

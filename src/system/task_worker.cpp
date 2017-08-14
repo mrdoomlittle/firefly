@@ -32,7 +32,7 @@ void* task_worker(void *__arg) {
 			wk-> tsk_indx[tsk_id].tsk_call(wk-> tsk_indx[tsk_id].voidptr);
 
 		_timer.end();
-		wk-> latency = _timer.delta<std::chrono::microseconds>();
+		wk-> latency = _timer.delta<time::ns_to_us>();
 		if (wk-> tsk_indx.empty() && wk-> tsk_queue.empty()) wk-> wk_state = false;
 		pthread_mutex_unlock(&wk-> mutex);
 		__asm__("nop");

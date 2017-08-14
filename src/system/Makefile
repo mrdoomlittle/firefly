@@ -1,10 +1,15 @@
-DEFINES=-D__DEBUG_ENABLED #-D__WITH_MEM_TRACKER
+DEFINES=-D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
 all:
 	gcc -c $(DEFINES) -std=c11 errno.c
 	gcc -c $(DEFINES) -std=c11 ../memory/mem_alloc.c
 	gcc -c $(DEFINES) -std=c11 ../memory/mem_free.c
 	gcc -c $(DEFINES) -std=c11 ../memory/mem_realloc.c
-	g++ -std=c++11 $(DEFINES) -o main queue.cpp errno.o mem_alloc.o mem_free.o mem_realloc.o
+	gcc -c $(DEFINES) -std=c11 mem_allocr.c
+	gcc -c $(DEFINES) -std=c11 vec.c
+	gcc -c $(DEFINES) -std=c11 io.c
+	gcc -c $(DEFINES) -std=c11 ../data/byte_ncpy.c
+	gcc -c -std=c11 $(DEFINES) -o mem_tracker.o mem_tracker.c
+	g++ -std=c++11 $(DEFINES) -o main main.cpp vec.o byte_ncpy.o mem_allocr.o io.o errno.o mem_tracker.o mem_alloc.o mem_free.o mem_realloc.o
 
 #all:
 #	g++ -c -std=c++11 ../memory/mem_alloc.cpp

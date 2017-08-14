@@ -11,6 +11,7 @@ namespace ublas = boost::numeric::ublas;
 # include "memory/alloc_pixmap.hpp"
 # include "memory/mem_free.h"
 # include "types/pixmap_t.h"
+# include "system/io.h"
 namespace mdl {
 namespace firefly {
 class layer_manager {
@@ -36,7 +37,7 @@ class layer_manager {
 		} else {
 			layers[layer_id].second = memory::alloc_pixmap(__xlen, __ylen);
 			if (layers[layer_id].second == NULL) {
-				fprintf(stderr, "layer_manager: failed to alloc memory for pixmap.\n");
+				system::io::printf(stderr, "layer_manager: failed to alloc memory for pixel map.\n");
 				return 0;
 			}
 
@@ -75,7 +76,7 @@ class layer_manager {
 	}
 
 	// change to int8_t
-	boost::int8_t draw_layers(types::pixmap_t __pixbuff, uint_t __xlen, uint_t __ylen) {
+	i8_t draw_layers(types::pixmap_t __pixbuff, uint_t __xlen, uint_t __ylen) {
 		for (std::size_t o = 0; o != layers.size(); o ++) {
 			uint_t layer_id = this-> render_arrm[o];
 			types::layer_info_t layer_info = this-> layers[layer_id].first;
@@ -84,7 +85,7 @@ class layer_manager {
 			if (pixmap == nullptr) continue;
 
 			if (graphics::draw_pixmap(layer_info.xoffset, layer_info.yoffset, __pixbuff, __xlen, __ylen, pixmap, layer_info.xaxis_len, layer_info.yaxis_len) == FFLY_FAILURE) {
-				fprintf(stderr, "layer_manager: failed to draw a layer with gpu, using cpu instead.\n");
+				system::io::printf(stderr, "layer_manager: failed to draw layer[gpu], using cpu.\n");
 				return FFLY_FAILURE;
 			}
 		}
@@ -92,14 +93,14 @@ class layer_manager {
 	}
 
 
-	boost::int8_t push_forwards(uint_t __layer_id);
-	boost::int8_t pull_backwards(uint_t __layer_id);
-	boost::int8_t swap(uint_t __layer_ida, uint_t __layer_idb);
-	~layer_manager() { this-> de_init(); }
+	i8_t push_forwards(uint_t __layer_id);
+	i8_t pull_backwards(uint_t __layer_id);
+	i8_t swap(uint_t __layer_ida, uint_t __layer_idb);
+	~layer_manager() {this->de_init();}
 
-	boost::int8_t de_init() {
-		for (std::size_t o = 0; o != layers.size(); o ++)
-			memory::mem_free(layers[o].second);
+	types::err_t de_init() {
+		for (std::size_t layer_no{}; layer_no != layers.size(); layer_no++)
+			memory::mem_free(layers[layer_no].second);
 	}
 
 	std::set<bool> locked_layers;

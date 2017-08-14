@@ -40,6 +40,7 @@
 # include "gui/window.hpp"
 # include "data/scale_pixmap.hpp"
 # include "skel_creator.hpp"
+# include "system/io.hpp"
 namespace mdl {
 class ffly_studio {
 	public:
@@ -54,8 +55,7 @@ class ffly_studio {
 	firefly::types::id_t bse_room_id = nullptr;
 
 	void chnage_room(firefly::types::id_t __room_id) {
-		this-> _room_manager.change_room(__room_id);
-	}
+		this-> _room_manager.change_room(__room_id);}
 
 	struct {
 		firefly::types::btn_t *exit_btn, *skelc_btn;

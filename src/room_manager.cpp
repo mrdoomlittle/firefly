@@ -34,7 +34,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::add_room(types::id_t& __r
 
 	if (this-> room_count == 0) {
 		if ((this-> _room_info = (room_info_t *)memory::mem_alloc(sizeof(room_info_t))) == NULL) {
-			fprintf(stderr, "room_manager: failed to alloc memory for 'room_info', errno: %d\n", errno);
+			system::io::printf(stderr, "room_manager: failed to alloc memory for 'room_info', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 
@@ -45,14 +45,14 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::add_room(types::id_t& __r
 	} else {
 			room_info_t *room_info = NULL;
 			if ((room_info = (room_info_t *)memory::mem_realloc(this-> _room_info, (this-> room_count + 1) * sizeof(room_info_t))) == NULL) {
-				fprintf(stderr, "room_manager: failed to realloc memory for 'room_info', errno: %d\n", errno);
+				system::io::printf(stderr, "room_manager: failed to realloc memory for 'room_info', errno: %d\n", errno);
 				return FFLY_FAILURE;
 			} else
 				this-> _room_info = room_info;
 
 			room_data_t *room_data = NULL;
 			if ((room_data = (room_data_t *)memory::mem_realloc(this-> _room_data, (this-> room_count + 1) * sizeof(room_data_t))) == NULL) {
-				fprintf(stderr, "room_manager: failed to realloc memory for 'room_info', errno: %d\n", errno);
+				system::io::printf(stderr, "room_manager: failed to realloc memory for 'room_info', errno: %d\n", errno);
 				room_info = NULL;
 				if ((room_info = (room_info_t *)memory::mem_realloc(this-> _room_info, (this-> room_count - 1) * sizeof(room_info_t))) == NULL)
 					return FFLY_FAILURE;
@@ -74,7 +74,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::add_room(types::id_t& __r
 	} else {
 		this-> _room_info[this-> room_count].id = __room_id = (types::id_t)memory::mem_alloc(sizeof(types::__id_t));
 		if (__room_id == NULL) {
-			fprintf(stderr, "room_manager: failed to alloc memory for 'room_id', errno: %d\n", errno);
+			system::io::printf(stderr, "room_manager: failed to alloc memory for 'room_id', errno: %d\n", errno);
 			goto mem_clean;
 		} else
 			*__room_id = this-> room_count;
@@ -85,7 +85,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::add_room(types::id_t& __r
 
 	gui::btn_manager *btn_manager;
 	if ((btn_manager = (gui::btn_manager *)memory::mem_alloc(sizeof(gui::btn_manager))) == NULL) {
-		fprintf(stderr, "room_manager: failed to alloc memory for 'btn_manager', errno: %d\n", errno);
+		system::io::printf(stderr, "room_manager: failed to alloc memory for 'btn_manager', errno: %d\n", errno);
 		btn_manager = nullptr;
 		goto mem_clean;
 	} else {
@@ -105,7 +105,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::add_room(types::id_t& __r
 # ifdef __RM_LAYERING
 	layer_manager *_layer_manager;
 	if ((_layer_manager = (layer_manager *)memory::mem_alloc(sizeof(layer_manager))) == NULL) {
-		fprintf(stderr, "room_manager: failed to alloc memory for 'layer_manager', errno: %d\n", errno);
+		system::io::printf(stderr, "room_manager: failed to alloc memory for 'layer_manager', errno: %d\n", errno);
 		btn_manager = nullptr;
 		goto mem_clean;
 	} else
@@ -167,7 +167,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::draw_room(types::id_t __r
 	mdl::firefly::types::err_t any_err;
 	if (room_data.btn_manager != nullptr) {
 		if ((any_err = room_data.btn_manager-> manage(pixbuff)) != FFLY_SUCCESS) {
-			fprintf(stderr, "room_manager: failed to call 'btn_manager::manage'\n");
+			system::io::printf(stderr, "room_manager: failed to call 'btn_manager::manage'\n");
 			return any_err;
 		}
 	}
@@ -175,7 +175,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::draw_room(types::id_t __r
 # ifdef __RM_LAYERING
 	if (room_data._layer_manager) {
 		if ((any_err = room_data._layer_manager-> draw_layers(pixbuff, pb_xaxis_len, pb_yaxis_len)) != FFLY_SUCCESS) {
-			fprintf(stderr, "room_manager: failed to draw layers.\n");
+			system::io::printf(stderr, "room_manager: failed to draw layers.\n");
 			return any_err;
 		}
 	}
@@ -192,7 +192,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::rm_room(types::id_t __roo
 
 mdl::firefly::types::err_t mdl::firefly::room_manager::manage(types::id_t __room_id) {
 	if (!this-> room_change.empty() && !this-> window-> is_button_press()) {
-		printf("room_manager: changing room to id with %d\n", *this-> room_change.front());
+		system::io::printf(stdout, "room_manager: changing room to id with %d\n", *this-> room_change.front());
 		this-> curr_room_id = this->room_change.front();
 		this-> room_change.pop();
 	}
@@ -213,7 +213,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::manage(types::id_t __room
 
 	types::err_t any_err;
 	if ((any_err = this-> draw_room()) != FFLY_SUCCESS) {
-		fprintf(stderr, "room_manager: failed to draw room.\n");
+		system::io::printf(stderr, "room_manager: failed to draw room.\n");
 		return any_err;
 	}
 
@@ -221,7 +221,7 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::manage(types::id_t __room
 }
 
 mdl::firefly::types::err_t mdl::firefly::room_manager::de_init() {
-	printf("room_manager: going to free all memory for rooms\n");
+	system::io::printf(stdout, "room_manager: going to free all memory for rooms\n");
 	for (uint_t _room_id = 0; _room_id != this-> room_count; _room_id ++) {
 		uint_t *room_id = (this-> _room_info + _room_id)-> id;
 		if (!this-> id_inuse(room_id)) continue;

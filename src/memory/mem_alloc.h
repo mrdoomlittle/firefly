@@ -49,7 +49,7 @@ void gpu_mem_alloc(void*& __mptr, std::size_t __bc, types::err_t& __any_err);
 # endif /*__USING_OPENCL*/
 
 # ifdef __WITH_MEM_TRACKER
-void __inline__* mem_alloc(std::size_t __bc, bool __track_bypass = false) {
+void __inline__* mem_alloc(std::size_t __bc, bool __track_bypass) {
 	return ffly_mem_alloc(__bc, __track_bypass);
 }
 
@@ -79,15 +79,15 @@ void *ffly_mem_alloc(size_t);
 
 # if defined(__WITH_MEM_TRACKER) && !defined(__cplusplus)
 # 	ifdef __cplusplus
-#		define __ffly_mem_alloc(__MEM_PTR) mdl::firefly::memory::mem_alloc(__MEM_PTR, 0)
+#		define __ffly_mem_alloc(__ALLOC_BC) mdl::firefly::memory::mem_alloc(__ALLOC_BC, 0)
 # 	else
-#		define __ffly_mem_alloc(__MEM_PTR) ffly_mem_alloc(__MEM_PTR, 0)
+#		define __ffly_mem_alloc(__ALLOC_BC) ffly_mem_alloc(__ALLOC_BC, 0)
 # 	endif
 # else
 #   ifdef __cplusplus
-#		define __ffly_mem_alloc(__MEM_PTR) mdl::firefly::memory::mem_alloc(__MEM_PTR)
+#		define __ffly_mem_alloc(__ALLOC_BC) mdl::firefly::memory::mem_alloc(__ALLOC_BC)
 # 	else
-#		define __ffly_mem_alloc(__MEM_PTR) ffly_mem_alloc(__MEM_PTR)
+#		define __ffly_mem_alloc(__ALLOC_BC) ffly_mem_alloc(__ALLOC_BC)
 # 	endif
 # endif
 

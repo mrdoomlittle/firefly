@@ -1,10 +1,10 @@
 # include "png_loader.hpp"
-boost::int8_t mdl::firefly::graphics::load_png_file(char const *__filedir, char const *__filename, types::pixmap_t&__pixmap, uint_t *__pm_size) {
+mdl::firefly::types::err_t mdl::firefly::graphics::load_png_file(char const *__filedir, char const *__filename, types::pixmap_t&__pixmap, uint_t *__pm_size) {
 	char *abs_fpath = strcmb(const_cast<char *>(__filedir), strcmb(const_cast<char *>(__filename), ".png", STRCMB_FREE_NONE), STRCMB_FREE_SECOND);
 	FILE *file = fopen(abs_fpath, "rb");
 
 	if (file == NULL) {
-		fprintf(stderr, "error cant open png file. at %s\n", abs_fpath);
+		system::io::printf(stderr, "png_loader, error can't open png file at '%s', errno: %d\n", abs_fpath, errno);
 		return FFLY_FAILURE;
 	}
 
@@ -27,11 +27,11 @@ boost::int8_t mdl::firefly::graphics::load_png_file(char const *__filedir, char 
 
 	if (bit_depth != 8 || color_type != PNG_COLOR_TYPE_RGB_ALPHA) return FFLY_FAILURE;
 
-	types::pixmap_t pixmap = static_cast<types::pixmap_t>(memory::mem_alloc((__pm_size[0] * __pm_size[1]) * 4));
-	bzero(pixmap, (__pm_size[0] * __pm_size[1]) * 4);
+	types::pixmap_t pixmap = static_cast<types::pixmap_t>(memory::mem_alloc((__pm_size[0]*__pm_size[1])*4));
+	bzero(pixmap, (__pm_size[0]*__pm_size[1])*4);
 
-	for (std::size_t y = 0; y != __pm_size[1]; y ++)
-		png_read_row(png, pixmap + (y * (__pm_size[0] * 4)), NULL);
+	for (std::size_t ya{}; ya != __pm_size[1]; ya++)
+		png_read_row(png, pixmap+(ya*(__pm_size[0]*4)), NULL);
 
 	fclose(file);
 	std::free(abs_fpath);
@@ -41,9 +41,9 @@ boost::int8_t mdl::firefly::graphics::load_png_file(char const *__filedir, char 
 	return FFLY_SUCCESS;
 }
 
-boost::int8_t mdl::firefly::graphics::load_png_file(char const *__filedir, char const *__filename, types::pixmap_t&__pixmap, types::_2d_dsize_t<>& __pm_size) {
+mdl::firefly::types::err_t mdl::firefly::graphics::load_png_file(char const *__filedir, char const *__filename, types::pixmap_t&__pixmap, types::_2d_dsize_t<>& __pm_size) {
 	uint_t pm_size[2] = {0};
-	boost::int8_t result = load_png_file(__filedir, __filename, __pixmap, pm_size);
+	i8_t result = load_png_file(__filedir, __filename, __pixmap, pm_size);
 	__pm_size.xaxis_len = pm_size[0];
 	__pm_size.yaxis_len = pm_size[1];
 	return result;

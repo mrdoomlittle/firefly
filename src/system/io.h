@@ -6,7 +6,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-void ffly_printf(FILE*, char*, ...);
+void ffly_printf(FILE*, char const*, ...);
 # ifdef __cplusplus
 }
 # endif
@@ -16,7 +16,7 @@ namespace mdl {
 namespace firefly {
 namespace system {
 namespace io {
-static void(*printf)(FILE*, char*, ...) = &ffly_printf;
+static void(*printf)(FILE*, char const*, ...) = &ffly_printf;
 }
 }
 }

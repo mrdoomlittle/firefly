@@ -11,6 +11,7 @@
 # include "../memory/mem_free.h"
 # include "../graphics/crop_pixmap.hpp"
 # include "../graphics/fill_pixmap.hpp"
+# include "../system/io.h"
 namespace mdl {
 namespace firefly {
 namespace ui {
@@ -27,36 +28,35 @@ class camera {
 	uint_t get_xaxis_len() {return this-> xaxis_len;}
 	uint_t get_yaxis_len() {return this-> yaxis_len;}
 
-	void xaxis_pull() {this-> set_xaxis(this-> xaxis + 1);}
-	void xaxis_push() {this-> set_xaxis(this-> xaxis - 1);}
+	void xaxis_pull() {this->set_xaxis(this-> xaxis+1);}
+	void xaxis_push() {this->set_xaxis(this-> xaxis-1);}
 
-	void yaxis_pull() {this-> set_yaxis(this-> yaxis + 1);}
-	void yaxis_push() {this-> set_yaxis(this-> yaxis - 1);}
+	void yaxis_pull() {this->set_yaxis(this-> yaxis+1);}
+	void yaxis_push() {this->set_yaxis(this-> yaxis-1);}
 
-	void zaxis_pull() {this-> set_zaxis(this-> zaxis + 1);}
-	void zaxis_push() {this-> set_zaxis(this-> zaxis - 1);}
+	void zaxis_pull() {this->set_zaxis(this-> zaxis+1);}
+	void zaxis_push() {this->set_zaxis(this-> zaxis-1);}
 
-	void set_xaxis(uint_t __xaxis) {if (__xaxis < 0) return; this-> xaxis = __xaxis;}
-	void set_yaxis(uint_t __yaxis) {if (__yaxis < 0) return; this-> yaxis = __yaxis;}
-	void set_zaxis(uint_t __zaxis) {if (__zaxis < 0) return; this-> zaxis = __zaxis;}
+	void set_xaxis(uint_t __xaxis) {if (__xaxis < 0) return; this->xaxis = __xaxis;}
+	void set_yaxis(uint_t __yaxis) {if (__yaxis < 0) return; this->yaxis = __yaxis;}
+	void set_zaxis(uint_t __zaxis) {if (__zaxis < 0) return; this->zaxis = __zaxis;}
 
-	uint_t get_xaxis() {return this-> xaxis;}
-	uint_t get_yaxis() {return this-> yaxis;}
-	uint_t get_zaxis() {return this-> zaxis;}
+	uint_t get_xaxis() {return this->xaxis;}
+	uint_t get_yaxis() {return this->yaxis;}
+	uint_t get_zaxis() {return this->zaxis;}
 
 	void set_coords(types::_3d_coords_t<> __coords) {
-		this-> set_xaxis(__coords.xaxis);
-		this-> set_yaxis(__coords.yaxis);
-		this-> set_zaxis(__coords.zaxis);
+		this->set_xaxis(__coords.xaxis);
+		this->set_yaxis(__coords.yaxis);
+		this->set_zaxis(__coords.zaxis);
 	}
 
 	types::_3d_coords_t<> get_coords() {
-		types::_3d_coords_t<> coords = {
-			.xaxis = this-> xaxis,
-			.yaxis = this-> yaxis,
-			.zaxis = this-> zaxis
+		return (types::_3d_coords_t<>) {
+			.xaxis = this->xaxis,
+			.yaxis = this->yaxis,
+			.zaxis = this->zaxis
 		};
-		return coords;
 	}
 	bool inited = false;
 	private:

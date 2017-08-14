@@ -17,16 +17,22 @@ typedef struct {
 	types::byte_t r, g, b;
 } rgb_colour_t;
 
-
-// change to 'make_colour'
-static colour_t __colour__(types::byte_t __r, types::byte_t __g, types::byte_t __b, types::byte_t __a) {
-	colour_t _colour = {
-		.r = __r,
-		.g = __g ,
-		.b = __b,
-		.a = __a
+colour_t static __inline__ mk_colour(types::byte_t __r, types::byte_t __g, types::byte_t __b, types::byte_t __a) {
+	return (colour_t) {
+		r:__r,
+		g:__g,
+		b:__b,
+		a:__a
 	};
-	return _colour;
+}
+
+colour_t static __inline__ __colour__(types::byte_t __r, types::byte_t __g, types::byte_t __b, types::byte_t __a) {
+	return (colour_t) {
+		r:__r,
+		g:__g,
+		b:__b,
+		a:__a
+	};
 }
 
 }

@@ -1,22 +1,21 @@
 # include "tcp_server.hpp"
 bool mdl::firefly::networking::tcp_server::to_shutdown = false;
-mdl::firefly::types::err_t mdl::firefly::networking::tcp_server::init(boost::uint16_t __port_no) {
-	this-> sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (this-> sock == -1) {
-		fprintf(stderr, "tcp_server: failed to create sock, errno: %d\n", errno);
+mdl::firefly::types::err_t mdl::firefly::networking::tcp_server::init(mdl::u16_t __port_no) {
+	if ((this->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		system::io::printf(stderr, "tcp_server: failed to create sock, errno: %d\n", errno);
 		return FFLY_FAILURE;
 	}
 
-	this-> server_addr.sin_family = AF_INET;
-	this-> server_addr.sin_addr.s_addr = htons(INADDR_ANY);
-	this-> server_addr.sin_port = htons(__port_no);
+	this->server_addr.sin_family = AF_INET;
+	this->server_addr.sin_addr.s_addr = htons(INADDR_ANY);
+	this->server_addr.sin_port = htons(__port_no);
 
 	if (bind(this-> sock, (struct sockaddr*)&this-> server_addr, sizeof(this-> server_addr)) == -1) {
 		fprintf(stderr, "tcp_server: failed to bind sock, errno: %d\n", errno);
 		return FFLY_FAILURE;
 	}
 
-	this-> poll_th_c = 0;
+	this->poll_th_c = 0;
 	len = sizeof(struct sockaddr_in);
 /*
 	struct timeval tv = {

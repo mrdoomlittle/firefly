@@ -57,7 +57,7 @@ ffly_err_t ffly_vec_pop_back(struct vec *__vec, void *__ptr) {
 
 ffly_err_t ffly_vec_resize(struct vec *__vec, mdl_uint_t __size) {
 	if (!__size) {__ffly_mem_free(__vec->p); __vec->p = NULL; return FFLY_SUCCESS;}
-	if (!__vec->p) {__vec->p = __ffly_mem_alloc(__size*__vec->blk_size); return FFLY_SUCCESS;} 
+	if (!__vec->p) {__vec->p = __ffly_mem_alloc(__size*__vec->blk_size); return FFLY_SUCCESS;}
 	if ((__vec->p = ffly_mem_realloc(__vec->p, __size*__vec->blk_size)) == NULL) {
 		ffly_printf(stderr, "vec: failed to realloc memory for resize, errno: %d\n", errno);
 		return FFLY_FAILURE;}

@@ -14,6 +14,7 @@
 # include "memory/mem_free.h"
 # include "system/time_stamp.hpp"
 # include "types/id_t.hpp"
+# include "types/bool_t.h"
 namespace ublas = boost::numeric::ublas;
 namespace mdl {
 namespace firefly {
@@ -35,7 +36,7 @@ class asset_manager
 
 	types::err_t de_init();
 
-	bool valid_asset_id(types::id_t __asset_id);
+	types::bool_t valid_asset_id(types::id_t __asset_id);
 	types::id_t add_asset(u8_t *__data, uint_t __bytes, uint_t __type);
 	types::id_t load_asset(char const *__asset_file, uint_t __asset_type);
 	void del_asset(types::id_t __asset_id);

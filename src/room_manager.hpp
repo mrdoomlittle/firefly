@@ -20,6 +20,8 @@
 #	include "layer_manager.hpp"
 # endif
 # include "types/id_t.hpp"
+# include "system/io.h"
+# include "firefly.hpp"
 namespace mdl {
 namespace firefly {
 class room_manager {
