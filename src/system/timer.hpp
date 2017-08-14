@@ -1,26 +1,25 @@
 # ifndef __ffly_timer__hpp
 # define __ffly_timer__hpp
 # include <eint_t.hpp>
-# include <chrono>
-// this will replace stop_watch
+# include "time.h"
+
 namespace mdl {
 namespace firefly {
 namespace system {
 struct timer {
-	std::chrono::high_resolution_clock::time_point begin_point;
-	std::chrono::high_resolution_clock::time_point end_point;
+	types::tpv_t begin_point;
+	types::tpv_t end_point;
 
-	void begin() {begin_point = std::chrono::high_resolution_clock::now();}
-	void end() {end_point = std::chrono::high_resolution_clock::now();}
-	template<typename __time_unit>
-	uint_t now() {
-		return std::chrono::duration_cast<__time_unit>(std::chrono::high_resolution_clock::now() - this-> begin_point).count();
-	}
+	void begin() {this->begin_point = time::get_ns_tp();}
+	void end() {this->end_point = time::get_ns_tp();}
 
-	template<typename __time_unit>
-	uint_t delta() {
-		return std::chrono::duration_cast<__time_unit>(this-> end_point - this-> begin_point).count();
-	}
+	template<types::tpv_t(*__e)(types::tpv_t)>
+	types::tpv_t now() {
+		return time::unit_cast<__e>(time::get_ns_tp()-this->begin_point);}
+
+	template<types::tpv_t(*__e)(types::tpv_t)>
+	types::tpv_t delta() {
+		return time::unit_cast<__e>(this->end_point-this->begin_point);}
 };
 }
 }
