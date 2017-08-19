@@ -1,92 +1,106 @@
 # ifndef __vec__h
 # define __vec__h
-# define VEC_PAGE_SIZE 32
+# define VEC_PAGE_SIZE 32 // dont change
 # define VEC_AUTO_RESIZE 0x1
 # include <eint_t.h>
+# include "io.h"
 # include "../types/err_t.h"
-struct vec {
+struct ffly_vec {
 	void *p;
 	mdl_u8_t flags;
-	mdl_uint_t off;
+	mdl_uint_t off, size;
 	mdl_uint_t blk_size, page_c;
 };
 
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_vec_init(struct vec*, mdl_uint_t);
-ffly_err_t ffly_vec_push_back(struct vec*, void **);
-ffly_err_t ffly_vec_pop_back(struct vec*, void*);
-ffly_err_t ffly_vec_de_init(struct vec*);
-ffly_err_t ffly_vec_resize(struct vec*, mdl_uint_t);
+ffly_err_t ffly_vec_init(struct ffly_vec*, mdl_uint_t);
+ffly_err_t ffly_vec_push_back(struct ffly_vec*, void**);
+ffly_err_t ffly_vec_pop_back(struct ffly_vec*, void*);
+ffly_err_t ffly_vec_de_init(struct ffly_vec*);
+ffly_err_t ffly_vec_resize(struct ffly_vec*, mdl_uint_t);
 # ifdef __cplusplus
 }
 # endif
 
-mdl_uint_t static __inline__ ffly_vec_size(struct vec *__vec) {return __vec->off;}
-void static __inline__* ffly_vec_begin(struct vec *__vec) {return __vec->p;}
-void static __inline__* ffly_vec_end(struct vec *__vec) {return (mdl_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size);}
-mdl_u8_t static __inline__ ffly_vec_empty(struct vec *__vec) {return __vec->off == 0?1:0;}
-void static __inline__ ffly_vec_swp(struct vec *__vec) {
-
-}
-
+mdl_uint_t static __inline__ ffly_vec_size(struct ffly_vec *__vec) {return __vec->size;}
+void static __inline__* ffly_vec_begin(struct ffly_vec *__vec) {return __vec->p;}
+void static __inline__* ffly_vec_end(struct ffly_vec *__vec) {return (mdl_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size);}
+mdl_u8_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return __vec->off == 0?1:0;}
 # ifdef __cplusplus
 # include "../data/swp.h"
 namespace mdl {
 namespace firefly {
 namespace system {
-static types::err_t (*vec_init)(struct vec*, mdl_uint_t) = &ffly_vec_init;
-static types::err_t (*vec_push_back)(struct vec*, void **) = &ffly_vec_push_back;
-static types::err_t (*vec_pop_back)(struct vec*, void*) = &ffly_vec_pop_back;
-static types::err_t (*vec_de_init)(struct vec*) = &ffly_vec_de_init;
-static types::err_t (*vec_resize)(struct vec*, mdl_uint_t) = &ffly_vec_resize;
-uint_t static __inline__ vec_size(struct vec *__vec) {return ffly_vec_size(__vec);}
-void static __inline__* vec_begin(struct vec *__vec) {ffly_vec_begin(__vec);}
-void static __inline__* vec_end(struct vec *__vec) {ffly_vec_end(__vec);}
-bool static __inline__ vec_empty(struct vec *__vec) {return ffly_vec_empty(__vec);}
+static types::err_t (*vec_init)(struct ffly_vec*, uint_t) = &ffly_vec_init;
+static types::err_t (*vec_push_back)(struct ffly_vec*, void**) = &ffly_vec_push_back;
+static types::err_t (*vec_pop_back)(struct ffly_vec*, void*) = &ffly_vec_pop_back;
+static types::err_t (*vec_de_init)(struct ffly_vec*) = &ffly_vec_de_init;
+static types::err_t (*vec_resize)(struct ffly_vec*, uint_t) = &ffly_vec_resize;
+uint_t static __inline__ vec_size(struct ffly_vec *__vec) {return ffly_vec_size(__vec);}
+void static __inline__* vec_begin(struct ffly_vec *__vec) {return ffly_vec_begin(__vec);}
+void static __inline__* vec_end(struct ffly_vec *__vec) {return ffly_vec_end(__vec);}
+bool static __inline__ vec_empty(struct ffly_vec *__vec) {return ffly_vec_empty(__vec);}
 template<typename _T>
 struct vec {
-	vec() {this->init(0);}
-	vec(mdl_u8_t __flags) {this->init(__flags);}
-	void init(u8_t __flags) {vec_init(&this->_vec, sizeof(_T)); this->_vec.flags = __flags;}
-	~vec() {vec_de_init(&this->_vec);}
-	uint_t size() {vec_size(&this->_vec);}
-	_T* begin() {static_cast<_T*>(vec_begin(&this->_vec));}
-	_T* end() {static_cast<_T*>(vec_end(&this->_vec));}
-	_T& operator[](uint_t __off) {return *(begin()+__off);}
-	bool empty() {return vec_empty(&this->_vec);}
+	vec() {
+		if (this->init(0) != FFLY_SUCCESS)
+			io::printf(stderr, "queue: failed to ini.\n");}
+	vec(mdl_u8_t __flags) {
+		if (this->init(__flags) != FFLY_SUCCESS)
+			io::printf(stderr, "queue: failed to ini.\n");}
+	~vec() {
+		if (this->de_init() != FFLY_SUCCESS)
+			io::printf(stderr, "queue: failed to de_init.\n");}
 
-	_T& push_back() {
-		_T *ptr;
-		vec_push_back(&this->_vec, (void**)&ptr);
-		return *ptr;
+	types::err_t init(u8_t __flags) {
+		types::err_t any_err;
+		any_err = vec_init(&this->raw_vec, sizeof(_T));
+		this->raw_vec.flags = __flags;
+		return any_err;
+	}
+	types::err_t de_init() {return vec_de_init(&this->raw_vec);}
+	uint_t size() {vec_size(&this->raw_vec);}
+	_T* begin() {static_cast<_T*>(vec_begin(&this->raw_vec));}
+	_T* end() {static_cast<_T*>(vec_end(&this->raw_vec));}
+	bool empty() {return vec_empty(&this->raw_vec);}
+
+	_T& push_back(types::err_t& __any_err) {
+		_T *p;
+		__any_err = vec_push_back(&this->raw_vec, (void**)&p);
+		return *p;
 	}
 
-	void push_back(_T __element) {
-		this->push_back() = __element;}
+	types::err_t push_back(_T __elem) {
+		types::err_t any_err;
+		this->push_back(any_err) = __elem;
+		return any_err;
+	}
 
-	_T pop_back() {
+	_T pop_back(types::err_t& __any_err) {
 		_T ret;
-		vec_pop_back(&this->_vec, (void*)&ret);
+		__any_err = vec_pop_back(&this->raw_vec, (void*)&ret);
 		return ret;
 	}
 
+	_T& at(uint_t __off) {return *(this->begin()+__off);}
+	_T& operator[](uint_t __off){return this->at(__off);}
+
 	void swp(_T *__p1, uint_t __p2) {
-		data::swp(__p1, (void*)(this->begin()+__p2), sizeof(_T));}
+		data::swp<_T>(__p1, (void*)(this->begin()+__p2));}
 
 	void swp(uint_t __p1, _T *__p2) {
-		data::swp((void*)(this->begin()+__p1), __p2, sizeof(_T));}
+		data::swp<_T>((void*)(this->begin()+__p1), __p2);}
 
 	void swp(uint_t __p1, uint_t __p2) {
-		data::swp((void*)(this->begin()+__p1), (void*)(this->begin()+__p2), sizeof(_T));}
+		data::swp<_T>((void*)(this->begin()+__p1), (void*)(this->begin()+__p2));}
 
-	void resize(uint_t __size) {vec_resize(&this->_vec, __size);}
-	void resize(uint_t __size, u8_t __dir) {
-		if (__dir == 1) {this->resize(this->size()+__size);return;}
-		if (__dir == -1) {this->resize(this->size()-__size);return;}
-	}
-	struct ::vec _vec;
+	types::err_t resize(uint_t __size) {return vec_resize(&this->raw_vec, __size);}
+	types::err_t resize(uint_t __size, u8_t __dir) {
+		if (__dir == 1) {return this->resize(this->size()+__size);}
+		if (__dir == -1) {return this->resize(this->size()-__size);}}
+	struct ffly_vec raw_vec;
 };
 
 }

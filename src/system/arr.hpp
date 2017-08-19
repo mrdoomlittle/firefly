@@ -6,15 +6,16 @@
 namespace mdl {
 namespace firefly {
 namespace system {
-template <typename __T, std::size_t __N>
+template <typename _T, std::size_t _N>
 struct arr {
 	public:
-	array() {this->p = static_cast<__T*>(__ffly_mem_alloc(__N*sizeof(__T)));}
-	__T &operator[](std::size_t __off) {return this->p[__off];}
-	~array() {__ffly_mem_free(this->p);}
-	mdl::uint_t size() {return __N;}
+	arr() {this->p = static_cast<_T*>(__ffly_mem_alloc(_N*sizeof(_T)));}
+	_T &operator[](std::size_t __off) {return this->p[__off];}
+	~arr() {__ffly_mem_free(this->p);}
+	mdl::uint_t size() {return _N;}
+	_T *get_ptr() {return this->p;}
 	private:
-	__T *p = nullptr;
+	_T *p = nullptr;
 };
 }
 }

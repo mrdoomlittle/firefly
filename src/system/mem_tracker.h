@@ -14,7 +14,7 @@
 extern "C" {
 # endif
 
-struct ffly_mem_track_t {
+struct ffly_mem_track {
 	void **mptr_lst;
 	mdl_uint_t *unused_pnts;
 	mdl_uint_t unused_pnts_c;
@@ -22,17 +22,17 @@ struct ffly_mem_track_t {
 	mdl_uint_t nxt_pnt;
 };
 
-extern struct ffly_mem_track_t __ffly_mem_track__;
+extern struct ffly_mem_track __ffly_mem_track__;
 # ifdef __DEBUG_ENABLED
-void ffly_mem_track_dmp_ptr_lst(struct ffly_mem_track_t*);
+void ffly_mem_track_dmp_ptr_lst(struct ffly_mem_track*);
 # endif
-void* ffly_mem_track_get_nxt(struct ffly_mem_track_t*);
-void ffly_mem_track_reset(struct ffly_mem_track_t*);
-void ffly_mem_track_update(struct ffly_mem_track_t*, void*, void*);
-ffly_err_t ffly_mem_track_init(struct ffly_mem_track_t*);
-ffly_err_t ffly_mem_track_de_init(struct ffly_mem_track_t*);
-ffly_err_t ffly_mem_track_alloc(struct ffly_mem_track_t*, void*);
-ffly_err_t ffly_mem_track_free(struct ffly_mem_track_t*, void*, mdl_u8_t);
+void* ffly_mem_track_get_nxt(struct ffly_mem_track*);
+void ffly_mem_track_reset(struct ffly_mem_track*);
+void ffly_mem_track_update(struct ffly_mem_track*, void*, void*);
+ffly_err_t ffly_mem_track_init(struct ffly_mem_track*);
+ffly_err_t ffly_mem_track_de_init(struct ffly_mem_track*);
+ffly_err_t ffly_mem_track_alloc(struct ffly_mem_track*, void*);
+ffly_err_t ffly_mem_track_free(struct ffly_mem_track*, void*, mdl_u8_t);
 # ifdef __cplusplus
 }
 # endif
