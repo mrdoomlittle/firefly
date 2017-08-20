@@ -1,34 +1,61 @@
 # ifndef __mem__realloc__h
 # define __mem__realloc__h
 # include <malloc.h>
+# include <eint_t.h>
 # include "mem_alloc.h"
+# include "../ffly_def.h"
+# include "../types/bool_t.h"
+
 # ifdef __cplusplus
-# include <cstddef>
-
 extern "C" {
-	void extern* ffly_mem_realloc(void*, std::size_t);
-# if defined(__DEBUG_ENABLED) && !defined(__mem__halloc__h)
-	std::size_t extern ffly_mem_alloc_bc;
-	std::size_t extern ffly_mem_alloc_c;
 # endif
-}
 
+# if defined(__DEBUG_ENABLED) && !defined(__mem__alloc__h)
+mdl_uint_t extern ffly_mem_alloc_bc;
+mdl_uint_t extern ffly_mem_alloc_c;
+# endif
+
+# ifdef __WITH_MEM_TRACKER
+void* ffly_mem_realloc(void*, mdl_uint_t, ffly_bool_t);
+# else
+void* ffly_mem_realloc(void*, mdl_uint_t);
+# endif
+# ifdef __cplusplus
+}
+# endif
+
+# ifdef __cplusplus
 namespace mdl {
 namespace firefly {
 namespace memory {
-void static*(*mem_realloc)(void*, std::size_t) = &ffly_mem_realloc;
+# ifdef __WITH_MEM_TRACKER
+void __inline__* mem_realloc(void *__mem_ptr, uint_t __bc, types::bool_t __track_bypass) {
+	return ffly_mem_realloc(__mem_ptr, __bc, __track_bypass);
 }
-}
-}
-# else /*c section*/
 
-# include <stddef.h>
-# if defined(__DEBUG_ENABLED) && !defined(__mem__alloc__h)
-size_t extern ffly_mem_alloc_bc;
-size_t extern ffly_mem_alloc_c;
+void __inline__* mem_realloc(void *__mem_ptr, uint_t __bc) {
+	return mem_realloc(__mem_ptr, __bc, ffly_false);
+}
+# else
+static void*(*mem_realloc)(void*, uint_t) = &ffly_mem_realloc;
+# endif
+}
+}
+}
 # endif
 
-void* ffly_mem_realloc(void*, size_t);
-
+# if defined(__WITH_MEM_TRACKER) && !defined(__cplusplus)
+#	ifdef __cplusplus
+#		define __ffly_mem_realloc(__MEM_PTR, __ALLOC_BC) mdl::firefly::memory::mem_realloc(__MEM_PTR, __ALLOC_BC, ffly_false)
+#	else
+#		define __ffly_mem_realloc(__MEM_PTR, __ALLOC_BC) ffly_mem_realloc(__MEM_PTR, __ALLOC_BC, ffly_false)
+#	endif
+# else
+#	ifdef __cplusplus
+#		define __ffly_mem_realloc(__MEM_PTR, __ALLOC_BC) mdl::firefly::memory::mem_realloc(__MEM_PTR, __ALLOC_BC)
+#	else
+#		define __ffly_mem_realloc(__MEM_PTR, __ALLOC_BC) ffly_mem_realloc(__MEM_PTR, __ALLOC_BC)
+#	endif
 # endif
+
 # endif /*__mem__realloc__h*/
