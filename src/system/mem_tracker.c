@@ -73,13 +73,12 @@ void ffly_mem_track_update(struct ffly_mem_track *__mem_track, void *__mptr, voi
 ffly_err_t ffly_mem_track_alloc(struct ffly_mem_track *__mem_track, void *__mptr) {
 	mdl_uint_t lst_loc = 0;
 	if (__mem_track->unused_pnts_c != 0) {
-		lst_loc = __mem_track->unused_pnts[__mem_track->unused_pnts_c];
-
-		if (__mem_track->unused_pnts_c-1 == 0) {
+		lst_loc = __mem_track->unused_pnts[__mem_track->unused_pnts_c-1];
+		if (!(__mem_track->unused_pnts_c-1)) {
 			if (__mem_track->unused_pnts != NULL) ffly_mem_free(__mem_track->unused_pnts, 1);
 			__mem_track->unused_pnts_c--;
 		} else {
-			if ((__mem_track->unused_pnts = (mdl_uint_t*)ffly_mem_realloc(__mem_track->unused_pnts, (--__mem_track->unused_pnts_c)*sizeof(mdl_uint_t))) == NULL) {
+			if ((__mem_track->unused_pnts = (mdl_uint_t*)ffly_mem_realloc(__mem_track->unused_pnts, (--__mem_track->unused_pnts_c)*sizeof(mdl_uint_t), 1)) == NULL) {
 				ffly_printf(stderr, "mem_tracker: failed to realloc memory for 'unused_pnts', errno: %d\n", errno);
 				return FFLY_FAILURE;
 			}
@@ -88,13 +87,13 @@ ffly_err_t ffly_mem_track_alloc(struct ffly_mem_track *__mem_track, void *__mptr
 		goto _sk_resize;
 	}
 
-	if (__mem_track->lst_size == 0) {
+	if (!__mem_track->lst_size) {
 		if ((__mem_track->mptr_lst = (void**)ffly_mem_alloc(sizeof(void*), 1)) == NULL) {
 			ffly_printf(stderr, "mem_tracker: failed to alloc memory for 'mptr_lst', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 	} else {
-		if ((__mem_track->mptr_lst = (void**)ffly_mem_realloc(__mem_track->mptr_lst, (__mem_track->lst_size+1)*sizeof(void*))) == NULL) {
+		if ((__mem_track->mptr_lst = (void**)ffly_mem_realloc(__mem_track->mptr_lst, (__mem_track->lst_size+1)*sizeof(void*), 1)) == NULL) {
 			ffly_printf(stderr, "mem_tracker: failed to realloc memory for 'mptr_lst', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
@@ -133,7 +132,7 @@ ffly_err_t ffly_mem_track_free(struct ffly_mem_track *__mem_track, void *__mptr,
 			return FFLY_FAILURE;
 		}
 	} else {
-		if ((__mem_track->unused_pnts = (mdl_uint_t*)ffly_mem_realloc(__mem_track->unused_pnts, (__mem_track->unused_pnts_c+1)*sizeof(mdl_uint_t))) == NULL) {
+		if ((__mem_track->unused_pnts = (mdl_uint_t*)ffly_mem_realloc(__mem_track->unused_pnts, (__mem_track->unused_pnts_c+1)*sizeof(mdl_uint_t), 1)) == NULL) {
 			ffly_printf(stderr, "mem_tracker: failed to realloc memory for 'unused_pnts', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
@@ -151,7 +150,7 @@ ffly_err_t ffly_mem_track_free(struct ffly_mem_track *__mem_track, void *__mptr,
 		}
 	else {
 		__mem_track->mptr_lst[lst_loc] = __mem_track->mptr_lst[__mem_track->lst_size-1];
-		if ((__mem_track->mptr_lst = (void**)ffly_mem_realloc(__mem_track->mptr_lst, (__mem_track->lst_size-1)*sizeof(void*))) == NULL) {
+		if ((__mem_track->mptr_lst = (void**)ffly_mem_realloc(__mem_track->mptr_lst, (__mem_track->lst_size-1)*sizeof(void*), 1)) == NULL) {
 			ffly_printf(stderr, "mem_tracker: failed to realloc memory for 'mptr_lst', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
