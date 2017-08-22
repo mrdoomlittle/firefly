@@ -137,7 +137,7 @@ ffly_err_t ffly_mem_allocr_free(struct ffly_mem_allocr *__mem_allocr, void *__mp
 		if (below != NULL) {
 			if (below->blk_state == BLK_FREE) {
 				printf("free space found below.\n");
-				blk_desc->below = below;
+				blk_desc->below = (mdl_u8_t*)below;
 				blk_desc->size += below->size;
 				blk_desc->data_size += below->size;
 

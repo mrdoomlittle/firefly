@@ -22,7 +22,7 @@ void ffly_buff_get(struct ffly_buff *__buff, void *__p) {
 	ffly_mem_ncpy(__p, (mdl_u8_t*)__buff->p+(__buff->off*__buff->blk_size), __buff->blk_size);}
 
 ffly_err_t ffly_buff_resize(struct ffly_buff *__buff, mdl_uint_t __nsize) {
-	if ((__buff->p = ffly_mem_realloc(__buff->p, __nsize*__buff->blk_size)) == NULL) {
+	if ((__buff->p = __ffly_mem_realloc(__buff->p, __nsize*__buff->blk_size)) == NULL) {
 		ffly_printf(stderr, "buff: failed to realloc memory.\n");
 		return FFLY_FAILURE;
 	}

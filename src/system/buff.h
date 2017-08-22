@@ -74,6 +74,5 @@ struct buff {
 }
 }
 # endif
-
-
 # endif /*__buff__h*/
+

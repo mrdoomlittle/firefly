@@ -57,7 +57,7 @@ ffly_err_t ffly_queue_push(struct ffly_queue *__queue, void *__p) {
  	}
 
 	if (__queue->end_off >> 5 == __queue->page_c) {
-		if ((__queue->p = (void**)ffly_mem_realloc(__queue->p, (++__queue->page_c)*sizeof(void*))) == NULL) {
+		if ((__queue->p = (void**)__ffly_mem_realloc(__queue->p, (++__queue->page_c)*sizeof(void*))) == NULL) {
 			ffly_printf(stderr, "queue: failed to realloc memory.\n");
 			return FFLY_FAILURE;
 		}
