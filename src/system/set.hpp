@@ -7,16 +7,48 @@ namespace firefly {
 namespace system {
 template<typename _T>
 struct set {
-	typedef _T* iterator;
-	set() : raw(VEC_AUTO_RESIZE) {};
-	_T* begin(){return this->raw.begin();}
-	_T* end(){return this->raw.end();}
-	types::bool_t empty(){return this->raw.empty();}
+	typedef struct _iterator {
+		vec<_T> *raw;
+		_T *p;
+		_T* operator*() {
+			return p;
+		}
+
+		_iterator operator+(mdl_uint_t __a) {
+			_T *p = this->p;
+			ffly_vec_itr(&raw->raw_vec, (void**)&p, VEC_ITR_DOWN, __a);
+			return (iterator){raw:this->v, p:p};
+		}
+
+		_iterator& operator++(int) {
+			ffly_vec_itr(&raw->raw_vec, (void**)&this->p, VEC_ITR_DOWN, 1);
+		}
+
+		types::bool_t operator!=(const _iterator& __val) {
+			return (this->p != __val.p);
+		}
+
+		types::bool_t operator==(const _iterator& __val) {
+			return (this->p == __val.p);
+		}
+
+		types::bool_t operator==(const void *__val) {
+			return (this->p == __val);
+		}
+
+	} iterator;
+	set() : v(VEC_AUTO_RESIZE|VEC_BLK_CHAIN|VEC_UUU_BLKS) {};
+	iterator begin(){return (iterator){raw:&this->v, p:this->v.first()};}
+	iterator end(){return (iterator){raw:&this->v, p:this->v.end()};}
+	types::bool_t empty(){return this->v.empty();}
 	void insert(_T __elem) {
-		this->raw.push_back(__elem);
+		this->v.push_back(__elem);
+	}
+	void erase(iterator __itr) {
+		this->v.del(__itr.p);
 	}
 
-	vec<_T> raw;
+	vec<_T> v;
 };
 }
 }

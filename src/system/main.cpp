@@ -4,10 +4,139 @@
 # include "mem_allocr.h"
 # include "timer.hpp"
 # include <cstdlib>
-# include "smem_buff.h"
-# include "queue.hpp"
+//# include "smem_buff.h"
+//# include "queue.hpp"
+//# include "vec.h"
+//# include "buff.h"
+# include "queue.h"
+# include <string.h>
+# include "io.h"
+# include "set.hpp"
+# include "mem_tracker.h"
 # include "vec.h"
+# include <unistd.h>
 int main() {
+	ffly_mem_track_init(&__ffly_mem_track__);
+
+	mdl::firefly::system::set<mdl_uint_t>* tst = new mdl::firefly::system::set<mdl_uint_t>();
+	tst->insert(2);
+	tst->insert(1);
+	tst->insert(2);
+	tst->insert(9);
+	tst->insert(9);
+
+	tst->erase(tst->begin());
+
+	for (mdl::firefly::system::set<mdl_uint_t>::iterator itr = tst->begin(); itr != tst->end();) {
+		if (itr == NULL) break;
+		printf("%u\n", **itr);
+
+		itr++;
+	}
+
+	delete tst;
+
+/*
+	struct ffly_vec my_vec;
+
+	my_vec.flags = VEC_AUTO_RESIZE | VEC_BLK_CHAIN | VEC_UUU_BLKS;
+	ffly_vec_init(&my_vec, sizeof(mdl_uint_t));
+
+	for (int i = 0; i != 11; i++) {
+		mdl_uint_t *x;
+		ffly_vec_push_back(&my_vec, (void**)&x);
+		*x = i;
+	}
+
+	void *p = ffly_vec_first(&my_vec);
+	ffly_vec_itr(&my_vec, (void**)&p, VEC_ITR_DOWN, 6);
+	ffly_vec_del(&my_vec, p);
+
+	printf("%u\n", ffly_vec_size(&my_vec));
+	mdl_uint_t *x;
+	ffly_vec_push_back(&my_vec, (void**)&x);
+	*x = 21;
+	ffly_vec_push_back(&my_vec, (void**)&x);
+	*x = 31;
+
+	void *itr = ffly_vec_first(&my_vec);
+	while(itr != NULL) {
+		printf("value: %u\n", *(mdl_u8_t*)itr);
+		ffly_vec_itr(&my_vec, (void**)&itr, VEC_ITR_DOWN, 1);
+	}
+
+	ffly_vec_de_init(&my_vec);
+*/
+/*
+	mdl_uint_t *p;
+	struct ffly_vec my_vec;
+	ffly_vec_init(&my_vec, sizeof(mdl_uint_t));
+	ffly_vec_resize(&my_vec, 12);
+
+	for (int i = 0; i != 11; i++) {
+	mdl_uint_t *x;
+	ffly_vec_push_back(&my_vec, (void**)&x);
+	*x = i;
+
+	if (i >= 6 && i <= 12) {
+		p = x;
+		ffly_vec_del(&my_vec, (void*)x);
+	}
+	}
+
+	//ffly_vec_del(&my_vec, (void*)p);
+
+
+	mdl_uint_t *itr = (mdl_uint_t*)ffly_vec_rbegin(&my_vec);
+	while(itr != NULL) {
+		usleep(1000000);
+		printf("%u\n", *itr);
+
+		ffly_vec_itr(&my_vec, (void**)&itr, VEC_ITR_DOWN);
+	}
+*/
+//	ffly_mem_track_de_init(&__ffly_mem_track__);
+
+
+//	mdl::firefly::system::io::printf(stdout, "hello\n");
+/*
+	ffly_mem_track_init(&__ffly_mem_track__);
+
+	mdl::firefly::system::queue<mdl::uint_t> my_queue;
+
+	my_queue.push(21);
+	my_queue.push(29);
+	my_queue.push(9);
+
+	mdl::i8_t o;
+	printf("%u", my_queue.pop(o));
+	printf("%u", my_queue.pop(o));
+	printf("%u\n", my_queue.pop(o));
+*/
+//	printf("size: %u\n", ffly_queue_size(&q));
+
+//	for (mdl_uint_t ic = 0; ic != size/2; ic++)
+//		ffly_queue_push(&q, (void*)&ic);
+
+//	printf("size: %u\n", ffly_queue_size(&q));
+/*
+	struct ffly_buff b;
+
+	ffly_buff_init(&b, 12, sizeof(mdl_uint_t));
+
+
+	mdl_uint_t put = 21299;
+	ffly_buff_put(&b, &put);
+
+	ffly_buff_incr(&b);
+
+	mdl_uint_t get = 0;
+	ffly_buff_get(&b, &get);
+	printf("%u\n", get);
+
+	ffly_buff_de_init(&b);
+*/
+/*
 	mdl::firefly::system::vec<mdl::uint_t> _vec;
 	_vec.resize(100);
 
@@ -16,6 +145,7 @@ int main() {
 
 	for (int x = 0; x != 88; x ++)
 		printf("%u\n", _vec.pop_back());
+*/
 /*
 	ffly_smem_buff_t *smem_buff = ffly_smem_buff_ninst(12, sizeof(int));
 	int x = 21;

@@ -5,6 +5,7 @@
 # define VEC_ITR_UP 0x0
 # define VEC_ITR_DOWN 0x1
 # define VEC_BLK_CHAIN 0b01000000
+# define VEC_UUU_BLKS 0b00100000
 # include <eint_t.h>
 # include "io.h"
 # include "../types/err_t.h"
@@ -15,11 +16,12 @@ struct ffly_vec_chain {
 };
 
 struct ffly_vec {
-	mdl_uint_t last_blk;
+	mdl_uint_t last_blk, first_blk;
 	void *p;
 	mdl_u8_t flags;
 	mdl_uint_t off, size;
 	mdl_uint_t blk_size, page_c;
+	struct ffly_vec *uu_blks;
 };
 
 # ifdef __cplusplus
@@ -31,9 +33,11 @@ ffly_err_t ffly_vec_pop_back(struct ffly_vec*, void*);
 ffly_err_t ffly_vec_de_init(struct ffly_vec*);
 ffly_err_t ffly_vec_resize(struct ffly_vec*, mdl_uint_t);
 void ffly_vec_del(struct ffly_vec*, void*);
-void ffly_vec_itr(struct ffly_vec*, void**, mdl_u8_t);
+void ffly_vec_itr(struct ffly_vec*, void**, mdl_u8_t, mdl_uint_t);
 void* ffly_vec_rbegin(struct ffly_vec*);
 void* ffly_vec_rend(struct ffly_vec*);
+void* ffly_vec_first(struct ffly_vec*);
+void* ffly_vec_last(struct ffly_vec*);
 # ifdef __cplusplus
 }
 # endif
@@ -58,6 +62,8 @@ static types::err_t(*vec_pop_back)(struct ffly_vec*, void*) = &ffly_vec_pop_back
 static types::err_t(*vec_de_init)(struct ffly_vec*) = &ffly_vec_de_init;
 static types::err_t(*vec_resize)(struct ffly_vec*, uint_t) = &ffly_vec_resize;
 static void(*vec_del)(struct ffly_vec*, void*) = &ffly_vec_del;
+static void*(*vec_first)(struct ffly_vec*) = &ffly_vec_first;
+static void*(*vec_last)(struct ffly_vec*) = &ffly_vec_last;
 uint_t static __inline__ vec_size(struct ffly_vec *__vec) {return ffly_vec_size(__vec);}
 void static __inline__* vec_begin(struct ffly_vec *__vec) {return ffly_vec_begin(__vec);}
 void static __inline__* vec_end(struct ffly_vec *__vec) {return ffly_vec_end(__vec);}
@@ -84,7 +90,13 @@ struct vec {
 	uint_t size() {vec_size(&this->raw_vec);}
 	_T* begin() {static_cast<_T*>(vec_begin(&this->raw_vec));}
 	_T* end() {static_cast<_T*>(vec_end(&this->raw_vec));}
+	_T* first() {static_cast<_T*>(vec_first(&this->raw_vec));}
+	_T* last() {static_cast<_T*>(vec_last(&this->raw_vec));}
 	types::bool_t empty() {return vec_empty(&this->raw_vec);}
+
+	void del(_T *__p) {
+		vec_del(&this->raw_vec, static_cast<void*>(__p));
+	}
 
 	_T& push_back(types::err_t& __any_err) {
 		_T *p;
