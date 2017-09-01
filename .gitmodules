@@ -34,3 +34,9 @@
 [submodule "mdlint"]
 	path = mdlint
 	url = git@github.com:mrdoomlittle/mdlint.git
+[submodule "emu2d"]
+	path = emu2d
+	url = git@github.com:mrdoomlittle/emu2d.git
+[submodule "emu3d"]
+	path = emu3d
+	url = git@github.com:mrdoomlittle/emu3d.git
