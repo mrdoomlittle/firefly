@@ -1,6 +1,6 @@
 # ifndef __id__t__h
 # define __id__t__h
-# include <eint_t.h>
+# include <mdlint.h>
 typedef mdl_uint_t __ffly_id_t;
 typedef mdl_uint_t* ffly_id_t;
 # ifdef __cplusplus

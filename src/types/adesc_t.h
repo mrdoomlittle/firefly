@@ -3,7 +3,7 @@
 # include "aformat_t.h"
 
 # ifdef __cplusplus
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace types {

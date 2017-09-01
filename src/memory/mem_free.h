@@ -1,7 +1,7 @@
 # ifndef __mem__free__h
 # define __mem__free__h
 # include <malloc.h>
-# include <eint_t.h>
+# include <mdlint.h>
 # include "../types/bool_t.h"
 # ifdef __WITH_MEM_TRACKER
 #	include "../system/mem_tracker.h"

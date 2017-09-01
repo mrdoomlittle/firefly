@@ -2,7 +2,7 @@
 # define __ffly__alsa__audio__hpp
 # include <alsa/asoundlib.h>
 # include "types/err_t.h"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <math.h>
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"

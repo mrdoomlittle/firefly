@@ -1,6 +1,6 @@
 # ifndef __swp__h
 # define __swp__h
-# include <eint_t.h>
+# include <mdlint.h>
 # ifdef __cplusplus
 extern "C" {
 # endif

@@ -2,7 +2,7 @@
 # define __wav__disc__t__h
 # include "../byte_t.h"
 # ifdef __cplusplus
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace types {

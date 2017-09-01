@@ -1,6 +1,6 @@
 # ifndef __mem__init__hpp
 # define __mem__init__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <string.h>
 namespace mdl {
 namespace firefly {

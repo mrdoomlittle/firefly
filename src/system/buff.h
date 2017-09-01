@@ -2,7 +2,7 @@
 # define __buff__h
 # include "../types/err_t.h"
 # include "io.h"
-# include <eint_t.h>
+# include <mdlint.h>
 struct ffly_buff {
 	mdl_u8_t *p;
 	mdl_uint_t off;

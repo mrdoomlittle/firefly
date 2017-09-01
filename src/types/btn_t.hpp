@@ -1,6 +1,6 @@
 # ifndef __btn__t__hpp
 # define __btn__t__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "pixmap_t.h"
 # include "bitmap_t.hpp"
 # include "coords_t.hpp"

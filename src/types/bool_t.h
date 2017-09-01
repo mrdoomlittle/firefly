@@ -1,6 +1,6 @@
 # ifndef __bool__t
 # define __bool__t
-# include <eint_t.h>
+# include <mdlint.h>
 typedef mdl_u8_t ffly_bool_t;
 # ifdef __cplusplus
 namespace mdl {

@@ -1,4 +1,4 @@
-# include <eint_t.h>
+# include <mdlint.h>
 
 __kernel void draw_pixmap(__global uint_t *__xoffset, __global uint_t *__yoffset, __global uchar *__pixbuff, __global uint_t *__pb_xlen, __global uchar *__pixmap) {
 

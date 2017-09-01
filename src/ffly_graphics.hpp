@@ -1,6 +1,6 @@
 # ifndef __ffly__graphics__hpp
 # define __ffly__graphics__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "types/err_t.h"
 # define _CPU_MX_X 64
 # define _CPU_MX_Y 64

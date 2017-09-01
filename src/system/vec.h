@@ -6,7 +6,7 @@
 # define VEC_ITR_DOWN 0x1
 # define VEC_BLK_CHAIN 0b01000000
 # define VEC_UUU_BLKS 0b00100000
-# include <eint_t.h>
+# include <mdlint.h>
 # include "io.h"
 # include "../types/err_t.h"
 # include "../types/bool_t.h"

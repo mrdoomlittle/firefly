@@ -1,6 +1,6 @@
 # ifndef __byte__t__h
 # define __byte__t__h
-# include <eint_t.h>
+# include <mdlint.h>
 typedef mdl_u8_t ffly_byte_t;
 # ifdef __cplusplus
 namespace mdl {

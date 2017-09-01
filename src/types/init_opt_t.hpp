@@ -1,6 +1,6 @@
 # ifndef __init__opt__hpp
 # define __init__opt__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 /* NOTE: all things like window size and camera size so x and y len
 need to be divisabal by 2 all the way to 0 or 1 ??
 */

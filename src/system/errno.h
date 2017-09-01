@@ -1,9 +1,9 @@
 # ifndef __ffly__errno__h
 # define __ffly__errno__h
 # ifdef __cplusplus
-#	include <eint_t.hpp>
+#	include <mdlint.h>
 # else
-#	include <eint_t.h>
+#	include <mdlint.h>
 # endif
 # include <errno.h>
 

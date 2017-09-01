@@ -2,7 +2,7 @@
 # include "../maths/rotate_point.hpp"
 # include "../memory/alloc_pixmap.hpp"
 # include "../memory/mem_free.h"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "../system/matrix.hpp"
 namespace mdl {
 namespace firefly {

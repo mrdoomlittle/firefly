@@ -1,6 +1,6 @@
 # ifndef __btn__info__t__hpp
 # define __btn__info__t__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "coords_t.hpp"
 # include "pixmap_t.h"
 namespace mdl {

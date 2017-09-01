@@ -4,7 +4,7 @@
 # include <png.h>
 # include <string.h>
 # include <boost/cstdint.hpp>
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "../system/errno.h"
 # include <strcmb.hpp>
 # include "../types/pixmap_t.h"

@@ -9,7 +9,7 @@
 # include <unistd.h>
 # include <string.h>
 # include <sys/time.h>
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/thread.hpp>
 # include <boost/cstdint.hpp>
 # include "conn_status.h"

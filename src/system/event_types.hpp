@@ -1,6 +1,6 @@
 # ifndef __event__types__hpp
 # define __event__types__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace system {

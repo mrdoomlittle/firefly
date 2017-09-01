@@ -1,6 +1,6 @@
 # ifndef __rotate__point__hpp
 # define __rotate__point__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <math.h>
 # include "pi.h"
 # include <boost/cstdint.hpp>

@@ -6,7 +6,7 @@
 # include "xcb_window.hpp"
 # endif
 # include <cstdio>
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/cstdint.hpp>
 # include "../system/errno.h"
 # include "../types/pixmap_t.h"

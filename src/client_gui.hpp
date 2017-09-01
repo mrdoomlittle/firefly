@@ -5,7 +5,7 @@
 # include <boost/array.hpp>
 # include "draw.hpp"
 # include "types.hpp"
-# include "../eint_t/inc/eint_t.hpp"
+# include "../eint_t/inc/mdlint.h"
 namespace ublas = boost::numeric::ublas;
 namespace mdl { class client_gui
 {

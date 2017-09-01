@@ -1,6 +1,6 @@
 # ifndef __squar__hpp
 # define __squar__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace maths {

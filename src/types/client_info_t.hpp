@@ -1,7 +1,7 @@
 # ifndef __client__info__t__hpp
 # define __client__info__t__hpp
 # include <serializer.hpp>
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace types {

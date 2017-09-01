@@ -1,7 +1,7 @@
 # ifndef __is__inside__hpp
 # define __is__inside__hpp
 # include "../types/coords_t.h"
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace maths {

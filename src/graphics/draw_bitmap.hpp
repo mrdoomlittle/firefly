@@ -4,7 +4,7 @@
 # include "../types/pixmap_t.h"
 # include "../types/coords_t.hpp"
 # include "../types/colour_t.hpp"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <cstdio>
 # include "../system/errno.h"
 # include <boost/cstdint.hpp>

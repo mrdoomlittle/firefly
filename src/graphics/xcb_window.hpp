@@ -12,7 +12,7 @@
 # include <GL/gl.h>
 # include <boost/cstdint.hpp>
 # include "../types/pixmap_t.h"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <string.h>
 # include <boost/thread.hpp>
 # include "../types/status.hpp"

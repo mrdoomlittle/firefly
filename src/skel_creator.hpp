@@ -5,7 +5,7 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "memory/mem_init.h"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "system/errno.h"
 # include <errno.h>
 # include <math.h>

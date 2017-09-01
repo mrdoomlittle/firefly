@@ -1,6 +1,6 @@
 # ifndef __camera__hpp
 # define __camera__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <errno.h>
 # include <cstdio>
 # include "../graphics/draw_pixmap.hpp"

@@ -30,7 +30,7 @@ int main() {
 	tst->erase(tst->end());
 
 	for (mdl::firefly::system::set<mdl_uint_t>::iterator itr = tst->begin(); itr != tst->end()+1;) {
-		printf("%u\n", **itr);
+		printf("%u\n", *itr);
 
 		itr++;
 	}

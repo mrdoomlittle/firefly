@@ -6,7 +6,7 @@
 # define FLG_WD_OPEN 2
 # define FLG_WD_WAITING 4
 # define FLG_WD_DONE_DRAW 8
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace graphics {

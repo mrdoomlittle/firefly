@@ -1,7 +1,7 @@
 # ifndef __mem__realloc__h
 # define __mem__realloc__h
 # include <malloc.h>
-# include <eint_t.h>
+# include <mdlint.h>
 # include "mem_alloc.h"
 # include "../ffly_def.h"
 # include "../types/bool_t.h"

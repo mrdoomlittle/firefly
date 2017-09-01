@@ -8,7 +8,7 @@
 # include "memory/alloc_pixmap.hpp"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
-# include <eint_t.h>
+# include <mdlint.h>
 # include <ft2build.h>
 # include "types/skelmap_info_t.hpp"
 # include "graphics/draw_skelmap.hpp"

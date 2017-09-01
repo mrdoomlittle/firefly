@@ -1,6 +1,6 @@
 # ifndef __ffly_timer__hpp
 # define __ffly_timer__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "time.h"
 
 namespace mdl {

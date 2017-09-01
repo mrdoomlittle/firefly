@@ -1,6 +1,6 @@
 # ifndef __cuda__helper__hpp
 # define __cuda__helper__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <cuda_runtime.h>
 # include "types/err_t.h"
 # include "system/errno.h"

@@ -1,5 +1,5 @@
 # include <time.h>
-# include <eint_t.h>
+# include <mdlint.h>
 # include <math.h>
 mdl_u64_t get_sec_tp();
 

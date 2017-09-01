@@ -1,6 +1,6 @@
 # ifndef __system__config__hpp
 # define __system__config__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace system {

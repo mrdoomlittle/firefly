@@ -1,6 +1,6 @@
 # ifndef __cal__dist__hpp
 # define __cal__dist__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "../types/coords_t.hpp"
 # include <math.h>
 # include "squar.hpp"

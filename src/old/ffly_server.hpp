@@ -6,7 +6,7 @@
 # include "networking/udp_server.hpp"
 # include "networking/udp_client.hpp"
 
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "types/uni_par_t.hpp"
 # include <boost/thread.hpp>
 # include "opencl_helper.hpp"

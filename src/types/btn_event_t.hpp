@@ -1,6 +1,6 @@
 # ifndef __btn__event__t__hpp
 # define __btn__event__t__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace types {

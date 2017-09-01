@@ -10,7 +10,7 @@
 # include <string.h>
 # include <math.h>
 # include <errno.h>
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/cstdint.hpp>
 # include "../pk_config.hpp"
 # include "../defaults.hpp"

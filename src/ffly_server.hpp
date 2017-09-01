@@ -6,7 +6,7 @@
 
 # include "networking/udp_server.hpp"
 # include "networking/udp_client.hpp"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # ifdef __USING_OPENCL
 #	include "opencl_helper.hpp"
 #	include <CL/cl.hpp>

@@ -3,7 +3,7 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include <cstddef>
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "types/err_t.h"
 # include <cstdio>
 namespace mdl {

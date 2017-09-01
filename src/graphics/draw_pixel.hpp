@@ -1,7 +1,7 @@
 # ifndef __draw__pixel__hpp
 # define __draw__pixel__hpp
 # include "../types/colour_t.hpp"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/cstdint.hpp>
 namespace mdl {
 namespace firefly {

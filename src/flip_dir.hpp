@@ -1,6 +1,6 @@
 # ifndef __flip__dir__hpp
 # define __flip__dir__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <atomic>
 namespace mdl {
 namespace firefly {

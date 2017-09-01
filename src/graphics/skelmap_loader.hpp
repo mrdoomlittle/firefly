@@ -2,7 +2,7 @@
 # define __skelmap__loader__hpp
 # include "../types/skelmap_info_t.hpp"
 # include <string.h>
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <fstream>
 # include <boost/cstdint.hpp>
 namespace mdl {

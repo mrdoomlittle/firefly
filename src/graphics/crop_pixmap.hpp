@@ -2,7 +2,7 @@
 # define __crop__pixmap__hpp
 # include "../types/err_t.h"
 # include "../types/pixmap_t.h"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <cstdio>
 # include "../types/byte_t.h"
 # include "../system/errno.h"

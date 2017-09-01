@@ -1,6 +1,6 @@
 # ifndef __th__control__hpp
 # define __th__control__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/cstdint.hpp>
 # define TH_SUCCESS 0
 # define TH_FAILURE -1

@@ -1,7 +1,7 @@
 # ifndef __fill_pixmap__hpp
 # define __fill_pixmap__hpp
 # include "../types/colour_t.hpp"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "../system/errno.h"
 # include "../types/pixmap_t.h"
 # include "../types/err_t.h"

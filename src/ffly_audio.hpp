@@ -8,7 +8,7 @@
 # include <sys/stat.h>
 # include <cstdio>
 # include "types/err_t.h"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "system/errno.h"
 # include <strcmb.hpp>
 # include "memory/mem_alloc.h"

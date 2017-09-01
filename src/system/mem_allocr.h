@@ -1,6 +1,6 @@
 # ifndef __ffly__mem__allocr__h
 # define __ffly__mem__allocr__h
-# include <eint_t.h>
+# include <mdlint.h>
 # include "../types/err_t.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"

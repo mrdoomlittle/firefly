@@ -1,6 +1,6 @@
 # ifndef __alloc__pixmap__h
 # define __alloc__pixmap__h
-# include <eint_t.h>
+# include <mdlint.h>
 # include "../types/pixmap_t.h"
 
 # ifdef __cplusplus

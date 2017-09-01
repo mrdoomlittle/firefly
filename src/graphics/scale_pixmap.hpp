@@ -1,6 +1,6 @@
 # ifndef __scale__pixmap__hpp
 # define __scale__pixmap__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/cstdint.hpp>
 # include <cstdio>
 namespace mdl {

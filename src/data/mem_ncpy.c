@@ -1,4 +1,4 @@
-# include <eint_t.h>
+# include <mdlint.h>
 void ffly_mem_ncpy(void *__dst, void *__src, mdl_uint_t __bc) {
 	mdl_u8_t *src_itr = (mdl_u8_t*)__src;
 	while(src_itr != (mdl_u8_t*)__src+__bc) {

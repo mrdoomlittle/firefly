@@ -1,7 +1,7 @@
 # ifndef __draw__line__hpp
 # define __draw__line__hpp
 # include <boost/cstdint.hpp>
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <math.h>
 # include <emu2d.hpp>
 # include "../types/colour_t.hpp"

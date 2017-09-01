@@ -1,6 +1,6 @@
 # ifndef __obj__manager__hpp
 # define __obj__manager__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "types/pixmap_t.h"
 # include "types/obj_info_t.hpp"
 # include <boost/numeric/ublas/vector.hpp>

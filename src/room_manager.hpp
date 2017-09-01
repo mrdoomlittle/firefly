@@ -1,7 +1,7 @@
 # ifndef __room__manager__hpp
 # define __room__manager__hpp
 # include <boost/cstdint.hpp>
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <set>
 # include <queue>
 # include "memory/mem_alloc.h"

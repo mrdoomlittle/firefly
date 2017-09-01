@@ -2,7 +2,7 @@
 # define __conv__dsm__h
 
 # ifdef __cplusplus
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace data {

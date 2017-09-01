@@ -1,6 +1,6 @@
 # ifndef __asset__manager__hpp
 # define __asset__manager__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/numeric/ublas/vector.hpp>
 # include <boost/array.hpp>
 # include "graphics/skelmap_loader.hpp"

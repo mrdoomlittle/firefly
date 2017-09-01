@@ -1,6 +1,6 @@
 # ifndef __draw__skellmap__hpp
 # define __draw__skellmap__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "../types/colour_t.hpp"
 # include "../types/skelmap_info_t.hpp"
 # include <cstdio>

@@ -1,6 +1,6 @@
 # ifndef __mem__dupe__h
 # define __mem__dupe__h
-# include <eint_t.h>
+# include <mdlint.h>
 # include "../types/err_t.h"
 # ifdef __cplusplus
 extern "C" {

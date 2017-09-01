@@ -1,7 +1,7 @@
 # ifndef __worker__manager__hpp
 # define __worker__manager__hpp
 # include <errno.h>
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "types/id_t.hpp"
 # include "system/errno.h"
 # include "types/err_t.h"

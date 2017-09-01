@@ -1,7 +1,7 @@
 # ifndef __graphics__draw__rect__hpp
 # define __graphics__draw__rect__hpp
 # include <boost/cstdint.hpp>
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <emu2d.hpp>
 # include "../types/colour_t.hpp"
 

@@ -12,7 +12,7 @@
 # include "asset_manager.hpp"
 # include "types/err_t.h"
 # include "types/id_t.h"
-# include <eint_t.h>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 class font {

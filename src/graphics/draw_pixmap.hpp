@@ -1,6 +1,6 @@
 # ifndef __graphics__draw__pixmap__hpp
 # define __graphics__draw__pixmap__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <cstdio>
 # include <math.h>
 # include <boost/cstdint.hpp>

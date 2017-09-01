@@ -1,6 +1,6 @@
 # ifndef __obj__info__t__hpp
 # define __obj__info__t__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "colour_t.hpp"
 # include "atom_t.hpp"
 # include "coords_t.hpp"

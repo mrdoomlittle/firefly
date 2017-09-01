@@ -1,6 +1,6 @@
 # ifndef __combstr__hpp
 # define __combstr__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <string.h>
 namespace mdl {
 char * combstr(char const *__str0, char const *__str1) {

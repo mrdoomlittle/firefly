@@ -2,7 +2,7 @@
 # define __scale__pixmap__hpp
 # include "../types/pixmap_t.h"
 # include "../types/err_t.h"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "../memory/alloc_pixmap.hpp"
 # include "../memory/mem_free.h"
 # include "../system/errno.h"

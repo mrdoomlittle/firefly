@@ -1,7 +1,7 @@
 # ifndef __aformat__h
 # define __aformat__h
 # ifdef __cplusplus
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace system {

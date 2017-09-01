@@ -2,7 +2,7 @@
 # define __layer__hpp
 # include <boost/numeric/ublas/vector.hpp>
 namespace ublas = boost::numeric::ublas;
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "graphics/draw_pixmap.hpp"
 # include <utility>
 # include <string.h>

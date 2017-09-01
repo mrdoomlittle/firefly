@@ -1,6 +1,6 @@
 # ifndef __skelfont__t__hpp
 # define __skelfont__t__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <utility>
 # include <boost/numeric/ublas/vector.hpp>
 namespace ublas = boost::numeric::ublas;

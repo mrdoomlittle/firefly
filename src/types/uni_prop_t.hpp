@@ -1,6 +1,6 @@
 # ifndef __uni__prop__t__hpp
 # define __uni__prop__t__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "uni_dlen_t.hpp"
 namespace mdl {
 namespace firefly {

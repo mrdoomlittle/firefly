@@ -1,7 +1,7 @@
 # ifndef __chunk__keeper__hpp
 # define __chunk__keeper__hpp
 # include "ffly_config.hpp"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/cstdint.hpp>
 # include <cstdio>
 # include <set>

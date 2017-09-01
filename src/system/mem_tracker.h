@@ -6,7 +6,7 @@
 # include "errno.h"
 # include "../types/err_t.h"
 # include <errno.h>
-# include <eint_t.h>
+# include <mdlint.h>
 # ifdef __DEBUG_ENABLED
 #	include <stdio.h>
 # endif

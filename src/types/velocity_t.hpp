@@ -1,6 +1,6 @@
 # ifndef __velocity__t__hpp
 # define __velocity__t__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/cstdint.hpp>
 # include "direction_t.hpp"
 # include <atomic>

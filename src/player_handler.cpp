@@ -1,5 +1,5 @@
 # include "types/err_t.h"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <cstdio>
 # include "player_manager.hpp"
 namespace mdl {

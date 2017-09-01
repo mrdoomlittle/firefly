@@ -1,6 +1,6 @@
 # ifndef __worker__manager__hpp
 # define __worker__manager__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/cstdint.hpp>
 # include "networking/tcp_server.hpp"
 # include "networking/udp_server.hpp"

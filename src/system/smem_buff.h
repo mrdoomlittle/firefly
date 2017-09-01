@@ -1,6 +1,6 @@
 # ifndef __smem__buff__h
 # define __smem__buff__h
-# include <eint_t.h>
+# include <mdlint.h>
 # include "errno.h"
 # include <errno.h>
 # include "../types/err_t.h"

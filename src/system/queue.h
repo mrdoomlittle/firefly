@@ -1,6 +1,6 @@
 # ifndef __queue__h
 # define __queue__h
-# include <eint_t.h>
+# include <mdlint.h>
 # include "io.h"
 # include "../types/err_t.h"
 # define QUEUE_PAGE_SIZE 32 // dont change

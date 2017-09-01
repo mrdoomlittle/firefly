@@ -1,4 +1,4 @@
-# include <eint_t.h>
+# include <mdlint.h>
 __kernel void render_camera(__global uchar *__uni, __global uchar *__camera, __global uint_t *__offsets, __global uint_t *__uni_xlen) {
 	uint_t  uni_coords = ((get_global_id(0) + __offsets[0]) + ((get_global_id(1) + __offsets[1]) * (*__uni_xlen))) * 4;
 

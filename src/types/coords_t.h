@@ -1,6 +1,6 @@
 # ifndef __coords__t__h
 # define __coords__t__h
-# include <eint_t.h>
+# include <mdlint.h>
 
 typedef struct {
 	mdl_uint_t xa, ya, za;

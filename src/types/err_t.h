@@ -2,7 +2,7 @@
 # define __err__t__h
 
 # ifdef __cplusplus
-# include <eint_t.hpp>
+# include <mdlint.h>
 
 # if defined(USING_OPENCL) || defined(__USING_OPENCL)
 #	include <CL/cl.hpp>
@@ -25,7 +25,7 @@ typedef cudaError_t cu_err_t;
 }
 typedef mdl::i8_t ffly_err_t;
 # else
-# include <eint_t.h>
+# include <mdlint.h>
 typedef mdl_i8_t ffly_err_t;
 # endif
 

@@ -1,4 +1,4 @@
-# include <eint_t.h>
+# include <mdlint.h>
 # include <colour_t.h>
 
 __kernel void draw_rect(__global uchar *__pixbuff, __global uint_t *__b_xcoord, __global uint_t *__b_ycoord, __global uint_t *__e_xcoord, __global uint_t *__e_ycoord, __global colour_t *__colour, __global uint_t *__pb_xlen) {

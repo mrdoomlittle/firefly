@@ -1,6 +1,6 @@
 # ifndef __lerp__hpp
 # define __lerp__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace maths {

@@ -6,7 +6,7 @@
 # include "../data/mem_ncpy.h"
 # include "errno.h"
 # include <errno.h>
-# include <eint_t.h>
+# include <mdlint.h>
 # define VEC_BLK_USED 1
 # define VEC_BLK_FREE 0
 ffly_bool_t static is_flag(struct ffly_vec *__vec, mdl_u8_t __flag) {

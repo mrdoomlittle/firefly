@@ -1,6 +1,6 @@
 # ifndef __layer__info__t__hpp
 # define __layer__info__t__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace types {

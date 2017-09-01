@@ -4,7 +4,7 @@
 # include "../types/pixmap_t.h"
 # include <boost/numeric/ublas/vector.hpp>
 namespace ublas = boost::numeric::ublas;
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/array.hpp>
 # include "../types/btn_t.hpp"
 # include "../types/btn_info_t.hpp"

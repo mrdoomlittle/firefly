@@ -2,7 +2,7 @@
 # define __uni__manager__hpp
 # include "types/pixmap_t.h"
 # include "types/uni_par_t.h"
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "ffly_config.hpp"
 # include "chunk_manager.h"
 # include "chunk_data_t.h"

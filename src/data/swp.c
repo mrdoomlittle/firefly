@@ -1,4 +1,4 @@
-# include <eint_t.h>
+# include <mdlint.h>
 # include "mem_ncpy.h"
 void ffly_swp(void *__p1, void *__p2, mdl_uint_t __n) {
 	mdl_u8_t tmp[__n];

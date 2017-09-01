@@ -1,6 +1,6 @@
 # ifndef __chunk__info__t__hpp
 # define __chunk__info__t__hpp
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include "coords_t.hpp"
 namespace mdl {
 namespace firefly {

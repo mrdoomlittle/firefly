@@ -4,7 +4,7 @@
 # include <GL/glx.h>
 # include <cstdio>
 # include <chrono>
-# include <eint_t.hpp>
+# include <mdlint.h>
 # include <boost/thread.hpp>
 # include <boost/cstdint.hpp>
 # include "../memory/alloc_pixmap.hpp"

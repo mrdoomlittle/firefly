@@ -1,6 +1,6 @@
 # ifndef __chunk__manager__hpp
 # define __chunk__manager__hpp
-# include <eint_t.h>
+# include <mdlint.h>
 # include <set>
 # include "types/id_t.h"
 # include "types/err_t.h"
