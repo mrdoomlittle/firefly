@@ -42,11 +42,11 @@ mdl::firefly::types::err_t mdl::ffly_audio::load_aud_file(char const *__fdir, ch
 
 mdl::firefly::types::wav_disc_t mdl::ffly_audio::get_wav_fdisc(u8_t *__raw_data, firefly::types::err_t& __any_err) {
 	firefly::types::wav_disc_t wav_disc{0};
-	u16_t byte_point = 0;
-	auto nxt_byte = [&byte_point]() -> u16_t {
-		u16_t this_byte = byte_point;
-		byte_point ++;
-		return this_byte;
+	u16_t byte_loc = 0;
+	auto nxt_byte = [&byte_loc]() -> u16_t {
+		u16_t ret_val = byte_loc;
+		byte_loc++;
+		return ret_val;
 	};
 
 	wav_disc.cnk_id[0] = __raw_data[nxt_byte()];

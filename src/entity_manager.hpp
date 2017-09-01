@@ -3,7 +3,7 @@
 # include "obj_manager.hpp"
 # include "system/vec.h"
 # include "ui/camera.hpp"
-# include "types/id_t.hpp"
+# include "types/id_t.h"
 # include "types/err_t.h"
 # include "system/errno.h"
 # include "types/coords_t.hpp"

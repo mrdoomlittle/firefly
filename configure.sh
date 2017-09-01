@@ -1,5 +1,5 @@
 #!/bin/sh
-CXX_IFLAGS="-Inibbles/inc -Itermio/inc -Ieint_t/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Itagged_memory/inc -Iemu2d/inc -Iemu3d/inc"
+CXX_IFLAGS="-Inibbles/inc -Itermio/inc -Imdlint/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Itagged_memory/inc -Iemu2d/inc -Iemu3d/inc"
 CXX_LFLAGS="-Lnibbles/lib -Ltermio/lib -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstrcmb/lib -Ltagged_memory/lib -Lemu2d/lib -Lemu3d/lib"
 LDFLAGS="-ltagged_memory -ltermio -lintlen -lgetdigit -lto_string -lstrcmb -lnibbles -lemu2d -lemu3d -lboost_system -lboost_filesystem -lpthread -lboost_thread"
 GPU_CL_TYPE=""

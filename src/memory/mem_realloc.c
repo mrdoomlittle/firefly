@@ -1,4 +1,5 @@
 # include "mem_realloc.h"
+# include "../system/io.h"
 # ifdef __WITH_MEM_TRACKER
 void* ffly_mem_realloc(void *__mem_ptr, mdl_uint_t __nbc, ffly_bool_t __track_bypass) {
 # else

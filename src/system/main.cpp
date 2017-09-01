@@ -25,10 +25,11 @@ int main() {
 	tst->insert(9);
 	tst->insert(9);
 
-	tst->erase(tst->begin());
+	tst->erase(tst->end());
+	tst->erase(tst->end());
+	tst->erase(tst->end());
 
-	for (mdl::firefly::system::set<mdl_uint_t>::iterator itr = tst->begin(); itr != tst->end();) {
-		if (itr == NULL) break;
+	for (mdl::firefly::system::set<mdl_uint_t>::iterator itr = tst->begin(); itr != tst->end()+1;) {
 		printf("%u\n", **itr);
 
 		itr++;
@@ -48,16 +49,16 @@ int main() {
 		*x = i;
 	}
 
-	void *p = ffly_vec_first(&my_vec);
-	ffly_vec_itr(&my_vec, (void**)&p, VEC_ITR_DOWN, 6);
+	void *p = ffly_vec_last(&my_vec);
+//	ffly_vec_itr(&my_vec, (void**)&p, VEC_ITR_DOWN, 6);
 	ffly_vec_del(&my_vec, p);
 
-	printf("%u\n", ffly_vec_size(&my_vec));
-	mdl_uint_t *x;
-	ffly_vec_push_back(&my_vec, (void**)&x);
-	*x = 21;
-	ffly_vec_push_back(&my_vec, (void**)&x);
-	*x = 31;
+//	printf("%u\n", ffly_vec_size(&my_vec));
+//	mdl_uint_t *x;
+//	ffly_vec_push_back(&my_vec, (void**)&x);
+//	*x = 21;
+//	ffly_vec_push_back(&my_vec, (void**)&x);
+//	*x = 31;
 
 	void *itr = ffly_vec_first(&my_vec);
 	while(itr != NULL) {

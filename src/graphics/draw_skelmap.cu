@@ -1,5 +1,5 @@
 # include "draw_skelmap.hpp"
-__global__ void cu_draw_skelmap(boost::uint8_t *__skelmap, boost::uint8_t *__pixbuff, mdl::uint_t *__xaxis, mdl::uint_t *__yaxis, mdl::uint_t *__pixbuff_xlen, mdl::uint_t *__scale, mdl::firefly::graphics::colour_t *__colour) {
+__global__ void cu_draw_skelmap(mdl::u8_t *__skelmap, mdl::u8_t *__pixbuff, mdl::uint_t *__xaxis, mdl::uint_t *__yaxis, mdl::uint_t *__pixbuff_xlen, mdl::uint_t *__scale, mdl::firefly::graphics::colour_t *__colour) {
 	mdl::uint_t skel_point = threadIdx.x + (blockIdx.x * blockDim.x);
 
 if (__skelmap[skel_point] == 0x1) {
@@ -17,8 +17,8 @@ if (__skelmap[skel_point] == 0x1) {
 }
 }
 
-boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, boost::uint8_t *__pixbuff, uint_t __xaxis, uint_t __yaxis, types::skelmap_info_t __skelmap_info, uint_t __pixbuff_xlen, uint_t __pixbuff_ylen, uint_t __scale, colour_t __colour) {
-	static boost::uint8_t *skelmap = nullptr, *pixbuff = nullptr;
+mdl::i8_t mdl::firefly::graphics::draw_skelmap(u8_t *__skelmap, u8_t *__pixbuff, uint_t __xaxis, uint_t __yaxis, types::skelmap_info_t __skelmap_info, uint_t __pixbuff_xlen, uint_t __pixbuff_ylen, uint_t __scale, colour_t __colour) {
+	static u8_t *skelmap = nullptr, *pixbuff = nullptr;
 	static uint_t *xaxis = nullptr, *yaxis = nullptr, *pixbuff_xlen = nullptr, *scale = nullptr;
 	static colour_t *colour = nullptr;
 	static bool initialized = false;
@@ -93,7 +93,7 @@ boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, bo
 	if (_skelmap_info.xaxis_len != __skelmap_info.xaxis_len || _skelmap_info.yaxis_len != __skelmap_info.yaxis_len) {
 		if (skelmap != nullptr) cudaFree(skelmap);
 
-		if ((any_error = cudaMalloc((void **)&skelmap, (__skelmap_info.xaxis_len * __skelmap_info.yaxis_len) * sizeof(boost::uint8_t))) != cudaSuccess) {
+		if ((any_error = cudaMalloc((void **)&skelmap, (__skelmap_info.xaxis_len * __skelmap_info.yaxis_len) * sizeof(u8_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
 			return -1;
 		}
@@ -107,7 +107,7 @@ boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, bo
 	if (_pixbuff_size != pixbuff_size) {
 		if (pixbuff != nullptr) cudaFree(pixbuff);
 
-		if ((any_error = cudaMalloc((void **)&pixbuff, pixbuff_size * sizeof(boost::uint8_t))) != cudaSuccess) {
+		if ((any_error = cudaMalloc((void **)&pixbuff, pixbuff_size * sizeof(u8_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
 			return -1;
 		}
@@ -124,12 +124,12 @@ boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, bo
 		_pixbuff_size = pixbuff_size;
 	}
 
-	if ((any_error = cudaMemcpy(skelmap, __skelmap, (__skelmap_info.xaxis_len * __skelmap_info.yaxis_len) * sizeof(boost::uint8_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+	if ((any_error = cudaMemcpy(skelmap, __skelmap, (__skelmap_info.xaxis_len * __skelmap_info.yaxis_len) * sizeof(u8_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 		return -1;
 	}
 
-	if ((any_error = cudaMemcpy(pixbuff, __pixbuff, pixbuff_size * sizeof(boost::uint8_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+	if ((any_error = cudaMemcpy(pixbuff, __pixbuff, pixbuff_size * sizeof(u8_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 		return -1;
 	}
@@ -177,7 +177,7 @@ boost::int8_t mdl::firefly::graphics::draw_skelmap(boost::uint8_t *__skelmap, bo
 
 	cu_draw_skelmap<<<__skelmap_info.yaxis_len, __skelmap_info.xaxis_len>>>(skelmap, pixbuff, xaxis, yaxis, pixbuff_xlen, scale, colour);
 
-	if ((any_error = cudaMemcpy(__pixbuff, pixbuff, pixbuff_size * sizeof(boost::uint8_t), cudaMemcpyDeviceToHost)) != cudaSuccess) {
+	if ((any_error = cudaMemcpy(__pixbuff, pixbuff, pixbuff_size * sizeof(u8_t), cudaMemcpyDeviceToHost)) != cudaSuccess) {
 		fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 		return -1;
 	}

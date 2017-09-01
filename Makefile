@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 CURR_DIR=${CURDIR}
-#CXXFLAGS=@echo ${CXXFLAGS}#-DDEBUG_ENABLED -Ieint_t/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstrcmb/lib
+#CXXFLAGS=@echo ${CXXFLAGS}#-DDEBUG_ENABLED -Imdlint/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstrcmb/lib
 #LDFLAGS=
 #ARC=-DARC64
 #CUDA=-I/usr/local/cuda-8.0/include -L/usr/local/cuda-8.0/lib64
@@ -10,33 +10,33 @@ CURR_DIR=${CURDIR}
 #endif
 
 #LIBRARY_OBJS=intlen/src/intlen.o to_string/src/to_string.o strcmb/src/strcmb.o getdigit/src/getdigit.
-FFLY_OBJECTS=
+FFLY_OBJS=
 FFLY_WINDOW=
 EXTRA_DEFINES=
 
 CXX_VERSION=c++11
 C_VERSION=c11
 ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-uni-manager"), 0)
- FFLY_OBJECTS+= src/uni_manager.o src/chunk_manager.o src/chunk_keeper.o src/data/uni_dlen_val.o
+ FFLY_OBJS+= src/uni_manager.o src/chunk_manager.o src/chunk_keeper.o src/data/uni_dlen_val.o
 endif
 
 ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-obj-manager"), 0)
- FFLY_OBJECTS+= src/obj_manager.o src/gravy_manager.o
+ FFLY_OBJS+= src/obj_manager.o src/gravy_manager.o
 endif
 
 ifeq ($(FFLY_TARGET), FFLY_SERVER)
- FFLY_OBJECTS += src/ffly_server.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/graphics/png_loader.o \
+ FFLY_OBJS += src/ffly_server.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/graphics/png_loader.o \
  src/worker_manager.o src/memory/alloc_pixmap.o src/graphics/draw_pixmap.clo src/player_manager.o src/player_handler.o src/worker_handler.o
 
 else ifeq ($(FFLY_TARGET), FFLY_CLIENT)
- FFLY_OBJECTS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o \
+ FFLY_OBJS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o \
  src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/draw_pixmap.clo \
  src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o \
  src/layer_manager.o src/maths/cal_dist.o src/system/time_stamp.o src/room_manager.o \
  src/gui/btn_manager.o src/system/event.o src/graphics/draw_bitmap.o src/font.o src/system/task_handle.o src/system/task_worker.o \
  src/ui/camera.o src/graphics/crop_pixmap.o src/entity_manager.o src/system/smem_buff.o
 else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
- FFLY_OBJECTS += src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
+ FFLY_OBJS += src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
  src/graphics/png_loader.o src/room_manager.o src/asset_manager.o src/system/time_stamp.o  src/graphics/draw_rect.o \
  src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o src/graphics/draw_pixmap.clo src/system/task_handle.o src/system/task_worker.o \
@@ -44,35 +44,45 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
  LDFLAGS += -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple
  CXX_IFLAGS += -I/usr/include/freetype2 $(CUDART_INC)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
- FFLY_OBJECTS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
+ FFLY_OBJS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
 else ifeq ($(FFLY_TARGET), FFLY_TEST)
- FFLY_OBJECTS+= src/graphics/crop_pixmap.o src/memory/alloc_pixmap.o #src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
+ FFLY_OBJS+= src/graphics/crop_pixmap.o src/memory/alloc_pixmap.o #src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
 else
- FFLY_OBJECTS=
+ FFLY_OBJS=
  FFLY_TARGET=FFLY_NONE
 endif
 
 ifeq ($(GPU_CL_TYPE), -DUSING_OPENCL)
  CXXFLAGS+= -L/usr/local/lib/x86_64/sdk
- FFLY_OBJECTS+= src/opencl_helper.o
+ FFLY_OBJS+= src/opencl_helper.o
 else ifeq ($(GPU_CL_TYPE), -DUSING_CUDA)
- FFLY_OBJECTS+= src/cuda_helper.o
+ FFLY_OBJS+= src/cuda_helper.o
 endif
 
-FFLY_OBJECTS += src/system/vec.o src/data/swp.o src/data/byte_ncpy.o src/system/time.o src/system/config.o src/firefly.o src/ffly_memory.o src/system/errno.o src/system/io.o
-## core memory stuff
-FFLY_OBJECTS += src/memory/mem_alloc.o src/memory/mem_alloc.co src/memory/mem_free.co src/memory/mem_realloc.co #src/memory/alloc_pixmap.o
+FFLY_OBJS+= src/firefly.o
+# lower level core - things that are needed for things to work
+# maths
+FFLY_OBJS+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o
+# data
+FFLY_OBJS+= src/data/swp.o src/data/mem_ncpy.o
+# system
+FFLY_OBJS+= src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o
+# graphics
+FFLY_OBJS+= src/ffly_graphics.o
+# memory
+FFLY_OBJS+= src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_alloc.co src/memory/mem_free.co src/memory/mem_realloc.co #src/memory/alloc_pixmap.o
+
 CXXFLAGS += $(FFLY_TARGET)
 
 ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-mem-tracker"), 0)
-	FFLY_OBJECTS += src/system/mem_tracker.o
+	FFLY_OBJS += src/system/mem_tracker.o
 endif
 
 ifneq ($(FFLY_TARGET), $(filter $(FFLY_TARGET), FFLY_SERVER FFLY_WORKER FFLY_TEST))
 ifeq ($(FFLY_WINDOW), -DUSING_X11)
- FFLY_OBJECTS += src/graphics/x11_window.o
+ FFLY_OBJS += src/graphics/x11_window.o
 else ifeq ($(FFLY_WINDOW), -DUSING_XCB)
- FFLY_OBJECTS += src/graphics/xcb_window.o
+ FFLY_OBJS += src/graphics/xcb_window.o
 endif
 endif
 
@@ -89,6 +99,20 @@ all: ffly_test
 endif
 
 FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+src/maths/sq.o: src/maths/sq.asm
+	nasm -f elf64 -o src/maths/sq.o src/maths/sq.asm
+
+src/ffly_graphics.o: src/ffly_graphics.cpp
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_graphics.o src/ffly_graphics.cpp
+
+src/maths/round.o: src/maths/round.asm
+	nasm -f elf64 -o src/maths/round.o src/maths/round.asm
+
+src/maths/ceil.o: src/maths/ceil.asm
+	nasm -f elf64 -o src/maths/ceil.o src/maths/ceil.asm
+
+src/maths/floor.o: src/maths/floor.asm
+	nasm -f elf64 -o src/maths/floor.o src/maths/floor.asm
 
 src/system/vec.o: src/system/vec.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/vec.o src/system/vec.c
@@ -96,11 +120,8 @@ src/system/vec.o: src/system/vec.c
 src/data/swp.o: src/data/swp.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/swp.o src/data/swp.c
 
-src/system/vec.o: src/system/vec.c
-	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/vec.o src/system/vec.c
-
-src/data/byte_ncpy.o: src/data/byte_ncpy.c
-	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/byte_ncpy.o src/data/byte_ncpy.c
+src/data/mem_ncpy.o: src/data/mem_ncpy.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/mem_ncpy.o src/data/mem_ncpy.c
 
 src/system/time.o: src/system/time.c
 	gcc -c -Wall -std=gnu11 -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/time.o src/system/time.c
@@ -229,7 +250,7 @@ src/worker_manager.o: src/worker_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/worker_manager.o src/worker_manager.cpp
 
 src/memory/alloc_pixmap.o:src/memory/alloc_pixmap.cpp
-	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/alloc_pixmap.o src/memory/alloc_pixmap.cpp
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/alloc_pixmap.o src/memory/alloc_pixmap.cpp
 
 src/graphics/draw_pixmap.clo: src/graphics/draw_pixmap.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_pixmap.clo src/graphics/draw_pixmap.cpp
@@ -393,7 +414,7 @@ relocate_headers:
 	cp $(CURR_DIR)/src/*.h $(CURR_DIR)/inc/firefly
 	cp $(CURR_DIR)/src/*.hpp $(CURR_DIR)/inc/firefly
 
-	cp $(CURR_DIR)/eint_t/inc/*.hpp $(CURR_DIR)/inc
+	cp $(CURR_DIR)/mdlint/inc/*.hpp $(CURR_DIR)/inc
 	cp $(CURR_DIR)/getdigit/inc/*.hpp $(CURR_DIR)/inc
 	cp $(CURR_DIR)/intlen/inc/*.hpp $(CURR_DIR)/inc
 	cp $(CURR_DIR)/to_string/inc/*.hpp $(CURR_DIR)/inc
@@ -403,37 +424,37 @@ relocate_headers:
 # core libraries that are needed by design
 libraries:
 	cd termio; make; cd ../;
-	cd intlen; make ARC64 EINT_T_INC=$(CURR_DIR)/eint_t/inc; cd ../;
-	cd nibbles; make EINT_T_INC=$(CURR_DIR)/eint_t/inc; cd ../;
-	cd getdigit; make ARC64 EINT_T_INC=$(CURR_DIR)/eint_t/inc INTLEN_INC=$(CURR_DIR)/intlen/inc INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
-	cd to_string; make ECHAR_T=$(CURR_DIR)/echar_t/inc EINT_T_INC=$(CURR_DIR)/eint_t/inc GETDIGIT_INC=$(CURR_DIR)/getdigit/inc INTLEN_INC=$(CURR_DIR)/intlen/inc GETDIGIT_LIB=$(CURR_DIR)/getdigit/lib INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
-	cd strcmb; make EINT_T_INC=$(CURR_DIR)/echar_t/inc EINT_T_INC=$(CURR_DIR)/eint_t/inc ARC=$(ARC); cd ../;
+	cd intlen; make ARC64 MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
+	cd nibbles; make MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
+	cd getdigit; make ARC64 MDLINT_INC=$(CURR_DIR)/mdlint/inc INTLEN_INC=$(CURR_DIR)/intlen/inc INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
+	cd to_string; make ECHAR_T=$(CURR_DIR)/echar_t/inc MDLINT_INC=$(CURR_DIR)/mdlint/inc GETDIGIT_INC=$(CURR_DIR)/getdigit/inc INTLEN_INC=$(CURR_DIR)/intlen/inc GETDIGIT_LIB=$(CURR_DIR)/getdigit/lib INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
+	cd strcmb; make MDLINT_INC=$(CURR_DIR)/echar_t/inc MDLINT_INC=$(CURR_DIR)/mdlint/inc ARC=$(ARC); cd ../;
 	cd tagged_memory; make LIB_PATH=$(CURR_DIR)/; cd ../;
-	cd emu2d; make ARC=$(ARC) EINT_T_INC=$(CURR_DIR)/eint_t/inc; cd ../;
-	cd emu3d; make ARC=$(ARC) EINT_T_INC=$(CURR_DIR)/eint_t/inc; cd ../;
+	cd emu2d; make ARC=$(ARC) MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
+	cd emu3d; make ARC=$(ARC) MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
 
-ffly_worker: $(FFLY_OBJECTS)
-	ld -r -o lib/ffly_worker.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
+ffly_worker: $(FFLY_OBJS)
+	ld -r -o lib/ffly_worker.o $(FFLY_OBJS) #$(LIBRARY_OBJS)
 	ar rcs lib/libffly_worker.a lib/ffly_worker.o
 #	make relocate_headers
 
-ffly_server: $(FFLY_OBJECTS)
-	ld -r -o lib/ffly_server.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
+ffly_server: $(FFLY_OBJS)
+	ld -r -o lib/ffly_server.o $(FFLY_OBJS) #$(LIBRARY_OBJS)
 	ar rcs lib/libffly_server.a lib/ffly_server.o
 #	make relocate_headers
 
-ffly_client: $(FFLY_OBJECTS)
-	ld -r -o lib/ffly_client.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
+ffly_client: $(FFLY_OBJS)
+	ld -r -o lib/ffly_client.o $(FFLY_OBJS) #$(LIBRARY_OBJS)
 	ar rcs lib/libffly_client.a lib/ffly_client.o
 #	make relocate_headers
 
-ffly_studio: $(FFLY_OBJECTS) src/ffly_studio.o
-	ld -r -o lib/ffly_studio.o $(FFLY_OBJECTS) #$(LIBRARY_OBJS)
+ffly_studio: $(FFLY_OBJS) src/ffly_studio.o
+	ld -r -o lib/ffly_studio.o $(FFLY_OBJS) #$(LIBRARY_OBJS)
 	ar rcs lib/libffly_studio.a lib/ffly_studio.o
 #	make relocate_headers
 
-ffly_test: $(FFLY_OBJECTS) src/ffly_test.o
-	ld -r -o lib/ffly_test.o $(FFLY_OBJECTS)
+ffly_test: $(FFLY_OBJS) src/ffly_test.o
+	ld -r -o lib/ffly_test.o $(FFLY_OBJS)
 	ar rcs lib/libffly_test.a lib/ffly_test.o
 #	make relocate_headers
 	#g++ -std=c++11 -Iinc -Llib -Wall -o bin/ffly_studio src/ffly_studio.o -lffly_studio

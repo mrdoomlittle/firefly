@@ -1,5 +1,6 @@
 # include "firefly.hpp"
 struct mdl::firefly::_core_portal mdl::firefly::core_portal;
+
 mdl::firefly::types::err_t mdl::firefly::init() {
 	ffly_memory::init();
 	ffly_system::init();

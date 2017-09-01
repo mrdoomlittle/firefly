@@ -13,7 +13,6 @@
 # include <serializer.hpp>
 # include <cuda_runtime.h>
 # include "defaults.hpp"
-# include <errno.h>
 # include "types/err_t.h"
 # include "system/errno.h"
 # include "types/init_opt_t.hpp"
@@ -38,7 +37,7 @@
 #	include "uni_manager.hpp"
 #   include "types/uni_prop_t.hpp"
 # endif
-# include "types/id_t.hpp"
+# include "types/id_t.h"
 # include "system/io.h"
 namespace mdl { class ffly_client
 {
@@ -119,6 +118,8 @@ namespace mdl { class ffly_client
 		void (* __extern_loop)(boost::int8_t, portal_t*, void *), void *__this
 	);
 
+
+	// window
 	firefly::graphics::window window;
 
 //	bool poll_event(firefly::system::event& __event);

@@ -11,7 +11,8 @@
 # include "memory/mem_alloc.h"
 # include "asset_manager.hpp"
 # include "types/err_t.h"
-# include "types/id_t.hpp"
+# include "types/id_t.h"
+# include <eint_t.h>
 namespace mdl {
 namespace firefly {
 class font {

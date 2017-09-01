@@ -1,11 +1,54 @@
 # include <cstdio>
-# include "chunk_keeper.hpp"
-# include "uni_manager.hpp"
-# include "chunk_manager.hpp"
-# include "types/coords_t.hpp"
+# include "chunk_keeper.h"
+# include "system/mem_tracker.h"
 int main() {
-	mdl::firefly::chunk_handler chunk_handler;
+	ffly_mem_track_init(&__ffly_mem_track__);
+/*
+	struct ffly_ck chunk_keeper;
+	ffly_ck_init(&chunk_keeper, 16, 16, 16);
 
+	mdl_uint_t const s = 20;
+	ffly_id_t ids[s];
+
+	for (mdl_uint_t ic = 0; ic != s; ic++) {
+		ffly_ck_create(&chunk_keeper, &ids[ic], 0);
+		printf("chunk_id: %u\n", *ids[ic]);
+	}
+
+	for (mdl_uint_t ic = 0; ic != 2/s; ic++) {
+		ffly_ck_del(&chunk_keeper, ids[ic], 1);
+	}
+
+	printf("\n\n\n");
+
+	for (mdl_uint_t ic = 0; ic != s/2; ic++) {
+		ffly_ck_create(&chunk_keeper, &ids[ic], 1);
+		printf("chunk_id: %u\n", *ids[ic]);
+	}
+
+	ffly_ck_de_init(&chunk_keeper);
+*/
+	mdl::firefly::chunk_keeper ck(16, 16, 16);
+	mdl::uint_t const s = 20;
+	mdl::firefly::types::id_t ids[s];
+	for (mdl_uint_t ic = 0; ic != s; ic++) {
+		ck.create(ids[ic], 0);
+		printf("chunk_id: %u\n", *ids[ic]);
+	}
+
+	for (mdl_uint_t ic = 0; ic != 2/s; ic++) {
+		ck.del(ids[ic], 0);
+	}
+
+	for (mdl_uint_t ic = 0; ic != s/2; ic++) {
+		ck.create(ids[ic], 0);
+		printf("chunk_id: %u\n", *ids[ic]);
+	}
+
+	ck.de_init();
+	ffly_mem_track_de_init(&__ffly_mem_track__);
+
+	printf("mem used: %u, mem freed: %u\n", ffly_mem_alloc_bc, ffly_mem_free_bc);
 /*
 	mdl::firefly::uni_manager uni_manager(12,12,12);
 	uni_manager.init(2,2,2);

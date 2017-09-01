@@ -16,3 +16,5 @@ things a lot simpler also does not use too much extra memory
 -> fix mem_allocr
 -> remove termio & echar_t
 -> remove cu_clean
+
+-> move low level stuff like memory chunk_keeper to c

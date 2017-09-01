@@ -9,59 +9,60 @@ __global__ void cu_fill_pixmap(mdl::firefly::types::pixmap_t __pixmap, mdl::fire
 }
 
 
-mdl::firefly::types::err_t mdl::firefly::graphics::fill_pixmap(types::pixmap_t __pixmap, uint_t __xaxis_len, uint_t __yaxis_len, colour_t __colour) {
-	static types::pixmap_t pixmap = nullptr;
-	static colour_t *colour = nullptr;
-	static bool initialized = false;
+mdl::firefly::types::err_t mdl::firefly::graphics::fill_pixmap(types::pixmap_t __pixmap, uint_t __xa_len, uint_t __ya_len, colour_t __colour) {
+	types::pixmap_t static pixmap = nullptr;
+	colour_t static *colour = nullptr;
+	bool static inited = false;
 	cudaError_t any_error = cudaSuccess;
 
-	uint_t pixmap_size = (__xaxis_len * __yaxis_len) * 4;
-	static uint_t _pixmap_size = 0;
+	uint_t pixmap_size = __xa_len*__ya_len*4;
+	uint_t static _pixmap_size = 0;
 
 	if (pixmap_size == 0) {
-		fprintf(stderr, "error pixmap size must not be zero.\n");
+		system::io::printf(stderr, "cuda, fill_pixmap: error pixmap size must not be zero.\n");
 		return FFLY_FAILURE;
 	}
 
 	if (_pixmap_size != pixmap_size) {
 		if (pixmap != nullptr) cudaFree(pixmap);
 
-		if ((any_error = cudaMalloc((void **)&pixmap, pixmap_size * sizeof(types::__pixmap_t))) != cudaSuccess) {
-			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
+		if ((any_error = cudaMalloc((void**)&pixmap, pixmap_size*sizeof(types::__pixmap_t))) != cudaSuccess) {
+			system::io::printf(stderr, "cuda, fill_pixmap: failed to call Malloc, error code: %d\n", any_error);
 			return FFLY_FAILURE;
-		} 
+		}
+
+		_pixmap_size = pixmap_size;
 	}
 
-	if (!initialized) {
-		if ((any_error = cudaMalloc((void **)&colour, sizeof(colour_t))) != cudaSuccess) {
-			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
+	if (!inited) {
+		if ((any_error = cudaMalloc((void**)&colour, sizeof(colour_t))) != cudaSuccess) {
+			system::io::printf(stderr, "cuda, fill_pixmap: failed to call Malloc, error code: %d\n", any_error);
 			return FFLY_FAILURE;
 		}
 
 		if (__colour.r == 0 && __colour.g == 0 && __colour.b == 0 && __colour.a == 0) {
 			if ((any_error = cudaMemcpy(colour, &__colour, sizeof(colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
-				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
+				system::io::printf(stderr, "cuda, fill_pixmap: failed to call Memcpy, error code: %d\n", any_error);
 				return FFLY_FAILURE;
 			}
 		}
 
-		initialized = true;
+		inited = true;
 	}
 
-	cudaMemcpy(pixmap, __pixmap, pixmap_size * sizeof(types::__pixmap_t), cudaMemcpyHostToDevice);
+	cudaMemcpy(pixmap, __pixmap, pixmap_size*sizeof(types::__pixmap_t), cudaMemcpyHostToDevice);
 
-	static colour_t _colour = {0, 0, 0, 0};
-
+	colour_t static _colour = {0, 0, 0, 0};
 	if (_colour.r != __colour.r || _colour.g != __colour.g || _colour.b != __colour.b || _colour.a != __colour.a) {
 		if ((any_error = cudaMemcpy(colour, &__colour, sizeof(colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
-			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
+			system::io::printf(stderr, "cuda, fill_pixmap: failed to call Memcpy, error code: %d\n", any_error);
 			return FFLY_FAILURE;
 		}
+
+		_colour = __colour;
 	}
 
-	cu_fill_pixmap<<<__yaxis_len, __xaxis_len>>>(pixmap, colour);
-
-	cudaMemcpy(__pixmap, pixmap, pixmap_size * sizeof(boost::uint8_t), cudaMemcpyDeviceToHost);
-
+	cu_fill_pixmap<<<__ya_len, __xa_len>>>(pixmap, colour);
+	cudaMemcpy(__pixmap, pixmap, pixmap_size*sizeof(u8_t), cudaMemcpyDeviceToHost);
 	return FFLY_SUCCESS;
 }

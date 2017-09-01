@@ -23,6 +23,6 @@ mdl::uint_t mdl::firefly::maths::cal_dist(types::coords_t<> __obj_0, types::coor
 		obj_y1 = __obj_0.yaxis;
 	}
 
-	double dist = squar_rt(squar(obj_x0 - obj_x1) + squar(obj_y0 - obj_y1));
+	double dist = squar_rt(squar(obj_x0-obj_x1)+squar(obj_y0-obj_y1));
 	return (uint_t)round(dist);
 }

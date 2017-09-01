@@ -13,7 +13,7 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/time_stamp.hpp"
-# include "types/id_t.hpp"
+# include "types/id_t.h"
 # include "types/bool_t.h"
 namespace ublas = boost::numeric::ublas;
 namespace mdl {

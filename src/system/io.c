@@ -8,16 +8,15 @@ mdl::u8_t static ffly_arg_id(char *__arg) {
 	}
 }
 */
+void ffly_open(void *__p, mdl_u8_t __kind) {
+
+
+}
+
 void ffly_printf(FILE *__stream, char const *__str, ...) {
 	va_list args;
 	va_start(args, __str);
-/*
-	char *itr = __str;
-	while(itr != '\0') {
-		if (*itr == '#' && *(itr++) == '#')
-			
-	}
-*/
+
 	printf("firefly; ");
 	vfprintf(__stream, __str, args);
 	va_end(args);

@@ -8,7 +8,7 @@
 # include "memory/alloc_pixmap.hpp"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
-# include <eint_t.hpp>
+# include <eint_t.h>
 # include <ft2build.h>
 # include "types/skelmap_info_t.hpp"
 # include "graphics/draw_skelmap.hpp"
@@ -22,7 +22,7 @@
 # include "maths/rotate_point.hpp"
 # include "system/stop_watch.hpp"
 # include "room_manager.hpp"
-# include "types/id_t.hpp"
+# include "types/id_t.h"
 # include "gui/btn.hpp"
 # include "maths/find_center.hpp"
 # include "types/btn_t.hpp"
