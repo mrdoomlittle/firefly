@@ -31,3 +31,6 @@
 [submodule "nibbles"]
 	path = nibbles
 	url = git@github.com:mrdoomlittle/nibbles.git
+[submodule "mdlint"]
+	path = mdlint
+	url = git@github.com:mrdoomlittle/mdlint.git
