@@ -1,6 +1,3 @@
-[submodule "eint_t"]
-	path = eint_t
-	url = git@github.com:/mrdoomlittle/eint_t
 [submodule "intlen"]
 	path = intlen
 	url = git@github.com:mrdoomlittle/intlen.git
