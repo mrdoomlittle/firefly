@@ -13,7 +13,7 @@
 # include "types/skelmap_info_t.hpp"
 # include "graphics/draw_skelmap.hpp"
 # include "graphics/draw_bitmap.hpp"
-# include "types/colour_t.hpp"
+# include "types/colour_t.h"
 # include "types/bitmap_t.hpp"
 # include <cuda_runtime.h>
 # include "pulse_audio.hpp"

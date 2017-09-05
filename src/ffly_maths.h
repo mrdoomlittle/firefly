@@ -4,7 +4,7 @@ double extern ffly_round(double);
 double extern ffly_ceil(double);
 double extern ffly_floor(double);
 double extern ffly_sq(double);
-
+# ifdef __cplusplus
 namespace mdl {
 namespace firefly {
 double __inline__ round(double __val) {
@@ -20,5 +20,5 @@ double __inline__ sq(double __val) {
 	return ffly_sq(__val);}
 }
 }
-
+# endif
 # endif /*__ffly__maths__h*/

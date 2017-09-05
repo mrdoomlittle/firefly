@@ -23,7 +23,7 @@ mdl::firefly::types::err_t mdl::firefly::skel_creator::init(uint_t __pm_xlen, ui
 	this-> xsplit = __xsplit;
 	this-> ysplit = __ysplit;
 
-	firefly::graphics::draw_grid(this-> bse_pm, __pm_xlen, __pm_ylen, __xsplit, __ysplit, GRID_LN_WIDTH, GRIP_LN_HEIGHT, graphics::__colour__(64, 73, 89, 244));
+	firefly::graphics::draw_grid(this-> bse_pm, __pm_xlen, __pm_ylen, __xsplit, __ysplit, GRID_LN_WIDTH, GRIP_LN_HEIGHT, types::mk_colour(64, 73, 89, 244));
 	return FFLY_SUCCESS;
 }
 
@@ -42,9 +42,9 @@ mdl::firefly::types::err_t mdl::firefly::skel_creator::tick(u16_t __mx_axis, u16
 	printf("%d - %d - %d\n", __mpress, __button_code, one_press);
 	if (__mpress && __button_code == 1 && !one_press) {
 		printf("dhhfdhfhdu\n");
-		graphics::colour_t colour;
+		types::colour_t colour;
 		uint_t blk_point = blk_xc + (blk_yc * this-> xsplit);
-		colour = !this-> blk_st[blk_point]? graphics::__colour__(0, 0, 0, 244) : graphics::__colour__(244, 244, 244, 244);
+		colour = !this-> blk_st[blk_point]? types::mk_colour(0, 0, 0, 244) : types::mk_colour(244, 244, 244, 244);
 		this-> blk_st[blk_point] = !this-> blk_st[blk_point]? 0x1 : 0x0;
 
 		if (graphics::draw_rect(this-> bse_pm, pm_xa + GRID_LN_WIDTH, pm_ya + GRIP_LN_HEIGHT, pm_xa + (this-> bpm_xa_len/this-> xsplit), pm_ya + (this-> bpm_ya_len/this-> ysplit), colour, this-> bpm_xa_len, this-> bpm_ya_len) != FFLY_SUCCESS) {

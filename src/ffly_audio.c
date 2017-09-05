@@ -1,0 +1,156 @@
+# include "ffly_audio.h"
+# include "system/io.h"
+# include "system/errno.h"
+# include <str_cmb.h>
+# include "memory/mem_alloc.h"
+ffly_err_t ffly_ld_aud_file(char *__dir, char *__name, ffly_aud_fformat_t __format, ffly_byte_t **__p, ffly_size_t *__size) {
+	char *ext;
+	switch(__format) {
+		case _ffly_audf_wav:
+				ext = ".wav";
+		break;
+		case _ffly_audf_mp3:
+				ext = ".mp3";
+		break;
+		default:
+			return FFLY_FAILURE;
+	}
+
+	char *fpth = mdl_str_cmb(__dir, mdl_str_cmb(__name, ext, 0), MDL_SC_FREE_RIGHT);
+	int fd;
+	if ((fd = open(fpth, O_RDONLY)) < 0) {
+		ffly_printf(stderr, "ffly_audio: failed to open audio file.\n");
+		return FFLY_FAILURE;
+	}
+
+	struct stat st;
+	if (stat(fpth, &st) < 0) {
+		ffly_printf(stderr, "ffly_audio: failed to stat audio file.\n");
+		close(fd);
+		return FFLY_FAILURE;
+	}
+
+	*__size = st.st_size;
+	*__p = (ffly_byte_t*)__ffly_mem_alloc(*__size);
+	read(fd, *__p, *__size);
+	close(fd);
+	return FFLY_SUCCESS;
+}
+
+# include "data/mem_set.h"
+ffly_wav_spec_t ffly_extract_wav_spec(ffly_byte_t *__p) {
+	ffly_wav_spec_t wav_spec;
+	ffly_mem_set(&wav_spec, 0, sizeof(ffly_wav_spec_t));
+
+	wav_spec.cnk_id[0] = *(__p++);
+	wav_spec.cnk_id[1] = *(__p++);
+	wav_spec.cnk_id[2] = *(__p++);
+	wav_spec.cnk_id[3] = *(__p++);
+
+	wav_spec.cnk_size |= (wav_spec.cnk_size & 0xFF) | *(__p++);
+	wav_spec.cnk_size |= (wav_spec.cnk_size & 0xFF) | *(__p++) << 8;
+	wav_spec.cnk_size |= (wav_spec.cnk_size & 0xFF) | *(__p++) << 16;
+	wav_spec.cnk_size |= (wav_spec.cnk_size & 0xFF) | *(__p++) << 24;
+
+	wav_spec.format[0] = *(__p++);
+	wav_spec.format[1] = *(__p++);
+	wav_spec.format[2] = *(__p++);
+	wav_spec.format[3] = *(__p++);
+
+	wav_spec.sub_cnk1_id[0] = *(__p++);
+	wav_spec.sub_cnk1_id[1] = *(__p++);
+	wav_spec.sub_cnk1_id[2] = *(__p++);
+	wav_spec.sub_cnk1_id[3] = *(__p++);
+
+	wav_spec.sub_cnk1_size |= (wav_spec.sub_cnk1_size & 0xFF) | *(__p++);
+	wav_spec.sub_cnk1_size |= (wav_spec.sub_cnk1_size & 0xFF) | *(__p++) << 8;
+	wav_spec.sub_cnk1_size |= (wav_spec.sub_cnk1_size & 0xFF) | *(__p++) << 16;
+	wav_spec.sub_cnk1_size |= (wav_spec.sub_cnk1_size & 0xFF) | *(__p++) << 24;
+
+	wav_spec.aud_format |= (wav_spec.aud_format & 0xFF) | *(__p++);
+	wav_spec.aud_format |= (wav_spec.aud_format & 0xFF) | *(__p++) << 8;
+
+	wav_spec.chn_c |= (wav_spec.chn_c & 0xFF) | *(__p++);
+	wav_spec.chn_c |= (wav_spec.chn_c & 0xFF) | *(__p++) << 8;
+
+	wav_spec.sample_rate |= (wav_spec.sample_rate & 0xFF) | *(__p++);
+	wav_spec.sample_rate |= (wav_spec.sample_rate & 0xFF) | *(__p++) << 8;
+	wav_spec.sample_rate |= (wav_spec.sample_rate & 0xFF) | *(__p++) << 16;
+	wav_spec.sample_rate |= (wav_spec.sample_rate & 0xFF) | *(__p++) << 24;
+
+	wav_spec.byte_rate |= (wav_spec.byte_rate & 0xFF) | *(__p++);
+	wav_spec.byte_rate |= (wav_spec.byte_rate & 0xFF) | *(__p++) << 8;
+	wav_spec.byte_rate |= (wav_spec.byte_rate & 0xFF) | *(__p++) << 16;
+	wav_spec.byte_rate |= (wav_spec.byte_rate & 0xFF) | *(__p++) << 24;
+
+	wav_spec.blk_align |= (wav_spec.blk_align & 0xFF) | *(__p++);
+	wav_spec.blk_align |= (wav_spec.blk_align & 0xFF) | *(__p++) << 8;
+
+	wav_spec.bit_depth |= (wav_spec.bit_depth & 0xFF) | *(__p++);
+	wav_spec.bit_depth |= (wav_spec.bit_depth & 0xFF) | *(__p++) << 8;
+
+	wav_spec.sub_cnk2_id[0] = *(__p++);
+	wav_spec.sub_cnk2_id[1] = *(__p++);
+	wav_spec.sub_cnk2_id[2] = *(__p++);
+	wav_spec.sub_cnk2_id[3] = *(__p++);
+
+	wav_spec.sub_cnk2_size |= (wav_spec.sub_cnk2_size & 0xFF) | *(__p++);
+	wav_spec.sub_cnk2_size |= (wav_spec.sub_cnk2_size & 0xFF) | *(__p++) << 8;
+	wav_spec.sub_cnk2_size |= (wav_spec.sub_cnk2_size & 0xFF) | *(__p++) << 16;
+	wav_spec.sub_cnk2_size |= (wav_spec.sub_cnk2_size & 0xFF) | *(__p++) << 24;
+	return wav_spec;
+}
+
+ffly_err_t ffly_aud_play(char *__fdir, char*__fname, ffly_aud_fformat_t __fformat) {
+	ffly_byte_t *f;
+	ffly_size_t fsize;
+	ffly_ld_aud_file(__fdir, __fname, __fformat, &f, &fsize);
+	ffly_aud_spec_t aud_spec;
+
+	ffly_byte_t off;
+	switch(__fformat) {
+		case _ffly_audf_wav: {
+			ffly_wav_spec_t wav_spec = ffly_extract_wav_spec(f);
+			if (wav_spec.aud_format) {
+				if (wav_spec.bit_depth == 16) {
+					aud_spec.format = _ffly_af_s16_le;
+				}
+			}
+
+			aud_spec.chn_c = wav_spec.chn_c;
+			aud_spec.rate = wav_spec.sample_rate;
+			off = sizeof(ffly_wav_spec_t);
+			break;
+		}
+		default:
+			return FFLY_FAILURE;
+	}
+
+# ifdef __USING_PULSE_AUDIO
+	ffly_printf(stdout, "ffly_audio: using pulse audio.\n");
+	struct pa_sample_spec sample_spec;
+	switch(aud_spec.format) {
+		case _ffly_af_s16_le:
+			sample_spec.format = PA_SAMPLE_S16LE;
+		break;
+		case _ffly_af_float32_le:
+			sample_spec.format = PA_SAMPLE_FLOAT32LE;
+		break;
+		default:
+			return FFLY_FAILURE;
+	}
+	
+	sample_spec.channels = aud_spec.chn_c;
+	sample_spec.rate = aud_spec.rate;
+
+	if (ffly_pulse_write("firefly-audio", "firefly-stream", &sample_spec, f+off, fsize-off) != FFLY_SUCCESS) {
+		ffly_printf(stderr, "ffly_audio: failed to write.\n");
+		return FFLY_FAILURE;
+	}
+# else
+# ifdef __USING_ALSA_AUDIO
+# else
+	ffly_printf(stdout, "ffly_audio: alsa or pluse need to be defined at compile time.\n");
+# endif
+# endif
+}

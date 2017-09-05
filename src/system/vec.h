@@ -44,11 +44,11 @@ void* ffly_vec_last(struct ffly_vec*);
 
 mdl_uint_t static __inline__ ffly_vec_size(struct ffly_vec *__vec) {return __vec->size;}
 void static __inline__* ffly_vec_begin(struct ffly_vec *__vec) {
-	return (void*)((mdl_u8_t*)__vec->p+(__vec->flags & VEC_BLK_CHAIN == VEC_BLK_CHAIN? sizeof(struct ffly_vec_chain):0));
+	return (void*)((mdl_u8_t*)__vec->p+((__vec->flags & VEC_BLK_CHAIN) == VEC_BLK_CHAIN? sizeof(struct ffly_vec_chain):0));
 }
 
 void static __inline__* ffly_vec_end(struct ffly_vec *__vec) {
-	return (void*)(((mdl_u8_t*)__vec->p-(__vec->flags & VEC_BLK_CHAIN == VEC_BLK_CHAIN? sizeof(struct ffly_vec_chain):0))+((__vec->off-1)*__vec->blk_size));
+	return (void*)(((mdl_u8_t*)__vec->p-((__vec->flags & VEC_BLK_CHAIN) == VEC_BLK_CHAIN? sizeof(struct ffly_vec_chain):0))+((__vec->off-1)*__vec->blk_size));
 }
 ffly_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return __vec->off == 0?1:0;}
 # ifdef __cplusplus
@@ -87,12 +87,13 @@ struct vec {
 		return any_err;
 	}
 	types::err_t de_init() {return vec_de_init(&this->raw_vec);}
-	uint_t size() {vec_size(&this->raw_vec);}
-	_T* begin() {static_cast<_T*>(vec_begin(&this->raw_vec));}
-	_T* end() {static_cast<_T*>(vec_end(&this->raw_vec));}
-	_T* first() {static_cast<_T*>(vec_first(&this->raw_vec));}
-	_T* last() {static_cast<_T*>(vec_last(&this->raw_vec));}
+	uint_t size() {return vec_size(&this->raw_vec);}
+	_T* begin() {return static_cast<_T*>(vec_begin(&this->raw_vec));}
+	_T* end() {return static_cast<_T*>(vec_end(&this->raw_vec));}
+	_T* first() {return static_cast<_T*>(vec_first(&this->raw_vec));}
+	_T* last() {return static_cast<_T*>(vec_last(&this->raw_vec));}
 	types::bool_t empty() {return vec_empty(&this->raw_vec);}
+	_T& operator()(mdl_uint_t __off) {return this->at(__off);}
 
 	void del(_T *__p) {
 		vec_del(&this->raw_vec, static_cast<void*>(__p));

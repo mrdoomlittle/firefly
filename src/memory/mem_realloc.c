@@ -3,11 +3,11 @@
 # ifdef __WITH_MEM_TRACKER
 void* ffly_mem_realloc(void *__mem_ptr, mdl_uint_t __nbc, ffly_bool_t __track_bypass) {
 # else
-void* ffly_mem_realloc(void *__mem_ptr, mdl_uint_t __nbc);
+void* ffly_mem_realloc(void *__mem_ptr, mdl_uint_t __nbc) {
 # endif
 	mdl_u8_t *mem_ptr;
 # ifdef __DEBUG_ENABLED
-	mem_ptr = ((mdl_u8_t*)__mem_ptr)-sizeof(mdl_uint_t);
+	mem_ptr = (mdl_u8_t*)__mem_ptr-sizeof(mdl_uint_t);
 	mdl_uint_t mem_size = *((mdl_uint_t*)mem_ptr);
 
 	if ((mem_ptr = (mdl_u8_t*)realloc(mem_ptr, __nbc+sizeof(mdl_uint_t))) == NULL) {

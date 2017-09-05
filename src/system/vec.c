@@ -3,7 +3,7 @@
 # include "../memory/mem_free.h"
 # include "../memory/mem_realloc.h"
 # include "io.h"
-# include "../data/mem_ncpy.h"
+# include "../data/mem_cpy.h"
 # include "errno.h"
 # include <errno.h>
 # include <mdlint.h>
@@ -144,7 +144,7 @@ ffly_err_t ffly_vec_push_back(struct ffly_vec *__vec, void **__p) {
 
 	if (is_flag(__vec, VEC_AUTO_RESIZE)) {
 		for (;;) {
-		if (__vec->off >> 5 > (__vec->off-1 >> 5)) {
+		if (__vec->off >> 5 > (__vec->off-1) >> 5) {
 			if ((__vec->p = __ffly_mem_realloc(__vec->p, (++__vec->page_c)*(VEC_PAGE_SIZE*__vec->blk_size))) == NULL) {
 				ffly_printf(stderr, "vec: failed to realloc memory for next page, errno: %d.\n", errno);
 				return FFLY_FAILURE;
@@ -183,7 +183,7 @@ ffly_err_t ffly_vec_pop_back(struct ffly_vec *__vec, void *__p) {
 	__vec->size--;
 	if (is_flag(__vec, VEC_AUTO_RESIZE)) {
 		for (;;) {
-		if (__vec->off >> 5 < (__vec->off+1 >> 5) && __vec->page_c > 1) {
+		if (__vec->off >> 5 < (__vec->off+1) >> 5 && __vec->page_c > 1) {
 			if ((__vec->p = __ffly_mem_realloc(__vec->p, (--__vec->page_c)*(VEC_PAGE_SIZE*__vec->blk_size))) == NULL) {
 				ffly_printf(stderr, "vec: failed to realloc memory for next page, errno: %d.\n", errno);
 				return FFLY_FAILURE;
@@ -197,7 +197,7 @@ ffly_err_t ffly_vec_pop_back(struct ffly_vec *__vec, void *__p) {
 	}
 
 	// dont change - we cant return the ptr because if a resize takes place the pointer will be invalid
-	ffly_mem_ncpy(__p, (void*)((mdl_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size)), __vec->blk_size);
+	ffly_mem_cpy(__p, (void*)((mdl_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size)), __vec->blk_size);
 	__vec->off--;
 	return FFLY_SUCCESS;
 }

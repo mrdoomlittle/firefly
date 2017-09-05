@@ -9,7 +9,10 @@ extern "C" {
 ffly_1d_pm_t ffly_alloc_pixmap(mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_u8_t);
 # ifdef __cplusplus
 }
-# include "types/dsize_t.hpp"
+# include "../types/dsize_t.hpp"
+namespace mdl {
+namespace firefly {
+namespace memory {
 types::_1d_pm_t static __inline__ alloc_pixmap(uint_t __xa_len, uint_t __ya_len, uint_t __za_len, u8_t __chn_c = 4) {
 	return ffly_alloc_pixmap(__xa_len, __ya_len, __za_len, __chn_c);
 }
@@ -61,6 +64,9 @@ __inline__ static types::_1d_pm_t alloc_pixmap(types::_3d_dsize_t<> __dsize, u8_
 
 __inline__ static types::_1d_pm_t alloc_pixmap(types::_2d_dsize_t<> __dsize, u8_t __chn_c = 4) {
 	return alloc_pixmap(__dsize.xaxis_len, __dsize.yaxis_len, __chn_c);
+}
+}
+}
 }
 # endif
 # endif /*__alloc__pixmap__h*/

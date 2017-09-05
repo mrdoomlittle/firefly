@@ -8,7 +8,7 @@ namespace ublas = boost::numeric::ublas;
 # include <string.h>
 # include <set>
 # include "types/layer_info_t.hpp"
-# include "memory/alloc_pixmap.hpp"
+# include "memory/alloc_pixmap.h"
 # include "memory/mem_free.h"
 # include "types/pixmap_t.h"
 # include "system/io.h"

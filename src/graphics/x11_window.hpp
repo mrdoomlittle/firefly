@@ -7,12 +7,12 @@
 # include <mdlint.h>
 # include <boost/thread.hpp>
 # include <boost/cstdint.hpp>
-# include "../memory/alloc_pixmap.hpp"
+# include "../memory/alloc_pixmap.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../types.hpp"
 # include "../types/pixmap_t.h"
-# include "../types/coords_t.hpp"
+# include "../types/coords_t.h"
 # include "../types/mouse_coords_t.hpp"
 # include "../system/errno.h"
 # include "wd_flags.hpp"
@@ -43,7 +43,7 @@ class x11_window: public wd_flags
 	}
 
 	_pointer_coords<i32_t, i32_t> *pointer_coords;
-	types::_2d_coords_t<i32_t> *wd_coords;
+	ffly_2d_i32_coords_t *wd_coords;
 
 	types::mouse_coords_t<int, int> mouse_coords = {{0, 0, 0}, {0, 0, 0}};
 	bool contains_pointer = false;

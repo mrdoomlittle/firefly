@@ -9,7 +9,7 @@
 # include "types/btn_event_t.hpp"
 # include "types/event_id_t.hpp"
 # include "types/event_t.hpp"
-# include "types/coords_t.hpp"
+# include "types/coords_t.h"
 # include "types/bool_t.h"
 # include "core_portal.h"
 # include "graphics/window.hpp"

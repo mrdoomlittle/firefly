@@ -1,6 +1,7 @@
 # include "chunk_manager.hpp"
 # include "system/io.h"
 mdl::firefly::types::err_t mdl::firefly::chunk_manager::init(uint_t __xa_len, uint_t __ya_len, uint_t __za_len) {
+
 }
 
 mdl::firefly::types::err_t mdl::firefly::chunk_manager::de_init() {
@@ -12,14 +13,14 @@ mdl::firefly::types::err_t mdl::firefly::chunk_manager::de_init() {
 	return FFLY_SUCCESS;
 }
 
-mdl::firefly::types::err_t mdl::firefly::chunk_manager::add_cnk(types::id_t& __id, uint_t __xa, uint_t __ya, uint_t __za) {
+mdl::firefly::types::err_t mdl::firefly::chunk_manager::add_cnk(types::id_t& __id, types::axis_t __xa, types::axis_t __ya, types::axis_t __za) {
 	types::err_t any_err;
 	if ((any_err = this->ck.create(__id, 0)) != FFLY_SUCCESS) {
 		system::io::printf(stderr, "chunk_manager: failed to create chunk.\n");
 		return any_err;
 	}
 
-	chunk_info& cnk_info = *this->ck.get_info(__id);
+	chunk_info& cnk_info = this->ck.get_info(__id);
 	cnk_info.coords.xa = __xa;
 	cnk_info.coords.ya = __ya;
 	cnk_info.coords.za = __za;
@@ -40,8 +41,8 @@ mdl::firefly::types::err_t mdl::firefly::chunk_manager::add_cnk(types::id_t& __i
 	return FFLY_SUCCESS;
 }
 
-mdl::firefly::types::err_t mdl::firefly::chunk_manager::rm_cnk(uint_t __xaxis, uint_t __yaxis, uint_t __zaxis) {
-	
+mdl::firefly::types::err_t mdl::firefly::chunk_manager::rm_cnk(types::axis_t __xa, types::axis_t __ya, types::axis_t __za) {
+
 /*
 	types::id_t cnk_id = this-> find_cnk_id(__xaxis, __yaxis, __zaxis);
 	types::err_t any_err;

@@ -1,6 +1,6 @@
 # ifndef __btn__manager__hpp
 # define __btn__manager__hpp
-# include "../types/coords_t.hpp"
+# include "../types/coords_t.h"
 # include "../types/pixmap_t.h"
 # include <boost/numeric/ublas/vector.hpp>
 namespace ublas = boost::numeric::ublas;
@@ -10,12 +10,12 @@ namespace ublas = boost::numeric::ublas;
 # include "../types/btn_info_t.hpp"
 # include "../memory/mem_free.h"
 # include "../graphics/draw_pixmap.hpp"
-# include "../types/id_t.hpp"
+# include "../types/id_t.h"
 # include "../asset_manager.hpp"
 # include "../memory/mem_alloc.h"
-# include "../memory/alloc_pixmap.hpp"
+# include "../memory/alloc_pixmap.h"
 # include "../graphics/fill_pixmap.hpp"
-# include "../types/colour_t.hpp"
+# include "../types/colour_t.h"
 # include "../types/err_t.h"
 # include "../font.hpp"
 # include "../types/bitmap_t.hpp"
@@ -39,9 +39,9 @@ class btn_manager {
 	: pixbuff(__pixbuff), wd_coords(__wd_coords), mouse_coords(__mouse_coords), pb_xaxis_len(__pb_xaxis_len), pb_yaxis_len(__pb_yaxis_len) {
 	}
 
-	types::err_t create_btn(types::__id_t& __btn_id, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
-	uint_t create_btn(types::pixmap_t __pixmap, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
-	uint_t create_btn(types::id_t __asset_id, types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len, asset_manager *__asset_manger);
+	types::err_t create_btn(types::__id_t& __btn_id, types::_2d_coords_t __coords, uint_t __xaxis_len, uint_t __yaxis_len);
+	uint_t create_btn(types::pixmap_t __pixmap, types::_2d_coords_t __coords, uint_t __xaxis_len, uint_t __yaxis_len);
+	uint_t create_btn(types::id_t __asset_id, types::_2d_coords_t __coords, uint_t __xaxis_len, uint_t __yaxis_len, asset_manager *__asset_manger);
 
 	uint_t create_btn(types::btn_info_t __btn_info) {
 		return this-> create_btn(__btn_info.pixmap, __btn_info.coords, __btn_info.xaxis_len, __btn_info.yaxis_len);}
@@ -67,7 +67,7 @@ class btn_manager {
 
 	types::err_t event_bind(types::__id_t __btn_id);
 
-	bool mouse_inside(types::_2d_coords_t<> __coords, uint_t __xaxis_len, uint_t __yaxis_len);
+	bool mouse_inside(types::_2d_coords_t __coords, uint_t __xaxis_len, uint_t __yaxis_len);
 
 	void enable_btn(types::__id_t __btn_id) {
 		data::enable(this-> btn_index[__btn_id].enabled);}

@@ -1,18 +1,28 @@
-DEFINES=-D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
+#DEFINES=-D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
 all: clean
-	gcc -c $(DEFINES) -std=c11 errno.c
-	gcc -c $(DEFINES) -std=c11 ../memory/mem_alloc.c
-	gcc -c $(DEFINES) -std=c11 ../memory/mem_free.c
-	gcc -c $(DEFINES) -std=c11 ../memory/mem_realloc.c
-	gcc -c $(DEFINES) -std=c11 mem_allocr.c
-	gcc -c $(DEFINES) -std=c11 vec.c
-	gcc -c $(DEFINES) -std=c11 io.c
-	gcc -c $(DEFINES) -std=c11 buff.c
-	gcc -c $(DEFINES) -std=c11 queue.c
-	gcc -c $(DEFINES) -std=c11 ../data/mem_ncpy.c
-	gcc -c $(DEFINES) -std=c11 ../data/swp.c
-	gcc -c -std=c11 $(DEFINES) -o mem_tracker.o mem_tracker.c
-	g++ -std=c++11 $(DEFINES) -o main main.cpp swp.o buff.o queue.o vec.o mem_ncpy.o mem_allocr.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o mem_tracker.o
+	gcc -c -std=c11 io.c
+	gcc -c -std=c11 arr.c
+	gcc -c -std=c11 ../data/mem_cpy.c
+	gcc -c -std=c11 ../memory/mem_alloc.c
+	gcc -c -std=c11 ../memory/mem_free.c
+	gcc -c -std=c11 ../memory/mem_realloc.c
+	gcc -c -std=c11 ../data/mem_dupe.c
+	gcc -c -std=c11 thread.c
+	gcc -c -std=c11 errno.c
+	g++ -std=c++11 main.cpp io.o arr.o mem_cpy.o mem_dupe.o mem_alloc.o mem_free.o mem_realloc.o thread.o errno.o -o main -lpthread
+#	gcc -c $(DEFINES) -std=c11 errno.c
+#	gcc -c $(DEFINES) -std=c11 ../memory/mem_alloc.c
+#	gcc -c $(DEFINES) -std=c11 ../memory/mem_free.c
+#	gcc -c $(DEFINES) -std=c11 ../memory/mem_realloc.c
+#	gcc -c $(DEFINES) -std=c11 mem_allocr.c
+#	gcc -c $(DEFINES) -std=c11 vec.c
+#	gcc -c $(DEFINES) -std=c11 io.c
+#	gcc -c $(DEFINES) -std=c11 buff.c
+#	gcc -c $(DEFINES) -std=c11 queue.c
+#	gcc -c $(DEFINES) -std=c11 ../data/mem_ncpy.c
+#	gcc -c $(DEFINES) -std=c11 ../data/swp.c
+#	gcc -c -std=c11 $(DEFINES) -o mem_tracker.o mem_tracker.c
+#	g++ -std=c++11 $(DEFINES) -o main main.cpp swp.o buff.o queue.o vec.o mem_ncpy.o mem_allocr.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o mem_tracker.o
 clean:
 	rm -f *.o
 #all:

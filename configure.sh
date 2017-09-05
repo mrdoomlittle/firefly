@@ -1,7 +1,7 @@
 #!/bin/sh
-CXX_IFLAGS="-Inibbles/inc -Itermio/inc -Imdlint/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Itagged_memory/inc -Iemu2d/inc -Iemu3d/inc"
+CXX_IFLAGS="-Inibbles/inc -Itermio/inc -Imdlint/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Itagged_memory/inc -Iemu2d/inc -Iemu3d/inc -Iechar_t/inc"
 CXX_LFLAGS="-Lnibbles/lib -Ltermio/lib -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstrcmb/lib -Ltagged_memory/lib -Lemu2d/lib -Lemu3d/lib"
-LDFLAGS="-ltagged_memory -ltermio -lintlen -lgetdigit -lto_string -lstrcmb -lnibbles -lemu2d -lemu3d -lboost_system -lboost_filesystem -lpthread -lboost_thread"
+LDFLAGS="-ltagged_memory -ltermio -lintlen -lgetdigit -lto_string -lstr_cmb -lnibbles -lemu2d -lemu3d -lboost_system -lboost_filesystem -lpthread -lboost_thread"
 GPU_CL_TYPE=""
 BOOST_PATH="/usr/local"
 OPENCL_PATH="/usr"
@@ -37,7 +37,7 @@ elif [ $(bash find.bash "$1" "--ffly-studio") = "0" ]; then
 elif [ $(bash find.bash "$1" "--ffly-worker") = "0" ]; then
 	echo "0"
 elif [ $(bash find.bash "$1" "--ffly-test") = "0" ]; then
-	LDFLAGS="$LDFLAGS"
+	LDFLAGS="$LDFLAGS -lX11 -lGL -lGLU -lglut -lX11-xcb -lxcb -lxcb-icccm -lpulse -lpulse-simple -lasound"
 else
 	echo "sorry but we need to know what the target is :( e.g. --ffly-client, --ffly-studio etc"
 	return

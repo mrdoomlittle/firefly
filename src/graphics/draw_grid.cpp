@@ -1,5 +1,5 @@
 # include "draw_grid.hpp"
-mdl::firefly::types::err_t mdl::firefly::graphics::cpu_draw_grid(types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, uint_t __xsplit, uint_t __ysplit, uint_t __horz_thickness, uint_t __vert_thickness, colour_t __line_colour) {
+mdl::firefly::types::err_t mdl::firefly::graphics::cpu_draw_grid(types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, uint_t __xsplit, uint_t __ysplit, uint_t __horz_thickness, uint_t __vert_thickness, types::colour_t __line_colour) {
 	if (__pm_xlen % __xsplit || __pm_ylen % __ysplit) {
 		fprintf(stderr, "draw_grid: failure, pixmap xlen and ylen must split evenly.\n");
 		return FFLY_FAILURE;

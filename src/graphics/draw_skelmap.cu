@@ -1,5 +1,5 @@
 # include "draw_skelmap.hpp"
-__global__ void cu_draw_skelmap(mdl::u8_t *__skelmap, mdl::u8_t *__pixbuff, mdl::uint_t *__xaxis, mdl::uint_t *__yaxis, mdl::uint_t *__pixbuff_xlen, mdl::uint_t *__scale, mdl::firefly::graphics::colour_t *__colour) {
+__global__ void cu_draw_skelmap(mdl::u8_t *__skelmap, mdl::u8_t *__pixbuff, mdl::uint_t *__xaxis, mdl::uint_t *__yaxis, mdl::uint_t *__pixbuff_xlen, mdl::uint_t *__scale, mdl::firefly::types::colour_t *__colour) {
 	mdl::uint_t skel_point = threadIdx.x + (blockIdx.x * blockDim.x);
 
 if (__skelmap[skel_point] == 0x1) {
@@ -17,10 +17,10 @@ if (__skelmap[skel_point] == 0x1) {
 }
 }
 
-mdl::i8_t mdl::firefly::graphics::draw_skelmap(u8_t *__skelmap, u8_t *__pixbuff, uint_t __xaxis, uint_t __yaxis, types::skelmap_info_t __skelmap_info, uint_t __pixbuff_xlen, uint_t __pixbuff_ylen, uint_t __scale, colour_t __colour) {
+mdl::i8_t mdl::firefly::graphics::draw_skelmap(u8_t *__skelmap, u8_t *__pixbuff, uint_t __xaxis, uint_t __yaxis, types::skelmap_info_t __skelmap_info, uint_t __pixbuff_xlen, uint_t __pixbuff_ylen, uint_t __scale, types::colour_t __colour) {
 	static u8_t *skelmap = nullptr, *pixbuff = nullptr;
 	static uint_t *xaxis = nullptr, *yaxis = nullptr, *pixbuff_xlen = nullptr, *scale = nullptr;
-	static colour_t *colour = nullptr;
+	static types::colour_t *colour = nullptr;
 	static bool initialized = false;
 	cudaError_t any_error = cudaSuccess;
 
@@ -40,7 +40,7 @@ mdl::i8_t mdl::firefly::graphics::draw_skelmap(u8_t *__skelmap, u8_t *__pixbuff,
 		if (__xaxis == 0) {
 			if ((any_error = cudaMemcpy(xaxis, &__xaxis, sizeof(uint_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
-				return -1;	
+				return -1;
 			}
 		}
 
@@ -73,13 +73,13 @@ mdl::i8_t mdl::firefly::graphics::draw_skelmap(u8_t *__skelmap, u8_t *__pixbuff,
 			}
 		}
 
-		if ((any_error = cudaMalloc((void **)&colour, sizeof(colour_t))) != cudaSuccess) {
+		if ((any_error = cudaMalloc((void **)&colour, sizeof(types::colour_t))) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Malloc, error code: %d\n", any_error);
 			return -1;
 		}
 
 		if (__colour.r == 0 && __colour.g == 0 && __colour.b == 0 && __colour.a == 0) {
-			if ((any_error = cudaMemcpy(colour, &__colour, sizeof(colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+			if ((any_error = cudaMemcpy(colour, &__colour, sizeof(types::colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 				fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);
 				return -1;
 			}
@@ -164,8 +164,7 @@ mdl::i8_t mdl::firefly::graphics::draw_skelmap(u8_t *__skelmap, u8_t *__pixbuff,
 		_scale = __scale;
 	}
 
-	static colour_t _colour;
-
+	static types::colour_t _colour;
 	if (_colour.r != __colour.r || _colour.g != __colour.g || _colour.b != __colour.b || _colour.a != __colour.a) {
 		if ((any_error = cudaMemcpy(colour, &__colour, sizeof(colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 			fprintf(stderr, "cuda: failed to call Memcpy, error code: %d\n", any_error);

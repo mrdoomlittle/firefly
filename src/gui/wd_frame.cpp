@@ -1,5 +1,5 @@
 # include "wd_frame.hpp"
-static const mdl::firefly::graphics::colour_t ol_colour = {36, 37, 38, 244};
+static const mdl::firefly::types::colour_t ol_colour = {36, 37, 38, 244};
 mdl::firefly::types::err_t mdl::firefly::gui::wd_frame::init(u16_t __xaxis, u16_t __yaxis, u16_t __xaxis_len, u16_t __yaxis_len, char const *__title) {
 	if (!this->pixmap) {
 		if ((this->pixmap = memory::alloc_pixmap(static_cast<uint_t>(__xaxis_len+(OUTLINE_WIDTH*2)), static_cast<uint_t>(__yaxis_len+(OUTLINE_WIDTH*2)))) == NULL) {

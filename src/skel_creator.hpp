@@ -12,8 +12,8 @@
 # include "graphics/draw_rect.hpp"
 # include "graphics/draw_pixmap.hpp"
 # include "graphics/draw_grid.hpp"
-# include "types/colour_t.hpp"
-# include "memory/alloc_pixmap.hpp"
+# include "types/colour_t.h"
+# include "memory/alloc_pixmap.h"
 namespace mdl {
 namespace firefly {
 class skel_creator {

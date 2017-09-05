@@ -1,4 +1,4 @@
-# include "../data/mem_ncpy.h"
+# include "../data/mem_cpy.h"
 # include <time.h>
 # include <stdio.h>
 # include <string.h>
@@ -15,7 +15,7 @@ void test(mdl_uint_t __bc) {
 		struct timespec begin, end;
 		clock_gettime(CLOCK_MONOTONIC, &begin);
 
-		ffly_mem_ncpy(dst, src, __bc);
+		ffly_mem_cpy(dst, src, __bc);
 
 		clock_gettime(CLOCK_MONOTONIC, &end);
 		ns += end.tv_nsec-begin.tv_nsec;

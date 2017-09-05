@@ -3,19 +3,19 @@
 # include <boost/cstdint.hpp>
 # include <mdlint.h>
 # include <emu2d.hpp>
-# include "../types/colour_t.hpp"
+# include "../types/colour_t.h"
 
 # ifdef USING_OPENCL
 	# include <CL/cl.hpp>
 	# include "../opencl_helper.hpp"
 # endif
-# include "../types/coords_t.hpp"
+# include "../types/coords_t.h"
 # include "../types/status.hpp"
 namespace mdl {
 namespace firefly {
 namespace graphics {
 # ifdef USING_OPENCL
-boost::int8_t draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b_ycoord, uint_t __e_xcoord, uint_t __e_ycoord, colour_t __colour, uint_t __pb_xlen, uint_t __pb_ylen, opencl *__opencl) {
+boost::int8_t draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b_ycoord, uint_t __e_xcoord, uint_t __e_ycoord, types::colour_t __colour, uint_t __pb_xlen, uint_t __pb_ylen, opencl *__opencl) {
 	if (__e_xcoord > __pb_xlen || __e_ycoord > __pb_ylen || __e_xcoord < __b_xcoord || __e_ycoord < __b_ycoord) {
 		fprintf(stderr, "error: somthing is wong with the 'draw_rect' arguments.\n");
 		return FFLY_FAILURE;
@@ -198,7 +198,7 @@ boost::int8_t draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b
 
 }
 # elif defined(USING_CUDA)
-boost::int8_t draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b_ycoord, uint_t __e_xcoord, uint_t __e_ycoord, colour_t __colour, uint_t __pd_xlen, uint_t __pd_ylen);
+boost::int8_t draw_rect(boost::uint8_t *__pixbuff, uint_t __b_xcoord, uint_t __b_ycoord, uint_t __e_xcoord, uint_t __e_ycoord, types::colour_t __colour, uint_t __pd_xlen, uint_t __pd_ylen);
 # endif
 }
 }

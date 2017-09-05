@@ -46,7 +46,7 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
  FFLY_OBJS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
 else ifeq ($(FFLY_TARGET), FFLY_TEST)
- FFLY_OBJS+= src/graphics/crop_pixmap.o src/memory/alloc_pixmap.o #src/system/task_handle.o src/system/task_worker.o src/graphics/crop_pixmap.o
+ FFLY_OBJS+= src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/graphics/png_loader.o src/system/time_stamp.o
 else
  FFLY_OBJS=
  FFLY_TARGET=FFLY_NONE
@@ -56,19 +56,19 @@ ifeq ($(GPU_CL_TYPE), -DUSING_OPENCL)
  CXXFLAGS+= -L/usr/local/lib/x86_64/sdk
  FFLY_OBJS+= src/opencl_helper.o
 else ifeq ($(GPU_CL_TYPE), -DUSING_CUDA)
- FFLY_OBJS+= src/cuda_helper.o
+# FFLY_OBJS+= src/cuda_helper.o
 endif
 
-FFLY_OBJS+= src/firefly.o
+#FFLY_OBJS+= src/firefly.o
 # lower level core - things that are needed for things to work
 # maths
-FFLY_OBJS+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o
+FFLY_OBJS+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o src/maths/is_inside.o
 # data
-FFLY_OBJS+= src/data/swp.o src/data/mem_ncpy.o
+FFLY_OBJS+= src/data/swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o
 # system
-FFLY_OBJS+= src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o
+FFLY_OBJS+= src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o
 # graphics
-FFLY_OBJS+= src/ffly_graphics.o
+#FFLY_OBJS+= src/ffly_graphics.o
 # memory
 FFLY_OBJS+= src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_alloc.co src/memory/mem_free.co src/memory/mem_realloc.co #src/memory/alloc_pixmap.o
 
@@ -78,11 +78,11 @@ ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-mem-tracker"), 0)
 	FFLY_OBJS += src/system/mem_tracker.o
 endif
 
-ifneq ($(FFLY_TARGET), $(filter $(FFLY_TARGET), FFLY_SERVER FFLY_WORKER FFLY_TEST))
-ifeq ($(FFLY_WINDOW), -DUSING_X11)
- FFLY_OBJS += src/graphics/x11_window.o
-else ifeq ($(FFLY_WINDOW), -DUSING_XCB)
- FFLY_OBJS += src/graphics/xcb_window.o
+ifneq ($(FFLY_TARGET), $(filter $(FFLY_TARGET), FFLY_SERVER FFLY_WORKER))
+ifeq ($(FFLY_WINDOW), -D__USING_X11)
+ FFLY_OBJS += src/graphics/x11_wd.o
+else ifeq ($(FFLY_WINDOW), -D__USING_XCB)
+ FFLY_OBJS += src/graphics/xcb_wd.o
 endif
 endif
 
@@ -98,7 +98,22 @@ else ifeq ($(FFLY_TARGET), FFLY_TEST)
 all: ffly_test
 endif
 
-FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES)
+FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES) -D__USING_PULSE_AUDIO
+src/audio/alsa.o: src/audio/alsa.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/audio/alsa.o src/audio/alsa.c
+
+src/audio/pulse.o: src/audio/pulse.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/audio/pulse.o src/audio/pulse.c
+
+src/system/flags.o: src/system/flags.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/flags.o src/system/flags.c
+
+src/system/thread.o: src/system/thread.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/thread.o src/system/thread.c
+
+src/maths/is_inside.o: src/maths/is_inside.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/is_inside.o src/maths/is_inside.c
+
 src/maths/sq.o: src/maths/sq.asm
 	nasm -f elf64 -o src/maths/sq.o src/maths/sq.asm
 
@@ -120,8 +135,17 @@ src/system/vec.o: src/system/vec.c
 src/data/swp.o: src/data/swp.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/swp.o src/data/swp.c
 
-src/data/mem_ncpy.o: src/data/mem_ncpy.c
-	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/mem_ncpy.o src/data/mem_ncpy.c
+src/data/mem_set.o: src/data/mem_set.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/mem_set.o src/data/mem_set.c
+
+src/data/mem_cpy.o: src/data/mem_cpy.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/mem_cpy.o src/data/mem_cpy.c
+
+src/data/str_len.o: src/data/str_len.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/str_len.o src/data/str_len.c
+
+src/data/mem_dupe.o: src/data/mem_dupe.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/mem_dupe.o src/data/mem_dupe.c
 
 src/system/time.o: src/system/time.c
 	gcc -c -Wall -std=gnu11 -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/time.o src/system/time.c
@@ -153,8 +177,8 @@ src/ffly_memory.o: src/ffly_memory.cpp
 src/system/mem_tracker.o: src/system/mem_tracker.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/mem_tracker.o src/system/mem_tracker.c
 
-src/ffly_audio.o: src/ffly_audio.cpp
-	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_audio.o src/ffly_audio.cpp
+src/ffly_audio.o: src/ffly_audio.c
+	gcc -c -Wall -std=$(C_VERSION) -Istrcmb/inc -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_audio.o src/ffly_audio.c
 
 src/alsa_audio.o: src/alsa_audio.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/alsa_audio.o src/alsa_audio.cpp
@@ -186,8 +210,8 @@ src/system/task_handle.o: src/system/task_handle.cpp
 src/system/task_worker.o: src/system/task_worker.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/task_worker.o src/system/task_worker.cpp
 
-src/graphics/x11_window.o: src/graphics/x11_window.cpp
-	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/x11_window.o src/graphics/x11_window.cpp
+src/graphics/x11_wd.o: src/graphics/x11_wd.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/x11_wd.o src/graphics/x11_wd.c
 
 src/graphics/png_loader.o: src/graphics/png_loader.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/png_loader.o src/graphics/png_loader.cpp
@@ -249,8 +273,8 @@ src/opencl_helper.o: src/opencl_helper.cpp
 src/worker_manager.o: src/worker_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/worker_manager.o src/worker_manager.cpp
 
-src/memory/alloc_pixmap.o:src/memory/alloc_pixmap.cpp
-	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/alloc_pixmap.o src/memory/alloc_pixmap.cpp
+src/memory/alloc_pixmap.o: src/memory/alloc_pixmap.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/alloc_pixmap.o src/memory/alloc_pixmap.c
 
 src/graphics/draw_pixmap.clo: src/graphics/draw_pixmap.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_pixmap.clo src/graphics/draw_pixmap.cpp
@@ -300,8 +324,8 @@ src/graphics/draw_bitmap.o: src/graphics/draw_bitmap.cu
 src/pulse_audio.o: src/pulse_audio.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/pulse_audio.o src/pulse_audio.cpp
 
-src/graphics/xcb_window.o: src/graphics/xcb_window.cpp
-	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/xcb_window.o src/graphics/xcb_window.cpp
+src/graphics/xcb_wd.o: src/graphics/xcb_wd.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/xcb_wd.o src/graphics/xcb_wd.c
 
 src/room_manager.o: src/room_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/room_manager.o src/room_manager.cpp
@@ -345,13 +369,12 @@ relocate_headers:
 		mkdir $(CURR_DIR)/inc/firefly/graphics; \
 	fi
 
-	cp $(CURR_DIR)/src/graphics/*.hpp $(CURR_DIR)/inc/firefly/graphics
-	cp $(CURR_DIR)/src/graphics/*.h $(CURR_DIR)/inc/firefly/graphics
+	cp $(CURR_DIR)/src/graphics/*.h* $(CURR_DIR)/inc/firefly/graphics 2>/dev/null
 
 	if ! [ -d $(CURR_DIR)/inc/firefly/networking ]; then \
 		mkdir $(CURR_DIR)/inc/firefly/networking; \
 	fi
-	cp $(CURR_DIR)/src/networking/*.hpp $(CURR_DIR)/inc/firefly/networking
+	cp $(CURR_DIR)/src/networking/*.h* $(CURR_DIR)/inc/firefly/networking 2>/dev/null
 
 	if ! [ -d $(CURR_DIR)/inc/firefly/types ]; then \
 		mkdir $(CURR_DIR)/inc/firefly/types; \
@@ -389,37 +412,30 @@ relocate_headers:
 		mkdir $(CURR_DIR)/inc/firefly/data; \
 	fi
 
-	cp $(CURR_DIR)/src/data/*.hpp $(CURR_DIR)/inc/firefly/data 2>/dev/null
-	cp $(CURR_DIR)/src/data/*.h $(CURR_DIR)/inc/firefly/data 2>/dev/null
+	cp $(CURR_DIR)/src/data/*.h* $(CURR_DIR)/inc/firefly/data 2>/dev/null
 
-	cp $(CURR_DIR)/src/ui/*.hpp $(CURR_DIR)/inc/firefly/ui
+	cp $(CURR_DIR)/src/ui/*.h* $(CURR_DIR)/inc/firefly/ui 2>/dev/null
 
-	#cp $(CURR_DIR)/src/gui/*.h $(CURR_DIR)/inc/firefly/gui
-	cp $(CURR_DIR)/src/gui/*.hpp $(CURR_DIR)/inc/firefly/gui
+	cp $(CURR_DIR)/src/gui/*.h* $(CURR_DIR)/inc/firefly/gui 2>/dev/null
 
-	cp $(CURR_DIR)/src/system/*.h $(CURR_DIR)/inc/firefly/system
-	cp $(CURR_DIR)/src/system/*.hpp $(CURR_DIR)/inc/firefly/system
+	cp $(CURR_DIR)/src/system/*.h* $(CURR_DIR)/inc/firefly/system 2>/dev/null
 
-	cp $(CURR_DIR)/src/memory/*.h $(CURR_DIR)/inc/firefly/memory
-	cp $(CURR_DIR)/src/memory/*.hpp $(CURR_DIR)/inc/firefly/memory
+	cp $(CURR_DIR)/src/memory/*.h* $(CURR_DIR)/inc/firefly/memory 2>/dev/null
 
-	cp $(CURR_DIR)/src/maths/*.h $(CURR_DIR)/inc/firefly/maths
-	cp $(CURR_DIR)/src/maths/*.hpp $(CURR_DIR)/inc/firefly/maths
+	cp $(CURR_DIR)/src/maths/*.h* $(CURR_DIR)/inc/firefly/maths 2>/dev/null
 
-	cp $(CURR_DIR)/src/tests/*.hpp $(CURR_DIR)/inc/firefly/tests
+	cp $(CURR_DIR)/src/tests/*.h* $(CURR_DIR)/inc/firefly/tests 2>/dev/null
 
-	cp $(CURR_DIR)/src/types/*.h $(CURR_DIR)/inc/firefly/types 2>/dev/null
-	cp $(CURR_DIR)/src/types/*.hpp $(CURR_DIR)/inc/firefly/types 2>/dev/null
+	cp $(CURR_DIR)/src/types/*.h* $(CURR_DIR)/inc/firefly/types 2>/dev/null
 
-	cp $(CURR_DIR)/src/*.h $(CURR_DIR)/inc/firefly
-	cp $(CURR_DIR)/src/*.hpp $(CURR_DIR)/inc/firefly
+	cp $(CURR_DIR)/src/*.h* $(CURR_DIR)/inc/firefly 2>/dev/null
 
-	cp $(CURR_DIR)/mdlint/inc/*.hpp $(CURR_DIR)/inc
-	cp $(CURR_DIR)/getdigit/inc/*.hpp $(CURR_DIR)/inc
-	cp $(CURR_DIR)/intlen/inc/*.hpp $(CURR_DIR)/inc
-	cp $(CURR_DIR)/to_string/inc/*.hpp $(CURR_DIR)/inc
-	cp $(CURR_DIR)/strcmb/inc/*.hpp $(CURR_DIR)/inc
-	cp $(CURR_DIR)/serializer/inc/*.hpp $(CURR_DIR)/inc
+	cp $(CURR_DIR)/mdlint/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
+	cp $(CURR_DIR)/getdigit/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
+	cp $(CURR_DIR)/intlen/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
+	cp $(CURR_DIR)/to_string/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
+	cp $(CURR_DIR)/strcmb/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
+	cp $(CURR_DIR)/serializer/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
 
 # core libraries that are needed by design
 libraries:
@@ -427,7 +443,7 @@ libraries:
 	cd intlen; make ARC64 MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
 	cd nibbles; make MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
 	cd getdigit; make ARC64 MDLINT_INC=$(CURR_DIR)/mdlint/inc INTLEN_INC=$(CURR_DIR)/intlen/inc INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
-	cd to_string; make ECHAR_T=$(CURR_DIR)/echar_t/inc MDLINT_INC=$(CURR_DIR)/mdlint/inc GETDIGIT_INC=$(CURR_DIR)/getdigit/inc INTLEN_INC=$(CURR_DIR)/intlen/inc GETDIGIT_LIB=$(CURR_DIR)/getdigit/lib INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
+	cd to_string; make ECHAR_T_INC=$(CURR_DIR)/echar_t/inc MDLINT_INC=$(CURR_DIR)/mdlint/inc GETDIGIT_INC=$(CURR_DIR)/getdigit/inc INTLEN_INC=$(CURR_DIR)/intlen/inc GETDIGIT_LIB=$(CURR_DIR)/getdigit/lib INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
 	cd strcmb; make MDLINT_INC=$(CURR_DIR)/echar_t/inc MDLINT_INC=$(CURR_DIR)/mdlint/inc ARC=$(ARC); cd ../;
 	cd tagged_memory; make LIB_PATH=$(CURR_DIR)/; cd ../;
 	cd emu2d; make ARC=$(ARC) MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
@@ -468,9 +484,9 @@ ffly_test: $(FFLY_OBJS) src/ffly_test.o
 #	make move_headers;
 #	make move_libs;
 
-#ffly_client: required src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o \
+#ffly_client: required src/ffly_client.o src/graphics/x11_wd.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o \
 #	src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o
-#	ld -r -o lib/ffly_client.o src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o \
+#	ld -r -o lib/ffly_client.o src/ffly_client.o src/graphics/x11_wd.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o \
 #	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
 #	src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o
 #
@@ -491,9 +507,9 @@ ffly_test: $(FFLY_OBJS) src/ffly_test.o
 #src/ffly_memory.o: src/memory/mem_alloc.o src/memory/mem_free.o src/memory/alloc_pixmap.o
 #	ld -r -o src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/alloc_pixmap.o
 
-#example_client: required src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o \
+#example_client: required src/ffly_client.o src/graphics/x11_wd.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o \
 #	src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o src/ffly_memory.o
-#	g++ -std=c++11 $(CXXFLAGS) -DUSING_CUDA -DFFLY_CLIENT $(CUDA) -Wall $(ARC) -o bin/example_client.exec example_client.cpp src/ffly_client.o src/graphics/x11_window.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o \
+#	g++ -std=c++11 $(CXXFLAGS) -DUSING_CUDA -DFFLY_CLIENT $(CUDA) -Wall $(ARC) -o bin/example_client.exec example_client.cpp src/ffly_client.o src/graphics/x11_wd.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o \
 #	src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o src/ffly_memory.o \
 #	-lto_string -lgetdigit -lintlen -lstrcmb -lemu2d -lpulse -lpulse-simple -lpng16 -lcuda -lcudart -lboost_system -lboost_filesystem -lpthread -lboost_thread -lX11 -lGL -lGLU -lglut
 
@@ -522,18 +538,9 @@ example_client:
 #	g++ -std=c++11 $(CXXFLAGS) -L/usr/local/lib/x86_64/sdk -Wall $(ARC) -o bin/uni_worker.exec src/uni_worker.cpp src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o \
 #	src/ffly_memory.o -lpng16 -lboost_system -lOpenCL -lboost_filesystem -lpthread -lboost_thread
 
-skel_creator: src/graphics/x11_window.o
+skel_creator: src/graphics/x11_wd.o
 	nvcc -c -std=c++11 -DARC64 $(CUDA) -o draw_grid.o draw_grid.cu
-	g++ -std=c++11 $(CUDA) -DARC64 -L/usr/local/lib -I/usr/local/include -o skel_creator.exec skel_creator.cpp draw_grid.o src/graphics/x11_window.o -lcuda -lcudart -lboost_system -lpthread -lboost_thread -lemu2d -lX11 -lGL -lGLU -lglut
+	g++ -std=c++11 $(CUDA) -DARC64 -L/usr/local/lib -I/usr/local/include -o skel_creator.exec skel_creator.cpp draw_grid.o src/graphics/x11_wd.o -lcuda -lcudart -lboost_system -lpthread -lboost_thread -lemu2d -lX11 -lGL -lGLU -lglut
 
 clean:
-	cd nibbles; make clean; cd ../;
-	cd termio; make clean; cd ../;
-	cd intlen; make clean; cd ../;
-	cd getdigit; make clean; cd ../;
-	cd to_string; make clean; cd ../;
-	cd strcmb; make clean; cd ../;
-	cd tagged_memory; make clean; cd ../;
-
-	rm -f src/ui/*.o src/gui/*.o src/memory/*.o src/memory/*.co src/graphics/*.o src/graphics/*.clo src/networking/*.o src/maths/*.o src/tests/*.o src/system/*.o src/*.o src/data/*.o *.exec #bin/*.exec
-	rm -rf $(CURR_DIR)/inc/* $(CURR_DIR)/lib/*
+	sh clean.sh

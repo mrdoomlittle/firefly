@@ -7,7 +7,7 @@
 # include <strcmb.hpp>
 # include <string.h>
 # include <math.h>
-# include "types/coords_t.hpp"
+# include "types/coords_t.h"
 # include "memory/mem_alloc.h"
 # include "asset_manager.hpp"
 # include "types/err_t.h"

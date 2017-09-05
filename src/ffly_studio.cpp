@@ -104,7 +104,7 @@ mdl::firefly::types::err_t mdl::ffly_studio::begin(char const *__frame_title) {
 	while(window.get_pixbuff() == nullptr);
 	_room_manager.set_pixbuff(window.get_pixbuff());
 
-	firefly::graphics::colour_t bg_colour = {244, 244, 244, 244};
+	firefly::types::colour_t bg_colour = {244, 244, 244, 244};
 	firefly::gui::window my_window;
 
 	my_window.init(0, 0, 186, 128);

@@ -2,10 +2,10 @@
 # define __ffly__memory__hpp
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
-# include <cstddef>
+# include "memory/mem_realloc.h"
 # include <mdlint.h>
 # include "types/err_t.h"
-# include <cstdio>
+# include "system/errno.h"
 namespace mdl {
 namespace ffly_memory {
 # ifdef __DEBUG_ENABLED

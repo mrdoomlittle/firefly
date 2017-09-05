@@ -26,9 +26,9 @@ echo "extra options: $4"
 
 ffly_window=
 if [ $(bash find.bash "$FFLY_ARGS" "--using-x11") -eq 0 ]; then
-	ffly_window=-DUSING_X11
+	ffly_window=-D__USING_X11
 elif [ $(bash find.bash "$FFLY_ARGS" "--using-xcb") -eq 0 ]; then
-	ffly_window=-DUSING_XCB
+	ffly_window=-D__USING_XCB
 fi
 
 extra_defines=

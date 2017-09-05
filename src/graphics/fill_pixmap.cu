@@ -1,17 +1,17 @@
 # include "fill_pixmap.hpp"
-__global__ void cu_fill_pixmap(mdl::firefly::types::pixmap_t __pixmap, mdl::firefly::graphics::colour_t *__colour) {
-	mdl::uint_t point = (threadIdx.x + (blockIdx.x * blockDim.x)) * 4;
+__global__ void cu_fill_pixmap(mdl::firefly::types::pixmap_t __pixmap, mdl::firefly::types::colour_t *__colour) {
+	mdl::uint_t point = (threadIdx.x+(blockIdx.x*blockDim.x))*4;
 
 	__pixmap[point] =__colour-> r;
-	__pixmap[point + 1] =__colour-> g;
-	__pixmap[point + 2] =__colour-> b;
-	__pixmap[point + 3] =__colour-> a;
+	__pixmap[point+1] =__colour-> g;
+	__pixmap[point+2] =__colour-> b;
+	__pixmap[point+3] =__colour-> a;
 }
 
 
-mdl::firefly::types::err_t mdl::firefly::graphics::fill_pixmap(types::pixmap_t __pixmap, uint_t __xa_len, uint_t __ya_len, colour_t __colour) {
+mdl::firefly::types::err_t mdl::firefly::graphics::fill_pixmap(types::pixmap_t __pixmap, uint_t __xa_len, uint_t __ya_len, types::colour_t __colour) {
 	types::pixmap_t static pixmap = nullptr;
-	colour_t static *colour = nullptr;
+	types::colour_t static *colour = nullptr;
 	bool static inited = false;
 	cudaError_t any_error = cudaSuccess;
 
@@ -35,13 +35,13 @@ mdl::firefly::types::err_t mdl::firefly::graphics::fill_pixmap(types::pixmap_t _
 	}
 
 	if (!inited) {
-		if ((any_error = cudaMalloc((void**)&colour, sizeof(colour_t))) != cudaSuccess) {
+		if ((any_error = cudaMalloc((void**)&colour, sizeof(types::colour_t))) != cudaSuccess) {
 			system::io::printf(stderr, "cuda, fill_pixmap: failed to call Malloc, error code: %d\n", any_error);
 			return FFLY_FAILURE;
 		}
 
 		if (__colour.r == 0 && __colour.g == 0 && __colour.b == 0 && __colour.a == 0) {
-			if ((any_error = cudaMemcpy(colour, &__colour, sizeof(colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+			if ((any_error = cudaMemcpy(colour, &__colour, sizeof(types::colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 				system::io::printf(stderr, "cuda, fill_pixmap: failed to call Memcpy, error code: %d\n", any_error);
 				return FFLY_FAILURE;
 			}
@@ -52,9 +52,9 @@ mdl::firefly::types::err_t mdl::firefly::graphics::fill_pixmap(types::pixmap_t _
 
 	cudaMemcpy(pixmap, __pixmap, pixmap_size*sizeof(types::__pixmap_t), cudaMemcpyHostToDevice);
 
-	colour_t static _colour = {0, 0, 0, 0};
+	types::colour_t static _colour = {0, 0, 0, 0};
 	if (_colour.r != __colour.r || _colour.g != __colour.g || _colour.b != __colour.b || _colour.a != __colour.a) {
-		if ((any_error = cudaMemcpy(colour, &__colour, sizeof(colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+		if ((any_error = cudaMemcpy(colour, &__colour, sizeof(types::colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
 			system::io::printf(stderr, "cuda, fill_pixmap: failed to call Memcpy, error code: %d\n", any_error);
 			return FFLY_FAILURE;
 		}

@@ -1,7 +1,6 @@
 # ifndef __coords__t__h
 # define __coords__t__h
 # include <mdlint.h>
-
 typedef struct {
 	mdl_uint_t xa, ya, za;
 } ffly_3d_uint_coords_t;
@@ -11,12 +10,20 @@ typedef struct {
 } ffly_2d_uint_coords_t;
 
 typedef struct {
+	mdl_u32_t xa, ya;
+} ffly_2d_u32_coords_t;
+
+typedef struct {
 	mdl_int_t xa, ya, za;
 } ffly_3d_int_coords_t;
 
 typedef struct {
 	mdl_int_t xa, ya;
 } ffly_2d_int_coords_t;
+
+typedef struct {
+	mdl_i32_t xa, ya;
+} ffly_2d_i32_coords_t;
 
 typedef ffly_3d_uint_coords_t ffly_3d_coords_t;
 typedef ffly_2d_uint_coords_t ffly_2d_coords_t;
@@ -25,8 +32,11 @@ typedef ffly_2d_uint_coords_t ffly_2d_coords_t;
 namespace mdl {
 namespace firefly {
 namespace types {
+typedef ffly_3d_coords_t _3d_coords_t;
+typedef ffly_2d_coords_t _2d_coords_t;
 template<typename _T = uint_t>
 struct coords_t {
+
 # ifndef __NVCC__
 operator coords_t<uint_t>() const {
 	return (coords_t<uint_t>) {
@@ -48,41 +58,6 @@ operator coords_t<u8_t>() const {
 # endif
 	_T xaxis, yaxis, zaxis;
 };
-
-template<typename _T = uint_t>
-struct _2d_coords_t {
-	_T xaxis, yaxis;
-};
-
-# ifndef __NVCC__
-template<typename _T = uint_t>
-static _2d_coords_t<_T> __coords__(_T __xaxis, _T __yaxis) {
-	_2d_coords_t<_T> _coords = {
-		.xaxis = __xaxis,
-		.yaxis = __yaxis
-	};
-	return _coords;
-}
-
-# endif
-
-template<typename _T = uint_t>
-struct _3d_coords_t {
-    _T xaxis, yaxis, zaxis;
-};
-
-# ifndef __NVCC__
-template<typename _T = uint_t>
-static _3d_coords_t<_T> __coords__(_T __xaxis, _T __yaxis, _T __zaxis) {
-	_3d_coords_t<_T> _coords = {
-		.xaxis = __xaxis,
-		.yaxis = __yaxis,
-		.zaxis = __zaxis
-	};
-	return _coords;
-}
-# endif
-
 
 // ncvv seems to not like this
 # ifndef __NVCC__

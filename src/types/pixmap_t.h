@@ -6,7 +6,6 @@ typedef ffly_byte_t* ffly_pixmap_t;
 typedef ffly_byte_t* ffly_1d_pm_t;
 typedef ffly_byte_t** ffly_2d_pm_t;
 typedef ffly_byte_t*** ffly_3d_pm_t;
-
 # ifdef __cplusplus
 namespace mdl {
 namespace firefly {
