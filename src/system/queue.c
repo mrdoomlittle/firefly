@@ -3,7 +3,7 @@
 # include "errno.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_realloc.h"
-# include "../data/mem_ncpy.h"
+# include "../data/mem_cpy.h"
 # include "../memory/mem_free.h"
 ffly_err_t ffly_queue_init(struct ffly_queue *__queue, mdl_uint_t __blk_size) {
 	__queue->page_c = 0;
@@ -81,7 +81,7 @@ ffly_err_t ffly_queue_push(struct ffly_queue *__queue, void *__p) {
 		}
 	}
 
-	ffly_mem_ncpy((void*)(((mdl_u8_t*)*(__queue->p+page))+((__queue->end_off++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __p, __queue->blk_size);
+	ffly_mem_cpy((void*)(((mdl_u8_t*)*(__queue->p+page))+((__queue->end_off++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __p, __queue->blk_size);
 	return FFLY_SUCCESS;
 }
 
@@ -94,7 +94,7 @@ ffly_err_t ffly_queue_pop(struct ffly_queue *__queue, void *__p) {
 
 	if (__queue->end_off < __queue->begin_off && __queue->begin_off+1 == __queue->page_c*QUEUE_PAGE_SIZE && __queue->begin_off <= QUEUE_PAGE_SIZE*QUEUE_MAX_PAGE_C) __queue->begin_off = 0;
 	mdl_uint_t page = __queue->begin_off >> 5;
-	ffly_mem_ncpy(__p, (void*)(((mdl_u8_t*)*(__queue->p+page))+((__queue->begin_off++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __queue->blk_size);
+	ffly_mem_cpy(__p, (void*)(((mdl_u8_t*)*(__queue->p+page))+((__queue->begin_off++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __queue->blk_size);
 	if (__queue->begin_off >> 5 > page) {
 		__ffly_mem_free(*(__queue->p+page));
 		*(__queue->p+page) = NULL;

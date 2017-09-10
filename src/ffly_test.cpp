@@ -8,7 +8,15 @@ using namespace mdl::firefly;
 # include <stdio.h>
 int main() {
 	asset_manager am;
-	types::id_t a = am.add_asset((mdl_u8_t*)0, 0, 0);
+//	ffly_byte_t *fp;
+//	ffly_size_t fsize;
+//	if (ffly_ld_aud_file("", "test", _ffly_audf_wav, &fp, &fsize) != FFLY_SUCCESS) {
+//		return FFLY_FAILURE;
+//	}
+
+//	types::id_t id = am.add_asset((mdl_u8_t*)fp, fsize, 0);
+//	*((ffly_aud_fformat_t*)(am.asset_info(id) = __ffly_mem_alloc(sizeof(ffly_aud_fformat_t)))) = _ffly_audf_wav;
+/*
 	types::id_t b = am.add_asset((mdl_u8_t*)1, 1, 1);
 	types::id_t c = am.add_asset((mdl_u8_t*)2, 2, 2);
 	types::id_t d = am.add_asset((mdl_u8_t*)3, 3, 3);
@@ -17,7 +25,13 @@ int main() {
 	printf("%u\n", am.get_asset_data(b));
 	printf("%u\n", am.get_asset_data(c));
 	printf("%u\n", am.get_asset_data(d));
+*/
 
+	types::id_t id = am.load_asset("test", _ffly_ak_wav_file);
+
+	types::asset_t& ass = am.asset(id);
+	ffly_aud_fad_t *aud_fad = (ffly_aud_fad_t*)ass.data;
+	ffly_aud_play(aud_fad->fp, aud_fad->fsize, aud_fad->fformat);
 //	printf("main called.\n");
 //	ffly_aud_play("", "test", _ffly_audf_wav);
 //	while(1);
@@ -42,4 +56,6 @@ int main() {
 
 	printf("window closed.\n");
 */
+
+
 }

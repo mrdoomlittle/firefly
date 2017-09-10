@@ -1,58 +1,39 @@
+# include "io.h"
+# include "task_pool.h"
 # include "thread.h"
-# include <typeinfo>
-# include <cstdio>
 # include <unistd.h>
-void test(mdl_u8_t __a, mdl_u8_t __b, mdl_u8_t __c, mdl_u8_t __d) {
-	while(1) {
-		usleep(1000000);
-		printf("hello, %u, %u, %u, %u\n", __a, __b, __c, __d);
-	}
+# include "task_pool.h"
+# include "mutex.h"
+# include <pthread.h>
+# include "signal.h"
+
+ffly_sig_t sig = 0;
+void *call(void *__arg_p) {
+	printf("waiting for signal.\n");
+	ffly_sigwait(&sig);
+	printf("signaled.\n");
 }
 
-mdl_uint_t o  = 0;
-using namespace mdl::firefly::system;
-/*
-template<typename _ARG, typename... _E>
-struct test_ : test_<_E...> {
-	_ARG val = o++;
-};
-
-template<typename _ARG>
-struct test_<_ARG>{
-	_ARG val = o++;
-};
-
-
-template<mdl_uint_t _I, typename _ARG, typename... _E>
-struct test_impl {
-	auto static val(test_<_ARG, _E...>& __r) -> decltype(test_impl<_I-1, _E...>::val(__r)) {
-		return test_impl<_I-1, _E...>::val(__r);
-	}
-};
-
-template<typename _ARG, typename... _E>
-struct test_impl<0, _ARG, _E...> {
-	_ARG static val(test_<_ARG, _E...>& __r) {
-		return __r.val;
-	}
-};
-
-template<mdl_uint_t _I, typename _ARG, typename... _E>
-auto static g(test_<_ARG, _E...>& __r) -> decltype(test_impl<_I, _ARG, _E...>::val(__r)) {
-	return test_impl<_I, _ARG, _E...>::val(__r);
-}
-
-template<typename _ARG, typename... _E>
-void test(_ARG, _E...) {
-	
-	struct test_<_ARG, _E...> r;
-	printf("%u\n", g<1>(r));
-}
-*/
 int main() {
-	thread th(&test, 1, 2, 3, 4);
-	printf("hello fu\n");
-	while(1);
-//	thread_create(&ts, 1, 2);
-//	test((int)1, (int)2, (int)3);
+//	struct ffly_task_pool task_pool;
+///	ffly_task_pool_init(&task_pool, 4);
+//	ffly_task_pool_de_init(&task_pool);
+	ffly_tid_t tid;
+	ffly_thread_create(&tid, &call, NULL);
+	usleep(5000000);
+
+	printf("sending sig.\n");
+	ffly_signal(&sig);
+	printf("send sig.\n");
+
+	usleep(5000000);
+	ffly_thread_cleanup();
+
+/*
+	ffly_tid_t tids[20];
+	for (mdl_uint_t i = 0; i != 20; i++) {
+		ffly_thread_create(&tids[i], NULL, NULL);
+		printf("%u\n", tids[i]);
+	}
+*/
 }

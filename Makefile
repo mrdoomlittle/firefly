@@ -120,14 +120,20 @@ src/maths/sq.o: src/maths/sq.asm
 src/ffly_graphics.o: src/ffly_graphics.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_graphics.o src/ffly_graphics.cpp
 
-src/maths/round.o: src/maths/round.asm
-	nasm -f elf64 -o src/maths/round.o src/maths/round.asm
+src/system/asm/atomic_op.o: src/system/asm/atomic_op.asm
+	nasm -f elf64 -o src/system/asm/atomic_op.o src/system/asm/atomic_op.asm
 
-src/maths/ceil.o: src/maths/ceil.asm
-	nasm -f elf64 -o src/maths/ceil.o src/maths/ceil.asm
+src/system/asm/mutex.o: src/system/asm/mutex.asm
+	nasm -f elf64 -o src/system/asm/mutex.o src/system/asm/mutex.asm
 
-src/maths/floor.o: src/maths/floor.asm
-	nasm -f elf64 -o src/maths/floor.o src/maths/floor.asm
+src/maths/asm/round.o: src/maths/asm/round.asm
+	nasm -f elf64 -o src/maths/asm/round.o src/maths/asm/round.asm
+
+src/maths/asm/ceil.o: src/maths/asm/ceil.asm
+	nasm -f elf64 -o src/maths/asm/ceil.o src/maths/asm/ceil.asm
+
+src/maths/asm/floor.o: src/maths/asm/floor.asm
+	nasm -f elf64 -o src/maths/asm/floor.o src/maths/asm/floor.asm
 
 src/system/vec.o: src/system/vec.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/vec.o src/system/vec.c

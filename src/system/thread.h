@@ -6,16 +6,19 @@
 # include "../memory/mem_alloc.h"
 # include "../data/mem_cpy.h"
 # include "../data/mem_dupe.h"
+# include "../types/thread.h"
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_thread_create(void*(*)(void*), void*);
+ffly_err_t ffly_thread_create(ffly_tid_t*, void*(*)(void*), void*);
+ffly_err_t ffly_thread_kill(ffly_tid_t);
+ffly_err_t ffly_thread_cleanup();
 # ifdef __cplusplus
 }
 namespace mdl {
 namespace firefly {
 namespace system {
-static types::err_t(*thread_create)(void*(*)(void*), void*) = &ffly_thread_create;
+static types::err_t(*thread_create)(ffly_tid_t*, void*(*)(void*), void*) = &ffly_thread_create;
 
 template<typename _F, typename _A1, typename _A2, typename _A3, typename _A4>
 struct thread_arg {
@@ -46,8 +49,9 @@ struct thread {
 		};
 
 		void *_arg;
+		ffly_tid_t tid;
 		ffly_mem_dupe(&_arg, (void*)&arg, sizeof(struct thread_arg<_F, _A1, _A2, _A3, _A4>));
-		thread_create(&t<_F, _A1, _A2, _A3, _A4>::proxy, _arg);
+		thread_create(&tid, &t<_F, _A1, _A2, _A3, _A4>::proxy, _arg);
 	}
 };
 }

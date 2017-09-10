@@ -2,7 +2,14 @@
 # include "system/io.h"
 # include "system/errno.h"
 # include <str_cmb.h>
+# include <sys/types.h>
+# include <fcntl.h>
+# include <sys/stat.h>
 # include "memory/mem_alloc.h"
+# include "types/off_t.h"
+# ifdef __USING_PULSE_AUDIO
+struct ffly_pulse __pulse__;
+# endif
 ffly_err_t ffly_ld_aud_file(char *__dir, char *__name, ffly_aud_fformat_t __format, ffly_byte_t **__p, ffly_size_t *__size) {
 	char *ext;
 	switch(__format) {
@@ -101,7 +108,74 @@ ffly_wav_spec_t ffly_extract_wav_spec(ffly_byte_t *__p) {
 	return wav_spec;
 }
 
-ffly_err_t ffly_aud_play(char *__fdir, char*__fname, ffly_aud_fformat_t __fformat) {
+ffly_err_t ffly_aud_play(ffly_byte_t *__fp, ffly_size_t __fsize, ffly_aud_fformat_t __fformat) {
+	ffly_aud_spec_t aud_spec;
+	ffly_off_t off;
+	switch(__fformat) {
+		case _ffly_audf_wav: {
+			ffly_wav_spec_t wav_spec = ffly_extract_wav_spec(__fp);
+			if (wav_spec.aud_format) {
+				switch(wav_spec.bit_depth) {
+					case 16:
+						aud_spec.format = _ffly_af_s16_le;
+					break;
+					default: return FFLY_FAILURE;
+				}
+
+				aud_spec.chn_c = wav_spec.chn_c;
+				aud_spec.rate = wav_spec.sample_rate;
+            	off = sizeof(ffly_wav_spec_t);
+			} else
+				return FFLY_FAILURE;
+			break;
+		}
+		default:
+			ffly_printf(stderr, "ffly_audio, file format not rq.\n");
+		return FFLY_FAILURE;
+	}
+
+	ffly_aud_raw_play(__fp+off, __fsize-off);
+	return FFLY_SUCCESS;
+}
+
+ffly_err_t ffly_aud_raw_play(ffly_byte_t *__p, ffly_size_t __size) {
+# ifdef __USING_PULSE_AUDIO
+	if (ffly_pulse_write(&__pulse__, __p, __size) != FFLY_SUCCESS) {
+		ffly_printf(stderr, "ffly_audio: failed to write.\n");
+		return FFLY_FAILURE;
+	}
+# endif
+	return FFLY_SUCCESS;
+}
+
+ffly_err_t ffly_audio_init(ffly_aud_spec_t *__aud_spec) {
+# ifdef __USING_PULSE_AUDIO
+	struct pa_sample_spec sample_spec;
+	switch(__aud_spec->format) {
+		case _ffly_af_s16_le:
+			sample_spec.format = PA_SAMPLE_S16LE;
+		break;
+		case _ffly_af_float32_le:
+			sample_spec.format = PA_SAMPLE_FLOAT32LE;
+		break;
+		default: return FFLY_FAILURE;
+	}
+
+	sample_spec.channels = __aud_spec->chn_c;
+	sample_spec.rate = __aud_spec->rate;
+
+	ffly_pulse_init(&__pulse__);
+# endif
+}
+
+ffly_err_t ffly_audio_de_init() {
+# ifdef __USING_PULSE_AUDIO
+	ffly_pulse_free(&__pulse__);
+# endif
+}
+
+/*
+ffly_err_t ffly_aud_raw_play(char *__fdir, char*__fname, ffly_aud_fformat_t __fformat) {
 	ffly_byte_t *f;
 	ffly_size_t fsize;
 	ffly_ld_aud_file(__fdir, __fname, __fformat, &f, &fsize);
@@ -153,4 +227,4 @@ ffly_err_t ffly_aud_play(char *__fdir, char*__fname, ffly_aud_fformat_t __fforma
 	ffly_printf(stdout, "ffly_audio: alsa or pluse need to be defined at compile time.\n");
 # endif
 # endif
-}
+}*/

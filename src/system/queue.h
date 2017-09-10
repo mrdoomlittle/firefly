@@ -23,7 +23,7 @@ void* ffly_queue_front(struct ffly_queue*);
 void* ffly_queue_back(struct ffly_queue*);
 # ifdef __cplusplus
 }
-
+# include "errno.h"
 namespace mdl {
 namespace firefly {
 namespace system {

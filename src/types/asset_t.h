@@ -6,9 +6,7 @@
 typedef struct {
 	ffly_id_t id;
 	mdl_uint_t kind;
-	mdl_uint_t bc;
 	ffly_byte_t *data;
-	void *info;
 } ffly_asset_t;
 
 # ifdef __cplusplus

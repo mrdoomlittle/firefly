@@ -53,6 +53,7 @@ void static __inline__* ffly_vec_end(struct ffly_vec *__vec) {
 ffly_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return __vec->off == 0?1:0;}
 # ifdef __cplusplus
 # include "../data/swp.h"
+# include "errno.h"
 namespace mdl {
 namespace firefly {
 namespace system {

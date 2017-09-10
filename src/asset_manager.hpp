@@ -17,6 +17,10 @@
 # include "types/asset_t.h"
 # include "system/vec.h"
 # include "types/byte_t.h"
+# include "system/asset_kind.h"
+# include "data/pair.h"
+# include "types/aud_fad_t.h"
+# include "ffly_audio.h"
 namespace mdl {
 namespace firefly {
 class asset_manager
@@ -29,8 +33,8 @@ class asset_manager
 	types::err_t de_init();
 
 	types::bool_t valid_asset_id(types::id_t __asset_id);
-	types::id_t add_asset(u8_t *__data, uint_t __bc, uint_t __type);
-	types::id_t load_asset(char const *__file, uint_t __type);
+	types::id_t add_asset(types::byte_t *__data, uint_t __kind);
+	types::id_t load_asset(char *__fname, uint_t __kind);
 	void del_asset(types::id_t __asset_id);
 	u8_t* get_asset_data(types::id_t __asset_id);
 	types::asset_t get_asset(types::id_t __asset_id) noexcept;

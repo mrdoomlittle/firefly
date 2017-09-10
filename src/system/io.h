@@ -1,5 +1,6 @@
 # ifndef __io__h
 # define __io__h
+# include <mdlint.h>
 # include <stdio.h>
 # ifdef __cplusplus
 extern "C" {
