@@ -13,6 +13,8 @@
 # include "../types/off_t.h"
 # include "../system/flags.h"
 # include "../types/byte_t.h"
+# include "../system/buff.h"
+
 struct ffly_xcb_wd {
 	mdl_uint_t xa_len, ya_len;
 	ffly_off_t mn_xal_off, mn_yal_off;
@@ -23,8 +25,8 @@ struct ffly_xcb_wd {
 	xcb_window_t w;
 	ffly_byte_t *frame_buff;
 	ffly_flag_t flags;
+	struct ffly_buff event_buff;
 };
-
 
 # ifdef __cplusplus
 extern "C" {

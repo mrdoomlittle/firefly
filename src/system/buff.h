@@ -3,40 +3,46 @@
 # include "../types/err_t.h"
 # include "io.h"
 # include <mdlint.h>
+# include "mutex.h"
 struct ffly_buff {
+	ffly_mutex_t m;
 	mdl_u8_t *p;
 	mdl_uint_t off;
-	mdl_uint_t rs_size;
-	mdl_uint_t size, blk_size;
+	mdl_uint_t rs_blk_c;
+	mdl_uint_t blk_c, blk_size;
 };
 
 # ifdef __cplusplus
 extern "C" {
 # endif
 ffly_err_t ffly_buff_init(struct ffly_buff*, mdl_uint_t, mdl_uint_t);
-void ffly_buff_put(struct ffly_buff*, void*);
-void ffly_buff_get(struct ffly_buff*, void*);
+ffly_err_t ffly_buff_put(struct ffly_buff*, void*);
+ffly_err_t ffly_buff_get(struct ffly_buff*, void*);
 ffly_err_t ffly_buff_resize(struct ffly_buff*, mdl_uint_t);
 ffly_err_t ffly_buff_de_init(struct ffly_buff*);
-void static __inline__ ffly_buff_incr(struct ffly_buff *__buff) {__buff->off++;}
-void static __inline__ ffly_buff_decr(struct ffly_buff *__buff) {__buff->off--;}
-void static __inline__ ffly_buff_off_reset(struct ffly_buff *__buff) {__buff->off = 0;}
-void static __inline__* ffly_buff_begin(struct ffly_buff *__buff) {return (void*)__buff->p;}
-void static __inline__* ffly_buff_end(struct ffly_buff *__buff) {return (void*)(__buff->p+((__buff->off-1)*__buff->blk_size));}
+ffly_err_t ffly_buff_incr(struct ffly_buff*);
+ffly_err_t ffly_buff_decr(struct ffly_buff*);
 ffly_err_t ffly_buff_reset(struct ffly_buff*);
 # ifdef __cplusplus
 }
-
+# endif
+mdl_uint_t static __inline__ ffly_buff_ublk_c(struct ffly_buff *__buff){if (!__buff->off) return 0;return __buff->off/__buff->blk_size;}
+void static __inline__ ffly_buff_off_reset(struct ffly_buff *__buff) {__buff->off = 0;}
+void static __inline__* ffly_buff_begin(struct ffly_buff *__buff) {return (void*)__buff->p;}
+void static __inline__* ffly_buff_end(struct ffly_buff *__buff) {return (void*)(__buff->p+((__buff->off-1)*__buff->blk_size));}
+void static __inline__ ffly_buff_lock(struct ffly_buff *__buff) {ffly_mutex_lock(&__buff->m);}
+void static __inline__ ffly_buff_unlock(struct ffly_buff *__buff) {ffly_mutex_unlock(&__buff->m);}
+# ifdef __cplusplus
 namespace mdl {
 namespace firefly {
 namespace system {
 static ffly_err_t(*buff_init)(struct ffly_buff*, uint_t, uint_t) = &ffly_buff_init;
-static void(*buff_put)(struct ffly_buff*, void*) = &ffly_buff_put;
-static void(*buff_get)(struct ffly_buff*, void*) = &ffly_buff_get;
+static ffly_err_t(*buff_put)(struct ffly_buff*, void*) = &ffly_buff_put;
+static ffly_err_t(*buff_get)(struct ffly_buff*, void*) = &ffly_buff_get;
 static types::err_t(*buff_resize)(struct ffly_buff*, uint_t) = &ffly_buff_resize;
 static types::err_t(*buff_de_init)(struct ffly_buff*) = &ffly_buff_de_init;
-void static __inline__ buff_incr(struct ffly_buff *__buff) {ffly_buff_incr(__buff);}
-void static __inline__ buff_decr(struct ffly_buff *__buff) {ffly_buff_decr(__buff);}
+ffly_err_t static __inline__ buff_incr(struct ffly_buff *__buff) {return ffly_buff_incr(__buff);}
+ffly_err_t static __inline__ buff_decr(struct ffly_buff *__buff) {return ffly_buff_decr(__buff);}
 void static __inline__ buff_off_reset(struct ffly_buff *__buff) {ffly_buff_off_reset(__buff);}
 void static __inline__* buff_begin(struct ffly_buff *__buff) {return ffly_buff_begin(__buff);}
 void static __inline__* buff_end(struct ffly_buff *__buff) {return ffly_buff_end(__buff);}

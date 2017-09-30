@@ -1,12 +1,12 @@
 #!/bin/sh
 CXX_IFLAGS="-Inibbles/inc -Itermio/inc -Imdlint/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Itagged_memory/inc -Iemu2d/inc -Iemu3d/inc -Iechar_t/inc"
 CXX_LFLAGS="-Lnibbles/lib -Ltermio/lib -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstrcmb/lib -Ltagged_memory/lib -Lemu2d/lib -Lemu3d/lib"
-LDFLAGS="-ltagged_memory -ltermio -lintlen -lgetdigit -lto_string -lstr_cmb -lnibbles -lemu2d -lemu3d -lboost_system -lboost_filesystem -lpthread -lboost_thread"
+LDFLAGS="-ltagged_memory -ltermio -lintlen -lgetdigit -lto_string -lmdl-strcmb -lnibbles -lemu2d -lemu3d -lboost_system -lboost_filesystem -lpthread -lboost_thread"
 GPU_CL_TYPE=""
 BOOST_PATH="/usr/local"
 OPENCL_PATH="/usr"
 CUDA_PATH="/usr"
-CUDART_PATH="/usr/local/cuda-8.0"
+CUDART_PATH="/usr/local/cuda-9.0"
 CUDART_INC="-I$CUDART_PATH/include"
 CUDART_LIB="-L$CUDART_PATH/lib64"
 export CUDART_INC="$CUDART_INC"
@@ -134,7 +134,7 @@ elif [ -f "$CUDA_PATH/lib/x86_64-linux-gnu/libcuda.so" ]; then
 	if [ -d "$CUDART_PATH" ]; then
 		GPU_CL_TYPE="-DUSING_CUDA"
 		CXX_IFLAGS="$CXX_IFLAGS -D__USING_CUDA"
-		LDFLAGS="$LDFLAGS -lcuda -lcudart"
+		LDFLAGS="$LDFLAGS -lcudart"
 #		CXXFLAGS="$CXXFLAGS $CUDART_PATH/include $CUDART_PATH/lib64"
 	else
 		echo "cudart dir does not exist"

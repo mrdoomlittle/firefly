@@ -66,7 +66,8 @@ FFLY_OBJS+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o 
 # data
 FFLY_OBJS+= src/data/swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o
 # system
-FFLY_OBJS+= src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o
+FFLY_OBJS+= src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
+src/system/mutex.o src/system/atomic_op.o src/system/queue.o
 # graphics
 #FFLY_OBJS+= src/ffly_graphics.o
 # memory
@@ -114,26 +115,26 @@ src/system/thread.o: src/system/thread.c
 src/maths/is_inside.o: src/maths/is_inside.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/is_inside.o src/maths/is_inside.c
 
-src/maths/sq.o: src/maths/sq.asm
-	nasm -f elf64 -o src/maths/sq.o src/maths/sq.asm
+src/maths/sq.o: src/maths/asm/sq.asm
+	nasm -f elf64 -o src/maths/sq.o src/maths/asm/sq.asm
 
 src/ffly_graphics.o: src/ffly_graphics.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_graphics.o src/ffly_graphics.cpp
 
-src/system/asm/atomic_op.o: src/system/asm/atomic_op.asm
-	nasm -f elf64 -o src/system/asm/atomic_op.o src/system/asm/atomic_op.asm
+src/system/atomic_op.o: src/system/asm/atomic_op.asm
+	nasm -f elf64 -o src/system/atomic_op.o src/system/asm/atomic_op.asm
 
-src/system/asm/mutex.o: src/system/asm/mutex.asm
-	nasm -f elf64 -o src/system/asm/mutex.o src/system/asm/mutex.asm
+src/system/mutex.o: src/system/asm/mutex.asm
+	nasm -f elf64 -o src/system/mutex.o src/system/asm/mutex.asm
 
-src/maths/asm/round.o: src/maths/asm/round.asm
-	nasm -f elf64 -o src/maths/asm/round.o src/maths/asm/round.asm
+src/maths/round.o: src/maths/asm/round.asm
+	nasm -f elf64 -o src/maths/round.o src/maths/asm/round.asm
 
-src/maths/asm/ceil.o: src/maths/asm/ceil.asm
-	nasm -f elf64 -o src/maths/asm/ceil.o src/maths/asm/ceil.asm
+src/maths/ceil.o: src/maths/asm/ceil.asm
+	nasm -f elf64 -o src/maths/ceil.o src/maths/asm/ceil.asm
 
-src/maths/asm/floor.o: src/maths/asm/floor.asm
-	nasm -f elf64 -o src/maths/asm/floor.o src/maths/asm/floor.asm
+src/maths/floor.o: src/maths/asm/floor.asm
+	nasm -f elf64 -o src/maths/floor.o src/maths/asm/floor.asm
 
 src/system/vec.o: src/system/vec.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/vec.o src/system/vec.c

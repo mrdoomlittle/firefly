@@ -1,9 +1,11 @@
-DEFINES=
+DEFINES=#-D__WITH_TASK_POOL
 all: clean
 	nasm -f elf64 -o cond_lock.o asm/cond_lock.asm
 	nasm -f elf64 -o mutex.o asm/mutex.asm
 	nasm -f elf64 -o atomic_op.o asm/atomic_op.asm
 	nasm -f elf64 -o signal.o asm/signal.asm
+	nasm -f elf64 -o sys_nanosleep.o asm/sys_nanosleep.asm
+	gcc -c $(DEFINES) -std=gnu11 time.c
 	gcc -c $(DEFINES) -std=c11 flags.c
 	gcc -c $(DEFINES) -std=c11 arr.c
 	gcc -c $(DEFINES) -std=c11 ../data/mem_set.c
@@ -25,7 +27,7 @@ all: clean
 #	gcc -c $(DEFINES) -std=c11 ../data/mem_ncpy.c
 	gcc -c $(DEFINES) -std=c11 ../data/swp.c
 #	gcc -c -std=c11 $(DEFINES) -o mem_tracker.o mem_tracker.c
-	g++ -std=c++11 $(DEFINES) -o main main.cpp cond_lock.o atomic_op.o mutex.o flags.o mem_set.o swp.o buff.o queue.o vec.o mem_cpy.o mem_allocr.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o arr.o mem_dupe.o thread.o task_pool.o task_worker.o signal.o -lpthread
+	g++ -std=c++11 $(DEFINES) -o main main.cpp time.o sys_nanosleep.o cond_lock.o atomic_op.o mutex.o flags.o mem_set.o swp.o buff.o queue.o vec.o mem_cpy.o mem_allocr.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o arr.o mem_dupe.o thread.o task_pool.o task_worker.o signal.o -lpthread
 clean:
 	rm -f *.o
 #all:

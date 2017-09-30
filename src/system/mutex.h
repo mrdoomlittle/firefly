@@ -1,6 +1,7 @@
 # ifndef __ffly__mutex__h
 # define __ffly__mutex__h
 # include "../types/mutex_t.h"
+# define FFLY_MUTEX_INIT 0
 # ifdef __cplusplus
 extern "C" {
 # endif

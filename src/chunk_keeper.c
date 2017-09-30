@@ -4,7 +4,7 @@
 # include "memory/mem_free.h"
 # include "system/errno.h"
 # include "system/io.h"
-# include "data/mem_ncpy.h"
+# include "data/mem_cpy.h"
 # include "data/find.h"
 # include "memory/alloc_pixmap.h"
 # include "ffly_config.h"
@@ -97,7 +97,7 @@ ffly_err_t ffly_ck_del(struct ffly_ck *__ck, ffly_id_t __id, ffly_bool_t __hard_
 			__ck->cnk = NULL;
 		} else {
 			if (id != __ck->cnk_off-1) {
-				ffly_mem_ncpy((void*)cnk, __ck->cnk+(__ck->cnk_off-1), sizeof(struct ffly_chunk));
+				ffly_mem_cpy((void*)cnk, __ck->cnk+(__ck->cnk_off-1), sizeof(struct ffly_chunk));
 				printf("mov %u to %u\n", *cnk->info.id, id);
 				*cnk->info.id = id;
 			}

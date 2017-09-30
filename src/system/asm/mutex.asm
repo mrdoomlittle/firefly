@@ -20,5 +20,5 @@ ffly_mutex_unlock:
 	cmp al, 1
 	jne _sk_decr
 	lock dec BYTE[rdi]
-	_sk_decr
+	_sk_decr:
 	ret

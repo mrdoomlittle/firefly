@@ -9,6 +9,7 @@
 # include <stdio.h>
 # include "../types/off_t.h"
 # include "../system/flags.h"
+# include "../system/buff.h"
 struct ffly_x11_wd {
 	mdl_uint_t xa_len, ya_len;
 	ffly_off_t mn_xal_off, mn_yal_off;
@@ -17,6 +18,7 @@ struct ffly_x11_wd {
 	Display *d;
 	Window w;
 	ffly_flag_t flags;
+	struct ffly_buff event_buff;
 };
 
 # ifdef __cplusplus

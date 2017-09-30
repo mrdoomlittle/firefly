@@ -3,6 +3,7 @@
 # include "../data/str_len.h"
 # include "../data/mem_dupe.h"
 # include "../system/thread.h"
+# include "../types/event_t.h"
 mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __xa_len, u16_t __ya_len, char const *__title) {
 	ffly_mem_set(&this->handle, 0, sizeof(struct ffly_x11_wd));
 	this->xa_len = __xa_len;
@@ -15,6 +16,23 @@ mdl::firefly::types::err_t mdl::firefly::graphics::window::begin() {
 	system::thread t(ffly_x11_wd_begin, &this->handle, this->xa_len, this->ya_len, this->title);
 }
 
+mdl::firefly::types::err_t mdl::firefly::graphics::window::dump_event_buff() {
+	if (this->event_queue.size() > 200) {
+		system::io::printf(stdout, "window, event queue is full.\n");
+		return FFLY_NOP;
+	}
+
+	ffly_buff_lock(&this->handle.event_buff);
+
+	types::event_t *itr = (types::event_t*)ffly_buff_begin(&this->handle.event_buff);
+	while(itr < (types::event_t*)ffly_buff_end(&this->handle.event_buff))
+		this->event_queue.push(*(itr++));
+
+	ffly_buff_off_reset(&this->handle.event_buff);
+
+	ffly_buff_unlock(&this->handle.event_buff);
+	return FFLY_SUCCESS;
+}
 
 // testing
 /*

@@ -23,7 +23,7 @@ ffly_err_t ffly_ld_aud_file(char *__dir, char *__name, ffly_aud_fformat_t __form
 			return FFLY_FAILURE;
 	}
 
-	char *fpth = mdl_str_cmb(__dir, mdl_str_cmb(__name, ext, 0), MDL_SC_FREE_RIGHT);
+	char *fpth = mdl_strcmb(__dir, mdl_str_cmb(__name, ext, 0), MDL_SC_FREE_RIGHT);
 	int fd;
 	if ((fd = open(fpth, O_RDONLY)) < 0) {
 		ffly_printf(stderr, "ffly_audio: failed to open audio file.\n");
@@ -134,11 +134,11 @@ ffly_err_t ffly_aud_play(ffly_byte_t *__fp, ffly_size_t __fsize, ffly_aud_fforma
 		return FFLY_FAILURE;
 	}
 
-	ffly_aud_raw_play(__fp+off, __fsize-off);
+	ffly_aud_raw_play(__fp+off, __fsize-off, &aud_spec);
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_aud_raw_play(ffly_byte_t *__p, ffly_size_t __size) {
+ffly_err_t ffly_aud_raw_play(ffly_byte_t *__p, ffly_size_t __size, ffly_aud_spec_t *__aud_spec) {
 # ifdef __USING_PULSE_AUDIO
 	if (ffly_pulse_write(&__pulse__, __p, __size) != FFLY_SUCCESS) {
 		ffly_printf(stderr, "ffly_audio: failed to write.\n");
@@ -164,8 +164,9 @@ ffly_err_t ffly_audio_init(ffly_aud_spec_t *__aud_spec) {
 	sample_spec.channels = __aud_spec->chn_c;
 	sample_spec.rate = __aud_spec->rate;
 
-	ffly_pulse_init(&__pulse__);
+	ffly_pulse_init(&__pulse__, "pulse", "ffly-audio", &sample_spec);
 # endif
+	return FFLY_SUCCESS;
 }
 
 ffly_err_t ffly_audio_de_init() {

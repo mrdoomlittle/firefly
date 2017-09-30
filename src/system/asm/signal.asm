@@ -1,7 +1,7 @@
 section .text
 global ffly_sigwait
 global ffly_signal
-extern usleep
+extern ffly_usleep
 ffly_sigwait:
 	push rbp
 	mov rbp, rsp
@@ -9,8 +9,9 @@ ffly_sigwait:
 	mov QWORD[rbp-8], rdi
 	jmp _sk_wait
 	_again:
-	mov rdi, 1000
-	call usleep
+	mov rdi, 1
+	mov rsi, 0
+	call ffly_usleep
 	_sk_wait:
 	mov rdi, [rbp-8]
 	mov ax, WORD[rdi]

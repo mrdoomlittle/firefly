@@ -27,13 +27,13 @@ void* ffly_queue_back(struct ffly_queue*);
 namespace mdl {
 namespace firefly {
 namespace system {
-types::err_t(*queue_init)(struct ffly_queue*, uint_t) = &ffly_queue_init;
-types::err_t(*queue_de_init)(struct ffly_queue*) = &ffly_queue_de_init;
-uint_t(*queue_size)(struct ffly_queue*) = &ffly_queue_size;
-types::err_t(*queue_push)(struct ffly_queue*, void*) = &ffly_queue_push;
-types::err_t(*queue_pop)(struct ffly_queue*, void*) = &ffly_queue_pop;
-void*(*queue_front)(struct ffly_queue*) = &ffly_queue_front;
-void*(*queue_back)(struct ffly_queue*) = &ffly_queue_back;
+static types::err_t(*queue_init)(struct ffly_queue*, uint_t) = &ffly_queue_init;
+static types::err_t(*queue_de_init)(struct ffly_queue*) = &ffly_queue_de_init;
+static uint_t(*queue_size)(struct ffly_queue*) = &ffly_queue_size;
+static types::err_t(*queue_push)(struct ffly_queue*, void*) = &ffly_queue_push;
+static types::err_t(*queue_pop)(struct ffly_queue*, void*) = &ffly_queue_pop;
+static void*(*queue_front)(struct ffly_queue*) = &ffly_queue_front;
+static void*(*queue_back)(struct ffly_queue*) = &ffly_queue_back;
 template<typename _T>
 struct queue {
 	queue() {

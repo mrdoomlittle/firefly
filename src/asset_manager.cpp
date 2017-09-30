@@ -1,4 +1,12 @@
 # include "asset_manager.hpp"
+char const static* asset_kind_to_str(mdl::uint_t __kind) {
+	switch(__kind) {
+		case _ffly_ak_png_file: return "png file";
+		case _ffly_ak_wav_file: return "wav file";
+	}
+	return "unknown";
+}
+
 mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fname, uint_t __kind) {
 	types::id_t asset_id;
 
@@ -25,7 +33,7 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fname,
 			break;
 		}
 
-		if (ffly_ld_aud_file(""/*this will change*/, __fname, fformat, &fp, &fsize) != FFLY_SUCCESS) {
+		if (ffly_ld_aud_file(NULL/*this will change*/, __fname, fformat, &fp, &fsize) != FFLY_SUCCESS) {
 			return nullptr;
 		}
 
@@ -38,6 +46,9 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fname,
 
 		asset_id = this->add_asset(reinterpret_cast<types::byte_t*>(aud_fad), __kind);
 	}
+# ifdef __DEBUG_ENABLED
+	system::io::printf(stdout, "loaded asset{id: %u, file: %s}\n" *asset_id, __fname);
+# endif
 	return asset_id;
 }
 

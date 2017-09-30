@@ -18,8 +18,8 @@ ffly_atomic_get:
 	mov rax, [rdi]
 	ret
 ffly_atomic_incr:
-	lock inc BYTE[rdi]
+	lock inc QWORD[rdi]
 	ret
 ffly_atomic_decr:
-	lock dec BYTE[rdi]
+	lock dec QWORD[rdi]
 	ret

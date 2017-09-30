@@ -11,8 +11,8 @@
 extern "C" {
 # endif
 # ifdef __DEBUG_ENABLED
-mdl_uint_t ffly_mem_free_bc;
-mdl_uint_t ffly_mem_free_c;
+mdl_uint_t extern ffly_mem_free_bc;
+mdl_uint_t extern ffly_mem_free_c;
 # endif /*__DEBUG_ENABLED*/
 
 # ifdef __WITH_MEM_TRACKER

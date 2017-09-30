@@ -8,5 +8,6 @@ struct ffly_pair static __inline__* ffly_mk_pair(void *__p1, void *__p2) {
 	struct ffly_pair *ret = (struct ffly_pair*)__ffly_mem_alloc(sizeof(struct ffly_pair));
 	ret->p1 = __p1;
 	ret->p2 = __p2;
+	return ret;
 }
 # endif /*__ffly__pair__h*/

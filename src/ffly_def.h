@@ -13,4 +13,5 @@
 #	define ffly_false 0
 # endif
 
+# define force_inline __attribute__((always_inline)) inline
 # endif /*__ffly__def__h*/

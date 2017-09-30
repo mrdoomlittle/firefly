@@ -24,8 +24,8 @@ extern "C" {
 # endif
 
 # ifdef __DEBUG_ENABLED
-mdl_uint_t ffly_mem_alloc_bc;
-mdl_uint_t ffly_mem_alloc_c;
+mdl_uint_t extern ffly_mem_alloc_bc;
+mdl_uint_t extern ffly_mem_alloc_c;
 # endif
 
 # ifdef __WITH_MEM_TRACKER

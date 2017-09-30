@@ -2,6 +2,11 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "wd_flags.h"
+# include "../types/event_t.h"
+# include "../system/io.h"
+# include "../system/event_kind.h"
+# define EVENT_BUFF_SIZE 20
+
 int static ffly_x11_err_handle(Display *__d, XErrorEvent *__e) {
 	printf("err code: %u\n", __e->error_code);
 	switch(__e->error_code) {
@@ -36,6 +41,8 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 	XSetErrorHandler(ffly_x11_err_handle);
 	__x11_wd->xa_len = __xa_len;
 	__x11_wd->ya_len = __ya_len;
+
+	if (ffly_buff_init(&__x11_wd->event_buff, EVENT_BUFF_SIZE, sizeof(ffly_event_t)) != FFLY_SUCCESS) return FFLY_FAILURE;
 
 	if (!(__x11_wd->d = XOpenDisplay(NULL))) {
 		return FFLY_FAILURE;
@@ -95,14 +102,30 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 	ffly_add_flag(&__x11_wd->flags, FLG_WD_OPEN, 1);
 
 	XEvent xev;
+	ffly_event_t event;
 	do {
 		while (XPending(__x11_wd->d) > 0) {
 			XNextEvent(__x11_wd->d, &xev);
 			switch(xev.type) {
 				case ClientMessage:
-					goto end;
+					goto _end;
+				case KeyPress:
+					event = (ffly_event_t) {.kind = _ffly_ek_key_press};
+				break;
+				case KeyRelease:
+					event = (ffly_event_t) {.kind = _ffly_ek_key_release};
+				break;
 				default:
-					break;
+					continue;
+			}
+
+			if (ffly_buff_put(&__x11_wd->event_buff, (void*)&event) != FFLY_SUCCESS) {
+				ffly_printf(stderr, "x11_wd, failed to put event into buffer.\n");
+				continue;
+			}
+
+			if (ffly_buff_incr(&__x11_wd->event_buff) != FFLY_SUCCESS) {
+				ffly_printf(stderr, "x11_wd, failed to increment buff to next block.\n");
 			}
 		}
 
@@ -117,7 +140,7 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 
 	} while(!ffly_is_flag(__x11_wd->flags, FLG_WD_TO_CLOSE));
 
-	end:
+	_end:
 	ffly_add_flag(&__x11_wd->flags, FLG_WD_CLOSED, 0);
 	XDestroyWindow(__x11_wd->d, __x11_wd->w);
 	XCloseDisplay(__x11_wd->d);
