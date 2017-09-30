@@ -7,9 +7,6 @@
 [submodule "to_string"]
 	path = to_string
 	url = git@github.com:mrdoomlittle/to_string.git
-[submodule "strcmb"]
-	path = strcmb
-	url = git@github.com:mrdoomlittle/strcmb.git
 [submodule "serializer"]
 	path = serializer
 	url = git@github.com:mrdoomlittle/serializer.git
