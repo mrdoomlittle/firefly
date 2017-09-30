@@ -8,8 +8,8 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_id_t ffly_load_asset(void*, char*, mdl_uint_t);
-ffly_id_t ffly_add_asset(void*, ffly_byte_t*, mdl_uint_t, mdl_uint_t);
+ffly_id_t ffly_load_asset(void*, char*, char*, mdl_uint_t);
+ffly_id_t ffly_add_asset(void*, ffly_byte_t*, mdl_uint_t);
 ffly_asset_t* ffly_asset(void*, ffly_id_t);
 # ifdef __cplusplus
 }
@@ -17,6 +17,7 @@ ffly_asset_t* ffly_asset(void*, ffly_id_t);
 # include "graphics/skelmap_loader.hpp"
 # include "types/skelmap_info_t.hpp"
 # include <set>
+# include "types/size_t.h"
 # include "types/err_t.h"
 # include "graphics/png_loader.hpp"
 # include "types/dsize_t.hpp"
@@ -44,7 +45,7 @@ class asset_manager
 
 	types::bool_t valid_asset_id(types::id_t __asset_id);
 	types::id_t add_asset(types::byte_t *__data, uint_t __kind);
-	types::id_t load_asset(char *__fname, uint_t __kind);
+	types::id_t load_asset(char *__fdir, char *__fname, uint_t __kind);
 	void del_asset(types::id_t __asset_id);
 	u8_t* get_asset_data(types::id_t __asset_id);
 	types::asset_t get_asset(types::id_t __asset_id) noexcept;
@@ -56,8 +57,7 @@ class asset_manager
 	private:
 	uint_t amount_of_assets = 0;
 	std::set<types::id_t> asset_ids;
-	system::vec<types::asset_t> asset_indx;
-
+	system::vec<types::asset_t> asset_d;
 };
 }
 }

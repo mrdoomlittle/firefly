@@ -64,10 +64,10 @@ endif
 # maths
 FFLY_OBJS+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o src/maths/is_inside.o
 # data
-FFLY_OBJS+= src/data/swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o
+FFLY_OBJS+= src/data/swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o src/data/str_dupe.o src/data/mem_cmp.o src/data/str_cmp.o
 # system
 FFLY_OBJS+= src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
-src/system/mutex.o src/system/atomic_op.o src/system/queue.o
+src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o
 # graphics
 #FFLY_OBJS+= src/ffly_graphics.o
 # memory
@@ -100,6 +100,21 @@ all: ffly_test
 endif
 
 FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES) -D__USING_PULSE_AUDIO
+src/data/str_cmp.o: src/data/str_cmp.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/str_cmp.o src/data/str_cmp.c
+
+src/data/mem_cmp.o: src/data/mem_cmp.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/mem_cmp.o src/data/mem_cmp.c
+
+src/data/str_dupe.o: src/data/str_dupe.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/str_dupe.o src/data/str_dupe.c
+
+src/system/util/hash.o: src/system/util/hash.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/util/hash.o src/system/util/hash.c
+
+src/system/map.o: src/system/map.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/map.o src/system/map.c
+
 src/audio/alsa.o: src/audio/alsa.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/audio/alsa.o src/audio/alsa.c
 
@@ -185,7 +200,7 @@ src/system/mem_tracker.o: src/system/mem_tracker.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/mem_tracker.o src/system/mem_tracker.c
 
 src/ffly_audio.o: src/ffly_audio.c
-	gcc -c -Wall -std=$(C_VERSION) -Istrcmb/inc -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_audio.o src/ffly_audio.c
+	gcc -c -Wall -std=$(C_VERSION) -Istr_cmb/inc -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ffly_audio.o src/ffly_audio.c
 
 src/alsa_audio.o: src/alsa_audio.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/alsa_audio.o src/alsa_audio.cpp
@@ -441,7 +456,7 @@ relocate_headers:
 	cp $(CURR_DIR)/getdigit/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
 	cp $(CURR_DIR)/intlen/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
 	cp $(CURR_DIR)/to_string/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
-	cp $(CURR_DIR)/strcmb/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
+	cp -r $(CURR_DIR)/str_cmb/inc/* $(CURR_DIR)/inc 2>/dev/null
 	cp $(CURR_DIR)/serializer/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
 
 # core libraries that are needed by design
@@ -451,7 +466,7 @@ libraries:
 	cd nibbles; make MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
 	cd getdigit; make ARC64 MDLINT_INC=$(CURR_DIR)/mdlint/inc INTLEN_INC=$(CURR_DIR)/intlen/inc INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
 	cd to_string; make ECHAR_T_INC=$(CURR_DIR)/echar_t/inc MDLINT_INC=$(CURR_DIR)/mdlint/inc GETDIGIT_INC=$(CURR_DIR)/getdigit/inc INTLEN_INC=$(CURR_DIR)/intlen/inc GETDIGIT_LIB=$(CURR_DIR)/getdigit/lib INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
-	cd strcmb; make MDLINT_INC=$(CURR_DIR)/echar_t/inc MDLINT_INC=$(CURR_DIR)/mdlint/inc ARC=$(ARC); cd ../;
+	cd str_cmb; make MDLINT_INC=$(CURR_DIR)/mdlint/inc ARC=$(ARC); cd ../;
 	cd tagged_memory; make LIB_PATH=$(CURR_DIR)/; cd ../;
 	cd emu2d; make ARC=$(ARC) MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
 	cd emu3d; make ARC=$(ARC) MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;

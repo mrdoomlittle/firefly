@@ -1,7 +1,7 @@
 # include "ffly_audio.h"
 # include "system/io.h"
 # include "system/errno.h"
-# include <str_cmb.h>
+# include <mdl/str_cmb.h>
 # include <sys/types.h>
 # include <fcntl.h>
 # include <sys/stat.h>
@@ -23,16 +23,16 @@ ffly_err_t ffly_ld_aud_file(char *__dir, char *__name, ffly_aud_fformat_t __form
 			return FFLY_FAILURE;
 	}
 
-	char *fpth = mdl_strcmb(__dir, mdl_str_cmb(__name, ext, 0), MDL_SC_FREE_RIGHT);
+	char *fpth = mdl_str_cmb(__dir, mdl_str_cmb(__name, ext, 0), MDL_SC_FREE_RIGHT);
 	int fd;
 	if ((fd = open(fpth, O_RDONLY)) < 0) {
-		ffly_printf(stderr, "ffly_audio: failed to open audio file.\n");
+		ffly_printf(stderr, "ffly_audio: failed to open audio file at '%s'.\n", fpth);
 		return FFLY_FAILURE;
 	}
 
 	struct stat st;
 	if (stat(fpth, &st) < 0) {
-		ffly_printf(stderr, "ffly_audio: failed to stat audio file.\n");
+		ffly_printf(stderr, "ffly_audio: failed to stat audio file at '%s'.\n", fpth);
 		close(fd);
 		return FFLY_FAILURE;
 	}

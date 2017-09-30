@@ -6,7 +6,7 @@
 # include <boost/cstdint.hpp>
 # include <mdlint.h>
 # include "../system/errno.h"
-# include <mdl/strcmb.h>
+# include <mdl/str_cmb.h>
 # include "../types/pixmap_t.h"
 # include "../types/dsize_t.hpp"
 # include "../memory/mem_alloc.h"

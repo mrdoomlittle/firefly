@@ -1,5 +1,5 @@
 # include "mem_cmp.h"
-ffly_bool_t ffly_mem_cmp(void *__p1, void *__p2, mdl_uint_t __bc) {
+ffly_byte_t ffly_mem_cmp(void const *__p1, void const *__p2, mdl_uint_t __bc) {
 	mdl_u8_t *itr = (mdl_u8_t*)__p1;
 	while(itr != (mdl_u8_t*)__p1+__bc) {
 		mdl_uint_t off = itr-(mdl_u8_t*)__p1;

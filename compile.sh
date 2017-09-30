@@ -49,8 +49,8 @@ if [ $(bash find.bash "$FFLY_ARGS" "--with-uni-manager") -eq 0 ]; then
 fi
 
 if [ $(bash find.bash "$FFLY_ARGS" "--debug-enabled") -eq 0 ]; then
-	echo "--debug-enabled is not surported."
-	return
+#	echo "--debug-enabled is not surported."
+#	return
 	extra_defines="$extra_defines -D__DEBUG_ENABLED"
 fi
 

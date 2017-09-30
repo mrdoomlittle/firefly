@@ -34,3 +34,6 @@
 [submodule "emu3d"]
 	path = emu3d
 	url = git@github.com:mrdoomlittle/emu3d.git
+[submodule "str_cmb"]
+	path = str_cmb
+	url = git@github.com:mrdoomlittle/str_cmb.git

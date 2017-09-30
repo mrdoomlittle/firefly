@@ -1,6 +1,6 @@
 # include "png_loader.hpp"
 mdl::firefly::types::err_t mdl::firefly::graphics::load_png_file(char const *__dir, char const *__name, types::pixmap_t&__pixmap, uint_t *__pm_size) {
-	char *pth = strcmb(const_cast<char*>(__dir), str_cmb(const_cast<char*>(__name), ".png", 0), MDL_SC_FREE_RIGHT);
+	char *pth = str_cmb(const_cast<char*>(__dir), str_cmb(const_cast<char*>(__name), ".png", 0), MDL_SC_FREE_RIGHT);
 	FILE *file = fopen(pth, "rb");
 
 	if (file == NULL) {

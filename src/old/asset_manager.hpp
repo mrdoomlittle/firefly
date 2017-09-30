@@ -34,7 +34,7 @@ class asset_manager
 
 	types::bool_t valid_asset_id(types::id_t __asset_id);
 	types::id_t add_asset(types::byte_t *__data, uint_t __kind);
-	types::id_t load_asset(char *__fname, uint_t __kind);
+	types::id_t load_asset(char *__fdir, char *__fname, uint_t __kind);
 	void del_asset(types::id_t __asset_id);
 	u8_t* get_asset_data(types::id_t __asset_id);
 	types::asset_t get_asset(types::id_t __asset_id) noexcept;
