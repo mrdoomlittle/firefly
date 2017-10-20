@@ -28,7 +28,7 @@ struct ffly_thread {
 	void *arg_p;
 };
 
-static struct ffly_thread *threads = NULL;
+static struct ffly_thread **threads = NULL;
 mdl_uint_t static page_c = 0;
 ffly_off_t static off = 0;
 ffly_atomic_uint_t active_threads = 0;
@@ -38,9 +38,9 @@ struct {
 	mdl_uint_t page_c;
 	ffly_off_t off;
 } uu_ids = {.p = NULL, .page_c = 0, .off = 0};
-ffly_mutex_t static mutex = 0;
+ffly_mutex_t static mutex = FFLY_MUTEX_INIT;
 
-static struct ffly_thread *get_thr(ffly_tid_t __tid) {return threads+__tid;}
+static struct ffly_thread *get_thr(ffly_tid_t __tid) {return *(threads+__tid);}
 
 mdl_uint_t no_threads() {return off-uu_ids.off;}
 
@@ -77,7 +77,7 @@ int static ffly_thr_proxy(void *__arg_p) {
 	ffly_thread_del(thr->tid);
 
 	ffly_atomic_decr(&active_threads);
-	if (kill(thr->pid, SIGKILL) == -1) {
+	if (kill(thr->pid, SIGKILL) < 0) {
 		ffly_printf(stderr, "thread: failed to kill, errno{%d}\n", errno);
 	}
 
@@ -143,16 +143,20 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	_alloc:
 	if (off > page_c*PAGE_SIZE) {
 		if (!threads) {
-			if ((threads = (struct ffly_thread*)__ffly_mem_alloc(((++page_c)*PAGE_SIZE)*sizeof(struct ffly_thread))) == NULL) {
+			if ((threads = (struct ffly_thread**)__ffly_mem_alloc(((++page_c)*PAGE_SIZE)*sizeof(struct ffly_thread*))) == NULL) {
 				ffly_printf(stderr, "thread: failed to alloc memory, errno{%d}, ffly_errno{%u}\n", errno, ffly_errno);
 				goto _err;
 			}
 		} else {
-			if ((threads = (struct ffly_thread*)__ffly_mem_realloc(threads, ((++page_c)*PAGE_SIZE)*sizeof(struct ffly_thread))) == NULL) {
+			if ((threads = (struct ffly_thread**)__ffly_mem_realloc(threads, ((++page_c)*PAGE_SIZE)*sizeof(struct ffly_thread*))) == NULL) {
 				ffly_printf(stderr, "thread: failed to realloc memory, errno{%d}, ffly_errno{%u}\n", errno, ffly_errno);
 				goto _err;
 			}
 		}
+
+		struct ffly_thread **itr = threads+((page_c-1)*PAGE_SIZE);
+		while(itr != threads+(page_c*PAGE_SIZE))
+			*(itr++) = (struct ffly_thread*)__ffly_mem_alloc(sizeof(struct ffly_thread));
 	}
 
 	goto _exec;
@@ -162,17 +166,20 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 
 ffly_err_t ffly_thread_cleanup() {
 	while(no_threads() != 0 || active_threads != 0);
-	struct ffly_thread *itr = threads;
+	struct ffly_thread **itr = threads;
+	printf("--- stage 1.\n");
 	while(itr != threads+off) {
-		__ffly_mem_free(itr->sp);
-		itr++;
+		__ffly_mem_free((*(itr++))->sp);
+		__ffly_mem_free(*itr);
 	}
 
+	printf("--- stage 2.\n");
 	if (threads != NULL) {
 		__ffly_mem_free(threads);
 		threads = NULL;
 	}
 
+	printf("--- stage 3.\n");
 	if (uu_ids.p != NULL) {
 		__ffly_mem_free(uu_ids.p);
 		uu_ids.p = NULL;
