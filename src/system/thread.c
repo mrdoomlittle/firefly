@@ -80,7 +80,6 @@ int static ffly_thr_proxy(void *__arg_p) {
 	if (kill(thr->pid, SIGKILL) < 0) {
 		ffly_printf(stderr, "thread: failed to kill, errno{%d}\n", errno);
 	}
-
 	return 0;
 }
 
@@ -154,8 +153,9 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 			}
 		}
 
-		struct ffly_thread **itr = threads+((page_c-1)*PAGE_SIZE);
-		while(itr != threads+(page_c*PAGE_SIZE))
+		struct ffly_thread **begin = threads+((page_c-1)*PAGE_SIZE);
+		struct ffly_thread **itr = begin;
+		while(itr != begin+PAGE_SIZE)
 			*(itr++) = (struct ffly_thread*)__ffly_mem_alloc(sizeof(struct ffly_thread));
 	}
 
@@ -169,7 +169,8 @@ ffly_err_t ffly_thread_cleanup() {
 	struct ffly_thread **itr = threads;
 	printf("--- stage 1.\n");
 	while(itr != threads+off) {
-		__ffly_mem_free((*(itr++))->sp);
+		if ((*(itr++))->sp != NULL)
+			__ffly_mem_free((*(itr++))->sp);
 		__ffly_mem_free(*itr);
 	}
 
