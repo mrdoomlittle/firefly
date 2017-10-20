@@ -58,9 +58,12 @@
 # ifndef FF_ERR_WDEQE
 #	define FF_ERR_WDEQE 9 /* window event queue empty*/
 # endif
+
 # ifdef __cplusplus
-extern "C" {mdl::u8_t extern ffly_errno;}
-# else
+extern "C" {
+# endif
 mdl_u8_t extern ffly_errno;
+# ifdef __cplusplus
+}
 # endif
 # endif /*__ffly__errno__h*/

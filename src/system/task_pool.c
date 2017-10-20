@@ -23,6 +23,7 @@ ffly_err_t ffly_task_pool_init(struct ffly_task_pool *__task_pool, mdl_uint_t __
 		itr->tasks.flags = VEC_AUTO_RESIZE;
 		ffly_vec_init(&itr->tasks, sizeof(ffly_task_t));
 		itr->flags = TW_FLG_ACTIVE;
+		itr->mutex = FFLY_MUTEX_INIT;
 		ffly_thread_create(&itr->t, &ffly_task_worker, (void*)ffly_mk_pair((void*)itr, (void*)__task_pool));
 	}
 
@@ -65,6 +66,7 @@ ffly_err_t ffly_task_pool_add(struct ffly_task_pool *__task_pool, void*(*__call)
 	}
 
 	ffly_mutex_unlock(&worker->mutex);
+	__asm__("nop");
 }
 
 # ifdef __WITH_TASK_POOL

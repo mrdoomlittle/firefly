@@ -35,6 +35,7 @@ void* ffly_task_worker(void *__argp) {
 		}
 
 		ffly_mutex_unlock(&c->mutex);
+		__asm__("nop");
 
 		if (!ffly_queue_size(&c->s_call) && !ffly_vec_size(&c->tasks)) usleep(10000);
 		if (ffly_queue_size(&c->s_call) > 0) goto _sk_cstmt;
@@ -53,9 +54,11 @@ void* ffly_task_worker(void *__argp) {
 
 		_sk_to_end:
 		ffly_mutex_unlock(&c->mutex);
+		__asm__("nop");
 	}
 
 	ffly_printf(stdout, "worker with id{%u} has been killed.\n", c->id);
-	__ffly_mem_free(__argp);
+	if (__argp != NULL)
+		__ffly_mem_free(__argp);
 	ffly_atomic_decr(&task_pool->active_workers);
 }

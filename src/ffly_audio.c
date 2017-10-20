@@ -6,6 +6,7 @@
 # include <fcntl.h>
 # include <sys/stat.h>
 # include "memory/mem_alloc.h"
+# include "memory/mem_free.h"
 # include "types/off_t.h"
 # ifdef __USING_PULSE_AUDIO
 struct ffly_pulse __pulse__;
@@ -37,9 +38,11 @@ ffly_err_t ffly_ld_aud_file(char *__dir, char *__name, ffly_aud_fformat_t __form
 		return FFLY_FAILURE;
 	}
 
+	__ffly_mem_free(fpth);
+
 	*__size = st.st_size;
-	*__p = (ffly_byte_t*)__ffly_mem_alloc(*__size);
-	read(fd, *__p, *__size);
+	*__p = (ffly_byte_t*)__ffly_mem_alloc(st.st_size);
+	read(fd, *__p, st.st_size);
 	close(fd);
 	return FFLY_SUCCESS;
 }
@@ -148,7 +151,15 @@ ffly_err_t ffly_aud_raw_play(ffly_byte_t *__p, ffly_size_t __size, ffly_aud_spec
 	return FFLY_SUCCESS;
 }
 
+ffly_byte_t static *w_buff = NULL, *r_buff = NULL;
+ffly_byte_t static *wbuf_itr, *rbuf_itr;
+ffly_size_t static wbuf_size, rbuf_size;
 ffly_err_t ffly_audio_init(ffly_aud_spec_t *__aud_spec) {
+	w_buff = (ffly_byte_t*)__ffly_mem_alloc((wbuf_size = (1<<20)));
+	wbuf_itr = w_buff;
+
+	r_buff = (ffly_byte_t*)__ffly_mem_alloc((rbuf_size = (1<<20)));
+	rbuf_itr = r_buff;
 # ifdef __USING_PULSE_AUDIO
 	struct pa_sample_spec sample_spec;
 	switch(__aud_spec->format) {
@@ -170,6 +181,10 @@ ffly_err_t ffly_audio_init(ffly_aud_spec_t *__aud_spec) {
 }
 
 ffly_err_t ffly_audio_de_init() {
+	__ffly_mem_free(w_buff);
+	__ffly_mem_free(r_buff);
+	w_buff = NULL;
+	r_buff = NULL;
 # ifdef __USING_PULSE_AUDIO
 	ffly_pulse_free(&__pulse__);
 # endif
@@ -229,3 +244,30 @@ ffly_err_t ffly_aud_raw_play(char *__fdir, char*__fname, ffly_aud_fformat_t __ff
 # endif
 # endif
 }*/
+# include "data/mem_cpy.h"
+ffly_err_t ffly_aud_drain() {
+	ffly_pulse_write(&__pulse__, w_buff, wbuf_itr-w_buff);
+	ffly_pulse_drain(&__pulse__);
+	wbuf_itr = w_buff;
+}
+
+ffly_err_t ffly_aud_write(ffly_byte_t *__buff, ffly_size_t __size) {
+	if ((wbuf_itr-w_buff)+__size >= wbuf_size) return FFLY_FAILURE;
+
+	ffly_err_t any_err = FFLY_SUCCESS;
+	if ((any_err = ffly_mem_cpy(wbuf_itr, __buff, __size)) == FFLY_SUCCESS)
+		wbuf_itr+=__size;
+	return any_err;
+}
+
+ffly_err_t ffly_aud_read(ffly_byte_t *__buff, ffly_size_t __size) {
+	ffly_byte_t static *itr = NULL;
+	if (!itr) itr = r_buff;
+
+	if ((rbuf_itr-itr)<__size) return FFLY_FAILURE;
+
+	ffly_err_t any_err = FFLY_SUCCESS;
+	if ((any_err = ffly_mem_cpy(__buff, itr, __size)) == FFLY_SUCCESS)
+		itr+=__size;
+	return any_err;
+}

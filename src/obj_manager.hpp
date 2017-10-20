@@ -13,7 +13,7 @@
 # include "graphics/draw_pixmap.hpp"
 # include "graphics/fill_pixmap.hpp"
 # include "types/atom_t.hpp"
-# include "types/coords_t.hpp"
+# include "types/coords_t.h"
 # include <initializer_list>
 # include "gravy_manager.hpp"
 # include "types/coords_t.hpp"

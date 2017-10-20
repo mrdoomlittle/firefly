@@ -1,72 +1,67 @@
 #!/bin/bash
 lookup_str=$1
-to_find=$2
+to_find_str=$2
 
 lu_str_len=
 tf_str_len=
-
 if [ "$(command -v expr)" = "" ]; then
 	if ! [ -f bin/len ]; then
-		gcc -std=c11 -o bin/len len.c
+		gcc -o bin/len len.c
 	fi
 
 	lu_str_len=$(bin/len "$lookup_str")
-	tf_str_len=$(bin/len "$to_find")
+	tf_str_len=$(bin/len "$to_find_str")
 else
 	lu_str_len=$(expr length "$lookup_str")
-	tf_str_len=$(expr length "$to_find")
+	tf_str_len=$(expr length "$to_find_str")
 fi
 
-tf_point=0
-match_c=0
-lu_chr=' '
-tf_chr=' '
-nxt_chr=' '
-for ((o = 0; o != $lu_str_len; o++))
-do
-	if [ $tf_point -eq $tf_str_len ] && [ $match_c -ne $tf_str_len ]; then
-		tf_point=0
-		match_c=0
-		for ((i = $o; i != $lu_str_len; i++))
-		do
-			lu_chr=${lookup_str:$i:1}
-			if [ "$lu_chr" == ' ' ]; then
-				o=$((i + 1))
+for ((i = 0; i != $lu_str_len; i++)); do
+	lu_chr=${lookup_str:$i:1}
+	plen=0
+	part=""
+	while true; do
+		if [ "$lu_chr" = ' ' ] || [ $i -ge $lu_str_len ]; then
+			if [ $i -gt $lu_str_len ]; then
+				echo -ne "1"
+				exit
+			fi
+			break
+		fi
+		part=$part$lu_chr
+		plen=$(($plen+1))
+		i=$(($i+1))
+		lu_chr=${lookup_str:$i:1}
+	done
+
+#	echo "$part"
+#	echo "$plen"
+	loc=0
+	while [[ $loc -lt $plen ]]; do
+		a_chr=${part:$loc:1}
+		b_chr=${to_find_str:$loc:1}
+
+		if [ "$b_chr" == '*' ]; then
+			if [[ "$a_chr" = [a-zA-Z] ]]; then
 				break
 			fi
-		done
-	fi
 
-	lu_chr=${lookup_str:$o:1}
-	if [ "$lu_chr" = ' ' ]; then
-		tf_point=0
-		match_c=0
-		continue
-	fi
+			dif=$(($plen-$loc))
 
-	tf_chr=${to_find:$tf_point:1}
+			echo "${part:((loc+1)):dif}"
+			exit
+		fi
 
-	if [ "$lu_chr" = "$tf_chr" ]; then
-		match_c=$(($match_c + 1))
-	fi
+		if ! [ "$a_chr" = "$b_chr" ]; then
+			break
+		fi
 
-	if [ $o -ne $(($lu_str_len - 1)) ]; then
-		nxt_chr=${lookup_str:$(($o + 1)):1}
-	fi
+		loc=$(($loc+1))
+	done
 
-	#echo "$match_c = $tf_str_len | $nxt_chr "
-	if [ $match_c = $tf_str_len ] && ([ "$nxt_chr" = ' ' ] || [ $o -eq $(($lu_str_len - 1)) ]); then
-		echo 0
+	if [ $loc -eq $tf_str_len ]; then
+		echo -ne "0"
 		exit
 	fi
-
-	if [ $match_c = $tf_str_len ]; then
-		tf_point=0
-		match_c=0
-		continue
-	fi
-
-	tf_point=$(($tf_point + 1))
 done
-echo 1
-
+echo -ne "1"

@@ -169,9 +169,9 @@ ffly_err_t ffly_thread_cleanup() {
 	struct ffly_thread **itr = threads;
 	printf("--- stage 1.\n");
 	while(itr != threads+off) {
-		if ((*(itr++))->sp != NULL)
-			__ffly_mem_free((*(itr++))->sp);
-		__ffly_mem_free(*itr);
+		if ((*itr)->sp != NULL)
+			__ffly_mem_free((*itr)->sp);
+		__ffly_mem_free(*(itr++));
 	}
 
 	printf("--- stage 2.\n");

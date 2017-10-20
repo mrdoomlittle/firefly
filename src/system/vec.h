@@ -73,13 +73,13 @@ template<typename _T>
 struct vec {
 	vec() {
 		if (this->init(0) != FFLY_SUCCESS)
-			io::printf(stderr, "queue: failed to init.\n");}
+			io::printf(stderr, "vec: failed to init.\n");}
 	vec(mdl_u8_t __flags) {
 		if (this->init(__flags) != FFLY_SUCCESS)
-			io::printf(stderr, "queue: failed to init.\n");}
+			io::printf(stderr, "vec: failed to init.\n");}
 	~vec() {
 		if (this->de_init() != FFLY_SUCCESS)
-			io::printf(stderr, "queue: failed to de_init.\n");}
+			io::printf(stderr, "vec: failed to de_init.\n");}
 
 	types::err_t init(u8_t __flags) {
 		types::err_t any_err;
@@ -87,6 +87,7 @@ struct vec {
 		any_err = vec_init(&this->raw_vec, sizeof(_T));
 		return any_err;
 	}
+
 	types::err_t de_init() {return vec_de_init(&this->raw_vec);}
 	uint_t size() {return vec_size(&this->raw_vec);}
 	_T* begin() {return static_cast<_T*>(vec_begin(&this->raw_vec));}

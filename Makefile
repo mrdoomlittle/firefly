@@ -1,5 +1,4 @@
 SHELL := /bin/bash
-CURR_DIR=${CURDIR}
 #CXXFLAGS=@echo ${CXXFLAGS}#-DDEBUG_ENABLED -Imdlint/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istrcmb/inc -Iserializer/inc -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstrcmb/lib
 #LDFLAGS=
 #ARC=-DARC64
@@ -67,13 +66,13 @@ FFLY_OBJS+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o 
 FFLY_OBJS+= src/data/swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o src/data/str_dupe.o src/data/mem_cmp.o src/data/str_cmp.o
 # system
 FFLY_OBJS+= src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
-src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o
+src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o src/system/task_worker.o
 # graphics
 #FFLY_OBJS+= src/ffly_graphics.o
 # memory
 FFLY_OBJS+= src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_alloc.co src/memory/mem_free.co src/memory/mem_realloc.co #src/memory/alloc_pixmap.o
 
-CXXFLAGS += $(FFLY_TARGET)
+CXXFLAGS+= $(FFLY_TARGET)
 
 ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-mem-tracker"), 0)
 	FFLY_OBJS += src/system/mem_tracker.o
@@ -99,7 +98,22 @@ else ifeq ($(FFLY_TARGET), FFLY_TEST)
 all: ffly_test
 endif
 
-FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) $(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES) -D__USING_PULSE_AUDIO
+FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) -D__$(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES) -D__USING_PULSE_AUDIO -D__WITH_TASK_POOL
+src/system/task_pool.o: src/system/task_pool.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/task_pool.o src/system/task_pool.c
+
+src/system/task_worker.o: src/system/task_worker.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/task_worker.o src/system/task_worker.c
+
+src/system/file.o: src/system/file.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/file.o src/system/file.c
+
+src/system/dir.o: src/system/dir.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/dir.o src/system/dir.c
+
+src/chunk_keeper.o:src/chunk_keeper.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/chunk_keeper.o src/chunk_keeper.c
+
 src/data/str_cmp.o: src/data/str_cmp.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/data/str_cmp.o src/data/str_cmp.c
 
@@ -125,7 +139,7 @@ src/system/flags.o: src/system/flags.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/flags.o src/system/flags.c
 
 src/system/thread.o: src/system/thread.c
-	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/thread.o src/system/thread.c
+	gcc -c -Wall -std=gnu11 -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/thread.o src/system/thread.c
 
 src/maths/is_inside.o: src/maths/is_inside.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/is_inside.o src/maths/is_inside.c
@@ -223,14 +237,11 @@ src/uni_manager.o: src/uni_manager.cpp
 src/chunk_manager.o: src/chunk_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/chunk_manager.o src/chunk_manager.cpp
 
-src/chunk_keeper.o: src/chunk_keeper.cpp
-	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/chunk_keeper.o src/chunk_keeper.cpp
+#src/system/task_handle.o: src/system/task_handle.cpp
+#	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/task_handle.o src/system/task_handle.cpp
 
-src/system/task_handle.o: src/system/task_handle.cpp
-	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/task_handle.o src/system/task_handle.cpp
-
-src/system/task_worker.o: src/system/task_worker.cpp
-	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/task_worker.o src/system/task_worker.cpp
+#src/system/task_worker.o: src/system/task_worker.cpp
+#	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/task_worker.o src/system/task_worker.cpp
 
 src/graphics/x11_wd.o: src/graphics/x11_wd.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/x11_wd.o src/graphics/x11_wd.c
@@ -382,95 +393,6 @@ src/worker_handler.o: src/worker_handler.cpp
 src/uni_worker.o: src/uni_worker.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/uni_worker.o src/uni_worker.cpp
 
-relocate_headers:
-	if ! [ -d $(CURR_DIR)/inc/firefly ]; then \
-		mkdir $(CURR_DIR)/inc/firefly; \
-	fi
-
-	if ! [ -d $(CURR_DIR)/inc/firefly/graphics ]; then \
-		mkdir $(CURR_DIR)/inc/firefly/graphics; \
-	fi
-
-	cp $(CURR_DIR)/src/graphics/*.h* $(CURR_DIR)/inc/firefly/graphics 2>/dev/null
-
-	if ! [ -d $(CURR_DIR)/inc/firefly/networking ]; then \
-		mkdir $(CURR_DIR)/inc/firefly/networking; \
-	fi
-	cp $(CURR_DIR)/src/networking/*.h* $(CURR_DIR)/inc/firefly/networking 2>/dev/null
-
-	if ! [ -d $(CURR_DIR)/inc/firefly/types ]; then \
-		mkdir $(CURR_DIR)/inc/firefly/types; \
-	fi
-
-	if ! [ -d $(CURR_DIR)/inc/firefly/tests ]; then \
-		mkdir $(CURR_DIR)/inc/firefly/tests; \
-	fi
-
-	if ! [ -d $(CURR_DIR)/inc/firefly/maths ]; then \
-		mkdir $(CURR_DIR)/inc/firefly/maths; \
-	fi
-
-	if ! [ -d $(CURR_DIR)/inc/firefly/system ]; then \
-		mkdir $(CURR_DIR)/inc/firefly/system; \
-	fi
-
-	if ! [ -d $(CURR_DIR)/inc/firefly/memory ]; then \
-		mkdir $(CURR_DIR)/inc/firefly/memory; \
-	fi
-
-	if ! [ -d $(CURR_DIR)/inc/firefly/system ]; then \
-		mkdir $(CURR_DIR)/inc/firefly/system; \
-	fi
-
-	if ! [ -d $(CURR_DIR)/inc/firefly/gui ]; then \
-		mkdir $(CURR_DIR)/inc/firefly/gui; \
-	fi
-
-	if ! [ -d $(CURR_DIR)/inc/firefly/ui ]; then \
-		mkdir $(CURR_DIR)/inc/firefly/ui; \
-	fi
-
-	if ! [ -d $(CURR_DIR)/inc/firefly/data ]; then \
-		mkdir $(CURR_DIR)/inc/firefly/data; \
-	fi
-
-	cp $(CURR_DIR)/src/data/*.h* $(CURR_DIR)/inc/firefly/data 2>/dev/null
-
-	cp $(CURR_DIR)/src/ui/*.h* $(CURR_DIR)/inc/firefly/ui 2>/dev/null
-
-	cp $(CURR_DIR)/src/gui/*.h* $(CURR_DIR)/inc/firefly/gui 2>/dev/null
-
-	cp $(CURR_DIR)/src/system/*.h* $(CURR_DIR)/inc/firefly/system 2>/dev/null
-
-	cp $(CURR_DIR)/src/memory/*.h* $(CURR_DIR)/inc/firefly/memory 2>/dev/null
-
-	cp $(CURR_DIR)/src/maths/*.h* $(CURR_DIR)/inc/firefly/maths 2>/dev/null
-
-	cp $(CURR_DIR)/src/tests/*.h* $(CURR_DIR)/inc/firefly/tests 2>/dev/null
-
-	cp $(CURR_DIR)/src/types/*.h* $(CURR_DIR)/inc/firefly/types 2>/dev/null
-
-	cp $(CURR_DIR)/src/*.h* $(CURR_DIR)/inc/firefly 2>/dev/null
-
-	cp $(CURR_DIR)/mdlint/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
-	cp $(CURR_DIR)/getdigit/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
-	cp $(CURR_DIR)/intlen/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
-	cp $(CURR_DIR)/to_string/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
-	cp -r $(CURR_DIR)/str_cmb/inc/* $(CURR_DIR)/inc 2>/dev/null
-	cp $(CURR_DIR)/serializer/inc/*.h* $(CURR_DIR)/inc 2>/dev/null
-
-# core libraries that are needed by design
-libraries:
-	cd termio; make; cd ../;
-	cd intlen; make ARC64 MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
-	cd nibbles; make MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
-	cd getdigit; make ARC64 MDLINT_INC=$(CURR_DIR)/mdlint/inc INTLEN_INC=$(CURR_DIR)/intlen/inc INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
-	cd to_string; make ECHAR_T_INC=$(CURR_DIR)/echar_t/inc MDLINT_INC=$(CURR_DIR)/mdlint/inc GETDIGIT_INC=$(CURR_DIR)/getdigit/inc INTLEN_INC=$(CURR_DIR)/intlen/inc GETDIGIT_LIB=$(CURR_DIR)/getdigit/lib INTLEN_LIB=$(CURR_DIR)/intlen/lib; cd ../;
-	cd str_cmb; make MDLINT_INC=$(CURR_DIR)/mdlint/inc ARC=$(ARC); cd ../;
-	cd tagged_memory; make LIB_PATH=$(CURR_DIR)/; cd ../;
-	cd emu2d; make ARC=$(ARC) MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
-	cd emu3d; make ARC=$(ARC) MDLINT_INC=$(CURR_DIR)/mdlint/inc; cd ../;
-
 ffly_worker: $(FFLY_OBJS)
 	ld -r -o lib/ffly_worker.o $(FFLY_OBJS) #$(LIBRARY_OBJS)
 	ar rcs lib/libffly_worker.a lib/ffly_worker.o
@@ -519,10 +441,10 @@ ffly_test: $(FFLY_OBJS) src/ffly_test.o
 #	make move_libs;
 
 #move_libs:#
-#	cp $(CURR_DIR)/getdigit/lib/*.a $(CURR_DIR)/lib
-#	cp $(CURR_DIR)/intlen/lib/*.a $(CURR_DIR)/lib
-#	cp $(CURR_DIR)/to_string/lib/*.a $(CURR_DIR)/lib
-#	cp $(CURR_DIR)/strcmb/lib/*.a $(CURR_DIR)/lib
+#	cp $(ROOT_DIR)/getdigit/lib/*.a $(ROOT_DIR)/lib
+#	cp $(ROOT_DIR)/intlen/lib/*.a $(ROOT_DIR)/lib
+#	cp $(ROOT_DIR)/to_string/lib/*.a $(ROOT_DIR)/lib
+#	cp $(ROOT_DIR)/strcmb/lib/*.a $(ROOT_DIR)/lib
 
 
 

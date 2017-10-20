@@ -1,4 +1,5 @@
 # include "mem_cpy.h"
+# include "../system/errno.h"
 # ifdef __WITH_TASK_POOL
 #	include "../system/task_pool.h"
 #	include "../memory/mem_alloc.h"
@@ -38,7 +39,7 @@ void static* mem_cpy_proxy(void *__arg_p) {
 # define MIN_SLICE_C 2
 # define SLICE_SHIFT 20
 # endif
-void ffly_mem_cpy(void *__dst, void *__src, mdl_uint_t __bc) {
+ffly_err_t ffly_mem_cpy(void *__dst, void *__src, mdl_uint_t __bc) {
 # ifdef __WITH_TASK_POOL
 	if (__bc>>SLICE_SHIFT >= MIN_SLICE_C && ffly_is_task_pool_inited(&__task_pool__)) {
 		mdl_uint_t slice_c = __bc>>SLICE_SHIFT;
@@ -68,4 +69,5 @@ void ffly_mem_cpy(void *__dst, void *__src, mdl_uint_t __bc) {
 	}
 # endif
 	_ffly_mem_cpy(__dst, __src, __bc);
+	return FFLY_SUCCESS;
 }

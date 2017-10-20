@@ -1,2 +1,2 @@
 #!/bin/sh
-. ./compile.sh bin/ffly_test src/ffly_test.o --ffly-test "--force-cuda --debug-enabled"
+. ./compile.sh bin/ffly_test src/ffly_test.o --ffly-test "--force-cuda --with-mem-tracker --debug-enabled"

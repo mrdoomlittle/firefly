@@ -38,6 +38,7 @@ struct set {
 
 	} iterator;
 	set() : v(VEC_AUTO_RESIZE|VEC_BLK_CHAIN|VEC_UUU_BLKS) {};
+
 	iterator begin(){return (iterator){v_p:&this->v, p:this->v.first()};}
 	iterator end(){return (iterator){v_p:&this->v, p:this->v.last()};}
 	types::bool_t empty(){return this->v.empty();}
@@ -47,7 +48,6 @@ struct set {
 	void erase(iterator __itr) {
 		this->v.del(__itr.p);
 	}
-
 	vec<_T> v;
 };
 }

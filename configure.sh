@@ -1,7 +1,7 @@
 #!/bin/sh
 CXX_IFLAGS="-Inibbles/inc -Itermio/inc -Imdlint/inc -Iintlen/inc -Igetdigit/inc -Ito_string/inc -Istr_cmb/inc -Iserializer/inc -Itagged_memory/inc -Iemu2d/inc -Iemu3d/inc -Iechar_t/inc"
 CXX_LFLAGS="-Lnibbles/lib -Ltermio/lib -Lintlen/lib -Lgetdigit/lib -Lto_string/lib -Lstr_cmb/lib -Ltagged_memory/lib -Lemu2d/lib -Lemu3d/lib"
-LDFLAGS="-ltagged_memory -ltermio -lintlen -lgetdigit -lto_string -lmdl-str_cmb -lnibbles -lemu2d -lemu3d -lboost_system -lboost_filesystem -lpthread -lboost_thread"
+LDFLAGS="-lmdl-intlen -lmdl-getdigit -lmdl-to_string -lmdl-str_cmb -lmdl-emu2d -lmdl-emu3d -lboost_system -lboost_filesystem -lpthread -lboost_thread"
 GPU_CL_TYPE=""
 BOOST_PATH="/usr/local"
 OPENCL_PATH="/usr"
@@ -11,19 +11,24 @@ CUDART_INC="-I$CUDART_PATH/include"
 CUDART_LIB="-L$CUDART_PATH/lib64"
 export CUDART_INC="$CUDART_INC"
 export CUDART_LIC="$CUDART_LIB"
-ARC=-DARC$(getconf LONG_BIT)
+ARC=ARC$(getconf LONG_BIT)
 FORCE_CUDA=0
+
+ROOT_DIR=$(bash find.bash "$1" "--root-dir*")
+if [ "$ROOT_DIR" = "1" ]; then
+	ROOT_DIR=${PWD}
+fi
 
 if [ $(bash find.bash "$1" "--force-cuda") = "0" ]; then
 	FORCE_CUDA=1
 fi
 
 if [ $(bash find.bash "$1" "--arc64") = "0" ]; then
-	ARC="-DARC64"
+	ARC="ARC64"
 fi
 
 if [ $(bash find.bash "$1" "--arc32") = "0" ]; then
-	ARC="-DARC32"
+	ARC="ARC32"
 fi
 
 if [ $(bash find.bash "$1" "--ffly-client") = "0" ]; then
@@ -44,41 +49,33 @@ else
 fi
 
 FFLY_ARGS=
-if [ $(bash find.bash "$1" "--with-room-manager") = "0" ];
-then
+if [ $(bash find.bash "$1" "--with-room-manager") = "0" ]; then
 	FFLY_ARGS="$FFLY_ARGS --with-room-manager"
 fi
 
-if [ $(bash find.bash "$1" "--with-obj-manager") = "0" ];
-then
+if [ $(bash find.bash "$1" "--with-obj-manager") = "0" ]; then
 	FFLY_ARGS="$FFLY_ARGS --with-obj-manager"
 fi
 
-if [ $(bash find.bash "$1" "--rm-layering") = "0" ];
-then
+if [ $(bash find.bash "$1" "--rm-layering") = "0" ]; then
 	FFLY_ARGS="$FFLY_ARGS --rm-layering"
 fi
 
-if [ $(bash find.bash "$1" "--with-uni-manager") = "0" ];
-then
+if [ $(bash find.bash "$1" "--with-uni-manager") = "0" ]; then
 	FFLY_ARGS="$FFLY_ARGS --with-uni-manager"
 fi
 
-if [ $(bash find.bash "$1" "--debug-enabled") = "0" ];
-then
+if [ $(bash find.bash "$1" "--debug-enabled") = "0" ]; then
 	FFLY_ARGS="$FFLY_ARGS --debug-enabled"
 fi
 
-if [ $(bash find.bash "$1" "--with-mem-tracker") = "0" ];
-then
+if [ $(bash find.bash "$1" "--with-mem-tracker") = "0" ]; then
 	FFLY_ARGS="$FFLY_ARGS --with-mem-tracker"
 fi
 
-if [ $(bash find.bash "$1" "--using-x11") = "0" ];
-then
+if [ $(bash find.bash "$1" "--using-x11") = "0" ]; then
 	FFLY_ARGS="$FFLY_ARGS --using-x11"
-elif [ $(bash find.bash "$1" "--using-xcb") = "0" ];
-then
+elif [ $(bash find.bash "$1" "--using-xcb") = "0" ]; then
 	FFLY_ARGS="$FFLY_ARGS --using-xcb"
 else
 	FFLY_ARGS="$FFLY_ARGS --using-x11"
@@ -155,8 +152,9 @@ export CUDART_LIB="$CUDART_LIB"
 export ARC="$ARC"
 #export CXXFLAGS="$CXXFLAGS $ARC"
 
-export CXXFLAGS="$CXXFLAGS $GPU_CL_TYPE $ARC"
+export CXXFLAGS="$CXXFLAGS $GPU_CL_TYPE -D__$ARC"
 export C_IFLAGS="$C_IFLAGS"
 
 export LDFLAGS="$LDFLAGS"
 export GPU_CL_TYPE="$GPU_CL_TYPE"
+export ROOT_DIR="$ROOT_DIR"

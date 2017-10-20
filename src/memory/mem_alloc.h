@@ -4,7 +4,7 @@
 # include <mdlint.h>
 # include "../types/bool_t.h"
 # include "../ffly_def.h"
-
+# include "../system/atomic.h"
 # ifdef __WITH_MEM_TRACKER
 #	include "../system/mem_tracker.h"
 # endif
@@ -24,8 +24,8 @@ extern "C" {
 # endif
 
 # ifdef __DEBUG_ENABLED
-mdl_uint_t extern ffly_mem_alloc_bc;
-mdl_uint_t extern ffly_mem_alloc_c;
+ffly_atomic_uint_t extern ffly_mem_alloc_bc;
+ffly_atomic_uint_t extern ffly_mem_alloc_c;
 # endif
 
 # ifdef __WITH_MEM_TRACKER

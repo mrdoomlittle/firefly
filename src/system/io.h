@@ -6,7 +6,6 @@
 extern "C" {
 # endif
 void ffly_printf(FILE*, char const*, ...);
-void ffly_open(void*, mdl_u8_t);
 # ifdef __cplusplus
 }
 # endif

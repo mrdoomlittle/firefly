@@ -1,12 +1,14 @@
 # ifndef __id__t__h
 # define __id__t__h
 # include <mdlint.h>
+typedef mdl_uint_t _ffly_id_t;
 typedef mdl_uint_t __ffly_id_t;
 typedef mdl_uint_t* ffly_id_t;
 # ifdef __cplusplus
 namespace mdl {
 namespace firefly {
 namespace types {
+typedef _ffly_id_t _id_t;
 typedef __ffly_id_t __id_t;
 typedef ffly_id_t id_t;
 }

@@ -3,6 +3,8 @@
 # include <malloc.h>
 # include <mdlint.h>
 # include "../types/bool_t.h"
+# include "../types/err_t.h"
+# include "../system/atomic.h"
 # ifdef __WITH_MEM_TRACKER
 #	include "../system/mem_tracker.h"
 # endif
@@ -11,14 +13,14 @@
 extern "C" {
 # endif
 # ifdef __DEBUG_ENABLED
-mdl_uint_t extern ffly_mem_free_bc;
-mdl_uint_t extern ffly_mem_free_c;
+ffly_atomic_uint_t extern ffly_mem_free_bc;
+ffly_atomic_uint_t extern ffly_mem_free_c;
 # endif /*__DEBUG_ENABLED*/
 
 # ifdef __WITH_MEM_TRACKER
-void ffly_mem_free(void*, ffly_bool_t);
+ffly_err_t ffly_mem_free(void*, ffly_bool_t);
 # else
-void ffly_mem_free(void*);
+ffly_err_t ffly_mem_free(void*);
 # endif /*__WITH_MEM_TRACKER*/
 # ifdef __cplusplus
 }
@@ -30,16 +32,16 @@ namespace mdl {
 namespace firefly {
 namespace memory {
 # ifdef __WITH_MEM_TRACKER
-void __inline__ mem_free(void *__mem_ptr, types::bool_t __track_bypass) {
-	ffly_mem_free(__mem_ptr, __track_bypass);
+types::err_t __inline__ mem_free(void *__mem_ptr, types::bool_t __track_bypass) {
+	return ffly_mem_free(__mem_ptr, __track_bypass);
 }
 
-void __inline__ mem_free(void *__mem_ptr) {
-	mem_free(__mem_ptr, ffly_false);
+types::err_t __inline__ mem_free(void *__mem_ptr) {
+	return mem_free(__mem_ptr, ffly_false);
 }
 
 # else
-static void(*mem_free)(void*) = &ffly_mem_free;
+static types::err_t(*mem_free)(void*) = &ffly_mem_free;
 # endif /*__WITH_MEM_TRACKER*/
 }
 }

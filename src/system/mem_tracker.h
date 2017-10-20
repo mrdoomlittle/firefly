@@ -10,25 +10,25 @@
 # ifdef __DEBUG_ENABLED
 #	include <stdio.h>
 # endif
+# include "../types/bool_t.h"
+# include "mutex.h"
 # ifdef __cplusplus
 extern "C" {
 # endif
 
 struct ffly_mem_track {
-	void **mptr_lst;
-	mdl_uint_t *unused_pnts;
-	mdl_uint_t unused_pnts_c;
-	mdl_uint_t lst_size;
-	mdl_uint_t nxt_pnt;
+	void **table;
+	ffly_bool_t inited;
+	ffly_mutex_t mutex;
 };
 
 extern struct ffly_mem_track __ffly_mem_track__;
 # ifdef __DEBUG_ENABLED
-void ffly_mem_track_dmp_ptr_lst(struct ffly_mem_track*);
+void ffly_mem_track_dump(struct ffly_mem_track*);
 # endif
-void* ffly_mem_track_get_nxt(struct ffly_mem_track*);
-void ffly_mem_track_reset(struct ffly_mem_track*);
-void ffly_mem_track_update(struct ffly_mem_track*, void*, void*);
+//void* ffly_mem_track_get_nxt(struct ffly_mem_track*);
+//void ffly_mem_track_reset(struct ffly_mem_track*);
+ffly_err_t ffly_mem_track_update(struct ffly_mem_track*, void*, void*);
 ffly_err_t ffly_mem_track_init(struct ffly_mem_track*);
 ffly_err_t ffly_mem_track_de_init(struct ffly_mem_track*);
 ffly_err_t ffly_mem_track_alloc(struct ffly_mem_track*, void*);

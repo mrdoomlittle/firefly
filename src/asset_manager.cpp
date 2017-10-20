@@ -1,4 +1,5 @@
 # include "asset_manager.h"
+# include "system/flags.h"
 char const static* asset_kind_to_str(mdl::uint_t __kind) {
 	switch(__kind) {
 		case _ffly_ak_png_file: return "png file";
@@ -7,10 +8,11 @@ char const static* asset_kind_to_str(mdl::uint_t __kind) {
 	return "unknown";
 }
 
-mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, char *__fname, uint_t __kind) {
+mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, char *__fname, uint_t __kind, types::mode_t __mode) {
 	types::id_t asset_id;
 
-	if (__kind >= _ffly_ak_png_file && __kind <=_ffly_ak_png_file) {
+	if (__kind >= _ffly_ak_png_file && __kind <=_ffly_ak_png_file)
+	{
 /*
 		types::_2d_dsize_t<> *dsize = (types::_2d_dsize_t<> *)memory::mem_alloc(sizeof(types::_2d_dsize_t<>));
 		types::pixmap_t pixmap;
@@ -23,8 +25,10 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, 
 
 		this->asset_info(asset_id) = dsize;
 */
-	} else if (__kind >= _ffly_ak_wav_file && __kind <=_ffly_ak_wav_file) {
-		ffly_byte_t *fp;
+	}
+	else if (__kind >= _ffly_ak_wav_file && __kind <=_ffly_ak_wav_file)
+	{
+		ffly_byte_t *f;
 		ffly_size_t fsize;
 		ffly_aud_fformat_t fformat;
 		switch(__kind) {
@@ -33,13 +37,13 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, 
 			break;
 		}
 
-		if (ffly_ld_aud_file(__fdir, __fname, fformat, &fp, &fsize) != FFLY_SUCCESS) {
+		if (ffly_ld_aud_file(__fdir, __fname, fformat, &f, &fsize) != FFLY_SUCCESS) {
 			return nullptr;
 		}
 
-		ffly_aud_fad_t *aud_fad = static_cast<ffly_aud_fad_t*>(__ffly_mem_alloc(sizeof(ffly_aud_fad_t)));
+		ffly_aud_fad_t *aud_fad = static_cast<ffly_aud_fad_t*>(memory::mem_alloc(sizeof(ffly_aud_fad_t)));
 		*aud_fad = (ffly_aud_fad_t) {
-			fp:fp,
+			fp:f,
 			fsize:fsize,
 			fformat:fformat
 		};
@@ -70,14 +74,29 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::add_asset(types::byte_t *
 	return asset_id;
 }
 
+void mdl::firefly::asset_manager::free_asset(types::id_t __asset_id) {
+	types::asset_t& asset = this->asset_d[*__asset_id];
+	if (asset.kind >= _ffly_ak_wav_file && asset.kind <=_ffly_ak_wav_file)
+	{
+		ffly_aud_fad_t *aud_fad = reinterpret_cast<ffly_aud_fad_t*>(asset.data);
+		if (aud_fad->fp != nullptr) memory::mem_free(aud_fad->fp);
+		memory::mem_free(aud_fad);
+	}
+
+	if (asset.id != nullptr) memory::mem_free(asset.id);
+	if (asset.data != nullptr) memory::mem_free(asset.data);
+}
+
 mdl::firefly::types::err_t mdl::firefly::asset_manager::de_init() {
 	types::size_t i = 0;
 	for (;i != this->asset_d.size(); i++)
 	{
 		system::io::printf(stdout, "asset_manager: freed memory for asset{id: %u}\n", i);
-		if (this->asset_d[i].id != nullptr) memory::mem_free(this->asset_d[i].id);
-		if (this->asset_d[i].data != nullptr) memory::mem_free(this->asset_d[i].data);
+		this->free_asset(this->asset_d[i].id);
 	}
+
+	delete &this->asset_ids;
+	delete &this->asset_d;
 }
 
 void mdl::firefly::asset_manager::del_asset(types::id_t __asset_id) {
@@ -92,8 +111,7 @@ void mdl::firefly::asset_manager::del_asset(types::id_t __asset_id) {
 	this->asset(__asset_id) = *(this->asset_d.end()-1);
 	*this->asset(__asset_id).id = *__asset_id;
 
-	memory::mem_free(this->asset_d[*__asset_id].id);
-	memory::mem_free(this->asset_d[*__asset_id].data);
+	this->free_asset(__asset_id);
 
 	this->asset_d.resize(this->asset_d.size()-1);
 	this->asset_ids.erase(itr);
@@ -117,7 +135,7 @@ mdl::firefly::types::asset_t& mdl::firefly::asset_manager::asset(types::id_t __a
 
 extern "C" {
 ffly_id_t ffly_load_asset(void *__clsp, char *__fdir, char *__fname, mdl_uint_t __kind) {
-	static_cast<mdl::firefly::asset_manager*>(__clsp)->load_asset(__fdir, __fname, __kind);
+	static_cast<mdl::firefly::asset_manager*>(__clsp)->load_asset(__fdir, __fname, __kind, 0x0);
 }
 ffly_id_t ffly_add_asset(void *__clsp, ffly_byte_t *__data, mdl_uint_t __kind) {
 	static_cast<mdl::firefly::asset_manager*>(__clsp)->add_asset(__data, __kind);

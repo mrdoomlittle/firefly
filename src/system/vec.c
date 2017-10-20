@@ -10,7 +10,7 @@
 # define VEC_BLK_USED 1
 # define VEC_BLK_FREE 0
 ffly_bool_t static is_flag(struct ffly_vec *__vec, mdl_u8_t __flag) {
-	return (__vec->flags & __flag) == __flag?1:0;}
+	return (__vec->flags & __flag) == __flag;}
 
 ffly_err_t ffly_vec_init(struct ffly_vec *__vec, mdl_uint_t __blk_size) {
 	__vec->p = NULL;
@@ -221,6 +221,7 @@ ffly_err_t ffly_vec_de_init(struct ffly_vec *__vec) {
 
 	if (__vec->uu_blks != NULL) {
 		ffly_vec_de_init(__vec->uu_blks);
+		__vec->uu_blks = NULL;
 	}
 	return FFLY_SUCCESS;
 }

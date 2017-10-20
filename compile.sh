@@ -20,9 +20,10 @@ fi
 
 . ./configure.sh "$3 $4"
 
-echo "building for '$ffly_target'"
-echo "src: $2, dest: $1"
+echo "building for target: '$ffly_target'"
+echo "source: $2, destination: $1"
 echo "extra options: $4"
+echo "root dir: $ROOT_DIR"
 
 ffly_window=
 if [ $(bash find.bash "$FFLY_ARGS" "--using-x11") -eq 0 ]; then
@@ -58,14 +59,17 @@ if [ $(bash find.bash "$FFLY_ARGS" "--with-mem-tracker") -eq 0 ]; then
 	extra_defines="$extra_defines -D__WITH_MEM_TRACKER"
 fi
 
-make libraries;
-make relocate_headers;
+bash cac_dirs.bash
+bash copy_headers.bash
+bash mac_libs.bash
 
 make -j4 FFLY_TARGET=$ffly_target FFLY_WINDOW=$ffly_window EXTRA_DEFINES="$extra_defines"
+
+echo "target: $ffly_target"
 
 GPU_DEFINES=
 if [ $GPU_CL_TYPE = "-DUSING_CUDA" ]; then
 	GPU_DEFINES="$CUDART_INC $CUDART_LIB"
 fi
 
-g++ -std=c++11 $ARC $CXXFLAGS -D$ffly_target $ffly_window $extra_defines $GPU_CL_TYPE $GPU_DEFINES -Iinc -Llib -Wall -o $1 $2 $ffly_linker $LDFLAGS
+g++ -std=c++11 -D__$ARC $CXXFLAGS -D$ffly_target $ffly_window $extra_defines $GPU_CL_TYPE $GPU_DEFINES -Iinc -Llib -Wall -o $1 $2 $ffly_linker $LDFLAGS

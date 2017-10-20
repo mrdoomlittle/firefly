@@ -5,16 +5,14 @@
 # include "mem_alloc.h"
 # include "../ffly_def.h"
 # include "../types/bool_t.h"
-
+# include "../system/atomic.h"
 # ifdef __cplusplus
 extern "C" {
 # endif
-
 # if defined(__DEBUG_ENABLED) && !defined(__mem__alloc__h)
-mdl_uint_t extern ffly_mem_alloc_bc;
-mdl_uint_t extern ffly_mem_alloc_c;
+ffly_atomic_uint_t extern ffly_mem_alloc_bc;
+ffly_atomic_uint_t extern ffly_mem_alloc_c;
 # endif
-
 # ifdef __WITH_MEM_TRACKER
 void* ffly_mem_realloc(void*, mdl_uint_t, ffly_bool_t);
 # else
@@ -23,7 +21,6 @@ void* ffly_mem_realloc(void*, mdl_uint_t);
 # ifdef __cplusplus
 }
 # endif
-
 # ifdef __cplusplus
 namespace mdl {
 namespace firefly {
@@ -43,7 +40,6 @@ static void*(*mem_realloc)(void*, uint_t) = &ffly_mem_realloc;
 }
 }
 # endif
-
 # if defined(__WITH_MEM_TRACKER) && !defined(__cplusplus)
 #	ifdef __cplusplus
 #		define __ffly_mem_realloc(__MEM_PTR, __ALLOC_BC) mdl::firefly::memory::mem_realloc(__MEM_PTR, __ALLOC_BC, ffly_false)
