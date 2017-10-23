@@ -1,5 +1,6 @@
 # ifndef __ffly__client__hpp
 # define __ffly__client__hpp
+/*
 # include "networking/tcp_client.hpp"
 # include "networking/udp_client.hpp"
 # include <chrono>
@@ -38,9 +39,62 @@
 #   include "types/uni_prop_t.hpp"
 # endif
 # include "types/id_t.h"
+*/
+# include "types/err_t.h"
 # include "system/io.h"
+# include "types/bool_t.h"
+# include "system/errno.h"
+# include "graphics/window.hpp"
+# include "system/event.hpp"
+# include "types/byte_t.h"
+# ifdef __WITH_LAYER_MANAGER
+#	include "layer_manager.hpp"
+# endif
 namespace mdl { class ffly_client
 {
+	public:
+	ffly_client(u16_t __wd_xa_len, u16_t __wd_ya_len) : wd_xa_len(__wd_xa_len), wd_ya_len(__wd_ya_len){}
+	firefly::types::bool_t static to_shutdown;
+	typedef struct {
+		firefly::types::err_t init(ffly_client *__ffc_p) {
+			this->ffc_p = __ffc_p;
+		}
+
+		uint_t get_fps() {
+			if (!this->ffc_p) return 0;
+			this->ffc_p->get_fps();
+		}
+
+		ffly_client* get_ffc_p(){return this->ffc_p;}
+		firefly::types::byte_t* frame_buff() {return this->ffc_p->frame_buff();}
+
+		private:
+		ffly_client *ffc_p = nullptr;
+	} portal_t;
+
+	firefly::types::err_t init(char const *__frame_title);
+	firefly::types::err_t de_init();
+	firefly::types::err_t begin(void(*__extern_loop)(i8_t, portal_t*, void*), void *__this);
+	void shutdown();
+	uint_t get_fps() {
+		return this->fps;
+	}
+
+	void free_wd_event(firefly::types::event_t& __event) {
+		this->window.free_event_data(__event.data);
+	}
+
+	firefly::types::byte_t* frame_buff() {
+		return this->window.frame_buff();
+	}
+
+	portal_t portal;
+
+	private:
+	uint_t fps, frame_c = 0;
+	firefly::graphics::window window;
+	u16_t const wd_xa_len, wd_ya_len;
+/*
 	public:
 # ifndef __WITH_UNI_MANAGER
 	ffly_client(u16_t __wd_xa_len, u16_t __wd_ya_len) : wd_xa_len(__wd_xa_len), wd_ya_len(__wd_ya_len) {}
@@ -56,8 +110,8 @@ namespace mdl { class ffly_client
 		printf("ffly_client has safly shutdown.\n");
 	}
 
-	/* forward all events e.g. window, obj, etc. to the core event queue.
-	*/
+	 forward all events e.g. window, obj, etc. to the core event queue.
+	
 	firefly::types::err_t forward_events();
 
 	void cu_clean() {
@@ -124,7 +178,7 @@ namespace mdl { class ffly_client
 
 //	bool poll_event(firefly::system::event& __event);
 
-	bool static to_shutdown;
+	types::bool_t static to_shutdown;
 
 //	firefly::system::event *event = nullptr;
 	portal_t portal;
@@ -162,6 +216,7 @@ namespace mdl { class ffly_client
 	firefly::networking::tcp_client tcp_stream;
 	firefly::networking::udp_client udp_stream;
 	u16_t const wd_xa_len, wd_ya_len;
+*/
 };
 }
 

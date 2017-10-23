@@ -1,5 +1,26 @@
 # include "event.hpp"
-# include <cstdio>
+# include "queue.h"
+# include "errno.h"
+static mdl::firefly::system::queue<mdl::firefly::types::event_t> event_queue;
+mdl::firefly::types::err_t mdl::firefly::system::event_add(types::event_t __event) {
+	if (event_queue.size() > 20) return FFLY_SUCCESS;
+	if (event_queue.push(__event) != FFLY_SUCCESS) {
+		return FFLY_FAILURE;
+	}
+	return FFLY_SUCCESS;
+}
+
+mdl::firefly::types::err_t mdl::firefly::system::next_event(types::event_t& __event) {
+	types::err_t any_err;
+	__event = event_queue.pop(any_err);
+	return FFLY_SUCCESS;
+}
+
+mdl::firefly::types::bool_t mdl::firefly::system::pending_event() {
+	return event_queue.size()>0;
+}
+
+/*
 std::queue<mdl::firefly::data::pair<mdl::firefly::types::event_desc_t, void*>> mdl::firefly::system::event::event_queue;
 mdl::uint_t static _max_queue_size = 21;
 
@@ -28,4 +49,5 @@ mdl::uint_t mdl::firefly::system::event::max_queue_size() {
 void mdl::firefly::system::event::max_queue_size(uint_t __max_queue_size) {
 	_max_queue_size = __max_queue_size;
 }
+*/
 

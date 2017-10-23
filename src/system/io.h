@@ -6,6 +6,7 @@
 extern "C" {
 # endif
 void ffly_printf(FILE*, char const*, ...);
+# define ffly_errmsg(__MSG, __VA_ARGS) ffly_printf(stderr, __MSG, __VA_ARGS);
 # ifdef __cplusplus
 }
 # endif

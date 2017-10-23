@@ -79,7 +79,6 @@ ffly_err_t ffly_mem_allocr_alloc(struct ffly_mem_allocr *__mem_allocr, void **__
 
 				return FFLY_SUCCESS;
 			}
-
 			itr++;
 		}
 	}
@@ -113,7 +112,7 @@ ffly_err_t ffly_mem_allocr_free(struct ffly_mem_allocr *__mem_allocr, void *__mp
 	struct mem_blk_desc *blk_desc = (struct mem_blk_desc*)((mdl_u8_t*)__mptr-sizeof(struct mem_blk_desc));
 	struct unused_blks *_unused_blks = (struct unused_blks*)__mem_allocr->unused_blks;
 
-	mdl_uint_t uul = 0, is_more = 0x3;
+	mdl_uint_t uul = 0, is_more = 0x0;
 	for (;;) {
 		struct mem_blk_desc *above = (struct mem_blk_desc*)blk_desc->above;
 		struct mem_blk_desc *below = (struct mem_blk_desc*)blk_desc->below;

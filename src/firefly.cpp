@@ -1,4 +1,7 @@
 # include "firefly.hpp"
+# include "types/event_t.h"
+# include "ffly_def.h"
+/*
 struct mdl::firefly::_core_portal mdl::firefly::core_portal;
 
 mdl::firefly::types::err_t mdl::firefly::init() {
@@ -12,7 +15,21 @@ mdl::firefly::types::err_t mdl::firefly::de_init() {
 	ffly_system::de_init();
 	ffly_graphics::de_init();
 }
+*/
 
+mdl::firefly::types::bool_t mdl::firefly::poll_event(types::event_t& __event) {
+	if (!mdl::firefly::system::pending_event()) return ffly_false;
+	mdl::firefly::system::next_event(__event);
+	return ffly_true;
+}
+
+void mdl::firefly::event_free(ffly_client *__ffc, types::event_t& __event) {
+	if (__event.field == _ffly_ef_wd) {
+		__ffc->free_wd_event(__event);
+	}
+}
+
+/*
 namespace mdl {
 namespace firefly {
 types::err_t init_core_portal(graphics::window *__window) {
@@ -45,7 +62,8 @@ void pev_collapse(types::event_id_t __event_id) {
 		break;
 	}
 }
-
+*/
+/*
 namespace gpu {
 uint_t device_c = 0, mx_threads = 0, mx_blocks = 0;
 }
@@ -54,4 +72,5 @@ uint_t device_c = 0, mx_threads = 0, mx_blocks = 0;
 namespace ffly_graphics {
 bool inited = false;
 }
-}
+}*/
+

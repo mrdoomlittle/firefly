@@ -4,6 +4,8 @@
 # include "io.h"
 # include <mdlint.h>
 # include "mutex.h"
+# include "../types/bool_t.h"
+
 struct ffly_buff {
 	ffly_mutex_t m;
 	mdl_u8_t *p;
@@ -26,12 +28,14 @@ ffly_err_t ffly_buff_reset(struct ffly_buff*);
 # ifdef __cplusplus
 }
 # endif
-mdl_uint_t static __inline__ ffly_buff_ublk_c(struct ffly_buff *__buff){if (!__buff->off) return 0;return __buff->off/__buff->blk_size;}
+mdl_uint_t static __inline__ ffly_buff_ublk_c(struct ffly_buff *__buff){return __buff->off;}
 void static __inline__ ffly_buff_off_reset(struct ffly_buff *__buff) {__buff->off = 0;}
 void static __inline__* ffly_buff_begin(struct ffly_buff *__buff) {return (void*)__buff->p;}
 void static __inline__* ffly_buff_end(struct ffly_buff *__buff) {return (void*)(__buff->p+((__buff->off-1)*__buff->blk_size));}
 void static __inline__ ffly_buff_lock(struct ffly_buff *__buff) {ffly_mutex_lock(&__buff->m);}
 void static __inline__ ffly_buff_unlock(struct ffly_buff *__buff) {ffly_mutex_unlock(&__buff->m);}
+ffly_bool_t static __inline__ ffly_buff_full(struct ffly_buff *__buff) {return (__buff->off > __buff->blk_c);}
+ffly_bool_t static __inline__ ffly_buff_empty(struct ffly_buff *__buff) {return !__buff->off;}
 # ifdef __cplusplus
 namespace mdl {
 namespace firefly {

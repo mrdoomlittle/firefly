@@ -1,4 +1,5 @@
 # include "smem_buff.h"
+//  memory buffer
 struct ffly_smem_buff_t* ffly_smem_buff_ninst(mdl_uint_t __buff_size, mdl_uint_t __blk_len) {
 	struct ffly_smem_buff_t* tr = (struct ffly_smem_buff_t*)__ffly_mem_alloc(sizeof(struct ffly_smem_buff_t));
 	ffly_smem_buff_init(tr, __buff_size, __blk_len);

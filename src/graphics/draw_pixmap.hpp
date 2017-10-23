@@ -4,7 +4,7 @@
 # include <cstdio>
 # include <math.h>
 # include <boost/cstdint.hpp>
-# include "../ffly_graphics.hpp"
+//# include "../ffly_graphics.hpp"
 # include "../types/byte_t.h"
 # include "../types/pixmap_t.h"
 # include "../types/err_t.h"
@@ -24,7 +24,7 @@ types::err_t gpu_draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbu
 types::err_t gpu_draw_pixmap(gpu_dr_pm_mem& __gpu_dr_pm_mem, uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, uint_t __pm_xfs, types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, uint_t __rpm_xlen, boost::uint16_t __angle = 0);
 # endif
 # ifndef __NVCC__
-types::err_t draw_pixmap(gpu_dr_pm_mem& __gpu_dr_pm_mem, uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, boost::uint16_t __angle = 0);
+types::err_t draw_pixmap(gpu_dr_pm_mem& __gpu_dr_pm_mem, uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen);
 types::err_t draw_pixmap(uint_t __xfs, uint_t __yfs, types::pixmap_t __pixbuff, uint_t __pb_xlen, uint_t __pb_ylen, types::pixmap_t __pixmap, uint_t __pm_xlen, uint_t __pm_ylen, boost::uint16_t __angle = 0);
 # endif
 }

@@ -3,7 +3,6 @@
 # include <mdlint.h>
 typedef mdl_u64_t ffly_tpv_t;
 # ifdef __cplusplus
-# include <mdlint.h>
 namespace mdl {
 namespace firefly {
 namespace types {

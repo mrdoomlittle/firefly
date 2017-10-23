@@ -2,7 +2,9 @@
 # define __ffly__event__t__h
 # include <mdlint.h>
 typedef struct {
-	mdl_uint_t kind;
+	mdl_u8_t field;
+	mdl_u8_t kind;
+	void *data;
 } ffly_event_t;
 
 # ifdef __cplusplus

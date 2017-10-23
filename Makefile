@@ -13,8 +13,12 @@ FFLY_OBJS=
 FFLY_WINDOW=
 EXTRA_DEFINES=
 
-CXX_VERSION=c++11
+CXX_VERSION=c++17
 C_VERSION=c11
+ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-layer-manager"), 0)
+	FFLY_OBJS+= src/layer_manager.o
+endif
+
 ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-uni-manager"), 0)
  FFLY_OBJS+= src/uni_manager.o src/chunk_manager.o src/chunk_keeper.o src/data/uni_dlen_val.o
 endif
@@ -28,12 +32,8 @@ ifeq ($(FFLY_TARGET), FFLY_SERVER)
  src/worker_manager.o src/memory/alloc_pixmap.o src/graphics/draw_pixmap.clo src/player_manager.o src/player_handler.o src/worker_handler.o
 
 else ifeq ($(FFLY_TARGET), FFLY_CLIENT)
- FFLY_OBJS += src/ffly_client.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o \
- src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/draw_pixmap.clo \
- src/tests/layering.o src/maths/rotate_point.o src/graphics/scale_pixmap.o src/graphics/fill_pixmap.o src/memory/alloc_pixmap.o src/graphics/window.o \
- src/layer_manager.o src/maths/cal_dist.o src/system/time_stamp.o src/room_manager.o \
- src/gui/btn_manager.o src/system/event.o src/graphics/draw_bitmap.o src/font.o src/system/task_handle.o src/system/task_worker.o \
- src/ui/camera.o src/graphics/crop_pixmap.o src/entity_manager.o src/system/smem_buff.o
+ FFLY_OBJS += src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/graphics/png_loader.o src/system/time_stamp.o \
+src/system/event.o src/firefly.o
 else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
  FFLY_OBJS += src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
@@ -66,11 +66,13 @@ FFLY_OBJS+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o 
 FFLY_OBJS+= src/data/swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o src/data/str_dupe.o src/data/mem_cmp.o src/data/str_cmp.o
 # system
 FFLY_OBJS+= src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
-src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o src/system/task_worker.o
+src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
+src/system/task_worker.o src/system/sys_nanosleep.o src/system/mem_blk.o
 # graphics
+FFLY_OBJS+= src/graphics/draw_pixmap.o src/graphics/draw_pixmap.clo src/graphics/fill_pixmap.o
 #FFLY_OBJS+= src/ffly_graphics.o
 # memory
-FFLY_OBJS+= src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_alloc.co src/memory/mem_free.co src/memory/mem_realloc.co #src/memory/alloc_pixmap.o
+FFLY_OBJS+= src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o #src/memory/alloc_pixmap.o
 
 CXXFLAGS+= $(FFLY_TARGET)
 
@@ -98,7 +100,10 @@ else ifeq ($(FFLY_TARGET), FFLY_TEST)
 all: ffly_test
 endif
 
-FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) -D__$(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES) -D__USING_PULSE_AUDIO -D__WITH_TASK_POOL
+FFLY_DEFINES=-D__GCOMPUTE_GPU -D__GCOMPUTE_CPU $(GPU_CL_TYPE) -D__$(ARC) $(FFLY_WINDOW) $(EXTRA_DEFINES) -D__USING_PULSE_AUDIO
+src/system/mem_blk.o: src/system/mem_blk.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/mem_blk.o src/system/mem_blk.c
+
 src/system/task_pool.o: src/system/task_pool.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/task_pool.o src/system/task_pool.c
 
@@ -156,6 +161,9 @@ src/system/atomic_op.o: src/system/asm/atomic_op.asm
 src/system/mutex.o: src/system/asm/mutex.asm
 	nasm -f elf64 -o src/system/mutex.o src/system/asm/mutex.asm
 
+src/system/sys_nanosleep.o: src/system/asm/sys_nanosleep.asm
+	nasm -f elf64 -o src/system/sys_nanosleep.o src/system/asm/sys_nanosleep.asm
+
 src/maths/round.o: src/maths/asm/round.asm
 	nasm -f elf64 -o src/maths/round.o src/maths/asm/round.asm
 
@@ -164,6 +172,9 @@ src/maths/ceil.o: src/maths/asm/ceil.asm
 
 src/maths/floor.o: src/maths/asm/floor.asm
 	nasm -f elf64 -o src/maths/floor.o src/maths/asm/floor.asm
+
+src/system/buff.o: src/system/buff.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/buff.o src/system/buff.c
 
 src/system/vec.o: src/system/vec.c
 	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/system/vec.o src/system/vec.c
@@ -226,7 +237,7 @@ src/ui/camera.o: src/ui/camera.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/ui/camera.o src/ui/camera.cpp
 
 src/graphics/crop_pixmap.o: src/graphics/crop_pixmap.cu
-	nvcc -c -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/crop_pixmap.o src/graphics/crop_pixmap.cu
+	nvcc -c -std=c++11 $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/crop_pixmap.o src/graphics/crop_pixmap.cu
 
 src/firefly.o: src/firefly.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/firefly.o src/firefly.cpp
@@ -274,10 +285,10 @@ src/cuda_helper.o: src/cuda_helper.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/cuda_helper.o src/cuda_helper.cpp
 
 src/graphics/draw_rect.o: src/graphics/draw_rect.cu
-	nvcc -c -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_rect.o src/graphics/draw_rect.cu
+	nvcc -c -std=c++11 $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_rect.o src/graphics/draw_rect.cu
 
 src/graphics/draw_skelmap.o: src/graphics/draw_skelmap.cu
-	nvcc -c -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_skelmap.o src/graphics/draw_skelmap.cu
+	nvcc -c -std=c++11 $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_skelmap.o src/graphics/draw_skelmap.cu
 
 src/graphics/skelmap_loader.o: src/graphics/skelmap_loader.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/skelmap_loader.o src/graphics/skelmap_loader.cpp
@@ -286,10 +297,10 @@ src/asset_manager.o: src/asset_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/asset_manager.o src/asset_manager.cpp
 
 src/graphics/draw_pixmap.o: src/graphics/draw_pixmap.cu
-	nvcc -c -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_pixmap.o src/graphics/draw_pixmap.cu
+	nvcc -c -std=c++11 $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_pixmap.o src/graphics/draw_pixmap.cu
 
 src/graphics/fill_pixmap.o: src/graphics/fill_pixmap.cu
-	nvcc -c -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/fill_pixmap.o src/graphics/fill_pixmap.cu
+	nvcc -c -std=c++11 $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/fill_pixmap.o src/graphics/fill_pixmap.cu
 
 src/tests/layering.o: src/tests/layering.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/tests/layering.o src/tests/layering.cpp
@@ -298,7 +309,7 @@ src/maths/rotate_point.o: src/maths/rotate_point.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/maths/rotate_point.o src/maths/rotate_point.cpp
 
 src/graphics/scale_pixmap.o: src/graphics/scale_pixmap.cu
-	nvcc -c -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/scale_pixmap.o src/graphics/scale_pixmap.cu
+	nvcc -c -std=c++11 $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/scale_pixmap.o src/graphics/scale_pixmap.cu
 
 src/opencl_helper.o: src/opencl_helper.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/opencl_helper.o src/opencl_helper.cpp
@@ -312,20 +323,24 @@ src/memory/alloc_pixmap.o: src/memory/alloc_pixmap.c
 src/graphics/draw_pixmap.clo: src/graphics/draw_pixmap.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_pixmap.clo src/graphics/draw_pixmap.cpp
 
-src/memory/mem_alloc.o: src/memory/mem_alloc.cpp
-	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_alloc.o src/memory/mem_alloc.cpp
+src/memory/mem_alloc.o: src/memory/mem_alloc.cpp src/memory/mem_alloc.c
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_alloc.cpp.o src/memory/mem_alloc.cpp
+	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_alloc.c.o src/memory/mem_alloc.c
+	ld -r src/memory/mem_alloc.cpp.o src/memory/mem_alloc.c.o -o src/memory/mem_alloc.o
 
-src/memory/mem_alloc.co: src/memory/mem_alloc.c
-	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_alloc.co src/memory/mem_alloc.c
+#src/memory/mem_alloc.co: src/memory/mem_alloc.c
+#	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_alloc.co src/memory/mem_alloc.c
 
 #src/memory/mem_free.o: src/memory/mem_free.cpp
 #	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.o src/memory/mem_free.cpp
 
-src/memory/mem_free.co: src/memory/mem_free.c
-	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.co src/memory/mem_free.c
+src/memory/mem_free.o: src/memory/mem_free.cpp src/memory/mem_free.c
+	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.cpp.o src/memory/mem_free.cpp
+	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_free.c.o src/memory/mem_free.c
+	ld -r src/memory/mem_free.cpp.o src/memory/mem_free.c.o -o src/memory/mem_free.o
 
-src/memory/mem_realloc.co: src/memory/mem_realloc.c
-	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_realloc.co src/memory/mem_realloc.c
+src/memory/mem_realloc.o: src/memory/mem_realloc.c
+	gcc -c -Wall -std=$(C_VERSION) $(C_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/mem_realloc.o src/memory/mem_realloc.c
 
 src/graphics/window.o: src/graphics/window.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/window.o src/graphics/window.cpp
@@ -352,7 +367,7 @@ src/gui/btn_manager.o: src/gui/btn_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/gui/btn_manager.o src/gui/btn_manager.cpp
 
 src/graphics/draw_bitmap.o: src/graphics/draw_bitmap.cu
-	nvcc -c -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_bitmap.o src/graphics/draw_bitmap.cu
+	nvcc -c -std=c++11 $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_bitmap.o src/graphics/draw_bitmap.cu
 
 src/pulse_audio.o: src/pulse_audio.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/pulse_audio.o src/pulse_audio.cpp

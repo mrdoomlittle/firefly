@@ -1,4 +1,6 @@
 # include "fill_pixmap.hpp"
+# include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
 __global__ void cu_fill_pixmap(mdl::firefly::types::pixmap_t __pixmap, mdl::firefly::types::colour_t *__colour) {
 	mdl::uint_t point = (threadIdx.x+(blockIdx.x*blockDim.x))*4;
 
@@ -24,9 +26,9 @@ mdl::firefly::types::err_t mdl::firefly::graphics::fill_pixmap(types::pixmap_t _
 	}
 
 	if (_pixmap_size != pixmap_size) {
-		if (pixmap != nullptr) cudaFree(pixmap);
+		if (pixmap != nullptr) memory::gpu_mem_free(pixmap);
 
-		if ((any_error = cudaMalloc((void**)&pixmap, pixmap_size*sizeof(types::__pixmap_t))) != cudaSuccess) {
+		if (memory::gpu_mem_alloc((void**)&pixmap, pixmap_size*sizeof(types::__pixmap_t)) != FFLY_SUCCESS) {
 			system::io::printf(stderr, "cuda, fill_pixmap: failed to call Malloc, error code: %d\n", any_error);
 			return FFLY_FAILURE;
 		}
@@ -35,7 +37,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::fill_pixmap(types::pixmap_t _
 	}
 
 	if (!inited) {
-		if ((any_error = cudaMalloc((void**)&colour, sizeof(types::colour_t))) != cudaSuccess) {
+		if (memory::gpu_mem_alloc((void**)&colour, sizeof(types::colour_t)) != FFLY_SUCCESS) {
 			system::io::printf(stderr, "cuda, fill_pixmap: failed to call Malloc, error code: %d\n", any_error);
 			return FFLY_FAILURE;
 		}

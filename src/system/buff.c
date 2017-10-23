@@ -26,28 +26,34 @@ ffly_err_t ffly_buff_put(struct ffly_buff *__buff, void *__p) {
 }
 
 ffly_err_t ffly_buff_get(struct ffly_buff *__buff, void *__p) {
+	ffly_mutex_lock(&__buff->m);
 	ffly_mem_cpy(__p, (mdl_u8_t*)__buff->p+(__buff->off*__buff->blk_size), __buff->blk_size);
+	ffly_mutex_unlock(&__buff->m);
 	return FFLY_SUCCESS;
 }
 
 ffly_err_t ffly_buff_incr(struct ffly_buff *__buff) {
+	ffly_err_t any_err = FFLY_SUCCESS;
 	ffly_mutex_lock(&__buff->m);
-	if (__buff->off+1 > __buff->blk_c) return FFLY_FAILURE;
-	__buff->off++;
+	if (__buff->off+1 < __buff->blk_c)
+		__buff->off++;
+	else
+		any_err = FFLY_FAILURE;
 	ffly_mutex_unlock(&__buff->m);
-	return FFLY_SUCCESS;
+	return any_err;
 }
 
 ffly_err_t ffly_buff_decr(struct ffly_buff *__buff) {
+	ffly_err_t any_err = FFLY_SUCCESS;
 	ffly_mutex_lock(&__buff->m);
-	if (!__buff->off) return FFLY_FAILURE;
-	__buff->off--;
+	if (!__buff->off) any_err =  FFLY_FAILURE;
+	else __buff->off--;
 	ffly_mutex_unlock(&__buff->m);
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_buff_resize(struct ffly_buff *__buff, mdl_uint_t __nsize) {
-	if ((__buff->p = __ffly_mem_realloc(__buff->p, __nsize*__buff->blk_size)) == NULL) {
+ffly_err_t ffly_buff_resize(struct ffly_buff *__buff, mdl_uint_t __nblk_c) {
+	if ((__buff->p = __ffly_mem_realloc(__buff->p, (__buff->blk_c = __nblk_c)*__buff->blk_size)) == NULL) {
 		ffly_printf(stderr, "buff: failed to realloc memory.\n");
 		return FFLY_FAILURE;
 	}

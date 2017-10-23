@@ -12,6 +12,7 @@ struct timer {
 
 	void begin() {this->begin_point = time::get_ns_tp();}
 	void end() {this->end_point = time::get_ns_tp();}
+	void reset() {this->begin();}
 
 	template<types::tpv_t(*__e)(types::tpv_t)>
 	types::tpv_t now() {

@@ -72,4 +72,4 @@ if [ $GPU_CL_TYPE = "-DUSING_CUDA" ]; then
 	GPU_DEFINES="$CUDART_INC $CUDART_LIB"
 fi
 
-g++ -std=c++11 -D__$ARC $CXXFLAGS -D$ffly_target $ffly_window $extra_defines $GPU_CL_TYPE $GPU_DEFINES -Iinc -Llib -Wall -o $1 $2 $ffly_linker $LDFLAGS
+g++ -std=c++17 -D__$ARC $CXXFLAGS -D$ffly_target $ffly_window $extra_defines $GPU_CL_TYPE $GPU_DEFINES -Iinc -Llib -Wall -o $1 $2 $ffly_linker $LDFLAGS

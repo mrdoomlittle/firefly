@@ -3,15 +3,14 @@ global ffly_usleep
 ffly_usleep:
 	push rbp
 	mov rbp, rsp
-	sub rsp, 12
+	sub rsp, 16
 
-	mov rbx, rsi
-	mov [rbp-12], rdi
-	mov [rbp-4], rbx
+	mov [rbp-16], rdi
+	mov [rbp-8], rsi
 
 	mov rax, 35
 	mov rdi, rbp
-	sub rdi, 12
+	sub rdi, 16
 	xor rsi, rsi
 	syscall
 

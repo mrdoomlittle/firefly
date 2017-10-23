@@ -39,7 +39,7 @@ static void* proxy(void *__arg) {
 
 struct thread {
 	template<typename _F, typename _A1, typename _A2, typename _A3, typename _A4>
-	thread(_F __f, _A1 __a1, _A2 __a2, _A3 __a3, _A4 __a4) {
+	thread(_F __f, _A1 __a1, _A2 __a2, _A3 __a3, _A4 __a4, ffly_tid_t& __tid) {
 		struct thread_arg<_F, _A1, _A2, _A3, _A4> arg {
 			f:__f,
 			a1:__a1,
@@ -49,9 +49,8 @@ struct thread {
 		};
 
 		void *_arg;
-		ffly_tid_t tid;
 		ffly_mem_dupe(&_arg, (void*)&arg, sizeof(struct thread_arg<_F, _A1, _A2, _A3, _A4>));
-		thread_create(&tid, &t<_F, _A1, _A2, _A3, _A4>::proxy, _arg);
+		thread_create(&__tid, &t<_F, _A1, _A2, _A3, _A4>::proxy, _arg);
 	}
 };
 }

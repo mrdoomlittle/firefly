@@ -32,7 +32,7 @@ if [ $(bash find.bash "$1" "--arc32") = "0" ]; then
 fi
 
 if [ $(bash find.bash "$1" "--ffly-client") = "0" ]; then
-	LDFLAGS="$LDFLAGS -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple"
+	LDFLAGS="$LDFLAGS -lX11 -lGL -lGLU -lglut -lX11-xcb -lxcb -lxcb-icccm -lpulse -lpulse-simple -lasound"
 	CXX_IFLAGS="$CXX_IFLAGS -I/usr/include/freetype2"
 elif [ $(bash find.bash "$1" "--ffly-server") = "0" ]; then
 	echo "0"
@@ -116,9 +116,10 @@ if $(pkg-config libpng --exists); then
 fi
 
 if [ $FORCE_CUDA -eq 1 ]; then
-	GPU_CL_TYPE="-DUSING_CUDA"
-	LDFLAGS="$LDFLAGS -lcuda -lcudart"
+	GPU_CL_TYPE="-D__USING_CUDA"
+	LDFLAGS="$LDFLAGS -lcudart"
 	CXX_IFLAGS="$CXX_IFLAGS -I$CUDART_PATH/include"
+	CXX_LFLAGS="$CXX_LFLAGS -L$CUDART_PATH/lib64"
 #	CXXFLAGS="$CXXFLAGS $CUDART_PATH/include"
 else
 # check what type of cl library we are going to use e.g. opengl or cuda etc...
@@ -129,7 +130,7 @@ if [ -f "$OPENCL_PATH/lib/x86_64-linux-gnu/libOpenCL.so.1" ]; then
 	CXX_LFLAGS="$CXX_LFLAGS -L/usr/local/lib/x86_64/sdk"
 elif [ -f "$CUDA_PATH/lib/x86_64-linux-gnu/libcuda.so" ]; then
 	if [ -d "$CUDART_PATH" ]; then
-		GPU_CL_TYPE="-DUSING_CUDA"
+		GPU_CL_TYPE="-D__USING_CUDA"
 		CXX_IFLAGS="$CXX_IFLAGS -D__USING_CUDA"
 		LDFLAGS="$LDFLAGS -lcudart"
 #		CXXFLAGS="$CXXFLAGS $CUDART_PATH/include $CUDART_PATH/lib64"

@@ -4,6 +4,11 @@
 namespace mdl {
 namespace firefly {
 namespace system {
+enum {
+	
+};
+
+
 enum key_id : uint_t {
 	KEY_W_ID,
 	KEY_S_ID,
@@ -11,6 +16,7 @@ enum key_id : uint_t {
 	KEY_D_ID
 };
 typedef enum key_id key_id_t;
+
 }
 }
 }

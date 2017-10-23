@@ -1,6 +1,11 @@
 # ifndef __firefly__hpp
 # define __firefly__hpp
 # include "types/err_t.h"
+# include "types/bool_t.h"
+# include "system/event.hpp"
+# include "system/event_field.h"
+# include "ffly_client.hpp"
+/*
 # include "ffly_graphics.hpp"
 # include "ffly_system.hpp"
 # include "ffly_memory.hpp"
@@ -13,9 +18,10 @@
 # include "types/bool_t.h"
 # include "core_portal.h"
 # include "graphics/window.hpp"
+*/
 namespace mdl {
 namespace firefly {
-
+/*
 types::err_t init();
 types::err_t de_init();
 
@@ -24,8 +30,10 @@ struct ffly_smem_buff_t extern *wd_ev_dbuff;
 
 
 types::err_t init_core_portal(graphics::window *__window);
+*/
 types::bool_t poll_event(types::event_t& __event);
-void pev_collapse(types::event_id_t __event_id);
+
+void event_free(ffly_client *__ffc, types::event_t& __event);
 }
 }
 

@@ -5,6 +5,7 @@
 # include "../types/event_t.h"
 # include "../system/io.h"
 # include "../system/event_kind.h"
+# include "../system/event_field.h"
 # define EVENT_BUFF_SIZE 20
 
 int static ffly_x11_err_handle(Display *__d, XErrorEvent *__e) {
@@ -41,8 +42,10 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 	XSetErrorHandler(ffly_x11_err_handle);
 	__x11_wd->xa_len = __xa_len;
 	__x11_wd->ya_len = __ya_len;
-
-	if (ffly_buff_init(&__x11_wd->event_buff, EVENT_BUFF_SIZE, sizeof(ffly_event_t)) != FFLY_SUCCESS) return FFLY_FAILURE;
+	if (ffly_buff_init(&__x11_wd->event_buff, EVENT_BUFF_SIZE, sizeof(ffly_event_t)) != FFLY_SUCCESS) {
+		ffly_printf(stderr, "failed to init event buffer.\n");
+		return FFLY_FAILURE;
+	}
 
 	if (!(__x11_wd->d = XOpenDisplay(NULL))) {
 		return FFLY_FAILURE;
@@ -99,26 +102,44 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 		return FFLY_FAILURE;
 	}
 
-	ffly_add_flag(&__x11_wd->flags, FLG_WD_OPEN, 1);
+	ffly_mem_blk_init(&__x11_wd->event_data, 100, sizeof(ffly_wd_ed_t));
 
-	XEvent xev;
+	ffly_add_flag(&__x11_wd->flags, FFLY_FLG_WD_ALIVE, 1);
+
+	XEvent xevent;
 	ffly_event_t event;
+	ffly_wd_ed_t event_data;
 	do {
+		usleep(1000);
 		while (XPending(__x11_wd->d) > 0) {
-			XNextEvent(__x11_wd->d, &xev);
-			switch(xev.type) {
+			XNextEvent(__x11_wd->d, &xevent);
+			switch(xevent.type) {
 				case ClientMessage:
 					goto _end;
 				case KeyPress:
-					event = (ffly_event_t) {.kind = _ffly_ek_key_press};
+					event = (ffly_event_t) {.kind=_ffly_ek_key_press};
+					event_data.code = xevent.xkey.keycode;
 				break;
 				case KeyRelease:
-					event = (ffly_event_t) {.kind = _ffly_ek_key_release};
+					event = (ffly_event_t) {.kind=_ffly_ek_key_release};
+					event_data.code = xevent.xkey.keycode;
 				break;
 				default:
 					continue;
 			}
 
+			if (ffly_buff_full(&__x11_wd->event_buff)) {
+				ffly_printf(stderr, "window event buffer is full.\n");
+				continue;
+			}
+
+			if (ffly_mem_blk_full(&__x11_wd->event_data)) {
+				ffly_printf(stderr, "no more memory for event data.\n");
+				continue;
+			}
+
+			*(ffly_wd_ed_t*)(event.data = ffly_mem_blk_alloc(&__x11_wd->event_data)) = event_data;
+			event.field = _ffly_ef_wd;
 			if (ffly_buff_put(&__x11_wd->event_buff, (void*)&event) != FFLY_SUCCESS) {
 				ffly_printf(stderr, "x11_wd, failed to put event into buffer.\n");
 				continue;
@@ -129,19 +150,17 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 			}
 		}
 
-		ffly_add_flag(&__x11_wd->flags, FLG_WD_WAITING, 0);
-		if (!ffly_is_flag(__x11_wd->flags, FLG_WD_DONE_DRAW)) continue;
-
+		if (!ffly_is_flag(__x11_wd->flags, FFLY_FLG_WD_DRAW_FRAME)) continue;
 		glDrawPixels(__xa_len, __ya_len, GL_RGBA, GL_UNSIGNED_BYTE, __x11_wd->frame_buff);
 		glXSwapBuffers(__x11_wd->d, __x11_wd->w);
 
-		ffly_rm_flag(&__x11_wd->flags, FLG_WD_DONE_DRAW);
-		if (ffly_is_flag(__x11_wd->flags, FLG_WD_WAITING)) continue;
-
-	} while(!ffly_is_flag(__x11_wd->flags, FLG_WD_TO_CLOSE));
+		ffly_rm_flag(&__x11_wd->flags, FFLY_FLG_WD_DRAW_FRAME);
+		ffly_add_flag(&__x11_wd->flags, FFLY_FLG_WD_NEXT_FRAME, 0);
+	} while(!ffly_is_flag(__x11_wd->flags, FFLY_FLG_WD_KILL));
 
 	_end:
-	ffly_add_flag(&__x11_wd->flags, FLG_WD_CLOSED, 0);
+	ffly_mem_blk_de_init(&__x11_wd->event_data);
+	ffly_add_flag(&__x11_wd->flags, FFLY_FLG_WD_DEAD, 0);
 	XDestroyWindow(__x11_wd->d, __x11_wd->w);
 	XCloseDisplay(__x11_wd->d);
 	__ffly_mem_free(__x11_wd->frame_buff);

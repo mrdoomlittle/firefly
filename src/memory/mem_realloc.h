@@ -40,7 +40,7 @@ static void*(*mem_realloc)(void*, uint_t) = &ffly_mem_realloc;
 }
 }
 # endif
-# if defined(__WITH_MEM_TRACKER) && !defined(__cplusplus)
+# if defined(__WITH_MEM_TRACKER)
 #	ifdef __cplusplus
 #		define __ffly_mem_realloc(__MEM_PTR, __ALLOC_BC) mdl::firefly::memory::mem_realloc(__MEM_PTR, __ALLOC_BC, ffly_false)
 #	else

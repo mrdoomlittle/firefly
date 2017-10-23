@@ -1,9 +1,8 @@
 # ifndef __wd__flags__h
 # define __wd__flags__h
-# define FLG_WD_TO_CLOSE 16
-# define FLG_WD_KILLED 32
-# define FLG_WD_CLOSED 1
-# define FLG_WD_OPEN 2
-# define FLG_WD_WAITING 4
-# define FLG_WD_DONE_DRAW 8
+# define FFLY_FLG_WD_ALIVE 1
+# define FFLY_FLG_WD_DEAD 2
+# define FFLY_FLG_WD_DRAW_FRAME 4
+# define FFLY_FLG_WD_NEXT_FRAME 8
+# define FFLY_FLG_WD_KILL 16
 # endif /*__wd__flags__h*/

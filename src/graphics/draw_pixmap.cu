@@ -1,3 +1,4 @@
+
 # include "draw_pixmap.hpp"
 __global__ void cu_draw_pixmap(mdl::uint_t *__xfs, mdl::uint_t *__yfs, mdl::firefly::types::pixmap_t __pixbuff, mdl::uint_t *__pb_xlen, mdl::uint_t *__pm_xfs, mdl::firefly::types::pixmap_t __pixmap, mdl::uint_t *__pm_xlen, mdl::u16_t *__angle) {
 	mdl::uint_t pb_point = ((threadIdx.x+*__xfs)+(blockIdx.x**__pb_xlen))*4;

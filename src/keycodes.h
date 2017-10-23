@@ -1,5 +1,5 @@
-# ifndef __keycodes__hpp
-# define __keycodes__hpp
+# ifndef __keycodes__h
+# define __keycodes__h
 // numbers
 # define X11_NO_0 11
 # define X11_NO_1 1
@@ -17,4 +17,4 @@
 # define X11_LT_S 39
 # define X11_LT_D 40
 
-# endif /*__keycodes__hpp*/
+# endif /*__keycodes__h*/

@@ -10,8 +10,15 @@ using namespace mdl::firefly;
 # include "ffly_audio.h"
 # include "system/thread.h"
 # include "system/task_pool.h"
+# include "graphics/window.hpp"
 # include <string.h>
 int main() {
+	graphics::window window;
+	window.init(400, 400, "Hello World");
+
+	window.begin();
+	while(1);
+/*
 	ffly_mem_track_init(&__ffly_mem_track__);
 	ffly_task_pool_init(&__task_pool__, 4);
 	usleep(2000000);
@@ -37,7 +44,7 @@ int main() {
 	ffly_audio_de_init();
 
 	__ffly_mem_free(p);
-
+*/
 //	printf("size: %u\n", sizeof(mdl_uint_t));
 //	char *t = mdl_str_cmb("A", "B", 0);
 
@@ -48,12 +55,14 @@ int main() {
 //	types::id_t asset_id = ffly_load_asset((void*)&asset_m, NULL, "test", _ffly_ak_wav_file);
 //
 //	asset_m.de_init();
+/*
 	ffly_task_pool_de_init(&__task_pool__);
 	ffly_thread_cleanup();
 	ffly_mem_track_dump(&__ffly_mem_track__);
 	ffly_mem_track_de_init(&__ffly_mem_track__);
 
 	printf("finished.\n");
+*/
 //	printf("mem track: used: %lu bytes - freed: %lu bytes - lost:  bytes\n", ffly_mem_alloc_bc, ffly_mem_free_bc);
 	return 0;
 }

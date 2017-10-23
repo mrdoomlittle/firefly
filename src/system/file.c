@@ -1,6 +1,7 @@
 # include "file.h"
 # include <fcntl.h>
 # include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
 # include "io.h"
 # include <sys/stat.h>
 # include <unistd.h>

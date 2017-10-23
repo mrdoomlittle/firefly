@@ -10,6 +10,8 @@
 # include "../types/off_t.h"
 # include "../system/flags.h"
 # include "../system/buff.h"
+# include "../types/wd_ed_t.h"
+# include "../system/mem_blk.h"
 struct ffly_x11_wd {
 	mdl_uint_t xa_len, ya_len;
 	ffly_off_t mn_xal_off, mn_yal_off;
@@ -19,6 +21,7 @@ struct ffly_x11_wd {
 	Window w;
 	ffly_flag_t flags;
 	struct ffly_buff event_buff;
+	struct ffly_mem_blk event_data;
 };
 
 # ifdef __cplusplus
