@@ -3,10 +3,12 @@
 # include <mdlint.h>
 # include "../types/err_t.h"
 # include "../types/bool_t.h"
+# include "../types/mutex_t.h"
 struct ffly_mem_blk {
 	void *p, *uu_slices;
 	mdl_uint_t size, slice_size;
 	mdl_uint_t off, uu_slice_c;
+	ffly_mutex_t m;
 };
 
 # ifdef __cplusplus
