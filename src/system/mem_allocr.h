@@ -20,7 +20,7 @@ struct ffly_mem_allocr {
 	mdl_uint_t stack_size;
 	mdl_uint_t mem_free, mem_used;
 	void *last_blk;
-	void *unused_blks;
+	void *uu_blks;
 };
 
 ffly_err_t ffly_mem_allocr_init(struct ffly_mem_allocr*, mdl_uint_t);
