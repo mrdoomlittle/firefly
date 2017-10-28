@@ -19,23 +19,27 @@ ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-layer-manager"), 0)
 	FFLY_OBJS+= src/layer_manager.o
 endif
 
+ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-room-manager"), 0)
+    FFLY_OBJS+= src/room_manager.o
+endif
+
 ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-uni-manager"), 0)
  FFLY_OBJS+= src/uni_manager.o src/chunk_manager.o src/chunk_keeper.o src/data/uni_dlen_val.o
 endif
 
 ifeq ($(shell bash find.bash "$(FFLY_ARGS)" "--with-obj-manager"), 0)
- FFLY_OBJS+= src/obj_manager.o src/gravy_manager.o
+ FFLY_OBJS+= src/obj_manager.o
 endif
 
 ifeq ($(FFLY_TARGET), FFLY_SERVER)
  FFLY_OBJS += src/ffly_server.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/graphics/png_loader.o \
- src/worker_manager.o src/memory/alloc_pixmap.o src/graphics/draw_pixmap.clo src/player_manager.o src/player_handler.o src/worker_handler.o
+ src/worker_manager.o src/memory/alloc_pixelmap.o src/graphics/draw_pixmap.clo src/player_manager.o src/player_handler.o src/worker_handler.o
 
 else ifeq ($(FFLY_TARGET), FFLY_CLIENT)
  FFLY_OBJS += src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/graphics/png_loader.o src/system/time_stamp.o \
 src/system/event.o src/firefly.o
 else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
- FFLY_OBJS += src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
+ FFLY_OBJS += src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixelmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
  src/graphics/png_loader.o src/room_manager.o src/asset_manager.o src/system/time_stamp.o  src/graphics/draw_rect.o \
  src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o src/graphics/draw_pixmap.clo src/system/task_handle.o src/system/task_worker.o \
@@ -43,9 +47,9 @@ else ifeq ($(FFLY_TARGET), FFLY_STUDIO)
  LDFLAGS += -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple
  CXX_IFLAGS += -I/usr/include/freetype2 $(CUDART_INC)
 else ifeq ($(FFLY_TARGET), FFLY_WORKER)
- FFLY_OBJS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixmap.o
+ FFLY_OBJS += src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixelmap.o
 else ifeq ($(FFLY_TARGET), FFLY_TEST)
- FFLY_OBJS+= src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/graphics/png_loader.o src/system/time_stamp.o
+ FFLY_OBJS+= src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/graphics/png_loader.o src/system/time_stamp.o src/layer_manager.o src/room_manager.o
 else
  FFLY_OBJS=
  FFLY_TARGET=FFLY_NONE
@@ -69,10 +73,10 @@ FFLY_OBJS+= src/system/buff.o src/system/vec.o src/system/time.o src/system/conf
 src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
 src/system/task_worker.o src/system/sys_nanosleep.o src/system/mem_blk.o
 # graphics
-FFLY_OBJS+= src/graphics/draw_pixmap.o src/graphics/draw_pixmap.clo src/graphics/fill_pixmap.o
+FFLY_OBJS+= src/graphics/draw_pixelmap.o src/graphics/fill_pixmap.o src/graphics/fill_pixelmap.o
 #FFLY_OBJS+= src/ffly_graphics.o
 # memory
-FFLY_OBJS+= src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o #src/memory/alloc_pixmap.o
+FFLY_OBJS+= src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o src/memory/alloc_pixelmap.o
 
 CXXFLAGS+= $(FFLY_TARGET)
 
@@ -296,8 +300,11 @@ src/graphics/skelmap_loader.o: src/graphics/skelmap_loader.cpp
 src/asset_manager.o: src/asset_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/asset_manager.o src/asset_manager.cpp
 
-src/graphics/draw_pixmap.o: src/graphics/draw_pixmap.cu
-	nvcc -c -std=c++11 $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_pixmap.o src/graphics/draw_pixmap.cu
+src/graphics/draw_pixelmap.o: src/graphics/draw_pixelmap.cu
+	nvcc -c -std=c++11 $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_pixelmap.o src/graphics/draw_pixelmap.cu
+
+src/graphics/fill_pixelmap.o: src/graphics/fill_pixelmap.cu
+	nvcc -c -std=c++11 $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/fill_pixelmap.o src/graphics/fill_pixelmap.cu
 
 src/graphics/fill_pixmap.o: src/graphics/fill_pixmap.cu
 	nvcc -c -std=c++11 $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/fill_pixmap.o src/graphics/fill_pixmap.cu
@@ -317,8 +324,8 @@ src/opencl_helper.o: src/opencl_helper.cpp
 src/worker_manager.o: src/worker_manager.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/worker_manager.o src/worker_manager.cpp
 
-src/memory/alloc_pixmap.o: src/memory/alloc_pixmap.c
-	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/alloc_pixmap.o src/memory/alloc_pixmap.c
+src/memory/alloc_pixelmap.o: src/memory/alloc_pixelmap.c
+	gcc -c -Wall -std=$(C_VERSION) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/memory/alloc_pixelmap.o src/memory/alloc_pixelmap.c
 
 src/graphics/draw_pixmap.clo: src/graphics/draw_pixmap.cpp
 	g++ -c -Wall -std=$(CXX_VERSION) $(CXX_IFLAGS) -D$(FFLY_TARGET) $(FFLY_DEFINES) -o src/graphics/draw_pixmap.clo src/graphics/draw_pixmap.cpp
@@ -463,8 +470,8 @@ ffly_test: $(FFLY_OBJS) src/ffly_test.o
 
 
 
-#src/ffly_memory.o: src/memory/mem_alloc.o src/memory/mem_free.o src/memory/alloc_pixmap.o
-#	ld -r -o src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/alloc_pixmap.o
+#src/ffly_memory.o: src/memory/mem_alloc.o src/memory/mem_free.o src/memory/alloc_pixelmap.o
+#	ld -r -o src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/alloc_pixelmap.o
 
 #example_client: required src/ffly_client.o src/graphics/x11_wd.o src/graphics/png_loader.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/draw_rect.o src/graphics/draw_skelmap.o src/graphics/skelmap_loader.o \
 #	src/asset_manager.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o src/ffly_memory.o
@@ -473,9 +480,9 @@ ffly_test: $(FFLY_OBJS) src/ffly_test.o
 #	-lto_string -lgetdigit -lintlen -lstrcmb -lemu2d -lpulse -lpulse-simple -lpng16 -lcuda -lcudart -lboost_system -lboost_filesystem -lpthread -lboost_thread -lX11 -lGL -lGLU -lglut
 
 #example_server: src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o \
-#	src/opencl_helper.o src/worker_manager.o src/memory/alloc_pixmap.o src/graphics/draw_pixmap.clo
+#	src/opencl_helper.o src/worker_manager.o src/memory/alloc_pixelmap.o src/graphics/draw_pixmap.clo
 #	g++ -std=c++11 $(CXXFLAGS) -DUSING_OPENCL -DFFLY_SERVER -L/usr/local/lib/x86_64/sdk -Wall $(ARC) -o bin/example_server.exec example_server.cpp \
-#	src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o src/worker_manager.o src/memory/alloc_pixmap.o \
+#	src/ffly_server.o src/graphics/png_loader.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/opencl_helper.o src/worker_manager.o src/memory/alloc_pixelmap.o \
 #	src/graphics/draw_pixmap.clo -lpng16 -lboost_system -lemu2d -lOpenCL -lboost_filesystem -lpthread -lboost_thread
 
 example_worker:

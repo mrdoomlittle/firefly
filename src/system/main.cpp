@@ -20,30 +20,86 @@ void *call(void *__arg_p) {
 //	x = x;
 }
 
+void a() {
+	usleep(1000);
+}
+void b(mdl_uint_t __a1) {ffly_printf(stdout, "%u\n", __a1);}
+void c(mdl_uint_t __a1, mdl_uint_t __a2) {ffly_printf(stdout, "%u, %u\n", __a1, __a2);}
+void d(mdl_uint_t __a1, mdl_uint_t __a2, mdl_uint_t __a3) {ffly_printf(stdout, "%u, %u, %u\n", __a1, __a2, __a3);}
+void e(mdl_uint_t __a1, mdl_uint_t __a2, mdl_uint_t __a3, mdl_uint_t __a4) {ffly_printf(stdout, "%u, %u, %u, %u\n", __a1, __a2, __a3, __a4);}
+# include "futex.h"
+ffly_mutex_t mutex = FFLY_MUTEX_INIT;
+void* test(void *__arg) {
+	mdl_uint_t i = 0;
+	void *p;
+	while(i++ < 400) {
+		ffly_mutex_lock(&mutex);
+		ffly_printf(stdout, "%u\n", i);
+		p = malloc(1);
+		free(p);
+		ffly_mutex_unlock(&mutex);
+	}
+
+	ffly_printf(stdout, "??? - %u.\n", i);
+}
 int main() {
 	ffly_mem_track_init(&__ffly_mem_track__);
+
+	ffly_tid_t tid1, tid2;
+	ffly_thread_create(&tid1, &test, NULL);
+	ffly_thread_create(&tid2, &test, NULL);
+	while(ffly_thread_alive(tid1));
+	while(ffly_thread_alive(tid2));
+//	mdl::firefly::system::thread ta(&a, tid);
+//	mdl::firefly::system::thread tc(&a, tid);
+//	while(ffly_thread_alive(tid));
+//	mdl::firefly::system::thread tb(&b, (mdl_uint_t)1, tid);
+//	while(ffly_thread_alive(tid));
+//	mdl::firefly::system::thread tc(&c, (mdl_uint_t)1, (mdl_uint_t)2, tid);
+//	while(ffly_thread_alive(tid));
+//	mdl::firefly::system::thread td(&d, (mdl_uint_t)1, (mdl_uint_t)2, (mdl_uint_t)3,  tid);
+//	mdl::firefly::system::thread te(&e, (mdl_uint_t)1, (mdl_uint_t)2, (mdl_uint_t)3, (mdl_uint_t)4, tid);
+	ffly_thread_cleanup();
+	ffly_printf(stdout, "all good.\n");
+	fflush(stdout);
+	return 0;
+//	while(1);
 /*
 	struct ffly_mem_allocr ma;
 
 
-	ffly_mem_allocr_init(&ma, 1024);
+	ffly_mem_allocr_init(&ma, 8099);
 
-	void *p[80];
-	mdl_u16_t a = 2, i = 0, o = 0;
-	for (;a != 512; a*=2, i++) {
-		printf("alloced %u bytes.\n", a);
-		ffly_mem_allocr_alloc(&ma, &p[i], a);
+	void *p[12];
+	mdl_u8_t o = 0;
+	for (;o != 4;o++) {
+	mdl_u8_t i;
+
+	printf("----------- alloc\n");
+	i = 0;
+	for (;i != sizeof(p)/sizeof(void*);i++) {
+		ffly_mem_allocr_alloc(&ma, &p[i], sizeof(mdl_u64_t));
+		printf("%p\n", p[i]);
+		*(mdl_u64_t*)p[i] = 21299+i;
 	}
 
-
-	for (;o != i; o++) {
-		ffly_mem_allocr_free(&ma, p[o]);
+	printf("----------- free\n");
+	i = 0;
+	for (;i != sizeof(p)/sizeof(void*);i++) {
+		printf(">>>>>>>val: %lu\n", *(mdl_u64_t*)p[i]);
+		ffly_mem_allocr_free(&ma, p[i]);
 	}
 
-	void *mem;
-	ffly_mem_allocr_alloc(&ma, &mem, 256);
-
+	printf("----------- alloc\n");
+	i = 0;
+	for (;i != sizeof(p)/sizeof(void*);i++) {
+		ffly_mem_allocr_alloc(&ma, &p[i], 20);
+		printf("%p\n", p[i]);
+	}
+	}
 */
+//	ffly_mem_track_de_init(&__ffly_mem_track__);
+/*
 	struct ffly_mem_blk mem_blk;
 	ffly_mem_blk_init(&mem_blk, 26, sizeof(mdl_u8_t));
 
@@ -57,6 +113,7 @@ int main() {
  
 	ffly_mem_blk_de_init(&mem_blk);
 	ffly_mem_track_de_init(&__ffly_mem_track__);
+*/
 //# ifndef __WITH_TASK_POOL
 //	struct ffly_task_pool __task_pool__;
 //# endif

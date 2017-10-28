@@ -34,7 +34,7 @@ fi
 
 extra_defines=
 if [ $(bash find.bash "$FFLY_ARGS" "--with-room-manager") -eq 0 ]; then
-	extra_defines="-DROOM_MANAGER"
+	extra_defines="-D__WITH_ROOM_MANAGER"
 fi
 
 if [ $(bash find.bash "$FFLY_ARGS" "--with-obj-manager") -eq 0 ]; then
@@ -57,6 +57,10 @@ fi
 
 if [ $(bash find.bash "$FFLY_ARGS" "--with-mem-tracker") -eq 0 ]; then
 	extra_defines="$extra_defines -D__WITH_MEM_TRACKER"
+fi
+
+if [ $(bash find.bash "$FFLY_ARGS" "--with-layer-manager") -eq 0 ]; then
+	extra_defines="$extra_defines -D__WITH_LAYER_MANAGER"
 fi
 
 bash cac_dirs.bash

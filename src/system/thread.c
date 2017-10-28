@@ -5,6 +5,7 @@
 # include <sys/types.h>
 # include <errno.h>
 # include "io.h"
+# include <sys/wait.h>
 # include "../types/bool_t.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_realloc.h"
@@ -18,11 +19,11 @@
 # define MAX_THREADS 20
 # define PAGE_SIZE 4
 # define UU_PAGE_SIZE 26
-# define DSS 32000
+# define DSS 0xFFF
 struct ffly_thread {
 	pid_t pid;
 	ffly_tid_t tid;
-	ffly_bool_t alive;
+	ffly_bool_t alive, ok;
 	ffly_byte_t *sp;
 	void*(*entry_point)(void*);
 	void *arg_p;
@@ -65,31 +66,48 @@ ffly_err_t static ffly_thread_del(ffly_tid_t __tid) {
 	return FFLY_SUCCESS;
 }
 
+ffly_bool_t ffly_thread_alive(ffly_tid_t __tid) {
+	return (get_thr(__tid)->alive||!get_thr(__tid)->ok);
+}
+
+ffly_bool_t ffly_thread_dead(ffly_tid_t __tid) {
+	return !get_thr(__tid)->alive;
+}
+
 int static ffly_thr_proxy(void *__arg_p) {
 	struct ffly_thread *thr = (struct ffly_thread*)__arg_p;
 	ffly_atomic_incr(&active_threads);
 	thr->pid = getpid();
+	ffly_printf(stdout, "pid: %ld, no: %lu\n", thr->pid, active_threads);
 	thr->alive = 1;
 
+	thr->ok = 1;
 	thr->entry_point(thr->arg_p);
+//	ffly_thread_del(thr->tid);
 
 	thr->alive = 0;
-	ffly_thread_del(thr->tid);
-
 	ffly_atomic_decr(&active_threads);
-	if (kill(thr->pid, SIGKILL) < 0) {
-		ffly_printf(stderr, "thread: failed to kill, errno{%d}\n", errno);
-	}
+	ffly_printf(stdout, "no: %lu\n", active_threads);
+	fflush(stdout);
+//	if (kill(thr->pid, SIGKILL) < 0) {
+//		ffly_printf(stderr, "thread: failed to kill, errno{%d}\n", errno);
+//	}
+//	_wait:
+//	goto _wait;
 	return 0;
 }
 
 ffly_err_t ffly_thread_kill(ffly_tid_t __tid) {
 	struct ffly_thread *thr = get_thr(__tid);
 	if (kill(thr->pid, SIGKILL) == -1) {
-		ffly_printf(stderr, "thread: failed to kill, errno{%d}\n", errno);
+		ffly_printf(stderr, "thread, failed to kill, errno{%d}\n", errno);
 		return FFLY_FAILURE;
 	}
 
+	while(!thr->ok);
+	if (waitpid(thr->pid, NULL, 0) < 0) {
+		ffly_printf(stderr, "thread, waidpid failure, errno: %d.\n", errno);
+	}
 	return ffly_thread_del(__tid);
 }
 
@@ -99,7 +117,8 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 		return FFLY_FAILURE;
 	}
 
-	mdl_u8_t reused_tid;
+	ffly_mutex_lock(&mutex);
+	mdl_u8_t reused_tid = 0;
 	if ((reused_tid = (uu_ids.off > 0))) {
 		*__tid = *(uu_ids.p+(--uu_ids.off));
 		if (uu_ids.off < ((uu_ids.page_c-1)*UU_PAGE_SIZE) && uu_ids.page_c > 1) {
@@ -108,8 +127,10 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 				return FFLY_FAILURE;
 			}
 		}
+		ffly_mutex_unlock(&mutex);
 		goto _exec;
 	}
+	ffly_mutex_unlock(&mutex);
 
 	*__tid = off++;
 	goto _alloc;
@@ -117,12 +138,16 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	_exec:
 {
 	struct ffly_thread *thr = get_thr(*__tid);
+	thr->alive = 0;
+	thr->ok = 0;
 	if (reused_tid) {
 		if (thr->sp == NULL)
 			thr->sp = __ffly_mem_alloc(DSS);
 
 		thr->arg_p = __arg_p;
 		thr->entry_point = __p;
+		waitpid(thr->pid, NULL, 0);
+		printf("--------------------\n");
 	} else {
 		*thr = (struct ffly_thread) {
 			.tid = *__tid,
@@ -132,10 +157,12 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 		};
 	}
 
-	if (clone(&ffly_thr_proxy, thr->sp+DSS, CLONE_VM, (void*)thr) == -1) {
+	pid_t pid;
+	if ((pid = clone(&ffly_thr_proxy, thr->sp+DSS, CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD, (void*)thr)) == -1) {
 		ffly_printf(stderr, "thread: failed.\n");
 		return FFLY_FAILURE;
 	}
+//	waitpid(pid, NULL, 0);
 }
 	return FFLY_SUCCESS;
 
@@ -155,8 +182,10 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 
 		struct ffly_thread **begin = threads+((page_c-1)*PAGE_SIZE);
 		struct ffly_thread **itr = begin;
-		while(itr != begin+PAGE_SIZE)
+		while(itr != begin+PAGE_SIZE) {
 			*(itr++) = (struct ffly_thread*)__ffly_mem_alloc(sizeof(struct ffly_thread));
+			//printf("----> %u\n", itr-begin);
+		}
 	}
 
 	goto _exec;
@@ -165,22 +194,27 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 }
 
 ffly_err_t ffly_thread_cleanup() {
-	while(no_threads() != 0 || active_threads != 0);
+	while(active_threads != 0);
 	struct ffly_thread **itr = threads;
-	printf("--- stage 1.\n");
+	//printf("--- stage 1.\n");
 	while(itr != threads+off) {
+		if ((*itr)->alive || !(*itr)->ok) {
+			while(!(*itr)->ok);
+			ffly_thread_kill((*itr)->tid);
+			waitpid((*itr)->pid, NULL, 0);
+		}
 		if ((*itr)->sp != NULL)
 			__ffly_mem_free((*itr)->sp);
 		__ffly_mem_free(*(itr++));
 	}
 
-	printf("--- stage 2.\n");
+	//printf("--- stage 2.\n");
 	if (threads != NULL) {
 		__ffly_mem_free(threads);
 		threads = NULL;
 	}
 
-	printf("--- stage 3.\n");
+	//printf("--- stage 3.\n");
 	if (uu_ids.p != NULL) {
 		__ffly_mem_free(uu_ids.p);
 		uu_ids.p = NULL;

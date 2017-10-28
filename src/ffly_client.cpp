@@ -53,10 +53,10 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(void(*__extern_loop)(i8_t, po
 	this->portal.init(this);
 
 	do {
-		ffly_usleep(0, 50000000);
+		ffly_usleep(0, 20000000);
 		if (firefly::system::is_flag(window.flags(), FFLY_FLG_WD_DEAD)) {
 			firefly::system::io::printf(stdout, "window has been closed.\n");
-			break;
+			goto _pro;
 		}
 
 		if (timer.now<firefly::system::time::ns_to_ms>() > 1000) {
@@ -71,6 +71,7 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(void(*__extern_loop)(i8_t, po
 		}
 
 		mdl_u8_t c = 0;
+		// pull max of 10 events from window at one time
 		while(window.event_queue.size() > 0 && c++ < 10) {
 			firefly::types::err_t any_err = FFLY_SUCCESS;
 			firefly::system::event_add(window.event_queue.pop(any_err));
@@ -81,7 +82,9 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(void(*__extern_loop)(i8_t, po
 		}
 
 		__extern_loop(0, &this->portal, NULL);
-
+# ifdef __WITH_LAYER_MANAGER
+		this->layer_m.draw_layers(this->window.frame_buff(), this->wd_xa_len, this->wd_ya_len);
+# endif
 		if (!firefly::system::is_flag(window.flags(), FFLY_FLG_WD_DRAW_FRAME))
 			firefly::system::add_flag(&window.flags(), FFLY_FLG_WD_DRAW_FRAME, 0);
 
@@ -92,6 +95,8 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(void(*__extern_loop)(i8_t, po
 
 	firefly::system::add_flag(&window.flags(), FFLY_FLG_WD_KILL, 0);
 	while(!firefly::system::is_flag(window.flags(), FFLY_FLG_WD_DEAD));
+	_pro:
+	firefly::system::add_flag(&window.flags(), FFLY_FLG_WD_OK, 0);
 
 	err:
 	return any_err;

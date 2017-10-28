@@ -1,4 +1,5 @@
 # include "ffly_graphics.hpp"
+/*
 namespace mdl {
 namespace firefly {
 namespace graphics {
@@ -19,3 +20,4 @@ types::err_t draw_pix_map(types::_1d_pm_t __pix_buff, uint_t __pb_xa_len, uint_t
 }
 }
 }
+*/

@@ -26,10 +26,11 @@ all: clean
 	gcc -c $(DEFINES) -std=c11 buff.c
 	gcc -c $(DEFINES) -std=c11 queue.c
 	gcc -c $(DEFINES) -std=c11 mem_blk.c
+	gcc -c $(DEFINES) -std=gnu11 futex.c
 #	gcc -c $(DEFINES) -std=c11 ../data/mem_ncpy.c
 	gcc -c $(DEFINES) -std=c11 ../data/swp.c
 #	gcc -c -std=c11 $(DEFINES) -o mem_tracker.o mem_tracker.c
-	g++ -std=c++11 $(DEFINES) -o main main.cpp mem_tracker.o mem_blk.o time.o sys_nanosleep.o cond_lock.o atomic_op.o mutex.o flags.o mem_set.o swp.o buff.o queue.o vec.o mem_cpy.o mem_allocr.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o arr.o mem_dupe.o thread.o task_pool.o task_worker.o signal.o -lpthread
+	g++ -std=c++11 $(DEFINES) -o main main.cpp futex.o mem_tracker.o mem_blk.o time.o sys_nanosleep.o cond_lock.o atomic_op.o mutex.o flags.o mem_set.o swp.o buff.o queue.o vec.o mem_cpy.o mem_allocr.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o arr.o mem_dupe.o thread.o task_pool.o task_worker.o signal.o -lpthread
 clean:
 	rm -f *.o
 #all:

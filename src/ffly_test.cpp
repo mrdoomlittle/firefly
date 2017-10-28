@@ -12,12 +12,26 @@ using namespace mdl::firefly;
 # include "system/task_pool.h"
 # include "graphics/window.hpp"
 # include <string.h>
+# include "layer_manager.hpp"
+# include "room_manager.hpp"
+# include "types/no_t.h"
+extern "C" {
+	void ffly_usleep(mdl_u64_t,  mdl_u32_t);
+}
 int main() {
-	graphics::window window;
-	window.init(400, 400, "Hello World");
+	room_manager room_m;
 
-	window.begin();
-	while(1);
+	types::no_t *room_no;
+	for (;;) {
+	room_m.creat_room(room_no, 0);
+	room_m.del_room(room_no, 1);
+	ffly_usleep(0, 50000000);
+	}
+//	graphics::window window;
+//	window.init(400, 400, "Hello World");
+
+//	window.begin();
+//	while(1);
 /*
 	ffly_mem_track_init(&__ffly_mem_track__);
 	ffly_task_pool_init(&__task_pool__, 4);

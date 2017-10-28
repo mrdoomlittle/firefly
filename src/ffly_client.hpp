@@ -50,6 +50,12 @@
 # ifdef __WITH_LAYER_MANAGER
 #	include "layer_manager.hpp"
 # endif
+# ifdef __WITH_ROOM_MANAGER
+#	include "room_manager.hpp"
+# endif
+# ifdef __WITH_OBJ_MANAGER
+#	include "obj_manager.hpp"
+# endif
 namespace mdl { class ffly_client
 {
 	public:
@@ -89,8 +95,15 @@ namespace mdl { class ffly_client
 	}
 
 	portal_t portal;
-
-	private:
+# ifdef __WITH_LAYER_MANAGER
+	firefly::layer_manager layer_m;
+# endif
+# ifdef __WITH_ROOM_MANAGER
+	firefly::room_manager room_m;
+# endif
+# ifdef __WITH_OBJ_MANAGER
+	firefly::obj_manager obj_m;
+# endif
 	uint_t fps, frame_c = 0;
 	firefly::graphics::window window;
 	u16_t const wd_xa_len, wd_ya_len;

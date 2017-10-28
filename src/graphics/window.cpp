@@ -27,6 +27,9 @@ ffly_xcb_wd_begin
 }
 
 mdl::firefly::types::err_t mdl::firefly::graphics::window::de_init() {
+	system::io::printf(stdout, "window, waiting for handle thread to die.\n");
+	while(!ffly_thread_dead(this->tid));
+	system::io::printf(stdout, "window, handle thread is now dead.\n");
 	return FFLY_SUCCESS;
 }
 

@@ -159,9 +159,11 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 	} while(!ffly_is_flag(__x11_wd->flags, FFLY_FLG_WD_KILL));
 
 	_end:
-	ffly_mem_blk_de_init(&__x11_wd->event_data);
-	ffly_add_flag(&__x11_wd->flags, FFLY_FLG_WD_DEAD, 0);
 	XDestroyWindow(__x11_wd->d, __x11_wd->w);
 	XCloseDisplay(__x11_wd->d);
+	ffly_add_flag(&__x11_wd->flags, FFLY_FLG_WD_DEAD, 0);
+	while(!ffly_is_flag(__x11_wd->flags, FFLY_FLG_WD_OK));
+
+	ffly_mem_blk_de_init(&__x11_wd->event_data);
 	__ffly_mem_free(__x11_wd->frame_buff);
 }

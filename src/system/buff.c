@@ -35,10 +35,8 @@ ffly_err_t ffly_buff_get(struct ffly_buff *__buff, void *__p) {
 ffly_err_t ffly_buff_incr(struct ffly_buff *__buff) {
 	ffly_err_t any_err = FFLY_SUCCESS;
 	ffly_mutex_lock(&__buff->m);
-	if (__buff->off+1 < __buff->blk_c)
-		__buff->off++;
-	else
-		any_err = FFLY_FAILURE;
+	if (__buff->off == __buff->blk_c-1) any_err = FFLY_FAILURE;
+	else __buff->off++;
 	ffly_mutex_unlock(&__buff->m);
 	return any_err;
 }

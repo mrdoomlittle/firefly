@@ -8,5 +8,12 @@ extern "C" {
 ffly_err_t ffly_mem_cpy(void*, void*, mdl_uint_t);
 # ifdef __cplusplus
 }
+namespace mdl {
+namespace firefly {
+namespace data {
+static ffly_err_t(*mem_cpy)(void*, void*, mdl_uint_t) = &ffly_mem_cpy;
+}
+}
+}
 # endif
 # endif /*__ffly__mem_py__h*/

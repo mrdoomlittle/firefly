@@ -34,7 +34,7 @@ void static __inline__* ffly_buff_begin(struct ffly_buff *__buff) {return (void*
 void static __inline__* ffly_buff_end(struct ffly_buff *__buff) {return (void*)(__buff->p+((__buff->off-1)*__buff->blk_size));}
 void static __inline__ ffly_buff_lock(struct ffly_buff *__buff) {ffly_mutex_lock(&__buff->m);}
 void static __inline__ ffly_buff_unlock(struct ffly_buff *__buff) {ffly_mutex_unlock(&__buff->m);}
-ffly_bool_t static __inline__ ffly_buff_full(struct ffly_buff *__buff) {return (__buff->off > __buff->blk_c);}
+ffly_bool_t static __inline__ ffly_buff_full(struct ffly_buff *__buff) {return (__buff->off == __buff->blk_c-1);}
 ffly_bool_t static __inline__ ffly_buff_empty(struct ffly_buff *__buff) {return !__buff->off;}
 # ifdef __cplusplus
 namespace mdl {

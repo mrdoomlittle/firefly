@@ -73,6 +73,10 @@ if [ $(bash find.bash "$1" "--with-mem-tracker") = "0" ]; then
 	FFLY_ARGS="$FFLY_ARGS --with-mem-tracker"
 fi
 
+if [ $(bash find.bash "$1" "--with-layer-manager") = "0" ]; then
+	FFLY_ARGS="$FFLY_ARGS --with-layer-manager"
+fi
+
 if [ $(bash find.bash "$1" "--using-x11") = "0" ]; then
 	FFLY_ARGS="$FFLY_ARGS --using-x11"
 elif [ $(bash find.bash "$1" "--using-xcb") = "0" ]; then

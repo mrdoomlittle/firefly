@@ -1,22 +1,33 @@
-# ifndef __layer__hpp
-# define __layer__hpp
+# ifndef __ffly__layer__manager__hpp
+# define __ffly__layer__manager__hpp
 # include <boost/numeric/ublas/vector.hpp>
 namespace ublas = boost::numeric::ublas;
 # include <mdlint.h>
-# include "graphics/draw_pixmap.hpp"
-# include <utility>
-# include <string.h>
-# include <set>
-# include "types/layer_info_t.hpp"
-# include "memory/alloc_pixmap.h"
-# include "memory/mem_free.h"
-# include "types/pixmap_t.h"
+# include "system/set.hpp"
+# include "system/vec.h"
+# include "types/layer_desc_t.hpp"
+# include "types/pixelmap_t.h"
 # include "system/io.h"
 namespace mdl {
 namespace firefly {
 class layer_manager {
 	public:
-	uint_t add_layer(uint_t __xlen, uint_t __ylen, uint_t __xoffset, uint_t __yoffset, boost::uint8_t *__pixmap = nullptr) {
+	typedef struct {
+		types::layer_desc_t desc;
+		types::pixelmap_t pixelmap;
+	} layer_t;
+
+	layer_manager() : layers(VEC_AUTO_RESIZE) {}
+	uint_t add_layer(uint_t __xa_len, uint_t __ya_len, uint_t __xfs, uint_t __yfs, types::pixelmap_t __pixelmap, types::err_t& __any_err);
+	types::pixelmap_t get_layer_pixelmap(uint_t __no) {
+		return this->layers.at(__no).pixelmap;
+	}
+	types::layer_desc_t get_layer_desc(uint_t __no) {
+		return this->layers.at(__no).desc;
+	}
+	types::err_t draw_layers(types::pixelmap_t __pixelbuff, uint_t __xa_len, uint_t __ya_len);
+	system::vec<layer_t> layers;
+/*
 		uint_t layer_id = layers.size();
 		layers.resize(layers.size() + 1);
 
@@ -24,10 +35,10 @@ class layer_manager {
 		render_arrm[layer_id] = layer_id;
 
 		types::layer_info_t layer_info = {
-			.xaxis_len = __xlen,
-			.yaxis_len = __ylen,
-			.xoffset = __xoffset,
-			.yoffset = __yoffset
+			.xa_len = __xa_len,
+			.ya_len = __ya_len,
+			.xfs = __xfs,
+			.yfs = __yfs
 		};
 
 		layers[layer_id].first = layer_info;
@@ -35,7 +46,7 @@ class layer_manager {
 		if (__pixmap != nullptr) {
 			layers[layer_id].second = __pixmap;
 		} else {
-			layers[layer_id].second = memory::alloc_pixmap(__xlen, __ylen);
+			layers[layer_id].second = memory::alloc_pixelmap(__xlen, __ylen);
 			if (layers[layer_id].second == NULL) {
 				system::io::printf(stderr, "layer_manager: failed to alloc memory for pixel map.\n");
 				return 0;
@@ -45,8 +56,9 @@ class layer_manager {
 		}
 
 		return layer_id;
-	}
-
+*/
+//	}
+/*
 	bool locked_layer(uint_t __layer_id) {
 		if (this-> locked_layers.find(__layer_id) != this-> locked_layers.end()) return false;
 		return true;
@@ -62,7 +74,8 @@ class layer_manager {
 
 		this-> locked_layers.erase(itor);
 	}
-
+*/
+/*
 	bool does_layer_exist(uint_t __layer_id) {
 		return this-> layers.size() >= (__layer_id + 1)? true : false;
 	}
@@ -106,8 +119,9 @@ class layer_manager {
 	std::set<bool> locked_layers;
 	ublas::vector<uint_t> render_arrm; // render arrangement
 	ublas::vector<std::pair<types::layer_info_t, types::pixmap_t>> layers;
+*/
 };
 }
 }
 
-# endif /*__layer__hpp*/
+# endif /*__ffly__layer__manager__hpp*/
