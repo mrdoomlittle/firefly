@@ -4,5 +4,4 @@ cd intlen; make clean; cd ../;
 cd getdigit; make clean; cd ../;
 cd to_string; make clean; cd ../;
 cd str_cmb; make clean; cd ../;
-cd tagged_memory; make clean; cd ../;
 bash clean.bash

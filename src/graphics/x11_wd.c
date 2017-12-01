@@ -6,6 +6,7 @@
 # include "../system/io.h"
 # include "../system/event_kind.h"
 # include "../system/event_field.h"
+# include "../system/nanosleep.h"
 # define EVENT_BUFF_SIZE 20
 
 int static ffly_x11_err_handle(Display *__d, XErrorEvent *__e) {
@@ -110,7 +111,7 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 	ffly_event_t event;
 	ffly_wd_ed_t event_data;
 	do {
-		usleep(1000);
+		ffly_nanosleep(0, 1000000);
 		while (XPending(__x11_wd->d) > 0) {
 			XNextEvent(__x11_wd->d, &xevent);
 			switch(xevent.type) {

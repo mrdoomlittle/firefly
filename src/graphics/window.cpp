@@ -16,9 +16,9 @@ mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __xa_len, 
 mdl::firefly::types::err_t mdl::firefly::graphics::window::begin() {
 	system::thread t(
 # if defined(__USING_X11)
-ffly_x11_wd_begin
+&ffly_x11_wd_begin
 # elif defined(__USING_XCB)
-ffly_xcb_wd_begin
+&ffly_xcb_wd_begin
 # else
 # error "please select define __USING_X11 or __USING_XCB"
 # endif

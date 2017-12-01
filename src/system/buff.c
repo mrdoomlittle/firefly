@@ -68,4 +68,8 @@ ffly_err_t ffly_buff_reset(struct ffly_buff *__buff) {
 }
 
 ffly_err_t ffly_buff_de_init(struct ffly_buff *__buff) {
-	__ffly_mem_free(__buff->p);}
+	if (__ffly_mem_free(__buff->p) != FFLY_SUCCESS) {
+		// error
+	}
+	return FFLY_SUCCESS;
+}

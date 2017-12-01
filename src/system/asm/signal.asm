@@ -1,32 +1,31 @@
 section .text
 global ffly_sigwait
 global ffly_signal
-extern ffly_usleep
+extern ffly_nanosleep
 ffly_sigwait:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 8
 	mov QWORD[rbp-8], rdi
-	jmp _sk_wait
+	jmp _sk_sleep
 	_again:
-	mov rdi, 1
-	mov rsi, 0
-	call ffly_usleep
-	_sk_wait:
-	mov rdi, [rbp-8]
+	mov rdi, 0
+	mov rsi, 1000
+	call ffly_nanosleep
+	_sk_sleep:
+	mov rdi, QWORD[rbp-8]
 	mov ax, WORD[rdi]
-	and ax, 1
-	cmp ax, 1
+	and ax, 0x0001
+	cmp ax, 0x0001
 	jne _again
 
-	mov rdi, [rbp-8]
-	lock xor WORD[rdi], 1
+	lock xor WORD[rdi], 0x0001
 	mov rsp, rbp
 	pop rbp
 ffly_signal:
 	_re_check:
-	mov ax, [rdi]
-	and ax, 1
-	cmp ax, 1
+	mov ax, WORD[rdi]
+	and ax, 0x0001
+	cmp ax, 0x0001
 	je _re_check
-	lock or WORD[rdi], 1
+	lock or WORD[rdi], 0x0001

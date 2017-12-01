@@ -1,7 +1,6 @@
 section .text
 global ffly_sys_write
-; for later for ffly_print as we can't use printf
-; as it may call malloc 
+; for later
 ffly_sys_write:
 	push rbp
 	mov rbp,rsp

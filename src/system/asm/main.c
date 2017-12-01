@@ -1,8 +1,7 @@
 # include <mdlint.h>
 # include <stdio.h>
-extern mdl_u32_t ffly_usleep(mdl_u64_t, mdl_u32_t);
+void extern ffly_nanosleep(mdl_u64_t, mdl_u64_t);
 
-void ffly_usleepa(mdl_u64_t __a, mdl_u32_t __b) {}
 int main() {
-	printf("%u\n", ffly_usleep(1, 1));
+	ffly_nanosleep(1, 1);
 }

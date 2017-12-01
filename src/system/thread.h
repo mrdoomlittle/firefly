@@ -22,7 +22,7 @@ ffly_err_t ffly_thread_cleanup();
 namespace mdl {
 namespace firefly {
 namespace system {
-static types::err_t(*thread_create)(ffly_tid_t*, void*(*)(void*), void*) = &ffly_thread_create;
+static ffly_err_t(*thread_create)(ffly_tid_t*, void*(*)(void*), void*) = &ffly_thread_create;
 
 template<typename... _E> struct thread_arg;
 template<typename _F, typename _A1>

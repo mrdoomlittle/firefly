@@ -2,7 +2,7 @@
 # define __ffly__signal__h
 # include <mdlint.h>
 typedef mdl_u16_t ffly_sig_t;
-
+# define FFLY_SIG_INIT 0x0000
 # ifdef __cplusplus
 extern "C" {
 # endif

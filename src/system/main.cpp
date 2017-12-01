@@ -28,17 +28,18 @@ void c(mdl_uint_t __a1, mdl_uint_t __a2) {ffly_printf(stdout, "%u, %u\n", __a1, 
 void d(mdl_uint_t __a1, mdl_uint_t __a2, mdl_uint_t __a3) {ffly_printf(stdout, "%u, %u, %u\n", __a1, __a2, __a3);}
 void e(mdl_uint_t __a1, mdl_uint_t __a2, mdl_uint_t __a3, mdl_uint_t __a4) {ffly_printf(stdout, "%u, %u, %u, %u\n", __a1, __a2, __a3, __a4);}
 # include "futex.h"
-ffly_mutex_t mutex = FFLY_MUTEX_INIT;
-void* test(void *__arg) {
-	ffly_printf(stdout, "hello\n");
-}
-int main() {
-	ffly_mem_track_init(&__ffly_mem_track__);
+# include "atomic.h"
 
+int main() {
+	//ffly_mem_track_init(&__ffly_mem_track__);
 	ffly_printf(stdout, "init.\n");
 	ffly_tid_t tid;
-	ffly_thread_create(&tid, &test, NULL);
+	mdl::firefly::system::thread t1(&e, 1, 2, 3, 4, tid);
 	while(ffly_thread_alive(tid));
+	mdl::firefly::system::thread t2(&e, 1, 2, 3, 4, tid);
+
+	while(ffly_thread_alive(tid));
+	while(1);
 	return 0;
 //	ffly_tid_t tid1, tid2;
 //	ffly_thread_create(&tid1, &test, NULL);
