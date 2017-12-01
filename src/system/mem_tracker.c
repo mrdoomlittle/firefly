@@ -96,10 +96,9 @@ ffly_err_t ffly_mem_track_update(struct ffly_mem_track *__mem_track, void *__p, 
 	ffly_mutex_lock(&__mem_track->mutex);
 	struct blk *_blk = *(__mem_track->table+(((mdl_u64_t)__p)&0xFF));
 	if (((mdl_u64_t)__p&0xFF) != ((mdl_u64_t)__np&0xFF)) {
-		ffly_mutex_unlock(&__mem_track->mutex);
-
 		ffly_mem_track_free(__mem_track, __p, ffly_true);
 		ffly_mem_track_alloc(__mem_track, __np);
+		ffly_mutex_unlock(&__mem_track->mutex);
 		return FFLY_SUCCESS;
 	}
 

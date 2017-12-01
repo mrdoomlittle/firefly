@@ -12,5 +12,6 @@ void ffly_printf(FILE *__stream, char const *__str, ...) {
 	fprintf(__stream, "firefly; ");
 	vfprintf(__stream, __str, args);
 	va_end(args);
+	fflush(stdout);
 	ffly_mutex_unlock(&mutex);
 }

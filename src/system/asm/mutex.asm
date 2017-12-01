@@ -11,7 +11,7 @@ ffly_mutex_lock:
 	jne ffly_mutex_lock
 	ret
 ffly_mutex_unlock:
-	mov dl, [rdi]
+	mov al, [rdi]
 	lock xor BYTE[rdi], al
 	_sk_decr:
 	ret

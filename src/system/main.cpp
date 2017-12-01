@@ -30,26 +30,21 @@ void e(mdl_uint_t __a1, mdl_uint_t __a2, mdl_uint_t __a3, mdl_uint_t __a4) {ffly
 # include "futex.h"
 ffly_mutex_t mutex = FFLY_MUTEX_INIT;
 void* test(void *__arg) {
-	mdl_uint_t i = 0;
-	void *p;
-	while(i++ < 400) {
-		ffly_mutex_lock(&mutex);
-		ffly_printf(stdout, "%u\n", i);
-		p = malloc(1);
-		free(p);
-		ffly_mutex_unlock(&mutex);
-	}
-
-	ffly_printf(stdout, "??? - %u.\n", i);
+	ffly_printf(stdout, "hello\n");
 }
 int main() {
 	ffly_mem_track_init(&__ffly_mem_track__);
 
-	ffly_tid_t tid1, tid2;
-	ffly_thread_create(&tid1, &test, NULL);
-	ffly_thread_create(&tid2, &test, NULL);
-	while(ffly_thread_alive(tid1));
-	while(ffly_thread_alive(tid2));
+	ffly_printf(stdout, "init.\n");
+	ffly_tid_t tid;
+	ffly_thread_create(&tid, &test, NULL);
+	while(ffly_thread_alive(tid));
+	return 0;
+//	ffly_tid_t tid1, tid2;
+//	ffly_thread_create(&tid1, &test, NULL);
+//	ffly_thread_create(&tid2, &test, NULL);
+//	while(ffly_thread_alive(tid1));
+//	while(ffly_thread_alive(tid2));
 //	mdl::firefly::system::thread ta(&a, tid);
 //	mdl::firefly::system::thread tc(&a, tid);
 //	while(ffly_thread_alive(tid));
@@ -59,10 +54,10 @@ int main() {
 //	while(ffly_thread_alive(tid));
 //	mdl::firefly::system::thread td(&d, (mdl_uint_t)1, (mdl_uint_t)2, (mdl_uint_t)3,  tid);
 //	mdl::firefly::system::thread te(&e, (mdl_uint_t)1, (mdl_uint_t)2, (mdl_uint_t)3, (mdl_uint_t)4, tid);
-	ffly_thread_cleanup();
-	ffly_printf(stdout, "all good.\n");
-	fflush(stdout);
-	return 0;
+//	ffly_thread_cleanup();
+//	ffly_printf(stdout, "all good.\n");
+//	fflush(stdout);
+//	return 0;
 //	while(1);
 /*
 	struct ffly_mem_allocr ma;
