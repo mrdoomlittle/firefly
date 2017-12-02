@@ -1,7 +1,7 @@
 # ifndef __ffly__layer__manager__hpp
 # define __ffly__layer__manager__hpp
-# include <boost/numeric/ublas/vector.hpp>
-namespace ublas = boost::numeric::ublas;
+//# include <boost/numeric/ublas/vector.hpp>
+//namespace ublas = boost::numeric::ublas;
 # include <mdlint.h>
 # include "system/set.hpp"
 # include "system/vec.h"

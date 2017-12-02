@@ -1,13 +1,12 @@
 #!/bin/bash
-ROOT_DIR=${ROOT_DIR}
-. $ROOT_DIR/config.bash
-if [ ! -d $ROOT_DIR/inc/firefly ]; then
-	mkdir $ROOT_DIR/inc/firefly
+. $ffly_root_dir/config.bash
+if [ ! -d $ffly_root_dir/inc/firefly ]; then
+	mkdir $ffly_root_dir/inc/firefly
 fi
 
 i=0
 while [[ i -lt ${#dirs[@]} ]]; do
-	dir=$ROOT_DIR/inc/firefly/${dirs[i]}
+	dir=$ffly_root_dir/inc/firefly/${dirs[i]}
 	echo "checking if '$dir' exists."
 	if [ ! -d $dir ]; then
 		echo "created '$dir'"

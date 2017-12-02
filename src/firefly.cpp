@@ -1,6 +1,23 @@
 # include "firefly.hpp"
 # include "types/event_t.h"
 # include "ffly_def.h"
+ffly_act_gid_t act_gid_de_init;
+ffly_act_gid_t act_gid_cleanup;
+mdl::firefly::types::err_t mdl::firefly::init() {
+	ffly_act_init(&__ffly_act__);
+	act_gid_de_init = ffly_act_add_group(&__ffly_act__);
+	act_gid_cleanup = ffly_act_add_group(&__ffly_act__);
+}
+
+mdl::firefly::types::err_t static cleanup() {
+	ffly_act_do(&__ffly_act__, act_gid_cleanup);
+}
+
+mdl::firefly::types::err_t mdl::firefly::de_init() {
+	cleanup();
+	ffly_act_do(&__ffly_act__, act_gid_de_init);
+}
+
 /*
 struct mdl::firefly::_core_portal mdl::firefly::core_portal;
 
@@ -16,7 +33,7 @@ mdl::firefly::types::err_t mdl::firefly::de_init() {
 	ffly_graphics::de_init();
 }
 */
-
+# ifdef FFLY_CLIENT
 mdl::firefly::types::bool_t mdl::firefly::poll_event(types::event_t& __event) {
 	if (!mdl::firefly::system::pending_event()) return ffly_false;
 	mdl::firefly::system::next_event(__event);
@@ -28,7 +45,7 @@ void mdl::firefly::event_free(ffly_client *__ffc, types::event_t& __event) {
 		__ffc->free_wd_event(__event);
 	}
 }
-
+# endif
 /*
 namespace mdl {
 namespace firefly {

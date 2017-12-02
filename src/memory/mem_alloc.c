@@ -1,15 +1,16 @@
 # include "mem_alloc.h"
+# include "../system/errno.h"
 # include "../system/io.h"
 # ifdef __DEBUG_ENABLED
 ffly_atomic_uint_t ffly_mem_alloc_bc = 0;
 ffly_atomic_uint_t ffly_mem_alloc_c = 0;
 # endif
 
-# ifdef __WITH_MEM_TRACKER
-void* ffly_mem_alloc(mdl_uint_t __bc, mdl_u8_t __track_bypass) {
+# ifdef __MEM_AGENT
+void* ffly_mem_alloc(mdl_uint_t __bc, mdl_u8_t __agent_ignore) {
 # else
 void* ffly_mem_alloc(mdl_uint_t __bc) {
-# endif /*__WITH_MEM_TACKER*/
+# endif /*__MEM_AGENT*/
 	mdl_u8_t *p;
 # ifdef __DEBUG_ENABLED
 	if ((p = (mdl_u8_t*)malloc(__bc+sizeof(mdl_uint_t))) == NULL) {
@@ -24,11 +25,11 @@ void* ffly_mem_alloc(mdl_uint_t __bc) {
 # else
 	p = (mdl_u8_t*)malloc(__bc);
 # endif
-# ifdef __WITH_MEM_TRACKER
-	if (!__track_bypass) {
-		if (ffly_mem_track_alloc(&__ffly_mem_track__, (void*)p) != FFLY_SUCCESS) {
+# ifdef __MEM_AGENT
+	if (!__agent_ignore) {
+		if (ffly_mem_agent_alloc(&__ffly_mem_agent__, (void*)p) != FFLY_SUCCESS) {
 # ifdef __DEBUG_ENABLED
-			ffly_printf(stderr, "mem_alloc: mem tracker failure.\n");
+			ffly_printf(stderr, "mem_alloc: mem agent failure.\n");
 # endif
 			free((void*)(p+sizeof(mdl_uint_t)));
 			return NULL;

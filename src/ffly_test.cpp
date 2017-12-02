@@ -1,5 +1,4 @@
 # include "asset_manager.h"
-# include "system/mem_tracker.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 using namespace mdl::firefly;
@@ -7,18 +6,27 @@ using namespace mdl::firefly;
 # include "system/io.h"
 # include "system/file.h"
 # include "system/dir.h"
-# include "ffly_audio.h"
-# include "system/thread.h"
-# include "system/task_pool.h"
-# include "graphics/window.hpp"
-# include <string.h>
-# include "layer_manager.hpp"
-# include "room_manager.hpp"
-# include "types/no_t.h"
-extern "C" {
-	void ffly_usleep(mdl_u64_t,  mdl_u32_t);
-}
+# include "ffly_def.h"
+# include "system/nanosleep.h"
+# include "firefly.hpp"
+# include "graphics/fill.h"
+# include "graphics/colour.hpp"
+# include "types/off_t.h"
 int main() {
+	init();
+
+	mdl_u8_t frame[(8*8)*4];
+	graphics::fill_frame(frame, 8, 8, graphics::mk_colour(0xFF, 0xFF, 0xFF, 0xFF));
+
+	off_t x{0}, y{0};
+	for(;y != 8;y++){
+		for(;x != 8;x++) {
+			ffly_printf(stdout, "%u\n", *(frame+(y*8)+x));
+		}
+	}
+
+	de_init();
+/*
 	room_manager room_m;
 
 	types::no_t *room_no;
@@ -27,6 +35,7 @@ int main() {
 	room_m.del_room(room_no, 1);
 	ffly_usleep(0, 50000000);
 	}
+*/
 //	graphics::window window;
 //	window.init(400, 400, "Hello World");
 

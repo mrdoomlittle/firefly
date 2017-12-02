@@ -3,7 +3,6 @@
 # include <fstream>
 # include <png.h>
 # include <string.h>
-# include <boost/cstdint.hpp>
 # include <mdlint.h>
 # include "../system/errno.h"
 # include <mdl/str_cmb.h>

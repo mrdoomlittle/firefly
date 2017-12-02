@@ -5,17 +5,17 @@
 ffly_atomic_uint_t ffly_mem_free_bc;
 ffly_atomic_uint_t ffly_mem_free_c;
 # endif
-# ifdef __WITH_MEM_TRACKER
-ffly_err_t ffly_mem_free(void *__p, ffly_bool_t __track_bypass) {
+# ifdef __MEM_AGENT
+ffly_err_t ffly_mem_free(void *__p, ffly_bool_t __agent_ignore) {
 	ffly_err_t any_err;
-	if (!__track_bypass) {
+	if (!__agent_ignore) {
 # ifdef __DEBUG_ENABLED
 		if ((
 # endif
-		any_err = ffly_mem_track_free(&__ffly_mem_track__, __p, 0)
+		any_err = ffly_mem_agent_free(&__ffly_mem_agent__, __p, 0)
 # ifdef __DEBUG_ENABLED
 		) != FFLY_SUCCESS) {
-			ffly_printf(stderr, "mem_free: mem tracker failure.\n");
+			ffly_printf(stderr, "mem_free: mem agent failure.\n");
 		}
 # else
 ;
@@ -32,7 +32,7 @@ ffly_err_t ffly_mem_free(void *__p) {
 # else
 	free(__p);
 # endif
-# ifdef __WITH_MEM_TRACKER
+# ifdef __MEM_AGENT
 	return any_err;
 # else
 	return FFLY_SUCCESS;

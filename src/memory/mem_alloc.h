@@ -1,13 +1,13 @@
-# ifndef __mem__alloc__h
-# define __mem__alloc__h
+# ifndef __ffly__mem__alloc__h
+# define __ffly__mem__alloc__h
 # include <malloc.h>
 # include <mdlint.h>
 # include "../types/bool_t.h"
 # include "../types/size_t.h"
 # include "../ffly_def.h"
 # include "../system/atomic.h"
-# ifdef __WITH_MEM_TRACKER
-#	include "../system/mem_tracker.h"
+# ifdef __MEM_AGENT
+#	include "../system/mem_agent.h"
 # endif
 
 # ifdef __cplusplus
@@ -19,7 +19,7 @@ ffly_atomic_uint_t extern ffly_mem_alloc_bc;
 ffly_atomic_uint_t extern ffly_mem_alloc_c;
 # endif
 
-# ifdef __WITH_MEM_TRACKER
+# ifdef __MEM_AGENT
 void* ffly_mem_alloc(mdl_uint_t, ffly_bool_t);
 # else
 void* ffly_mem_alloc(mdl_uint_t);
@@ -47,7 +47,7 @@ cl_mem __inline__ gpu_mem_alloc(void*& __p, uint_t __bc, types::err_t& __any_err
 types::err_t gpu_mem_alloc(void** __p, uint_t __bc);
 # endif
 
-# ifdef __WITH_MEM_TRACKER
+# ifdef __MEM_AGENT
 void __inline__* mem_alloc(uint_t __bc, types::bool_t __track_bypass) {
 	return ffly_mem_alloc(__bc, __track_bypass);
 }
@@ -56,14 +56,14 @@ void __inline__* mem_alloc(uint_t __bc) {
 	return mem_alloc(__bc, ffly_false);
 }
 
-# else /*__WITH_MEM_TRACKER*/
+# else
 static void*(*mem_alloc)(uint_t) = &ffly_mem_alloc;
-# endif /*__WITH_MEM_TRACKER*/
+# endif /*__MEM_AGENT*/
 }
 }
 }
 # endif
-# if defined(__WITH_MEM_TRACKER)
+# if defined(__MEM_AGENT)
 # 	ifdef __cplusplus
 #		define __ffly_mem_alloc(__ALLOC_BC) mdl::firefly::memory::mem_alloc(__ALLOC_BC, ffly_false)
 # 	else
@@ -77,4 +77,4 @@ static void*(*mem_alloc)(uint_t) = &ffly_mem_alloc;
 # 	endif
 # endif
 
-# endif /*__mem__alloc__h*/
+# endif /*__ffly__mem__alloc__h*/

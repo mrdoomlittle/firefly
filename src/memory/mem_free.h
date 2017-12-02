@@ -5,8 +5,9 @@
 # include "../types/bool_t.h"
 # include "../types/err_t.h"
 # include "../system/atomic.h"
-# ifdef __WITH_MEM_TRACKER
-#	include "../system/mem_tracker.h"
+# include "../ffly_def.h"
+# ifdef __MEM_AGENT
+#	include "../system/mem_agent.h"
 # endif
 
 # ifdef __cplusplus
@@ -17,11 +18,11 @@ ffly_atomic_uint_t extern ffly_mem_free_bc;
 ffly_atomic_uint_t extern ffly_mem_free_c;
 # endif /*__DEBUG_ENABLED*/
 
-# ifdef __WITH_MEM_TRACKER
+# ifdef __MEM_AGENT
 ffly_err_t ffly_mem_free(void*, ffly_bool_t);
 # else
 ffly_err_t ffly_mem_free(void*);
-# endif /*__WITH_MEM_TRACKER*/
+# endif /*__MEM_AGENT*/
 # ifdef __cplusplus
 }
 # endif
@@ -29,12 +30,11 @@ ffly_err_t ffly_mem_free(void*);
 namespace mdl {
 namespace firefly {
 namespace memory {
-# ifdef __USING_CUDA
 types::err_t gpu_mem_free(void *__p);
-# endif
-# ifdef __WITH_MEM_TRACKER
-types::err_t __inline__ mem_free(void *__mem_ptr, types::bool_t __track_bypass) {
-	return ffly_mem_free(__mem_ptr, __track_bypass);
+
+# ifdef __MEM_AGENT
+types::err_t __inline__ mem_free(void *__mem_ptr, types::bool_t __agent_ignore) {
+	return ffly_mem_free(__mem_ptr, __agent_ignore);
 }
 
 types::err_t __inline__ mem_free(void *__mem_ptr) {
@@ -43,13 +43,13 @@ types::err_t __inline__ mem_free(void *__mem_ptr) {
 
 # else
 static types::err_t(*mem_free)(void*) = &ffly_mem_free;
-# endif /*__WITH_MEM_TRACKER*/
+# endif /*__MEM_AGENT*/
 }
 }
 }
 # endif
 
-# if defined(__WITH_MEM_TRACKER)
+# if defined(__MEM_AGENT)
 #	ifdef __cplusplus
 #		define __ffly_mem_free(__MEM_PTR) mdl::firefly::memory::mem_free(__MEM_PTR, 0)
 #	else

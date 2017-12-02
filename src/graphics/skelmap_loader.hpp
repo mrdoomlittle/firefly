@@ -4,11 +4,10 @@
 # include <string.h>
 # include <mdlint.h>
 # include <fstream>
-# include <boost/cstdint.hpp>
 namespace mdl {
 namespace firefly {
 namespace graphics {
-boost::uint8_t* load_skemap_file(types::skelmap_info_t& skelmap_info, char const *__file);
+u8_t* load_skemap_file(types::skelmap_info_t& skelmap_info, char const *__file);
 }
 }
 }
