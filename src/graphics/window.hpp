@@ -22,7 +22,7 @@ namespace graphics {
 class window {
 	public:
 	types::byte_t* frame_buff() {return this->handle.frame_buff;}
-	types::err_t init(u16_t __xa_len, u16_t __ya_len, char const *__title);
+	types::err_t init(u16_t __width, u16_t __height, char const *__title);
 	types::err_t begin();
 	types::flag_t& flags(){return this->handle.flags;}
 	types::bool_t is_event_buff_empty() {return !ffly_buff_ublk_c(&this->handle.event_buff);}
@@ -39,7 +39,7 @@ class window {
 	struct ffly_xcb_wd handle;
 # endif
 	char const *title;
-	u16_t xa_len, ya_len;
+	u16_t width, height;
 	types::tid_t tid;
 };
 }

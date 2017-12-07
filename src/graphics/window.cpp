@@ -4,10 +4,10 @@
 # include "../data/mem_dupe.h"
 # include "../system/thread.h"
 # include "../types/event_t.h"
-mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __xa_len, u16_t __ya_len, char const *__title) {
+mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __width, u16_t __height, char const *__title) {
 	ffly_mem_set(&this->handle, 0x0, sizeof(struct ffly_x11_wd));
-	this->xa_len = __xa_len;
-	this->ya_len = __ya_len;
+	this->width = __width;
+	this->height = __height;
 
 	ffly_mem_dupe(reinterpret_cast<void**>(const_cast<char**>(&this->title)), const_cast<char*>(__title), ffly_str_len(const_cast<char*>(__title)));
 	return FFLY_SUCCESS;
@@ -22,7 +22,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::window::begin() {
 # else
 # error "please select define __USING_X11 or __USING_XCB"
 # endif
-, &this->handle, this->xa_len, this->ya_len, this->title, this->tid);
+, &this->handle, &this->width, &this->height, this->title, this->tid);
 	return FFLY_SUCCESS;
 }
 

@@ -13,7 +13,7 @@ extern "C" {
 ffly_atomic_uint_t extern ffly_mem_alloc_bc;
 ffly_atomic_uint_t extern ffly_mem_alloc_c;
 # endif
-# ifdef __MEM_AGENT
+# ifdef __MAL_TRACK
 void* ffly_mem_realloc(void*, mdl_uint_t, ffly_bool_t);
 # else
 void* ffly_mem_realloc(void*, mdl_uint_t);
@@ -25,9 +25,9 @@ void* ffly_mem_realloc(void*, mdl_uint_t);
 namespace mdl {
 namespace firefly {
 namespace memory {
-# ifdef __MEM_AGENT
-void __inline__* mem_realloc(void *__mem_ptr, uint_t __bc, types::bool_t __agent_ignore) {
-	return ffly_mem_realloc(__mem_ptr, __bc, __agent_ignore);
+# ifdef __MAL_TRACK
+void __inline__* mem_realloc(void *__mem_ptr, uint_t __bc, types::bool_t __track_bypass) {
+	return ffly_mem_realloc(__mem_ptr, __bc, __track_bypass);
 }
 
 void __inline__* mem_realloc(void *__mem_ptr, uint_t __bc) {
@@ -40,7 +40,7 @@ static void*(*mem_realloc)(void*, uint_t) = &ffly_mem_realloc;
 }
 }
 # endif
-# if defined(__MEM_AGENT)
+# if defined(__MAL_TRACK)
 #	ifdef __cplusplus
 #		define __ffly_mem_realloc(__MEM_PTR, __ALLOC_BC) mdl::firefly::memory::mem_realloc(__MEM_PTR, __ALLOC_BC, ffly_false)
 #	else

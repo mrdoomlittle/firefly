@@ -10,6 +10,7 @@ void ffly_act_init(struct ffly_act *__act) {
 }
 
 ffly_act_gid_t ffly_act_add_group(struct ffly_act *__act) {
+	ffly_printf(stdout, "act new group.\n");
 	ffly_act_gid_t gid = __act->no_groups;
 	if (!__act->no_groups) {
 		__act->groups = (struct ffly_act_group**)__ffly_mem_alloc(sizeof(struct ffly_act_group*));
@@ -23,6 +24,7 @@ ffly_act_gid_t ffly_act_add_group(struct ffly_act *__act) {
 }
 
 void ffly_act_add_task(struct ffly_act *__act, ffly_act_gid_t __gid, void(*__call)(void*), void *__arg_p) {
+	ffly_printf(stdout, "act added.\n");
 	struct ffly_act_group *group = get_group(__act, __gid);
 	*(group->tasks+(group->no_tasks++)) = (struct ffly_act_task) {.call = __call, .arg_p = __arg_p};
 }

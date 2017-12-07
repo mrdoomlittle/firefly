@@ -1,9 +1,11 @@
 # include "firefly.hpp"
 # include "types/event_t.h"
 # include "ffly_def.h"
+# include "ffly_system.hpp"
 ffly_act_gid_t act_gid_de_init;
 ffly_act_gid_t act_gid_cleanup;
 mdl::firefly::types::err_t mdl::firefly::init() {
+	ffly_system::init();
 	ffly_act_init(&__ffly_act__);
 	act_gid_de_init = ffly_act_add_group(&__ffly_act__);
 	act_gid_cleanup = ffly_act_add_group(&__ffly_act__);
@@ -16,6 +18,7 @@ mdl::firefly::types::err_t static cleanup() {
 mdl::firefly::types::err_t mdl::firefly::de_init() {
 	cleanup();
 	ffly_act_do(&__ffly_act__, act_gid_de_init);
+	ffly_system::de_init();
 }
 
 /*

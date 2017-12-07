@@ -1,4 +1,4 @@
-# include "mem_agent.h"
+# include "mal_track.h"
 # include "io.h"
 # include "../ffly_def.h"
 # include "../memory/mem_alloc.h"
@@ -14,10 +14,10 @@ struct blk {
 	mdl_uint_t no_uoc_locs;
 };
 
-ffly_err_t ffly_mem_agent_init(struct ffly_mem_agent *__mem_agent) {
-	__mem_agent->table = (void**)ffly_mem_alloc(0xFF*sizeof(void*), ffly_true);
-	void **itr = __mem_agent->table;
-	while(itr != __mem_agent->table+0xFF) {
+ffly_err_t ffly_mal_track_init(struct ffly_mal_track *__mal_track) {
+	__mal_track->table = (void**)ffly_mem_alloc(0xFF*sizeof(void*), ffly_true);
+	void **itr = __mal_track->table;
+	while(itr != __mal_track->table+0xFF) {
 		*itr = (void*)ffly_mem_alloc(sizeof(struct blk), ffly_true);
 		*((struct blk*)*(itr++)) = (struct blk) {
 			.ptr_c = 0,
@@ -25,13 +25,13 @@ ffly_err_t ffly_mem_agent_init(struct ffly_mem_agent *__mem_agent) {
 			.uoc_locs = NULL,
 			.no_uoc_locs = 0,
 		};}
-	__mem_agent->inited = ffly_true;
-	__mem_agent->mutex = FFLY_MUTEX_INIT;
+	__mal_track->inited = ffly_true;
+	__mal_track->mutex = FFLY_MUTEX_INIT;
 	return FFLY_SUCCESS;
 }
-ffly_err_t ffly_mem_agent_de_init(struct ffly_mem_agent *__mem_agent) {
-	void **itr = __mem_agent->table;
-	while(itr != __mem_agent->table+0xFF) {
+ffly_err_t ffly_mal_track_de_init(struct ffly_mal_track *__mal_track) {
+	void **itr = __mal_track->table;
+	while(itr != __mal_track->table+0xFF) {
 		struct blk *_blk = (struct blk*)*itr;
 		if (_blk->ptrs != NULL)
 			ffly_mem_free(_blk->ptrs, ffly_true);
@@ -40,15 +40,15 @@ ffly_err_t ffly_mem_agent_de_init(struct ffly_mem_agent *__mem_agent) {
 		ffly_mem_free(*itr, ffly_true);
 		itr++;
 	}
-	ffly_mem_free(__mem_agent->table, ffly_true);
-	__mem_agent->inited = ffly_false;
+	ffly_mem_free(__mal_track->table, ffly_true);
+	__mal_track->inited = ffly_false;
 	return FFLY_SUCCESS;
 }
 
 # ifdef __DEBUG_ENABLED
-void ffly_mem_agent_dump(struct ffly_mem_agent *__mem_agent) {
-	void **itr = __mem_agent->table;
-	while(itr != __mem_agent->table+0xFF) {
+void ffly_mal_track_dump(struct ffly_mal_track *__mal_track) {
+	void **itr = __mal_track->table;
+	while(itr != __mal_track->table+0xFF) {
 		struct blk *_blk = (struct blk*)*itr;
 
 		if (!_blk->ptr_c) {
@@ -68,43 +68,43 @@ void ffly_mem_agent_dump(struct ffly_mem_agent *__mem_agent) {
 				}
 			}
 
-			ffly_printf(stdout, "mem_agenter: mem_ptr: %p, point: %d, state: %s\n", _blk->ptrs[loc], loc, used? "used" : "unused");
+			ffly_printf(stdout, "mal_tracker: mem_ptr: %p, point: %d, state: %s\n", _blk->ptrs[loc], loc, used? "used" : "unused");
 		}
 		itr++;
 	}
 }
 # endif
-//void* ffly_mem_agent_get_nxt(struct ffly_mem_agent *__mem_agent) {
+//void* ffly_mal_track_get_nxt(struct ffly_mal_track *__mal_track) {
 /*
-	if (__mem_agent->nxt_pnt == __mem_agent->ptr_c-1) return NULL;
-	for (mdl_uint_t loc = 0; loc != __mem_agent->ptr_c; loc ++) {
+	if (__mal_track->nxt_pnt == __mal_track->ptr_c-1) return NULL;
+	for (mdl_uint_t loc = 0; loc != __mal_track->ptr_c; loc ++) {
 		mdl_u8_t used = 1;
-		for (mdl_uint_t uu_point = 0; uu_point != __mem_agent->no_uoc_locs; uu_point ++) {
-			if (loc == __mem_agent->uoc_locs[uu_point]) {used = 0; break;}
+		for (mdl_uint_t uu_point = 0; uu_point != __mal_track->no_uoc_locs; uu_point ++) {
+			if (loc == __mal_track->uoc_locs[uu_point]) {used = 0; break;}
 		}
 		if (used) break;
-		if (__mem_agent->nxt_pnt == __mem_agent->ptr_c-1) return NULL;
-		__mem_agent->nxt_pnt++;
+		if (__mal_track->nxt_pnt == __mal_track->ptr_c-1) return NULL;
+		__mal_track->nxt_pnt++;
 	}
 
-	void *nxt_ptr = __mem_agent->table[__mem_agent->nxt_pnt];
-	__mem_agent->nxt_pnt++;
+	void *nxt_ptr = __mal_track->table[__mal_track->nxt_pnt];
+	__mal_track->nxt_pnt++;
 	return nxt_ptr;
 */
 //}
 
-//void ffly_mem_agent_reset(struct ffly_mem_agent *__mem_agent) {
-//	__mem_agent->nxt_pnt = 0;
+//void ffly_mal_track_reset(struct ffly_mal_track *__mal_track) {
+//	__mal_track->nxt_pnt = 0;
 //}
 
-ffly_err_t ffly_mem_agent_update(struct ffly_mem_agent *__mem_agent, void *__p, void *__np) {
-	if (!__mem_agent->inited) return FFLY_FAILURE;
-	ffly_mutex_lock(&__mem_agent->mutex);
-	struct blk *_blk = *(__mem_agent->table+(((mdl_u64_t)__p)&0xFF));
+ffly_err_t ffly_mal_track_update(struct ffly_mal_track *__mal_track, void *__p, void *__np) {
+	if (!__mal_track->inited) return FFLY_FAILURE;
+	ffly_mutex_lock(&__mal_track->mutex);
+	struct blk *_blk = *(__mal_track->table+(((mdl_u64_t)__p)&0xFF));
 	if (((mdl_u64_t)__p&0xFF) != ((mdl_u64_t)__np&0xFF)) {
-		ffly_mem_agent_free(__mem_agent, __p, ffly_true);
-		ffly_mem_agent_alloc(__mem_agent, __np);
-		ffly_mutex_unlock(&__mem_agent->mutex);
+		ffly_mal_track_free(__mal_track, __p, ffly_true);
+		ffly_mal_track_alloc(__mal_track, __np);
+		ffly_mutex_unlock(&__mal_track->mutex);
 		return FFLY_SUCCESS;
 	}
 
@@ -112,16 +112,16 @@ ffly_err_t ffly_mem_agent_update(struct ffly_mem_agent *__mem_agent, void *__p, 
 	for(;itr != _blk->ptrs+_blk->ptr_c;itr++) {
 		if (*itr == __p) {*itr = __np;break;}}
 
-	ffly_mutex_unlock(&__mem_agent->mutex);
+	ffly_mutex_unlock(&__mal_track->mutex);
 	__asm__("nop");
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_mem_agent_alloc(struct ffly_mem_agent *__mem_agent, void *__p) {
-	if (!__mem_agent->inited) return FFLY_FAILURE;
-	ffly_mutex_lock(&__mem_agent->mutex);
+ffly_err_t ffly_mal_track_alloc(struct ffly_mal_track *__mal_track, void *__p) {
+	if (!__mal_track->inited) return FFLY_FAILURE;
+	ffly_mutex_lock(&__mal_track->mutex);
 
-	struct blk *_blk = *(__mem_agent->table+(((mdl_u64_t)__p)&0xFF));
+	struct blk *_blk = *(__mal_track->table+(((mdl_u64_t)__p)&0xFF));
 	mdl_uint_t loc = 0;
 	if (_blk->no_uoc_locs != 0) {
 		loc = _blk->uoc_locs[_blk->no_uoc_locs-1];
@@ -133,7 +133,7 @@ ffly_err_t ffly_mem_agent_alloc(struct ffly_mem_agent *__mem_agent, void *__p) {
 			_blk->no_uoc_locs--;
 		} else {
 			if ((_blk->uoc_locs = (mdl_uint_t*)ffly_mem_realloc(_blk->uoc_locs, (--_blk->no_uoc_locs)*sizeof(mdl_uint_t), ffly_true)) == NULL) {
-				ffly_printf(stderr, "mem_agenter: failed to realloc memory for 'uoc_locs', errno: %d\n", errno);
+				ffly_printf(stderr, "mal_tracker: failed to realloc memory for 'uoc_locs', errno: %d\n", errno);
 				return FFLY_FAILURE;
 			}
 		}
@@ -142,12 +142,12 @@ ffly_err_t ffly_mem_agent_alloc(struct ffly_mem_agent *__mem_agent, void *__p) {
 
 	if (!_blk->ptrs) {
 		if ((_blk->ptrs = (void**)ffly_mem_alloc(sizeof(void*), ffly_true)) == NULL) {
-			ffly_printf(stderr, "mem_agenter: failed to alloc memory for 'ptrs', errno: %d\n", errno);
+			ffly_printf(stderr, "mal_tracker: failed to alloc memory for 'ptrs', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 	} else {
 		if ((_blk->ptrs = (void**)ffly_mem_realloc(_blk->ptrs, (_blk->ptr_c+1)*sizeof(void*), ffly_true)) == NULL) {
-			ffly_printf(stderr, "mem_agenter: failed to realloc memory for 'ptrs', errno: %d\n", errno);
+			ffly_printf(stderr, "mal_tracker: failed to realloc memory for 'ptrs', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 	}
@@ -156,15 +156,15 @@ ffly_err_t ffly_mem_agent_alloc(struct ffly_mem_agent *__mem_agent, void *__p) {
 	_sk_resize:
 
 	*(_blk->ptrs+loc) = __p;
-	ffly_mutex_unlock(&__mem_agent->mutex);
+	ffly_mutex_unlock(&__mal_track->mutex);
 	__asm__("nop");
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_mem_agent_free(struct ffly_mem_agent *__mem_agent, void *__p, mdl_u8_t __hard) {
-	if (!__mem_agent->inited) return FFLY_FAILURE;
-	ffly_mutex_lock(&__mem_agent->mutex);
-	struct blk *_blk = *(__mem_agent->table+(((mdl_u64_t)__p)&0xFF));
+ffly_err_t ffly_mal_track_free(struct ffly_mal_track *__mal_track, void *__p, mdl_u8_t __hard) {
+	if (!__mal_track->inited) return FFLY_FAILURE;
+	ffly_mutex_lock(&__mal_track->mutex);
+	struct blk *_blk = *(__mal_track->table+(((mdl_u64_t)__p)&0xFF));
 
 	mdl_uint_t loc = 0;
 	void **itr = _blk->ptrs;
@@ -176,7 +176,7 @@ ffly_err_t ffly_mem_agent_free(struct ffly_mem_agent *__mem_agent, void *__p, md
 		}
 
 		if (off == _blk->ptr_c-1) {
-			ffly_printf(stderr, "mem_agenter: failed to locate memory with ptr: %p.\n", __p);
+			ffly_printf(stderr, "mal_tracker: failed to locate memory with ptr: %p.\n", __p);
 			return FFLY_FAILURE;
 		}
 	}
@@ -185,12 +185,12 @@ ffly_err_t ffly_mem_agent_free(struct ffly_mem_agent *__mem_agent, void *__p, md
 
 	if (!_blk->uoc_locs) {
 		if ((_blk->uoc_locs = (mdl_uint_t*)ffly_mem_alloc(sizeof(mdl_uint_t), ffly_true)) == NULL) {
-			ffly_printf(stderr, "mem_agenter: failed to alloc memory for 'uoc_locs', errno: %d\n", errno);
+			ffly_printf(stderr, "mal_tracker: failed to alloc memory for 'uoc_locs', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 	} else {
 		if ((_blk->uoc_locs = (mdl_uint_t*)ffly_mem_realloc(_blk->uoc_locs, (_blk->no_uoc_locs+1)*sizeof(mdl_uint_t), ffly_true)) == NULL) {
-			ffly_printf(stderr, "mem_agenter: failed to realloc memory for 'uoc_locs', errno: %d\n", errno);
+			ffly_printf(stderr, "mal_tracker: failed to realloc memory for 'uoc_locs', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 	}
@@ -198,7 +198,7 @@ ffly_err_t ffly_mem_agent_free(struct ffly_mem_agent *__mem_agent, void *__p, md
 	_blk->ptrs[loc] = NULL;
 	_blk->uoc_locs[_blk->no_uoc_locs] = loc;
 	_blk->no_uoc_locs++;
-	ffly_mutex_unlock(&__mem_agent->mutex);
+	ffly_mutex_unlock(&__mal_track->mutex);
 	__asm__("nop");
 	return FFLY_SUCCESS;
 
@@ -211,14 +211,14 @@ ffly_err_t ffly_mem_agent_free(struct ffly_mem_agent *__mem_agent, void *__p, md
 	} else {
 		_blk->ptrs[loc] = _blk->ptrs[_blk->ptr_c-1];
 		if ((_blk->ptrs = (void**)ffly_mem_realloc(_blk->ptrs, (_blk->ptr_c-1)*sizeof(void*), ffly_true)) == NULL) {
-			ffly_printf(stderr, "mem_agenter: failed to realloc memory for 'ptrs', errno: %d\n", errno);
+			ffly_printf(stderr, "mal_tracker: failed to realloc memory for 'ptrs', errno: %d\n", errno);
 			return FFLY_FAILURE;
 		}
 	}
 	_blk->ptr_c--;
-	ffly_mutex_unlock(&__mem_agent->mutex);
+	ffly_mutex_unlock(&__mal_track->mutex);
 	__asm__("nop");
 	return FFLY_SUCCESS;
 }
 
-struct ffly_mem_agent __ffly_mem_agent__ = {.inited=ffly_false};
+struct ffly_mal_track __ffly_mal_track__ = {.inited=ffly_false};

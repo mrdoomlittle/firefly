@@ -12,20 +12,62 @@ using namespace mdl::firefly;
 # include "graphics/fill.h"
 # include "graphics/colour.hpp"
 # include "types/off_t.h"
+# include "graphics/window.hpp"
+# include "graphics/wd_flags.h"
+# include "graphics/copy.h"
+# define WIDTH 800
+# define HEIGHT 800
+# include "graphics/pipe.h"
+# include "graphics/fill.h"
 int main() {
+/*
+	ffly_io_init();
+	ffly_grp_prepare(&__ffly_grp__, 12);
+
+	graphics::fill_pixelmap(NULL, 21299, graphics::mk_colour(0xFF, 0xFF, 0xFF, 0xFF));
+	ffly_grp_unload_all(&__ffly_grp__);
+
+	ffly_grp_cleanup(&__ffly_grp__);
+	ffly_io_closeup();
+*/
+
 	init();
+	ffly_grp_prepare(&__ffly_grp__, 12);
+	graphics::window window;
+	window.init(WIDTH, HEIGHT, "Hello World");
+	window.begin();
 
-	mdl_u8_t frame[(8*8)*4];
-	graphics::fill_frame(frame, 8, 8, graphics::mk_colour(0xFF, 0xFF, 0xFF, 0xFF));
+	mdl_u8_t *buf = (mdl_u8_t*)__ffly_mem_alloc(WIDTH*HEIGHT*4);
+	graphics::pixelfill(buf, WIDTH*HEIGHT, graphics::mk_colour(0xFF, 0xFF, 0xFF, 0xFF));
+	ffly_grp_unload_all(&__ffly_grp__);
 
-	off_t x{0}, y{0};
-	for(;y != 8;y++){
-		for(;x != 8;x++) {
-			ffly_printf(stdout, "%u\n", *(frame+(y*8)+x));
+	while(!system::is_flag(window.flags(), FFLY_FLG_WD_ALIVE));
+
+	while(1) {
+		ffly_nanosleep(1, 0);
+		if (system::is_flag(window.flags(), FFLY_FLG_WD_DEAD)) {
+			break;
 		}
+
+		graphics::pixelcopy(window.frame_buff(), buf, WIDTH*HEIGHT);
+		ffly_grp_unload_all(&__ffly_grp__);
+		if (!system::is_flag(window.flags(), FFLY_FLG_WD_DRAW_FRAME))
+			system::add_flag(&window.flags(), FFLY_FLG_WD_DRAW_FRAME, 0);
+
+		if (!system::is_flag(window.flags(), FFLY_FLG_WD_NEXT_FRAME)) continue;
+		system::rm_flag(&window.flags(), FFLY_FLG_WD_NEXT_FRAME);
 	}
 
+	system::add_flag(&window.flags(), FFLY_FLG_WD_OK, 0);
+
+	ffly_nanosleep(0, 10000000);
+//	graphics::fill_frame(frame, YA*XA, graphics::mk_colour(0xFF, 0xFF, 0xFF, 0xFF));
+
+	free(buf);
 	de_init();
+	ffly_grp_cleanup(&__ffly_grp__);
+
+//	ffly_io_closeup();
 /*
 	room_manager room_m;
 

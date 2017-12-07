@@ -51,8 +51,8 @@ if [ $ffly_debug_enabled -eq 1 ]; then
 	ffly_defines="$ffly_defines -D__DEBUG_ENABLED"
 fi
 
-if [ $ffly_mem_agent -eq 1 ]; then
-	ffly_defines="$ffly_defines -D__MEM_AGENT"
+if [ $ffly_mal_track -eq 1 ]; then
+	ffly_defines="$ffly_defines -D__MAL_TRACK"
 fi
 
 if [ $ffly_with_layer_manager -eq 1 ]; then

@@ -39,10 +39,12 @@ int static ffly_x11_err_handle(Display *__d, XErrorEvent *__e) {
 	}
 }
 
-ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, mdl_u16_t __ya_len, char const *__title) {
+ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t *__width, mdl_u16_t *__height, char const *__title) {
 	XSetErrorHandler(ffly_x11_err_handle);
-	__x11_wd->xa_len = __xa_len;
-	__x11_wd->ya_len = __ya_len;
+	__x11_wd->width = __width;
+	__x11_wd->height = __height;
+
+	mdl_u16_t width = *__width, height = *__height;
 	if (ffly_buff_init(&__x11_wd->event_buff, EVENT_BUFF_SIZE, sizeof(ffly_event_t)) != FFLY_SUCCESS) {
 		ffly_printf(stderr, "failed to init event buffer.\n");
 		return FFLY_FAILURE;
@@ -65,7 +67,7 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 	w_att.colormap = XCreateColormap(__x11_wd->d, rt, vis_info->visual, AllocNone);
 	w_att.event_mask = 0x0;
 
-	__x11_wd->w = XCreateWindow(__x11_wd->d, rt, 0, 0, __xa_len, __ya_len, 0, vis_info->depth, InputOutput, vis_info->visual, CWColormap|CWEventMask, &w_att);
+	__x11_wd->w = XCreateWindow(__x11_wd->d, rt, 0, 0, width, height, 0, vis_info->depth, InputOutput, vis_info->visual, CWColormap|CWEventMask, &w_att);
 	XStoreName(__x11_wd->d, __x11_wd->w, __title);
 	XSelectInput(__x11_wd->d, __x11_wd->w, ExposureMask|KeyPressMask|KeyReleaseMask|ButtonPressMask|ButtonReleaseMask|StructureNotifyMask);
 	XMapWindow(__x11_wd->d, __x11_wd->w);
@@ -73,15 +75,18 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 	Atom WM_DELETE_WINDOW = XInternAtom(__x11_wd->d, "WM_DELETE_WINDOW", 0);
 	XSetWMProtocols(__x11_wd->d, __x11_wd->w, &WM_DELETE_WINDOW, 1);
 
-	XSizeHints size_hints = {
-		.min_width = __xa_len-__x11_wd->mn_xal_off,
-		.min_height = __ya_len-__x11_wd->mn_yal_off,
-		.max_width = __xa_len+__x11_wd->mx_xal_off,
-		.max_height = __ya_len+__x11_wd->mx_yal_off,
-		.flags = PMinSize|PMaxSize
-	};
+	if (__x11_wd->mn_width != NULL && __x11_wd->mn_height != NULL
+		&& __x11_wd->mx_width != NULL && __x11_wd->mx_height != NULL) {
+		XSizeHints size_hints = {
+			.min_width = *__x11_wd->mn_width,
+			.min_height = *__x11_wd->mn_height,
+			.max_width = *__x11_wd->mx_width,
+			.max_height = *__x11_wd->mx_height,
+			.flags = PMinSize|PMaxSize
+		};
 
-	XSetWMNormalHints(__x11_wd->d, __x11_wd->w, &size_hints);
+		XSetWMNormalHints(__x11_wd->d, __x11_wd->w, &size_hints);
+	}
 
 	GLXContext glx_ct = glXCreateContext(__x11_wd->d, vis_info, NULL, GL_TRUE);
 	if (!glx_ct) {
@@ -89,15 +94,15 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 	}
 
 	glXMakeCurrent(__x11_wd->d, __x11_wd->w, glx_ct);
-	glViewport(0, 0, __xa_len, __ya_len);
+	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	glOrtho(0, __xa_len, 0, __ya_len, 0.1, 1);
+	glOrtho(0, width, 0, height, 0.1, 1);
 	glPixelZoom(1, -1);
-	glRasterPos3f(0, __ya_len, -0.3);
+	glRasterPos3f(0, height, -0.3);
 
-	if ((__x11_wd->frame_buff = __ffly_mem_alloc(__xa_len*__ya_len*4)) == NULL) {
+	if ((__x11_wd->frame_buff = __ffly_mem_alloc(width*height*4)) == NULL) {
 		XDestroyWindow(__x11_wd->d, __x11_wd->w);
 		XCloseDisplay(__x11_wd->d);
 		return FFLY_FAILURE;
@@ -152,7 +157,7 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd *__x11_wd, mdl_u16_t __xa_len, m
 		}
 
 		if (!ffly_is_flag(__x11_wd->flags, FFLY_FLG_WD_DRAW_FRAME)) continue;
-		glDrawPixels(__xa_len, __ya_len, GL_RGBA, GL_UNSIGNED_BYTE, __x11_wd->frame_buff);
+		glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, __x11_wd->frame_buff);
 		glXSwapBuffers(__x11_wd->d, __x11_wd->w);
 
 		ffly_rm_flag(&__x11_wd->flags, FFLY_FLG_WD_DRAW_FRAME);

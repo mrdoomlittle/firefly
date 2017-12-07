@@ -1,5 +1,6 @@
 # ifndef __ffly__engine__hpp
 # define __ffly__engine__hpp
+/*
 # include <boost/cstdint.hpp>
 # include "system/errno.h"
 # include <cstdio>
@@ -33,7 +34,7 @@ __inline__ boost::int8_t ffly_check_for_gpu() {
 
 
 # endif
-
+*/
 # if defined(FFLY_SERVER)
 #	include "ffly_server.hpp"
 # elif defined(FFLY_CLIENT)

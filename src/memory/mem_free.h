@@ -6,8 +6,8 @@
 # include "../types/err_t.h"
 # include "../system/atomic.h"
 # include "../ffly_def.h"
-# ifdef __MEM_AGENT
-#	include "../system/mem_agent.h"
+# ifdef __MAL_TRACK
+#	include "../system/mal_track.h"
 # endif
 
 # ifdef __cplusplus
@@ -18,11 +18,11 @@ ffly_atomic_uint_t extern ffly_mem_free_bc;
 ffly_atomic_uint_t extern ffly_mem_free_c;
 # endif /*__DEBUG_ENABLED*/
 
-# ifdef __MEM_AGENT
+# ifdef __MAL_TRACK
 ffly_err_t ffly_mem_free(void*, ffly_bool_t);
 # else
 ffly_err_t ffly_mem_free(void*);
-# endif /*__MEM_AGENT*/
+# endif /*__MAL_TRACK*/
 # ifdef __cplusplus
 }
 # endif
@@ -32,9 +32,9 @@ namespace firefly {
 namespace memory {
 types::err_t gpu_mem_free(void *__p);
 
-# ifdef __MEM_AGENT
-types::err_t __inline__ mem_free(void *__mem_ptr, types::bool_t __agent_ignore) {
-	return ffly_mem_free(__mem_ptr, __agent_ignore);
+# ifdef __MAL_TRACK
+types::err_t __inline__ mem_free(void *__mem_ptr, types::bool_t __track_bypass) {
+	return ffly_mem_free(__mem_ptr, __track_bypass);
 }
 
 types::err_t __inline__ mem_free(void *__mem_ptr) {
@@ -43,13 +43,13 @@ types::err_t __inline__ mem_free(void *__mem_ptr) {
 
 # else
 static types::err_t(*mem_free)(void*) = &ffly_mem_free;
-# endif /*__MEM_AGENT*/
+# endif /*__MAL_TRACK*/
 }
 }
 }
 # endif
 
-# if defined(__MEM_AGENT)
+# if defined(__MAL_TRACK)
 #	ifdef __cplusplus
 #		define __ffly_mem_free(__MEM_PTR) mdl::firefly::memory::mem_free(__MEM_PTR, 0)
 #	else

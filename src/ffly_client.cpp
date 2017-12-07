@@ -33,10 +33,7 @@ mdl::firefly::types::err_t mdl::ffly_client::forward_events() {
 
 }*/
 
-extern "C" {
-	void ffly_usleep(mdl_u64_t,  mdl_u32_t);
-}
-
+# include "system/nanosleep.h"
 mdl::firefly::types::err_t mdl::ffly_client::begin(void(*__extern_loop)(i8_t, portal_t*, void*), void *__this) {
 	firefly::types::err_t any_err = FFLY_SUCCESS;
 	if ((any_err = this->window.begin()) != FFLY_SUCCESS) {
@@ -53,13 +50,13 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(void(*__extern_loop)(i8_t, po
 	this->portal.init(this);
 
 	do {
-		ffly_usleep(0, 20000000);
+		ffly_nanosleep(0, 20000000);
 		if (firefly::system::is_flag(window.flags(), FFLY_FLG_WD_DEAD)) {
 			firefly::system::io::printf(stdout, "window has been closed.\n");
 			goto _pro;
 		}
 
-		if (timer.now<firefly::system::time::ns_to_ms>() > 1000) {
+		if (timer.now<&ffly_ns_to_ms>() > 1000) {
 			this->fps = this->frame_c;
 			this->frame_c = 0;
 			timer.reset();

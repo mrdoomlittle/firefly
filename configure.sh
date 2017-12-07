@@ -51,8 +51,7 @@ fi
 
 ffly_target=
 if [ $(bash find.bash "$1" "--ffly-client") -eq 0 ]; then
-	ffly_ld_flags="$ffly_ld_flags -lX11 -lGL -lGLU -lglut -lX11-xcb -lxcb -lxcb-icccm -lpulse -lpulse-simple -lasound"
-	ffly_inc_flags="$ffly_inc_flags -I/usr/include/freetype2"
+	ffly_ld_flags="$ffly_ld_flags -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm -lpulse -lpulse-simple -lasound"
 	ffly_target="FFLY_CLIENT"
 elif [ $(bash find.bash "$1" "--ffly-server") -eq 0 ]; then
 	echo "0"
@@ -77,7 +76,7 @@ ffly_debug_enabled=0
 ffly_with_obj_manager=0
 ffly_rm_layering=0
 ffly_with_uni_manager=0
-ffly_mem_agent=0
+ffly_mal_track=0
 ffly_with_layer_manager=0
 ffly_flag=
 if [ $(bash find.bash "$1" "--with-room-manager") -eq 0 ]; then
@@ -105,9 +104,9 @@ if [ $(bash find.bash "$1" "--debug-enabled") -eq 0 ]; then
 	ffly_debug_enabled=1
 fi
 
-if [ $(bash find.bash "$1" "--mem-agent") -eq 0 ]; then
-	ffly_flags="$ffly_flags --mem-agent"
-	ffly_mem_agent=1
+if [ $(bash find.bash "$1" "--mal-track") -eq 0 ]; then
+	ffly_flags="$ffly_flags --mal-track"
+	ffly_mal_track=1
 fi
 
 if [ $(bash find.bash "$1" "--with-layer-manager") -eq 0 ]; then

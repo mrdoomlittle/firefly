@@ -1,5 +1,5 @@
 # include "xcb_wd.h"
-ffly_err_t ffly_xcb_wd_begin(struct ffly_xcb_wd *__xcb_wd, mdl_uint_t __xa_len, mdl_uint_t __ya_len, char const *__title) {
+ffly_err_t ffly_xcb_wd_begin(struct ffly_xcb_wd *__xcb_wd, mdl_u16_t __width, mdl_u16_t __height, char const *__title) {
 	if (!(__xcb_wd->d = XOpenDisplay(NULL))) {
 		return FFLY_FAILURE;
 	}
@@ -14,8 +14,8 @@ ffly_err_t ffly_xcb_wd_begin(struct ffly_xcb_wd *__xcb_wd, mdl_uint_t __xa_len, 
 
 	xcb_screen_iterator_t screen_itr = xcb_setup_roots_iterator(setup);
 	int def_screen = DefaultScreen(__xcb_wd->d);
-	mdl_uint_t ic;
-	for (ic = 0; ic < def_screen; ++ic)
+	mdl_u8_t i = 0;
+	for(;i < def_screen;++i)
 		xcb_screen_next(&screen_itr);
 
 	__xcb_wd->screen = screen_itr.data;
@@ -44,10 +44,10 @@ ffly_err_t ffly_xcb_wd_begin(struct ffly_xcb_wd *__xcb_wd, mdl_uint_t __xa_len, 
 	mdl_u32_t val_list[] = {event_msk, colour_map, 0};
 	mdl_u32_t val_msk = XCB_CW_EVENT_MASK|XCB_CW_COLORMAP;
 
-	xcb_create_window(__xcb_wd->conn, XCB_COPY_FROM_PARENT, __xcb_wd->w, __xcb_wd->screen->root, 0, 0, __xa_len, __ya_len, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, vis_id, val_msk, val_list);
+	xcb_create_window(__xcb_wd->conn, XCB_COPY_FROM_PARENT, __xcb_wd->w, __xcb_wd->screen->root, 0, 0, __width, __height, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, vis_id, val_msk, val_list);
 	xcb_size_hints_t size_hints;
-	xcb_icccm_size_hints_set_min_size(&size_hints, __xa_len-__xcb_wd->mn_xal_off, __ya_len-__xcb_wd->mn_yal_off);
-	xcb_icccm_size_hints_set_max_size(&size_hints, __xa_len+__xcb_wd->mx_xal_off, __ya_len+__xcb_wd->mx_yal_off);
+	xcb_icccm_size_hints_set_min_size(&size_hints, __xcb_wd->mn_width, __xcb_wd->mn_height);
+	xcb_icccm_size_hints_set_max_size(&size_hints, __xcb_wd->mx_width, __xcb_wd->mx_height);
 	xcb_icccm_set_wm_size_hints(__xcb_wd->conn, __xcb_wd->w, XCB_ATOM_WM_NORMAL_HINTS, &size_hints);
 
 	xcb_intern_atom_cookie_t proto_cookie = xcb_intern_atom(__xcb_wd->conn, 1, 12, "WM_PROTOCOLS");
@@ -77,7 +77,7 @@ ffly_err_t ffly_xcb_wd_begin(struct ffly_xcb_wd *__xcb_wd, mdl_uint_t __xa_len, 
 	do {
 		xcb_generic_event_t *ev;
 		while((ev = xcb_poll_for_event(__xcb_wd->conn)) != NULL) {
-			switch(ev->response_type & ~0x80) {
+			switch(ev->response_type&~0x80) {
 				case XCB_CLIENT_MESSAGE: goto end;
 			}
 		}

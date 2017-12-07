@@ -1,7 +1,7 @@
 # include "mem_realloc.h"
 # include "../system/io.h"
-# ifdef __MEM_AGENT
-void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc, ffly_bool_t __agent_ignore) {
+# ifdef __MAL_TRACK
+void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc, ffly_bool_t __track_bypass) {
 # else
 void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc) {
 # endif
@@ -25,15 +25,15 @@ void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc) {
 	p = (mdl_u8_t*)realloc(__p, __nbc);
 # endif
 
-# ifdef __MEM_AGENT
-	if (!__agent_ignore) {
+# ifdef __MAL_TRACK
+	if (!__track_bypass) {
 # ifdef __DEBUG_ENABLED
 		if (
 # endif
-		ffly_mem_agent_update(&__ffly_mem_agent__, __p, (void*)p)
+		ffly_mal_track_update(&__ffly_mal_track__, __p, (void*)p)
 # ifdef __DEBUG_ENABLED
 		!= FFLY_SUCCESS) {
-			ffly_printf(stderr, "mem_realloc: mem agent failure.\n");
+			ffly_printf(stderr, "mem_realloc: mal track failure.\n");
 		}
 # else
 ;

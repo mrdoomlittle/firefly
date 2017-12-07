@@ -1,5 +1,6 @@
 # ifndef __ffly__system__hpp
 # define __ffly__system__hpp
+/*
 # ifdef __WITH_TASK_HANDLE
 #	include "system/task_handle.hpp"
 # endif
@@ -34,5 +35,19 @@ firefly::types::err_t static de_init() {
 
 }
 }
+*/
+# include "system/io.h"
+# include "types/err_t.h"
+# include "system/errno.h"
+namespace mdl {
+namespace ffly_system {
+firefly::types::err_t init() {
+	ffly_io_init();
+}
 
+firefly::types::err_t de_init() {
+	ffly_io_closeup();
+}
+}
+}
 # endif /*__ffly__system__hpp*/

@@ -7,15 +7,14 @@
 # include <X11/Xlib.h>
 # include <GL/glx.h>
 # include <stdio.h>
-# include "../types/off_t.h"
 # include "../system/flags.h"
 # include "../system/buff.h"
 # include "../types/wd_ed_t.h"
 # include "../system/mem_blk.h"
 struct ffly_x11_wd {
-	mdl_uint_t xa_len, ya_len;
-	ffly_off_t mn_xal_off, mn_yal_off;
-	ffly_off_t mx_xal_off, mx_yal_off;
+	mdl_u16_t *width, *height;
+	mdl_u16_t *mn_width, *mn_height;
+	mdl_u16_t *mx_width, *mx_height;
 	ffly_byte_t *frame_buff;
 	Display *d;
 	Window w;
@@ -27,7 +26,7 @@ struct ffly_x11_wd {
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd*, mdl_u16_t, mdl_u16_t, char const*);
+ffly_err_t ffly_x11_wd_begin(struct ffly_x11_wd*, mdl_u16_t*, mdl_u16_t*, char const*);
 # ifdef __cplusplus
 }
 # endif

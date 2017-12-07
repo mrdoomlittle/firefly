@@ -10,15 +10,14 @@
 # include <xcb/xcb_icccm.h>
 # include <GL/glx.h>
 # include <GL/gl.h>
-# include "../types/off_t.h"
 # include "../system/flags.h"
 # include "../types/byte_t.h"
 # include "../system/buff.h"
 
 struct ffly_xcb_wd {
-	mdl_uint_t xa_len, ya_len;
-	ffly_off_t mn_xal_off, mn_yal_off;
-	ffly_off_t mx_xal_off, mx_yal_off;
+	mdl_uint_t width, height;
+	mdl_u16_t mn_width, mn_height;
+	mdl_u16_t mx_width, mx_height;
 	Display *d;
 	xcb_connection_t *conn;
 	xcb_screen_t *screen;
@@ -31,7 +30,7 @@ struct ffly_xcb_wd {
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_xcb_wd_begin(struct ffly_xcb_wd*, mdl_uint_t, mdl_uint_t, char const*);
+ffly_err_t ffly_xcb_wd_begin(struct ffly_xcb_wd*, mdl_u16_t, mdl_u16_t, char const*);
 # ifdef __cplusplus
 }
 # endif
