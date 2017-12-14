@@ -57,7 +57,7 @@ struct thread_arg<_F, _A1, _A2, _A3, _A4> {
 
 template<typename _F>
 static void* proxy(void *__arg) {
-	((_F)__arg)();
+	(reinterpret_cast<_F>(__arg))();
 }
 
 template<typename _F, typename _A1>

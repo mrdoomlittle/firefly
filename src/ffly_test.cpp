@@ -19,6 +19,26 @@ using namespace mdl::firefly;
 # define HEIGHT 800
 # include "graphics/pipe.h"
 # include "graphics/fill.h"
+# include "graphics/draw.h"
+# include "system/thread.h"
+
+void unloader() {
+	while(1) {
+		if (!ffly_grp_buff_empty(&__ffly_grp__)) {
+			ffly_printf(ffly_out, "unloading.\n");
+			ffly_grp_unload_all(&__ffly_grp__);
+		}
+
+		ffly_nanosleep(0, 100000000);
+	}
+}
+
+struct ttt {
+	mdl_u8_t a;
+	mdl_u8_t b;
+};
+
+# include "data/mem_set.h"
 int main() {
 /*
 	ffly_io_init();
@@ -30,40 +50,48 @@ int main() {
 	ffly_grp_cleanup(&__ffly_grp__);
 	ffly_io_closeup();
 */
-
 	init();
-	ffly_grp_prepare(&__ffly_grp__, 12);
+//	ffly_tid_t tid;
+//	ffly_grp_prepare(&__ffly_grp__, 4);
+
+//	system::thread t(&unloader, tid);
+
 	graphics::window window;
 	window.init(WIDTH, HEIGHT, "Hello World");
 	window.begin();
+/*
+	mdl_u8_t *a = (mdl_u8_t*)__ffly_mem_alloc(100*100*4);
+	mdl_u8_t *b = (mdl_u8_t*)__ffly_mem_alloc(200*200*4);
+	mdl_u8_t *c = (mdl_u8_t*)__ffly_mem_alloc(300*300*4);
+	graphics::pixelfill(a, 100*100, graphics::mk_colour(0xFF, 0x0, 0x0, 0xFF));
+	graphics::pixelfill(b, 200*200, graphics::mk_colour(0x0, 0xFF, 0x0, 0xFF));
+	graphics::pixelfill(c, 300*300, graphics::mk_colour(0x0, 0x0, 0xFF, 0xFF));
 
-	mdl_u8_t *buf = (mdl_u8_t*)__ffly_mem_alloc(WIDTH*HEIGHT*4);
-	graphics::pixelfill(buf, WIDTH*HEIGHT, graphics::mk_colour(0xFF, 0xFF, 0xFF, 0xFF));
-	ffly_grp_unload_all(&__ffly_grp__);
-
-	while(!system::is_flag(window.flags(), FFLY_FLG_WD_ALIVE));
+*/
+	while(!system::is_flag(window.flags(), FF_FLG_WD_ALIVE));
+//	ffly_nanosleep(1, 0);
 
 	while(1) {
 		ffly_nanosleep(1, 0);
-		if (system::is_flag(window.flags(), FFLY_FLG_WD_DEAD)) {
+		if (system::is_flag(window.flags(), FF_FLG_WD_DEAD)) {
 			break;
 		}
 
-		graphics::pixelcopy(window.frame_buff(), buf, WIDTH*HEIGHT);
-		ffly_grp_unload_all(&__ffly_grp__);
-		if (!system::is_flag(window.flags(), FFLY_FLG_WD_DRAW_FRAME))
-			system::add_flag(&window.flags(), FFLY_FLG_WD_DRAW_FRAME, 0);
+//		if (!system::is_flag(window.flags(), FF_FLG_WD_DRAW))
+//			system::add_flag(&window.flags(), FF_FLG_WD_DRAW, 0);
 
-		if (!system::is_flag(window.flags(), FFLY_FLG_WD_NEXT_FRAME)) continue;
-		system::rm_flag(&window.flags(), FFLY_FLG_WD_NEXT_FRAME);
+//		if (!system::is_flag(window.flags(), FF_FLG_WD_OK)) continue;
+//		system::rm_flag(&window.flags(), FF_FLG_WD_OK);
 	}
 
-	system::add_flag(&window.flags(), FFLY_FLG_WD_OK, 0);
+	system::add_flag(&window.flags(), FF_FLG_WD_OK, 0);
 
+	window.de_init();
 	ffly_nanosleep(0, 10000000);
-//	graphics::fill_frame(frame, YA*XA, graphics::mk_colour(0xFF, 0xFF, 0xFF, 0xFF));
 
-	free(buf);
+//	free(a);
+//	free(b);
+//	free(c);
 	de_init();
 	ffly_grp_cleanup(&__ffly_grp__);
 

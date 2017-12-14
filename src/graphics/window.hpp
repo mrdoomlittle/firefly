@@ -1,10 +1,6 @@
 # ifndef __window__hpp
 # define __window__hpp
-# if defined(__USING_X11)
-#	include "x11_wd.h"
-# elif defined(__USING_XCB)
-#	include "xcb_wd.h"
-# endif
+# include "window.h"
 # include <mdlint.h>
 # include "../types/err_t.h"
 # include "../system/errno.h"
@@ -16,28 +12,28 @@
 # include "../types/bool_t.h"
 # include "../types/event_t.h"
 # include "../system/mem_blk.h"
+# include "wd_flags.h"
 namespace mdl {
 namespace firefly {
 namespace graphics {
 class window {
 	public:
-	types::byte_t* frame_buff() {return this->handle.frame_buff;}
+	types::byte_t* frame_buff() {return ffly_wd_frame_buff(&this->raw);}
 	types::err_t init(u16_t __width, u16_t __height, char const *__title);
 	types::err_t begin();
-	types::flag_t& flags(){return this->handle.flags;}
-	types::bool_t is_event_buff_empty() {return !ffly_buff_ublk_c(&this->handle.event_buff);}
+	types::bool_t is_dead() {return system::is_flag(this->raw.flags, FFLY_FLG_WD_DEAD);}
+	types::bool_t is_alive() {return system::is_flag(this->raw.flags, FFLY_FLG_WD_ALIVE);}
+	types::flag_t& flags(){return *ffly_wd_flags(&this->raw);}
+	void update();
+	types::bool_t is_event_buff_empty() {return !ffly_buff_ublk_c(&this->raw.event_buff);}
 	types::err_t dump_event_buff();
 	types::err_t de_init();
 	system::queue<types::event_t> event_queue;
 	void free_event_data(void *__data) {
-		ffly_mem_blk_free(&this->handle.event_data, __data);
+		ffly_mem_blk_free(&this->raw.event_data, __data);
 	}
 	private:
-# if defined(__USING_X11)
-	struct ffly_x11_wd handle;
-# elif defined(__USING_XCB)
-	struct ffly_xcb_wd handle;
-# endif
+	struct ffly_wd raw;
 	char const *title;
 	u16_t width, height;
 	types::tid_t tid;

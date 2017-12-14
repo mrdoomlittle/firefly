@@ -4,6 +4,7 @@
 # include "../types/byte_t.h"
 # include "../types/err_t.h"
 # include "../types/pixelmap_t.h"
+# include "../types/off_t.h"
 # ifdef __cplusplus
 # ifndef __NVCC__
 #	include "pipe.h"
@@ -11,7 +12,7 @@
 namespace mdl {
 namespace firefly {
 namespace graphics {
-types::err_t gpu_pixcopy(types::byte_t*, types::byte_t*, mdl_uint_t);
+types::err_t gpu_pixcopy(types::byte_t *__dst, types::byte_t *__src, mdl_uint_t __nopix);
 # ifndef __NVCC__
 types::err_t static pixelcopy(types::pixelmap_t __dst, types::pixelmap_t __src, mdl_uint_t __nopix) {
 	return pipe_inject(&__ffly_grp__, mk_job(_grj_pixcopy, __dst, __src, __nopix));

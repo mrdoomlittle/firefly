@@ -5,7 +5,8 @@
 
 enum {
     _grj_pixfill,
-    _grj_pixcopy
+    _grj_pixcopy,
+	_grj_pixdraw
 };
 
 struct ffly_grj {
@@ -92,6 +93,55 @@ static struct ffly_grj* mk_job(u8_t __kind, _A1 __a1, _A2 __a2, _A3 __a3, _A4 __
 	p+= sizeof(_A4);
 
 	*reinterpret_cast<_A5*>(p) = __a5;
+	return ffly_grj_mk(__kind, par);
+}
+
+template<typename _A1, typename _A2, typename _A3, typename _A4, typename _A5, typename _A6>
+static struct ffly_grj* mk_job(u8_t __kind, _A1 __a1, _A2 __a2, _A3 __a3, _A4 __a4, _A5 __a5, _A6 __a6) {
+	void *par = memory::mem_alloc(sizeof(_A1)+sizeof(_A2)+sizeof(_A3)+sizeof(_A4)+sizeof(_A5)+sizeof(_A6));
+	u8_t *p = static_cast<u8_t*>(par);
+	*reinterpret_cast<_A1*>(p) = __a1;
+	p+= sizeof(_A1);
+
+	*reinterpret_cast<_A2*>(p) = __a2;
+	p+= sizeof(_A2);
+
+	*reinterpret_cast<_A3*>(p) = __a3;
+	p+= sizeof(_A3);
+
+	*reinterpret_cast<_A4*>(p) = __a4;
+	p+= sizeof(_A4);
+
+	*reinterpret_cast<_A5*>(p) = __a5;
+	p+= sizeof(_A5);
+
+	*reinterpret_cast<_A6*>(p) = __a6;
+	return ffly_grj_mk(__kind, par);
+}
+
+template<typename _A1, typename _A2, typename _A3, typename _A4, typename _A5, typename _A6, typename _A7>
+static struct ffly_grj* mk_job(u8_t __kind, _A1 __a1, _A2 __a2, _A3 __a3, _A4 __a4, _A5 __a5, _A6 __a6, _A7 __a7) {
+	void *par = memory::mem_alloc(sizeof(_A1)+sizeof(_A2)+sizeof(_A3)+sizeof(_A4)+sizeof(_A5)+sizeof(_A6)+sizeof(_A7));
+	u8_t *p = static_cast<u8_t*>(par);
+	*reinterpret_cast<_A1*>(p) = __a1;
+	p+= sizeof(_A1);
+
+	*reinterpret_cast<_A2*>(p) = __a2;
+	p+= sizeof(_A2);
+
+	*reinterpret_cast<_A3*>(p) = __a3;
+	p+= sizeof(_A3);
+
+	*reinterpret_cast<_A4*>(p) = __a4;
+	p+= sizeof(_A4);
+
+	*reinterpret_cast<_A5*>(p) = __a5;
+	p+= sizeof(_A5);
+
+	*reinterpret_cast<_A6*>(p) = __a6;
+	p+= sizeof(_A6);
+
+	*reinterpret_cast<_A7*>(p) = __a7;
 	return ffly_grj_mk(__kind, par);
 }
 }

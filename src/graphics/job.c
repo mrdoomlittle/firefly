@@ -9,6 +9,8 @@ char const static *kstr(mdl_u8_t __kind) {
 			return "pixfill";
 		case _grj_pixcopy:
 			return "pixcopy";
+		case _grj_pixdraw:
+			return "pixdraw";
 	}
 	return "unknown";
 }
@@ -27,7 +29,9 @@ struct ffly_grj* ffly_grj_mk(mdl_u8_t __kind, void *__par) {
 # include "../types/colour_t.h"
 # include "fill.h"
 # include "copy.h"
+# include "draw.h"
 # include "../types/byte_t.h"
+# include "../types/off_t.h"
 ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 	ffly_err_t any_err = FFLY_SUCCESS;
 	ffly_printf(ffly_out, "about to prosess graphics job.\n");
@@ -60,6 +64,34 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 
 			ffly_pixcopy(dst, src, nopix);
 			ffly_printf(ffly_out, "graphics job-%s, %p, %p, %u\n", kstr(__job->kind), dst, src, nopix);
+			break;
+		}
+		case _grj_pixdraw: {
+			mdl_u8_t *p = (mdl_u8_t*)__job->par;
+			ffly_off_t x, y;
+
+			x = *(ffly_off_t*)p;
+			p+= sizeof(ffly_off_t);
+
+			y = *(ffly_off_t*)p;
+			p+= sizeof(ffly_off_t);
+
+			ffly_byte_t *buff = *(ffly_byte_t**)p;
+			p+= sizeof(ffly_byte_t*);
+
+			mdl_uint_t bufw = *(mdl_uint_t*)p;
+			p+= sizeof(mdl_uint_t);
+
+			ffly_byte_t *pixels = *(ffly_byte_t**)p;
+			p+= sizeof(ffly_byte_t*);
+
+			mdl_uint_t width = *(mdl_uint_t*)p;
+			p+= sizeof(mdl_uint_t);
+
+			mdl_uint_t height = *(mdl_uint_t*)p;
+
+			ffly_pixdraw(x, y, buff, bufw, pixels, width, height);
+			ffly_printf(ffly_out, "graphics job-%s, %u, %u, %p, %u, %p, %u, %u\n", kstr(__job->kind), x, y, buff, bufw, pixels, width, height);
 			break;
 		}
 		default:

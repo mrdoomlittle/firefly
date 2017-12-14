@@ -4,7 +4,11 @@
 # include "../system/mutex.h"
 # include <mdlint.h>
 # include "job.h"
+# include "../system/signal.h"
+# include "../types/bool_t.h"
 struct ffly_grp {
+	ffly_sig_t sig;
+	mdl_u16_t bufsize;
 	ffly_mutex_t mutex;
 	struct ffly_grj **job_buff;
 	struct ffly_grj **fresh_job;
@@ -13,6 +17,7 @@ struct ffly_grp {
 # ifdef __cplusplus
 extern "C" {
 # endif
+ffly_bool_t ffly_grp_buff_empty(struct ffly_grp*);
 ffly_err_t ffly_grp_prepare(struct ffly_grp*, mdl_u16_t);
 ffly_err_t ffly_grp_inject(struct ffly_grp*, struct ffly_grj*);
 ffly_err_t ffly_grp_unload_all(struct ffly_grp*);

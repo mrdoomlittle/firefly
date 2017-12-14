@@ -10,11 +10,9 @@
 # include <xcb/xcb_icccm.h>
 # include <GL/glx.h>
 # include <GL/gl.h>
-# include "../system/flags.h"
 # include "../types/byte_t.h"
-# include "../system/buff.h"
-
 struct ffly_xcb_wd {
+	char const *title;
 	mdl_uint_t width, height;
 	mdl_u16_t mn_width, mn_height;
 	mdl_u16_t mx_width, mx_height;
@@ -23,14 +21,17 @@ struct ffly_xcb_wd {
 	xcb_screen_t *screen;
 	xcb_window_t w;
 	ffly_byte_t *frame_buff;
-	ffly_flag_t flags;
-	struct ffly_buff event_buff;
+	GLXWindow glx_window;
+	GLXContext glx_ct;
 };
 
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_xcb_wd_begin(struct ffly_xcb_wd*, mdl_u16_t, mdl_u16_t, char const*);
+ffly_err_t ffly_xcb_wd_init(struct ffly_xcb_wd*, mdl_u16_t, mdl_u16_t, char const*);
+ffly_err_t ffly_xcb_wd_open(struct ffly_xcb_wd*);
+ffly_err_t ffly_xcb_wd_close(struct ffly_xcb_wd*);
+ffly_err_t ffly_xcb_wd_cleanup(struct ffly_xcb_wd*);
 # ifdef __cplusplus
 }
 # endif

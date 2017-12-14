@@ -1,4 +1,4 @@
-SHELL := /bin/bash
+#SHELL := /bin/bash
 ifeq ($(shell bash find.bash "$(ffly_flags)" "--with-layer-manager"), 0)
  override ffly_objs+= src/layer_manager.o
 endif
@@ -48,9 +48,9 @@ override ffly_objs+= src/data/swp.o src/data/mem_cpy.o src/data/str_len.o src/da
 # system
 override ffly_objs+= src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
 src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
-src/system/task_worker.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o
+src/system/task_worker.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o
 # graphics
-override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o src/graphics/copy.o #src/graphics/draw_pixelmap.o src/graphics/fill_pixmap.o src/graphics/fill_pixelmap.o
+override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o src/graphics/copy.o src/graphics/draw.o #src/graphics/draw_pixelmap.o src/graphics/fill_pixmap.o src/graphics/fill_pixelmap.o
 #ffly_objs+= src/ffly_graphics.o
 # memory
 override ffly_objs+= src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o src/memory/alloc_pixelmap.o
@@ -83,6 +83,11 @@ endif
 
 override ffly_objs+= src/firefly.o
 override ffly_defines+= -D__USING_PULSE_AUDIO
+src/graphics/draw.o: src/graphics/draw.cu src/graphics/draw.cpp
+	$(ffly_nvcc) -c -std=c++11 $(CXX_IFLAGS) -D$(ffly_target) $(ffly_defines) -o src/graphics/draw.o.1 src/graphics/draw.cu
+	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D$(ffly_target) $(ffly_defines) -o src/graphics/draw.o.2 src/graphics/draw.cpp
+	ld -r src/graphics/draw.o.1 src/graphics/draw.o.2 -o src/graphics/draw.o
+
 src/graphics/job.o: src/graphics/job.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D$(ffly_target) $(ffly_defines) -o src/graphics/job.o src/graphics/job.c
 
@@ -139,6 +144,9 @@ src/system/thread.o: src/system/thread.c
 
 src/maths/is_inside.o: src/maths/is_inside.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D$(ffly_target) $(ffly_defines) -o src/maths/is_inside.o src/maths/is_inside.c
+
+src/system/signal.o: src/system/asm/signal.asm
+	nasm -f elf64 -o src/system/signal.o src/system/asm/signal.asm
 
 src/system/cond_lock.o: src/system/asm/cond_lock.asm
 	nasm -f elf64 -o src/system/cond_lock.o src/system/asm/cond_lock.asm
@@ -349,8 +357,10 @@ src/memory/mem_free.o: src/memory/mem_free.cpp src/memory/mem_free.c
 src/memory/mem_realloc.o: src/memory/mem_realloc.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) $(C_IFLAGS) -D$(ffly_target) $(ffly_defines) -o src/memory/mem_realloc.o src/memory/mem_realloc.c
 
-src/graphics/window.o: src/graphics/window.cpp
-	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D$(ffly_target) $(ffly_defines) -o src/graphics/window.o src/graphics/window.cpp
+src/graphics/window.o: src/graphics/window.cpp src/graphics/window.c
+	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D$(ffly_target) $(ffly_defines) -o src/graphics/window.o.1 src/graphics/window.cpp
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) $(C_IFLAGS) -D$(ffly_target) $(ffly_defines) -o src/graphics/window.o.2 src/graphics/window.c
+	ld -r src/graphics/window.o.1 src/graphics/window.o.2 -o src/graphics/window.o
 
 src/layer_manager.o: src/layer_manager.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D$(ffly_target) $(ffly_defines) -o src/layer_manager.o src/layer_manager.cpp

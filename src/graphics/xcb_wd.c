@@ -1,91 +1,107 @@
 # include "xcb_wd.h"
-ffly_err_t ffly_xcb_wd_begin(struct ffly_xcb_wd *__xcb_wd, mdl_u16_t __width, mdl_u16_t __height, char const *__title) {
-	if (!(__xcb_wd->d = XOpenDisplay(NULL))) {
+# include "../system/io.h"
+# include "../data/mem_set.h"
+# include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
+# include "../data/str_len.h"
+ffly_err_t ffly_xcb_wd_init(struct ffly_xcb_wd *__wd, mdl_u16_t __width, mdl_u16_t __height, char const *__title) {
+	ffly_mem_set(__wd, 0x0, sizeof(struct ffly_xcb_wd));
+	__wd->title = __title;
+	__wd->width = __width;
+	__wd->height = __height;
+	if ((__wd->frame_buff = __ffly_mem_alloc(__width*__height*4)) == NULL) {
+		ffly_printf(stderr, "failed to allocate memory for frame buffer.\n");
+		return FFLY_FAILURE;
+	}
+	return FFLY_SUCCESS;
+}
+
+ffly_err_t ffly_xcb_wd_open(struct ffly_xcb_wd *__wd) {
+	if (!(__wd->d = XOpenDisplay(NULL))) {
+		ffly_printf(stderr, "failed to open display.\n");
 		return FFLY_FAILURE;
 	}
 
-	if (!(__xcb_wd->conn = XGetXCBConnection(__xcb_wd->d))) {
-		XCloseDisplay(__xcb_wd->d);
+	if (!(__wd->conn = XGetXCBConnection(__wd->d))) {
+		XCloseDisplay(__wd->d);
+		ffly_printf(stderr, "failed to get connection.\n");
 		return FFLY_FAILURE;
 	}
 
-	XSetEventQueueOwner(__xcb_wd->d, XCBOwnsEventQueue);
-	xcb_setup_t const *setup = xcb_get_setup(__xcb_wd->conn);
+	XSetEventQueueOwner(__wd->d, XCBOwnsEventQueue);
+	xcb_setup_t *setup = xcb_get_setup(__wd->conn);
 
 	xcb_screen_iterator_t screen_itr = xcb_setup_roots_iterator(setup);
-	int def_screen = DefaultScreen(__xcb_wd->d);
+	int def_screen = DefaultScreen(__wd->d);
 	mdl_u8_t i = 0;
-	for(;i < def_screen;++i)
+	for (;i < def_screen;i++)
 		xcb_screen_next(&screen_itr);
 
-	__xcb_wd->screen = screen_itr.data;
-	__xcb_wd->w = xcb_generate_id(__xcb_wd->conn);
+	__wd->screen = screen_itr.data;
+	__wd->w = xcb_generate_id(__wd->conn);
 
-	GLXContext glx_ct;
 	int vis_id;
 	GLXFBConfig *fb_configs;
 	int fb_config_c;
-	if (!(fb_configs = glXGetFBConfigs(__xcb_wd->d, def_screen, &fb_config_c))) {
+	if (!(fb_configs = glXGetFBConfigs(__wd->d, def_screen, &fb_config_c))) {
+		ffly_printf(stderr, "failed to get frame buffer config.\n");
 		return FFLY_FAILURE;
 	}
 
 	if (!fb_config_c) return FFLY_FAILURE;
 
 	GLXFBConfig fb_config = *fb_configs;
-	glXGetFBConfigAttrib(__xcb_wd->d, fb_config, GLX_VISUAL_ID, &vis_id);
-	if (!(glx_ct = glXCreateNewContext(__xcb_wd->d, fb_config, GLX_RGBA_TYPE, 0, True))) {
-
+	glXGetFBConfigAttrib(__wd->d, fb_config, GLX_VISUAL_ID, &vis_id);
+	if (!(__wd->glx_ct = glXCreateNewContext(__wd->d, fb_config, GLX_RGBA_TYPE, 0, True))) {
+		ffly_printf(stderr, "failed to create glx context.\n");
 		return FFLY_FAILURE;
 	}
 
-	xcb_colormap_t colour_map = xcb_generate_id(__xcb_wd->conn);
-	xcb_create_colormap(__xcb_wd->conn, XCB_COLORMAP_ALLOC_NONE, colour_map, __xcb_wd->screen->root, vis_id);
+	xcb_colormap_t colour_map = xcb_generate_id(__wd->conn);
+	xcb_create_colormap(__wd->conn, XCB_COLORMAP_ALLOC_NONE, colour_map, __wd->screen->root, vis_id);
 	mdl_u32_t event_msk = XCB_EVENT_MASK_EXPOSURE|XCB_EVENT_MASK_KEY_PRESS|XCB_EVENT_MASK_KEY_RELEASE|XCB_EVENT_MASK_BUTTON_PRESS|XCB_EVENT_MASK_BUTTON_RELEASE;
 	mdl_u32_t val_list[] = {event_msk, colour_map, 0};
 	mdl_u32_t val_msk = XCB_CW_EVENT_MASK|XCB_CW_COLORMAP;
 
-	xcb_create_window(__xcb_wd->conn, XCB_COPY_FROM_PARENT, __xcb_wd->w, __xcb_wd->screen->root, 0, 0, __width, __height, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, vis_id, val_msk, val_list);
+	xcb_create_window(__wd->conn, XCB_COPY_FROM_PARENT, __wd->w, __wd->screen->root, 0, 0, __wd->width, __wd->height, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, vis_id, val_msk, val_list);
+
+	xcb_change_property(__wd->conn, XCB_PROP_MODE_REPLACE, __wd->w, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8, ffly_str_len(__wd->title), __wd->title);
+/* de comment later
+	// size hints
 	xcb_size_hints_t size_hints;
-	xcb_icccm_size_hints_set_min_size(&size_hints, __xcb_wd->mn_width, __xcb_wd->mn_height);
-	xcb_icccm_size_hints_set_max_size(&size_hints, __xcb_wd->mx_width, __xcb_wd->mx_height);
-	xcb_icccm_set_wm_size_hints(__xcb_wd->conn, __xcb_wd->w, XCB_ATOM_WM_NORMAL_HINTS, &size_hints);
+	xcb_icccm_size_hints_set_min_size(&size_hints, __wd->mn_width, __wd->mn_height);
+	xcb_icccm_size_hints_set_max_size(&size_hints, __wd->mx_width, __wd->mx_height);
+	xcb_icccm_set_wm_size_hints(__wd->conn, __wd->w, XCB_ATOM_WM_NORMAL_HINTS, &size_hints);
+*/
+	xcb_intern_atom_cookie_t proto_cookie = xcb_intern_atom(__wd->conn, 1, 12, "WM_PROTOCOLS");
+	xcb_intern_atom_reply_t *proto_re = xcb_intern_atom_reply(__wd->conn, proto_cookie, 0);
 
-	xcb_intern_atom_cookie_t proto_cookie = xcb_intern_atom(__xcb_wd->conn, 1, 12, "WM_PROTOCOLS");
-	xcb_intern_atom_reply_t *proto_re = xcb_intern_atom_reply(__xcb_wd->conn, proto_cookie, 0);
+	xcb_intern_atom_cookie_t cookie = xcb_intern_atom(__wd->conn, 0, 16, "WM_DELETE_WINDOW");
+ 	xcb_intern_atom_reply_t *re = xcb_intern_atom_reply(__wd->conn, cookie, 0);
 
-	xcb_intern_atom_cookie_t cookie = xcb_intern_atom(__xcb_wd->conn, 0, 16, "WM_DELETE_WINDOW");
-	xcb_intern_atom_reply_t *re = xcb_intern_atom_reply(__xcb_wd->conn, cookie, 0);
+	xcb_change_property(__wd->conn, XCB_PROP_MODE_REPLACE, __wd->w, proto_re->atom, 4, 32, 1, &re->atom);
 
-	xcb_change_property(__xcb_wd->conn, XCB_PROP_MODE_REPLACE, __xcb_wd->w, proto_re->atom, 4, 32, 1, &re->atom);
-
-	xcb_map_window(__xcb_wd->conn, __xcb_wd->w);
-	GLXWindow glx_window;
-	if (!(glx_window = glXCreateWindow(__xcb_wd->d, fb_config, __xcb_wd->w, NULL))) {
-		xcb_destroy_window(__xcb_wd->conn, __xcb_wd->w);
-		glXDestroyContext(__xcb_wd->d, glx_ct);
+	xcb_map_window(__wd->conn, __wd->w);
+	if (!(__wd->glx_window = glXCreateWindow(__wd->d, fb_config, __wd->w, NULL))) {
 		return FFLY_FAILURE;
 	}
 
-	GLXDrawable dr = glx_window;
-	if(!glXMakeContextCurrent(__xcb_wd->d, dr, dr, glx_ct)) {
-		xcb_destroy_window(__xcb_wd->conn, __xcb_wd->w);
-		glXDestroyContext(__xcb_wd->d, glx_ct);
-		glXDestroyWindow(__xcb_wd->d, glx_window);
+	GLXDrawable dr = __wd->glx_window;
+	if(!glXMakeContextCurrent(__wd->d, dr, dr, __wd->glx_ct)) {
 		return FFLY_FAILURE;
 	}
+	return FFLY_SUCCESS;
+}
 
-	do {
-		xcb_generic_event_t *ev;
-		while((ev = xcb_poll_for_event(__xcb_wd->conn)) != NULL) {
-			switch(ev->response_type&~0x80) {
-				case XCB_CLIENT_MESSAGE: goto end;
-			}
-		}
-	} while(1);
+ffly_err_t ffly_xcb_wd_close(struct ffly_xcb_wd *__wd) {
+	xcb_destroy_window(__wd->conn, __wd->w);
+	glXDestroyContext(__wd->d, __wd->glx_ct);
+	glXDestroyWindow(__wd->d, __wd->glx_window);
+	XCloseDisplay(__wd->d);
+	return FFLY_SUCCESS;
+}
 
-	end:
-	xcb_destroy_window(__xcb_wd->conn, __xcb_wd->w);
-	glXDestroyContext(__xcb_wd->d, glx_ct);
-	glXDestroyWindow(__xcb_wd->d, glx_window);
+ffly_err_t ffly_xcb_wd_cleanup(struct ffly_xcb_wd *__wd) {
+	__ffly_mem_free(__wd->frame_buff);
 	return FFLY_SUCCESS;
 }

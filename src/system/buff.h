@@ -6,6 +6,10 @@
 # include "mutex.h"
 # include "../types/bool_t.h"
 
+# ifdef __cplusplus
+#	include "errno.h"
+# endif
+
 struct ffly_buff {
 	ffly_mutex_t m;
 	mdl_u8_t *p;

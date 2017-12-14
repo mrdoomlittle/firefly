@@ -12,4 +12,5 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixcopy(types::byte_t *__
 	mdl_uint_t size = __nopix*4;
 	cudaMemcpy(__dst, __src, size, cudaMemcpyHostToHost);
 	cudaDeviceSynchronize();
+	return FFLY_SUCCESS;
 }
