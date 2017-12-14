@@ -5,6 +5,7 @@
 # include "wd_flags.h"
 # include "../system/nanosleep.h"
 # include "../types/event_t.h"
+# include "../data/mem_set.h"
 ffly_byte_t* ffly_wd_frame_buff(struct ffly_wd *__wd) {
 	return __wd->raw.frame_buff;
 }
@@ -76,6 +77,11 @@ ffly_err_t ffly_wd_cleanup(struct ffly_wd *__wd) {
 	return FFLY_SUCCESS;
 }
 
+ffly_err_t ffly_wd_display(struct ffly_wd *__wd) {
+	glDrawPixels(__wd->raw.width, __wd->raw.height, GL_RGBA, GL_UNSIGNED_BYTE, __wd->raw.frame_buff);
+	glXSwapBuffers(__wd->raw.d, __wd->raw.glx_dr);
+}
+
 # ifdef __USING_X11
 ffly_err_t ffly_x11_wd_begin(struct ffly_wd *__wd) {
 	ffly_add_flag(&__wd->flags, FF_FLG_WD_ALIVE, 0);
@@ -91,13 +97,6 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_wd *__wd) {
 				case ClientMessage: goto _end;
 			}
 		}
-
-		if (!ffly_is_flag(__wd->flags, FF_FLG_WD_DRAW)) continue;
-		glDrawPixels(__wd->raw.width, __wd->raw.height, GL_RGBA, GL_UNSIGNED_BYTE, __wd->raw.frame_buff);
-		glXSwapBuffers(__wd->raw.d, __wd->raw.w);
-
-		ffly_rm_flag(&__wd->flags, FF_FLG_WD_DRAW);
-		ffly_add_flag(&__wd->flags, FF_FLG_WD_OK, 0);
 	} while(!ffly_is_flag(__wd->flags, FF_FLG_WD_KILL));
 
 	_end:
@@ -110,14 +109,16 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_wd *__wd) {
 # ifdef __USING_XCB
 ffly_err_t ffly_xcb_wd_begin(struct ffly_wd *__wd) {
 	ffly_add_flag(&__wd->flags, FF_FLG_WD_ALIVE, 0);
-
 	xcb_generic_event_t *event;
 	do {
+		ffly_nanosleep(0, 1000000);
 		while((event = xcb_poll_for_event(__wd->raw.conn)) != NULL) {
 			switch(event->response_type&~0x80) {
 				case XCB_CLIENT_MESSAGE: goto _end;
 			}
 		}
+
+		free(event);
 	} while(!ffly_is_flag(__wd->flags, FF_FLG_WD_KILL));
 	_end:
 	ffly_add_flag(&__wd->flags, FF_FLG_WD_DEAD, 0);

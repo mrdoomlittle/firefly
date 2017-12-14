@@ -52,24 +52,18 @@ int main() {
 */
 	init();
 //	ffly_tid_t tid;
-//	ffly_grp_prepare(&__ffly_grp__, 4);
+	ffly_grp_prepare(&__ffly_grp__, 4);
 
 //	system::thread t(&unloader, tid);
 
 	graphics::window window;
 	window.init(WIDTH, HEIGHT, "Hello World");
 	window.begin();
-/*
-	mdl_u8_t *a = (mdl_u8_t*)__ffly_mem_alloc(100*100*4);
-	mdl_u8_t *b = (mdl_u8_t*)__ffly_mem_alloc(200*200*4);
-	mdl_u8_t *c = (mdl_u8_t*)__ffly_mem_alloc(300*300*4);
-	graphics::pixelfill(a, 100*100, graphics::mk_colour(0xFF, 0x0, 0x0, 0xFF));
-	graphics::pixelfill(b, 200*200, graphics::mk_colour(0x0, 0xFF, 0x0, 0xFF));
-	graphics::pixelfill(c, 300*300, graphics::mk_colour(0x0, 0x0, 0xFF, 0xFF));
 
-*/
 	while(!system::is_flag(window.flags(), FF_FLG_WD_ALIVE));
-//	ffly_nanosleep(1, 0);
+	graphics::pixelfill(window.frame_buff(), WIDTH*HEIGHT, graphics::mk_colour(0xFF, 0x0, 0x0, 0xFF));
+
+	ffly_grp_unload_all(&__ffly_grp__);
 
 	while(1) {
 		ffly_nanosleep(1, 0);
@@ -77,21 +71,14 @@ int main() {
 			break;
 		}
 
-//		if (!system::is_flag(window.flags(), FF_FLG_WD_DRAW))
-//			system::add_flag(&window.flags(), FF_FLG_WD_DRAW, 0);
-
-//		if (!system::is_flag(window.flags(), FF_FLG_WD_OK)) continue;
-//		system::rm_flag(&window.flags(), FF_FLG_WD_OK);
+		window.display();
 	}
 
 	system::add_flag(&window.flags(), FF_FLG_WD_OK, 0);
 
 	window.de_init();
-	ffly_nanosleep(0, 10000000);
 
-//	free(a);
-//	free(b);
-//	free(c);
+	ffly_nanosleep(0, 10000000);
 	de_init();
 	ffly_grp_cleanup(&__ffly_grp__);
 

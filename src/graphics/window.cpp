@@ -13,15 +13,10 @@ mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __width, u
 	return FFLY_SUCCESS;
 }
 
-void mdl::firefly::graphics::window::update() {
-	ffly_add_flag(&this->raw.flags, FF_FLG_WD_DRAW, 0);
-	while(!ffly_is_flag(this->raw.flags, FF_FLG_WD_OK));
-	ffly_rm_flag(&this->raw.flags, FF_FLG_WD_OK);
-}
-
 mdl::firefly::types::err_t mdl::firefly::graphics::window::begin() {
 	ffly_wd_open(&this->raw);
 	system::thread t(&ffly_wd_begin, &this->raw, this->tid);
+//	ffly_wd_begin(&this->raw);
 	return FFLY_SUCCESS;
 }
 

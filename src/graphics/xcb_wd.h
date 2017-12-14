@@ -23,6 +23,7 @@ struct ffly_xcb_wd {
 	ffly_byte_t *frame_buff;
 	GLXWindow glx_window;
 	GLXContext glx_ct;
+	GLXDrawable glx_dr;
 };
 
 # ifdef __cplusplus

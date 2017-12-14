@@ -24,7 +24,7 @@ class window {
 	types::bool_t is_dead() {return system::is_flag(this->raw.flags, FFLY_FLG_WD_DEAD);}
 	types::bool_t is_alive() {return system::is_flag(this->raw.flags, FFLY_FLG_WD_ALIVE);}
 	types::flag_t& flags(){return *ffly_wd_flags(&this->raw);}
-	void update();
+	types::err_t display(){return ffly_wd_display(&this->raw);}
 	types::bool_t is_event_buff_empty() {return !ffly_buff_ublk_c(&this->raw.event_buff);}
 	types::err_t dump_event_buff();
 	types::err_t de_init();

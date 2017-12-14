@@ -33,14 +33,14 @@ ffly_err_t ffly_xcb_wd_open(struct ffly_xcb_wd *__wd) {
 
 	xcb_screen_iterator_t screen_itr = xcb_setup_roots_iterator(setup);
 	int def_screen = DefaultScreen(__wd->d);
-	mdl_u8_t i = 0;
-	for (;i < def_screen;i++)
+	int screen_no = def_screen;
+	for (;screen_itr.rem && screen_no > 0;screen_no--)
 		xcb_screen_next(&screen_itr);
 
 	__wd->screen = screen_itr.data;
 	__wd->w = xcb_generate_id(__wd->conn);
 
-	int vis_id;
+	int visual;
 	GLXFBConfig *fb_configs;
 	int fb_config_c;
 	if (!(fb_configs = glXGetFBConfigs(__wd->d, def_screen, &fb_config_c))) {
@@ -51,19 +51,19 @@ ffly_err_t ffly_xcb_wd_open(struct ffly_xcb_wd *__wd) {
 	if (!fb_config_c) return FFLY_FAILURE;
 
 	GLXFBConfig fb_config = *fb_configs;
-	glXGetFBConfigAttrib(__wd->d, fb_config, GLX_VISUAL_ID, &vis_id);
+	glXGetFBConfigAttrib(__wd->d, fb_config, GLX_VISUAL_ID, &visual);
 	if (!(__wd->glx_ct = glXCreateNewContext(__wd->d, fb_config, GLX_RGBA_TYPE, 0, True))) {
 		ffly_printf(stderr, "failed to create glx context.\n");
 		return FFLY_FAILURE;
 	}
 
 	xcb_colormap_t colour_map = xcb_generate_id(__wd->conn);
-	xcb_create_colormap(__wd->conn, XCB_COLORMAP_ALLOC_NONE, colour_map, __wd->screen->root, vis_id);
-	mdl_u32_t event_msk = XCB_EVENT_MASK_EXPOSURE|XCB_EVENT_MASK_KEY_PRESS|XCB_EVENT_MASK_KEY_RELEASE|XCB_EVENT_MASK_BUTTON_PRESS|XCB_EVENT_MASK_BUTTON_RELEASE;
-	mdl_u32_t val_list[] = {event_msk, colour_map, 0};
-	mdl_u32_t val_msk = XCB_CW_EVENT_MASK|XCB_CW_COLORMAP;
+	xcb_create_colormap(__wd->conn, XCB_COLORMAP_ALLOC_NONE, colour_map, __wd->screen->root, visual);
+	mdl_u32_t event_mask = XCB_EVENT_MASK_EXPOSURE|XCB_EVENT_MASK_KEY_PRESS|XCB_EVENT_MASK_KEY_RELEASE|XCB_EVENT_MASK_BUTTON_PRESS|XCB_EVENT_MASK_BUTTON_RELEASE;
+	mdl_u32_t values[] = {event_mask, colour_map, XCB_EVENT_MASK_EXPOSURE, 0};
+	mdl_u32_t mask = XCB_CW_EVENT_MASK|XCB_CW_COLORMAP;
 
-	xcb_create_window(__wd->conn, XCB_COPY_FROM_PARENT, __wd->w, __wd->screen->root, 0, 0, __wd->width, __wd->height, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, vis_id, val_msk, val_list);
+	xcb_create_window(__wd->conn, __wd->screen->root_depth, __wd->w, __wd->screen->root, 0, 0, __wd->width, __wd->height, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, visual, mask, values);
 
 	xcb_change_property(__wd->conn, XCB_PROP_MODE_REPLACE, __wd->w, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8, ffly_str_len(__wd->title), __wd->title);
 /* de comment later
@@ -81,15 +81,17 @@ ffly_err_t ffly_xcb_wd_open(struct ffly_xcb_wd *__wd) {
 
 	xcb_change_property(__wd->conn, XCB_PROP_MODE_REPLACE, __wd->w, proto_re->atom, 4, 32, 1, &re->atom);
 
-	xcb_map_window(__wd->conn, __wd->w);
 	if (!(__wd->glx_window = glXCreateWindow(__wd->d, fb_config, __wd->w, NULL))) {
 		return FFLY_FAILURE;
 	}
 
-	GLXDrawable dr = __wd->glx_window;
-	if(!glXMakeContextCurrent(__wd->d, dr, dr, __wd->glx_ct)) {
+	__wd->glx_dr = __wd->glx_window;
+	if(!glXMakeContextCurrent(__wd->d, __wd->glx_dr, __wd->glx_dr, __wd->glx_ct)) {
 		return FFLY_FAILURE;
 	}
+
+	xcb_map_window(__wd->conn, __wd->w);
+	xcb_flush(__wd->conn);
 	return FFLY_SUCCESS;
 }
 

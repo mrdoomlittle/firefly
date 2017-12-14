@@ -25,6 +25,7 @@ struct ffly_wd {
 # ifdef __cplusplus
 extern "C" {
 # endif
+ffly_err_t ffly_wd_display(struct ffly_wd*);
 ffly_byte_t* ffly_wd_frame_buff(struct ffly_wd*);
 ffly_flag_t* ffly_wd_flags(struct ffly_wd*);
 ffly_err_t ffly_wd_open(struct ffly_wd*);

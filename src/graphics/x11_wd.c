@@ -106,8 +106,8 @@ ffly_err_t ffly_x11_wd_open(struct ffly_x11_wd *__wd) {
 }
 
 ffly_err_t ffly_x11_wd_close(struct ffly_x11_wd *__wd) {
-	XDestroyWindow(__wd->d, __wd->w);
 	XSetCloseDownMode(__wd->d, DestroyAll);
+	XDestroyWindow(__wd->d, __wd->w);
 	XCloseDisplay(__wd->d);
 	return FFLY_SUCCESS;
 }
