@@ -12,52 +12,52 @@ ffly_err_t ffly_alsa_write(mdl_u32_t __rate, mdl_u16_t __chn_c, snd_pcm_format_t
 	snd_pcm_hw_params_alloca(&hw_params);
 
 	if ((any_err = snd_pcm_open(&pcm_handle, pcm_name, stream, 0)) < 0) {
-		ffly_printf(stderr, "alsa: failed to open device, err: %d\n", any_err);
+		ffly_fprintf(ffly_err, "alsa: failed to open device, err: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
 
 	if ((any_err = snd_pcm_hw_params_any(pcm_handle, hw_params)) < 0) {
-		ffly_printf(stderr, "alsa: failed to configure device, err: %d\n", any_err);
+		ffly_fprintf(ffly_err, "alsa: failed to configure device, err: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
 
 	if ((any_err = snd_pcm_hw_params_set_access(pcm_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
-		ffly_printf(stderr, "alsa: failed to set device access settings, err: %d\n", any_err);
+		ffly_fprintf(ffly_err, "alsa: failed to set device access settings, err: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
 
 	if ((any_err = snd_pcm_hw_params_set_format(pcm_handle, hw_params, __format)) < 0) {
-		ffly_printf(stderr, "alsa: failed to set audio format, err: %d\n", any_err);
+		ffly_fprintf(ffly_err, "alsa: failed to set audio format, err: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
 
 	if ((any_err = snd_pcm_hw_params_set_rate(pcm_handle, hw_params, __rate, 0)) < 0) {
-		ffly_printf(stderr, "alsa: failed to set audio rate, err: %d\n", any_err);
+		ffly_fprintf(ffly_err, "alsa: failed to set audio rate, err: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
 
 	if ((any_err = snd_pcm_hw_params_set_channels(pcm_handle, hw_params, __chn_c)) < 0) {
-		ffly_printf(stderr, "alsa: failed to set audio channels, err: %d\n", any_err);
+		ffly_fprintf(ffly_err, "alsa: failed to set audio channels, err: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
 
 	if ((any_err = snd_pcm_hw_params_set_periods(pcm_handle, hw_params, __period_c, 0)) < 0) {
-		ffly_printf(stderr, "alsa: failed to set periods, err: %d\n", any_err);
+		ffly_fprintf(ffly_err, "alsa: failed to set periods, err: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
 
 	if ((any_err = snd_pcm_hw_params_set_buffer_size(pcm_handle, hw_params, (__period_c*__period_size) >> 2)) < 0) {
-		ffly_printf(stderr, "alsa: failed to set buff size, err: %d\n", any_err);
+		ffly_fprintf(ffly_err, "alsa: failed to set buff size, err: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
 
 	if ((any_err = snd_pcm_hw_params(pcm_handle, hw_params)) < 0) {
-		ffly_printf(stderr, "alsa: failed to apply params to device, err: %d\n", any_err);
+		ffly_fprintf(ffly_err, "alsa: failed to apply params to device, err: %d\n", any_err);
 		return FFLY_FAILURE;
 	}
 
 	if ((any_err = snd_pcm_prepare(pcm_handle)) < 0) {
-		ffly_printf(stderr, "alsa: failed to prepare device for use, err: %d\n");
+		ffly_fprintf(ffly_err, "alsa: failed to prepare device for use, err: %d\n");
 		return FFLY_FAILURE;
 	}
 

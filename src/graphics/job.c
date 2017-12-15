@@ -33,8 +33,8 @@ struct ffly_grj* ffly_grj_mk(mdl_u8_t __kind, void *__par) {
 # include "../types/byte_t.h"
 # include "../types/off_t.h"
 ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
-	ffly_err_t any_err = FFLY_SUCCESS;
-	ffly_printf(ffly_out, "about to prosess graphics job.\n");
+	ffly_err_t err;
+	ffly_fprintf(ffly_log, "about to prosess graphics job.\n");
 	switch(__job->kind) {
 		case _grj_pixfill: {
 			mdl_u8_t *p = (mdl_u8_t*)__job->par;
@@ -46,8 +46,8 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 
 			ffly_colour_t colour = *(ffly_colour_t*)p;
 
-			ffly_pixfill(buf, nopix, colour);
-			ffly_printf(ffly_out, "graphics job-%s, %p %u, %u-%u-%u-%u\n", kstr(__job->kind), buf, nopix, colour.r, colour.g, colour.b, colour.a);
+			err = ffly_pixfill(buf, nopix, colour);
+			ffly_fprintf(ffly_log, "graphics job-%s, %p %u, %u-%u-%u-%u\n", kstr(__job->kind), buf, nopix, colour.r, colour.g, colour.b, colour.a);
 			break;
 		}
 		case _grj_pixcopy: {
@@ -62,8 +62,8 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 
 			mdl_uint_t nopix = *(mdl_uint_t*)p;
 
-			ffly_pixcopy(dst, src, nopix);
-			ffly_printf(ffly_out, "graphics job-%s, %p, %p, %u\n", kstr(__job->kind), dst, src, nopix);
+			err = ffly_pixcopy(dst, src, nopix);
+			ffly_fprintf(ffly_log, "graphics job-%s, %p, %p, %u\n", kstr(__job->kind), dst, src, nopix);
 			break;
 		}
 		case _grj_pixdraw: {
@@ -90,14 +90,15 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 
 			mdl_uint_t height = *(mdl_uint_t*)p;
 
-			ffly_pixdraw(x, y, buff, bufw, pixels, width, height);
-			ffly_printf(ffly_out, "graphics job-%s, %u, %u, %p, %u, %p, %u, %u\n", kstr(__job->kind), x, y, buff, bufw, pixels, width, height);
+			err = ffly_pixdraw(x, y, buff, bufw, pixels, width, height);
+			ffly_fprintf(ffly_log, "graphics job-%s, %u, %u, %p, %u, %p, %u, %u\n", kstr(__job->kind), x, y, buff, bufw, pixels, width, height);
 			break;
 		}
 		default:
-			ffly_printf(ffly_err, "graphics, job kind not recognised.\n");
-			any_err = FFLY_FAILURE;
+			ffly_fprintf(ffly_err, "graphics, job kind not recognised.\n");
+			__ffly_mem_free(__job);
+			return FFLY_FAILURE;
 	}
 	__ffly_mem_free(__job);
-	return any_err;
+	return FFLY_SUCCESS;
 }

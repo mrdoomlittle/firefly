@@ -1,41 +1,50 @@
 # include "layer_manager.hpp"
-# include "graphics/draw_pixelmap.hpp"
 # include "memory/alloc_pixelmap.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/errno.h"
-mdl::uint_t mdl::firefly::layer_manager::add_layer(uint_t __xa_len,uint_t __ya_len,uint_t __xfs,uint_t __yfs,types::pixelmap_t __pixelmap, types::err_t& __any_err){
+# include "graphics/draw.h"
+# include "system/err.h"
+mdl::uint_t mdl::firefly::layer_manager::add_layer(u16_t __width, u16_t __height, u16_t __xa, u16_t __ya, types::pixelmap_t __pixelmap, types::err_t& __err){
 	uint_t no = this->layers.size();
 	layer_t layer = {
 		.desc = {
-			xa_len:__xa_len,
-			ya_len:__ya_len,
-			xfs:__xfs,
-			yfs:__yfs
+			width:__width,
+			height:__height,
+			xa:__xa,
+			ya:__ya
 		}
 	};
 
 	if(__pixelmap != nullptr)
 		layer.pixelmap = __pixelmap;
 	else {
-		if((layer.pixelmap = memory::alloc_pixelmap(__xa_len, __ya_len)) == nullptr){
-			system::io::printf(stderr,"layer_manager, failed to alloc memory for pixelmap.\n");
-			__any_err = FFLY_FAILURE;
+		if((layer.pixelmap = memory::alloc_pixelmap(static_cast<uint_t>(__width), static_cast<uint_t>(__height))) == nullptr){
+			system::io::fprintf(ffly_err, "layer_manager, failed to alloc memory for pixelmap.\n");
+			__err = FFLY_FAILURE;
 			return 0;
 		}
 	}
 
 	this->layers.push_back(layer);
-	__any_err = FFLY_SUCCESS;
+	__err = FFLY_SUCCESS;
 	return no;
 }
 
-mdl::firefly::types::err_t mdl::firefly::layer_manager::draw_layers(types::pixelmap_t __pixelbuff, uint_t __xa_len, uint_t __ya_len) {
+mdl::firefly::types::err_t mdl::firefly::layer_manager::draw_layers(types::pixelmap_t __pixelbuff, u16_t __width, u16_t __height) {
+	if (this->layers.empty()) {
+		return FFLY_SUCCESS;
+	}
+	types::err_t err;
 	layer_t *itr = this->layers.begin();
 	while(itr <= this->layers.end()) {
- 		graphics::gpu_draw_pixelmap(itr->desc.xfs, itr->desc.yfs, __pixelbuff, __xa_len, __ya_len, itr->pixelmap, itr->desc.xa_len, itr->desc.ya_len);
+		if (_err(err = graphics::pixeldraw(itr->desc.xa, itr->desc.ya, __pixelbuff, __width, itr->pixelmap, itr->desc.width, itr->desc.height))) {
+			system::io::fprintf(ffly_err, "failed to draw layer.\n");
+			return err;
+		}
 		itr++;
 	}
+	return FFLY_SUCCESS;
 }
 
 /*

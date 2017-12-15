@@ -58,34 +58,39 @@ struct thread_arg<_F, _A1, _A2, _A3, _A4> {
 template<typename _F>
 static void* proxy(void *__arg) {
 	(reinterpret_cast<_F>(__arg))();
+	return nullptr;
 }
 
 template<typename _F, typename _A1>
 static void* proxy(void *__arg) {
     struct thread_arg<_F, _A1> *arg = static_cast<struct thread_arg<_F, _A1>*>(__arg);
     arg->f(arg->a1);
-//	memory::mem_free(__arg);
+	memory::mem_free(__arg);
+	return nullptr;
 }
 
 template<typename _F, typename _A1, typename _A2>
 static void* proxy(void *__arg) {
 	struct thread_arg<_F, _A1, _A2> *arg = static_cast<struct thread_arg<_F, _A1, _A2>*>(__arg);
 	arg->f(arg->a1, arg->a2);
-//	memory::mem_free(__arg);
+	memory::mem_free(__arg);
+	return nullptr;
 }
 
 template<typename _F, typename _A1, typename _A2, typename _A3>
 static void* proxy(void *__arg) {
 	struct thread_arg<_F, _A1, _A2, _A3> *arg = static_cast<struct thread_arg<_F, _A1, _A2, _A3>*>(__arg);
 	arg->f(arg->a1, arg->a2, arg->a3);
-//	memory::mem_free(__arg);
+	memory::mem_free(__arg);
+	return nullptr;
 }
 
 template<typename _F, typename _A1, typename _A2, typename _A3, typename _A4>
 static void* proxy(void *__arg) {
 	struct thread_arg<_F, _A1, _A2, _A3, _A4> *arg = static_cast<struct thread_arg<_F, _A1, _A2, _A3, _A4>*>(__arg);
 	arg->f(arg->a1, arg->a2, arg->a3, arg->a4);
-//	memory::mem_free(__arg);
+	memory::mem_free(__arg);
+	return nullptr;
 }
 
 struct thread {

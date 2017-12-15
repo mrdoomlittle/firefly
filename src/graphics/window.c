@@ -21,7 +21,7 @@ ffly_err_t ffly_wd_open(struct ffly_wd *__wd) {
 	err = ffly_xcb_wd_open(&__wd->raw);
 # endif
 	if (_err(err)) {
-		ffly_printf(stderr, "failed to open window.\n");
+		ffly_fprintf(ffly_err, "failed to open window.\n");
 		return err;
 	}
 	return FFLY_SUCCESS;
@@ -35,7 +35,7 @@ ffly_err_t ffly_wd_close(struct ffly_wd *__wd) {
 	err = ffly_xcb_wd_close(&__wd->raw);
 # endif
 	if (_err(err)) {
-		ffly_printf(stderr, "failed to close window.\n");
+		ffly_fprintf(ffly_err, "failed to close window.\n");
 		return err;
 	}
 	return FFLY_SUCCESS;
@@ -50,12 +50,12 @@ ffly_err_t ffly_wd_init(struct ffly_wd *__wd, mdl_u16_t __width, mdl_u16_t __hei
 	err = ffly_xcb_wd_init(&__wd->raw, __width, __height, __title);
 # endif
 	if (_err(err)) {
-		ffly_printf(stderr, "failure to init window.\n");
+		ffly_fprintf(ffly_err, "failure to init window.\n");
 		return err;
 	}
 
 	if (ffly_buff_init(&__wd->event_buff, EVENT_BUFF_SIZE, sizeof(ffly_event_t)) != FFLY_SUCCESS) {
-		ffly_printf(stderr, "failed to init event buffer.\n");
+		ffly_fprintf(ffly_err, "failed to init event buffer.\n");
 		return FFLY_FAILURE;
 	}
 
@@ -71,7 +71,7 @@ ffly_err_t ffly_wd_cleanup(struct ffly_wd *__wd) {
 	err = ffly_xcb_wd_cleanup(&__wd->raw);
 # endif
 	if (_err(err)) {
-		ffly_printf(stderr, "failed to cleanup window.\n");
+		ffly_fprintf(ffly_err, "failed to cleanup window.\n");
 		return err;
 	}
 	return FFLY_SUCCESS;
@@ -79,13 +79,16 @@ ffly_err_t ffly_wd_cleanup(struct ffly_wd *__wd) {
 
 ffly_err_t ffly_wd_display(struct ffly_wd *__wd) {
 	glDrawPixels(__wd->raw.width, __wd->raw.height, GL_RGBA, GL_UNSIGNED_BYTE, __wd->raw.frame_buff);
+# ifdef __USING_X11
+	glXSwapBuffers(__wd->raw.d, __wd->raw.w);
+# elif __USING_XCB
 	glXSwapBuffers(__wd->raw.d, __wd->raw.glx_dr);
+# endif
 }
 
 # ifdef __USING_X11
 ffly_err_t ffly_x11_wd_begin(struct ffly_wd *__wd) {
 	ffly_add_flag(&__wd->flags, FF_FLG_WD_ALIVE, 0);
-
 	XEvent xevent;
 	ffly_event_t event;
 	ffly_wd_ed_t event_data;
@@ -98,10 +101,11 @@ ffly_err_t ffly_x11_wd_begin(struct ffly_wd *__wd) {
 			}
 		}
 	} while(!ffly_is_flag(__wd->flags, FF_FLG_WD_KILL));
-
 	_end:
+	ffly_fprintf(ffly_log, "closing window.\n");
 	ffly_add_flag(&__wd->flags, FF_FLG_WD_DEAD, 0);
 	while(!ffly_is_flag(__wd->flags, FF_FLG_WD_OK));
+	ffly_fprintf(ffly_log, "got ok to close.\n");
 	return FFLY_SUCCESS;
 }
 # endif
@@ -121,8 +125,10 @@ ffly_err_t ffly_xcb_wd_begin(struct ffly_wd *__wd) {
 		free(event);
 	} while(!ffly_is_flag(__wd->flags, FF_FLG_WD_KILL));
 	_end:
+	ffly_fprintf(ffly_log, "closing window.\n");
 	ffly_add_flag(&__wd->flags, FF_FLG_WD_DEAD, 0);
 	while(!ffly_is_flag(__wd->flags, FF_FLG_WD_OK));
+	ffly_fprintf(ffly_log, "got ok to close.\n");
 	return FFLY_SUCCESS;
 }
 # endif
@@ -135,7 +141,7 @@ ffly_err_t ffly_wd_begin(struct ffly_wd *__wd) {
 	err = ffly_xcb_wd_begin(__wd);
 # endif
 	if (_err(err)) {
-		ffly_printf(stderr, "window failed.\n");
+		ffly_fprintf(ffly_err, "window failed.\n");
 		return err;
 	}
 	return FFLY_SUCCESS;

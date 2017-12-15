@@ -43,10 +43,12 @@ namespace mdl {
 namespace ffly_system {
 firefly::types::err_t init() {
 	ffly_io_init();
+	return FFLY_SUCCESS;
 }
 
 firefly::types::err_t de_init() {
 	ffly_io_closeup();
+	return FFLY_SUCCESS;
 }
 }
 }

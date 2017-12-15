@@ -73,13 +73,13 @@ template<typename _T>
 struct vec {
 	vec() {
 		if (this->init(0) != FFLY_SUCCESS)
-			io::printf(stderr, "vec: failed to init.\n");}
+			io::fprintf(stderr, "vec: failed to init.\n");}
 	vec(mdl_u8_t __flags) {
 		if (this->init(__flags) != FFLY_SUCCESS)
-			io::printf(stderr, "vec: failed to init.\n");}
+			io::fprintf(stderr, "vec: failed to init.\n");}
 	~vec() {
 		if (this->de_init() != FFLY_SUCCESS)
-			io::printf(stderr, "vec: failed to de_init.\n");}
+			io::fprintf(stderr, "vec: failed to de_init.\n");}
 
 	types::err_t init(u8_t __flags) {
 		types::err_t any_err;

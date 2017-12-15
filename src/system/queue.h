@@ -38,10 +38,10 @@ template<typename _T>
 struct queue {
 	queue() {
 		if (this->init() != FFLY_SUCCESS)
-			io::printf(stderr, "queue: failed to init.\n");}
+			io::fprintf(stderr, "queue: failed to init.\n");}
 	~queue() {
 		if (this->de_init() != FFLY_SUCCESS)
-			io::printf(stderr, "queue: failed to de_init.\n");}
+			io::fprintf(stderr, "queue: failed to de_init.\n");}
 	types::err_t init() {return queue_init(&this->raw_queue, sizeof(_T));}
 	types::err_t de_init() {return queue_de_init(&this->raw_queue);}
 	uint_t size() {return queue_size(&this->raw_queue);}

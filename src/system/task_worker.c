@@ -11,12 +11,13 @@
 # include "mutex.h"
 # include "../types/task_t.h"
 # include "time.h"
+# include "nanosleep.h"
 void* ffly_task_worker(void *__argp) {
 	struct ffly_pair *arg = (struct ffly_pair*)__argp;
 	ffly_task_worker_t *c = (ffly_task_worker_t*)arg->p1;
 	struct ffly_task_pool *task_pool = (struct ffly_task_pool*)arg->p2;
 	ffly_atomic_incr(&task_pool->active_workers);
-	ffly_printf(stdout, "worker with id{%u} is now alive.\n", c->id);
+	ffly_fprintf(ffly_log, "worker with id{%u} is now alive.\n", c->id);
 	mdl_uint_t begin = 0;
 	while(ffly_is_flag(c->flags, TW_FLG_ACTIVE)) {
 		mdl_uint_t end = ffly_get_us_tp();
@@ -37,7 +38,7 @@ void* ffly_task_worker(void *__argp) {
 		ffly_mutex_unlock(&c->mutex);
 		__asm__("nop");
 
-		if (!ffly_queue_size(&c->s_call) && !ffly_vec_size(&c->tasks)) usleep(10000);
+		if (!ffly_queue_size(&c->s_call) && !ffly_vec_size(&c->tasks)) ffly_nanosleep(0, 10000);
 		if (ffly_queue_size(&c->s_call) > 0) goto _sk_cstmt;
 		continue;
 		_sk_cstmt:
@@ -57,7 +58,7 @@ void* ffly_task_worker(void *__argp) {
 		__asm__("nop");
 	}
 
-	ffly_printf(stdout, "worker with id{%u} has been killed.\n", c->id);
+	ffly_fprintf(ffly_log, "worker with id{%u} has been killed.\n", c->id);
 	if (__argp != NULL)
 		__ffly_mem_free(__argp);
 	ffly_atomic_decr(&task_pool->active_workers);

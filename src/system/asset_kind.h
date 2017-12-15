@@ -4,6 +4,7 @@
 enum {
 	_ffly_ak_png_file,
 	_ffly_ak_wav_file,
+	_ffly_ak_raw_file
 };
 
 

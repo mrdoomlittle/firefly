@@ -7,7 +7,7 @@
 # include "mutex.h"
 ffly_err_t ffly_mem_blk_init(struct ffly_mem_blk *__mem_blk, mdl_uint_t __size, mdl_uint_t __slice_size) {
 	if ((__mem_blk->p = (void*)__ffly_mem_alloc(__size*__slice_size)) == NULL) {
-		ffly_printf(stderr, "failed to alloc memory.\n");
+		ffly_fprintf(ffly_err, "failed to alloc memory.\n");
 		return FFLY_FAILURE;
 	}
 	__mem_blk->m = FFLY_MUTEX_INIT;

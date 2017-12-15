@@ -25,7 +25,7 @@ using namespace mdl::firefly;
 void unloader() {
 	while(1) {
 		if (!ffly_grp_buff_empty(&__ffly_grp__)) {
-			ffly_printf(ffly_out, "unloading.\n");
+//			ffly_printf(ffly_out, "unloading.\n");
 			ffly_grp_unload_all(&__ffly_grp__);
 		}
 
@@ -37,34 +37,37 @@ struct ttt {
 	mdl_u8_t a;
 	mdl_u8_t b;
 };
-
+# include "asset_manager.h"
 # include "data/mem_set.h"
 int main() {
-/*
-	ffly_io_init();
-	ffly_grp_prepare(&__ffly_grp__, 12);
-
-	graphics::fill_pixelmap(NULL, 21299, graphics::mk_colour(0xFF, 0xFF, 0xFF, 0xFF));
-	ffly_grp_unload_all(&__ffly_grp__);
-
-	ffly_grp_cleanup(&__ffly_grp__);
-	ffly_io_closeup();
-*/
 	init();
+	asset_manager am;
+	types::id_t id = am.load_asset(nullptr, "test.txt", _ffly_ak_raw_file, 0);
+	system::io::printf("%s\n", (char*)am.get_asset_data(id));
+	am.de_init();
+	de_init();
+
 //	ffly_tid_t tid;
-	ffly_grp_prepare(&__ffly_grp__, 4);
+//	ffly_grp_prepare(&__ffly_grp__, 4);
 
 //	system::thread t(&unloader, tid);
 
-	graphics::window window;
-	window.init(WIDTH, HEIGHT, "Hello World");
-	window.begin();
+//	graphics::window window;
+//	window.init(WIDTH, HEIGHT, "Hello World");
+//	window.open();
+//	window.begin();
 
-	while(!system::is_flag(window.flags(), FF_FLG_WD_ALIVE));
-	graphics::pixelfill(window.frame_buff(), WIDTH*HEIGHT, graphics::mk_colour(0xFF, 0x0, 0x0, 0xFF));
+//	while(!system::is_flag(window.flags(), FF_FLG_WD_ALIVE));
+//	graphics::pixelfill(window.frame_buff(), WIDTH*HEIGHT, graphics::mk_colour(0xFF, 0x0, 0x0, 0xFF));
+//	ffly_grp_unload_all(&__ffly_grp__);
 
-	ffly_grp_unload_all(&__ffly_grp__);
+//	while(1) {
+//		ffly_nanosleep(1, 0);
+//		window.display();
 
+		
+//	}
+/*
 	while(1) {
 		ffly_nanosleep(1, 0);
 		if (system::is_flag(window.flags(), FF_FLG_WD_DEAD)) {
@@ -75,12 +78,16 @@ int main() {
 	}
 
 	system::add_flag(&window.flags(), FF_FLG_WD_OK, 0);
+*/
 
-	window.de_init();
+//	ffly_nanosleep(4, 0);
+//	window.de_init();
+//	window.close();
+//	window.cleanup();
 
-	ffly_nanosleep(0, 10000000);
-	de_init();
-	ffly_grp_cleanup(&__ffly_grp__);
+//	ffly_nanosleep(0, 10000000);
+//	de_init();
+//	ffly_grp_cleanup(&__ffly_grp__);
 
 //	ffly_io_closeup();
 /*

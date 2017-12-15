@@ -12,6 +12,8 @@ struct ffly_stat {
 	ffly_size_t size;
 };
 
+# define FF_O_RDONLY O_RDONLY
+# define FF_O_WRONLY O_WRONLY
 # define FF_O_CREATE O_CREAT
 # define FF_S_IRWXU S_IRWXU
 # define FF_S_IRUSR S_IRUSR

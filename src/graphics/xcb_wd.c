@@ -10,7 +10,7 @@ ffly_err_t ffly_xcb_wd_init(struct ffly_xcb_wd *__wd, mdl_u16_t __width, mdl_u16
 	__wd->width = __width;
 	__wd->height = __height;
 	if ((__wd->frame_buff = __ffly_mem_alloc(__width*__height*4)) == NULL) {
-		ffly_printf(stderr, "failed to allocate memory for frame buffer.\n");
+		ffly_fprintf(ffly_err, "failed to allocate memory for frame buffer.\n");
 		return FFLY_FAILURE;
 	}
 	return FFLY_SUCCESS;
@@ -18,13 +18,13 @@ ffly_err_t ffly_xcb_wd_init(struct ffly_xcb_wd *__wd, mdl_u16_t __width, mdl_u16
 
 ffly_err_t ffly_xcb_wd_open(struct ffly_xcb_wd *__wd) {
 	if (!(__wd->d = XOpenDisplay(NULL))) {
-		ffly_printf(stderr, "failed to open display.\n");
+		ffly_fprintf(ffly_err, "failed to open display.\n");
 		return FFLY_FAILURE;
 	}
 
 	if (!(__wd->conn = XGetXCBConnection(__wd->d))) {
 		XCloseDisplay(__wd->d);
-		ffly_printf(stderr, "failed to get connection.\n");
+		ffly_fprintf(ffly_err, "failed to get connection.\n");
 		return FFLY_FAILURE;
 	}
 
@@ -44,7 +44,7 @@ ffly_err_t ffly_xcb_wd_open(struct ffly_xcb_wd *__wd) {
 	GLXFBConfig *fb_configs;
 	int fb_config_c;
 	if (!(fb_configs = glXGetFBConfigs(__wd->d, def_screen, &fb_config_c))) {
-		ffly_printf(stderr, "failed to get frame buffer config.\n");
+		ffly_fprintf(ffly_err, "failed to get frame buffer config.\n");
 		return FFLY_FAILURE;
 	}
 
@@ -53,7 +53,7 @@ ffly_err_t ffly_xcb_wd_open(struct ffly_xcb_wd *__wd) {
 	GLXFBConfig fb_config = *fb_configs;
 	glXGetFBConfigAttrib(__wd->d, fb_config, GLX_VISUAL_ID, &visual);
 	if (!(__wd->glx_ct = glXCreateNewContext(__wd->d, fb_config, GLX_RGBA_TYPE, 0, True))) {
-		ffly_printf(stderr, "failed to create glx context.\n");
+		ffly_fprintf(ffly_err, "failed to create glx context.\n");
 		return FFLY_FAILURE;
 	}
 

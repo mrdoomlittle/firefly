@@ -5,7 +5,7 @@ namespace mdl {
 namespace firefly {
 namespace types {
 typedef struct {
-	uint_t xa_len, ya_len, xfs, yfs;
+	u16_t width, height, xa, ya;
 } layer_desc_t;
 }
 }

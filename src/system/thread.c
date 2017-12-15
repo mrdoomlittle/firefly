@@ -56,12 +56,12 @@ ffly_err_t static ffly_thread_del(ffly_tid_t __tid) {
 	if (uu_ids.off >= uu_ids.page_c*UU_PAGE_SIZE) {
 		if (!uu_ids.p) {
 			if ((uu_ids.p = (ffly_tid_t*)__ffly_mem_alloc(((++uu_ids.page_c)*UU_PAGE_SIZE)*sizeof(ffly_tid_t))) == NULL) {
-				ffly_printf(stderr, "thread: failed to allocate memory for unused thread ids to be stored.\n");
+				ffly_fprintf(ffly_err, "thread: failed to allocate memory for unused thread ids to be stored.\n");
 				return FFLY_FAILURE;
 			}
 		} else {
 			if ((uu_ids.p = (ffly_tid_t*)__ffly_mem_realloc(uu_ids.p, ((++uu_ids.page_c)*UU_PAGE_SIZE)*sizeof(ffly_id_t))) == NULL) {
-				ffly_printf(stderr, "thread: failed to realloc memory space for unused thread ids.\n");
+				ffly_fprintf(ffly_err, "thread: failed to realloc memory space for unused thread ids.\n");
 				return FFLY_FAILURE;
 			}
 		}
@@ -83,7 +83,7 @@ ffly_bool_t ffly_thread_dead(ffly_tid_t __tid) {
 void static* ffly_thr_proxy(void *__arg_p) {
 	struct ffly_thread *thr = (struct ffly_thread*)__arg_p;
 	thr->pid = getpid();
-	ffly_printf(stdout, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
+	ffly_fprintf(ffly_log, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
 	ffly_atomic_incr(&active_threads);
 	thr->alive = 1;
 
@@ -107,13 +107,13 @@ ffly_err_t ffly_thread_kill(ffly_tid_t __tid) {
 /*
 	struct ffly_thread *thr = get_thr(__tid);
 	if (kill(thr->pid, SIGKILL) == -1) {
-		ffly_printf(stderr, "thread, failed to kill, errno{%d}\n", errno);
+		ffly_fprintf(ffly_err, "thread, failed to kill, errno{%d}\n", errno);
 		return FFLY_FAILURE;
 	}
 
 	while(!thr->ok);
 	if (waitpid(thr->pid, NULL, 0) < 0) {
-		ffly_printf(stderr, "thread, waidpid failure, errno: %d.\n", errno);
+		ffly_fprintf(ffly_err, "thread, waidpid failure, errno: %d.\n", errno);
 	}
 	return ffly_thread_del(__tid);
 */
@@ -122,7 +122,7 @@ ffly_err_t ffly_thread_kill(ffly_tid_t __tid) {
 
 ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg_p) {
 	if (no_threads() == MAX_THREADS) {
-		ffly_printf(stdout, "thread: only %u threads are allowed.\n", MAX_THREADS);
+		ffly_fprintf(ffly_log, "thread: only %u threads are allowed.\n", MAX_THREADS);
 		return FFLY_FAILURE;
 	}
 
@@ -132,7 +132,7 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 		*__tid = *(uu_ids.p+(--uu_ids.off));
 		if (uu_ids.off < ((uu_ids.page_c-1)*UU_PAGE_SIZE) && uu_ids.page_c > 1) {
 			if ((uu_ids.p = (ffly_tid_t*)__ffly_mem_realloc(uu_ids.p, ((--uu_ids.page_c)*UU_PAGE_SIZE)*sizeof(ffly_id_t))) == NULL) {
-				ffly_printf(stderr, "thread: failed to realloc memory space for unused thread ids.\n");
+				ffly_fprintf(ffly_err, "thread: failed to realloc memory space for unused thread ids.\n");
 				return FFLY_FAILURE;
 			}
 		}
@@ -169,7 +169,7 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 /*
 	pid_t pid;
 	if ((pid = clone(&ffly_thr_proxy, thr->sp+DSS, CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD, (void*)thr)) == -1) {
-		ffly_printf(stderr, "thread: failed.\n");
+		ffly_fprintf(ffly_err, "thread: failed.\n");
 		return FFLY_FAILURE;
 	}
 */
@@ -184,12 +184,12 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	if (off > page_c*PAGE_SIZE) {
 		if (!threads) {
 			if ((threads = (struct ffly_thread**)__ffly_mem_alloc(((++page_c)*PAGE_SIZE)*sizeof(struct ffly_thread*))) == NULL) {
-				ffly_printf(stderr, "thread: failed to alloc memory, errno{%d}, ffly_errno{%u}\n", errno, ffly_errno);
+				ffly_fprintf(ffly_err, "thread: failed to alloc memory, errno{%d}, ffly_errno{%u}\n", errno, ffly_errno);
 				goto _err;
 			}
 		} else {
 			if ((threads = (struct ffly_thread**)__ffly_mem_realloc(threads, ((++page_c)*PAGE_SIZE)*sizeof(struct ffly_thread*))) == NULL) {
-				ffly_printf(stderr, "thread: failed to realloc memory, errno{%d}, ffly_errno{%u}\n", errno, ffly_errno);
+				ffly_fprintf(ffly_err, "thread: failed to realloc memory, errno{%d}, ffly_errno{%u}\n", errno, ffly_errno);
 				goto _err;
 			}
 		}

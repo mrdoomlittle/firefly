@@ -24,7 +24,7 @@ namespace firefly {
 namespace system {
 namespace time {
 constexpr static ffly_tpv_t(*ns_to_us)(ffly_tpv_t) = &ffly_ns_to_us;
-constexpr static ffly_tpv_t(*ns_to_ms)(ffly_tpv_t) = ffly_ns_to_ms;
+constexpr static ffly_tpv_t(*ns_to_ms)(ffly_tpv_t) = &ffly_ns_to_ms;
 constexpr static ffly_tpv_t(*ns_to_sec)(ffly_tpv_t) = &ffly_ns_to_sec;
 constexpr static ffly_tpv_t(*ns_to_min)(ffly_tpv_t) = &ffly_ns_to_min;
 

@@ -1,9 +1,12 @@
 # include "asset_manager.h"
 # include "system/flags.h"
+# include "system/file.h"
+# include <mdl/str_cmb.h>
 char const static* asset_kind_to_str(mdl::uint_t __kind) {
 	switch(__kind) {
 		case _ffly_ak_png_file: return "png file";
 		case _ffly_ak_wav_file: return "wav file";
+		case _ffly_ak_raw_file: return "raw file";
 	}
 	return "unknown";
 }
@@ -28,8 +31,8 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, 
 	}
 	else if (__kind >= _ffly_ak_wav_file && __kind <=_ffly_ak_wav_file)
 	{
-		ffly_byte_t *f;
-		ffly_size_t fsize;
+		types::byte_t *f;
+		types::size_t fsize;
 		ffly_aud_fformat_t fformat;
 		switch(__kind) {
 			case _ffly_ak_wav_file:
@@ -50,8 +53,23 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, 
 
 		asset_id = this->add_asset(reinterpret_cast<types::byte_t*>(aud_fad), __kind);
 	}
+	else if (__kind == _ffly_ak_raw_file) {
+		types::byte_t *f;
+		types::size_t size;
+
+		char *path = mdl_str_cmb(__fdir, __fname, 0x0);
+		FF_FILE *file = ffly_fopen(path, O_RDONLY, 0);
+		struct ffly_stat st;
+		ffly_fstat(path, &st);
+		size = st.size;
+
+		f = static_cast<types::byte_t*>(memory::mem_alloc(size));
+		ffly_fread(file, f, size);
+		ffly_fclose(file);
+		asset_id = this->add_asset(f, __kind);
+	}
 # ifdef __DEBUG_ENABLED
-	system::io::printf(stdout, "asset_manager: loaded asset{id: %u, file: '%s%s'}\n", *asset_id, __fdir, __fname);
+	system::io::fprintf(ffly_log, "asset_manager: loaded asset{id: %u, file: '%s%s', kind: %s}\n", *asset_id, __fdir, __fname, asset_kind_to_str(__kind));
 # endif
 	return asset_id;
 }
@@ -69,7 +87,7 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::add_asset(types::byte_t *
 
 	this->asset_ids.insert(asset_id);
 # ifdef __DEBUG_ENABLED
-	system::io::printf(stdout, "asset_manager: added asset{id: %u}\n", *asset_id);
+	system::io::fprintf(ffly_log, "asset_manager: added asset{id: %u}\n", *asset_id);
 # endif
 	return asset_id;
 }
@@ -89,9 +107,8 @@ void mdl::firefly::asset_manager::free_asset(types::id_t __asset_id) {
 
 mdl::firefly::types::err_t mdl::firefly::asset_manager::de_init() {
 	types::size_t i = 0;
-	for (;i != this->asset_d.size(); i++)
-	{
-		system::io::printf(stdout, "asset_manager: freed memory for asset{id: %u}\n", i);
+	for (;i != this->asset_d.size();i++) {
+		system::io::fprintf(ffly_log, "asset_manager: freed memory for asset{id: %u}, size: %u bytes.\n", i, this->asset_d[i].bc);
 		this->free_asset(this->asset_d[i].id);
 	}
 

@@ -2,23 +2,64 @@
 # include "types/event_t.h"
 # include "ffly_def.h"
 # include "ffly_system.hpp"
+# include "ffly_graphics.hpp"
+# include "system/err.h"
+# include "system/io.h"
 ffly_act_gid_t act_gid_de_init;
 ffly_act_gid_t act_gid_cleanup;
 mdl::firefly::types::err_t mdl::firefly::init() {
-	ffly_system::init();
-	ffly_act_init(&__ffly_act__);
+	firefly::types::err_t err;
+	if (_err(err = ffly_system::init())) {
+		firefly::system::io::fprintf(ffly_err, "failed to init engine systems.\n");
+		return err;
+	}
+
+	if (_err(err = ffly_graphics::init())) {
+		firefly::system::io::fprintf(ffly_err, "failed to init engine graphics.\n");
+		return err;
+	}
+
+	if (_err(err = ffly_act_init(&__ffly_act__))) {
+		firefly::system::io::fprintf(ffly_err, "failed to init act.\n");
+		return err;
+	}
+
 	act_gid_de_init = ffly_act_add_group(&__ffly_act__);
 	act_gid_cleanup = ffly_act_add_group(&__ffly_act__);
+	return FFLY_SUCCESS;
 }
 
 mdl::firefly::types::err_t static cleanup() {
-	ffly_act_do(&__ffly_act__, act_gid_cleanup);
+	mdl::firefly::types::err_t err;
+	if (_err(err = ffly_act_do(&__ffly_act__, act_gid_cleanup))) {
+		mdl::firefly::system::io::fprintf(ffly_err, "failed to act on cleanup.\n");
+		return err;
+	}
+	return FFLY_SUCCESS;
 }
 
 mdl::firefly::types::err_t mdl::firefly::de_init() {
-	cleanup();
-	ffly_act_do(&__ffly_act__, act_gid_de_init);
-	ffly_system::de_init();
+	firefly::types::err_t err;
+	if (_err(err = cleanup())) {
+		firefly::system::io::fprintf(ffly_err, "failed to cleanup.\n");
+		return err;
+	}
+
+	if (_err(err = ffly_act_do(&__ffly_act__, act_gid_de_init))) {
+		firefly::system::io::fprintf(ffly_err, "failed to act on init.\n");
+		return err;
+	}
+
+	if (_err(err = ffly_graphics::de_init())) {
+		firefly::system::io::fprintf(ffly_err, "failed to de-init engine graphics.\n");
+		return err;
+	}
+
+	if (_err(err = ffly_system::de_init())) {
+		firefly::system::io::fprintf(ffly_err, "failed to de-init engine systems.\n");
+		return err;
+	}
+	return FFLY_SUCCESS;
 }
 
 /*

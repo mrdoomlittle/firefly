@@ -7,9 +7,9 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../firefly.hpp"
-__global__ void static pixdraw(mdl::firefly::types::off_t __x, mdl::firefly::types::byte_t *__buff, mdl::uint_t __bufw, mdl::firefly::types::byte_t *__pixels) {
+__global__ void static pixdraw(mdl::firefly::types::off_t __xa, mdl::firefly::types::byte_t *__buff, mdl::uint_t __bufw, mdl::firefly::types::byte_t *__pixels) {
 	mdl::firefly::types::byte_t *src = __pixels+((threadIdx.x+(blockIdx.x*blockDim.x))*4);
-	mdl::firefly::types::byte_t *dst = __buff+((threadIdx.x+(blockIdx.x*__bufw)+__x)*4);
+	mdl::firefly::types::byte_t *dst = __buff+((threadIdx.x+(blockIdx.x*__bufw)+__xa)*4);
 
 	mdl::firefly::types::byte_t alpha = *(src+A_OFF);
 	mdl::firefly::types::byte_t invr_alpha = ~*(src+A_OFF);
@@ -25,13 +25,14 @@ __global__ void static pixdraw(mdl::firefly::types::off_t __x, mdl::firefly::typ
 
 mdl::firefly::types::byte_t static *buff = nullptr, *pixels = nullptr;
 void static cleanup(void *__arg_p) {
+	mdl::firefly::system::io::fprintf(ffly_log, "cleanup for draw.\n");
 	if (buff != nullptr)
 		mdl::firefly::memory::gpu_mem_free(buff);
 	if (pixels != nullptr)
 		mdl::firefly::memory::gpu_mem_free(pixels);
 }
 
-mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixdraw(types::off_t __x, types::off_t __y, types::byte_t *__buff, uint_t __bufw, types::byte_t *__pixels, uint_t __width, uint_t __height) {
+mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixdraw(types::off_t __xa, types::off_t __ya, types::byte_t *__buff, uint_t __bufw, types::byte_t *__pixels, uint_t __width, uint_t __height) {
 	cudaError_t any_err;
 	types::bool_t static inited = ffly_false;
 	uint_t bufsize = __bufw*__height*4;
@@ -79,9 +80,9 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixdraw(types::off_t __x,
 	}
 
 	// for now
-	pixdraw<<<__height, __width>>>(__x, buff, __bufw, pixels);
-	if ((any_err = cudaMemcpy(__buff+((__y*__bufw)*4), buff, bufsize, cudaMemcpyDeviceToHost)) != cudaSuccess) {
+	pixdraw<<<__height, __width>>>(__xa, buff, __bufw, pixels);
+	if ((any_err = cudaMemcpy(__buff+((__ya*__bufw)*4), buff, bufsize, cudaMemcpyDeviceToHost)) != cudaSuccess) {
 		return FFLY_FAILURE;
 	}
-
+	return FFLY_SUCCESS;
 }

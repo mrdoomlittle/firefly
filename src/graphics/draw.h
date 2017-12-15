@@ -11,10 +11,10 @@
 namespace mdl {
 namespace firefly {
 namespace graphics {
-types::err_t gpu_pixdraw(types::off_t __x, types::off_t __y, types::byte_t *__buff, uint_t __bufw, types::byte_t *__pixels, uint_t __width, uint_t __height);
+types::err_t gpu_pixdraw(types::off_t __xa, types::off_t __ya, types::byte_t *__buff, uint_t __bufw, types::byte_t *__pixels, uint_t __width, uint_t __height);
 # ifndef __NVCC__
-types::err_t static pixeldraw(types::off_t __x, types::off_t __y, types::byte_t *__buff, uint_t __bufw, types::byte_t *__pixels, uint_t __width, uint_t __height) {
-	return pipe_inject(&__ffly_grp__, mk_job(_grj_pixdraw, __x, __y, __buff, __bufw, __pixels, __width, __height));
+types::err_t static pixeldraw(types::off_t __xa, types::off_t __ya, types::byte_t *__buff, uint_t __bufw, types::byte_t *__pixels, uint_t __width, uint_t __height) {
+	return pipe_inject(&__ffly_grp__, mk_job(_grj_pixdraw, __xa, __ya, __buff, __bufw, __pixels, __width, __height));
 }
 # endif
 }

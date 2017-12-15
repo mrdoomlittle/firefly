@@ -13,28 +13,28 @@ int static ffly_x11_err_handle(Display *__d, XErrorEvent *__e) {
 	printf("err code: %u\n", __e->error_code);
 	switch(__e->error_code) {
 		case BadAccess:
-			printf("bad access\n");
+			ffly_fprintf(ffly_err, "bad access\n");
 		break;
 		case BadAlloc:
-			printf("bad alloc\n");
+			ffly_fprintf(ffly_err, "bad alloc\n");
 		break;
 		case BadImplementation:
-			printf("bad implementation\n");
+			ffly_fprintf(ffly_err, "bad implementation\n");
 		break;
 		case BadName:
-			printf("bad name\n");
+			ffly_fprintf(ffly_err, "bad name\n");
 		break;
 		case BadValue:
-			printf("bad value\n");
+			ffly_fprintf(ffly_err, "bad value\n");
 		break;
 		case BadLength:
-			printf("bad length\n");
+			ffly_fprintf(ffly_err, "bad length\n");
 		break;
 		case BadMatch:
-			printf("bad match\n");
+			ffly_fprintf(ffly_err, "bad match\n");
 		break;
 		case BadWindow:
-			printf("bad window\n");
+			ffly_fprintf(ffly_err, "bad window\n");
 		break;
 	}
 }
@@ -46,7 +46,7 @@ ffly_err_t ffly_x11_wd_init(struct ffly_x11_wd *__wd, mdl_u16_t __width, mdl_u16
 	__wd->height = __height;
 	__wd->title = __title;
 	if ((__wd->frame_buff = __ffly_mem_alloc(__width*__height*4)) == NULL) {
-		ffly_printf(stderr, "failed to allocate memory for frame buffer.\n");
+		ffly_fprintf(ffly_err, "failed to allocate memory for frame buffer.\n");
 		return FFLY_FAILURE;
 	}
 	return FFLY_SUCCESS;
@@ -54,7 +54,7 @@ ffly_err_t ffly_x11_wd_init(struct ffly_x11_wd *__wd, mdl_u16_t __width, mdl_u16
 
 ffly_err_t ffly_x11_wd_open(struct ffly_x11_wd *__wd) {
 	if (!(__wd->d = XOpenDisplay(NULL))) {
-		ffly_printf(stderr, "failed to open display.\n");
+		ffly_fprintf(ffly_err, "failed to open display.\n");
 		return FFLY_FAILURE;
 	}
 

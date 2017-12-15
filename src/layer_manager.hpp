@@ -1,7 +1,5 @@
 # ifndef __ffly__layer__manager__hpp
 # define __ffly__layer__manager__hpp
-//# include <boost/numeric/ublas/vector.hpp>
-//namespace ublas = boost::numeric::ublas;
 # include <mdlint.h>
 # include "system/set.hpp"
 # include "system/vec.h"
@@ -18,14 +16,14 @@ class layer_manager {
 	} layer_t;
 
 	layer_manager() : layers(VEC_AUTO_RESIZE) {}
-	uint_t add_layer(uint_t __xa_len, uint_t __ya_len, uint_t __xfs, uint_t __yfs, types::pixelmap_t __pixelmap, types::err_t& __any_err);
+	uint_t add_layer(u16_t __width, u16_t __height, u16_t __xa, u16_t __ya, types::pixelmap_t __pixelmap, types::err_t& __err);
 	types::pixelmap_t get_layer_pixelmap(uint_t __no) {
 		return this->layers.at(__no).pixelmap;
 	}
 	types::layer_desc_t get_layer_desc(uint_t __no) {
 		return this->layers.at(__no).desc;
 	}
-	types::err_t draw_layers(types::pixelmap_t __pixelbuff, uint_t __xa_len, uint_t __ya_len);
+	types::err_t draw_layers(types::pixelmap_t __pixelbuff, u16_t __width, u16_t __height);
 	system::vec<layer_t> layers;
 /*
 		uint_t layer_id = layers.size();

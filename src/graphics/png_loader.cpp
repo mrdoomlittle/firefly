@@ -4,7 +4,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::load_png_file(char const *__d
 	FILE *file = fopen(pth, "rb");
 
 	if (file == NULL) {
-		system::io::printf(stderr, "png_loader, error can't open png file at '%s', errno: %d\n", pth, errno);
+		system::io::fprintf(ffly_err, "png_loader, error can't open png file at '%s', errno: %d\n", pth, errno);
 		return FFLY_FAILURE;
 	}
 
@@ -21,7 +21,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::load_png_file(char const *__d
 
 	__pm_size[0] = png_get_image_width(png, info);
 	__pm_size[1] = png_get_image_height(png, info);
-	printf("loading img. size %dx%d\n", __pm_size[0], __pm_size[1]);
+	system::io::fprintf(ffly_log, "loading img. size %dx%d\n", __pm_size[0], __pm_size[1]);
 	png_byte color_type = png_get_color_type(png, info);
 	png_byte bit_depth = png_get_bit_depth(png, info);
 

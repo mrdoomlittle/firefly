@@ -59,7 +59,6 @@
 namespace mdl { class ffly_client
 {
 	public:
-	ffly_client(u16_t __wd_xa_len, u16_t __wd_ya_len) : wd_xa_len(__wd_xa_len), wd_ya_len(__wd_ya_len){}
 	firefly::types::bool_t static to_shutdown;
 	typedef struct {
 		firefly::types::err_t init(ffly_client *__ffc_p) {
@@ -78,9 +77,9 @@ namespace mdl { class ffly_client
 		ffly_client *ffc_p = nullptr;
 	} portal_t;
 
-	firefly::types::err_t init(char const *__frame_title);
+	firefly::types::err_t init(u16_t __wd_width, u16_t __wd_height, char const *__wd_title);
 	firefly::types::err_t de_init();
-	firefly::types::err_t begin(void(*__extern_loop)(i8_t, portal_t*, void*), void *__this);
+	firefly::types::err_t begin(ffly_err_t(*__extern_loop)(i8_t, portal_t*, void*), void *__this);
 	void shutdown();
 	uint_t get_fps() {
 		return this->fps;
@@ -106,7 +105,7 @@ namespace mdl { class ffly_client
 # endif
 	uint_t fps, frame_c = 0;
 	firefly::graphics::window window;
-	u16_t const wd_xa_len, wd_ya_len;
+	u16_t wd_width, wd_height;
 /*
 	public:
 # ifndef __WITH_UNI_MANAGER

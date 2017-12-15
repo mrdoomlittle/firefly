@@ -27,13 +27,13 @@ ffly_err_t ffly_ld_aud_file(char *__dir, char *__name, ffly_aud_fformat_t __form
 	char *fpth = mdl_str_cmb(__dir, mdl_str_cmb(__name, ext, 0), MDL_SC_FREE_RIGHT);
 	int fd;
 	if ((fd = open(fpth, O_RDONLY)) < 0) {
-		ffly_printf(stderr, "ffly_audio: failed to open audio file at '%s'.\n", fpth);
+		ffly_fprintf(ffly_err, "ffly_audio: failed to open audio file at '%s'.\n", fpth);
 		return FFLY_FAILURE;
 	}
 
 	struct stat st;
 	if (stat(fpth, &st) < 0) {
-		ffly_printf(stderr, "ffly_audio: failed to stat audio file at '%s'.\n", fpth);
+		ffly_fprintf(ffly_err, "ffly_audio: failed to stat audio file at '%s'.\n", fpth);
 		close(fd);
 		return FFLY_FAILURE;
 	}
@@ -133,7 +133,7 @@ ffly_err_t ffly_aud_play(ffly_byte_t *__fp, ffly_size_t __fsize, ffly_aud_fforma
 			break;
 		}
 		default:
-			ffly_printf(stderr, "ffly_audio, file format not rq.\n");
+			ffly_fprintf(ffly_err, "ffly_audio, file format not rq.\n");
 		return FFLY_FAILURE;
 	}
 
@@ -144,7 +144,7 @@ ffly_err_t ffly_aud_play(ffly_byte_t *__fp, ffly_size_t __fsize, ffly_aud_fforma
 ffly_err_t ffly_aud_raw_play(ffly_byte_t *__p, ffly_size_t __size, ffly_aud_spec_t *__aud_spec) {
 # ifdef __USING_PULSE_AUDIO
 	if (ffly_pulse_write(&__pulse__, __p, __size) != FFLY_SUCCESS) {
-		ffly_printf(stderr, "ffly_audio: failed to write.\n");
+		ffly_fprintf(ffly_err, "ffly_audio: failed to write.\n");
 		return FFLY_FAILURE;
 	}
 # endif
@@ -217,7 +217,7 @@ ffly_err_t ffly_aud_raw_play(char *__fdir, char*__fname, ffly_aud_fformat_t __ff
 	}
 
 # ifdef __USING_PULSE_AUDIO
-	ffly_printf(stdout, "ffly_audio: using pulse audio.\n");
+	ffly_fprintf(stdout, "ffly_audio: using pulse audio.\n");
 	struct pa_sample_spec sample_spec;
 	switch(aud_spec.format) {
 		case _ffly_af_s16_le:
@@ -234,13 +234,13 @@ ffly_err_t ffly_aud_raw_play(char *__fdir, char*__fname, ffly_aud_fformat_t __ff
 	sample_spec.rate = aud_spec.rate;
 
 	if (ffly_pulse_write("firefly-audio", "firefly-stream", &sample_spec, f+off, fsize-off) != FFLY_SUCCESS) {
-		ffly_printf(stderr, "ffly_audio: failed to write.\n");
+		ffly_fprintf(ffly_err, "ffly_audio: failed to write.\n");
 		return FFLY_FAILURE;
 	}
 # else
 # ifdef __USING_ALSA_AUDIO
 # else
-	ffly_printf(stdout, "ffly_audio: alsa or pluse need to be defined at compile time.\n");
+	ffly_fprintf(stdout, "ffly_audio: alsa or pluse need to be defined at compile time.\n");
 # endif
 # endif
 }*/

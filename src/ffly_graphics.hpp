@@ -1,6 +1,32 @@
 # ifndef __ffly__graphics__hpp
 # define __ffly__graphics__hpp
 # include <mdlint.h>
+# include "types/err_t.h"
+# include "system/errno.h"
+# include "graphics/pipe.h"
+# include "system/err.h"
+# include "system/io.h"
+namespace mdl {
+namespace ffly_graphics {
+firefly::types::err_t init() {
+	firefly::types::err_t err;
+	if (_err(err = ffly_grp_prepare(&__ffly_grp__, 30))) {
+		firefly::system::io::fprintf(ffly_err, "failed to prepare graphics pipe.\n");
+		return err;
+	}
+	return FFLY_SUCCESS;
+}
+
+firefly::types::err_t de_init() {
+	firefly::types::err_t err;
+	if (_err(err = ffly_grp_cleanup(&__ffly_grp__))) {
+		firefly::system::io::fprintf(ffly_err, "failed to cleanup graphics pipe.\n");
+		return err;
+	}
+	return FFLY_SUCCESS;
+}
+}
+}
 /*
 # include "types/err_t.h"
 # define _CPU_MX_X 64
