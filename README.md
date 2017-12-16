@@ -1,2 +1,2 @@
 # *Firefly Engine* <br />
-##### This engine was only made for educational purposes, and very unlikly to compile.
+##### an attempt at making a game engine.
