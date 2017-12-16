@@ -5,12 +5,12 @@
 # include "types/asset_t.h"
 # include "types/flag_t.h"
 # include <mdlint.h>
-
+# include "types/err_t.h"
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_id_t ffly_load_asset(void*, char*, char*, mdl_uint_t);
-ffly_id_t ffly_add_asset(void*, ffly_byte_t*, mdl_uint_t);
+ffly_id_t ffly_load_asset(void*, char*, char*, mdl_uint_t, ffly_err_t*);
+ffly_id_t ffly_add_asset(void*, ffly_byte_t*, mdl_uint_t, ffly_err_t*);
 ffly_asset_t* ffly_asset(void*, ffly_id_t);
 # ifdef __cplusplus
 }
@@ -19,7 +19,6 @@ ffly_asset_t* ffly_asset(void*, ffly_id_t);
 # include "types/skelmap_info_t.hpp"
 # include <set>
 # include "types/size_t.h"
-# include "types/err_t.h"
 # include "graphics/png_loader.hpp"
 # include "types/dsize_t.hpp"
 # include "types/pixmap_t.h"
@@ -40,6 +39,10 @@ class asset_manager
 {
 	public:
 	enum {
+		AST_NOLOAD
+	};
+
+	enum {
 		AST_PNG_FILE
 	};
 
@@ -48,8 +51,8 @@ class asset_manager
 	types::err_t de_init();
 
 	types::bool_t valid_asset_id(types::id_t __asset_id);
-	types::id_t add_asset(types::byte_t *__data, uint_t __kind);
-	types::id_t load_asset(char *__fdir, char *__fname, uint_t __kind, types::mode_t __mode);
+	types::id_t add_asset(types::byte_t *__data, uint_t __kind, types::err_t& __err);
+	types::id_t load_asset(char *__fdir, char *__fname, uint_t __kind, types::mode_t __mode, types::err_t& __err);
 	void del_asset(types::id_t __asset_id);
 	u8_t* get_asset_data(types::id_t __asset_id);
 	types::asset_t get_asset(types::id_t __asset_id) noexcept;

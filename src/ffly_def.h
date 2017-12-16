@@ -8,6 +8,10 @@
 #	define NULL (void*)0
 # endif
 
+# ifndef ffly_null_id
+#	define ffly_null_id NULL
+# endif
+
 # ifndef __ffly_true
 #	define ffly_true 1
 # endif

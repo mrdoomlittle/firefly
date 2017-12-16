@@ -81,9 +81,7 @@ namespace mdl { class ffly_client
 	firefly::types::err_t de_init();
 	firefly::types::err_t begin(ffly_err_t(*__extern_loop)(i8_t, portal_t*, void*), void *__this);
 	void shutdown();
-	uint_t get_fps() {
-		return this->fps;
-	}
+	uint_t get_fps() {return this->fps;}
 
 	void free_wd_event(firefly::types::event_t& __event) {
 		this->window.free_event_data(__event.data);
@@ -103,7 +101,7 @@ namespace mdl { class ffly_client
 # ifdef __WITH_OBJ_MANAGER
 	firefly::obj_manager obj_m;
 # endif
-	uint_t fps, frame_c = 0;
+	uint_t fps = 0, frame_c = 0;
 	firefly::graphics::window window;
 	u16_t wd_width, wd_height;
 /*

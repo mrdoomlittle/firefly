@@ -39,12 +39,36 @@ struct ttt {
 };
 # include "asset_manager.h"
 # include "data/mem_set.h"
+# include "types/err_t.h"
+# include "system/errno.h"
+# include "room_manager.hpp"
+using namespace mdl::firefly::system;
+using namespace mdl::firefly;
 int main() {
+	types::err_t err;
 	init();
+/*
 	asset_manager am;
-	types::id_t id = am.load_asset(nullptr, "test.txt", _ffly_ak_raw_file, 0);
-	system::io::printf("%s\n", (char*)am.get_asset_data(id));
+	types::id_t id = am.load_asset(nullptr, "test.txt", _ffly_ak_raw_file, 0, err);
+	io::printf("%s\n", (char*)am.get_asset_data(id));
 	am.de_init();
+*/
+
+	room_manager room_m;
+
+	types::no_t *a, *b, *c, *d;
+	room_m.creat_room(a);
+	room_m.creat_room(b);
+	room_m.creat_room(c);
+	room_m.creat_room(d);
+
+	room_m.del_room(a);
+	room_m.del_room(b);
+	room_m.del_room(c);
+	room_m.del_room(d);
+	room_m.creat_room(a);
+	room_m.del_room(a);
+
 	de_init();
 
 //	ffly_tid_t tid;

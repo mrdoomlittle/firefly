@@ -8,9 +8,10 @@
 # include "signal.h"
 # include "atomic.h"
 # include "time.h"
-# include "mem_tracker.h"
+# include "mal_track.h"
 # include "mem_allocr.h"
 # include "mem_blk.h"
+/*
 mdl::firefly::system::atomic_t x;
 ffly_atomic_uint_t f = 0;
 void *call(void *__arg_p) {
@@ -27,11 +28,43 @@ void b(mdl_uint_t __a1) {ffly_printf(stdout, "%u\n", __a1);}
 void c(mdl_uint_t __a1, mdl_uint_t __a2) {ffly_printf(stdout, "%u, %u\n", __a1, __a2);}
 void d(mdl_uint_t __a1, mdl_uint_t __a2, mdl_uint_t __a3) {ffly_printf(stdout, "%u, %u, %u\n", __a1, __a2, __a3);}
 void e(mdl_uint_t __a1, mdl_uint_t __a2, mdl_uint_t __a3, mdl_uint_t __a4) {ffly_printf(stdout, "%u, %u, %u, %u\n", __a1, __a2, __a3, __a4);}
+*/
 # include "futex.h"
 # include "atomic.h"
-
+# include "vec.h"
+# include "buff.h"
+# include "queue.h"
+# include "io.h"
+# include "../types/err_t.h"
+//# include "../firefly.hpp"
+using namespace mdl::firefly::system;
+using namespace mdl::firefly::types;
 int main() {
+	err_t err;
+	ffly_io_init();
+	vec<int> v(VEC_BLK_CHAIN);
+	v.resize(20);
+	v.push_back(err) = 1;
+	v.push_back(err) = 2;
+	v.push_back(err) = 3;
+	v.push_back(err) = 4;
+	v.push_back(err) = 5;
+
+	int *p = v.begin();
+//	ffly_vec_itr(&v.raw_vec, (void**)&p, VEC_ITR_DOWN, 1);
+
+	v.del(p);
+
+	int *itr = v.first();
+	while(itr != NULL) {
+		io::printf("%u\n", *itr);
+		ffly_vec_itr(&v.raw_vec, (void**)&itr, VEC_ITR_FD, 1);
+	}
+
+	ffly_io_closeup();
+
 	//ffly_mem_track_init(&__ffly_mem_track__);
+/*
 	ffly_printf(stdout, "init.\n");
 	ffly_tid_t tid;
 	mdl::firefly::system::thread t1(&e, 1, 2, 3, 4, tid);
@@ -40,6 +73,7 @@ int main() {
 
 	while(ffly_thread_alive(tid));
 	while(1);
+*/
 	return 0;
 //	ffly_tid_t tid1, tid2;
 //	ffly_thread_create(&tid1, &test, NULL);

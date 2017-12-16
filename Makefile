@@ -46,7 +46,7 @@ override ffly_objs+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/ma
 # data
 override ffly_objs+= src/data/swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o src/data/str_dupe.o src/data/mem_cmp.o src/data/str_cmp.o
 # system
-override ffly_objs+= src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
+override ffly_objs+= src/system/arr.o src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
 src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
 src/system/task_worker.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o
 # graphics
@@ -87,6 +87,9 @@ src/graphics/draw.o: src/graphics/draw.cu src/graphics/draw.cpp
 	$(ffly_nvcc) -c -std=c++11 $(CXX_IFLAGS) -D$(ffly_target) $(ffly_defines) -o src/graphics/draw.o.1 src/graphics/draw.cu
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D$(ffly_target) $(ffly_defines) -o src/graphics/draw.o.2 src/graphics/draw.cpp
 	ld -r src/graphics/draw.o.1 src/graphics/draw.o.2 -o src/graphics/draw.o
+
+src/system/arr.o: src/system/arr.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D$(ffly_target) $(ffly_defines) -o src/system/arr.o src/system/arr.c
 
 src/graphics/job.o: src/graphics/job.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D$(ffly_target) $(ffly_defines) -o src/graphics/job.o src/graphics/job.c

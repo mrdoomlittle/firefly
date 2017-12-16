@@ -3,6 +3,7 @@
 # include "id_t.h"
 # include <mdlint.h>
 # include "byte_t.h"
+# include "mode_t.h"
 typedef struct {
 	ffly_id_t id;
 	mdl_uint_t kind;

@@ -3,7 +3,9 @@
 # include "../types/size_t.h"
 # include <sys/types.h>
 # include <fcntl.h>
+# include "../types/err_t.h"
 struct ffly_file {
+	char const *path;
 	int d;
 };
 
@@ -23,12 +25,12 @@ struct ffly_stat {
 # ifdef __cplusplus
 extern "C" {
 # endif
-struct ffly_file* ffly_fopen(char*, int, mode_t);
-void ffly_fcreat(char*, mode_t);
-void ffly_fstat(char*, struct ffly_stat*);
-void ffly_fwrite(struct ffly_file*, void*, ffly_size_t);
-void ffly_fread(struct ffly_file*, void*, ffly_size_t);
-void ffly_fclose(struct ffly_file*);
+struct ffly_file* ffly_fopen(char*, int, mode_t, ffly_err_t*);
+ffly_err_t ffly_fcreat(char*, mode_t);
+ffly_err_t ffly_fstat(char*, struct ffly_stat*);
+ffly_err_t ffly_fwrite(struct ffly_file*, void*, mdl_uint_t);
+ffly_err_t ffly_fread(struct ffly_file*, void*, mdl_uint_t);
+ffly_err_t ffly_fclose(struct ffly_file*);
 # ifdef __cplusplus
 }
 # endif

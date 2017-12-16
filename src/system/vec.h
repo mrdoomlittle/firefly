@@ -1,33 +1,38 @@
 # ifndef __vec__h
 # define __vec__h
 # define VEC_PAGE_SIZE 32 // dont change
-# define VEC_AUTO_RESIZE 0b10000000
-# define VEC_ITR_UP 0x0
-# define VEC_ITR_DOWN 0x1
-# define VEC_BLK_CHAIN 0b01000000
-# define VEC_UUU_BLKS 0b00100000
+# define VEC_AUTO_RESIZE 0x1
+# define VEC_ITR_FD 0x0
+# define VEC_ITR_BK 0x1
+# define VEC_BLK_CHAIN 0x2
+# define VEC_UUU_BLKS 0x4
 # include <mdlint.h>
 # include "io.h"
 # include "../types/err_t.h"
 # include "../types/bool_t.h"
+# include "flags.h"
+# include "err.h"
+# include "../types/off_t.h"
+# include "../types/size_t.h"
 struct ffly_vec_chain {
-	mdl_u8_t state;
-	mdl_uint_t above, below;
+	ffly_flag_t flags;
+	ffly_off_t above, below;
 };
 
 struct ffly_vec {
-	mdl_uint_t last_blk, first_blk;
+	ffly_off_t last_blk, first_blk;
 	void *p;
-	mdl_u8_t flags;
-	mdl_uint_t off, size;
-	mdl_uint_t blk_size, page_c;
+	ffly_flag_t flags;
+	ffly_off_t off;
+	ffly_size_t size, blk_size;
+	mdl_uint_t page_c;
 	struct ffly_vec *uu_blks;
 };
 
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_vec_init(struct ffly_vec*, mdl_uint_t);
+ffly_err_t ffly_vec_init(struct ffly_vec*, ffly_size_t);
 ffly_err_t ffly_vec_push_back(struct ffly_vec*, void**);
 ffly_err_t ffly_vec_pop_back(struct ffly_vec*, void*);
 ffly_err_t ffly_vec_de_init(struct ffly_vec*);
@@ -38,19 +43,13 @@ void* ffly_vec_rbegin(struct ffly_vec*);
 void* ffly_vec_rend(struct ffly_vec*);
 void* ffly_vec_first(struct ffly_vec*);
 void* ffly_vec_last(struct ffly_vec*);
+void* ffly_vec_begin(struct ffly_vec*);
+void* ffly_vec_end(struct ffly_vec*);
 # ifdef __cplusplus
 }
 # endif
-
-mdl_uint_t static __inline__ ffly_vec_size(struct ffly_vec *__vec) {return __vec->size;}
-void static __inline__* ffly_vec_begin(struct ffly_vec *__vec) {
-	return (void*)((mdl_u8_t*)__vec->p+((__vec->flags & VEC_BLK_CHAIN) == VEC_BLK_CHAIN? sizeof(struct ffly_vec_chain):0));
-}
-
-void static __inline__* ffly_vec_end(struct ffly_vec *__vec) {
-	return (void*)(((mdl_u8_t*)__vec->p-((__vec->flags & VEC_BLK_CHAIN) == VEC_BLK_CHAIN? sizeof(struct ffly_vec_chain):0))+((__vec->off-1)*__vec->blk_size));
-}
-ffly_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return __vec->off == 0?1:0;}
+ffly_size_t static __inline__ ffly_vec_size(struct ffly_vec *__vec) {return __vec->size;}
+ffly_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return !__vec->off;}
 # ifdef __cplusplus
 # include "../data/swp.h"
 # include "errno.h"
@@ -65,31 +64,31 @@ static types::err_t(*vec_resize)(struct ffly_vec*, uint_t) = &ffly_vec_resize;
 static void(*vec_del)(struct ffly_vec*, void*) = &ffly_vec_del;
 static void*(*vec_first)(struct ffly_vec*) = &ffly_vec_first;
 static void*(*vec_last)(struct ffly_vec*) = &ffly_vec_last;
-uint_t static __inline__ vec_size(struct ffly_vec *__vec) {return ffly_vec_size(__vec);}
+types::size_t static __inline__ vec_size(struct ffly_vec *__vec) {return ffly_vec_size(__vec);}
 void static __inline__* vec_begin(struct ffly_vec *__vec) {return ffly_vec_begin(__vec);}
 void static __inline__* vec_end(struct ffly_vec *__vec) {return ffly_vec_end(__vec);}
 types::bool_t static __inline__ vec_empty(struct ffly_vec *__vec) {return ffly_vec_empty(__vec);}
 template<typename _T>
 struct vec {
 	vec() {
-		if (this->init(0) != FFLY_SUCCESS)
-			io::fprintf(stderr, "vec: failed to init.\n");}
+		if (_err(this->init(0)))
+			io::fprintf(ffly_err, "vec: failed to init.\n");}
 	vec(mdl_u8_t __flags) {
-		if (this->init(__flags) != FFLY_SUCCESS)
-			io::fprintf(stderr, "vec: failed to init.\n");}
+		if (_err(this->init(__flags)))
+			io::fprintf(ffly_err, "vec: failed to init.\n");}
 	~vec() {
-		if (this->de_init() != FFLY_SUCCESS)
-			io::fprintf(stderr, "vec: failed to de_init.\n");}
+		if (_err(this->de_init()))
+			io::fprintf(ffly_err, "vec: failed to de_init.\n");}
 
 	types::err_t init(u8_t __flags) {
-		types::err_t any_err;
+		types::err_t err;
 		this->raw_vec.flags = __flags;
-		any_err = vec_init(&this->raw_vec, sizeof(_T));
-		return any_err;
+		err = vec_init(&this->raw_vec, sizeof(_T));
+		return err;
 	}
 
 	types::err_t de_init() {return vec_de_init(&this->raw_vec);}
-	uint_t size() {return vec_size(&this->raw_vec);}
+	types::size_t size() {return vec_size(&this->raw_vec);}
 	_T* begin() {return static_cast<_T*>(vec_begin(&this->raw_vec));}
 	_T* end() {return static_cast<_T*>(vec_end(&this->raw_vec));}
 	_T* first() {return static_cast<_T*>(vec_first(&this->raw_vec));}
@@ -101,21 +100,21 @@ struct vec {
 		vec_del(&this->raw_vec, static_cast<void*>(__p));
 	}
 
-	_T& push_back(types::err_t& __any_err) {
+	_T& push_back(types::err_t& __err) {
 		_T *p;
-		__any_err = vec_push_back(&this->raw_vec, (void**)&p);
+		__err = vec_push_back(&this->raw_vec, (void**)&p);
 		return *p;
 	}
 
 	types::err_t push_back(_T __elem) {
-		types::err_t any_err;
-		this->push_back(any_err) = __elem;
-		return any_err;
+		types::err_t err;
+		this->push_back(err) = __elem;
+		return err;
 	}
 
-	_T pop_back(types::err_t& __any_err) {
+	_T pop_back(types::err_t& __err) {
 		_T ret;
-		__any_err = vec_pop_back(&this->raw_vec, (void*)&ret);
+		__err = vec_pop_back(&this->raw_vec, (void*)&ret);
 		return ret;
 	}
 
