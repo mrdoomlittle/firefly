@@ -14,6 +14,7 @@ all: clean
 	gcc -c $(DEFINES) -std=c11 task_pool.c
 	gcc -c $(DEFINES) -std=c11 task_worker.c
 	gcc -c $(DEFINES) -std=c11 ../data/mem_dupe.c
+	gcc -c $(DEFINES) -std=c11 ../data/str_len.c
 	gcc -c $(DEFINES) -std=gnu11 thread.c
 #	gcc -c $(DEFINES) -std=c11 mem_tracker.c
 #	g++ -std=c++11 main.cpp io.o arr.o mem_cpy.o mem_dupe.o mem_alloc.o mem_free.o mem_realloc.o thread.o errno.o -o main -lpthread
@@ -29,9 +30,13 @@ all: clean
 	gcc -c $(DEFINES) -std=c11 mem_blk.c
 	gcc -c $(DEFINES) -std=gnu11 futex.c
 #	gcc -c $(DEFINES) -std=c11 ../data/mem_ncpy.c
+	gcc -c $(DEFINES) -std=c11 ../data/mem_cmp.c
+	gcc -c $(DEFINES) -std=c11 util/hash.c
+	gcc -c $(DEFINES) -std=c11 bin_tree.c
+	gcc -c $(DEFINES) -std=c11 map.c
 	gcc -c $(DEFINES) -std=c11 ../data/swp.c
-#	gcc -c -std=c11 $(DEFINES) -o mem_tracker.o mem_tracker.c
-	g++ -std=c++11 $(DEFINES) -o main main.cpp futex.o mem_blk.o time.o sys_nanosleep.o cond_lock.o atomic_op.o mutex.o flags.o mem_set.o swp.o buff.o queue.o vec.o mem_cpy.o mem_allocr.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o arr.o mem_dupe.o thread.o task_pool.o task_worker.o signal.o -lpthread
+##	gcc -c -std=c11 $(DEFINES) -o mem_tracker.o mem_tracker.c
+	g++ -std=c++11 $(DEFINES) -o main map.o bin_tree.o hash.o str_len.o mem_cmp.o main.cpp futex.o mem_blk.o time.o sys_nanosleep.o cond_lock.o atomic_op.o mutex.o flags.o mem_set.o swp.o buff.o queue.o vec.o mem_cpy.o mem_allocr.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o arr.o mem_dupe.o thread.o task_pool.o task_worker.o signal.o -lpthread
 clean:
 	rm -f *.o
 #all:

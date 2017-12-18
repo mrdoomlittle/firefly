@@ -36,12 +36,36 @@ void e(mdl_uint_t __a1, mdl_uint_t __a2, mdl_uint_t __a3, mdl_uint_t __a4) {ffly
 # include "queue.h"
 # include "io.h"
 # include "../types/err_t.h"
+# include "map.h"
+# include "bin_tree.h"
+# include "set.hpp"
+# include "err.h"
 //# include "../firefly.hpp"
 using namespace mdl::firefly::system;
 using namespace mdl::firefly::types;
 int main() {
 	err_t err;
 	ffly_io_init();
+
+	set<int> ids;
+
+	mdl_uint_t i = 0;
+	while(i < 20) {
+		ids.insert(i);
+		i++;
+	}
+
+	set<int>::iterator id = ids.find(10, err);
+	ids.erase(id);
+
+	i = 0;
+	while(i < 20) {
+		set<int>::iterator itr = ids.find(i, err);
+		if (_ok(err))
+			ffly_printf("%u\n", *itr);
+		i++;
+	}
+/* 
 	vec<int> v(VEC_BLK_CHAIN);
 	v.resize(20);
 	v.push_back(err) = 1;
@@ -60,6 +84,7 @@ int main() {
 		io::printf("%u\n", *itr);
 		ffly_vec_itr(&v.raw_vec, (void**)&itr, VEC_ITR_FD, 1);
 	}
+*/
 
 	ffly_io_closeup();
 

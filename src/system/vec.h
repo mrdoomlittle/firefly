@@ -45,11 +45,16 @@ void* ffly_vec_first(struct ffly_vec*);
 void* ffly_vec_last(struct ffly_vec*);
 void* ffly_vec_begin(struct ffly_vec*);
 void* ffly_vec_end(struct ffly_vec*);
+ffly_off_t ffly_vec_off(struct ffly_vec*, void*);
+mdl_uint_t ffly_vec_blk_off(struct ffly_vec*, void*);
 # ifdef __cplusplus
 }
 # endif
+void static __inline__* ffly_vec_p(struct ffly_vec *__vec){return __vec->p;}
 ffly_size_t static __inline__ ffly_vec_size(struct ffly_vec *__vec) {return __vec->size;}
 ffly_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return !__vec->off;}
+void static __inline__ ffly_vec_tog_flag(struct ffly_vec *__vec, ffly_flag_t __flag) {ffly_add_flag(&__vec->flags, __flag, 0);}
+void static __inline__ ffly_vec_clear_flags(struct ffly_vec *__vec){__vec->flags = 0x0;}
 # ifdef __cplusplus
 # include "../data/swp.h"
 # include "errno.h"
@@ -82,27 +87,27 @@ struct vec {
 
 	types::err_t init(u8_t __flags) {
 		types::err_t err;
-		this->raw_vec.flags = __flags;
-		err = vec_init(&this->raw_vec, sizeof(_T));
+		this->raw.flags = __flags;
+		err = vec_init(&this->raw, sizeof(_T));
 		return err;
 	}
 
-	types::err_t de_init() {return vec_de_init(&this->raw_vec);}
-	types::size_t size() {return vec_size(&this->raw_vec);}
-	_T* begin() {return static_cast<_T*>(vec_begin(&this->raw_vec));}
-	_T* end() {return static_cast<_T*>(vec_end(&this->raw_vec));}
-	_T* first() {return static_cast<_T*>(vec_first(&this->raw_vec));}
-	_T* last() {return static_cast<_T*>(vec_last(&this->raw_vec));}
-	types::bool_t empty() {return vec_empty(&this->raw_vec);}
+	types::err_t de_init() {return vec_de_init(&this->raw);}
+	types::size_t size() {return vec_size(&this->raw);}
+	_T* begin() {return static_cast<_T*>(vec_begin(&this->raw));}
+	_T* end() {return static_cast<_T*>(vec_end(&this->raw));}
+	_T* first() {return static_cast<_T*>(vec_first(&this->raw));}
+	_T* last() {return static_cast<_T*>(vec_last(&this->raw));}
+	types::bool_t empty() {return vec_empty(&this->raw);}
 	_T& operator()(mdl_uint_t __off) {return this->at(__off);}
 
 	void del(_T *__p) {
-		vec_del(&this->raw_vec, static_cast<void*>(__p));
+		vec_del(&this->raw, static_cast<void*>(__p));
 	}
 
 	_T& push_back(types::err_t& __err) {
 		_T *p;
-		__err = vec_push_back(&this->raw_vec, (void**)&p);
+		__err = vec_push_back(&this->raw, (void**)&p);
 		return *p;
 	}
 
@@ -114,10 +119,13 @@ struct vec {
 
 	_T pop_back(types::err_t& __err) {
 		_T ret;
-		__err = vec_pop_back(&this->raw_vec, (void*)&ret);
+		__err = vec_pop_back(&this->raw, (void*)&ret);
 		return ret;
 	}
 
+	types::off_t off(void *__p) {return ffly_vec_off(&this->raw, __p);}
+	uint_t blk_off(void *__p){return ffly_vec_blk_off(&this->raw, __p);}
+	_T& at_off(types::off_t __off) {return *reinterpret_cast<_T*>(static_cast<u8_t*>(ffly_vec_p(&this->raw))+__off);}
 	_T& at(uint_t __off) {return *(this->begin()+__off);}
 	_T& operator[](uint_t __off){return this->at(__off);}
 
@@ -130,11 +138,11 @@ struct vec {
 	void swp(uint_t __p1, uint_t __p2) {
 		data::swp<_T>((void*)(this->begin()+__p1), (void*)(this->begin()+__p2));}
 
-	types::err_t resize(uint_t __size) {return vec_resize(&this->raw_vec, __size);}
+	types::err_t resize(uint_t __size) {return vec_resize(&this->raw, __size);}
 	types::err_t resize(uint_t __size, u8_t __dir) {
 		if (__dir == 1) {return this->resize(this->size()+__size);}
 		if (__dir == -1) {return this->resize(this->size()-__size);}}
-	struct ffly_vec raw_vec;
+	struct ffly_vec raw;
 };
 
 }

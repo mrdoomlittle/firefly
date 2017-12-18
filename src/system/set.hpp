@@ -1,7 +1,9 @@
 # ifndef __set__hpp
 # define __set__hpp
 # include "vec.h"
+# include "bin_tree.h"
 # include "../types/bool_t.h"
+# include "../types/off_t.h"
 namespace mdl {
 namespace firefly {
 namespace system {
@@ -44,11 +46,25 @@ struct set {
 	types::bool_t empty(){return this->v.empty();}
 	void insert(_T __elem) {
 		this->v.push_back(__elem);
+		_T *p = this->v.last();
+		this->tree.insert(this->v.off(p), static_cast<uint_t>(__elem));
 	}
 	void erase(iterator __itr) {
 		this->v.del(__itr.p);
+		this->tree.erase(static_cast<uint_t>(*__itr.p));
 	}
+	iterator find(_T __elem, types::err_t& __err) {
+		_T *p;
+		uint_t off;
+		if (_err(__err = this->tree.find(off, static_cast<uint_t>(__elem)))) {
+			return (iterator){};
+		}
+		p = &this->v.at_off(off);
+		return (iterator){v_p:&this->v, p:p};
+	}
+
 	vec<_T> v;
+	bin_tree<uint_t> tree;
 };
 }
 }

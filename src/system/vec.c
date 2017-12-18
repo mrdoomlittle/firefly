@@ -10,6 +10,16 @@
 # define VEC_BLK_USED 0x1
 # define VEC_BLK_FREE 0x2
 # define is_flag(__vec, __flag) ffly_is_flag(__vec->flags, __flag)
+ffly_off_t ffly_vec_off(struct ffly_vec *__vec, void *__p) {
+	return (mdl_u8_t*)__p-(mdl_u8_t*)__vec->p;
+}
+
+mdl_uint_t ffly_vec_blk_off(struct ffly_vec *__vec, void *__p) {
+	ffly_off_t off = ffly_vec_off(__vec, __p);
+	if (is_flag(__vec, VEC_BLK_CHAIN))
+		return (off-sizeof(struct ffly_vec_chain))/__vec->blk_size;
+	return off/__vec->blk_size;
+}
 
 void* ffly_vec_begin(struct ffly_vec *__vec) {
 	void *p = __vec->p;
@@ -155,13 +165,11 @@ ffly_err_t ffly_vec_push_back(struct ffly_vec *__vec, void **__p) {
 	}
 
 	if (is_flag(__vec, VEC_AUTO_RESIZE)) {
-		for (;;) {
 		if (__vec->off>>5 > (__vec->off-1)>>5) {
 			if ((__vec->p = __ffly_mem_realloc(__vec->p, (++__vec->page_c)*(VEC_PAGE_SIZE*__vec->blk_size))) == NULL) {
 				ffly_fprintf(ffly_err, "vec: failed to realloc memory for next page, errno: %d.\n", errno);
 				return FFLY_FAILURE;
 			}
-		} else break;
 		}
 	}
 
@@ -187,20 +195,15 @@ ffly_err_t ffly_vec_push_back(struct ffly_vec *__vec, void **__p) {
 	__vec->off++;
 	return FFLY_SUCCESS;
 }
-
-/*
-	if theres a error with pop move ffly_byte_ncpy to the top
-*/
 ffly_err_t ffly_vec_pop_back(struct ffly_vec *__vec, void *__p) {
 	__vec->size--;
 	if (is_flag(__vec, VEC_AUTO_RESIZE)) {
-		for (;;) {
-		if (__vec->off>>5 < (__vec->off+1)>>5 && __vec->page_c > 1) {
+		// might cause issues - need to test
+		if (__vec->off>>5 < (__vec->off+1)>>5 && __vec->page_c > 0) {
 			if ((__vec->p = __ffly_mem_realloc(__vec->p, (--__vec->page_c)*(VEC_PAGE_SIZE*__vec->blk_size))) == NULL) {
 				ffly_fprintf(ffly_err, "vec: failed to realloc memory for next page, errno: %d.\n", errno);
 				return FFLY_FAILURE;
 			}
-		} else break;
 		}
 	}
 
