@@ -13,6 +13,7 @@ class room {
 	types::err_t init(u16_t __width, u16_t __height);
 	types::err_t draw(types::pixelmap_t __pixelbuff, u16_t __width, u16_t __height);
 	private:
+	u16_t width, height;
 	types::pixelmap_t pixelmap;
 };
 }

@@ -5,16 +5,16 @@ cd intlen; make arc64 mdlint_inc_dir=${ffly_root_dir}/mdlint/inc; cd ../;
 cd getdigit; make arc64 mdlint_inc_dir=${ffly_root_dir}/mdlint/inc intlen_inc_dir=${ffly_root_dir}/intlen/inc intlen_lib_dir=${ffly_root_dir}/intlen/lib; cd ../;
 cd to_string; make mdlint_inc_dir=${ffly_root_dir}/mdlint/inc getdigit_inc_dir=${ffly_root_dir}/getdigit/inc getdigit_lib_dir=${ffly_root_dir}/getdigit/lib intlen_inc_dir=${ffly_root_dir}/intlen/inc intlen_lib_dir=${ffly_root_dir}/intlen/lib; cd ../;
 
-sc_defines=-D__FFLY_ENGINE
+stc_defines=-D__ffly_engine
 if [ $ffly_debug_enabled -eq 1 ]; then
-	sc_defines="$sc_defines -D__DEBUG_ENABLED"
+	sc_defines="$stc_defines -D__ffly_debug_enabled"
 fi
 
-if [ $ffly_with_mem_tracker -eq 1 ]; then
-	sc_defines="$sc_defines -D__WITH_MEM_TRACKER"
+if [ $ffly_mal_track -eq 1 ]; then
+	sc_defines="$stc_defines -D__ffly_mal_track"
 fi
 
-cd str_cmb; make MDLINT_INC=${ffly_root_dir}/mdlint/inc ARC=${ffly_arc} DEFINES="$sc_defines" I_FLAGS=-I${ffly_root_dir}/inc; cd ../;
+cd str_cmb; make mdlint_inc_dir=${ffly_root_dir}/mdlint/inc arc=${ffly_arc} defines="$stc_defines" inc_flags=-I${ffly_root_dir}/inc; cd ../;
 
 #cd tagged_memory; make LIB_PATH=${ffly_root_dir}/; cd ../;
 cd emu2d; make ARC=${ffly_arc} MDLINT_INC=${ffly_root_dir}/mdlint/inc; cd ../;

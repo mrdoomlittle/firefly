@@ -23,7 +23,7 @@ void static cleanup(void *__arg_p) {
 }
 
 mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixfill(types::byte_t *__buff, mdl_uint_t __nopix, types::colour_t __colour) {
-	cudaError_t any_err;
+	types::cl_err_t err;
 	types::bool_t static inited = ffly_false;
 	mdl_uint_t size = __nopix*4;
 	if (!inited) {
@@ -37,13 +37,8 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixfill(types::byte_t *__
 			return FFLY_FAILURE;
 		}
 
-		if ((any_err = cudaMemcpy(buff, __buff, size, cudaMemcpyHostToDevice)) != cudaSuccess) {
-			system::io::fprintf(ffly_err, "cuda, failed to copy buff to device.\n");
-			return FFLY_FAILURE;
-		}
-
-		if ((any_err = cudaMemcpy(colour, &__colour, sizeof(types::colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
-			system::io::fprintf(ffly_err, "cuda, failed to copy colour to device.\n");
+		if ((err = cudaMemcpy(colour, &__colour, sizeof(types::colour_t), cudaMemcpyHostToDevice)) != ffly_cl_success) {
+			system::io::fprintf(ffly_err, "cuda, failed to copy colour to device, %s\n", cudaGetErrorString(err));
 			return FFLY_FAILURE;
 		}
 		ffly_act_add_task(&__ffly_act__, act_gid_cleanup, &cleanup, nullptr);
@@ -60,15 +55,14 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixfill(types::byte_t *__
 		_size = size;
 	}
 
-
-	if ((any_err = cudaMemcpy(buff, __buff, size, cudaMemcpyHostToDevice)) != cudaSuccess) {
-		system::io::fprintf(ffly_err, "cuda, failed to copy buff to device.\n");
+	if ((err = cudaMemcpy(buff, __buff, size, cudaMemcpyHostToDevice)) != ffly_cl_success) {
+		system::io::fprintf(ffly_err, "cuda, failed to copy buff to device, %s\n", cudaGetErrorString(err));
 		return FFLY_FAILURE;
 	}
 
 	types::colour_t static _colour = __colour;
 	if (_colour.r != __colour.r || _colour.g != __colour.g || _colour.b != __colour.b || _colour.a != __colour.a) {
-		if ((any_err = cudaMemcpy(colour, &__colour, sizeof(types::colour_t), cudaMemcpyHostToDevice)) != cudaSuccess) {
+		if ((err = cudaMemcpy(colour, &__colour, sizeof(types::colour_t), cudaMemcpyHostToDevice)) != ffly_cl_success) {
 			system::io::fprintf(ffly_err, "cuda, failed to copy colour to device.\n");
 			return FFLY_FAILURE;
 		}
@@ -90,7 +84,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixfill(types::byte_t *__
 	pixfill<<<no_blks, blk_size>>>(buff, colour);
 	if ((left = (__nopix-(off = (no_blks*(1<<8)))))>0 && (__nopix>>8)>0)
 		pixfill<<<1, left>>>(buff+(off*4), colour);
-	if ((any_err = cudaMemcpy(__buff, buff, size, cudaMemcpyDeviceToHost)) != cudaSuccess) {
+	if ((err = cudaMemcpy(__buff, buff, size, cudaMemcpyDeviceToHost)) != ffly_cl_success) {
 		system::io::fprintf(ffly_err, "cuda, failed to copy buff from device to host.\n");
 		return FFLY_FAILURE;
 	}

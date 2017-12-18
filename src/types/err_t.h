@@ -1,32 +1,31 @@
-# ifndef __err__t__h
-# define __err__t__h
-
-# ifdef __cplusplus
+# ifndef __ffly__err__t__h
+# define __ffly__err__t__h
 # include <mdlint.h>
 
-# if defined(USING_OPENCL) || defined(__USING_OPENCL)
+# ifdef __cplusplus
+# ifdef __ffly_use_opencl
 #	include <CL/cl.hpp>
 # endif
-# if defined(USING_CUDA) || defined(__USING_CUDA)
+
+# ifdef __ffly_use_cuda
 #	include <cuda_runtime.h>
 # endif
+# endif
+
+typedef mdl_i8_t ffly_err_t;
+# ifdef __cplusplus
 namespace mdl {
 namespace firefly {
 namespace types {
-typedef i8_t err_t;
-# if defined(USING_OPENCL) || defined(__USING_OPENCL)
+typedef ffly_err_t err_t;
+# ifdef __ffly_use_opencl
 typedef cl_int cl_err_t;
 # endif
-# if defined(USING_CUDA) || defined(__USING_CUDA)
-typedef cudaError_t cu_err_t;
+# ifdef __ffly_use_cuda
+typedef cudaError_t cl_err_t;
 # endif
 }
 }
 }
-typedef mdl::i8_t ffly_err_t;
-# else
-# include <mdlint.h>
-typedef mdl_i8_t ffly_err_t;
 # endif
-
-# endif /*__err__t__h*/
+# endif /*__ffly__err__t__h*/

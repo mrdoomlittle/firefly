@@ -24,7 +24,7 @@ ffly_err_t ffly_ld_aud_file(char *__dir, char *__name, ffly_aud_fformat_t __form
 			return FFLY_FAILURE;
 	}
 
-	char *fpth = mdl_str_cmb(__dir, mdl_str_cmb(__name, ext, 0), MDL_SC_FREE_RIGHT);
+	char *fpth = mdl_str_cmb(__dir, mdl_str_cmb(__name, ext, 0), _mdl_stc_free_rhs);
 	int fd;
 	if ((fd = open(fpth, O_RDONLY)) < 0) {
 		ffly_fprintf(ffly_err, "ffly_audio: failed to open audio file at '%s'.\n", fpth);

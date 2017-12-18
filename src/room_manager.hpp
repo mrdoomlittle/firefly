@@ -13,6 +13,7 @@ class room_manager {
 	room_manager() : spare_rooms(VEC_AUTO_RESIZE){}
 	types::err_t creat_room(types::no_t*& __no);
 	types::err_t del_room(types::no_t *__no);
+	room* get_room(types::no_t *__no);
 	private:
 	system::vec<types::no_t*> spare_rooms;
 	system::arr<room*, MAX_ROOMS> rooms;

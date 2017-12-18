@@ -3,6 +3,7 @@
 # include "../memory/mem_free.h"
 # include "../system/io.h"
 # include "../system//errno.h"
+# include "../system/err.h"
 char const static *kstr(mdl_u8_t __kind) {
 	switch(__kind) {
 		case _grj_pixfill:
@@ -46,7 +47,9 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 
 			ffly_colour_t colour = *(ffly_colour_t*)p;
 
-			err = ffly_pixfill(buf, nopix, colour);
+			if (_err(err = ffly_pixfill(buf, nopix, colour))) {
+				ffly_fprintf(ffly_err, "failed to fill with pixels.\n");
+			}
 			ffly_fprintf(ffly_log, "graphics job-%s, %p %u, %u-%u-%u-%u\n", kstr(__job->kind), buf, nopix, colour.r, colour.g, colour.b, colour.a);
 			break;
 		}
@@ -62,7 +65,9 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 
 			mdl_uint_t nopix = *(mdl_uint_t*)p;
 
-			err = ffly_pixcopy(dst, src, nopix);
+			if (_err(err = ffly_pixcopy(dst, src, nopix))) {
+				ffly_fprintf(ffly_err, "failed to copy pixels.\n");
+			}
 			ffly_fprintf(ffly_log, "graphics job-%s, %p, %p, %u\n", kstr(__job->kind), dst, src, nopix);
 			break;
 		}
@@ -90,7 +95,9 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 
 			mdl_uint_t height = *(mdl_uint_t*)p;
 
-			err = ffly_pixdraw(x, y, buff, bufw, pixels, width, height);
+			if (_err(err = ffly_pixdraw(x, y, buff, bufw, pixels, width, height))) {
+				ffly_fprintf(ffly_err, "failed to draw pixels.\n");
+			}
 			ffly_fprintf(ffly_log, "graphics job-%s, %u, %u, %p, %u, %p, %u, %u\n", kstr(__job->kind), x, y, buff, bufw, pixels, width, height);
 			break;
 		}
@@ -100,5 +107,10 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 			return FFLY_FAILURE;
 	}
 	__ffly_mem_free(__job);
+	if (_err(err)) {
+		ffly_fprintf(ffly_err, "job failure.\n");
+		return err;
+	}
+
 	return FFLY_SUCCESS;
 }

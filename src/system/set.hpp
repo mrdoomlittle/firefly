@@ -16,12 +16,12 @@ struct set {
 
 		_iterator operator+(mdl_uint_t __a) {
 			_T *p = this->p;
-			ffly_vec_itr(&this->v_p->raw_vec, (void**)&p, VEC_ITR_DOWN, __a);
+			ffly_vec_itr(&this->v_p->raw_vec, (void**)&p, VEC_ITR_FD, __a);
 			return (iterator){v_p:this->v_p, p:p};
 		}
 
 		_iterator& operator++(int) {
-			ffly_vec_itr(&this->v_p->raw_vec, (void**)&this->p, VEC_ITR_DOWN, 1);
+			ffly_vec_itr(&this->v_p->raw_vec, (void**)&this->p, VEC_ITR_BK, 1);
 		}
 
 		types::bool_t operator!=(const _iterator& __val) {

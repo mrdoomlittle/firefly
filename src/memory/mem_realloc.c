@@ -1,12 +1,12 @@
 # include "mem_realloc.h"
 # include "../system/io.h"
-# ifdef __MAL_TRACK
+# ifdef __ffly_mal_track
 void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc, ffly_bool_t __track_bypass) {
 # else
 void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc) {
 # endif
 	mdl_u8_t *p;
-# ifdef __DEBUG_ENABLED
+# ifdef __ffly_debug_enabled
 	p = (mdl_u8_t*)__p-sizeof(mdl_uint_t);
 	mdl_uint_t mem_size = *((mdl_uint_t*)p);
 
@@ -25,13 +25,13 @@ void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc) {
 	p = (mdl_u8_t*)realloc(__p, __nbc);
 # endif
 
-# ifdef __MAL_TRACK
+# ifdef __ffly_mal_track
 	if (!__track_bypass) {
-# ifdef __DEBUG_ENABLED
+# ifdef __ffly_debug_enabled
 		if (
 # endif
 		ffly_mal_track_update(&__ffly_mal_track__, __p, (void*)p)
-# ifdef __DEBUG_ENABLED
+# ifdef __ffly_debug_enabled
 		!= FFLY_SUCCESS) {
 			ffly_printf(stderr, "mem_realloc: mal track failure.\n");
 		}

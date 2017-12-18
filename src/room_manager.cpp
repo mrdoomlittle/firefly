@@ -18,6 +18,10 @@ mdl::firefly::types::err_t mdl::firefly::room_manager::creat_room(types::no_t*& 
 	return FFLY_SUCCESS;
 }
 
+mdl::firefly::room* mdl::firefly::room_manager::get_room(types::no_t *__no) {
+	return this->rooms.at(*__no);
+}
+
 mdl::firefly::types::err_t mdl::firefly::room_manager::del_room(types::no_t *__no) {
 	system::io::fprintf(ffly_log, "room-manager: deleting room %u\n", *__no);
 	room *r = this->rooms.get(*__no);

@@ -33,7 +33,7 @@ void static cleanup(void *__arg_p) {
 }
 
 mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixdraw(types::off_t __xa, types::off_t __ya, types::byte_t *__buff, uint_t __bufw, types::byte_t *__pixels, uint_t __width, uint_t __height) {
-	cudaError_t any_err;
+	types::cl_err_t err;
 	types::bool_t static inited = ffly_false;
 	uint_t bufsize = __bufw*__height*4;
 	uint_t size = __width*__height*4;
@@ -71,17 +71,19 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixdraw(types::off_t __xa
 		_size = size;
 	}
 
-	if ((any_err = cudaMemcpy(buff, __buff, bufsize, cudaMemcpyHostToDevice)) != cudaSuccess) {
+	if ((err = cudaMemcpy(buff, __buff, bufsize, cudaMemcpyHostToDevice)) != ffly_cl_success) {
+		system::io::fprintf(ffly_err, "failed to copy buffer to device, %s\n", cudaGetErrorString(err));
 		return FFLY_FAILURE;
 	}
 
-	if ((any_err = cudaMemcpy(pixels, __pixels, size, cudaMemcpyHostToDevice)) != cudaSuccess) {
+	if ((err = cudaMemcpy(pixels, __pixels, size, cudaMemcpyHostToDevice)) != ffly_cl_success) {
+		system::io::fprintf(ffly_err, "failed to copy pixels to device, %s\n", cudaGetErrorString(err));
 		return FFLY_FAILURE;
 	}
 
 	// for now
 	pixdraw<<<__height, __width>>>(__xa, buff, __bufw, pixels);
-	if ((any_err = cudaMemcpy(__buff+((__ya*__bufw)*4), buff, bufsize, cudaMemcpyDeviceToHost)) != cudaSuccess) {
+	if ((err = cudaMemcpy(__buff+((__ya*__bufw)*4), buff, bufsize, cudaMemcpyDeviceToHost)) != ffly_cl_success) {
 		return FFLY_FAILURE;
 	}
 	return FFLY_SUCCESS;

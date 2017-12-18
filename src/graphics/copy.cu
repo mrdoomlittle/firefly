@@ -8,7 +8,7 @@
 # include "../memory/mem_free.h"
 # include "../firefly.hpp"
 mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixcopy(types::byte_t *__dst, types::byte_t *__src, mdl_uint_t __nopix) {
-	cudaError_t any_err;
+	types::cl_err_t any_err;
 	mdl_uint_t size = __nopix*4;
 	cudaMemcpy(__dst, __src, size, cudaMemcpyHostToHost);
 	cudaDeviceSynchronize();

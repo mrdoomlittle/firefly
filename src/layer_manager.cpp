@@ -26,6 +26,7 @@ mdl::uint_t mdl::firefly::layer_manager::add_layer(u16_t __width, u16_t __height
 		}
 	}
 
+	system::io::fprintf(ffly_log, "layer, width: %u, height: %u, %p\n", layer.desc.width, layer.desc.height, layer.pixelmap);
 	this->layers.push_back(layer);
 	__err = FFLY_SUCCESS;
 	return no;
@@ -38,6 +39,7 @@ mdl::firefly::types::err_t mdl::firefly::layer_manager::draw_layers(types::pixel
 	types::err_t err;
 	layer_t *itr = this->layers.begin();
 	while(itr <= this->layers.end()) {
+		system::io::fprintf(ffly_log, "layer, width: %u, height: %u, %p\n", itr->desc.width, itr->desc.height, itr->pixelmap);
 		if (_err(err = graphics::pixeldraw(itr->desc.xa, itr->desc.ya, __pixelbuff, __width, itr->pixelmap, itr->desc.width, itr->desc.height))) {
 			system::io::fprintf(ffly_err, "failed to draw layer.\n");
 			return err;

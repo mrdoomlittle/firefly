@@ -4,23 +4,22 @@
 # include "../types/err_t.h"
 # include "../system/flags.h"
 # include "../types/bool_t.h"
-# include "../system/buff.h"
 # include "../system/mem_blk.h"
-# ifdef __USING_X11
+# include "../system/mutex.h"
+# include "../types/event_t.h"
+# ifdef __ffly_use_x11
 #	include "x11_wd.h"
-# elif __USING_XCB
+# elif __ffly_use_xcb
 #	include "xcb_wd.h"
 # endif
-# define EVENT_BUFF_SIZE 20
 struct ffly_wd {
-# ifdef __USING_X11
+# ifdef __ffly_use_x11
 	struct ffly_x11_wd raw;
-# elif __USING_XCB
+# elif __ffly_use_xcb
 	struct ffly_xcb_wd raw;
 # endif
 	ffly_flag_t flags;
-	struct ffly_buff event_buff;
-	struct ffly_mem_blk event_data;
+	struct ffly_mem_blk events;
 };
 # ifdef __cplusplus
 extern "C" {
@@ -32,7 +31,8 @@ ffly_err_t ffly_wd_open(struct ffly_wd*);
 ffly_err_t ffly_wd_close(struct ffly_wd*);
 ffly_err_t ffly_wd_init(struct ffly_wd*, mdl_u16_t, mdl_u16_t, char const*);
 ffly_err_t ffly_wd_cleanup(struct ffly_wd*);
-ffly_err_t ffly_wd_begin(struct ffly_wd*);
+ffly_event_t* ffly_wd_poll_event(struct ffly_wd*, ffly_err_t*);
+ffly_err_t ffly_wd_free_event(struct ffly_wd*, ffly_event_t*);
 # ifdef __cplusplus
 }
 # endif

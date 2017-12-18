@@ -1,45 +1,5 @@
 # ifndef __ffly__client__hpp
 # define __ffly__client__hpp
-/*
-# include "networking/tcp_client.hpp"
-# include "networking/udp_client.hpp"
-# include <chrono>
-# include <signal.h>
-# include "draw.hpp"
-# include <boost/cstdint.hpp>
-# include "types/client_info_t.hpp"
-# include "types/player_info_t.hpp"
-# include "asset_manager.hpp"
-# include "layer_manager.hpp"
-# include <serializer.hpp>
-# include <cuda_runtime.h>
-# include "defaults.hpp"
-# include "types/err_t.h"
-# include "system/errno.h"
-# include "types/init_opt_t.hpp"
-# include "graphics/window.hpp"
-# include "types/layer_info_t.hpp"
-# include "system/event.hpp"
-# include "ffly_system.hpp"
-# include "ffly_graphics.hpp"
-# include "entity_manager.hpp"
-# include "types/err_t.h"
-# include "system/smem_buff.h"
-# include "types/event_t.hpp"
-# ifdef __WITH_OBJ_MANAGER
-#	include "obj_manager.hpp"
-# endif
-
-# ifdef ROOM_MANAGER
-#	include "room_manager.hpp"
-# endif
-# include "firefly.hpp"
-# ifdef __WITH_UNI_MANAGER
-#	include "uni_manager.hpp"
-#   include "types/uni_prop_t.hpp"
-# endif
-# include "types/id_t.h"
-*/
 # include "types/err_t.h"
 # include "system/io.h"
 # include "types/bool_t.h"
@@ -47,15 +7,10 @@
 # include "graphics/window.hpp"
 # include "system/event.hpp"
 # include "types/byte_t.h"
-# ifdef __WITH_LAYER_MANAGER
-#	include "layer_manager.hpp"
-# endif
-# ifdef __WITH_ROOM_MANAGER
-#	include "room_manager.hpp"
-# endif
-# ifdef __WITH_OBJ_MANAGER
-#	include "obj_manager.hpp"
-# endif
+
+# include "layer_manager.hpp"
+# include "room_manager.hpp"
+# include "asset_manager.h"
 namespace mdl { class ffly_client
 {
 	public:
@@ -65,14 +20,17 @@ namespace mdl { class ffly_client
 			this->ffc_p = __ffc_p;
 		}
 
+		void shutdown() {
+			this->ffc_p->shutdown();
+		}
+
 		uint_t get_fps() {
 			if (!this->ffc_p) return 0;
-			this->ffc_p->get_fps();
+			return this->ffc_p->get_fps();
 		}
 
 		ffly_client* get_ffc_p(){return this->ffc_p;}
 		firefly::types::byte_t* frame_buff() {return this->ffc_p->frame_buff();}
-
 		private:
 		ffly_client *ffc_p = nullptr;
 	} portal_t;
@@ -83,24 +41,19 @@ namespace mdl { class ffly_client
 	void shutdown();
 	uint_t get_fps() {return this->fps;}
 
-	void free_wd_event(firefly::types::event_t& __event) {
-		this->window.free_event_data(__event.data);
+	void free_wd_event(firefly::types::event_t *__event) {
+		this->window.free_event(__event);
 	}
 
 	firefly::types::byte_t* frame_buff() {
 		return this->window.frame_buff();
 	}
 
-	portal_t portal;
-# ifdef __WITH_LAYER_MANAGER
 	firefly::layer_manager layer_m;
-# endif
-# ifdef __WITH_ROOM_MANAGER
 	firefly::room_manager room_m;
-# endif
-# ifdef __WITH_OBJ_MANAGER
-	firefly::obj_manager obj_m;
-# endif
+	firefly::asset_manager asset_m;
+
+	portal_t portal;
 	uint_t fps = 0, frame_c = 0;
 	firefly::graphics::window window;
 	u16_t wd_width, wd_height;

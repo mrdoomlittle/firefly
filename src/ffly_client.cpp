@@ -6,14 +6,24 @@
 # include "system/io.h"
 # include "firefly.hpp"
 # include "system/err.h"
-mdl::firefly::types::bool_t mdl::ffly_client::to_shutdown = false;
+# include <cuda_runtime.h>
+mdl::firefly::types::bool_t mdl::ffly_client::to_shutdown = 0;
 
 void static ctrl_c(int __sig) {
+	if (mdl::ffly_client::to_shutdown) {
+		exit(0);
+	}
+
 	mdl::firefly::system::io::fprintf(ffly_out, "looks like ctrl_c was called bye bye...\n");
-	mdl::ffly_client::to_shutdown = true;
+	mdl::ffly_client::to_shutdown = 1;
+}
+
+void mdl::ffly_client::shutdown() {
+	mdl::ffly_client::to_shutdown = 1;
 }
 
 mdl::firefly::types::err_t mdl::ffly_client::init(u16_t __wd_width, u16_t __wd_height, char const *__wd_title) {
+	cudaDeviceReset();
 	firefly::types::err_t err;
 	firefly::system::io::fprintf(ffly_log, "initing engine.\n");
 	if (_err(err = firefly::init())) {
@@ -40,6 +50,8 @@ mdl::firefly::types::err_t mdl::ffly_client::de_init() {
 	} else
 		firefly::system::io::fprintf(ffly_log, "no problem occurred while de-inited window.\n");
 
+	this->asset_m.de_init();
+
 	firefly::system::io::fprintf(ffly_log, "de-initing engine.\n");
 	if (_err(err = firefly::de_init())) {
 		firefly::system::io::fprintf(ffly_err, "failed to de-init engine.\n");
@@ -49,76 +61,69 @@ mdl::firefly::types::err_t mdl::ffly_client::de_init() {
 	return FFLY_SUCCESS;
 }
 
-/*
-mdl::firefly::types::err_t mdl::ffly_client::forward_events() {
+//mdl::firefly::types::err_t mdl::ffly_client::forward_event(types::event_t& __event) {
 
 
-}*/
+//}
+
+# include "system/event_kind.h"
+# include "types/event_t.h"
 # include "graphics/pipe.h"
 # include "system/nanosleep.h"
 mdl::firefly::types::err_t mdl::ffly_client::begin(ffly_err_t(*__extern_loop)(i8_t, portal_t*, void*), void *__this) {
-	firefly::types::err_t err = FFLY_SUCCESS;
-	if (_err(err = this->window.begin()) != FFLY_SUCCESS) {
-		//err
-		goto _fatal;
-	}
-
-	while(!window.is_alive());
-	firefly::data::mem_set(this->window.frame_buff(), 0x0, this->window.get_width()*this->window.get_height()*4);
+	window.open();
+	firefly::types::err_t err;
+	firefly::data::mem_set(this->window.frame_buff(), 0xFF, this->window.get_width()*this->window.get_height()*4);
 
 	firefly::system::timer timer;
 	timer.begin();
 
 	this->portal.init(this);
-
 	do {
-		ffly_nanosleep(0, 20000000);
-		if (firefly::system::is_flag(window.flags(), FF_FLG_WD_DEAD)) {
-			firefly::system::io::fprintf(ffly_log, "window has been closed.\n");
-			goto _exit;
-		}
-
+		ffly_nanosleep(0, 20000000); // debug
 		if (timer.now<(ffly_tpv_t(*)(ffly_tpv_t))firefly::system::time::ns_to_ms>() > 1000) {
 			this->fps = this->frame_c;
 			this->frame_c = 0;
 			timer.reset();
 		}
-/*
-		if (!window.is_event_buff_empty()) {
-			firefly::system::io::printf(stdout, "dumping window event buffer.\n");
-			window.dump_event_buff();
-		}
 
-		mdl_u8_t c = 0;
-*/
-		// pull max of 10 events from window at one time
-	/*
-		while(window.event_queue.size() > 0 && c++ < 10) {
-			firefly::types::err_t any_err = FFLY_SUCCESS;
-			firefly::system::event_add(window.event_queue.pop(any_err));
-			firefly::system::io::printf(stdout, "forwarding window event queue to global one.\n");
-			if (any_err != FFLY_SUCCESS) {
-				firefly::system::io::printf(stderr, "failure.");
+		mdl::firefly::system::io::fprintf(ffly_log, "fps: %u\n", this->get_fps());
+
+		firefly::types::event_t *event;
+		while(window.poll_event(event, err)) {
+			if (event->kind == _ffly_ek_unknown) {
+				firefly::system::io::fprintf(ffly_log, "unknown window event was caught.\n");
+				window.free_event(event);
+			}
+			else {
+				switch(event->kind) {
+					case _ffly_wd_ek_closed:
+						firefly::system::io::fprintf(ffly_log, "got event to close window.\n");
+					break;
+				}
+				firefly::system::event_push(event);
 			}
 		}
-*/
+
 		if (_err(__extern_loop(0, &this->portal, NULL))) {
 			firefly::system::io::fprintf(ffly_err, ".\n");
 			goto _fatal;
 		}
-# ifdef __WITH_LAYER_MANAGER
-		this->layer_m.draw_layers(this->window.frame_buff(), this->window.get_width(), this->window.get_height());
-# endif
-		firefly::graphics::pipe_unload_all(&__ffly_grp__);
+
+		firefly::system::io::fprintf(ffly_log, "frame buff: %p\n", this->window.frame_buff());
+
+		if (_err(this->layer_m.draw_layers(this->window.frame_buff(), this->window.get_width(), this->window.get_height()))) {
+			goto _fatal;
+		}
+
+		if (_err(firefly::graphics::pipe_unload_all(&__ffly_grp__))) {
+			goto _fatal;
+		}
+
 		this->window.display();
 		this->frame_c++;
 	} while(!to_shutdown);
-
-	window.kill();
-
-	_exit:
-	window.ok();
-
+	return FFLY_SUCCESS;
 	_fatal:
 	return err;
 }

@@ -7,6 +7,15 @@
 # endif
 # include <errno.h>
 
+# ifdef __ffly_use_opencl
+#   include <CL/cl.hpp>
+#	define ffly_cl_success CL_SUCCESS
+# endif
+# ifdef __ffly_use_cuda
+#   include <cuda_runtime.h>
+#	define ffly_cl_success cudaSuccess
+# endif
+
 # ifndef FFLY_SUCCESS
 #	define FFLY_SUCCESS 0
 # endif

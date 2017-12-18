@@ -2,6 +2,7 @@
 # include "system/flags.h"
 # include "system/file.h"
 # include <mdl/str_cmb.h>
+# include "graphics/image.h"
 char const static* asset_kind_to_str(mdl::uint_t __kind) {
 	switch(__kind) {
 		case _ffly_ak_png_file: return "png file";
@@ -12,9 +13,13 @@ char const static* asset_kind_to_str(mdl::uint_t __kind) {
 }
 
 mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, char *__fname, uint_t __kind, types::mode_t __mode, types::err_t& __err) {
-	types::id_t asset_id;
+	types::id_t id;
 	if (__kind >= _ffly_ak_png_file && __kind <=_ffly_ak_png_file)
 	{
+		graphics::imagep img = static_cast<graphics::imagep>(memory::mem_alloc(sizeof(graphics::image)));
+		graphics::ld_png_file(__fdir, __fname, img);
+
+		id = this->add_asset(reinterpret_cast<types::byte_t*>(img),  __kind, __err);
 /*
 		types::_2d_dsize_t<> *dsize = (types::_2d_dsize_t<> *)memory::mem_alloc(sizeof(types::_2d_dsize_t<>));
 		types::pixmap_t pixmap;
@@ -23,13 +28,14 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, 
 			return nullptr;
 		}
 
-		asset_id = this->add_asset(pixmap, 0, __kind);
+		id = this->add_asset(pixmap, 0, __kind);
 
-		this->asset_info(asset_id) = dsize;
+		this->asset_info(id) = dsize;
 */
 	}
 	else if (__kind >= _ffly_ak_wav_file && __kind <=_ffly_ak_wav_file)
 	{
+/*
 		types::byte_t *f;
 		types::size_t fsize;
 		ffly_aud_fformat_t fformat;
@@ -50,11 +56,12 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, 
 			fformat:fformat
 		};
 
-		asset_id = this->add_asset(reinterpret_cast<types::byte_t*>(aud_fad), __kind, __err);
+		id = this->add_asset(reinterpret_cast<types::byte_t*>(aud_fad), __kind, __err);
 		if (_err(__err)) {
 			system::io::fprintf(ffly_err, "failed to add asset.\n");
 			return ffly_null_id;
 		}
+*/
 	}
 	else if (__kind == _ffly_ak_raw_file) {
 		types::byte_t *f;
@@ -91,7 +98,7 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, 
 			return ffly_null_id;
 		}
 
-		asset_id = this->add_asset(f, __kind, __err);
+		id = this->add_asset(f, __kind, __err);
 		if (_err(__err)) {
 			system::io::fprintf(ffly_err, "failed to add asset.\n");
 			return ffly_null_id;
@@ -102,15 +109,15 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, 
 		}
 	}
 # ifdef __DEBUG_ENABLED
-	system::io::fprintf(ffly_log, "asset_manager: loaded asset{id: %u, file: '%s%s', kind: %s}\n", *asset_id, __fdir, __fname, asset_kind_to_str(__kind));
+	system::io::fprintf(ffly_log, "asset_manager: loaded asset{id: %u, file: '%s%s', kind: %s}\n", *id, __fdir, __fname, asset_kind_to_str(__kind));
 # endif
 	__err = FFLY_SUCCESS;
-	return asset_id;
+	return id;
 }
 
 mdl::firefly::types::id_t mdl::firefly::asset_manager::add_asset(types::byte_t *__data, uint_t __kind, types::err_t& __err) {
-	types::id_t asset_id = (types::id_t)memory::mem_alloc(sizeof(types::__id_t));
-	if (asset_id == nullptr) {
+	types::id_t id = (types::id_t)memory::mem_alloc(sizeof(types::__id_t));
+	if (id == nullptr) {
 		system::io::fprintf(ffly_err, "failed to allocate memory for asset id.\n");
 		__err = FFLY_FAILURE;
 		return ffly_null_id;
@@ -121,78 +128,84 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::add_asset(types::byte_t *
 		return ffly_null_id;
 	}
 
-	*asset_id = this->asset_d.size()-1;
-	this->asset_d[*asset_id] = (types::asset_t)	{
-		id:asset_id,
+	*id = this->asset_d.size()-1;
+	this->asset_d[*id] = (types::asset_t)	{
+		id:id,
 		kind:__kind,
 		data:__data
 	};
 
-	this->asset_ids.insert(asset_id);
+	this->asset_ids.insert(id);
 # ifdef __DEBUG_ENABLED
-	system::io::fprintf(ffly_log, "asset_manager: added asset{id: %u}\n", *asset_id);
+	system::io::fprintf(ffly_log, "asset_manager: added asset{id: %u}\n", *id);
 # endif
 	__err = FFLY_SUCCESS;
-	return asset_id;
+	return id;
 }
 
-void mdl::firefly::asset_manager::free_asset(types::id_t __asset_id) {
-	types::asset_t& asset = this->asset_d[*__asset_id];
-	if (asset.kind >= _ffly_ak_wav_file && asset.kind <=_ffly_ak_wav_file)
-	{
-		ffly_aud_fad_t *aud_fad = reinterpret_cast<ffly_aud_fad_t*>(asset.data);
-		if (aud_fad->fp != nullptr) memory::mem_free(aud_fad->fp);
-		memory::mem_free(aud_fad);
+void mdl::firefly::asset_manager::free_asset(types::id_t __id) {
+	types::asset_t& asset = this->asset_d[*__id];
+	if (asset.kind >= _ffly_ak_png_file && asset.kind <=_ffly_ak_png_file){
+		graphics::imagep img = reinterpret_cast<graphics::imagep>(asset.data);
+		if (img->pixels != nullptr)
+			memory::mem_free(img->pixels);
 	}
 
-	if (asset.id != nullptr) memory::mem_free(asset.id);
-	if (asset.data != nullptr) memory::mem_free(asset.data);
+	if (asset.id != nullptr)
+		memory::mem_free(asset.id);
+	if (asset.data != nullptr)
+		memory::mem_free(asset.data);
 }
 
-mdl::firefly::types::err_t mdl::firefly::asset_manager::de_init() {
+
+void mdl::firefly::asset_manager::free_all() {
 	types::size_t i = 0;
 	for (;i != this->asset_d.size();i++) {
 		system::io::fprintf(ffly_log, "asset_manager: freed memory for asset{id: %u}, size: %u bytes.\n", i, this->asset_d[i].bc);
 		this->free_asset(this->asset_d[i].id);
 	}
+}
 
+mdl::firefly::types::err_t mdl::firefly::asset_manager::de_init() {
+	this->free_all();
 	delete &this->asset_ids;
 	delete &this->asset_d;
 }
 
-void mdl::firefly::asset_manager::del_asset(types::id_t __asset_id) {
-	std::set<types::id_t>::iterator itr = this->asset_ids.find(__asset_id);
+/*
+void mdl::firefly::asset_manager::del_asset(types::id_t __id) {
+	std::set<types::id_t>::iterator itr = this->asset_ids.find(__id);
 	if (itr == this->asset_ids.end()) {
-		printf("failed to look up asset, id? %d\n", *__asset_id);
+		printf("failed to look up asset, id? %d\n", *__id);
 		return;
 	}
 
-	printf("deleting asset, id: %d\n", *__asset_id);
+	printf("deleting asset, id: %d\n", *__id);
 
-	this->asset(__asset_id) = *(this->asset_d.end()-1);
-	*this->asset(__asset_id).id = *__asset_id;
+	this->asset(__id) = *(this->asset_d.end()-1);
+	*this->asset(__id).id = *__id;
 
-	this->free_asset(__asset_id);
+	this->free_asset(__id);
 
 	this->asset_d.resize(this->asset_d.size()-1);
 	this->asset_ids.erase(itr);
 }
+*/
+mdl::firefly::types::bool_t mdl::firefly::asset_manager::valid_asset_id(types::id_t __id) {
+	return !(this->asset_ids.find(__id) == this->asset_ids.end());}
 
-mdl::firefly::types::bool_t mdl::firefly::asset_manager::valid_asset_id(types::id_t __asset_id) {
-	return !(this->asset_ids.find(__asset_id) == this->asset_ids.end());}
-
-mdl::u8_t* mdl::firefly::asset_manager::get_asset_data(types::id_t __asset_id) {
-	if (!this->valid_asset_id(__asset_id)) return nullptr;
-	return this->asset_d[*__asset_id].data;
+mdl::u8_t* mdl::firefly::asset_manager::get_asset_data(types::id_t __id) {
+	if (!this->valid_asset_id(__id)) return nullptr;
+	return this->asset_d[*__id].data;
 }
 
-mdl::firefly::types::asset_t mdl::firefly::asset_manager::get_asset(types::id_t __asset_id) noexcept {
-	if (!this->valid_asset_id(__asset_id)) throw;
-	return this->asset_d[*__asset_id];
+mdl::firefly::types::asset_t mdl::firefly::asset_manager::get_asset(types::id_t __id) noexcept {
+	if (!this->valid_asset_id(__id)) throw;
+	return this->asset_d[*__id];
 }
 
-mdl::firefly::types::asset_t& mdl::firefly::asset_manager::asset(types::id_t __asset_id) {
-	return this->asset_d[*__asset_id];}
+mdl::firefly::types::asset_t& mdl::firefly::asset_manager::asset(types::id_t __id) {
+	return this->asset_d[*__id];}
 
 extern "C" {
 ffly_id_t ffly_load_asset(void *__clsp, char *__fdir, char *__fname, mdl_uint_t __kind, ffly_err_t *__err) {

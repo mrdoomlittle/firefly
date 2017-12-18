@@ -35,9 +35,12 @@ __inline__ boost::int8_t ffly_check_for_gpu() {
 
 # endif
 */
-# if defined(FFLY_SERVER)
+
+# if defined(__ffly_server)
 #	include "ffly_server.hpp"
-# elif defined(FFLY_CLIENT)
+# elif defined(__ffly_client)
 #	include "ffly_client.hpp"
+# else
+#	error "error."
 # endif
 # endif /*__ffly__engine__hpp*/

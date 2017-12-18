@@ -2,7 +2,6 @@
 # include "../data/mem_set.h"
 # include "../data/str_len.h"
 # include "../data/mem_dupe.h"
-# include "../system/thread.h"
 # include "../types/event_t.h"
 # include "../system/io.h"
 mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __width, u16_t __height, char const *__title) {
@@ -15,26 +14,23 @@ mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __width, u
 	return FFLY_SUCCESS;
 }
 
-mdl::firefly::types::err_t mdl::firefly::graphics::window::kill() {
-	system::add_flag(&this->flags(), FF_FLG_WD_KILL, 0);
-	while(!system::is_flag(this->flags(), FF_FLG_WD_DEAD));
-}
-
-mdl::firefly::types::err_t mdl::firefly::graphics::window::begin() {
-	ffly_wd_open(&this->raw);
-	system::thread t(&ffly_wd_begin, &this->raw, this->tid);
-	return FFLY_SUCCESS;
-}
-
 mdl::firefly::types::err_t mdl::firefly::graphics::window::de_init() {
-	system::io::fprintf(stdout, "window, waiting for handle thread to die.\n");
-	while(!ffly_thread_dead(this->tid));
-	system::io::fprintf(stdout, "window, handle thread is now dead.\n");
 	ffly_wd_close(&this->raw);
 	ffly_wd_cleanup(&this->raw);
 	return FFLY_SUCCESS;
 }
 
+mdl::firefly::types::bool_t mdl::firefly::graphics::window::poll_event(types::event_t*& __event, types::err_t& __err) {
+	__err = FFLY_SUCCESS;
+	return (__event = ffly_wd_poll_event(&this->raw, &__err)) != nullptr;
+}
+
+mdl::firefly::types::err_t mdl::firefly::graphics::window::free_event(types::event_t *__event) {
+	ffly_wd_free_event(&this->raw, __event);
+	return FFLY_SUCCESS;
+}
+
+/*
 mdl::firefly::types::err_t mdl::firefly::graphics::window::dump_event_buff() {
 	if (this->event_queue.size() > 8) {
 		system::io::fprintf(stdout, "window, event queue is full.\n");
@@ -51,7 +47,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::window::dump_event_buff() {
 	ffly_buff_unlock(&this->raw.event_buff);
 	return FFLY_SUCCESS;
 }
-
+*/
 // testing
 /*
 # include "wd_flags.h"

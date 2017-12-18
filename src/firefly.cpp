@@ -77,15 +77,15 @@ mdl::firefly::types::err_t mdl::firefly::de_init() {
 	ffly_graphics::de_init();
 }
 */
-# ifdef FFLY_CLIENT
-mdl::firefly::types::bool_t mdl::firefly::poll_event(types::event_t& __event) {
+# ifdef __ffly_client
+mdl::firefly::types::bool_t mdl::firefly::poll_event(types::event_t*& __event) {
 	if (!mdl::firefly::system::pending_event()) return ffly_false;
 	mdl::firefly::system::next_event(__event);
 	return ffly_true;
 }
 
-void mdl::firefly::event_free(ffly_client *__ffc, types::event_t& __event) {
-	if (__event.field == _ffly_ef_wd) {
+void mdl::firefly::event_free(ffly_client *__ffc, types::event_t *__event) {
+	if (__event->field == _ffly_ef_wd) {
 		__ffc->free_wd_event(__event);
 	}
 }

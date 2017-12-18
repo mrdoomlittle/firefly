@@ -1,5 +1,5 @@
-# ifndef __mem__realloc__h
-# define __mem__realloc__h
+# ifndef __ffly__mem__realloc__h
+# define __ffly__mem__realloc__h
 # include <malloc.h>
 # include <mdlint.h>
 # include "mem_alloc.h"
@@ -9,11 +9,11 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-# if defined(__DEBUG_ENABLED) && !defined(__mem__alloc__h)
+# if defined(__ffly_debug_enabled) && !defined(__ffly_mem__alloc__h)
 ffly_atomic_uint_t extern ffly_mem_alloc_bc;
 ffly_atomic_uint_t extern ffly_mem_alloc_c;
 # endif
-# ifdef __MAL_TRACK
+# ifdef __ffly_mal_track
 void* ffly_mem_realloc(void*, mdl_uint_t, ffly_bool_t);
 # else
 void* ffly_mem_realloc(void*, mdl_uint_t);
@@ -25,13 +25,13 @@ void* ffly_mem_realloc(void*, mdl_uint_t);
 namespace mdl {
 namespace firefly {
 namespace memory {
-# ifdef __MAL_TRACK
-void __inline__* mem_realloc(void *__mem_ptr, uint_t __bc, types::bool_t __track_bypass) {
-	return ffly_mem_realloc(__mem_ptr, __bc, __track_bypass);
+# ifdef __ffly_mal_track
+void __inline__* mem_realloc(void *__p, uint_t __bc, types::bool_t __track_bypass) {
+	return ffly_mem_realloc(__p, __bc, __track_bypass);
 }
 
-void __inline__* mem_realloc(void *__mem_ptr, uint_t __bc) {
-	return mem_realloc(__mem_ptr, __bc, ffly_false);
+void __inline__* mem_realloc(void *__p, uint_t __bc) {
+	return mem_realloc(__p, __bc, ffly_false);
 }
 # else
 static void*(*mem_realloc)(void*, uint_t) = &ffly_mem_realloc;
@@ -40,18 +40,18 @@ static void*(*mem_realloc)(void*, uint_t) = &ffly_mem_realloc;
 }
 }
 # endif
-# if defined(__MAL_TRACK)
+# if defined(__ffly_mal_track)
 #	ifdef __cplusplus
-#		define __ffly_mem_realloc(__MEM_PTR, __ALLOC_BC) mdl::firefly::memory::mem_realloc(__MEM_PTR, __ALLOC_BC, ffly_false)
+#		define __ffly_mem_realloc(__p, __bc) mdl::firefly::memory::mem_realloc(__p, __bc, ffly_false)
 #	else
-#		define __ffly_mem_realloc(__MEM_PTR, __ALLOC_BC) ffly_mem_realloc(__MEM_PTR, __ALLOC_BC, ffly_false)
+#		define __ffly_mem_realloc(__p, __bc) ffly_mem_realloc(__p, __bc, ffly_false)
 #	endif
 # else
 #	ifdef __cplusplus
-#		define __ffly_mem_realloc(__MEM_PTR, __ALLOC_BC) mdl::firefly::memory::mem_realloc(__MEM_PTR, __ALLOC_BC)
+#		define __ffly_mem_realloc(__p, __bc) mdl::firefly::memory::mem_realloc(__p, __bc)
 #	else
-#		define __ffly_mem_realloc(__MEM_PTR, __ALLOC_BC) ffly_mem_realloc(__MEM_PTR, __ALLOC_BC)
+#		define __ffly_mem_realloc(__p, __bc) ffly_mem_realloc(__p, __bc)
 #	endif
 # endif
 
-# endif /*__mem__realloc__h*/
+# endif /*__ffly__mem__realloc__h*/

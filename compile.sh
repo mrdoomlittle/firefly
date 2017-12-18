@@ -6,57 +6,42 @@ echo "extra options: $4"
 
 ffly_defines=
 ffly_linker=
-if [ $ffly_target = "FFLY_CLIENT" ]; then
+if [ $ffly_target = "ffly_client" ]; then
 	ffly_linker=-lffly_client
-elif [ $ffly_target = "FFLY_SERVER" ]; then
+elif [ $ffly_target = "ffly_server" ]; then
 	ffly_linker=-lffly_server
-elif [ $ffly_target = "FFLY_STUDIO" ]; then
+elif [ $ffly_target = "ffly_studio" ]; then
 	ffly_linker=-lffly_studio
-elif [ $ffly_target = "FFLY_WORKER" ]; then
+elif [ $ffly_target = "ffly_worker" ]; then
 	ffly_linker=-lffly_worker
-elif [ $ffly_target = "FFLY_TEST" ]; then
+elif [ $ffly_target = "ffly_test" ]; then
 	ffly_linker=-lffly_test
+elif [ $ffly_target = "ffly_bare"]; then
+	ffly_linker=-lffly_bare
 fi
 
 if [ $ffly_cl = "cuda" ]; then
-	ffly_defines="$ffly_defined -D__USING_CUDA"
+	ffly_defines="$ffly_defined -D__ffly_use_cuda"
+elif [ $ffly_cl = "opencl" ];then
+	ffly_defines="$ffly_defines -D__ffly_use_opencl"
 fi
 
 ffly_window=
-if [ $ffly_using_x11 -eq 1 ]; then
-	ffly_window=X11
-	ffly_defines="$ffly_defines -D__USING_X11"
-elif [ $ffly_using_xcb -eq 1 ]; then
-	ffly_window=XCB
-	ffly_defines="$ffly_defines -D__USING_XCB"
-fi
-
-if [ $ffly_with_room_manager -eq 1 ]; then
-	ffly_defines="$ffly_defines -D__WITH_ROOM_MANAGER"
-fi
-
-if [ $ffly_with_obj_manager -eq 1 ]; then
-	ffly_defines="$ffly_defines -D__WITH_OBJ_MANAGER"
-fi
-
-if [ $ffly_rm_layering -eq 1 ]; then
-	ffly_defines="$ffly_defines -D__RM_LAYERING"
-fi
-
-if [ $ffly_with_uni_manager -eq 1 ]; then
-	ffly_defines="$ffly_defines -D__WITH_UNI_MANAGER"
+if [ $ffly_use_x11 -eq 1 ]; then
+	ffly_window=x11
+	ffly_defines="$ffly_defines -D__ffly_use_x11"
+elif [ $ffly_use_xcb -eq 1 ]; then
+	ffly_window=xcb
+	ffly_defines="$ffly_defines -D__ffly_use_xcb"
 fi
 
 if [ $ffly_debug_enabled -eq 1 ]; then
-	ffly_defines="$ffly_defines -D__DEBUG_ENABLED"
+	ffly_defines="$ffly_defines -D__ffly_debug_enabled"
 fi
 
+# memory allocation tracker
 if [ $ffly_mal_track -eq 1 ]; then
-	ffly_defines="$ffly_defines -D__MAL_TRACK"
-fi
-
-if [ $ffly_with_layer_manager -eq 1 ]; then
-	ffly_defines="$ffly_defines -D__WITH_LAYER_MANAGER"
+	ffly_defines="$ffly_defines -D__ffly_mal_track"
 fi
 
 . ./cac_dirs.bash
@@ -93,5 +78,5 @@ echo "target: $ffly_target"
 echo "defines: $ffly_defines"
 echo "flags: $ffly_flags"
 echo "dest: $1"
-g++ -std=c++17 -D__$arc $ffly_cxxflags $ffly_cflags -D$ffly_target $ffly_defines -Iinc -Llib -Wall -o $1 $2 /usr/lib/x86_64-linux-gnu/libGLU.so.1 $ffly_linker $ffly_ld_flags
+g++ -std=c++17 -D__$arc $ffly_cxxflags $ffly_cflags -D__$ffly_target $ffly_defines -Iinc -Llib -Wall -o $1 $2 /usr/lib/x86_64-linux-gnu/libGLU.so.1 $ffly_linker $ffly_ld_flags
 echo "finished."
