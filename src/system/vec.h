@@ -1,5 +1,5 @@
-# ifndef __vec__h
-# define __vec__h
+# ifndef __ffly__vec__h
+# define __ffly__vec__h
 # define VEC_PAGE_SIZE 32 // dont change
 # define VEC_AUTO_RESIZE 0x1
 # define VEC_ITR_FD 0x0
@@ -52,7 +52,7 @@ mdl_uint_t ffly_vec_blk_off(struct ffly_vec*, void*);
 # endif
 void static __inline__* ffly_vec_p(struct ffly_vec *__vec){return __vec->p;}
 ffly_size_t static __inline__ ffly_vec_size(struct ffly_vec *__vec) {return __vec->size;}
-ffly_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return !__vec->off;}
+ffly_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return !__vec->size;}
 void static __inline__ ffly_vec_tog_flag(struct ffly_vec *__vec, ffly_flag_t __flag) {ffly_add_flag(&__vec->flags, __flag, 0);}
 void static __inline__ ffly_vec_clear_flags(struct ffly_vec *__vec){__vec->flags = 0x0;}
 # ifdef __cplusplus
@@ -149,4 +149,4 @@ struct vec {
 }
 }
 # endif
-# endif /*__vec__h*/
+# endif /*__ffly__vec__h*/

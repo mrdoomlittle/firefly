@@ -3,6 +3,7 @@
 # include <string.h>
 # include <stdio.h>
 # include "../system/io.h"
+# include "./system/errno.h"
 int main(void) {
 	ffly_io_init();
 	char *a = "abcdefghijkmnopqrstuvwxyz";
@@ -19,4 +20,5 @@ int main(void) {
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	printf("mem_cmp, time taken: %uns, both strings %s\n", end.tv_nsec-begin.tv_nsec, res == 1? "match":"don't match");
 	ffly_io_closeup();
+	return FFLY_FAILURE;
 }

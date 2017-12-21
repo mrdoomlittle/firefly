@@ -1,18 +1,28 @@
-# ifndef __queue__h
-# define __queue__h
+# ifndef __ffly__queue__h
+# define __ffly__queue__h
 # include <mdlint.h>
-# include "io.h"
 # include "../types/err_t.h"
 # include "../types/off_t.h"
 # include "../types/size_t.h"
 # include "err.h"
-# define QUEUE_PAGE_SIZE 32 // dont change
+/*
+	page shift
+	value: 32
+*/
+# define QUEUE_PAGE_SHIFT 5
+/*
+	real size = page_count*blk_size
+*/
+# define QUEUE_PAGE_SIZE (1<<QUEUE_PAGE_SHIFT)
+/*
+	max number of pages.
+*/
 # define QUEUE_MAX_PAGE_C 32
 struct ffly_queue {
 	void **p;
 	mdl_uint_t page_c;
 	ffly_size_t blk_size;
-	ffly_off_t begin_off, end_off;
+	ffly_off_t top, end;
 };
 
 # ifdef __cplusplus
@@ -27,6 +37,7 @@ void* ffly_queue_front(struct ffly_queue*);
 void* ffly_queue_back(struct ffly_queue*);
 # ifdef __cplusplus
 }
+# include "io.h"
 # include "errno.h"
 namespace mdl {
 namespace firefly {
@@ -68,4 +79,4 @@ struct queue {
 
 
 # endif
-# endif /*__queue__h*/
+# endif /*__ffly__queue__h*/

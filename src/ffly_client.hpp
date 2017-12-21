@@ -5,7 +5,7 @@
 # include "types/bool_t.h"
 # include "system/errno.h"
 # include "graphics/window.hpp"
-# include "system/event.hpp"
+# include "system/event.h"
 # include "types/byte_t.h"
 
 # include "layer_manager.hpp"

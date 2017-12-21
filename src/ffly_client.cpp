@@ -93,13 +93,17 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(ffly_err_t(*__extern_loop)(i8
 		while(window.poll_event(event, err)) {
 			if (event->kind == _ffly_ek_unknown) {
 				firefly::system::io::fprintf(ffly_log, "unknown window event was caught.\n");
-				window.free_event(event);
+				firefly::free_event(this, event);
 			}
 			else {
 				switch(event->kind) {
 					case _ffly_wd_ek_closed:
 						firefly::system::io::fprintf(ffly_log, "got event to close window.\n");
 					break;
+					default:
+						firefly::system::io::fprintf(ffly_log, "window event hasent been implemented.\n");
+						firefly::free_event(this, event);
+						continue;
 				}
 				firefly::system::event_push(event);
 			}

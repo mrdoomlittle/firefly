@@ -7,6 +7,8 @@
 # include "../data/mem_set.h"
 # include "../system/event_kind.h"
 # include "../system/event_field.h"
+# include "../system/event.h"
+# include "../types/wd_event_t.h"
 ffly_byte_t* ffly_wd_frame_buff(struct ffly_wd *__wd) {
 	return __wd->raw.frame_buff;
 }
@@ -55,7 +57,7 @@ ffly_err_t ffly_wd_init(struct ffly_wd *__wd, mdl_u16_t __width, mdl_u16_t __hei
 		return err;
 	}
 
-	ffly_mem_blk_init(&__wd->events, 20, sizeof(ffly_event_t));
+	ffly_mem_blk_init(&__wd->events, 20, sizeof(ffly_wd_event_t));
 	return FFLY_SUCCESS;
 }
 
@@ -91,11 +93,23 @@ void static mk_event(ffly_event_t **__event, ffly_event_t __tmpl) {
 ffly_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
 	XEvent event;
 	if (XPending(__wd->raw.d) > 0) {
-		*__event = ffly_mem_blk_alloc(&__wd->events);
+		*__event = ffly_alloc_event();
 		XNextEvent(__wd->raw.d, &event);
 		switch(event.type) {
 			case ClientMessage:
 				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_closed});
+			break;
+			case KeyPress:
+				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_key_press, .data=ffly_mem_blk_alloc(&__wd->events)});
+				*((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
+					.code = event.xkey.keycode
+				};
+			break;
+			case KeyRelease:
+				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_key_release, .data=ffly_mem_blk_alloc(&__wd->events)});
+				*((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
+					.code = event.xkey.keycode
+				};
 			break;
 			default:
 				mk_event(__event, (ffly_event_t){.kind=_ffly_ek_unknown});
@@ -108,7 +122,7 @@ ffly_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) 
 ffly_err_t ffly_xcb_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
 	xcb_generic_event_t *event;
 	if ((event = xcb_poll_for_event(__wd->raw.conn)) != NULL) {
-		*__event = ffly_mem_blk_alloc(&__wd->events);
+		*__event = ffly_alloc_event();
 		switch(event->response_type&~0x80) {
 			case XCB_CLIENT_MESSAGE:
 				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_closed});
@@ -139,5 +153,7 @@ ffly_event_t* ffly_wd_poll_event(struct ffly_wd *__wd, ffly_err_t *__err) {
 }
 
 ffly_err_t ffly_wd_free_event(struct ffly_wd *__wd, ffly_event_t *__event) {
-	ffly_mem_blk_free(&__wd->events, __event);
+	if (__event->kind  == _ffly_wd_ek_key_press || __event->kind == _ffly_wd_ek_key_release) {
+		ffly_mem_blk_free(&__wd->events, __event->data);
+	}
 }

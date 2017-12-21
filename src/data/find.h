@@ -1,5 +1,12 @@
-# ifndef __find__h
-# define __find__h
+# ifndef __ffly__find__h
+# define __ffly__find__h
 # include <mdlint.h>
-void* ffly_find(void*, void*, mdl_uint_t, mdl_uint_t);
-# endif /*__find__h*/
+# include "../types/size_t.h"
+# ifdef __cplusplus
+extern "C" {
+# endif
+void* ffly_find(void*, void*, ffly_size_t, ffly_size_t);
+# ifdef __cplusplus
+}
+# endif
+# endif /*__ffly__find__h*/

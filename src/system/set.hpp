@@ -18,12 +18,12 @@ struct set {
 
 		_iterator operator+(mdl_uint_t __a) {
 			_T *p = this->p;
-			ffly_vec_itr(&this->v_p->raw_vec, (void**)&p, VEC_ITR_FD, __a);
+			ffly_vec_itr(&this->v_p->raw, (void**)&p, VEC_ITR_FD, __a);
 			return (iterator){v_p:this->v_p, p:p};
 		}
 
 		_iterator& operator++(int) {
-			ffly_vec_itr(&this->v_p->raw_vec, (void**)&this->p, VEC_ITR_BK, 1);
+			ffly_vec_itr(&this->v_p->raw, (void**)&this->p, VEC_ITR_BK, 1);
 		}
 
 		types::bool_t operator!=(const _iterator& __val) {
@@ -40,7 +40,6 @@ struct set {
 
 	} iterator;
 	set() : v(VEC_AUTO_RESIZE|VEC_BLK_CHAIN|VEC_UUU_BLKS) {};
-
 	iterator begin(){return (iterator){v_p:&this->v, p:this->v.first()};}
 	iterator end(){return (iterator){v_p:&this->v, p:this->v.last()};}
 	types::bool_t empty(){return this->v.empty();}
@@ -55,7 +54,7 @@ struct set {
 	}
 	iterator find(_T __elem, types::err_t& __err) {
 		_T *p;
-		uint_t off;
+		types::off_t off;
 		if (_err(__err = this->tree.find(off, static_cast<uint_t>(__elem)))) {
 			return (iterator){};
 		}

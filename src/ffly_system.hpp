@@ -39,14 +39,17 @@ firefly::types::err_t static de_init() {
 # include "system/io.h"
 # include "types/err_t.h"
 # include "system/errno.h"
+# include "system/event.h"
 namespace mdl {
 namespace ffly_system {
 firefly::types::err_t init() {
 	ffly_io_init();
+	ffly_queue_init(&ffly_event_queue, sizeof(ffly_event_t*));
 	return FFLY_SUCCESS;
 }
 
 firefly::types::err_t de_init() {
+	ffly_queue_de_init(&ffly_event_queue);
 	ffly_io_closeup();
 	return FFLY_SUCCESS;
 }

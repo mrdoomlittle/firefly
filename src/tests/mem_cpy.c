@@ -3,6 +3,7 @@
 # include <stdio.h>
 # include <string.h>
 # include <mdlint.h>
+# include "../system/errno.h"
 # define max 64*64
 
 void test(mdl_uint_t __bc) {
@@ -33,4 +34,5 @@ int main(void) {
 		o*=2;
 	}
 	ffly_io_closeup();
+	return FFLY_SUCCESS;
 }

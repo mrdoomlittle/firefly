@@ -197,6 +197,9 @@ src/system/io.o: src/system/io.c
 src/system/smem_buff.o: src/system/smem_buff.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/smem_buff.o src/system/smem_buff.c
 
+src/system/event.o: src/system/event.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/event.o src/system/event.c
+
 src/system/config.o: src/system/config.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/system/config.o src/system/config.cpp
 
@@ -395,9 +398,6 @@ src/gui/wd_frame.o: src/gui/wd_frame.cpp
 
 src/gui/window.o: src/gui/window.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/gui/window.o src/gui/window.cpp
-
-src/system/event.o: src/system/event.cpp
-	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/system/event.o src/system/event.cpp
 
 src/data/scale_pixmap.o: src/data/scale_pixmap.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/data/scale_pixmap.o src/data/scale_pixmap.cpp

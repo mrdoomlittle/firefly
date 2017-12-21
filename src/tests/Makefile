@@ -34,7 +34,22 @@ vec: clean
 	gcc -c -std=c11 ../memory/mem_realloc.c
 	gcc -c -std=c11 ../system/flags.c
 	gcc -c -std=c11 ../system/vec.c
-	gcc -std=gnu11 -o vec vec.c io.o flags.o vec.o errno.o mem_cpy.o mutex.o mem_alloc.o mem_free.o mem_realloc.o
-all: mem_cpy mem_dupe mem_cmp find vec
+	gcc -c -std=c11 ../data/mem_cmp.c
+	gcc -std=gnu11 -o vec vec.c io.o mem_cmp.o flags.o vec.o errno.o mem_cpy.o mutex.o mem_alloc.o mem_free.o mem_realloc.o
+set: clean
+	nasm -f elf64 -o mutex.o ../system/asm/mutex.asm
+	gcc -c -std=c11 ../system/io.c
+	gcc -c -std=c11 ../system/errno.c
+	gcc -c -std=c11 ../data/mem_cpy.c
+	gcc -c -std=c11 ../memory/mem_alloc.c
+	gcc -c -std=c11 ../memory/mem_free.c
+	gcc -c -std=c11 ../memory/mem_realloc.c
+	gcc -c -std=c11 ../system/flags.c
+	gcc -c -std=c11 ../system/vec.c
+	gcc -c -std=c11 ../system/util/hash.c
+	gcc -c -std=c11 ../system/bin_tree.c
+	gcc -c -std=c11 ../data/swp.c
+	g++ -std=c++11 -o set set.cpp swp.o hash.o bin_tree.o io.o flags.o vec.o errno.o mem_cpy.o mutex.o mem_alloc.o mem_free.o mem_realloc.o
+all: mem_cpy mem_dupe mem_cmp find vec set
 clean:
-	rm -f *.o mem_cpy mem_dupe mem_cmp find
+	rm -f *.o mem_cpy mem_dupe mem_cmp find vec set

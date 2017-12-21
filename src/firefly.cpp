@@ -5,6 +5,7 @@
 # include "ffly_graphics.hpp"
 # include "system/err.h"
 # include "system/io.h"
+# include "system/event.h"
 ffly_act_gid_t act_gid_de_init;
 ffly_act_gid_t act_gid_cleanup;
 mdl::firefly::types::err_t mdl::firefly::init() {
@@ -80,14 +81,16 @@ mdl::firefly::types::err_t mdl::firefly::de_init() {
 # ifdef __ffly_client
 mdl::firefly::types::bool_t mdl::firefly::poll_event(types::event_t*& __event) {
 	if (!mdl::firefly::system::pending_event()) return ffly_false;
-	mdl::firefly::system::next_event(__event);
+	mdl::firefly::system::event_pop(&__event);
 	return ffly_true;
 }
 
-void mdl::firefly::event_free(ffly_client *__ffc, types::event_t *__event) {
+# include "ffly_client.hpp"
+void mdl::firefly::free_event(ffly_client *__ffc, types::event_t *__event) {
 	if (__event->field == _ffly_ef_wd) {
 		__ffc->free_wd_event(__event);
 	}
+	ffly_free_event(__event);
 }
 # endif
 /*

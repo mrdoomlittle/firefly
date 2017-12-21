@@ -18,7 +18,8 @@ ffly_err_t ffly_queue_init(struct ffly_queue *__queue, mdl_uint_t __blk_size) {
 		ffly_fprintf(ffly_err, "queue: failed to init page.\n");
 		return FFLY_FAILURE;
 	}
-	__queue->begin_off = __queue->end_off = 0;
+	__queue->top = 0;
+	__queue->end = 0;
 	return FFLY_SUCCESS;
 }
 
@@ -39,15 +40,15 @@ ffly_err_t ffly_queue_de_init(struct ffly_queue *__queue) {
 
 ffly_size_t ffly_queue_size(struct ffly_queue *__queue) {
 	ffly_size_t size = 0;
-	if (__queue->end_off < __queue->begin_off)
-		size = __queue->end_off+((__queue->page_c*QUEUE_PAGE_SIZE)-__queue->begin_off);
-	else if (__queue->end_off > __queue->begin_off)
-		size = __queue->end_off-__queue->begin_off;
+	if (__queue->end < __queue->top)
+		size = __queue->end+((__queue->page_c*QUEUE_PAGE_SIZE)-__queue->top);
+	else if (__queue->end > __queue->top)
+		size = __queue->end-__queue->top;
 	return size;
 }
 
 ffly_err_t ffly_queue_push(struct ffly_queue *__queue, void *__p) {
-	if (__queue->end_off+1 == __queue->begin_off) {
+	if (__queue->end+1 == __queue->top) {
 		ffly_fprintf(ffly_err, "queue: overflow.\n");
 		return FFLY_NOP;
 	}
@@ -60,7 +61,7 @@ ffly_err_t ffly_queue_push(struct ffly_queue *__queue, void *__p) {
 		goto _init_page;
  	}
 
-	if (__queue->end_off>>5 == __queue->page_c) {
+	if (__queue->end>>QUEUE_PAGE_SHIFT == __queue->page_c) {
 		if ((__queue->p = (void**)__ffly_mem_realloc(__queue->p, (++__queue->page_c)*sizeof(void*))) == NULL) {
 			ffly_fprintf(ffly_err, "queue: failed to realloc memory.\n");
 			return FFLY_FAILURE;
@@ -76,9 +77,9 @@ ffly_err_t ffly_queue_push(struct ffly_queue *__queue, void *__p) {
 	}
 
 	_sk_init_page:
-	if (__queue->begin_off>>5 > 0 && __queue->end_off == __queue->page_c*QUEUE_PAGE_SIZE && __queue->end_off <= QUEUE_PAGE_SIZE*QUEUE_MAX_PAGE_C)
-		__queue->end_off = 0;
-	mdl_uint_t page = __queue->end_off>>5;
+	if (__queue->top>>QUEUE_PAGE_SHIFT > 0 && __queue->end == __queue->page_c*QUEUE_PAGE_SIZE && __queue->end <= QUEUE_PAGE_SIZE*QUEUE_MAX_PAGE_C)
+		__queue->end = 0;
+	mdl_uint_t page = __queue->end>>QUEUE_PAGE_SHIFT;
 	if (!*(__queue->p+page)) {
 		if ((*(__queue->p+page) = (void*)__ffly_mem_alloc(QUEUE_PAGE_SIZE*__queue->blk_size)) == NULL) {
 			ffly_fprintf(ffly_err, "queue: failed to alloc memory.\n");
@@ -86,22 +87,22 @@ ffly_err_t ffly_queue_push(struct ffly_queue *__queue, void *__p) {
 		}
 	}
 
-	ffly_mem_cpy((void*)(((mdl_u8_t*)*(__queue->p+page))+((__queue->end_off++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __p, __queue->blk_size);
+	ffly_mem_cpy((void*)(((mdl_u8_t*)*(__queue->p+page))+((__queue->end++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __p, __queue->blk_size);
 	return FFLY_SUCCESS;
 }
 
 
 ffly_err_t ffly_queue_pop(struct ffly_queue *__queue, void *__p) {
-	if (__queue->begin_off == __queue->end_off) {
+	if (__queue->top == __queue->end) {
 		ffly_fprintf(ffly_err, "queue: underflow.\n");
 		return FFLY_FAILURE;
 	}
 
-	if (__queue->end_off < __queue->begin_off && __queue->begin_off+1 == __queue->page_c*QUEUE_PAGE_SIZE && __queue->begin_off <= QUEUE_PAGE_SIZE*QUEUE_MAX_PAGE_C)
-		__queue->begin_off = 0;
-	mdl_uint_t page = __queue->begin_off>>5;
-	ffly_mem_cpy(__p, (void*)(((mdl_u8_t*)*(__queue->p+page))+((__queue->begin_off++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __queue->blk_size);
-	if (__queue->begin_off>>5 > page) {
+	if (__queue->end < __queue->top && __queue->top+1 == __queue->page_c*QUEUE_PAGE_SIZE && __queue->top <= QUEUE_PAGE_SIZE*QUEUE_MAX_PAGE_C)
+		__queue->top = 0;
+	mdl_uint_t page = __queue->top>>QUEUE_PAGE_SHIFT;
+	ffly_mem_cpy(__p, (void*)(((mdl_u8_t*)*(__queue->p+page))+((__queue->top++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __queue->blk_size);
+	if (__queue->top>>QUEUE_PAGE_SHIFT > page) {
 		__ffly_mem_free(*(__queue->p+page));
 		*(__queue->p+page) = NULL;
 	}
@@ -109,6 +110,6 @@ ffly_err_t ffly_queue_pop(struct ffly_queue *__queue, void *__p) {
 }
 
 void* ffly_queue_front(struct ffly_queue *__queue) {
-	return (void*)((mdl_u8_t*)(*(__queue->p+(__queue->begin_off>>5)))+((__queue->begin_off-((__queue->begin_off>>5)*QUEUE_PAGE_SIZE))*__queue->blk_size));}
+	return (void*)((mdl_u8_t*)(*(__queue->p+(__queue->top>>QUEUE_PAGE_SHIFT)))+((__queue->top-((__queue->top>>QUEUE_PAGE_SHIFT)*QUEUE_PAGE_SIZE))*__queue->blk_size));}
 void* ffly_queue_back(struct ffly_queue *__queue) {
-	return (void*)((mdl_u8_t*)(*(__queue->p+(__queue->end_off>>5)))+(((__queue->end_off-((__queue->end_off>>5)*QUEUE_PAGE_SIZE))-1)*__queue->blk_size));}
+	return (void*)((mdl_u8_t*)(*(__queue->p+(__queue->end>>QUEUE_PAGE_SHIFT)))+(((__queue->end-((__queue->end>>QUEUE_PAGE_SHIFT)*QUEUE_PAGE_SIZE))-1)*__queue->blk_size));}

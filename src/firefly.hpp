@@ -3,7 +3,7 @@
 # include "types/err_t.h"
 # include "types/bool_t.h"
 # ifdef __ffly_client
-#	include "system/event.hpp"
+#	include "system/event.h"
 #	include "system/event_field.h"
 # endif
 # include "act.h"
@@ -19,7 +19,7 @@ types::err_t de_init();
 
 # ifdef __ffly_client
 types::bool_t poll_event(types::event_t*& __event);
-void event_free(ffly_client *__ffc, types::event_t* __event);
+void free_event(ffly_client *__ffc, types::event_t* __event);
 # endif
 }
 }
