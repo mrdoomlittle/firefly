@@ -1,12 +1,8 @@
-make mem_ncpy
-make mem_dupe
-make mem_cmp
-make find
-
+make all
 
 clear
 echo "------------ test:0 ------------"
-./mem_ncpy
+./mem_cpy
 
 echo "\n------------ test:1 ------------"
 ./mem_dupe

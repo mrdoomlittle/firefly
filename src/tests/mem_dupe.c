@@ -1,6 +1,7 @@
 # include "../data/mem_dupe.h"
 # include "../memory/mem_free.h"
 # include <time.h>
+# include <mdlint.h>
 # define max 64*64
 
 void test(mdl_uint_t __bc) {
@@ -23,11 +24,13 @@ void test(mdl_uint_t __bc) {
 
 	printf("mem_dupe, time taken: %lfns, bc: %u.\n", (double)ns/(double)c, __bc);
 }
-
+# include "../system/io.h"
 int main(void) {
+	ffly_io_init();
 	mdl_uint_t o = 1;
 	while(o != max*2) {
 		test(o);
 		o*=2;
 	}
+	ffly_io_closeup();
 }

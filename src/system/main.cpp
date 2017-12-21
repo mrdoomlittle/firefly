@@ -47,10 +47,11 @@ int main() {
 	err_t err;
 	ffly_io_init();
 
+/*
 	set<int> ids;
 
 	mdl_uint_t i = 0;
-	while(i < 20) {
+	while(i < 200) {
 		ids.insert(i);
 		i++;
 	}
@@ -59,12 +60,13 @@ int main() {
 	ids.erase(id);
 
 	i = 0;
-	while(i < 20) {
+	while(i < 200) {
 		set<int>::iterator itr = ids.find(i, err);
 		if (_ok(err))
 			ffly_printf("%u\n", *itr);
 		i++;
 	}
+*/
 /* 
 	vec<int> v(VEC_BLK_CHAIN);
 	v.resize(20);

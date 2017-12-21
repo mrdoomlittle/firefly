@@ -10,6 +10,7 @@
 # define VEC_BLK_USED 0x1
 # define VEC_BLK_FREE 0x2
 # define is_flag(__vec, __flag) ffly_is_flag(__vec->flags, __flag)
+# define is_set(__v) (__v&0x1)
 ffly_off_t ffly_vec_off(struct ffly_vec *__vec, void *__p) {
 	return (mdl_u8_t*)__p-(mdl_u8_t*)__vec->p;
 }
@@ -17,14 +18,14 @@ ffly_off_t ffly_vec_off(struct ffly_vec *__vec, void *__p) {
 mdl_uint_t ffly_vec_blk_off(struct ffly_vec *__vec, void *__p) {
 	ffly_off_t off = ffly_vec_off(__vec, __p);
 	if (is_flag(__vec, VEC_BLK_CHAIN))
-		return (off-sizeof(struct ffly_vec_chain))/__vec->blk_size;
+		return (off-sizeof(struct ffly_vec_blkd))/__vec->blk_size;
 	return off/__vec->blk_size;
 }
 
 void* ffly_vec_begin(struct ffly_vec *__vec) {
 	void *p = __vec->p;
 	if (is_flag(__vec, VEC_BLK_CHAIN))
-		p = (mdl_u8_t*)p+sizeof(struct ffly_vec_chain);
+		p = (mdl_u8_t*)p+sizeof(struct ffly_vec_blkd);
 	return p;
 }
 
@@ -32,7 +33,7 @@ void* ffly_vec_end(struct ffly_vec *__vec) {
 	void *p;
 	p = (void*)((mdl_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size));
 	if (is_flag(__vec, VEC_BLK_CHAIN))
-		p = (mdl_u8_t*)p+sizeof(struct ffly_vec_chain);
+		p = (mdl_u8_t*)p+sizeof(struct ffly_vec_blkd);
 	return p;
 }
 
@@ -42,7 +43,7 @@ ffly_err_t ffly_vec_init(struct ffly_vec *__vec, ffly_size_t __blk_size) {
 
 	__vec->blk_size = __blk_size;
 	if (is_flag(__vec, VEC_BLK_CHAIN))
-		__vec->blk_size+= sizeof(struct ffly_vec_chain);
+		__vec->blk_size+= sizeof(struct ffly_vec_blkd);
 
 	if (is_flag(__vec, VEC_AUTO_RESIZE)) {
 		if ((__vec->p = __ffly_mem_alloc((++__vec->page_c)*(VEC_PAGE_SIZE*__vec->blk_size))) == NULL) {
@@ -51,14 +52,14 @@ ffly_err_t ffly_vec_init(struct ffly_vec *__vec, ffly_size_t __blk_size) {
 		}
 	}
 
-	__vec->first_blk = 0;
-	__vec->last_blk = 0;
+	__vec->top = 0;
+	__vec->end = 0;
 	__vec->off = 0;
 	__vec->size = 0;
 	if (is_flag(__vec, VEC_BLK_CHAIN)) {
 		__vec->uu_blks = (struct ffly_vec*)__ffly_mem_alloc(sizeof(struct ffly_vec));
 		__vec->uu_blks->flags = VEC_AUTO_RESIZE;
-		if (ffly_vec_init(__vec->uu_blks, sizeof(mdl_uint_t*)) != FFLY_SUCCESS) {
+		if (ffly_vec_init(__vec->uu_blks, sizeof(ffly_off_t)) != FFLY_SUCCESS) {
 			ffly_fprintf(ffly_err, "vec: failed to init uu_blks->\n");
 			return FFLY_FAILURE;
 		}
@@ -69,79 +70,80 @@ ffly_err_t ffly_vec_init(struct ffly_vec *__vec, ffly_size_t __blk_size) {
 
 void ffly_vec_itr(struct ffly_vec *__vec, void **__p, mdl_u8_t __dir, mdl_uint_t __ia) {
 	while(__ia != 0) {
-		struct ffly_vec_chain *blk_chain = (struct ffly_vec_chain*)(((mdl_u8_t*)*__p)-sizeof(struct ffly_vec_chain));
+		struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)(((mdl_u8_t*)*__p)-sizeof(struct ffly_vec_blkd));
 		if (__dir == VEC_ITR_FD) {
-			if (!(blk_chain->below&0x1)) {*__p = NULL;return;}
-			*__p = (void*)(((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_chain))+((blk_chain->below>>1)*__vec->blk_size));
+			if (!is_set(blk->next)) {*__p = NULL;return;}
+			*__p = (void*)(((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_blkd))+((blk->next>>1)*__vec->blk_size));
 		} else if (__dir == VEC_ITR_BK) {
-			if (!(blk_chain->above&0x1)) {*__p = NULL;return;}
-			*__p = (void*)(((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_chain))+((blk_chain->above>>1)*__vec->blk_size));
+			if (!is_set(blk->prev)) {*__p = NULL;return;}
+			*__p = (void*)(((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_blkd))+((blk->prev>>1)*__vec->blk_size));
 		}
 		__ia--;
 	}
 }
 
 void* ffly_vec_rbegin(struct ffly_vec *__vec) {
-	void *itr = (void*)((mdl_u8_t*)ffly_vec_begin(__vec)-sizeof(struct ffly_vec_chain));
-	while(ffly_is_flag(((struct ffly_vec_chain*)itr)->flags, VEC_BLK_USED))
+	void *itr = (void*)((mdl_u8_t*)ffly_vec_begin(__vec)-sizeof(struct ffly_vec_blkd));
+	while(ffly_is_flag(((struct ffly_vec_blkd*)itr)->flags, VEC_BLK_USED))
 		itr = (mdl_u8_t*)itr+__vec->blk_size;
-	return (void*)((mdl_u8_t*)itr+sizeof(struct ffly_vec_chain));
+	return (void*)((mdl_u8_t*)itr+sizeof(struct ffly_vec_blkd));
 }
 
 void* ffly_vec_rend(struct ffly_vec *__vec) {
-	void *itr = (void*)((mdl_u8_t*)ffly_vec_end(__vec)-sizeof(struct ffly_vec_chain));
-	while(ffly_is_flag(((struct ffly_vec_chain*)itr)->flags, VEC_BLK_USED))
+	void *itr = (void*)((mdl_u8_t*)ffly_vec_end(__vec)-sizeof(struct ffly_vec_blkd));
+	while(ffly_is_flag(((struct ffly_vec_blkd*)itr)->flags, VEC_BLK_USED))
 		itr = (mdl_u8_t*)itr-__vec->blk_size;
-	return (void*)((mdl_u8_t*)itr+sizeof(struct ffly_vec_chain));
+	return (void*)((mdl_u8_t*)itr+sizeof(struct ffly_vec_blkd));
 }
 
 void* ffly_vec_first(struct ffly_vec *__vec) {
-	return (void*)((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_chain)+((__vec->first_blk>>1)*__vec->blk_size));}
+	return (void*)((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_blkd)+((__vec->top>>1)*__vec->blk_size));}
 
 void* ffly_vec_last(struct ffly_vec *__vec) {
-	return (void*)((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_chain)+((__vec->last_blk>>1)*__vec->blk_size));}
+	return (void*)((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_blkd)+((__vec->end>>1)*__vec->blk_size));}
+
+void ffly_vec_dechain(struct ffly_vec *__vec, struct ffly_vec_blkd *__blk) {
+	struct ffly_vec_blkd *prev = (struct ffly_vec_blkd*)((mdl_u8_t*)__vec->p+((__blk->prev>>1)*__vec->blk_size));
+	struct ffly_vec_blkd *next = (struct ffly_vec_blkd*)((mdl_u8_t*)__vec->p+((__blk->next>>1)*__vec->blk_size));
+	if (is_set(__vec->top)) {
+	if ((mdl_u8_t*)__blk-(mdl_u8_t*)__vec->p == (__vec->top>>1)*__vec->blk_size)
+		__vec->top = ((ffly_vec_off(__vec, (void*)next)/__vec->blk_size)<<1)|0x1;
+	}
+
+	if (is_set(__vec->end)) {
+	if ((mdl_u8_t*)__blk-(mdl_u8_t*)__vec->p == (__vec->end>>1)*__vec->blk_size)
+		__vec->end = ((ffly_vec_off(__vec, (void*)prev)/__vec->blk_size)<<1)|0x1;
+	}
+
+	ffly_printf("%u-%u\n", __blk->prev&0x1, __blk->next&0x1);
+
+	if (is_set(__blk->prev)) {
+		if (is_set(__blk->next))
+			prev->next = ((ffly_vec_off(__vec, (void*)next)/__vec->blk_size)<<1)|0x1;
+		else
+			prev->next = 0;
+	}
+
+	if (is_set(__blk->next)) {
+		if (is_set(__blk->prev))
+			next->prev = ((ffly_vec_off(__vec, (void*)prev)/__vec->blk_size)<<1)|0x1;
+		else
+			next->prev = 0;
+	}
+}
 
 void ffly_vec_del(struct ffly_vec *__vec, void *__p) {
 	__vec->size--;
-	struct ffly_vec_chain *blk_chain = (struct ffly_vec_chain*)((mdl_u8_t*)__p-sizeof(struct ffly_vec_chain));
+	struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)((mdl_u8_t*)__p-sizeof(struct ffly_vec_blkd));
 
-	struct ffly_vec_chain *above = (struct ffly_vec_chain*)((mdl_u8_t*)__vec->p+((blk_chain->above>>1)*__vec->blk_size));
-	struct ffly_vec_chain *below = (struct ffly_vec_chain*)((mdl_u8_t*)__vec->p+((blk_chain->below>>1)*__vec->blk_size));
+	ffly_rm_flag(&blk->flags, VEC_BLK_USED);
+	ffly_add_flag(&blk->flags, VEC_BLK_FREE, 0);
 
-	if (blk_chain->above&0x1) {
-		while(ffly_is_flag(above->flags, VEC_BLK_FREE)) {
-			above = (struct ffly_vec_chain*)((mdl_u8_t*)__vec->p+((above->above>>1)*__vec->blk_size));
-			if (!(above->above&0x1)) break;
-		}
-	}
+	ffly_vec_dechain(__vec, blk);
 
-	if (blk_chain->below&0x1) {
-		while(ffly_is_flag(below->flags, VEC_BLK_FREE)) {
-			below = (struct ffly_vec_chain*)((mdl_u8_t*)__vec->p+((below->below>>1)*__vec->blk_size));
-			if (!(below->below&0x1)) break;
-		}
-	}
-
-	if ((mdl_u8_t*)blk_chain-(mdl_u8_t*)__vec->p == (__vec->first_blk>>1)*__vec->blk_size)
-		__vec->first_blk = ((((mdl_u8_t*)below-(mdl_u8_t*)__vec->p)/__vec->blk_size)<<1)|1;
-
-	ffly_add_flag(&blk_chain->flags, VEC_BLK_FREE, 0);
-
-	if (!(blk_chain->above&0x1) || (!(blk_chain->above&0x1) && !(blk_chain->below&0x1)))
-		__vec->last_blk = 0;
-	if (!(blk_chain->below&0x1) && blk_chain->above&0x1) {
-		__vec->last_blk = ((((mdl_u8_t*)above-(mdl_u8_t*)__vec->p)/__vec->blk_size)<<1)|1;
-		above->below = 0;
-	}
-
-	if (blk_chain->above&0x1 && blk_chain->below&0x1) {
-		above->below = ((((mdl_u8_t*)below-(mdl_u8_t*)__vec->p)/__vec->blk_size)<<1)|1;
-		below->above = ((((mdl_u8_t*)above-(mdl_u8_t*)__vec->p)/__vec->blk_size)<<1)|1;
-	}
-
-	mdl_uint_t *p;
+	ffly_off_t *p;
 	ffly_vec_push_back(__vec->uu_blks, (void**)&p);
-	*p = ((mdl_u8_t*)blk_chain-(mdl_u8_t*)__vec->p)/__vec->blk_size;
+	*p = ((mdl_u8_t*)blk-(mdl_u8_t*)__vec->p)/__vec->blk_size;
 }
 
 ffly_err_t ffly_vec_push_back(struct ffly_vec *__vec, void **__p) {
@@ -150,16 +152,16 @@ ffly_err_t ffly_vec_push_back(struct ffly_vec *__vec, void **__p) {
 		if (ffly_vec_size(__vec->uu_blks) > 0) {
 			ffly_off_t off;
 			ffly_vec_pop_back(__vec->uu_blks, (void*)&off);
-			struct ffly_vec_chain *blk_chain = (struct ffly_vec_chain*)((mdl_u8_t*)__vec->p+(off*__vec->blk_size));
-			*blk_chain = (struct ffly_vec_chain) {
+			struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)((mdl_u8_t*)__vec->p+(off*__vec->blk_size));
+			*blk = (struct ffly_vec_blkd) {
 				.flags = VEC_BLK_USED,
-				.above = __vec->last_blk,
-				.below = 0
+				.prev = __vec->end,
+				.next = 0
 			};
 
-			((struct ffly_vec_chain*)((mdl_u8_t*)__vec->p+((__vec->last_blk>>1)*__vec->blk_size)))->below = (off<<1)|1;
-			*__p = (void*)((mdl_u8_t*)blk_chain+sizeof(struct ffly_vec_chain));
-			__vec->last_blk = (off<<1)|1;
+			((struct ffly_vec_blkd*)((mdl_u8_t*)__vec->p+((__vec->end>>1)*__vec->blk_size)))->next = (off<<1)|1;
+			*__p = (void*)((mdl_u8_t*)blk+sizeof(struct ffly_vec_blkd));
+			__vec->end = (off<<1)|1;
 			return FFLY_SUCCESS;
 		}
 	}
@@ -176,20 +178,20 @@ ffly_err_t ffly_vec_push_back(struct ffly_vec *__vec, void **__p) {
 	*__p = (void*)((mdl_u8_t*)__vec->p+(__vec->off*__vec->blk_size));
 
 	if (is_flag(__vec, VEC_BLK_CHAIN)) {
-		struct ffly_vec_chain *blk_chain = (struct ffly_vec_chain*)((mdl_u8_t*)*__p);
-		*__p = (void*)(((mdl_u8_t*)*__p)+sizeof(struct ffly_vec_chain));
-		blk_chain->above = blk_chain->below = 0;
-		blk_chain->flags = VEC_BLK_USED;
+		struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)((mdl_u8_t*)*__p);
+		*__p = (void*)(((mdl_u8_t*)*__p)+sizeof(struct ffly_vec_blkd));
+		blk->prev = blk->next = 0;
+		blk->flags = VEC_BLK_USED;
 
-		if (__vec->last_blk&0x1) {
-			blk_chain->above = __vec->last_blk;
+		if (is_set(__vec->end)) {
+			blk->prev = __vec->end;
 
-			((struct ffly_vec_chain*)((mdl_u8_t*)__vec->p+((__vec->last_blk>>1)*__vec->blk_size)))->below = (__vec->off<<1)|1;
+			((struct ffly_vec_blkd*)((mdl_u8_t*)__vec->p+((__vec->end>>1)*__vec->blk_size)))->next = (__vec->off<<1)|1;
 		}
 
-		__vec->last_blk = (__vec->off<<1)|1;
-		if (!(__vec->first_blk&0x1))
-			__vec->first_blk = __vec->last_blk;
+		__vec->end = (__vec->off<<1)|1;
+		if (!is_set(__vec->top))
+			__vec->top = __vec->end;
 	}
 
 	__vec->off++;
@@ -207,12 +209,17 @@ ffly_err_t ffly_vec_pop_back(struct ffly_vec *__vec, void *__p) {
 		}
 	}
 
-	if (is_flag(__vec, VEC_BLK_CHAIN))
-		__p = (void*)((mdl_u8_t*)__p+sizeof(struct ffly_vec_chain));
-
-	// dont change - we cant return the ptr because if a resize takes place the pointer will be invalid
-	ffly_mem_cpy(__p, (void*)((mdl_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size)), __vec->blk_size);
-	__vec->off--;
+	if (is_flag(__vec, VEC_BLK_CHAIN)) {
+		void *last = ffly_vec_last(__vec);
+		struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)((mdl_u8_t*)last-sizeof(struct ffly_vec_blkd));
+		ffly_mem_cpy(__p, last, __vec->blk_size);
+		ffly_vec_del(__vec, last);
+		ffly_printf("-->%p\n", last);
+	} else {
+		// dont change - we cant return the ptr because if a resize takes place the pointer will be invalid
+		ffly_mem_cpy(__p, (void*)((mdl_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size)), __vec->blk_size);
+		__vec->off--;
+	}
 	return FFLY_SUCCESS;
 }
 

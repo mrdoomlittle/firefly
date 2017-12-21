@@ -1,20 +1,40 @@
 mem_cpy: clean
-	gcc -c -std=c11 ../data/mem_cpy.c
-	gcc -std=gnu11 -o mem_cpy mem_cpy.c mem_cpy.o
-mem_dupe: clean
-	gcc -c -std=c11 ../system/errno.c
 	gcc -c -std=c11 ../system/io.c
+	gcc -c -std=c11 ../data/mem_cpy.c
+	nasm -f elf64 -o mutex.o ../system/asm/mutex.asm
+	gcc -std=gnu11 -o mem_cpy mem_cpy.c mem_cpy.o mutex.o io.o
+mem_dupe: clean
+	gcc -c -std=c11 ../system/io.c
+	gcc -c -std=c11 ../system/errno.c
 	gcc -c -std=c11 ../data/mem_cpy.c
 	gcc -c -std=c11 ../data/mem_dupe.c
 	gcc -c -std=c11 ../memory/mem_alloc.c
 	gcc -c -std=c11 ../memory/mem_free.c
-	gcc -std=gnu11 -o mem_dupe mem_dupe.c errno.o io.o mem_cpy.o mem_dupe.o mem_alloc.o mem_free.o
+	nasm -f elf64 -o mutex.o ../system/asm/mutex.asm
+	gcc -std=gnu11 -o mem_dupe mem_dupe.c errno.o mutex.o io.o mem_cpy.o mem_dupe.o mem_alloc.o mem_free.o
 mem_cmp: clean
+	gcc -c -std=c11 ../system/io.c
 	gcc -c -std=c11 ../data/mem_cmp.c
-	gcc -std=gnu11 -o mem_cmp mem_cmp.o mem_cmp.c
+	nasm -f elf64 -o mutex.o ../system/asm/mutex.asm
+	gcc -std=gnu11 -o mem_cmp mem_cmp.o mem_cmp.c io.o mutex.o
 find: clean
+	nasm -f elf64 -o mutex.o ../system/asm/mutex.asm
 	gcc -c -std=c11 ../data/mem_cmp.c
 	gcc -c -std=c11 ../data/find.c
-	gcc -std=gnu11 -o find find.c find.o mem_cmp.o
+	gcc -c -std=c11 ../system/io.c
+	gcc -std=gnu11 -o find find.c find.o mem_cmp.o io.o mutex.o
+
+vec: clean
+	nasm -f elf64 -o mutex.o ../system/asm/mutex.asm
+	gcc -c -std=c11 ../system/io.c
+	gcc -c -std=c11 ../system/errno.c
+	gcc -c -std=c11 ../data/mem_cpy.c
+	gcc -c -std=c11 ../memory/mem_alloc.c
+	gcc -c -std=c11 ../memory/mem_free.c
+	gcc -c -std=c11 ../memory/mem_realloc.c
+	gcc -c -std=c11 ../system/flags.c
+	gcc -c -std=c11 ../system/vec.c
+	gcc -std=gnu11 -o vec vec.c io.o flags.o vec.o errno.o mem_cpy.o mutex.o mem_alloc.o mem_free.o mem_realloc.o
+all: mem_cpy mem_dupe mem_cmp find vec
 clean:
 	rm -f *.o mem_cpy mem_dupe mem_cmp find

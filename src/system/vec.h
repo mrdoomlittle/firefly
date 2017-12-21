@@ -14,13 +14,13 @@
 # include "err.h"
 # include "../types/off_t.h"
 # include "../types/size_t.h"
-struct ffly_vec_chain {
+struct ffly_vec_blkd {
 	ffly_flag_t flags;
-	ffly_off_t above, below;
+	ffly_off_t prev, next;
 };
 
 struct ffly_vec {
-	ffly_off_t last_blk, first_blk;
+	ffly_off_t top, end;
 	void *p;
 	ffly_flag_t flags;
 	ffly_off_t off;
