@@ -4,13 +4,13 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-mdl_uint_t ffly_str_len(char const*);
+mdl_uint_t ffly_str_len(char*);
 # ifdef __cplusplus
 }
 namespace mdl {
 namespace firefly {
 namespace data {
-static uint_t(*str_len)(char const*) = &ffly_str_len;
+static uint_t(*str_len)(char*) = &ffly_str_len;
 }
 }
 }

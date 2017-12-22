@@ -4,7 +4,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-mdl_i8_t ffly_str_cmp(char const*, char const*);
+mdl_i8_t ffly_str_cmp(char*, char*);
 # ifdef __cplusplus
 }
 # endif

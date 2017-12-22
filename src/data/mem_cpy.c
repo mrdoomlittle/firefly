@@ -7,7 +7,7 @@
 #	include "../memory/mem_free.h"
 #	include "../system/atomic.h"
 # endif
-void static _ffly_mem_cpy(void const *__dst, void const *__src, mdl_uint_t __bc) {
+void static _ffly_mem_cpy(void *__dst, void *__src, mdl_uint_t __bc) {
 	if (__bc == 1) {
 		*(mdl_u8_t*)__dst = *(mdl_u8_t*)__src;
 		return;
@@ -54,7 +54,7 @@ void static* mem_cpy_proxy(void *__arg_p) {
 # define MIN_SLICE_C 2
 # define SLICE_SHIFT 20
 # endif
-ffly_err_t ffly_mem_cpy(void const *__dst, void const *__src, mdl_uint_t __bc) {
+ffly_err_t ffly_mem_cpy(void *__dst, void *__src, mdl_uint_t __bc) {
 # ifdef __WITH_TASK_POOL
 	if (__bc>>SLICE_SHIFT >= MIN_SLICE_C && ffly_is_task_pool_inited(&__task_pool__)) {
 		mdl_uint_t slice_c = __bc>>SLICE_SHIFT;

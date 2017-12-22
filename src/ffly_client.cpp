@@ -25,7 +25,6 @@ void mdl::ffly_client::shutdown() {
 mdl::firefly::types::err_t mdl::ffly_client::init(u16_t __wd_width, u16_t __wd_height, char const *__wd_title) {
 	cudaDeviceReset();
 	firefly::types::err_t err;
-	firefly::system::io::fprintf(ffly_log, "initing engine.\n");
 	if (_err(err = firefly::init())) {
 		firefly::system::io::fprintf(ffly_err, "failed to init engine.\n");
 		return err;
@@ -56,8 +55,7 @@ mdl::firefly::types::err_t mdl::ffly_client::de_init() {
 	if (_err(err = firefly::de_init())) {
 		firefly::system::io::fprintf(ffly_err, "failed to de-init engine.\n");
 		return err;
-	} /*else
-		firefly::system::io::fprintf(ffly_log, "no problem occurred while de-inited engine.\n");*/
+	}
 	return FFLY_SUCCESS;
 }
 
@@ -99,6 +97,9 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(ffly_err_t(*__extern_loop)(i8
 				switch(event->kind) {
 					case _ffly_wd_ek_closed:
 						firefly::system::io::fprintf(ffly_log, "got event to close window.\n");
+					break;
+					case _ffly_wd_ek_key_press:
+						firefly::system::io::fprintf(ffly_log, "got key press event from window.\n");
 					break;
 					default:
 						firefly::system::io::fprintf(ffly_log, "window event hasent been implemented.\n");

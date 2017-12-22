@@ -3,7 +3,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-char* ffly_str_dupe(char const*);
+char* ffly_str_dupe(char*);
 # ifdef __cplusplus
 }
 # endif

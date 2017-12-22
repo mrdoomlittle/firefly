@@ -4,16 +4,16 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-void ffly_mem_swp(void const*, void const*, mdl_uint_t);
+void ffly_mem_swp(void*, void*, mdl_uint_t);
 # ifdef __cplusplus
 }
 namespace mdl {
 namespace firefly {
 namespace data {
 template<typename _T>
-void static __inline__ mem_swp(void const*__p1, void const*__p2) {
+void static __inline__ mem_swp(void*__p1, void*__p2) {
 	ffly_mem_swp(__p1, __p2, sizeof(_T));}
-static void(*mem_swpn)(void const*, void const*, mdl::uint_t) = &ffly_mem_swp;
+static void(*mem_swpn)(void*, void*, mdl::uint_t) = &ffly_mem_swp;
 }
 }
 }

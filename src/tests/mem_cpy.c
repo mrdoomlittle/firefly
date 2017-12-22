@@ -11,7 +11,6 @@ void test(mdl_uint_t __bc) {
 
 	mdl_uint_t c = 200, itr = 0;
 	double time = 0.0;
-
 	while(itr != c) {
 		struct timespec begin, end;
 		clock_gettime(CLOCK_MONOTONIC, &begin);

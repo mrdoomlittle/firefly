@@ -13,7 +13,7 @@ void test(mdl_uint_t __bc) {
 		clock_gettime(CLOCK_MONOTONIC, &begin);
 
 		void *p;
-		ffly_mem_dupe((void const**)&p, src, __bc);
+		ffly_mem_dupe(&p, src, __bc);
 
 		clock_gettime(CLOCK_MONOTONIC, &end);
 		__ffly_mem_free(p);
