@@ -9,7 +9,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __width, u
 	this->height = __height;
 
 	system::io::fprintf(ffly_log, "window, width: %u, height: %u, title: %s\n", __width, __height, __title);
-	ffly_mem_dupe(reinterpret_cast<void**>(const_cast<char**>(&this->title)), const_cast<char*>(__title), ffly_str_len(const_cast<char*>(__title)));
+	ffly_mem_dupe(const_cast<void const**>(reinterpret_cast<void**>(const_cast<char**>(&this->title))), const_cast<char*>(__title), ffly_str_len(const_cast<char*>(__title)));
 	ffly_wd_init(&this->raw, __width, __height, this->title);
 	return FFLY_SUCCESS;
 }
