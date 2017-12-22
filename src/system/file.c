@@ -80,7 +80,6 @@ ffly_err_t ffly_fwrite(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
 	return FFLY_SUCCESS;
 }
 
-
 ffly_err_t ffly_fread(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
 	if (!valid_fd(__f->d)) {
 		ffly_fprintf(ffly_err, "file descriptor not valid.\n");

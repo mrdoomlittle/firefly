@@ -2,115 +2,130 @@
 # include "system/io.h"
 # include "system/errno.h"
 # include <mdl/str_cmb.h>
-# include <sys/types.h>
-# include <fcntl.h>
-# include <sys/stat.h>
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "types/off_t.h"
-# ifdef __USING_PULSE_AUDIO
+# include "system/err.h"
+# include "system/file.h"
+# ifdef __ffly_use_pulse_audio
 struct ffly_pulse __pulse__;
 # endif
-ffly_err_t ffly_ld_aud_file(char *__dir, char *__name, ffly_aud_fformat_t __format, ffly_byte_t **__p, ffly_size_t *__size) {
+ffly_err_t ffly_ld_aud(char *__dir, char *__name, ffly_aud_fformat_t __format, ffly_audiop __audio) {
+	ffly_size_t header_size;
 	char *ext;
 	switch(__format) {
 		case _ffly_audf_wav:
-				ext = ".wav";
-		break;
-		case _ffly_audf_mp3:
-				ext = ".mp3";
+			ext = ".wav";
+			header_size = 44;
 		break;
 		default:
 			return FFLY_FAILURE;
 	}
 
-	char *fpth = mdl_str_cmb(__dir, mdl_str_cmb(__name, ext, 0), _mdl_stc_free_rhs);
-	int fd;
-	if ((fd = open(fpth, O_RDONLY)) < 0) {
-		ffly_fprintf(ffly_err, "ffly_audio: failed to open audio file at '%s'.\n", fpth);
-		return FFLY_FAILURE;
+	char *path = mdl_str_cmb(__dir, mdl_str_cmb(__name, ext, 0), _mdl_stc_free_rhs);
+	ffly_err_t err;
+	FF_FILE *f = ffly_fopen(path, FF_O_RDONLY, 0, &err);
+	if (_err(err)) {
+		ffly_fprintf(ffly_err, "ffly_audio: failed to open audio file at '%s'.\n", path);
+		return err;
 	}
 
-	struct stat st;
-	if (stat(fpth, &st) < 0) {
-		ffly_fprintf(ffly_err, "ffly_audio: failed to stat audio file at '%s'.\n", fpth);
-		close(fd);
-		return FFLY_FAILURE;
+	struct ffly_stat st;
+	if (_err(err = ffly_fstat(path, &st))) {
+		ffly_fprintf(ffly_err, "ffly_audio: failed to stat audio file at '%s'.\n", path);
+		ffly_fclose(f);
+		return err;
 	}
 
-	__ffly_mem_free(fpth);
+	__ffly_mem_free(path);
+	ffly_byte_t *p = (ffly_byte_t*)__ffly_mem_alloc(header_size);
+	ffly_fread(f, p, header_size);
 
-	*__size = st.st_size;
-	*__p = (ffly_byte_t*)__ffly_mem_alloc(st.st_size);
-	read(fd, *__p, st.st_size);
-	close(fd);
+	switch(__format) {
+		case _ffly_audf_wav: {
+			ffly_wav_spec_t spec;
+			ffly_extract_wav_spec(&spec, p);
+			__audio->spec.rate = spec.sample_rate;
+			__audio->spec.chn_c = spec.chn_c;
+			switch(spec.bit_depth) {
+				case 16:
+					__audio->spec.format = _ffly_af_s16_le;
+				break;
+			}
+		}
+	}
+	__ffly_mem_free(p);
+
+	__audio->p = (ffly_byte_t*)__ffly_mem_alloc(__audio->size = (st.size-header_size));
+	ffly_fseek(f, header_size, FF_SEEK_SET);
+	ffly_fread(f, __audio->p, __audio->size);
+	ffly_fclose(f);
 	return FFLY_SUCCESS;
 }
 
 # include "data/mem_set.h"
-ffly_wav_spec_t ffly_extract_wav_spec(ffly_byte_t *__p) {
-	ffly_wav_spec_t wav_spec;
-	ffly_mem_set(&wav_spec, 0, sizeof(ffly_wav_spec_t));
+void ffly_extract_wav_spec(ffly_wav_spec_t *__spec, ffly_byte_t *__p) {
+	ffly_mem_set(__spec, 0, sizeof(ffly_wav_spec_t));
 
-	wav_spec.cnk_id[0] = *(__p++);
-	wav_spec.cnk_id[1] = *(__p++);
-	wav_spec.cnk_id[2] = *(__p++);
-	wav_spec.cnk_id[3] = *(__p++);
+	__spec->cnk_id[0] = *(__p++);
+	__spec->cnk_id[1] = *(__p++);
+	__spec->cnk_id[2] = *(__p++);
+	__spec->cnk_id[3] = *(__p++);
 
-	wav_spec.cnk_size |= (wav_spec.cnk_size & 0xFF) | *(__p++);
-	wav_spec.cnk_size |= (wav_spec.cnk_size & 0xFF) | *(__p++) << 8;
-	wav_spec.cnk_size |= (wav_spec.cnk_size & 0xFF) | *(__p++) << 16;
-	wav_spec.cnk_size |= (wav_spec.cnk_size & 0xFF) | *(__p++) << 24;
+	__spec->cnk_size |= (__spec->cnk_size&0xFF) | *(__p++);
+	__spec->cnk_size |= (__spec->cnk_size&0xFF) | *(__p++)<<8;
+	__spec->cnk_size |= (__spec->cnk_size&0xFF) | *(__p++)<<16;
+	__spec->cnk_size |= (__spec->cnk_size&0xFF) | *(__p++)<<24;
 
-	wav_spec.format[0] = *(__p++);
-	wav_spec.format[1] = *(__p++);
-	wav_spec.format[2] = *(__p++);
-	wav_spec.format[3] = *(__p++);
+	__spec->format[0] = *(__p++);
+	__spec->format[1] = *(__p++);
+	__spec->format[2] = *(__p++);
+	__spec->format[3] = *(__p++);
 
-	wav_spec.sub_cnk1_id[0] = *(__p++);
-	wav_spec.sub_cnk1_id[1] = *(__p++);
-	wav_spec.sub_cnk1_id[2] = *(__p++);
-	wav_spec.sub_cnk1_id[3] = *(__p++);
+	__spec->sub_cnk1_id[0] = *(__p++);
+	__spec->sub_cnk1_id[1] = *(__p++);
+	__spec->sub_cnk1_id[2] = *(__p++);
+	__spec->sub_cnk1_id[3] = *(__p++);
 
-	wav_spec.sub_cnk1_size |= (wav_spec.sub_cnk1_size & 0xFF) | *(__p++);
-	wav_spec.sub_cnk1_size |= (wav_spec.sub_cnk1_size & 0xFF) | *(__p++) << 8;
-	wav_spec.sub_cnk1_size |= (wav_spec.sub_cnk1_size & 0xFF) | *(__p++) << 16;
-	wav_spec.sub_cnk1_size |= (wav_spec.sub_cnk1_size & 0xFF) | *(__p++) << 24;
+	__spec->sub_cnk1_size |= (__spec->sub_cnk1_size&0xFF) | *(__p++);
+	__spec->sub_cnk1_size |= (__spec->sub_cnk1_size&0xFF) | *(__p++)<<8;
+	__spec->sub_cnk1_size |= (__spec->sub_cnk1_size&0xFF) | *(__p++)<<16;
+	__spec->sub_cnk1_size |= (__spec->sub_cnk1_size&0xFF) | *(__p++)<<24;
 
-	wav_spec.aud_format |= (wav_spec.aud_format & 0xFF) | *(__p++);
-	wav_spec.aud_format |= (wav_spec.aud_format & 0xFF) | *(__p++) << 8;
+	__spec->aud_format |= (__spec->aud_format&0xFF) | *(__p++);
+	__spec->aud_format |= (__spec->aud_format&0xFF) | *(__p++)<<8;
 
-	wav_spec.chn_c |= (wav_spec.chn_c & 0xFF) | *(__p++);
-	wav_spec.chn_c |= (wav_spec.chn_c & 0xFF) | *(__p++) << 8;
+	__spec->chn_c |= (__spec->chn_c&0xFF) | *(__p++);
+	__spec->chn_c |= (__spec->chn_c&0xFF) | *(__p++)<<8;
 
-	wav_spec.sample_rate |= (wav_spec.sample_rate & 0xFF) | *(__p++);
-	wav_spec.sample_rate |= (wav_spec.sample_rate & 0xFF) | *(__p++) << 8;
-	wav_spec.sample_rate |= (wav_spec.sample_rate & 0xFF) | *(__p++) << 16;
-	wav_spec.sample_rate |= (wav_spec.sample_rate & 0xFF) | *(__p++) << 24;
+	__spec->sample_rate |= (__spec->sample_rate&0xFF) | *(__p++);
+	__spec->sample_rate |= (__spec->sample_rate&0xFF) | *(__p++)<<8;
+	__spec->sample_rate |= (__spec->sample_rate&0xFF) | *(__p++)<<16;
+	__spec->sample_rate |= (__spec->sample_rate&0xFF) | *(__p++)<<24;
 
-	wav_spec.byte_rate |= (wav_spec.byte_rate & 0xFF) | *(__p++);
-	wav_spec.byte_rate |= (wav_spec.byte_rate & 0xFF) | *(__p++) << 8;
-	wav_spec.byte_rate |= (wav_spec.byte_rate & 0xFF) | *(__p++) << 16;
-	wav_spec.byte_rate |= (wav_spec.byte_rate & 0xFF) | *(__p++) << 24;
+	__spec->byte_rate |= (__spec->byte_rate&0xFF) | *(__p++);
+	__spec->byte_rate |= (__spec->byte_rate&0xFF) | *(__p++)<<8;
+	__spec->byte_rate |= (__spec->byte_rate&0xFF) | *(__p++)<<16;
+	__spec->byte_rate |= (__spec->byte_rate&0xFF) | *(__p++)<<24;
 
-	wav_spec.blk_align |= (wav_spec.blk_align & 0xFF) | *(__p++);
-	wav_spec.blk_align |= (wav_spec.blk_align & 0xFF) | *(__p++) << 8;
+	__spec->blk_align |= (__spec->blk_align&0xFF) | *(__p++);
+	__spec->blk_align |= (__spec->blk_align&0xFF) | *(__p++)<<8;
 
-	wav_spec.bit_depth |= (wav_spec.bit_depth & 0xFF) | *(__p++);
-	wav_spec.bit_depth |= (wav_spec.bit_depth & 0xFF) | *(__p++) << 8;
+	__spec->bit_depth |= (__spec->bit_depth&0xFF) | *(__p++);
+	__spec->bit_depth |= (__spec->bit_depth&0xFF) | *(__p++)<<8;
 
-	wav_spec.sub_cnk2_id[0] = *(__p++);
-	wav_spec.sub_cnk2_id[1] = *(__p++);
-	wav_spec.sub_cnk2_id[2] = *(__p++);
-	wav_spec.sub_cnk2_id[3] = *(__p++);
+	__spec->sub_cnk2_id[0] = *(__p++);
+	__spec->sub_cnk2_id[1] = *(__p++);
+	__spec->sub_cnk2_id[2] = *(__p++);
+	__spec->sub_cnk2_id[3] = *(__p++);
 
-	wav_spec.sub_cnk2_size |= (wav_spec.sub_cnk2_size & 0xFF) | *(__p++);
-	wav_spec.sub_cnk2_size |= (wav_spec.sub_cnk2_size & 0xFF) | *(__p++) << 8;
-	wav_spec.sub_cnk2_size |= (wav_spec.sub_cnk2_size & 0xFF) | *(__p++) << 16;
-	wav_spec.sub_cnk2_size |= (wav_spec.sub_cnk2_size & 0xFF) | *(__p++) << 24;
-	return wav_spec;
+	__spec->sub_cnk2_size |= (__spec->sub_cnk2_size&0xFF) | *(__p++);
+	__spec->sub_cnk2_size |= (__spec->sub_cnk2_size&0xFF) | *(__p++)<<8;
+	__spec->sub_cnk2_size |= (__spec->sub_cnk2_size&0xFF) | *(__p++)<<16;
+	__spec->sub_cnk2_size |= (__spec->sub_cnk2_size&0xFF) | *(__p++)<<24;
 }
 
+/*
 ffly_err_t ffly_aud_play(ffly_byte_t *__fp, ffly_size_t __fsize, ffly_aud_fformat_t __fformat) {
 	ffly_aud_spec_t aud_spec;
 	ffly_off_t off;
@@ -150,6 +165,7 @@ ffly_err_t ffly_aud_raw_play(ffly_byte_t *__p, ffly_size_t __size, ffly_aud_spec
 # endif
 	return FFLY_SUCCESS;
 }
+*/
 
 ffly_byte_t static *w_buff = NULL, *r_buff = NULL;
 ffly_byte_t static *wbuf_itr, *rbuf_itr;
@@ -160,7 +176,7 @@ ffly_err_t ffly_audio_init(ffly_aud_spec_t *__aud_spec) {
 
 	r_buff = (ffly_byte_t*)__ffly_mem_alloc((rbuf_size = (1<<20)));
 	rbuf_itr = r_buff;
-# ifdef __USING_PULSE_AUDIO
+# ifdef __ffly_use_pulse_audio
 	struct pa_sample_spec sample_spec;
 	switch(__aud_spec->format) {
 		case _ffly_af_s16_le:
@@ -185,7 +201,7 @@ ffly_err_t ffly_audio_de_init() {
 	__ffly_mem_free(r_buff);
 	w_buff = NULL;
 	r_buff = NULL;
-# ifdef __USING_PULSE_AUDIO
+# ifdef __ffly_use_pulse_audio
 	ffly_pulse_free(&__pulse__);
 # endif
 }
@@ -244,30 +260,33 @@ ffly_err_t ffly_aud_raw_play(char *__fdir, char*__fname, ffly_aud_fformat_t __ff
 # endif
 # endif
 }*/
+
 # include "data/mem_cpy.h"
 ffly_err_t ffly_aud_drain() {
+# ifdef __ffly_use_pulse_audio
 	ffly_pulse_write(&__pulse__, w_buff, wbuf_itr-w_buff);
 	ffly_pulse_drain(&__pulse__);
+# endif
 	wbuf_itr = w_buff;
 }
 
-ffly_err_t ffly_aud_write(ffly_byte_t *__buff, ffly_size_t __size) {
-	if ((wbuf_itr-w_buff)+__size >= wbuf_size) return FFLY_FAILURE;
+ffly_err_t ffly_aud_write(ffly_byte_t *__buff, mdl_uint_t __bc) {
+	if ((wbuf_itr-w_buff)+__bc >= wbuf_size) return FFLY_FAILURE;
 
-	ffly_err_t any_err = FFLY_SUCCESS;
-	if ((any_err = ffly_mem_cpy(wbuf_itr, __buff, __size)) == FFLY_SUCCESS)
-		wbuf_itr+=__size;
-	return any_err;
+	ffly_err_t err  = FFLY_SUCCESS;
+	if (_ok(err = ffly_mem_cpy(wbuf_itr, __buff, __bc)))
+		wbuf_itr+=__bc;
+	return err;
 }
 
-ffly_err_t ffly_aud_read(ffly_byte_t *__buff, ffly_size_t __size) {
+ffly_err_t ffly_aud_read(ffly_byte_t *__buff, mdl_uint_t __bc) {
 	ffly_byte_t static *itr = NULL;
 	if (!itr) itr = r_buff;
 
-	if ((rbuf_itr-itr)<__size) return FFLY_FAILURE;
+	if ((rbuf_itr-itr)<__bc) return FFLY_FAILURE;
 
-	ffly_err_t any_err = FFLY_SUCCESS;
-	if ((any_err = ffly_mem_cpy(__buff, itr, __size)) == FFLY_SUCCESS)
-		itr+=__size;
-	return any_err;
+	ffly_err_t err = FFLY_SUCCESS;
+	if (_ok(err = ffly_mem_cpy(__buff, itr, __bc)))
+		itr+=__bc;
+	return err;
 }

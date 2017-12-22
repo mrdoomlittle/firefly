@@ -1,0 +1,2 @@
+types::id_t add_asset(char*, char*, mdl::uint_t, mdl::uint_t, types::mode_t, types::err_t&);
+

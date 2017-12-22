@@ -3,37 +3,25 @@
 # include "system/file.h"
 # include <mdl/str_cmb.h>
 # include "graphics/image.h"
+# include "types/byte_t.h"
 char const static* asset_kind_to_str(mdl::uint_t __kind) {
 	switch(__kind) {
-		case _ffly_ak_png_file: return "png file";
-		case _ffly_ak_wav_file: return "wav file";
-		case _ffly_ak_raw_file: return "raw file";
+		case _ffly_ak_img: return "image";
+		case _ffly_ak_aud: return "audio";
+		case _ffly_ak_raw: return "raw";
 	}
 	return "unknown";
 }
 
-mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, char *__fname, uint_t __kind, types::mode_t __mode, types::err_t& __err) {
+mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__dir, char *__name, uint_t __kind, uint_t __format, types::mode_t __mode, types::err_t& __err) {
 	types::id_t id;
-	if (__kind >= _ffly_ak_png_file && __kind <=_ffly_ak_png_file)
+	if (__kind == _ffly_ak_img)
 	{
 		graphics::imagep img = static_cast<graphics::imagep>(memory::mem_alloc(sizeof(graphics::image)));
-		graphics::ld_png_file(__fdir, __fname, img);
-
+		graphics::ld_img(img, __dir, __name, __format);
 		id = this->add_asset(reinterpret_cast<types::byte_t*>(img),  __kind, __err);
-/*
-		types::_2d_dsize_t<> *dsize = (types::_2d_dsize_t<> *)memory::mem_alloc(sizeof(types::_2d_dsize_t<>));
-		types::pixmap_t pixmap;
-
-		if (graphics::load_png_file("", __fname, pixmap, *dsize) != FFLY_SUCCESS) {
-			return nullptr;
-		}
-
-		id = this->add_asset(pixmap, 0, __kind);
-
-		this->asset_info(id) = dsize;
-*/
 	}
-	else if (__kind >= _ffly_ak_wav_file && __kind <=_ffly_ak_wav_file)
+	else if (__kind >= _ffly_ak_aud)
 	{
 /*
 		types::byte_t *f;
@@ -45,7 +33,7 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, 
 			break;
 		}
 
-		if (ffly_ld_aud_file(__fdir, __fname, fformat, &f, &fsize) != FFLY_SUCCESS) {
+		if (ffly_ld_aud_file(__dir, __name, fformat, &f, &fsize) != FFLY_SUCCESS) {
 			return nullptr;
 		}
 
@@ -63,13 +51,13 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, 
 		}
 */
 	}
-	else if (__kind == _ffly_ak_raw_file) {
+	else if (__kind == _ffly_ak_raw) {
 		types::byte_t *f;
 		types::size_t size;
 
-		char *path = mdl_str_cmb(__fdir, __fname, 0x0);
+		char *path = mdl_str_cmb(__dir, __name, 0);
 		types::err_t err;
-		FF_FILE *file = ffly_fopen(path, O_RDONLY, 0, &err);
+		FF_FILE *file = ffly_fopen(path, FF_O_RDONLY, 0, &err);
 		if (_err(err)) {
 			system::io::fprintf(ffly_err, "failed to open asset file.\n");
 			return ffly_null_id;
@@ -109,7 +97,7 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::load_asset(char *__fdir, 
 		}
 	}
 # ifdef __DEBUG_ENABLED
-	system::io::fprintf(ffly_log, "asset_manager: loaded asset{id: %u, file: '%s%s', kind: %s}\n", *id, __fdir, __fname, asset_kind_to_str(__kind));
+	system::io::fprintf(ffly_log, "asset_manager: loaded asset{id: %u, file: '%s%s', kind: %s}\n", *id, __dir, __name, asset_kind_to_str(__kind));
 # endif
 	__err = FFLY_SUCCESS;
 	return id;
@@ -145,7 +133,7 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::add_asset(types::byte_t *
 
 void mdl::firefly::asset_manager::free_asset(types::id_t __id) {
 	types::asset_t& asset = this->asset_d[*__id];
-	if (asset.kind >= _ffly_ak_png_file && asset.kind <=_ffly_ak_png_file){
+	if (asset.kind == _ffly_ak_img){
 		graphics::imagep img = reinterpret_cast<graphics::imagep>(asset.data);
 		if (img->pixels != nullptr)
 			memory::mem_free(img->pixels);
@@ -208,8 +196,8 @@ mdl::firefly::types::asset_t& mdl::firefly::asset_manager::asset(types::id_t __i
 	return this->asset_d[*__id];}
 
 extern "C" {
-ffly_id_t ffly_load_asset(void *__clsp, char *__fdir, char *__fname, mdl_uint_t __kind, ffly_err_t *__err) {
-	static_cast<mdl::firefly::asset_manager*>(__clsp)->load_asset(__fdir, __fname, __kind, 0x0, *__err);
+ffly_id_t ffly_load_asset(void *__clsp, char *__dir, char *__name, mdl_uint_t __kind, mdl_uint_t __format, ffly_err_t *__err) {
+	static_cast<mdl::firefly::asset_manager*>(__clsp)->load_asset(__dir, __name, __kind, __format, 0x0, *__err);
 }
 ffly_id_t ffly_add_asset(void *__clsp, ffly_byte_t *__data, mdl_uint_t __kind, ffly_err_t *__err) {
 	static_cast<mdl::firefly::asset_manager*>(__clsp)->add_asset(__data, __kind, *__err);

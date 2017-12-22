@@ -14,7 +14,7 @@ struct ffly_pulse {
 extern "C" {
 # endif
 ffly_err_t ffly_pulse_init(struct ffly_pulse*, char*, char*, struct pa_sample_spec*);
-ffly_err_t ffly_pulse_write(struct ffly_pulse*, ffly_byte_t*, ffly_size_t);
+ffly_err_t ffly_pulse_write(struct ffly_pulse*, ffly_byte_t*, mdl_uint_t);
 ffly_err_t ffly_pulse_drain(struct ffly_pulse*);
 ffly_err_t ffly_pulse_free(struct ffly_pulse*);
 # ifdef __cplusplus

@@ -1,3 +1,15 @@
+# include "system/io.h"
+# include "graphics/image.h"
+using namespace mdl::firefly;
+int main() {
+	ffly_io_init();
+	graphics::image img;
+	graphics::ld_img(&img, "images", "test", _ffly_img_jpeg);
+	
+
+	ffly_io_closeup();
+}
+/*
 # include "asset_manager.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
@@ -47,13 +59,14 @@ using namespace mdl::firefly;
 int main() {
 	types::err_t err;
 	init();
+*/
 /*
 	asset_manager am;
 	types::id_t id = am.load_asset(nullptr, "test.txt", _ffly_ak_raw_file, 0, err);
 	io::printf("%s\n", (char*)am.get_asset_data(id));
 	am.de_init();
 */
-
+/*
 	room_manager room_m;
 
 	types::no_t *a, *b, *c, *d;
@@ -70,7 +83,7 @@ int main() {
 	room_m.del_room(a);
 
 	de_init();
-
+*/
 //	ffly_tid_t tid;
 //	ffly_grp_prepare(&__ffly_grp__, 4);
 
@@ -175,5 +188,5 @@ int main() {
 	printf("finished.\n");
 */
 //	printf("mem track: used: %lu bytes - freed: %lu bytes - lost:  bytes\n", ffly_mem_alloc_bc, ffly_mem_free_bc);
-	return 0;
-}
+//	return 0;
+//}

@@ -9,3 +9,4 @@ done
 
 rm -f ${PWD}/src/*.o ${PWD}/src/*.o.*
 rm -rf inc/* lib/*.a bin/*.exec
+rm -f bin/ffly_test

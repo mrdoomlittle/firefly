@@ -3,6 +3,7 @@
 # include "ffly_def.h"
 # include "ffly_system.hpp"
 # include "ffly_graphics.hpp"
+# include "ffly_audio.h"
 # include "system/err.h"
 # include "system/io.h"
 # include "system/event.h"
@@ -12,6 +13,11 @@ mdl::firefly::types::err_t mdl::firefly::init() {
 	firefly::types::err_t err;
 	if (_err(err = ffly_system::init())) {
 		firefly::system::io::fprintf(ffly_err, "failed to init engine systems.\n");
+		return err;
+	}
+
+	if (_err(err = ffly_audio::init())) {
+		firefly::system::io::fprintf(ffly_err, "failed to init engine audio.\n");
 		return err;
 	}
 
@@ -53,6 +59,11 @@ mdl::firefly::types::err_t mdl::firefly::de_init() {
 
 	if (_err(err = ffly_graphics::de_init())) {
 		firefly::system::io::fprintf(ffly_err, "failed to de-init engine graphics.\n");
+		return err;
+	}
+
+	if (_err(err = ffly_audio::de_init())) {
+		firefly::system::io::fprintf(ffly_err, "failed to de-init engine audio.\n");
 		return err;
 	}
 

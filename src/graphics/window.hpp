@@ -23,16 +23,8 @@ class window {
 	types::err_t cleanup() {return ffly_wd_cleanup(&this->raw);}
 	types::bool_t poll_event(types::event_t*& __event, types::err_t& __err);
 	types::err_t free_event(types::event_t *__event);
-//	types::flag_t& flags(){return *ffly_wd_flags(&this->raw);}
-
 	types::err_t display(){return ffly_wd_display(&this->raw);}
-//	types::bool_t is_event_buff_empty() {return !ffly_buff_ublk_c(&this->raw.event_buff);}
-//	types::err_t dump_event_buff();
 	types::err_t de_init();
-//	system::queue<types::event_t> event_queue;
-//	void free_event_data(void *__data) {
-//		ffly_mem_blk_free(&this->raw.event_data, __data);
-//	}
 	u16_t get_width() {return this->width;}
 	u16_t get_height() {return this->height;}
 	private:

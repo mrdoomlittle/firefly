@@ -7,4 +7,13 @@ typedef struct {
 	mdl_u32_t rate;
 	mdl_u16_t chn_c;
 } ffly_aud_spec_t;
+# ifdef __cplusplus
+namespace mdl {
+namespace firefly {
+namespace types {
+typedef ffly_aud_spec_t aud_spec_t;
+}
+}
+}
+# endif
 # endif /*__ffly_aud_spec__t__h*/

@@ -7,6 +7,7 @@
 # include "../system/mem_blk.h"
 # include "../system/mutex.h"
 # include "../types/event_t.h"
+# include "../types/byte_t.h"
 # ifdef __ffly_use_x11
 #	include "x11_wd.h"
 # elif __ffly_use_xcb

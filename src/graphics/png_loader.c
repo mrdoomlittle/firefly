@@ -8,7 +8,7 @@
 # include <mdl/str_cmb.h>
 # include "../types/byte_t.h"
 # include <unistd.h>
-# include <stdio.h>
+# include <png.h>
 ffly_err_t ffly_ld_png_file(char *__dir, char *__name, ffly_imagep __image) {
 	char *path = mdl_str_cmb(__dir, mdl_str_cmb("/", mdl_str_cmb(__name, ".png", 0), _mdl_stc_free_rhs), _mdl_stc_free_rhs);
 	ffly_fprintf(ffly_log, "going to load png file %s\n", path);
@@ -45,9 +45,8 @@ ffly_err_t ffly_ld_png_file(char *__dir, char *__name, ffly_imagep __image) {
 	__image->chn_c = png_get_channels(png_p, info_p);
 	__image->bit_depth = png_get_bit_depth(png_p, info_p);
 	__image->pixels = (ffly_byte_t*)__ffly_mem_alloc(__image->width*__image->height*__image->chn_c);
-	mdl_u32_t row = 0;
 
-	ffly_fprintf(ffly_log, "loading png file, width: %u, height: %u, chn_c: %u\n", __image->width, __image->height, __image->chn_c);
+	mdl_u32_t row = 0;
 	for(;row != __image->height;row++)
 		png_read_row(png_p, __image->pixels+(row*(__image->width*__image->chn_c)), NULL);
 
@@ -56,5 +55,6 @@ ffly_err_t ffly_ld_png_file(char *__dir, char *__name, ffly_imagep __image) {
 	__ffly_mem_free(path);
 	png_destroy_info_struct(png_p, &info_p);
 	png_destroy_read_struct(&png_p, (png_infopp)NULL, (png_infopp)NULL);
+	ffly_fprintf(ffly_log, "loaded png image, width: %u, height: %u, chn_c: %u\n", __image->width, __image->height, __image->chn_c);
 	return FFLY_SUCCESS;
 }

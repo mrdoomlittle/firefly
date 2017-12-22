@@ -62,7 +62,7 @@ elif [ $(bash find.bash "$1" "--ffly-studio") -eq 0 ]; then
 elif [ $(bash find.bash "$1" "--ffly-worker") -eq 0 ]; then
 	ffly_target="ffly_worker"
 elif [ $(bash find.bash "$1" "--ffly-test") -eq 0 ]; then
-	ffly_ld_flags="$ffly_ld_flags -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm -lpulse -lpulse-simple -lasound"
+	ffly_ld_flags="$ffly_ld_flags -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm -lpulse -lpulse-simple -lasound -ljpeg"
 	ffly_target="ffly_test"
 elif [ $(bash find.bash "$1" "--ffly-bare") -eq 0 ]; then
 #	ffly_ld_flags="$ffly_ld_flags"

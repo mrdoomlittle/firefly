@@ -2,6 +2,10 @@
 # include "../system/io.h"
 # include "../ffly_maths.h"
 # include "../system/errno.h"
+
+/*
+needs to be redone. like pulse.c/h
+*/
 ffly_err_t ffly_alsa_write(mdl_u32_t __rate, mdl_u16_t __chn_c, snd_pcm_format_t __format, mdl_uint_t __period_c, snd_pcm_uframes_t __period_size, ffly_byte_t *__p, ffly_size_t __size) {
 	snd_pcm_t *pcm_handle = NULL;
 	snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;

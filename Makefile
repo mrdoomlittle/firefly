@@ -10,11 +10,11 @@ else ifeq ($(ffly_target), ffly_studio)
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
  src/graphics/png_loader.o src/room_manager.o src/asset_manager.o src/system/time_stamp.o  src/graphics/draw_rect.o \
  src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o src/graphics/draw_pixmap.clo src/system/task_handle.o src/system/task_worker.o \
- src/system/smem_buff.o src/system/event.o
+ src/system/smem_buff.o
 else ifeq ($(ffly_target), ffly_worker)
  override ffly_objs+= src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png_loader.o src/memory/alloc_pixelmap.o
 else ifeq ($(ffly_target), ffly_test)
- override ffly_objs+= src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/graphics/png_loader.o src/system/time_stamp.o
+ override ffly_objs+= src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/graphics/png_loader.o src/graphics/jpeg_loader.o src/system/time_stamp.o
 else ifeq ($(ffly_target), ffly_bare)
  override ffly_objs+= 
 endif
@@ -35,16 +35,18 @@ override ffly_objs+= src/data/mem_swp.o src/data/mem_cpy.o src/data/str_len.o sr
 # system
 override ffly_objs+= src/system/arr.o src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
 src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
-src/system/task_worker.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o
+src/system/task_worker.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o src/system/event.o
 # graphics
-override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o src/graphics/copy.o src/graphics/draw.o #src/graphics/draw_pixelmap.o src/graphics/fill_pixmap.o src/graphics/fill_pixelmap.o
+override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o src/graphics/copy.o src/graphics/draw.o src/graphics/image.o
+
+#src/graphics/draw_pixelmap.o src/graphics/fill_pixmap.o src/graphics/fill_pixelmap.o
 #ffly_objs+= src/ffly_graphics.o
 # memory
 override ffly_objs+= src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o src/memory/alloc_pixelmap.o
 
 
 override ffly_objs+= src/act.o
-ifeq ($(shell bash find.bash "$(ffly_flags)" "--mem-agent"), 0)
+ifeq ($(shell bash find.bash "$(ffly_flags)" "--mal-track"), 0)
 	override ffly_objs+= src/system/mal_track.o
 endif
 
@@ -71,7 +73,13 @@ all ffly_bare
 endif
 
 override ffly_objs+= src/firefly.o
-override ffly_defines+= -D__USING_PULSE_AUDIO
+override ffly_defines+= -D__ffly_use_pulse_audio
+src/graphics/jpeg_loader.o: src/graphics/jpeg_loader.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/graphics/jpeg_loader.o src/graphics/jpeg_loader.c
+
+src/graphics/image.o: src/graphics/image.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/graphics/image.o src/graphics/image.c
+
 src/graphics/draw.o: src/graphics/draw.cu src/graphics/draw.cpp
 	$(ffly_nvcc) -c -std=c++11 $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/graphics/draw.o.1 src/graphics/draw.cu
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/graphics/draw.o.2 src/graphics/draw.cpp
