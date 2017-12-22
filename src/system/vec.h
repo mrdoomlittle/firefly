@@ -36,7 +36,7 @@ ffly_err_t ffly_vec_init(struct ffly_vec*, ffly_size_t);
 ffly_err_t ffly_vec_push_back(struct ffly_vec*, void**);
 ffly_err_t ffly_vec_pop_back(struct ffly_vec*, void*);
 ffly_err_t ffly_vec_de_init(struct ffly_vec*);
-ffly_err_t ffly_vec_resize(struct ffly_vec*, mdl_uint_t);
+ffly_err_t ffly_vec_resize(struct ffly_vec*, ffly_size_t);
 void ffly_vec_del(struct ffly_vec*, void*);
 void ffly_vec_itr(struct ffly_vec*, void**, mdl_u8_t, mdl_uint_t);
 void* ffly_vec_rbegin(struct ffly_vec*);
@@ -55,17 +55,18 @@ ffly_size_t static __inline__ ffly_vec_size(struct ffly_vec *__vec) {return __ve
 ffly_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return !__vec->size;}
 void static __inline__ ffly_vec_tog_flag(struct ffly_vec *__vec, ffly_flag_t __flag) {ffly_add_flag(&__vec->flags, __flag, 0);}
 void static __inline__ ffly_vec_clear_flags(struct ffly_vec *__vec){__vec->flags = 0x0;}
+void static __inline__ ffly_vec_set_flags(struct ffly_vec *__vec, ffly_flag_t __flags) {__vec->flags = __flags;}
 # ifdef __cplusplus
-# include "../data/swp.h"
+# include "../data/mem_swp.h"
 # include "errno.h"
 namespace mdl {
 namespace firefly {
 namespace system {
-static types::err_t(*vec_init)(struct ffly_vec*, uint_t) = &ffly_vec_init;
+static types::err_t(*vec_init)(struct ffly_vec*, types::size_t) = &ffly_vec_init;
 static types::err_t(*vec_push_back)(struct ffly_vec*, void**) = &ffly_vec_push_back;
 static types::err_t(*vec_pop_back)(struct ffly_vec*, void*) = &ffly_vec_pop_back;
 static types::err_t(*vec_de_init)(struct ffly_vec*) = &ffly_vec_de_init;
-static types::err_t(*vec_resize)(struct ffly_vec*, uint_t) = &ffly_vec_resize;
+static types::err_t(*vec_resize)(struct ffly_vec*, types::size_t) = &ffly_vec_resize;
 static void(*vec_del)(struct ffly_vec*, void*) = &ffly_vec_del;
 static void*(*vec_first)(struct ffly_vec*) = &ffly_vec_first;
 static void*(*vec_last)(struct ffly_vec*) = &ffly_vec_last;
@@ -87,7 +88,7 @@ struct vec {
 
 	types::err_t init(u8_t __flags) {
 		types::err_t err;
-		this->raw.flags = __flags;
+		ffly_vec_set_flags(&this->raw, __flags);
 		err = vec_init(&this->raw, sizeof(_T));
 		return err;
 	}
@@ -101,8 +102,9 @@ struct vec {
 	types::bool_t empty() {return vec_empty(&this->raw);}
 	_T& operator()(mdl_uint_t __off) {return this->at(__off);}
 
-	void del(_T *__p) {
+	types::err_t del(_T *__p) {
 		vec_del(&this->raw, static_cast<void*>(__p));
+		return FFLY_SUCCESS;
 	}
 
 	_T& push_back(types::err_t& __err) {
@@ -126,20 +128,20 @@ struct vec {
 	types::off_t off(void *__p) {return ffly_vec_off(&this->raw, __p);}
 	uint_t blk_off(void *__p){return ffly_vec_blk_off(&this->raw, __p);}
 	_T& at_off(types::off_t __off) {return *reinterpret_cast<_T*>(static_cast<u8_t*>(ffly_vec_p(&this->raw))+__off);}
-	_T& at(uint_t __off) {return *(this->begin()+__off);}
-	_T& operator[](uint_t __off){return this->at(__off);}
+	_T& at(types::off_t __off) {return *(this->begin()+__off);}
+	_T& operator[](types::off_t __off){return this->at(__off);}
 
-	void swp(_T *__p1, uint_t __p2) {
-		data::swp<_T>(__p1, (void*)(this->begin()+__p2));}
+	void swp(_T *__p1, types::off_t __p2) {
+		data::mem_swp<_T>(__p1, (void*)(this->begin()+__p2));}
 
-	void swp(uint_t __p1, _T *__p2) {
-		data::swp<_T>((void*)(this->begin()+__p1), __p2);}
+	void swp(types::off_t __p1, _T *__p2) {
+		data::mem_swp<_T>((void*)(this->begin()+__p1), __p2);}
 
-	void swp(uint_t __p1, uint_t __p2) {
-		data::swp<_T>((void*)(this->begin()+__p1), (void*)(this->begin()+__p2));}
+	void swp(types::off_t __p1, types::off_t __p2) {
+		data::mem_swp<_T>((void*)(this->begin()+__p1), (void*)(this->begin()+__p2));}
 
-	types::err_t resize(uint_t __size) {return vec_resize(&this->raw, __size);}
-	types::err_t resize(uint_t __size, u8_t __dir) {
+	types::err_t resize(types::size_t __size) {return vec_resize(&this->raw, __size);}
+	types::err_t resize(types::size_t __size, i8_t __dir) {
 		if (__dir == 1) {return this->resize(this->size()+__size);}
 		if (__dir == -1) {return this->resize(this->size()-__size);}}
 	struct ffly_vec raw;

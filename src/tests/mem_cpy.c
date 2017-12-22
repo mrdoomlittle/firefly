@@ -10,7 +10,7 @@ void test(mdl_uint_t __bc) {
 	mdl_u8_t static src[max], dst[max];
 
 	mdl_uint_t c = 200, itr = 0;
-	mdl_uint_t ns = 0;
+	double time = 0.0;
 
 	while(itr != c) {
 		struct timespec begin, end;
@@ -19,11 +19,13 @@ void test(mdl_uint_t __bc) {
 		ffly_mem_cpy(dst, src, __bc);
 
 		clock_gettime(CLOCK_MONOTONIC, &end);
-		ns += end.tv_nsec-begin.tv_nsec;
+		time+= (end.tv_nsec-begin.tv_nsec)+((end.tv_sec-begin.tv_sec)*1000000000.0);
 		itr++;
 	}
 
-	printf("mem_cpy, time taken: %lfns, bc: %u.\n", (double)ns/(double)c, __bc);
+	time /= (double)c;
+
+	printf("mem_cpy, time taken: %lfns or %lfsec, bc: %u.\n", time, time/1000000000.0, __bc);
 }
 # include "../system/io.h"
 int main(void) {

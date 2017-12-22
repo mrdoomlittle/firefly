@@ -13,6 +13,7 @@ struct node {
 
 ffly_err_t ffly_bin_tree_init(struct ffly_bin_tree *__bin_tree) {
 	__bin_tree->root = NULL;
+	return FFLY_SUCCESS;
 }
 
 ffly_err_t _ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, mdl_uint_t __key, struct node **__node) {
@@ -219,4 +220,5 @@ void static free_tree(struct node *__branch) {
 
 ffly_err_t ffly_bin_tree_de_init(struct ffly_bin_tree *__bin_tree) {
 	free_tree(__bin_tree->root);
+	return FFLY_SUCCESS;
 }

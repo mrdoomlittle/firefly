@@ -19,7 +19,8 @@ int main(void) {
 	res = ffly_find(a, &val, sizeof(type), len);
 
 	clock_gettime(CLOCK_MONOTONIC, &end);
-	printf("find, time taken: %luns. itr_c: %lu, blk_size: %lu.\n", end.tv_nsec-begin.tv_nsec, res-a, sizeof(type));
+	double time = (end.tv_nsec-begin.tv_nsec)+((end.tv_sec-begin.tv_sec)*1000000000.0);
+	printf("find, time taken: %lfns or %lfsec. itr_c: %lu, blk_size: %lu.\n", time, time/1000000000.0, res-a, sizeof(type));
 	ffly_io_closeup();
 	return FFLY_SUCCESS;
 }

@@ -53,10 +53,10 @@ int main(void) {
 	if (_err(ffly_vec_push_back(&vec, (void**)&d))) failure;
 
 	if (_err(ffly_vec_push_back(&vec, (void**)&a))) failure;
-	*a = mk('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k');
-	*b = mk('b', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k');
-	*c = mk('c', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k');
-	*d = mk('d', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k');
+	*a = mk('A', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k');
+	*b = mk('B', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k');
+	*c = mk('C', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k');
+	*d = mk('D', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k');
 
 	pr(a);
 	pr(b);
@@ -83,8 +83,9 @@ int main(void) {
 	if (_err(ffly_vec_pop_back(&vec, &t))) failure;
 	if (ffly_mem_cmp(&t, &save, sizeof(struct test))) failure;
 	pr(&t);
-	if (_err(ffly_vec_de_init(&vec))) failure;
 	_end:
+	if (_err(ffly_vec_de_init(&vec)))
+		err = FFLY_FAILURE;
 	ffly_io_closeup();
 	return err;
 }

@@ -2,13 +2,21 @@
 # include <stdarg.h>
 # include <mdlint.h>
 # include "mutex.h"
+# include "errno.h"
 FILE *ffly_out = NULL;
 FILE *ffly_log = NULL;
 FILE *ffly_err = NULL;
 ffly_err_t ffly_io_init() {
-	ffly_out = fopen("/dev/tty", "w");
-	ffly_log = fopen("log", "w");
-	ffly_err = fopen("err", "w");
+	if (!(ffly_out = fopen("/dev/tty", "w"))) {
+		return FFLY_FAILURE;
+	}
+	if (!(ffly_log = fopen("log", "w+"))) {
+		return FFLY_FAILURE;
+	}
+	if (!(ffly_err = fopen("err", "w+"))) {
+		return FFLY_FAILURE;
+	}
+	return FFLY_SUCCESS;
 }
 
 void ffly_io_closeup() {

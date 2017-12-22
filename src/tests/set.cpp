@@ -17,7 +17,6 @@ int main() {
 	mdl::uint_t i = 0;
 	while(i < 200) {
 		nos.insert(i);
-		io::printf("insert: %u\n", i);
 		i++;
 	}
 
@@ -35,9 +34,10 @@ int main() {
 	i = 0;
 	while(i < 200) {
 		set<mdl::uint_t>::iterator itr = nos.find(i, err);
-		if (_ok(err))
-			io::printf("got: %u, correct? %s\n", *itr, *itr == i?"yes":"no");
-		else {
+		if (_ok(err)) {
+			if (*itr != i)
+				io::printf("got %u not %u\n", *itr, i);
+		} else {
 			if (i < del_range[0] || i > del_range[1])
 				failure;
 			io::printf("can't find element: %u\n", i);

@@ -213,8 +213,12 @@ ffly_err_t ffly_vec_pop_back(struct ffly_vec *__vec, void *__p) {
 		void *last = ffly_vec_last(__vec);
 		struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)((mdl_u8_t*)last-sizeof(struct ffly_vec_blkd));
 		ffly_mem_cpy(__p, last, __vec->blk_size);
-		ffly_vec_del(__vec, last);
-		ffly_printf("-->%p\n", last);
+		if (blk == (void*)((mdl_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size))) {
+			ffly_vec_dechain(__vec, blk);
+			__vec->off--;
+		} else
+			ffly_vec_del(__vec, last);
+		ffly_printf("--> %p, %u, %p-%p\n", last, __vec->off, last, (void*)((mdl_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size)));
 	} else {
 		// dont change - we cant return the ptr because if a resize takes place the pointer will be invalid
 		ffly_mem_cpy(__p, (void*)((mdl_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size)), __vec->blk_size);
