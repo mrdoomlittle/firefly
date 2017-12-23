@@ -8,7 +8,7 @@ struct node {
 	mdl_u8_t inuse;
 	mdl_uint_t key;
 	void *p;
-	struct node *lhs, *rhs, *mid, *back;
+	struct node *lhs, *rhs, *back;
 };
 
 ffly_err_t ffly_bin_tree_init(struct ffly_bin_tree *__bin_tree) {
@@ -36,8 +36,6 @@ ffly_err_t _ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, mdl_uint_t __ke
 		branch = branch->lhs;
 	else if (branch->key > __key)
 		branch = branch->rhs;
-	else
-		branch = branch->mid;
 	goto _again;
 	_end:
 	return FFLY_SUCCESS;
@@ -76,7 +74,7 @@ ffly_err_t static insert(struct node *__root, mdl_uint_t __key, void *__p) {
 		}
 		*branch->lhs = (struct node) {
 			.inuse = 1, .key = __key, .p = __p,
-			.lhs = NULL, .mid = NULL, .rhs = NULL, .back = branch
+			.lhs = NULL, .rhs = NULL, .back = branch
 		};
 	} else if (branch->key > __key) {
 		if (branch->rhs != NULL) {
@@ -93,24 +91,7 @@ ffly_err_t static insert(struct node *__root, mdl_uint_t __key, void *__p) {
 		}
 		*branch->rhs = (struct node) {
 			.inuse = 1, .key = __key, .p = __p,
-			.lhs = NULL, .mid = NULL, .rhs = NULL, .back = branch
-		};
-	} else {
-		if (branch->mid != NULL) {
-			if (!branch->mid->inuse && branch->mid->key == __key) {
-				branch->mid->p = __p;
-				branch->mid->inuse = 1;
-				goto _end;
-			}
-			branch = branch->mid;
-			goto _again;
- 		}
-		if ((branch->mid = (struct node*)__ffly_mem_alloc(sizeof(struct node))) == NULL) {
-			return FFLY_FAILURE;
-		}
-		*branch->mid = (struct node) {
-			.inuse = 1, .key = __key, .p = __p,
-			.lhs = NULL, .mid = NULL, .rhs = NULL, .back = branch
+			.lhs = NULL, .rhs = NULL, .back = branch
 		};
 	}
 	_end:
@@ -127,10 +108,6 @@ void static remap_branch(struct node *__dst, struct node *__src) {
 	if (__src->rhs != NULL) {
 		remap_branch(__dst, __src->rhs);
 		__ffly_mem_free(__src->rhs);
-	}
-	if (__src->mid != NULL) {
-		remap_branch(__dst, __src->mid);
-		__ffly_mem_free(__src->mid);
 	}
 }
 
@@ -149,33 +126,16 @@ ffly_err_t ffly_bin_tree_del(struct ffly_bin_tree *__bin_tree, mdl_uint_t __key)
 			re = branch->lhs;
 			remap_branch(re, branch->rhs);
 			__ffly_mem_free(branch->rhs);
-
-			remap_branch(re, branch->mid);
-			__ffly_mem_free(branch->mid);
 		}
 		else if (branch->rhs != NULL) {
 			re = branch->rhs;
 			remap_branch(re, branch->lhs);
 			__ffly_mem_free(branch->lhs);
-
-			remap_branch(re, branch->mid);
-			__ffly_mem_free(branch->mid);
 		}
-		else if (branch->mid != NULL) {
-			re = branch->mid;
-			remap_branch(re, branch->lhs);
-			__ffly_mem_free(branch->lhs);
-
-			remap_branch(re, branch->rhs);
-			__ffly_mem_free(branch->rhs);
-		}
-
 		if (branch == branch->back->lhs)
 			branch->back->lhs = re;
 		else if (branch == branch->back->rhs)
 			branch->back->rhs = re;
-		else if (branch == branch->back->mid)
-			branch->back->mid = re;
 	}
 	return FFLY_SUCCESS;
 }
@@ -200,7 +160,7 @@ ffly_err_t ffly_bin_tree_insert(struct ffly_bin_tree *__bin_tree, mdl_uint_t __k
 		}
 		*(struct node*)__bin_tree->root = (struct node) {
 			.inuse = 1, .key = __key, .p = __p,
-			.lhs = NULL, .mid = NULL, .rhs = NULL, .back = NULL
+			.lhs = NULL, .rhs = NULL, .back = NULL
 		};
 	} else {
 		ffly_err_t err;
@@ -215,7 +175,6 @@ void static free_tree(struct node *__branch) {
 	if (!__branch) return;
 	if (__branch->lhs != NULL) free_tree(__branch->lhs);
 	if (__branch->rhs != NULL) free_tree(__branch->rhs);
-	if (__branch->mid != NULL) free_tree(__branch->mid);
 }
 
 ffly_err_t ffly_bin_tree_de_init(struct ffly_bin_tree *__bin_tree) {
