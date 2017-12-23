@@ -1,6 +1,9 @@
 # ifndef __colour__t__h
 # define __colour__t__h
 # include "byte_t.h"
+/*
+	// shoud pack structures
+*/
 typedef struct {
 	ffly_byte_t r, g, b, a;
 } ffly_colour_t;

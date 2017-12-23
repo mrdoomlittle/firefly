@@ -1,5 +1,6 @@
 # include "mem_cmp.h"
 # include "../types/off_t.h"
+# include "../system/io.h"
 mdl_i8_t ffly_mem_cmp(void *__p1, void *__p2, mdl_uint_t __bc) {
 	mdl_u8_t *itr = (mdl_u8_t*)__p1;
 	while(itr != (mdl_u8_t*)__p1+__bc) {
@@ -20,6 +21,6 @@ mdl_i8_t ffly_mem_cmp(void *__p1, void *__p2, mdl_uint_t __bc) {
 		}
 	}
 
-	if (itr != (mdl_u8_t*)(__p1+__bc)) return 0;
-	return 1;
+	if (itr != (mdl_u8_t*)(__p1+__bc)) return -1;
+	return 0;
 }
