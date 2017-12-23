@@ -8,16 +8,16 @@
 #	include "../system/atomic.h"
 # endif
 void static _ffly_mem_cpy(void *__dst, void *__src, mdl_uint_t __bc) {
-	if (__bc == 1) {
+	if (__bc == sizeof(mdl_u8_t)) {
 		*(mdl_u8_t*)__dst = *(mdl_u8_t*)__src;
 		return;
-	} else if (__bc>>3 == 1) {
+	} else if (__bc == sizeof(mdl_u64_t)) {
 		*(mdl_u64_t*)__dst = *(mdl_u64_t*)__src;
 		return;
-	} else if (__bc>>2 == 1) {
+	} else if (__bc == sizeof(mdl_u32_t)) {
 		*(mdl_u32_t*)__dst = *(mdl_u32_t*)__src;
 		return;
-	} else if (__bc>>1 == 1) {
+	} else if (__bc == sizeof(mdl_u16_t)) {
 		*(mdl_u16_t*)__dst = *(mdl_u16_t*)__src;
 		return;
 	}
