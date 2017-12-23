@@ -1,1 +1,19 @@
-
+-. clean up code
+-. work on pixdraw pixcopy pixfill
+-. remove some submodules
+-. remake object manager
+-. remake ffly studio
+-. change src/system/flags.c from c to asmbaly
+-. work on math functions
+-. fpu might not support sqrt so need to make fall back
+-. add lookup table for sqrt and other math functions
+-. get asla up and running
+-. rename graphics/png_loader.c/h to png.c/h same goes for jpeg loader
+-. add support for saving images such as png and jpeg
+-. clean up and improve task pool
+-. allow for functions such as mem_cmp to use task pool to improve speed for large compares
+-. need to find out how calulate a size to speed ratio for mem_cpy slice size as fixing it as one size would cause issus for other machines with a slow cpu clock.
+-. need to start working on graphics function for 2d and 3d.
+-. get opencl working with graphics functions.
+-. add fall back to cpu if gpu becomes unavailable or cl library wasn't stated at compile time
+-. document shit
