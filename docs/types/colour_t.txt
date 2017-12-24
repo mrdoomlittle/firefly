@@ -1,0 +1,12 @@
+r	- red
+g	- green
+b	- blue
+a	- alpha
+
+c style
+ffly_colour_t
+
+c++ style
+mdl::firefly::types::colour_t
+mdl::firefly::types::rgb_colour_t
+mdl::firefly::types::rgba_colour_t

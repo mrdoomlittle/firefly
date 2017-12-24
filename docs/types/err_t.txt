@@ -1,0 +1,9 @@
+c style
+{
+	ffly_err_t err;
+}
+
+c++ style
+{
+	mdl::firefly::types::err_t err;
+}

@@ -1,0 +1,24 @@
+	0 will be returned if both match else -1
+
+mdl_i8_t ffly_mem_cmp(void*, void*, mdl_uint_t);
+
+c style
+{
+	mdl_uint_t a = 21
+	mdl_uint_t b = 22;
+	if (!ffly_mem_cmp(&a, &b, sizeof(mdl_uint_t))) {
+		// match
+	} else {
+		// no match
+	}
+}
+
+c++ style
+- not implemented yet
+
+rust style
+- not implemented yet
+
+firefly script
+- not implemented yet
+

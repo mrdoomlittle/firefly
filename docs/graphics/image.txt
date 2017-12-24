@@ -1,0 +1,24 @@
+pixels	- pixel data         
+chn_c	- # colour channels
+width	- image width
+height	- image height
+
+NOTE: file extension should not be included in file name.
+
+c style
+struct ffly_image
+ffly_imagep		- struct ffly_image*
+ffly_imagepp	- struct ffly_image**
+{
+	struct ffly_image image;
+	ffly_ld_img(&image, "example-dir", "example-file", _ffly_img_png/jpeg);
+}
+
+mdl::firefly::graphics::image		- struct ffly_image
+mdl::firefly::graphics::imagep		- struct ffly_image*
+mdl::firefly::graphics::imagepp		- struct ffly_image**
+c++ style
+{
+	mdl::firefly::graphics::image image;
+	mdl::firefly::graphics::ld_img(&image, "example-dir", "example-file", _ffly_img_png/jpeg);
+}
