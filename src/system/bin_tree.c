@@ -6,7 +6,7 @@
 # include "err.h"
 struct node {
 	mdl_u8_t inuse;
-	mdl_uint_t key;
+	mdl_u64_t key;
 	void *p;
 	struct node *lhs, *rhs, *back;
 };
@@ -16,12 +16,12 @@ ffly_err_t ffly_bin_tree_init(struct ffly_bin_tree *__bin_tree) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t _ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, mdl_uint_t __key, struct node **__node) {
+ffly_err_t _ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key, struct node **__node) {
 	struct node *branch = __bin_tree->root;
 	_again:
 	if (!branch) {
 		*__node = NULL;
-		ffly_fprintf(ffly_err, "root branch hasen't been allocated.\n");
+		ffly_fprintf(ffly_err, "branch hasen't been allocated.\n");
 		return FFLY_FAILURE;
 	}
 
@@ -41,7 +41,7 @@ ffly_err_t _ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, mdl_uint_t __ke
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, mdl_uint_t __key, void **__p) {
+ffly_err_t ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key, void **__p) {
 	struct node *branch;
 	ffly_err_t err;
 	if (_err(err = _ffly_bin_tree_find(__bin_tree, __key, &branch))) {
@@ -111,7 +111,7 @@ void static remap_branch(struct node *__dst, struct node *__src) {
 	}
 }
 
-ffly_err_t ffly_bin_tree_del(struct ffly_bin_tree *__bin_tree, mdl_uint_t __key) {
+ffly_err_t ffly_bin_tree_del(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key) {
 	struct node *branch;
 	ffly_err_t err;
 	if (_err(err = _ffly_bin_tree_find(__bin_tree, __key, &branch))) {
@@ -140,7 +140,7 @@ ffly_err_t ffly_bin_tree_del(struct ffly_bin_tree *__bin_tree, mdl_uint_t __key)
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_bin_tree_erase(struct ffly_bin_tree *__bin_tree, mdl_uint_t __key) {
+ffly_err_t ffly_bin_tree_erase(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key) {
 	struct node *branch;
 	ffly_err_t err;
 	if (_err(err = _ffly_bin_tree_find(__bin_tree, __key, &branch))) {
@@ -153,7 +153,7 @@ ffly_err_t ffly_bin_tree_erase(struct ffly_bin_tree *__bin_tree, mdl_uint_t __ke
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_bin_tree_insert(struct ffly_bin_tree *__bin_tree, mdl_uint_t __key, void *__p) {
+ffly_err_t ffly_bin_tree_insert(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key, void *__p) {
 	if (!__bin_tree->root) {
 		if ((__bin_tree->root = __ffly_mem_alloc(sizeof(struct node))) == NULL) {
 			return FFLY_FAILURE;

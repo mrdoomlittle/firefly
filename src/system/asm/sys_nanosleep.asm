@@ -1,6 +1,6 @@
 section .text
-global ffly_nanosleep
-ffly_nanosleep:
+global _ffly_nanosleep
+_ffly_nanosleep:
 	push rbp
 	mov rbp, rsp
 	sub rsp, 16

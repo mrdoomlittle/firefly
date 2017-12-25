@@ -23,10 +23,12 @@ ffly_err_t ffly_map_init(struct ffly_map *__map) {
 map_entry_t static* map_find(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_t __bc) {
 	mdl_u64_t val = ffly_hash(__key, __bc);
 	struct ffly_vec **map_blk = __map->table+(val&FFLY_MAP_SIZE);
+	if (!*map_blk) return NULL;
+
 	map_entry_t *itr = (map_entry_t*)ffly_vec_begin(*map_blk);
 	while(itr <= (map_entry_t*)ffly_vec_end(*map_blk)) {
 		if (itr->val == val && itr->bc == __bc)
-			if (ffly_mem_cmp(__key, itr->key, __bc)) return itr;
+			if (!ffly_mem_cmp(__key, itr->key, __bc)) return itr;
 		itr++;
 	}
 	return NULL;

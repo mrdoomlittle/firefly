@@ -33,23 +33,37 @@ struct obj* next_obj(struct ffly_script *__script, struct obj __tmpl) {
 	return _obj;
 }
 
+struct obj mk_op_copy(struct type *__type, struct obj *__to, struct obj *__from) {
+    return (struct obj){.opcode=_op_copy, .p = NULL, ._type=__type, .to=__to, .from=__from, .val=NULL};
+}
+
+struct obj mk_op_alloc(struct type *__type) {
+    return (struct obj){.opcode=_op_alloc, .p = NULL, ._type=__type, .to=NULL, .from=NULL, .val=NULL};
+}
+
+struct obj mk_op_assign(void *__p, struct type *__type, struct obj *__to) {
+    return (struct obj){.opcode=_op_assign, .p=__p, ._type=__type, .to=__to, .from=NULL, .val=NULL};
+}
+
 void emit(struct ffly_script*, struct node*);
 void emit_decl_init(struct ffly_script *__script, struct node *__node, struct obj *__to) {
 	emit(__script, __node->init);
 	struct obj *from;
 	obj_pop(&from);
-	next_obj(__script, (struct obj){.opcode=_op_copy, ._type=__node->_type, .to=__to, .from=from});
+	next_obj(__script, mk_op_copy(__node->init->_type, __to, from));
 }
 
 void emit_decl(struct ffly_script *__script, struct node *__node) {
-	struct obj *m = next_obj(__script, (struct obj){.opcode=_op_alloc, ._type=__node->_type});
+    struct obj *m = next_obj(__script, mk_op_alloc(__node->var->_type));
 	if (__node->init != NULL)
 		emit_decl_init(__script, __node, m);
+    __node->var->_obj = m;
+
 }
 
 void emit_literal(struct ffly_script *__script, struct node *__node) {
-	struct obj *m = next_obj(__script, (struct obj){.opcode=_op_alloc, ._type=__node->_type});
-	next_obj(__script, (struct obj){.opcode=_op_assign, ._type=__node->_type, .to=m, .p=__node->val});
+	struct obj *m = next_obj(__script, mk_op_alloc(__node->_type));
+	next_obj(__script, mk_op_assign(__node->val, __node->_type, m));
 	obj_push(m);
 }
 
@@ -57,7 +71,11 @@ void emit_print_call(struct ffly_script *__script, struct node *__node) {
 	struct obj *arg;
 	emit(__script, __node->arg);
 	obj_pop(&arg);
-	next_obj(__script, (struct obj){.opcode=_op_print, .val=arg, ._type=__node->arg->_type});
+	next_obj(__script, (struct obj){.opcode=_op_print, .p=NULL, ._type=__node->arg->_type, .to=NULL, .from=NULL, .val=arg});
+}
+
+void emit_var(struct ffly_script *__script, struct node *__node) {
+    obj_push(__node->_obj);    
 }
 
 void emit(struct ffly_script *__script, struct node *__node) {
@@ -71,6 +89,9 @@ void emit(struct ffly_script *__script, struct node *__node) {
 		case _ast_print_call:
 			emit_print_call(__script, __node);
 		break;
+        case _ast_var:
+            emit_var(__script, __node);
+        break;
 	}
 }
 

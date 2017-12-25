@@ -4,9 +4,12 @@
 # include "types/byte_t.h"
 # include "types/off_t.h"
 # include "system/buff.h"
+# include "system/map.h"
 struct ffly_script {
+    struct ffly_map env;
 	ffly_byte_t *p, *end;
 	ffly_off_t off;
+    mdl_uint_t line;
 	struct ffly_vec nodes;
 	struct ffly_vec toks;
 	struct ffly_buff sbuf;
@@ -42,7 +45,8 @@ enum {
 	_ast_assign,
 	_ast_print,
 	_ast_literal,
-	_ast_print_call
+	_ast_print_call,
+    _ast_var
 };
 
 enum {
@@ -68,9 +72,10 @@ enum {
 
 struct node {
 	mdl_u8_t kind;
-	struct type *_type;
+    struct type *_type;
 	ffly_byte_t val[sizeof(mdl_u64_t)];
-	struct node *init, *arg;
+	struct node *init, *var, *arg;
+    struct obj *_obj;
 };
 
 struct token {
@@ -84,14 +89,18 @@ struct type {
 };
 
 struct obj {
+    mdl_u32_t off;
 	mdl_u8_t opcode;
 	void *p;
 	struct type *_type;
+    // dst/src? or'
 	struct obj *to, *from;
 	struct obj *val;
 	struct obj *next;
 };
 
+void skip_token(struct ffly_script*);
+mdl_uint_t curl(struct ffly_script*);
 ffly_bool_t next_token_is(struct ffly_script*, mdl_u8_t, mdl_u8_t);
 ffly_bool_t is_keyword(struct token*, mdl_u8_t);
 ffly_bool_t expect_token(struct ffly_script*, mdl_u8_t, mdl_u8_t);
@@ -109,4 +118,5 @@ ffly_err_t ffly_script_parse(struct ffly_script*);
 ffly_err_t ffly_script_gen(struct ffly_script*);
 ffly_err_t ffly_script_exec(struct ffly_script*);
 ffly_err_t ffly_script_free(struct ffly_script*);
+ffly_err_t ffly_script_save_bin(struct ffly_script*, char*);
 # endif /*__ffly__script__h*/

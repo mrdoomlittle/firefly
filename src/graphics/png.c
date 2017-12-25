@@ -5,12 +5,12 @@
 # include "../system/io.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
-# include <mdl/str_cmb.h>
+# include "../data/str_cmb.h"
 # include "../types/byte_t.h"
 # include <unistd.h>
 # include <png.h>
 ffly_err_t ffly_ld_png_file(char *__dir, char *__name, ffly_imagep __image) {
-	char *path = mdl_str_cmb(__dir, mdl_str_cmb("/", mdl_str_cmb(__name, ".png", 0), _mdl_stc_free_rhs), _mdl_stc_free_rhs);
+	char *path = ffly_str_cmb(__dir, ffly_str_cmb("/", ffly_str_cmb(__name, ".png", 0), _ffly_stc_free_rhs), _ffly_stc_free_rhs);
 	ffly_fprintf(ffly_log, "going to load png file %s\n", path);
 	ffly_err_t err;
 	FF_FILE *file = ffly_fopen(path, FF_O_RDONLY, 0, &err);

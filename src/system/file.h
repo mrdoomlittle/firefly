@@ -1,8 +1,10 @@
 # ifndef __ffly__file__h
-# define __ffly__file__h
-# include "../types/size_t.h"
 # include <sys/types.h>
+# include <mdlint.h>
 # include <fcntl.h>
+# include <sys/stat.h>
+# include <sys/types.h>
+# include "../types/size_t.h"
 # include "../types/err_t.h"
 # include "../types/off_t.h"
 struct ffly_file {
@@ -15,14 +17,16 @@ struct ffly_stat {
 	ffly_size_t size;
 };
 
+# define FF_O_TRUNC O_TRUNC
 # define FF_O_RDONLY O_RDONLY
 # define FF_O_WRONLY O_WRONLY
-# define FF_O_CREATE O_CREAT
-# define FF_S_IRWXU S_IRWXU
-# define FF_S_IRUSR S_IRUSR
-# define FF_S_IWUSR S_IWUSR
-# define FF_S_IXUSR S_IXUSR
+# define FF_O_CREAT O_CREAT
+# define FF_S_IRWXU S_IRWXU // r/w/x
+# define FF_S_IRUSR S_IRUSR // r
+# define FF_S_IWUSR S_IWUSR // w
+# define FF_S_IXUSR S_IXUSR // e
 # define FF_SEEK_SET SEEK_SET
+# define FF_SEEK_CUR SEEK_CUR
 # define FF_FILE struct ffly_file
 # ifdef __cplusplus
 extern "C" {

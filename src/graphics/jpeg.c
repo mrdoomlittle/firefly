@@ -1,13 +1,13 @@
 # include "jpeg_loader.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
-# include <mdl/str_cmb.h>
+# include "../data/str_cmb.h"
 # include "../types/byte_t.h"
 # include "../system/io.h"
 # include "../system/file.h"
 # include "../system/errno.h"
-ffly_err_t ffly_ld_jpeg_file(char *__dir, char *__name, ffly_imagep __image) {
-	char *path = mdl_str_cmb(__dir, mdl_str_cmb("/", mdl_str_cmb(__name, ".jpeg", 0), _mdl_stc_free_rhs), _mdl_stc_free_rhs);
+ffly_err_t ffly_ld_jpeg_img(char *__dir, char *__name, ffly_imagep __image) {
+	char *path = ffly_str_cmb(__dir, ffly_str_cmb("/", ffly_str_cmb(__name, ".jpeg", 0), _ffly_stc_free_rhs), _ffly_stc_free_rhs);
 	ffly_err_t err;
 	FF_FILE *f = ffly_fopen(path, FF_O_RDONLY, 0, &err);
 	struct ffly_stat st;

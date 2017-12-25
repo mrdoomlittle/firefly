@@ -68,7 +68,7 @@ char const* opstr(mdl_u8_t __op) {
 
 void pr_obj(struct obj *__obj) {
 	ffly_printf("op: %s\n", opstr(__obj->opcode));
-	if (__obj->opcode == _op_alloc) {
+	if (__obj->opcode == _op_alloc || __obj->opcode == _op_assign || __obj->opcode == _op_copy) {
 		ffly_printf("size: %u\n", __obj->_type->size);
 	}
 }
@@ -141,7 +141,7 @@ void(*op[])(struct obj*) = {
 };
 
 ffly_err_t ffly_script_exec(struct ffly_script *__script) {
-	struct obj *_obj = __script->top;
+	struct obj *_obj = (struct obj*)__script->top;
 	while(_obj != NULL) {
 		if (_obj->opcode >= _op_alloc && _obj->opcode <= _op_print)
 			op[_obj->opcode](_obj);
@@ -254,19 +254,152 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
 	ffly_vec_init(&__script->nodes, sizeof(struct node*));
 	ffly_vec_init(&__script->toks, sizeof(struct token*));
 	ffly_buff_init(&__script->iject_buff, 100, sizeof(struct token*));
+    ffly_map_init(&__script->env);
 	__script->off = 0;
 	__script->top = NULL;
+    __script->line = 0;
 }
 
 ffly_bool_t is_eof(struct ffly_script *__script) {
 	return (__script->p+__script->off) >= __script->end;
 }
 
+mdl_uint_t curl(struct ffly_script *__script) {
+    return __script->line;
+}
+
+void skip_token(struct ffly_script *__script) {
+    next_token(__script);
+}
+
+ffly_err_t ffly_script_save_bin(struct ffly_script *__script, char *__file) {
+    ffly_err_t err;
+    FF_FILE *f = ffly_fopen(__file, FF_O_WRONLY|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err);
+    ffly_fseek(f, sizeof(mdl_u32_t), FF_SEEK_SET);
+    mdl_u32_t top = ffly_fseek(f, 0, FF_SEEK_CUR);
+    mdl_u32_t off = top;
+
+    mdl_u32_t prev;
+    struct obj *_obj = (struct obj*)__script->top;
+    struct obj o;
+    while(_obj != NULL) {
+        ffly_printf("\n");
+        pr_obj(_obj);
+        _obj->off = off;
+        o = *_obj;
+        off+= sizeof(struct obj);
+        ffly_fseek(f, off, FF_SEEK_SET);
+        if (_obj->_type != NULL) {            
+            o._type = (void*)off;
+            ffly_fwrite(f, _obj->_type, sizeof(struct type));
+            off+= sizeof(struct type);
+
+            if (_obj->p != NULL) {
+                o.p = (void*)off;
+                ffly_fwrite(f, _obj->p, _obj->_type->size);
+                ffly_printf("data: %u\n", *(mdl_u16_t*)_obj->p);
+                off+= _obj->_type->size;
+            }
+
+            ffly_printf("types, off: %u\n", (mdl_u32_t)o._type);
+        }
+
+        if (_obj->to != NULL) {
+            ffly_printf("--to-- %u\n", _obj->to->off);
+            o.to = (void*)_obj->to->off;
+        }
+        if (_obj->from != NULL) {
+            ffly_printf("--from-- %u\n", _obj->from->off);
+            o.from = (void*)_obj->from->off;
+        }
+        if (_obj->val != NULL) {
+            ffly_printf("--val-- %u\n", _obj->val->off);
+            o.val = (void*)_obj->val->off;
+        }
+        if ((void*)_obj != __script->top) {
+            void *off = (void*)_obj->off;
+            ffly_fseek(f, prev, FF_SEEK_SET);
+            ffly_fwrite(f, &off, sizeof(void*));
+        }
+
+        ffly_printf("obj, off: %u\n", _obj->off);
+        ffly_fseek(f, _obj->off, FF_SEEK_SET); 
+        ffly_fwrite(f, &o, sizeof(struct obj));
+        prev = _obj->off+(((mdl_u8_t*)&o.next)-(mdl_u8_t*)&o);
+        _obj = _obj->next;
+    }
+
+    ffly_fseek(f, 0, FF_SEEK_SET);
+    ffly_fwrite(f, &top, sizeof(mdl_u32_t));
+    ffly_fclose(f);
+}
+
+# include "system/bin_tree.h"
+ffly_err_t ffly_script_ld_bin(struct ffly_script *__script, char *__file) {
+    ffly_err_t err;
+    FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
+    struct ffly_bin_tree objs;
+
+    ffly_bin_tree_init(&objs);
+
+    mdl_u32_t off;
+    ffly_fread(f, &off, sizeof(mdl_u32_t));
+    struct obj *_obj, *prev = NULL;
+    struct obj *top = NULL;
+
+    _next:
+    ffly_printf("\n");
+    _obj = (struct obj*)__ffly_mem_alloc(sizeof(struct obj));
+    if (!top)
+        top = _obj;
+    ffly_fseek(f, off, FF_SEEK_SET);
+    ffly_fread(f, _obj, sizeof(struct obj));
+    ffly_bin_tree_insert(&objs, off, _obj);
+    if (_obj->_type != NULL) {
+        ffly_fseek(f, (mdl_u32_t)_obj->_type, FF_SEEK_SET);
+        _obj->_type = (struct obj*)__ffly_mem_alloc(sizeof(struct type));
+        ffly_fread(f, _obj->_type, sizeof(struct type));
+    
+        ffly_printf("---> size: %u\n", _obj->_type->size);
+        if (_obj->p != NULL) {
+            ffly_fseek(f, (mdl_u32_t)_obj->p, FF_SEEK_SET);
+            if (_obj->_type->size < 100) { // in case 
+                _obj->p = __ffly_mem_alloc(_obj->_type->size);
+                ffly_fread(f, _obj->p, _obj->_type->size);
+            }
+            ffly_printf("data: %u\n", *(mdl_u16_t*)_obj->p);
+        }
+    }
+
+    if (_obj->to != NULL)
+        ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->to, (void**)&_obj->to);
+    if (_obj->from != NULL)
+        ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->from, (void**)&_obj->from);
+    if (_obj->val != NULL)
+        ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->val, (void**)&_obj->val); 
+
+    pr_obj(_obj);
+    if (prev != NULL)
+        prev->next = _obj;
+    prev = _obj;
+
+    if (_obj->next != NULL) {
+        off = (mdl_u32_t)_obj->next;
+        goto _next;
+    }
+    _obj->next = NULL;
+
+    __script->top = (void*)top;
+    ffly_fclose(f);
+    ffly_bin_tree_de_init(&objs);
+}
+//# define LOAD
 int main() {
 	struct ffly_script script;
 	ffly_io_init();
 	ffly_printf("loading script.\n");
 	ffly_script_prepare(&script);
+# ifndef LOAD
 	ffly_script_ld(&script, "scripts/main.ff");
 	ffly_printf("parsing script.\n");
 	ffly_script_parse(&script);
@@ -274,6 +407,11 @@ int main() {
 	ffly_script_gen(&script);
 	ffly_printf("executing script.\n");
 	ffly_script_exec(&script);
+   // ffly_script_save_bin(&script, "test.bin");
+# else
+    ffly_script_ld_bin(&script, "test.bin");
+    ffly_script_exec(&script);
+# endif
 
 	ffly_script_free(&script);
 	ffly_io_closeup();

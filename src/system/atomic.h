@@ -4,12 +4,12 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-void extern ffly_atomic_add(mdl_u64_t*, mdl_u64_t);
-void extern ffly_atomic_sub(mdl_u64_t*, mdl_u64_t);
-void extern ffly_atomic_set(mdl_u64_t*, mdl_u64_t);
-mdl_u64_t extern ffly_atomic_get(mdl_u64_t*);
-void extern ffly_atomic_incr(mdl_u64_t*);
-void extern ffly_atomic_decr(mdl_u64_t*);
+void ffly_atomic_add(mdl_u64_t*, mdl_u64_t);
+void ffly_atomic_sub(mdl_u64_t*, mdl_u64_t);
+void ffly_atomic_set(mdl_u64_t*, mdl_u64_t);
+mdl_u64_t ffly_atomic_get(mdl_u64_t*);
+void ffly_atomic_incr(mdl_u64_t*);
+void ffly_atomic_decr(mdl_u64_t*);
 # ifdef __cplusplus
 }
 namespace mdl {

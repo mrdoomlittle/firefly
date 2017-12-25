@@ -37,6 +37,15 @@ all: clean
 	gcc -c $(DEFINES) -std=c11 ../data/mem_swp.c
 ##	gcc -c -std=c11 $(DEFINES) -o mem_tracker.o mem_tracker.c
 	g++ -std=c++11 $(DEFINES) -o main map.o bin_tree.o hash.o str_len.o mem_cmp.o main.cpp futex.o mem_blk.o time.o sys_nanosleep.o cond_lock.o atomic_op.o mutex.o flags.o mem_set.o mem_swp.o buff.o queue.o vec.o mem_cpy.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o arr.o mem_dupe.o thread.o task_pool.o task_worker.o signal.o -lpthread
+mutex:
+	nasm -f elf64 -o mutex.o asm/mutex.asm
+	gcc -std=c11 mutex.c mutex.o -lpthread
+atomic:
+	nasm -f elf64 -o atomic_op.o asm/atomic_op.asm
+	gcc -std=c11 atomic_op.c atomic_op.o
+nanosleep:
+	nasm -f elf64 -o sys_nanosleep.o asm/sys_nanosleep.asm
+	gcc -std=c11 sys_nanosleep.c sys_nanosleep.o
 clean:
 	rm -f *.o
 #all:

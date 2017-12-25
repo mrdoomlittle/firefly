@@ -1,1 +1,3 @@
-print(21299);
+uint_t hello = 21;
+print(hello);
+

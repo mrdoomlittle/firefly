@@ -2,7 +2,6 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "io.h"
-# include <sys/stat.h>
 # include <unistd.h>
 # include "../data/mem_set.h"
 # include "errno.h"

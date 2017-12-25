@@ -24,7 +24,7 @@ char static* read_ident(struct ffly_script *__script) {
 	char end = '\0';
 	ffly_buff_put(&__script->sbuf, &end);
 	char *s = ffly_str_dupe((char*)ffly_buff_begin(&__script->sbuf));
-	__script->off+= ffly_buff_off(&__script->sbuf)+1;
+	__script->off+= ffly_buff_off(&__script->sbuf);
 	ffly_buff_off_reset(&__script->sbuf);
 	return s;
 }
@@ -39,7 +39,7 @@ char static* read_no(struct ffly_script *__script) {
 	char end = '\0';
 	ffly_buff_put(&__script->sbuf, &end);
 	char *s = ffly_str_dupe((char*)ffly_buff_begin(&__script->sbuf));
-	__script->off+= ffly_buff_off(&__script->sbuf)+1;
+	__script->off+= ffly_buff_off(&__script->sbuf);
 	ffly_buff_off_reset(&__script->sbuf);
 	return s;
 }
@@ -106,7 +106,10 @@ struct token* ffly_script_lex(struct ffly_script *__script, ffly_err_t *__err) {
 		return tok;
 	}
 
-	while(is_space(fetchc(__script)) && !is_eof(__script)) __script->off++;
+	while(is_space(fetchc(__script)) && !is_eof(__script)) {
+        if (fetchc(__script) == '\n') __script->line++;
+        __script->off++;
+    }
 
 	struct token *tok;
 	while(!(tok = read_token(__script)) && !is_eof(__script));
