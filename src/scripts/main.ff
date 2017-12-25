@@ -1,3 +1,6 @@
-uint_t hello = 21;
-print(hello);
+u8_t a = 0;
+u8_t b = 1;
 
+if (a == b) {
+	print(2);
+}

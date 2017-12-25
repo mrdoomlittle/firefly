@@ -14,9 +14,13 @@ char static fetchc(struct ffly_script *__script) {
 	return *(__script->p+__script->off);
 }
 
+ffly_bool_t is_next(struct ffly_script *__script, char __c) {
+    return (*(__script->p+__script->off+1) == __c);
+}
+
 char static* read_ident(struct ffly_script *__script) {
 	char *itr = (char*)(__script->p+__script->off);
-	while((*itr >= 'a' && *itr <= 'z') || *itr == '_') {
+	while((*itr >= 'a' && *itr <= 'z') || *itr == '_' || (*itr >= '0' && *itr <= '9')) {
 		ffly_buff_put(&__script->sbuf, itr++);
 		ffly_buff_incr(&__script->sbuf);
 	}
@@ -53,12 +57,31 @@ static struct token* read_token(struct ffly_script *__script) {
 	struct token *tok = (struct token*)__ffly_mem_alloc(sizeof(struct token));
 	tok->p = NULL;
 	switch(fetchc(__script)) {
+        case '<':
+            make_keyword(tok, _lt);
+            __script->off++;
+        break;
+        case '>':
+            make_keyword(tok, _gt);
+            __script->off++;
+        break;
+        case '!':
+            if (is_next(__script, '=')) {
+                make_keyword(tok, _neq);
+                __script->off++;
+            }
+            __script->off++;
+        break;
 		case ';':
 			make_keyword(tok, _semicolon);
 			__script->off++;
 		break;
 		case '=':
-			make_keyword(tok, _eq);
+            if (is_next(__script, '=')) {
+                make_keyword(tok, _eqeq);
+                __script->off++;
+            } else
+			    make_keyword(tok, _eq);
 			__script->off++;
 		break;
 		case '(':
@@ -69,6 +92,14 @@ static struct token* read_token(struct ffly_script *__script) {
 			make_keyword(tok, _r_paren);
 			__script->off++;
 		break;
+        case '{':
+            make_keyword(tok, _l_brace);
+            __script->off++;
+        break;
+        case '}':
+            make_keyword(tok, _r_brace);
+            __script->off++;
+        break;
 		default:
 		if ((fetchc(__script) >= 'a' && fetchc(__script) <= 'z') || fetchc(__script) == '_') {
 			*tok = (struct token) {

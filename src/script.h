@@ -23,10 +23,16 @@ struct ffly_script {
 # define TOK_KEYWORD 1
 # define TOK_NO 2
 enum {
+    _eqeq,
 	_eq,
+    _neq,
+    _gt,
+    _lt,
 	_semicolon,
 	_l_paren,
 	_r_paren,
+    _l_brace,
+    _r_brace,
 	_k_print,
 	_k_uint_t,
 	_k_int_t,
@@ -37,16 +43,22 @@ enum {
 	_k_u16_t,
 	_k_i16_t,
 	_k_u8_t,
-	_k_i8_t
+	_k_i8_t,
+    _k_if
 };
 
 enum {
+    _ast_if,
 	_ast_decl,
 	_ast_assign,
 	_ast_print,
 	_ast_literal,
 	_ast_print_call,
-    _ast_var
+    _ast_var,
+    _op_eq,
+    _op_neq,
+    _op_gt,
+    _op_lt
 };
 
 enum {
@@ -62,20 +74,31 @@ enum {
 	_i8_t
 };
 
+# define _flg_neq 0x1
+# define _flg_eq 0x2
+# define _flg_gt 0x4
+# define _flg_lt 0x8
+
 enum {
 	_op_alloc,
 	_op_free,
 	_op_assign,
 	_op_copy,
 	_op_print,
+    _op_compare,
+    _op_jump,
+    _op_cond_jump
 };
 
 struct node {
-	mdl_u8_t kind;
+    mdl_u8_t kind;
     struct type *_type;
-	ffly_byte_t val[sizeof(mdl_u64_t)];
-	struct node *init, *var, *arg;
+    ffly_byte_t val[sizeof(mdl_u64_t)];
+    struct node *init, *var, *arg;
     struct obj *_obj;
+    struct node *l, *r;
+    struct node *cond;
+    struct ffly_vec vec;
 };
 
 struct token {
@@ -90,13 +113,13 @@ struct type {
 
 struct obj {
     mdl_u32_t off;
-	mdl_u8_t opcode;
-	void *p;
-	struct type *_type;
+    mdl_u8_t opcode, cond;
+    void *p;
+    struct type *_type;
     // dst/src? or'
-	struct obj *to, *from;
-	struct obj *val;
-	struct obj *next;
+    struct obj *to, *from, *l, *r;
+    struct obj *val, **jmp, *flags;
+    struct obj *next;
 };
 
 void skip_token(struct ffly_script*);
@@ -112,6 +135,8 @@ ffly_bool_t maybe_keyword(struct token*);
 ffly_bool_t is_eof(struct ffly_script*);
 void pr_tok(struct token*);
 # endif
+ffly_err_t ffly_script_build(struct ffly_script*);
+ffly_err_t ffly_script_gen_free();
 ffly_err_t ffly_script_prepare(struct ffly_script*);
 ffly_err_t ffly_script_ld(struct ffly_script*, char*);
 ffly_err_t ffly_script_parse(struct ffly_script*);
