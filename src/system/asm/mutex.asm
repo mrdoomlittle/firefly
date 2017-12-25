@@ -1,17 +1,17 @@
 section .text
-global ffly_mutex_lock
-global ffly_mutex_unlock
-ffly_mutex_lock:
+global _ffly_mutex_lock
+global _ffly_mutex_unlock
+_ffly_mutex_lock:
 	mov al, [rdi]
 	cmp al, 1
-	je ffly_mutex_lock
+	je _ffly_mutex_lock
 
+	mov al, 1
 	lock xchg [rdi], al
 	cmp al, 0
-	jne ffly_mutex_lock
+	jne _ffly_mutex_lock
 	ret
-ffly_mutex_unlock:
+_ffly_mutex_unlock:
 	mov al, [rdi]
 	lock xor BYTE[rdi], al
-	_sk_decr:
 	ret
