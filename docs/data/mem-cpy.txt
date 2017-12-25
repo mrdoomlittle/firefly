@@ -1,0 +1,23 @@
+ffly_err_t ffly_mem_cpy(void*, void*, mdl_uint_t);
+
+c style
+{
+	mdl_uint_t src = 21299;
+	mdl_uint_t dst;
+	ffly_mem_cpy(&dst, &src, sizeof(mdl_uint_t));
+}
+
+mdl::firefly::types::err_t mdl::firefly::data::mem_cpy(void*, void*, mdl::uint_t);
+
+c++ style
+{
+	mdl::uint_t src = 21299;
+	mdl::uint_t dst;
+	mdl::firefly::data::mem_cpy(&dst, &src, sizeof(mdl::uint_t));
+}
+
+rust style
+- not implemented yet
+
+firefly script
+- not implemented yet

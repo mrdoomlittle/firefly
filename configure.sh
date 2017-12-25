@@ -105,7 +105,6 @@ else
 	if [ -f /usr/local/lib/x86_64-linux-gnu/libpng16.so ] ||
 	[ -f /usr/lib/x86_64-linux-gnu/libpng16.so ] ||
 	[ -f /lib/x86_64-linux-gnu/libpng16.so ]; then
-		echo "fuck"
 		ffly_ld_flags="$ffly_ld_flags -lpng16"
 	fi
 fi
