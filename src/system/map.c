@@ -28,7 +28,7 @@ map_entry_t static* map_find(struct ffly_map *__map, mdl_u8_t const *__key, mdl_
 	map_entry_t *itr = (map_entry_t*)ffly_vec_begin(*map_blk);
 	while(itr <= (map_entry_t*)ffly_vec_end(*map_blk)) {
 		if (itr->val == val && itr->bc == __bc)
-			if (!ffly_mem_cmp(__key, itr->key, __bc)) return itr;
+			if (!ffly_mem_cmp((void*)__key, (void*)itr->key, __bc)) return itr;
 		itr++;
 	}
 	return NULL;
@@ -52,7 +52,7 @@ ffly_err_t ffly_map_put(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_
 		//err
 	}
 	mdl_u8_t *key;
-	if (_err(ffly_mem_dupe((void**)&key, __key, __bc))) {
+	if (_err(ffly_mem_dupe((void**)&key, (void*)__key, __bc))) {
 		//err
 	}
 
@@ -84,4 +84,5 @@ ffly_err_t ffly_map_de_init(struct ffly_map *__map) {
 		itr++;
 	}
 	__ffly_mem_free(__map->table);
+	return FFLY_SUCCESS;
 }

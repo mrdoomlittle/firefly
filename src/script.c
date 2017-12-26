@@ -228,8 +228,8 @@ mdl_uint_t tokcol(struct token *__tok) {
 ffly_bool_t expect_token(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_t __id) {
 	struct token *tok = next_token(__script);
 	if (!tok) return 0;
-	mdl_u8_t ret_val = (tok->kind == __kind && tok->id == __id);
-    if (!ret_val) {
+	mdl_u8_t ret_val;
+    if (!(ret_val = (tok->kind == __kind && tok->id == __id))) {
         if (__kind == TOK_KEYWORD) {
             switch(__id) {
                 case _l_brace:

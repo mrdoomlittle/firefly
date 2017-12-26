@@ -1,7 +1,6 @@
 # include "window.hpp"
 # include "../data/mem_set.h"
-# include "../data/str_len.h"
-# include "../data/mem_dupe.h"
+# include "../data/str_dupe.h"
 # include "../types/event_t.h"
 # include "../system/io.h"
 # include "../system/err.h"
@@ -10,7 +9,7 @@ mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __width, u
 	this->height = __height;
 
 	system::io::fprintf(ffly_log, "window, width: %u, height: %u, title: %s\n", __width, __height, __title);
-	ffly_mem_dupe(reinterpret_cast<void**>(const_cast<char**>(&this->title)), const_cast<char*>(__title), ffly_str_len(const_cast<char*>(__title)));
+	this->title = ffly_str_dupe(const_cast<char*>(__title));
 	types::err_t err;
 	if (_err(err = ffly_wd_init(&this->raw, __width, __height, this->title)))
 		return err;

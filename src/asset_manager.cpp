@@ -179,10 +179,15 @@ void mdl::firefly::asset_manager::del_asset(types::id_t __id) {
 	this->asset_ids.erase(itr);
 }
 */
+# include "system/err.h"
 mdl::firefly::types::bool_t mdl::firefly::asset_manager::valid_asset_id(types::id_t __id) {
     types::err_t err;
-	return !(this->asset_ids.find(__id, err) == this->asset_ids.end());}
-
+    this->asset_ids.find(__id, err);
+    if (_err(err))
+        return 0;
+    return 1;
+//	return !(this->asset_ids.find(__id, err) == this->asset_ids.end());}
+}
 mdl::u8_t* mdl::firefly::asset_manager::get_asset_data(types::id_t __id) {
 	if (!this->valid_asset_id(__id)) return nullptr;
 	return this->asset_d[*__id].data;

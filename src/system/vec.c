@@ -15,6 +15,10 @@ ffly_off_t ffly_vec_off(struct ffly_vec *__vec, void *__p) {
 	return (mdl_u8_t*)__p-(mdl_u8_t*)__vec->p;
 }
 
+void* ffly_vec_at(struct ffly_vec *__vec, mdl_uint_t __off) {
+    return (void*)((mdl_u8_t*)__vec->p+(__off*__vec->blk_size));
+}
+
 mdl_uint_t ffly_vec_blk_off(struct ffly_vec *__vec, void *__p) {
 	ffly_off_t off = ffly_vec_off(__vec, __p);
 	if (is_flag(__vec, VEC_BLK_CHAIN))

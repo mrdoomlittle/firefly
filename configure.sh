@@ -51,7 +51,7 @@ fi
 
 ffly_target=
 if [ $(bash find.bash "$1" "--ffly-client") -eq 0 ]; then
-	ffly_ld_flags="$ffly_ld_flags -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm -lpulse -lpulse-simple -lasound"
+	ffly_ld_flags="$ffly_ld_flags -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm -lpulse -lpulse-simple -lasound -ljpeg"
 	ffly_target="ffly_client"
 elif [ $(bash find.bash "$1" "--ffly-server") -eq 0 ]; then
 	ffly_target="ffly_server"

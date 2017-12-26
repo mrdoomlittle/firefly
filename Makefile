@@ -1,10 +1,9 @@
 #SHELL := /bin/bash
 ifeq ($(ffly_target), ffly_server)
- override ffly_objs+= src/ffly_server.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o src/graphics/png.o \
+ override ffly_objs+= src/ffly_server.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o \
  src/worker_manager.o src/memory/alloc_pixelmap.o src/graphics/draw_pixmap.clo src/player_manager.o src/player_handler.o src/worker_handler.o
 else ifeq ($(ffly_target), ffly_client)
- override ffly_objs+= src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/graphics/png.o src/system/time_stamp.o src/system/event.o \
- src/layer_manager.o src/room_manager.o
+ override ffly_objs+= src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/system/time_stamp.o src/layer_manager.o src/room_manager.o
 else ifeq ($(ffly_target), ffly_studio)
  override ffly_objs+= src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixelmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
@@ -14,7 +13,7 @@ else ifeq ($(ffly_target), ffly_studio)
 else ifeq ($(ffly_target), ffly_worker)
  override ffly_objs+= src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png.o src/memory/alloc_pixelmap.o
 else ifeq ($(ffly_target), ffly_test)
- override ffly_objs+= src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/graphics/png.o src/graphics/jpeg.o src/system/time_stamp.o
+ override ffly_objs+= src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/system/time_stamp.o
 else ifeq ($(ffly_target), ffly_bare)
  override ffly_objs+= 
 endif
@@ -37,7 +36,7 @@ override ffly_objs+= src/system/bin_tree.o src/system/arr.o src/system/buff.o sr
 src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
 src/system/task_worker.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o src/system/event.o
 # graphics
-override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o src/graphics/copy.o src/graphics/draw.o src/graphics/image.o
+override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o src/graphics/copy.o src/graphics/draw.o src/graphics/image.o src/graphics/png.o src/graphics/jpeg.o
 
 #src/graphics/draw_pixelmap.o src/graphics/fill_pixmap.o src/graphics/fill_pixelmap.o
 #ffly_objs+= src/ffly_graphics.o
