@@ -12,11 +12,11 @@
 #	define ffly_null_id NULL
 # endif
 
-# ifndef __ffly_true
+# ifndef ffly_true
 #	define ffly_true 1
 # endif
 
-# ifndef __ffly_false
+# ifndef ffly_false
 #	define ffly_false 0
 # endif
 

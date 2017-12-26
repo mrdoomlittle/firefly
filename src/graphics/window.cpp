@@ -4,6 +4,10 @@
 # include "../types/event_t.h"
 # include "../system/io.h"
 # include "../system/err.h"
+mdl::firefly::types::err_t mdl::firefly::graphics::window::query_pointer(i16_t& __root_xa, i16_t& __root_ya, i16_t& __wd_xa, i16_t& __wd_ya) {
+    return ffly_wd_query_pointer(&this->raw, &__root_xa, &__root_ya, &__wd_xa, &__wd_ya);
+}
+
 mdl::firefly::types::err_t mdl::firefly::graphics::window::init(u16_t __width, u16_t __height, char const *__title) {
 	this->width = __width;
 	this->height = __height;

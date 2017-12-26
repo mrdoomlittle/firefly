@@ -66,11 +66,11 @@ ffly_err_t ffly_x11_wd_open(struct ffly_x11_wd *__wd) {
 		return FFLY_FAILURE;
 	}
 
-	Window rt = XRootWindow(__wd->d, 0);
-	wd_att.colormap = XCreateColormap(__wd->d, rt, vis_info->visual, AllocNone);
+	Window root = XRootWindow(__wd->d, 0);
+	wd_att.colormap = XCreateColormap(__wd->d, root, vis_info->visual, AllocNone);
 	wd_att.event_mask = 0;
 
-	__wd->w = XCreateWindow(__wd->d, rt, 0, 0, __wd->width, __wd->height, 0, vis_info->depth, InputOutput, vis_info->visual, CWColormap|CWEventMask, &wd_att);
+	__wd->w = XCreateWindow(__wd->d, root, 0, 0, __wd->width, __wd->height, 0, vis_info->depth, InputOutput, vis_info->visual, CWColormap|CWEventMask, &wd_att);
 	XStoreName(__wd->d, __wd->w, __wd->title);
 	XSelectInput(__wd->d, __wd->w, ExposureMask|KeyPressMask|KeyReleaseMask|ButtonPressMask|ButtonReleaseMask|StructureNotifyMask);
 	XMapWindow(__wd->d, __wd->w);

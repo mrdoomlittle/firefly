@@ -17,6 +17,7 @@ namespace graphics {
 class window {
 	public:
 	types::byte_t* frame_buff() {return ffly_wd_frame_buff(&this->raw);}
+    types::err_t query_pointer(i16_t& __root_xa, i16_t& __root_ya, i16_t& __wd_xa, i16_t& __wd_ya);
 	types::err_t init(u16_t __width, u16_t __height, char const *__title);
 	types::err_t open() {return ffly_wd_open(&this->raw);}
 	types::err_t close() {return ffly_wd_close(&this->raw);}

@@ -10,8 +10,10 @@
 # include "../types/byte_t.h"
 # ifdef __ffly_use_x11
 #	include "x11_wd.h"
+#	include "x11.h"
 # elif __ffly_use_xcb
 #	include "xcb_wd.h"
+#	include "xcb.h"
 # endif
 struct ffly_wd {
 # ifdef __ffly_use_x11
@@ -25,6 +27,7 @@ struct ffly_wd {
 # ifdef __cplusplus
 extern "C" {
 # endif
+ffly_err_t ffly_wd_query_pointer(struct ffly_wd*, mdl_i16_t*, mdl_i16_t*, mdl_i16_t*, mdl_i16_t*);
 ffly_err_t ffly_wd_display(struct ffly_wd*);
 ffly_byte_t* ffly_wd_frame_buff(struct ffly_wd*);
 ffly_flag_t* ffly_wd_flags(struct ffly_wd*);

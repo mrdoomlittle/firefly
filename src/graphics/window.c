@@ -16,6 +16,21 @@ ffly_flag_t* ffly_wd_flags(struct ffly_wd *__wd) {
 	return &__wd->flags;
 }
 
+ffly_err_t ffly_wd_query_pointer(struct ffly_wd *__wd, mdl_i16_t *__root_xa, mdl_i16_t *__root_ya, mdl_i16_t *__wd_xa, mdl_i16_t *__wd_ya) {
+    ffly_err_t err;
+# ifdef __ffly_use_x11
+    err = ffly_x11_query_pointer(&__wd->raw, __root_xa, __root_ya, __wd_xa, __wd_ya);
+# endif
+# ifdef __ffly_use_xcb 
+    err = ffly_xcb_query_pointer(&__wd->raw, __root_xa, __root_ya, __wd_xa, __wd_ya);
+# endif
+    if (_err(err)) {
+        ffly_fprintf(ffly_err, "failed to query pointer.\n");
+        return err;
+    }
+    return FFLY_SUCCESS;
+}
+
 ffly_err_t ffly_wd_open(struct ffly_wd *__wd) {
 	ffly_err_t err;
 # ifdef __ffly_use_x11

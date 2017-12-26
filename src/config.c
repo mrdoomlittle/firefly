@@ -21,15 +21,15 @@ enum {
     _r_bracket
 };
 
-ffly_bool_t is_space(char __c) {
+ffly_bool_t static is_space(char __c) {
     return (__c == ' ' || __c == '\n');
 }
 
-void const* ffly_conf_get(struct ffly_conf *__conf, char *__name) {
+void const static* ffly_conf_get(struct ffly_conf *__conf, char *__name) {
     return ffly_map_get(&__conf->env, (mdl_u8_t*)__name, ffly_str_len(__name));
 }
 
-void* ffly_conf_get_arr_elem(struct ffly_conf *__conf, void *__p, mdl_uint_t __no) {
+void static* ffly_conf_get_arr_elem(struct ffly_conf *__conf, void *__p, mdl_uint_t __no) {
     return *(void**)ffly_vec_at(&((struct ffly_conf_arr*)__p)->data, __no);
 }
 
@@ -38,9 +38,9 @@ struct token {
     void *p;
 };
 
-struct token* read_token(struct ffly_conf*, ffly_err_t*);
-struct token *peek_token(struct ffly_conf*, ffly_err_t*);
-ffly_bool_t expect_token(struct ffly_conf *__conf, mdl_u8_t __kind, mdl_u8_t __id, ffly_err_t *__err) {
+struct token static* read_token(struct ffly_conf*, ffly_err_t*);
+struct token static* peek_token(struct ffly_conf*, ffly_err_t*);
+ffly_bool_t static expect_token(struct ffly_conf *__conf, mdl_u8_t __kind, mdl_u8_t __id, ffly_err_t *__err) {
     struct token *tok = read_token(__conf, __err);
     if (_err(*__err)) return 0;
     mdl_u8_t ret_val;
@@ -66,40 +66,39 @@ ffly_bool_t expect_token(struct ffly_conf *__conf, mdl_u8_t __kind, mdl_u8_t __i
     return ret_val;
 }
 
-ffly_err_t push_free(struct ffly_conf *__conf, void *__p) {
+ffly_err_t static push_free(struct ffly_conf *__conf, void *__p) {
     void **p;
     ffly_vec_push_back(&__conf->free, (void**)&p);
     *p = __p;
 }
 
-
-ffly_err_t push_arr(struct ffly_conf *__conf, struct ffly_conf_arr *__arr) {
+ffly_err_t static push_arr(struct ffly_conf *__conf, struct ffly_conf_arr *__arr) {
     struct ffly_conf_arr **p;
     ffly_vec_push_back(&__conf->arrs, (void**)&p);
     *p = __arr;
 }
 
-ffly_bool_t is_eof(struct ffly_conf *__conf) {
+ffly_bool_t static is_eof(struct ffly_conf *__conf) {
     return (__conf->p+__conf->off) >= __conf->end;
 }
 
-void mk_ident(struct token *__tok, char *__s) {
+void static mk_ident(struct token *__tok, char *__s) {
     *__tok = (struct token){.kind=_tok_ident, .p=(void*)__s};
 }
-void mk_keyword(struct token *__tok, mdl_u8_t __id) {
+void static mk_keyword(struct token *__tok, mdl_u8_t __id) {
     *__tok = (struct token){.kind=_tok_keyword, .id=__id, .p=NULL};
 }
-void mk_str(struct token *__tok, char *__s) {
+void static mk_str(struct token *__tok, char *__s) {
     *__tok = (struct token){.kind=_tok_str, .p=(void*)__s};
 }
-void mk_no(struct token *__tok, char *__s) {
+void static mk_no(struct token *__tok, char *__s) {
     *__tok = (struct token){.kind=_tok_no, .p=(void*)__s};
 }
-void mk_chr(struct token *__tok, char *__s) {
+void static mk_chr(struct token *__tok, char *__s) {
     *__tok = (struct token){.kind=_tok_chr, .p=(void*)__s};
 }
 
-char *read_ident(struct ffly_conf *__conf) {
+char static* read_ident(struct ffly_conf *__conf) {
     char *itr = (char*)(__conf->p+__conf->off);
     while((*itr >= 'a' && *itr <= 'z') || *itr == '_') {
         ffly_buff_put(&__conf->sbuf, itr++);
@@ -114,7 +113,7 @@ char *read_ident(struct ffly_conf *__conf) {
     return s;
 }
 
-char *read_no(struct ffly_conf *__conf) {
+char static* read_no(struct ffly_conf *__conf) {
     char *itr = (char*)(__conf->p+__conf->off);
     while((*itr >= '0' && *itr <= '9') || *itr == '.') {
         ffly_buff_put(&__conf->sbuf, itr++);
@@ -129,7 +128,7 @@ char *read_no(struct ffly_conf *__conf) {
     return s;
 }
 
-char *read_str(struct ffly_conf *__conf) {
+char static* read_str(struct ffly_conf *__conf) {
     char *itr = (char*)(__conf->p+__conf->off);
     while(*itr != '"') {
         ffly_buff_put(&__conf->sbuf, itr++);
@@ -144,23 +143,23 @@ char *read_str(struct ffly_conf *__conf) {
     return s;
 }
 
-char *read_chr(struct ffly_conf *__conf) {
+char static* read_chr(struct ffly_conf *__conf) {
     __conf->off++;
     return (char*)(__conf->p+(__conf->off-1));
 }
 
-ffly_err_t uread_token(struct ffly_conf *__conf, struct token *__tok) {
+ffly_err_t static uread_token(struct ffly_conf *__conf, struct token *__tok) {
     ffly_err_t err;
     ffly_buff_put(&__conf->iject_buff, (void*)&__tok);
     ffly_buff_incr(&__conf->iject_buff);
     return FFLY_SUCCESS;
 }   
 
-char fetchc(struct ffly_conf *__conf) {
+char static fetchc(struct ffly_conf *__conf) {
     return *(__conf->p+__conf->off);
 }
 
-struct token* read_token(struct ffly_conf *__conf, ffly_err_t *__err) {
+struct token static* read_token(struct ffly_conf *__conf, ffly_err_t *__err) {
     ffly_err_t err;
     if (ffly_buff_off(&__conf->iject_buff)>0){
         struct token *tok;
@@ -216,7 +215,7 @@ struct token* read_token(struct ffly_conf *__conf, ffly_err_t *__err) {
     return tok;
 }
 
-ffly_bool_t next_token_is(struct ffly_conf *__conf, mdl_u8_t __kind, mdl_u8_t __id, ffly_err_t *__err) {
+ffly_bool_t static next_token_is(struct ffly_conf *__conf, mdl_u8_t __kind, mdl_u8_t __id, ffly_err_t *__err) {
     struct token *tok = read_token(__conf, __err);
     if (tok->kind == __kind && tok->id == __id) return 1;
     *__err = uread_token(__conf, tok);
@@ -224,7 +223,7 @@ ffly_bool_t next_token_is(struct ffly_conf *__conf, mdl_u8_t __kind, mdl_u8_t __
     return 0;
 }
 
-ffly_byte_t* read_literal(struct ffly_conf *__conf, mdl_u8_t *__kind, ffly_err_t *__err) {
+ffly_byte_t static* read_literal(struct ffly_conf *__conf, mdl_u8_t *__kind, ffly_err_t *__err) {
     struct token *tok = read_token(__conf, __err);
     if (tok->kind == _tok_no) {
         void *p;
@@ -256,7 +255,7 @@ ffly_byte_t* read_literal(struct ffly_conf *__conf, mdl_u8_t *__kind, ffly_err_t
     return (ffly_byte_t*)ffly_str_dupe((char*)tok->p); 
 }
 
-ffly_err_t read_val(struct ffly_conf *__conf, struct ffly_conf_val *__val) {
+ffly_err_t static read_val(struct ffly_conf *__conf, struct ffly_conf_val *__val) {
     ffly_err_t err;
     __val->p = read_literal(__conf, &__val->kind, &err);
     push_free(__conf, __val->p);
@@ -268,7 +267,7 @@ ffly_err_t read_val(struct ffly_conf *__conf, struct ffly_conf_val *__val) {
     return FFLY_SUCCESS;
 }
 
-ffly_err_t read_arr(struct ffly_conf *__conf, struct ffly_vec *__data) {
+ffly_err_t static read_arr(struct ffly_conf *__conf, struct ffly_vec *__data) {
     ffly_err_t err;
     ffly_vec_clear_flags(__data);
     ffly_vec_set_flags(__data, VEC_AUTO_RESIZE);
@@ -307,7 +306,7 @@ ffly_err_t read_arr(struct ffly_conf *__conf, struct ffly_vec *__data) {
     return FFLY_SUCCESS;
 }
 
-ffly_err_t read_decl(struct ffly_conf *__conf) {
+ffly_err_t static read_decl(struct ffly_conf *__conf) {
     ffly_err_t err;
     struct token *name = read_token(__conf, &err);
     if (_err(err)) return FFLY_FAILURE;
@@ -394,7 +393,7 @@ ffly_err_t ffly_conf_init(struct ffly_conf *__conf) {
     return FFLY_SUCCESS;
 }
 
-struct token *peek_token(struct ffly_conf *__conf, ffly_err_t *__err) {
+struct token static* peek_token(struct ffly_conf *__conf, ffly_err_t *__err) {
     struct token *tok = read_token(__conf, __err);
     if (_err(*__err)) return NULL;
     uread_token(__conf, tok);
@@ -495,7 +494,7 @@ ffly_err_t ffly_conf_free(struct ffly_conf *__conf) {
     return FFLY_SUCCESS;
 }
 
-void print_val(struct ffly_conf_val *__val) {
+void static print_val(struct ffly_conf_val *__val) {
     if (__val->kind == _ffly_conf_vt_str)
         printf("%s\n", (char*)__val->p);
     else if (__val->kind == _ffly_conf_vt_chr)

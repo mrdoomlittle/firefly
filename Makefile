@@ -51,9 +51,9 @@ endif
 
 ifneq ($(ffly_target), $(filter $(ffly_target), ffly_server ffly_worker))
  ifeq ($(ffly_window), x11)
-  override ffly_objs+= src/graphics/x11_wd.o
+  override ffly_objs+= src/graphics/x11_wd.o src/graphics/x11.o
  else ifeq ($(ffly_window), xcb)
-  override ffly_objs+= src/graphics/xcb_wd.o
+  override ffly_objs+= src/graphics/xcb_wd.o src/graphics/xcb.o
  endif
 endif
 
@@ -73,6 +73,12 @@ endif
 
 override ffly_objs+= src/firefly.o
 override ffly_defines+= -D__ffly_use_pulse_audio
+src/graphics/x11.o: src/graphics/x11.o
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/graphics/x11.o src/graphics/x11.c
+
+src/graphics/xcb.o: src/graphics/xcb.o
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/graphics/xcb.o src/graphics/xcb.c
+
 src/system/bin_tree.o: src/system/bin_tree.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/bin_tree.o src/system/bin_tree.c
 

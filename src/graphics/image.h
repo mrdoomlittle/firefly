@@ -19,6 +19,7 @@ enum {
 extern "C" {
 # endif
 ffly_err_t ffly_ld_img(ffly_imagep, char*, char*, mdl_uint_t);
+ffly_err_t ffly_free_img(ffly_imagep);
 # ifdef __cplusplus
 }
 namespace mdl {

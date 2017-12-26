@@ -2,18 +2,20 @@
 # include "graphics/image.h"
 # include "asset_manager.h"
 # include "system/asset.h"
+# include "ffly_audio.h"
+# include "system/aud_fformat.h"
 using namespace mdl::firefly;
 int main() {
 	ffly_io_init();
-    asset_manager asset_m;
-    types::err_t err;
-    asset_m.load_asset("images", "test", _ffly_ak_img, _ffly_af_png, 0, err);
-    
-//	graphics::image img;
-//	graphics::ld_img(&img, "images", "test", _ffly_img_jpeg);
-	
+    mdl::ffly_audio::init();
 
-	ffly_io_closeup();
+    ffly_audio aud;
+    ffly_ld_aud(NULL, "atest", _ffly_audf_wav, &aud);
+    ffly_aud_write(aud.p, aud.size);
+
+    ffly_aud_drain();
+    mdl::ffly_audio::de_init();
+    ffly_io_closeup();
 }
 /*
 # include "asset_manager.h"

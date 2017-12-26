@@ -10,6 +10,9 @@
 # ifdef __ffly_use_pulse_audio
 struct ffly_pulse __pulse__;
 # endif
+# ifdef __ffly_use_alsa_audio
+struct ffly_alsa __alsa__;
+# endif
 ffly_err_t ffly_ld_aud(char *__dir, char *__name, ffly_aud_fformat_t __format, ffly_audiop __audio) {
 	ffly_size_t header_size;
 	char *ext;
@@ -185,13 +188,37 @@ ffly_err_t ffly_audio_init(ffly_aud_spec_t *__aud_spec) {
 		case _ffly_af_float32_le:
 			sample_spec.format = PA_SAMPLE_FLOAT32LE;
 		break;
-		default: return FFLY_FAILURE;
+		default:
+            ffly_fprintf(ffly_err, "audio format not supported.\n");
+        return FFLY_FAILURE;
 	}
 
 	sample_spec.channels = __aud_spec->chn_c;
 	sample_spec.rate = __aud_spec->rate;
-
-	ffly_pulse_init(&__pulse__, "pulse", "ffly-audio", &sample_spec);
+    ffly_err_t err;
+	if (_err(err = ffly_pulse_init(&__pulse__, "pulse", "ffly-audio", &sample_spec))) {
+        ffly_fprintf(ffly_err, "failed to init pulse audio.\n");
+        return err;
+    }
+# endif
+# ifdef __ffly_use_alsa_audio
+    snd_pcm_format_t format;
+    switch(__aud_spec->format) {
+        case _ffly_af_s16_le:
+            format = SND_PCM_FORMAT_S16_LE;
+        break;
+        case _ffly_af_float32_le:
+            format = SND_PCM_FORMAT_FLOAT_LE;
+        break;
+        default:
+            ffly_fprintf(ffly_err, "audio format not supported.\n");
+        return FFLY_FAILURE;
+    }
+    ffly_err_t err;
+    if (_err(err = ffly_alsa_init(&__alsa__, __aud_spec->rate, __aud_spec->chn_c, format, 16, 100))) {
+        ffly_fprintf(ffly_err, "failed to init alsa audio.\n");
+        return err;
+    }
 # endif
 	return FFLY_SUCCESS;
 }
@@ -203,6 +230,9 @@ ffly_err_t ffly_audio_de_init() {
 	r_buff = NULL;
 # ifdef __ffly_use_pulse_audio
 	ffly_pulse_free(&__pulse__);
+# endif
+# ifdef __ffly_use_alsa_audio
+    ffly_alsa_free(&__alsa__);
 # endif
 }
 
@@ -266,6 +296,10 @@ ffly_err_t ffly_aud_drain() {
 # ifdef __ffly_use_pulse_audio
 	ffly_pulse_write(&__pulse__, w_buff, wbuf_itr-w_buff);
 	ffly_pulse_drain(&__pulse__);
+# endif
+# ifdef __ffly_use_alsa_audio
+    ffly_alsa_write(&__alsa__, w_buff, wbuf_itr-w_buff);
+    ffly_alsa_drain(&__alsa__);
 # endif
 	wbuf_itr = w_buff;
 }
