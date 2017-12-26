@@ -9,7 +9,8 @@ struct ffly_script {
     struct ffly_map env;
 	ffly_byte_t *p, *end;
 	ffly_off_t off;
-    mdl_uint_t line;
+
+    mdl_uint_t line, lo;
 	struct ffly_vec nodes;
 	struct ffly_vec toks;
 	struct ffly_buff sbuf;
@@ -22,6 +23,7 @@ struct ffly_script {
 # define TOK_IDENT 0
 # define TOK_KEYWORD 1
 # define TOK_NO 2
+# define TOK_NULL 3
 enum {
     _eqeq,
 	_eq,
@@ -87,7 +89,8 @@ enum {
 	_op_print,
     _op_compare,
     _op_jump,
-    _op_cond_jump
+    _op_cond_jump,
+    _op_zero
 };
 
 struct node {
@@ -104,6 +107,8 @@ struct node {
 struct token {
 	void *p;
 	mdl_u8_t kind, id;
+    mdl_uint_t line;
+    ffly_off_t off, lo;
 };
 
 struct type {
@@ -117,12 +122,19 @@ struct obj {
     void *p;
     struct type *_type;
     // dst/src? or'
+    struct obj *dst;
     struct obj *to, *from, *l, *r;
     struct obj *val, **jmp, *flags;
     struct obj *next;
 };
 
+char const* tokk_str(mdl_u8_t);
+char const* tokid_str(mdl_u8_t);
+mdl_uint_t tokcol(struct token*);
 void skip_token(struct ffly_script*);
+ffly_off_t toklo(struct token*);
+ffly_off_t curlo(struct ffly_script*);
+mdl_uint_t tokl(struct token*);
 mdl_uint_t curl(struct ffly_script*);
 ffly_bool_t next_token_is(struct ffly_script*, mdl_u8_t, mdl_u8_t);
 ffly_bool_t is_keyword(struct token*, mdl_u8_t);

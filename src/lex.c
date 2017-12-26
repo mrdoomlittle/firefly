@@ -56,6 +56,7 @@ void make_keyword(struct token *__tok, mdl_u8_t __id) {
 static struct token* read_token(struct ffly_script *__script) {
 	struct token *tok = (struct token*)__ffly_mem_alloc(sizeof(struct token));
 	tok->p = NULL;
+    ffly_off_t off = __script->off;
 	switch(fetchc(__script)) {
         case '<':
             make_keyword(tok, _lt);
@@ -113,10 +114,13 @@ static struct token* read_token(struct ffly_script *__script) {
 			};
 		} else {
 			__script->off++;
-			__ffly_mem_free(tok);
-			return NULL;
+			tok->kind = TOK_NULL;
 		}
 	}
+    
+    tok->line = curl(__script);
+    tok->off = off;
+    tok->lo = curlo(__script);
 	struct token **p;
 	ffly_vec_push_back(&__script->toks, (void**)&p);
 	*p = tok;
@@ -138,7 +142,12 @@ struct token* ffly_script_lex(struct ffly_script *__script, ffly_err_t *__err) {
 	}
 
 	while(is_space(fetchc(__script)) && !is_eof(__script)) {
-        if (fetchc(__script) == '\n') __script->line++;
+        if (fetchc(__script) == '\n') {
+            if (__script->end-1 != __script->p+__script->off) {
+                __script->line++;
+                __script->lo = __script->off+1;
+            }
+        }
         __script->off++;
     }
 

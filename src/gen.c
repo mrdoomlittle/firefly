@@ -92,6 +92,13 @@ struct obj mk_op_cond_jump(struct obj *__flags, mdl_u8_t __cond) {
     return _obj;
 }
 
+struct obj mk_op_zero(struct obj *__dst) {
+    struct obj _obj = obj_tmpl;
+    _obj.opcode = _op_zero;
+    _obj.dst = __dst;
+    return _obj;
+}
+
 struct obj mk_op_free(struct obj *__obj) {
     struct obj _obj = obj_tmpl;
     _obj.opcode = _op_alloc;
@@ -104,6 +111,8 @@ void emit_decl_init(struct ffly_script *__script, struct node *__node, struct ob
 	emit(__script, __node->init);
 	struct obj *from;
 	obj_pop(&from);
+    if (__to->_type->size > from->_type->size)
+        next_obj(__script, mk_op_zero(__to));
 	next_obj(__script, mk_op_copy(__node->init->_type, __to, from));
 }
 
@@ -229,4 +238,5 @@ ffly_err_t ffly_script_gen(struct ffly_script *__script) {
     }
 
     ffly_vec_de_init(&to_free);
+    return FFLY_SUCCESS;
 }

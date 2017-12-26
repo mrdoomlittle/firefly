@@ -6,6 +6,7 @@
 # include "system/file.h"
 # include "data/str_cmp.h"
 # include "data/mem_cpy.h"
+# include "data/mem_set.h"
 ffly_err_t ffly_script_ld(struct ffly_script *__script, char *__file) {
 	ffly_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
@@ -172,6 +173,10 @@ void op_print(struct obj *__obj, struct obj **__objp) {
 	}
 }
 
+void op_zero(struct obj *__obj, struct obj **__objp) {
+    ffly_mem_set(__obj->dst->p, 0x0, __obj->dst->_type->size);
+}
+
 void(*op[])(struct obj*, struct obj**) = {
 	&op_alloc,
 	&op_free,
@@ -180,13 +185,14 @@ void(*op[])(struct obj*, struct obj**) = {
 	&op_print,
     &op_compare,
     &op_jump,
-    &op_cond_jump
+    &op_cond_jump,
+    &op_zero
 };
 
 ffly_err_t ffly_script_exec(struct ffly_script *__script) {
 	struct obj *_obj = (struct obj*)__script->top;
 	while(_obj != NULL) {
-		if (_obj->opcode >= _op_alloc && _obj->opcode <= _op_cond_jump) {
+		if (_obj->opcode >= _op_alloc && _obj->opcode <= _op_zero) {
 			op[_obj->opcode](_obj, &_obj);
             if (!_obj) break;
         }
@@ -198,6 +204,14 @@ ffly_bool_t is_keyword(struct token *__tok, mdl_u8_t __id) {
 	return (__tok->kind == TOK_KEYWORD && __tok->id == __id);
 }
 
+ffly_off_t toklo(struct token *__tok) {
+    return __tok->lo;
+}
+
+ffly_off_t curlo(struct ffly_script *__script) {
+    return __script->lo;
+}
+
 ffly_bool_t next_token_is(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_t __id) {
 	struct token *tok = next_token(__script);
 	if (!tok) return 0;
@@ -207,10 +221,36 @@ ffly_bool_t next_token_is(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_
 	return 0;
 }
 
+mdl_uint_t tokcol(struct token *__tok) {
+    return __tok->off-toklo(__tok);
+}
+
 ffly_bool_t expect_token(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_t __id) {
 	struct token *tok = next_token(__script);
 	if (!tok) return 0;
-	return (tok->kind == __kind && tok->id == __id);
+	mdl_u8_t ret_val = (tok->kind == __kind && tok->id == __id);
+    if (!ret_val) {
+        if (__kind == TOK_KEYWORD) {
+            switch(__id) {
+                case _l_brace:
+                    ffly_fprintf(ffly_out, "%u;%u: expected left side brace.\n", tokl(tok), tokcol(tok));
+                break;
+                case _r_brace:
+                    ffly_fprintf(ffly_out, "%u;%u: expected right side brace.\n", tokl(tok), tokcol(tok));
+                break;
+                case _semicolon:
+                    ffly_fprintf(ffly_out, "%u;%u: expected semicolon.\n", tokl(tok), tokcol(tok));
+                break;
+                case _l_paren:
+                    ffly_fprintf(ffly_out, "%u;%u: expected left side paren.\n", tokl(tok), tokcol(tok));
+                break;
+                case _r_paren:
+                    ffly_fprintf(ffly_out, "%u;%u: expected right side paren.\n", tokl(tok), tokcol(tok));
+                break;
+            }
+        }
+    }
+    return ret_val;
 }
 
 ffly_err_t ffly_script_free(struct ffly_script *__script) {
@@ -265,6 +305,10 @@ struct token* next_token(struct ffly_script *__script) {
 	return tok;
 }
 
+mdl_uint_t tokl(struct token *__tok) {
+    return __tok->line;
+}
+
 void to_keyword(struct token *__tok, mdl_u8_t __id) {
 	__tok->kind = TOK_KEYWORD;
 	__tok->id = __id;
@@ -317,11 +361,16 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
 	__script->off = 0;
 	__script->top = NULL;
     __script->line = 0;
+    __script->lo = 0;
 }
 
 ffly_err_t ffly_script_build(struct ffly_script *__script) {
-    ffly_script_parse(__script);
-    ffly_script_gen(__script);
+    ffly_err_t err;
+    if (_err(err = ffly_script_parse(__script)))
+        return err;
+    if (_err(err = ffly_script_gen(__script)))
+        return err;
+    return FFLY_SUCCESS;
 }
 
 ffly_bool_t is_eof(struct ffly_script *__script) {
@@ -387,9 +436,10 @@ ffly_err_t ffly_script_save_bin(struct ffly_script *__script, char *__file) {
         if (_obj->r != NULL) {
             o.r = (void*)_obj->r->off;
         }
-        if (_obj->jmp != NULL) { 
+        if (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump) { 
             o.jmp = !*_obj->jmp?NULL:(void**)(*_obj->jmp)->off;
         }
+
         if (_obj->flags != NULL) {
             o.flags = (void*)_obj->flags->off;
         }
@@ -462,15 +512,17 @@ ffly_err_t ffly_script_ld_bin(struct ffly_script *__script, char *__file) {
     if (_obj->r != NULL)
         ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->r, (void**)&_obj->r);
     
-    if (_obj->jmp != NULL) {
-        struct obj **p = (struct ffly_obj**)__ffly_mem_alloc(sizeof(struct obj*));
-        ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->jmp, (void**)&p);
-        _obj->jmp = &p->next;
+    if (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump) {
+        struct obj **p = (struct obj**)__ffly_mem_alloc(sizeof(struct obj*));
+        if (_obj->jmp != NULL) {
+            ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->jmp, (void**)p);
+        } else
+            *p = NULL;
+        _obj->jmp = p;
     }
 
-    if (_obj->flags != NULL) {
-
-    }
+    if (_obj->flags != NULL)
+        ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->flags, (void**)&_obj->flags);
 
     pr_obj(_obj);
     if (prev != NULL)
@@ -497,10 +549,13 @@ int main() {
 # ifndef LOAD
 	ffly_script_ld(&script, "scripts/main.ff");
 	ffly_printf("building script.\n");
-	ffly_script_build(&script);
+	if (_err(ffly_script_build(&script))) {
+        ffly_printf("failed to build.\n");
+        return -1;
+    }
 	ffly_printf("executing script.\n");
 	ffly_script_exec(&script);
-   // ffly_script_save_bin(&script, "test.bin");
+//    ffly_script_save_bin(&script, "test.bin");
 # else
     ffly_script_ld_bin(&script, "test.bin");
     ffly_script_exec(&script);
