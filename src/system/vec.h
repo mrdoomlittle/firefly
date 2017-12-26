@@ -129,16 +129,16 @@ struct vec {
 	types::off_t off(void *__p) {return ffly_vec_off(&this->raw, __p);}
 	uint_t blk_off(void *__p){return ffly_vec_blk_off(&this->raw, __p);}
 	_T& at_off(types::off_t __off) {return *reinterpret_cast<_T*>(static_cast<u8_t*>(ffly_vec_p(&this->raw))+__off);}
-	_T& at(types::uint_t__off) {return *static_cast<_T*>(ffly_vec_at(&this->raw, __off));}
-	_T& operator[](types::uint_t __off){return this->at(__off);}
+	_T& at(uint_t __off) {return *static_cast<_T*>(ffly_vec_at(&this->raw, __off));}
+	_T& operator[](uint_t __off){return this->at(__off);}
 
-	void swp(_T *__p1, types::uint_t __p2) {
+	void swp(_T *__p1, uint_t __p2) {
 		data::mem_swp<_T>(__p1, ffly_vec_at(&this->raw, __p2));}
 
-	void swp(types::uint_t __p1, _T *__p2) {
+	void swp(uint_t __p1, _T *__p2) {
 		data::mem_swp<_T>(ffly_vec_at(&this->raw, __p1), __p2);}
 
-	void swp(types::uint_t __p1, types::uint_t __p2) {
+	void swp(uint_t __p1, uint_t __p2) {
 		data::mem_swp<_T>(ffly_vec_at(&this->raw, __p1), ffly_vec_at(&this->raw, __p2));}
 
 	types::err_t resize(types::size_t __size) {return vec_resize(&this->raw, __size);}
