@@ -3,9 +3,32 @@
 # include <mdlint.h>
 # include "mutex.h"
 # include "errno.h"
+# include <unistd.h>
+# include <sys/stat.h>
+# include <fcntl.h>
 FILE *ffly_out = NULL;
 FILE *ffly_log = NULL;
 FILE *ffly_err = NULL;
+ffly_fd_t ffly_open(char const *__path, int __flags, mode_t __mode) {
+	return open(__path, __flags, __mode);
+}
+
+ffly_err_t ffly_close(ffly_fd_t __fd) {
+	if (close(__fd) == -1) {
+		ffly_fprintf(ffly_err, "failed to close.\n");
+		return FFLY_FAILURE;
+	}
+	return FFLY_SUCCESS;
+}
+
+ffly_ssize_t ffly_write(ffly_fd_t __fd, void *__buf, ffly_size_t __size) {
+	return write(__fd, __buf, __size);
+}
+
+ffly_ssize_t ffly_read(ffly_fd_t __fd, void *__buf, ffly_size_t __size) {
+	return read(__fd, __buf, __size);
+}
+
 ffly_err_t ffly_io_init() {
 	if (!(ffly_out = fopen("/dev/tty", "w"))) {
 		return FFLY_FAILURE;

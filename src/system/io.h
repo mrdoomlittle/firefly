@@ -3,6 +3,10 @@
 # include <mdlint.h>
 # include <stdio.h>
 # include "../types/err_t.h"
+# include "../types/ssize_t.h"
+# include "../types/fd_t.h"
+# include "../types/size_t.h"
+# include <sys/types.h>
 # define ffly_errmsg(...) ffly_fprintf(ffly_err, __VA_ARGS__)
 # define ffly_logmsg(...) ffly_fprintf(ffly_log, __VA_ARGS__)
 # ifdef __cplusplus
@@ -15,6 +19,10 @@ ffly_err_t ffly_io_init();
 void ffly_io_closeup();
 void ffly_fprintf(FILE*, char const*, ...);
 void ffly_printf(char const*, ...);
+ffly_fd_t ffly_open(char const*, int, mode_t);
+ffly_err_t ffly_close(ffly_fd_t);
+ffly_ssize_t ffly_write(ffly_fd_t, void*, ffly_size_t);
+ffly_ssize_t ffly_read(ffly_fd_t, void*, ffly_size_t);
 # ifdef __cplusplus
 }
 # endif
