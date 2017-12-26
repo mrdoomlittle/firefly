@@ -1,4 +1,4 @@
-# include "jpeg_loader.h"
+# include "jpeg.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../data/str_cmb.h"

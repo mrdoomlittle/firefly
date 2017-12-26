@@ -1,7 +1,9 @@
 
 # include "str_len.h"
 # include "mem_cpy.h"
+# include "str_cmb.h"
 # include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
 char* ffly_str_cmb(char *__s1, char *__s2, mdl_u8_t __opt) {
     if (!__s1 && !__s2) return NULL;
     mdl_uint_t s1_len = !__s1?0:ffly_str_len(__s1), s2_len = !__s2?0:ffly_str_len(__s2);
@@ -9,18 +11,18 @@ char* ffly_str_cmb(char *__s1, char *__s2, mdl_u8_t __opt) {
 
     char *s = (char*)__ffly_mem_alloc(n_len);
     if (__s1 != NULL) ffly_mem_cpy(s, __s1, s1_len);
-    if (__s2 != NULL) ffly_mem_cpy(s+s1+len, __s2, s2_len);
+    if (__s2 != NULL) ffly_mem_cpy(s+s1_len, __s2, s2_len);
     *(s+n_len-1) = '\0';
     switch(__opt) {
         case _ffly_stc_free_both:
-            if (__s1 != NULL) _free(__s1);
-            if (__s2 != NULL) _free(__s2);
+            if (__s1 != NULL) __ffly_mem_free(__s1);
+            if (__s2 != NULL) __ffly_mem_free(__s2);
             break;
         case _ffly_stc_free_lhs:
-            if (__s1 != NULL) _free(__s1);
+            if (__s1 != NULL) __ffly_mem_free(__s1);
         break;
         case _ffly_stc_free_rhs:
-            if (__s2 != NULL) _free(__s2);
+            if (__s2 != NULL) __ffly_mem_free(__s2);
         break;
     }
     return s;

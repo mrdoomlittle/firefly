@@ -46,7 +46,7 @@ struct set {
 	void insert(_T __elem) {
 		this->v.push_back(__elem);
 		_T *p = this->v.last();
-		this->tree.insert(this->v.off(p), static_cast<uint_t>(__elem));
+		this->tree.insert(this->v.off(p), (u64_t)__elem);
 	}
 	void erase(iterator __itr) {
 		this->v.del(__itr.p);
@@ -55,7 +55,7 @@ struct set {
 	iterator find(_T __elem, types::err_t& __err) {
 		_T *p;
 		types::off_t off;
-		if (_err(__err = this->tree.find(off, static_cast<uint_t>(__elem)))) {
+		if (_err(__err = this->tree.find(off, (u64_t)__elem))) {
 			return (iterator){};
 		}
 		p = &this->v.at_off(off);

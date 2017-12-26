@@ -1,4 +1,4 @@
-# include "png_loader.h"
+# include "png.h"
 # include "../system/file.h"
 # include "../system/errno.h"
 # include "../system/err.h"
@@ -9,7 +9,7 @@
 # include "../types/byte_t.h"
 # include <unistd.h>
 # include <png.h>
-ffly_err_t ffly_ld_png_file(char *__dir, char *__name, ffly_imagep __image) {
+ffly_err_t ffly_ld_png_img(char *__dir, char *__name, ffly_imagep __image) {
 	char *path = ffly_str_cmb(__dir, ffly_str_cmb("/", ffly_str_cmb(__name, ".png", 0), _ffly_stc_free_rhs), _ffly_stc_free_rhs);
 	ffly_fprintf(ffly_log, "going to load png file %s\n", path);
 	ffly_err_t err;

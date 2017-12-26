@@ -180,7 +180,8 @@ void mdl::firefly::asset_manager::del_asset(types::id_t __id) {
 }
 */
 mdl::firefly::types::bool_t mdl::firefly::asset_manager::valid_asset_id(types::id_t __id) {
-	return !(this->asset_ids.find(__id) == this->asset_ids.end());}
+    types::err_t err;
+	return !(this->asset_ids.find(__id, err) == this->asset_ids.end());}
 
 mdl::u8_t* mdl::firefly::asset_manager::get_asset_data(types::id_t __id) {
 	if (!this->valid_asset_id(__id)) return nullptr;

@@ -1,10 +1,16 @@
 # include "system/io.h"
 # include "graphics/image.h"
+# include "asset_manager.h"
+# include "system/asset.h"
 using namespace mdl::firefly;
 int main() {
 	ffly_io_init();
-	graphics::image img;
-	graphics::ld_img(&img, "images", "test", _ffly_img_jpeg);
+    asset_manager asset_m;
+    types::err_t err;
+    asset_m.load_asset("images", "test", _ffly_ak_img, _ffly_af_png, 0, err);
+    
+//	graphics::image img;
+//	graphics::ld_img(&img, "images", "test", _ffly_img_jpeg);
 	
 
 	ffly_io_closeup();

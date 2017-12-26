@@ -17,9 +17,7 @@ ffly_asset_t* ffly_asset(void*, ffly_id_t);
 
 # include "graphics/skelmap_loader.hpp"
 # include "types/skelmap_info_t.hpp"
-# include <set>
 # include "types/size_t.h"
-# include "graphics/png_loader.h"
 # include "types/dsize_t.hpp"
 # include "types/pixmap_t.h"
 # include "memory/mem_alloc.h"
@@ -32,6 +30,7 @@ ffly_asset_t* ffly_asset(void*, ffly_id_t);
 # include "data/pair.h"
 # include "types/aud_fad_t.h"
 # include "types/mode_t.h"
+# include "system/set.hpp"
 namespace mdl {
 namespace firefly {
 class asset_manager
@@ -45,7 +44,7 @@ class asset_manager
 		AST_PNG_FILE
 	};
 
-	asset_manager() : asset_ids(*new std::set<types::id_t>), asset_d(*new system::vec<types::asset_t>) {}
+	asset_manager() : asset_ids(*new system::set<types::id_t>), asset_d(*new system::vec<types::asset_t>) {}
 
 	types::err_t de_init();
 
@@ -64,7 +63,7 @@ class asset_manager
 
 	private:
 	uint_t no_assets = 0;
-	std::set<types::id_t>& asset_ids;
+	system::set<types::id_t>& asset_ids;
 	system::vec<types::asset_t>& asset_d;
 };
 }
