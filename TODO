@@ -18,3 +18,4 @@
 -. add fall back to cpu if gpu becomes unavailable or cl library wasn't stated at compile time
 -. document shit
 -. remove old code
+-. add multithreading support for pixdraw/pixfill/etc
