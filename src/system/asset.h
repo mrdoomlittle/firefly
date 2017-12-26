@@ -1,5 +1,5 @@
-# ifndef __ffly__asset__h
-# define __ffly__asset__h
+# ifndef __ffly__system__asset__h
+# define __ffly__system__asset__h
 enum {
 	_ffly_ak_img,
 	_ffly_ak_aud,
@@ -11,4 +11,4 @@ enum {
 	_ffly_af_wav,
 	_ffly_af_null
 };
-# endif /*__ffly_asset__h*/
+# endif /*__ffly__system__asset__h*/

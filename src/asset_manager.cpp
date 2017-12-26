@@ -117,7 +117,7 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::add_asset(types::byte_t *
 	}
 
 	*id = this->asset_d.size()-1;
-	this->asset_d[*id] = (types::asset_t)	{
+	this->asset_d[*id] = (asset)	{
 		id:id,
 		kind:__kind,
 		data:__data
@@ -132,17 +132,17 @@ mdl::firefly::types::id_t mdl::firefly::asset_manager::add_asset(types::byte_t *
 }
 
 void mdl::firefly::asset_manager::free_asset(types::id_t __id) {
-	types::asset_t& asset = this->asset_d[*__id];
-	if (asset.kind == _ffly_ak_img){
-		graphics::imagep img = reinterpret_cast<graphics::imagep>(asset.data);
+	asset& _asset = this->asset_d[*__id];
+	if (_asset.kind == _ffly_ak_img){
+		graphics::imagep img = reinterpret_cast<graphics::imagep>(_asset.data);
 		if (img->pixels != nullptr)
 			memory::mem_free(img->pixels);
 	}
 
-	if (asset.id != nullptr)
-		memory::mem_free(asset.id);
-	if (asset.data != nullptr)
-		memory::mem_free(asset.data);
+	if (_asset.id != nullptr)
+		memory::mem_free(_asset.id);
+	if (_asset.data != nullptr)
+		memory::mem_free(_asset.data);
 }
 
 
@@ -186,20 +186,19 @@ mdl::firefly::types::bool_t mdl::firefly::asset_manager::valid_asset_id(types::i
     if (_err(err))
         return 0;
     return 1;
-//	return !(this->asset_ids.find(__id, err) == this->asset_ids.end());}
 }
-mdl::u8_t* mdl::firefly::asset_manager::get_asset_data(types::id_t __id) {
+
+mdl::firefly::types::byte_t* mdl::firefly::asset_manager::get_asset_data(types::id_t __id) {
 	if (!this->valid_asset_id(__id)) return nullptr;
 	return this->asset_d[*__id].data;
 }
 
-mdl::firefly::types::asset_t mdl::firefly::asset_manager::get_asset(types::id_t __id) noexcept {
-	if (!this->valid_asset_id(__id)) throw;
+mdl::firefly::asset& mdl::firefly::asset_manager::get_asset(types::id_t __id) {
+	if (!this->valid_asset_id(__id)) {
+        // err
+    }
 	return this->asset_d[*__id];
 }
-
-mdl::firefly::types::asset_t& mdl::firefly::asset_manager::asset(types::id_t __id) {
-	return this->asset_d[*__id];}
 
 extern "C" {
 ffly_id_t ffly_load_asset(void *__clsp, char *__dir, char *__name, mdl_uint_t __kind, mdl_uint_t __format, ffly_err_t *__err) {
@@ -208,8 +207,8 @@ ffly_id_t ffly_load_asset(void *__clsp, char *__dir, char *__name, mdl_uint_t __
 ffly_id_t ffly_add_asset(void *__clsp, ffly_byte_t *__data, mdl_uint_t __kind, ffly_err_t *__err) {
 	static_cast<mdl::firefly::asset_manager*>(__clsp)->add_asset(__data, __kind, *__err);
 }
-ffly_asset_t* ffly_asset(void *__clsp, ffly_id_t __id) {
-	return &static_cast<mdl::firefly::asset_manager*>(__clsp)->asset(__id);
+ffly_assetp ffly_get_asset(void *__clsp, ffly_id_t __id) {
+	return &static_cast<mdl::firefly::asset_manager*>(__clsp)->get_asset(__id);
 }
 }
 /*

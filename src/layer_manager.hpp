@@ -3,28 +3,23 @@
 # include <mdlint.h>
 # include "system/set.hpp"
 # include "system/vec.h"
-# include "types/layer_desc_t.hpp"
 # include "types/pixelmap_t.h"
 # include "system/io.h"
+# include "layer.h"
 namespace mdl {
 namespace firefly {
 class layer_manager {
 	public:
-	typedef struct {
-		types::layer_desc_t desc;
-		types::pixelmap_t pixelmap;
-	} layer_t;
-
 	layer_manager() : layers(VEC_AUTO_RESIZE) {}
 	uint_t add_layer(u16_t __width, u16_t __height, u16_t __xa, u16_t __ya, types::pixelmap_t __pixelmap, types::err_t& __err);
 	types::pixelmap_t get_layer_pixelmap(uint_t __no) {
 		return this->layers.at(__no).pixelmap;
 	}
-	types::layer_desc_t get_layer_desc(uint_t __no) {
-		return this->layers.at(__no).desc;
+	layer get_layer(uint_t __no) {
+		return this->layers.at(__no);
 	}
 	types::err_t draw_layers(types::pixelmap_t __pixelbuff, u16_t __width, u16_t __height);
-	system::vec<layer_t> layers;
+	system::vec<layer> layers;
 /*
 		uint_t layer_id = layers.size();
 		layers.resize(layers.size() + 1);

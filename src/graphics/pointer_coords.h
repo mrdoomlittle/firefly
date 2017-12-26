@@ -1,15 +1,17 @@
-# ifndef __pointer__coords
-# define __pointer__coords
-# include "../types/coords_t.hpp"
+# ifndef __ffly__pointer__coords__h
+# define __ffly__pointer__coords__h
+# include <mdlint.h>
+struct ffly_pointer_coords {
+    mdl_i16_t root_xa, root_ya, wd_xa, wd_ya;
+};
+
+# ifdef __cplusplus
 namespace mdl {
 namespace firefly {
 namespace graphics {
-template<typename _WD_T, typename _ROOT_T>
-struct _pointer_coords {
-	types::_2d_coords_t<_WD_T> wd;
-	types::_2d_coords_t<_ROOT_T> root;
-};
+typedef struct ffly_pointer_coords pointer_coords;
 }
 }
 }
-# endif /*__pointer__coords*/
+# endif
+# endif /*__ffly__pointer__coords__h*/

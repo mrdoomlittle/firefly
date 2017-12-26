@@ -2,7 +2,7 @@
 # define __ffly__asset__manager__h
 # include "types/id_t.h"
 # include "types/byte_t.h"
-# include "types/asset_t.h"
+# include "asset.h"
 # include "types/flag_t.h"
 # include <mdlint.h>
 # include "types/err_t.h"
@@ -11,7 +11,7 @@ extern "C" {
 # endif
 ffly_id_t ffly_load_asset(void*, char*, char*, mdl_uint_t, mdl_uint_t, ffly_err_t*);
 ffly_id_t ffly_add_asset(void*, ffly_byte_t*, mdl_uint_t, ffly_err_t*);
-ffly_asset_t* ffly_asset(void*, ffly_id_t);
+ffly_assetp ffly_asset(void*, ffly_id_t);
 # ifdef __cplusplus
 }
 
@@ -44,7 +44,7 @@ class asset_manager
 		AST_PNG_FILE
 	};
 
-	asset_manager() : asset_ids(*new system::set<types::id_t>), asset_d(*new system::vec<types::asset_t>) {}
+	asset_manager() : asset_ids(*new system::set<types::id_t>), asset_d(*new system::vec<asset>) {}
 
 	types::err_t de_init();
 
@@ -52,19 +52,14 @@ class asset_manager
 	types::id_t add_asset(types::byte_t *__data, uint_t __kind, types::err_t& __err);
 	types::id_t load_asset(char *__dir, char *__name, uint_t __kind, uint_t __format, types::mode_t __mode, types::err_t& __err);
 	void del_asset(types::id_t __asset_id);
-	u8_t* get_asset_data(types::id_t __asset_id);
-	types::asset_t get_asset(types::id_t __asset_id) noexcept;
-	types::asset_t& asset(types::id_t __asset_id);
+	types::byte_t* get_asset_data(types::id_t __asset_id);
+	asset& get_asset(types::id_t __asset_id);
 	void free_asset(types::id_t __asset_id);
 	void free_all();
-
-	void* get_asset_info(types::id_t __asset_id);
-	void*& asset_info(types::id_t _asset_id);
-
 	private:
 	uint_t no_assets = 0;
 	system::set<types::id_t>& asset_ids;
-	system::vec<types::asset_t>& asset_d;
+	system::vec<asset>& asset_d;
 };
 }
 }

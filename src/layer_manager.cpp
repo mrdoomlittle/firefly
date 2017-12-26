@@ -7,27 +7,25 @@
 # include "system/err.h"
 mdl::uint_t mdl::firefly::layer_manager::add_layer(u16_t __width, u16_t __height, u16_t __xa, u16_t __ya, types::pixelmap_t __pixelmap, types::err_t& __err){
 	uint_t no = this->layers.size();
-	layer_t layer = {
-		.desc = {
-			width:__width,
-			height:__height,
-			xa:__xa,
-			ya:__ya
-		}
+	layer _layer = {
+		width:__width,
+		height:__height,
+		xa:__xa,
+		ya:__ya
 	};
 
 	if(__pixelmap != nullptr)
-		layer.pixelmap = __pixelmap;
+		_layer.pixelmap = __pixelmap;
 	else {
-		if((layer.pixelmap = memory::alloc_pixelmap(static_cast<uint_t>(__width), static_cast<uint_t>(__height))) == nullptr){
+		if((_layer.pixelmap = memory::alloc_pixelmap(static_cast<uint_t>(__width), static_cast<uint_t>(__height))) == nullptr){
 			system::io::fprintf(ffly_err, "layer_manager, failed to alloc memory for pixelmap.\n");
 			__err = FFLY_FAILURE;
 			return 0;
 		}
 	}
 
-	system::io::fprintf(ffly_log, "layer, width: %u, height: %u, %p\n", layer.desc.width, layer.desc.height, layer.pixelmap);
-	this->layers.push_back(layer);
+	system::io::fprintf(ffly_log, "layer, width: %u, height: %u, %p\n", _layer.width, _layer.height, _layer.pixelmap);
+	this->layers.push_back(_layer);
 	__err = FFLY_SUCCESS;
 	return no;
 }
@@ -37,10 +35,10 @@ mdl::firefly::types::err_t mdl::firefly::layer_manager::draw_layers(types::pixel
 		return FFLY_SUCCESS;
 	}
 	types::err_t err;
-	layer_t *itr = this->layers.begin();
+	layer *itr = this->layers.begin();
 	while(itr <= this->layers.end()) {
-		system::io::fprintf(ffly_log, "layer, width: %u, height: %u, %p\n", itr->desc.width, itr->desc.height, itr->pixelmap);
-		if (_err(err = graphics::pixeldraw(itr->desc.xa, itr->desc.ya, __pixelbuff, __width, itr->pixelmap, itr->desc.width, itr->desc.height))) {
+		system::io::fprintf(ffly_log, "layer, width: %u, height: %u, %p\n", itr->width, itr->height, itr->pixelmap);
+		if (_err(err = graphics::pixeldraw(itr->xa, itr->ya, __pixelbuff, __width, itr->pixelmap, itr->width, itr->height))) {
 			system::io::fprintf(ffly_err, "failed to draw layer.\n");
 			return err;
 		}
