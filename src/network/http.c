@@ -4,6 +4,91 @@
 # include "../data/str_cpy.h"
 # include "../data/str_len.h"
 # include "../system/io.h"
+# include "../data/mem_cpy.h"
+# include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
+# include "../data/str_cmp.h"
+# include "../system/errno.h"
+# include "../data/bzero.h"
+struct http_hdr {
+    char *date;
+    char *server;
+    char *end; 
+};
+
+mdl_u8_t is_end(char *__s) {
+    if (*__s == '\r' && *(__s+1) == '\n')
+        if (*(__s+2) == '\r' && *(__s+3) == '\n')
+            return 1;
+    return 0;
+}
+
+char *extfield(char *__s, char *__buf) {
+    char *itr = __s;
+    while(*itr != '\r' && *(itr+1) != '\n')
+        *(__buf+(itr-__s)) = *(itr++);
+    *(__buf+(itr-__s)) = '\0';
+    mdl_uint_t len = (itr-__s)+1;
+    char *field = (char*)__ffly_mem_alloc(len);
+    ffly_mem_cpy(field, __buf, len);
+    return field;
+}
+
+mdl_u8_t is_field(char *__field, char *__name, char *__buf) {
+    char *itr = __field;
+    while(*itr != ':') {
+        if (*(__name+(itr-__field)) == '\0') {
+            return 0;
+        }
+        if (*itr != *(__name+(itr-__field))) {
+            return 0;
+        }
+        itr++;
+    }
+
+    if ((itr-__field) != ffly_str_len(__name))
+        return 0;
+    return 1;
+}
+
+ffly_err_t read_http_hdr(struct http_hdr *__hdr, char *__s) {
+    char *itr = __s;
+    // skip status
+    while(*itr != '\r' && *(itr+1) != '\n') itr++;
+    itr+=2;
+    char buf[200];
+    _next:
+    {
+        char *field = extfield(itr, buf);
+        itr+= ffly_str_len(field);
+    
+        if (is_field(field, "Date", buf)) {
+            __hdr->date = field;
+        } else if (is_field(field, "Server", buf)) {
+            __hdr->server = field;
+        } else {
+            __ffly_mem_free(field);
+        }
+
+        if (is_end(itr)) {
+            __hdr->end = itr+4;  
+            goto _end;
+        }
+
+        itr+= 2; 
+    }
+
+    goto _next;
+    _end:
+    return FFLY_SUCCESS;
+}
+
+void free_http_hdr(struct http_hdr *__hdr) {
+    if (__hdr->date != NULL)
+        __ffly_mem_free(__hdr->date);
+    if (__hdr->server != NULL)
+        __ffly_mem_free(__hdr->server);
+}
 ffly_err_t ffly_http_get(char *__host, char *__path, mdl_u16_t __port, void *__buf, ffly_size_t __size) {
     struct ffly_socket sock;
     ffly_socket(&sock, AF_INET, SOCK_STREAM, 0);
@@ -12,7 +97,7 @@ ffly_err_t ffly_http_get(char *__host, char *__path, mdl_u16_t __port, void *__b
     addr.sin_addr = ffly_resolve(__host);
     addr.sin_port = htons(__port);
 
-    printf("%u.%u.%u.%u\n", addr.sin_addr.s_addr&0xFF, addr.sin_addr.s_addr>>8&0xFF, addr.sin_addr.s_addr>>16&0xFF, addr.sin_addr.s_addr>>24&0xFF);
+    printf("ip-addr: %u.%u.%u.%u\n", addr.sin_addr.s_addr&0xFF, addr.sin_addr.s_addr>>8&0xFF, addr.sin_addr.s_addr>>16&0xFF, addr.sin_addr.s_addr>>24&0xFF);
 
     ffly_sock_connect(&sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
 
@@ -36,38 +121,18 @@ ffly_err_t ffly_http_get(char *__host, char *__path, mdl_u16_t __port, void *__b
     s+= 4;
     ffly_err_t err; 
     ffly_size_t sent = ffly_sock_send(&sock, hdr, s-hdr, 0, &err);
-    ffly_printf("sent: %u\n", sent);
-    ffly_printf("header: '%s'\n", hdr);
 
-    void *buf[2000];
+    char buf[2000];
 
     ffly_size_t recved = ffly_sock_recv(&sock, buf, sizeof(buf), 0, &err);    
-    ffly_printf("recved: %u\n", recved);
+    struct http_hdr h;
+    ffly_bzero(&h, sizeof(struct http_hdr));
+    read_http_hdr(&h, buf);
+    ffly_printf("date: %s\n", h.date);
+    ffly_printf("server: %s\n", h.server);
+    ffly_printf("data: %s\n", h.end);
 
-    char *begin = NULL;
-    char *itr = buf;
-    while(itr != buf+sizeof(buf)) {
-        if (!begin) {
-            if (*itr == '\r' && *(itr+1) == '\n') {
-                if (*(itr+2) == '\r' && *(itr+3) == '\n') {
-                    begin = itr+4;
-                }
-            }
-        }
-        itr++;
-    }
-
-    ffly_str_cpy(__buf, begin);
-
-/*
-    mdl_u8_t *itr = (mdl_u8_t*)__buf;
-    while(1) {
-        ffly_sock_recv(&sock, itr, 1, 0, &err);
-        ffly_printf("recved: %c\n", *itr);
-        if (itr > (mdl_u8_t*)__buf) {
-            if (*(itr-1) == '\r' && *itr == '\n') break;
-        }
-    }
-*/
+    ffly_mem_cpy(__buf, h.end, h.end-buf);
+    free_http_hdr(&h);  
     ffly_sock_close(&sock);
 }
