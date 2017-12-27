@@ -6,6 +6,7 @@
 # include <unistd.h>
 # include <sys/stat.h>
 # include <fcntl.h>
+# include "../types/size_t.h"
 FILE *ffly_out = NULL;
 FILE *ffly_log = NULL;
 FILE *ffly_err = NULL;
@@ -21,12 +22,26 @@ ffly_err_t ffly_close(ffly_fd_t __fd) {
 	return FFLY_SUCCESS;
 }
 
-ffly_ssize_t ffly_write(ffly_fd_t __fd, void *__buf, ffly_size_t __size) {
-	return write(__fd, __buf, __size);
+ffly_size_t ffly_write(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ffly_err_t *__err) {
+    ssize_t res;
+    if ((res = write(__fd, __buf, __size)) == -1) {
+        ffly_fprintf(ffly_err, "failed to write.\n");
+        *__err = FFLY_FAILURE;
+        return 0;
+    }
+    *__err = FFLY_SUCCESS;
+    return res;
 }
 
-ffly_ssize_t ffly_read(ffly_fd_t __fd, void *__buf, ffly_size_t __size) {
-	return read(__fd, __buf, __size);
+ffly_size_t ffly_read(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ffly_err_t *__err) {
+	ssize_t res;
+    if ((res = read(__fd, __buf, __size)) == -1) {
+        ffly_fprintf(ffly_err, "failed to read.\n");
+        *__err = FFLY_FAILURE;
+        return 0;
+    }
+    *__err = FFLY_SUCCESS;
+    return res;
 }
 
 ffly_err_t ffly_io_init() {

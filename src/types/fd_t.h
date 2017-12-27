@@ -1,6 +1,6 @@
 # ifndef __ffly__fd__t__h
 # define __ffly__fd__t__h
-typedef int unsigned ffly_fd_t;
+typedef int ffly_fd_t;
 # ifdef __cplusplus
 namespace mdl {
 namespace firefly {

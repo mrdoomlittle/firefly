@@ -3,7 +3,6 @@
 # include <mdlint.h>
 # include <stdio.h>
 # include "../types/err_t.h"
-# include "../types/ssize_t.h"
 # include "../types/fd_t.h"
 # include "../types/size_t.h"
 # include <sys/types.h>
@@ -21,8 +20,8 @@ void ffly_fprintf(FILE*, char const*, ...);
 void ffly_printf(char const*, ...);
 ffly_fd_t ffly_open(char const*, int, mode_t);
 ffly_err_t ffly_close(ffly_fd_t);
-ffly_ssize_t ffly_write(ffly_fd_t, void*, ffly_size_t);
-ffly_ssize_t ffly_read(ffly_fd_t, void*, ffly_size_t);
+ffly_size_t ffly_write(ffly_fd_t, void*, ffly_size_t, ffly_err_t*);
+ffly_size_t ffly_read(ffly_fd_t, void*, ffly_size_t, ffly_err_t*);
 # ifdef __cplusplus
 }
 # endif

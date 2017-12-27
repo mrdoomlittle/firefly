@@ -1,0 +1,15 @@
+all: clean
+	gcc -c ../system/io.c
+	nasm -f elf64 -o mutex.o.0 ../system/asm/mutex.asm
+	gcc -c -std=c11 -o mutex.o.1 ../system/mutex.c
+	gcc -c sock.c
+	gcc -c http.c
+	gcc -c ../data/mem_cpy.c
+	gcc -c ../data/str_cpy.c
+	gcc -c ../data/str_len.c
+	gcc -std=gnu11 -c resolve.c
+	gcc -c ../data/bcopy.c
+	gcc -c ../data/bzero.c
+	gcc -o main main.c bcopy.o bzero.o mem_cpy.o str_cpy.o str_len.o resolve.o http.o sock.o io.o mutex.o.0 mutex.o.1
+clean:
+	rm -f *.o
