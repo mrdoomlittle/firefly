@@ -30,18 +30,21 @@ endif
 # maths
 override ffly_objs+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o src/maths/is_inside.o
 # data
-override ffly_objs+= src/data/str_cmb.o src/data/mem_swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o src/data/str_dupe.o src/data/mem_cmp.o src/data/str_cmp.o
+override ffly_objs+= src/data/str_cmb.o src/data/mem_swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o src/data/str_dupe.o src/data/mem_cmp.o src/data/str_cmp.o \
+src/data/str_cpy.o src/data/bzero.o src/data/bcopy.o
 # system
 override ffly_objs+= src/system/bin_tree.o src/system/arr.o src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
 src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
 src/system/task_worker.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o src/system/event.o
+# network
+override ffly_objs+= src/network/sock.o src/network/resolve.o
 # graphics
 override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o src/graphics/copy.o src/graphics/draw.o src/graphics/image.o src/graphics/png.o src/graphics/jpeg.o
 
 #src/graphics/draw_pixelmap.o src/graphics/fill_pixmap.o src/graphics/fill_pixelmap.o
 #ffly_objs+= src/ffly_graphics.o
 # memory
-override ffly_objs+= src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o src/memory/alloc_pixelmap.o
+override ffly_objs+= src/ffly_system.o src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o src/memory/alloc_pixelmap.o
 
 
 override ffly_objs+= src/act.o
@@ -73,6 +76,21 @@ endif
 
 override ffly_objs+= src/firefly.o
 override ffly_defines+= -D__ffly_use_pulse_audio
+src/ffly_system.o: src/ffly_system.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/ffly_system.o src/ffly_system.c
+
+src/data/bzero.o: src/data/bzero.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/data/bzero.o src/data/bzero.c
+
+src/data/bcopy.o: src/data/bcopy.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/data/bcopy.o src/data/bcopy.c
+
+src/network/sock.o: src/network/sock.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/network/sock.o src/network/sock.c
+
+src/network/resolve.o: src/network/resolve.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/network/resolve.o src/network/resolve.c
+
 src/graphics/x11.o: src/graphics/x11.o
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/graphics/x11.o src/graphics/x11.c
 
@@ -157,40 +175,40 @@ src/maths/is_inside.o: src/maths/is_inside.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/maths/is_inside.o src/maths/is_inside.c
 
 src/system/signal.o: src/system/asm/signal.asm
-	nasm -f elf64 -o src/system/signal.o src/system/asm/signal.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/system/signal.o src/system/asm/signal.asm
 
 src/system/cond_lock.o: src/system/asm/cond_lock.asm
-	nasm -f elf64 -o src/system/cond_lock.o src/system/asm/cond_lock.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/system/cond_lock.o src/system/asm/cond_lock.asm
 
 src/maths/sq.o: src/maths/asm/sq.asm
-	nasm -f elf64 -o src/maths/sq.o src/maths/asm/sq.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/maths/sq.o src/maths/asm/sq.asm
 
 src/ffly_graphics.o: src/ffly_graphics.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/ffly_graphics.o src/ffly_graphics.cpp
 
 src/system/atomic_op.o: src/system/asm/atomic_op.asm
-	nasm -f elf64 -o src/system/atomic_op.o.0 src/system/asm/atomic_op.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/system/atomic_op.o.0 src/system/asm/atomic_op.asm
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/atomic_op.o.1 src/system/atomic_op.c
 	ld -r -o src/system/atomic_op.o src/system/atomic_op.o.0 src/system/atomic_op.o.1
 
 src/system/mutex.o: src/system/asm/mutex.asm
-	nasm -f elf64 -o src/system/mutex.o.0 src/system/asm/mutex.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/system/mutex.o.0 src/system/asm/mutex.asm
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/mutex.o.1 src/system/mutex.c
 	ld -r -o src/system/mutex.o src/system/mutex.o.0 src/system/mutex.o.1
 
 src/system/sys_nanosleep.o: src/system/asm/sys_nanosleep.asm
-	nasm -f elf64 -o src/system/sys_nanosleep.o.0 src/system/asm/sys_nanosleep.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/system/sys_nanosleep.o.0 src/system/asm/sys_nanosleep.asm
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/sys_nanosleep.o.1 src/system/sys_nanosleep.c
 	ld -r -o src/system/sys_nanosleep.o src/system/sys_nanosleep.o.0 src/system/sys_nanosleep.o.1
 
 src/maths/round.o: src/maths/asm/round.asm
-	nasm -f elf64 -o src/maths/round.o src/maths/asm/round.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/maths/round.o src/maths/asm/round.asm
 
 src/maths/ceil.o: src/maths/asm/ceil.asm
-	nasm -f elf64 -o src/maths/ceil.o src/maths/asm/ceil.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/maths/ceil.o src/maths/asm/ceil.asm
 
 src/maths/floor.o: src/maths/asm/floor.asm
-	nasm -f elf64 -o src/maths/floor.o src/maths/asm/floor.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/maths/floor.o src/maths/asm/floor.asm
 
 src/system/buff.o: src/system/buff.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/buff.o src/system/buff.c

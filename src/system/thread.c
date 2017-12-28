@@ -23,7 +23,6 @@
 # define UU_PAGE_SIZE 26
 # define DSS 0xFFF
 
-
 struct ffly_thread {
 	pthread_t thread;
 	ffly_cond_lock_t lock;
@@ -50,6 +49,15 @@ ffly_mutex_t static mutex = FFLY_MUTEX_INIT;
 static struct ffly_thread *get_thr(ffly_tid_t __tid) {return *(threads+__tid);}
 
 mdl_uint_t no_threads() {return off-uu_ids.off;}
+
+static __thread ffly_tid_t id = FFLY_TID_NULL;
+ffly_tid_t ffly_gettid() {
+    return id;
+}
+
+pid_t ffly_thread_getpid(ffly_tid_t __tid) {
+    return get_thr(__tid)->pid;
+}
 
 ffly_err_t static ffly_thread_del(ffly_tid_t __tid) {
 	ffly_mutex_lock(&mutex);
@@ -83,6 +91,7 @@ ffly_bool_t ffly_thread_dead(ffly_tid_t __tid) {
 void static* ffly_thr_proxy(void *__arg_p) {
 	struct ffly_thread *thr = (struct ffly_thread*)__arg_p;
 	thr->pid = getpid();
+    id = thr->tid;
 	ffly_fprintf(ffly_log, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
 	ffly_atomic_incr(&active_threads);
 	thr->alive = 1;
@@ -118,6 +127,10 @@ ffly_err_t ffly_thread_kill(ffly_tid_t __tid) {
 	return ffly_thread_del(__tid);
 */
 	return FFLY_SUCCESS;
+}
+
+void ffly_thread_wait(ffly_tid_t __tid) {
+    while(get_thr(__tid)->alive);
 }
 
 ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg_p) {

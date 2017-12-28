@@ -40,9 +40,12 @@ firefly::types::err_t static de_init() {
 # include "types/err_t.h"
 # include "system/errno.h"
 # include "system/event.h"
+# include "ffly_system.h"
+# include <unistd.h>
 namespace mdl {
 namespace ffly_system {
 firefly::types::err_t init() {
+    ffly_set_ppid(getppid());
 	ffly_io_init();
 	ffly_queue_init(&ffly_event_queue, sizeof(ffly_event_t*));
 	return FFLY_SUCCESS;

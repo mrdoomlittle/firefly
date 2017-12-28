@@ -52,6 +52,8 @@ ffly_event_t *ffly_alloc_event() {
 	if (next_free > free_events)
 		return *(--next_free);
 
+    if (fresh_event > events+MAX_EVENTS)
+        return NULL;
 	return fresh_event++;
 }
 

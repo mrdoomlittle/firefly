@@ -41,12 +41,25 @@ void e(mdl_uint_t __a1, mdl_uint_t __a2, mdl_uint_t __a3, mdl_uint_t __a4) {ffly
 # include "set.hpp"
 # include "err.h"
 //# include "../firefly.hpp"
+# include "nanosleep.h"
+void* call(void *__arg_p) {
+    ffly_printf("%u\n", ffly_gettid());
+    ffly_nanosleep(1, 0);
+}
 using namespace mdl::firefly::system;
 using namespace mdl::firefly::types;
 int main() {
-	err_t err;
 	ffly_io_init();
-
+    ffly_tid_t a, b, c;
+    ffly_thread_create(&a, call, NULL);
+    ffly_thread_create(&b, call, NULL);
+    ffly_thread_create(&c, call, NULL);
+    
+    ffly_thread_wait(a);
+    ffly_thread_wait(b);
+    ffly_thread_wait(c);
+    ffly_io_closeup();
+    return 0;
 /*
 	set<int> ids;
 

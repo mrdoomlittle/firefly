@@ -63,6 +63,7 @@ ffly_cc_ld_flags="$ffly_cc_ld_flags" \
 ffly_cxx_inc_flags="$ffly_cxx_inc_flags" \
 ffly_cxx_lib_flags="$ffly_cxx_lib_flags" \
 ffly_cxx_ld_flags="$ffly_cxx_ld_flags" \
+ffly_nasm_flags="$ffly_nasm_flags" \
 ffly_cflags="$ffly_cflags" \
 ffly_ccflags="$ffly_ccflags" \
 ffly_cxxflags="$ffly_cxxflags" \

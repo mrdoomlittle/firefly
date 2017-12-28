@@ -25,6 +25,7 @@ ffly_cc_ld_flags=
 # compiler flags - global
 ffly_cflags=-Wall
 
+ffly_nasm_flags="-I$PWD/src/system/asm/"
 ffly_ccflags=$ffly_cflags
 ffly_cxxflags=$ffly_cflags
 ffly_arc=ARC$(getconf LONG_BIT)
@@ -140,6 +141,7 @@ echo "cc-ld-flags: $ffly_cc_ld_flags"
 echo "cxx-inc-flags: $ffly_cxx_inc_flags"
 echo "cxx-lib-flags: $ffly_cxx_lib_flags"
 echo "cxx-ld-flags: $ffly_cxx_ld_flags"
+echo "nasm-flags: $ffly_nasm_flags"
 echo "cflags: $ffly_cflags"
 echo "ccflags: $ffly_ccflags"
 echo "cxxflags: $ffly_cxxflags"

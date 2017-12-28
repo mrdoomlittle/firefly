@@ -7,66 +7,117 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../firefly.hpp"
+# include "../system/thread.h"
 __global__ void static pixfill(mdl::firefly::types::byte_t *__buff, mdl::firefly::types::colour_t *__colour) {
 	mdl::firefly::types::byte_t *p = __buff+((threadIdx.x+(blockIdx.x*blockDim.x))*4);
 	*(p+R_OFF) = __colour->r, *(p+G_OFF) = __colour->g, *(p+B_OFF) = __colour->b, *(p+A_OFF) = __colour->a;
 }
 
-mdl::firefly::types::byte_t static *buff = nullptr;
-mdl::firefly::types::colour_t static *colour = nullptr;
+// mutithreading hasen't been tested on this and may not work.
+
+struct context {
+    mdl::firefly::types::byte_t *dev_buff;
+    mdl::firefly::types::colour_t *dev_colour;
+    mdl::firefly::types::colour_t colour;
+    mdl_uint_t size;
+    mdl::firefly::types::bool_t prepared;
+};
+
+/*
+    how many threads can access at one time.
+*/
+# define THREADS 8
+static struct context parent_ctx = {
+    dev_buff:nullptr,
+    dev_colour:nullptr,
+    colour:{r:0, g:0, b:0, a:0},
+    size:0,
+    prepared:ffly_false
+};
+
+static struct context ctx_list[THREADS];
 void static cleanup(void *__arg_p) {
 	mdl::firefly::system::io::fprintf(ffly_log, "cleanup for fill.\n");
-	if (buff != nullptr)
-		mdl::firefly::memory::gpu_mem_free(buff);
-	if (colour != nullptr)
-		mdl::firefly::memory::gpu_mem_free(colour);
+    mdl_uint_t i = 0;
+    while(i != THREADS) {
+        struct context *ctx = &ctx_list[i];
+    	if (ctx->dev_buff != nullptr)
+    		mdl::firefly::memory::gpu_mem_free(ctx->dev_buff);
+    	if (ctx->dev_colour != nullptr)
+    		mdl::firefly::memory::gpu_mem_free(ctx->dev_colour);
+        i++;
+    }
 }
-
+# include "../system/err.h"
+# include "../system/mutex.h"
+ffly_mutex_t static mutex = FFLY_MUTEX_INIT;
 mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixfill(types::byte_t *__buff, mdl_uint_t __nopix, types::colour_t __colour) {
 	types::cl_err_t err;
-	types::bool_t static inited = ffly_false;
 	mdl_uint_t size = __nopix*4;
-	if (!inited) {
-		if (memory::gpu_mem_alloc((void**)&colour, sizeof(types::colour_t)) != FFLY_SUCCESS) {
+
+    ffly_tid_t tid = ffly_gettid();
+    // thread id should only be null if its the parent prossess calling
+    struct context *ctx = tid == FFLY_TID_NULL?&parent_ctx:&ctx_list[tid];
+    types::bool_t static inited = ffly_false;
+    if (!inited) {
+        if (_ok(ffly_mutex_trylock(&mutex))) {
+            if (!inited) {
+                mdl_uint_t i = 0;
+                while(i != THREADS) {
+                    ctx[i++] = (struct context) {
+                        dev_buff:nullptr,
+                        dev_colour:nullptr,
+                        colour:{r:0, g:0, b:0, a:0},
+                        size:0,
+                        prepared:ffly_false
+                    };
+                }
+                ffly_act_add_task(&__ffly_act__, act_gid_cleanup, &cleanup, nullptr);
+                inited = ffly_true;
+            }
+            ffly_mutex_unlock(&mutex);
+        }
+    }
+ 
+    while(!inited);
+    if (!ctx->prepared) {
+		if (memory::gpu_mem_alloc((void**)&ctx->dev_colour, sizeof(types::colour_t)) != FFLY_SUCCESS) {
 			system::io::fprintf(ffly_err, "cuda, failed to allocate memory for colour.\n");
 			return FFLY_FAILURE;
 		}
 
-		if (memory::gpu_mem_alloc((void**)&buff, size) != FFLY_SUCCESS) {
+		if (memory::gpu_mem_alloc((void**)&ctx->dev_buff, size) != FFLY_SUCCESS) {
 			system::io::fprintf(ffly_err, "cuda, failed to allocate memory for buff.\n");
 			return FFLY_FAILURE;
 		}
 
-		if ((err = cudaMemcpy(colour, &__colour, sizeof(types::colour_t), cudaMemcpyHostToDevice)) != ffly_cl_success) {
+		if ((err = cudaMemcpy(ctx->dev_colour, &__colour, sizeof(types::colour_t), cudaMemcpyHostToDevice)) != ffly_cl_success) {
 			system::io::fprintf(ffly_err, "cuda, failed to copy colour to device, %s\n", cudaGetErrorString(err));
 			return FFLY_FAILURE;
 		}
-		ffly_act_add_task(&__ffly_act__, act_gid_cleanup, &cleanup, nullptr);
-		inited = ffly_true;
+		ctx->prepared = ffly_true;
 	}
 
-	mdl_uint_t static _size = size;
-	if (_size != size) {
-		if (buff != nullptr) memory::gpu_mem_free(buff);
-		if (memory::gpu_mem_alloc((void**)&buff, size) != FFLY_SUCCESS) {
+	if (ctx->size != size) {
+		if (ctx->dev_buff != nullptr) memory::gpu_mem_free(ctx->dev_buff);
+		if (memory::gpu_mem_alloc((void**)&ctx->dev_buff, size) != FFLY_SUCCESS) {
 			system::io::fprintf(ffly_err, "cuda, failed to allocate memory for buff.\n");
 			return FFLY_FAILURE;
 		}
-		_size = size;
+		ctx->size = size;
 	}
 
-	if ((err = cudaMemcpy(buff, __buff, size, cudaMemcpyHostToDevice)) != ffly_cl_success) {
+	if ((err = cudaMemcpy(ctx->dev_buff, __buff, size, cudaMemcpyHostToDevice)) != ffly_cl_success) {
 		system::io::fprintf(ffly_err, "cuda, failed to copy buff to device, %s\n", cudaGetErrorString(err));
 		return FFLY_FAILURE;
 	}
 
-	types::colour_t static _colour = __colour;
-	if (_colour.r != __colour.r || _colour.g != __colour.g || _colour.b != __colour.b || _colour.a != __colour.a) {
-		if ((err = cudaMemcpy(colour, &__colour, sizeof(types::colour_t), cudaMemcpyHostToDevice)) != ffly_cl_success) {
+	if (ctx->colour.r != __colour.r || ctx->colour.g != __colour.g || ctx->colour.b != __colour.b || ctx->colour.a != __colour.a) {
+		if ((err = cudaMemcpy(ctx->dev_colour, &__colour, sizeof(types::colour_t), cudaMemcpyHostToDevice)) != ffly_cl_success) {
 			system::io::fprintf(ffly_err, "cuda, failed to copy colour to device.\n");
 			return FFLY_FAILURE;
 		}
-		_colour = __colour;
+		ctx->colour = __colour;
 	}
 
 	mdl_uint_t blk_size;
@@ -81,10 +132,10 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixfill(types::byte_t *__
 	}
 
 	system::io::fprintf(ffly_log, "no_blks: %u, blk_size: %u\n", no_blks, blk_size);
-	pixfill<<<no_blks, blk_size>>>(buff, colour);
+	pixfill<<<no_blks, blk_size>>>(ctx->dev_buff, ctx->dev_colour);
 	if ((left = (__nopix-(off = (no_blks*(1<<8)))))>0 && (__nopix>>8)>0)
-		pixfill<<<1, left>>>(buff+(off*4), colour);
-	if ((err = cudaMemcpy(__buff, buff, size, cudaMemcpyDeviceToHost)) != ffly_cl_success) {
+		pixfill<<<1, left>>>(ctx->dev_buff+(off*4), ctx->dev_colour);
+	if ((err = cudaMemcpy(__buff, ctx->dev_buff, size, cudaMemcpyDeviceToHost)) != ffly_cl_success) {
 		system::io::fprintf(ffly_err, "cuda, failed to copy buff from device to host.\n");
 		return FFLY_FAILURE;
 	}

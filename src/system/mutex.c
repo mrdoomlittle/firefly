@@ -1,7 +1,7 @@
 # include "mutex.h"
 void extern _ffly_mutex_lock(ffly_mutex_t*);
 void extern _ffly_mutex_unlock(ffly_mutex_t*);
-// make sure correct register is used.
+void extern _ffly_mutex_trylock(ffly_mutex_t*);
 void ffly_mutex_lock(ffly_mutex_t *__m) {
 	__asm__("mov %0, %%rdi\n\t"
         "call _ffly_mutex_lock" : : "r"(__m));
@@ -10,6 +10,14 @@ void ffly_mutex_lock(ffly_mutex_t *__m) {
 void ffly_mutex_unlock(ffly_mutex_t *__m) {
     __asm__("mov %0, %%rdi\n\t" 
         "call _ffly_mutex_unlock" : : "r"(__m));
+}
+
+ffly_err_t ffly_mutex_trylock(ffly_mutex_t *__m) {
+    ffly_err_t ret;
+    __asm__("mov %1, %%rdi\n\r"
+        "call _ffly_mutex_trylock\n\t" 
+        "mov %%bl, %0" : "=r"(ret) : "r"(__m));
+    return ret;
 }
 
 /*

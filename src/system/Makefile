@@ -2,10 +2,10 @@ DEFINES=
 #-D__WITH_MEM_TRACKER
 all: clean
 	nasm -f elf64 -o cond_lock.o asm/cond_lock.asm
-	nasm -f elf64 -o mutex.o asm/mutex.asm
-	nasm -f elf64 -o atomic_op.o asm/atomic_op.asm
+	nasm -f elf64 -o mutex.o.0 asm/mutex.asm
+	nasm -f elf64 -o atomic_op.o.0 asm/atomic_op.asm
 	nasm -f elf64 -o signal.o asm/signal.asm
-	nasm -f elf64 -o sys_nanosleep.o asm/sys_nanosleep.asm
+	nasm -f elf64 -o sys_nanosleep.o.0 asm/sys_nanosleep.asm
 	gcc -c $(DEFINES) -std=gnu11 time.c
 	gcc -c $(DEFINES) -std=c11 flags.c
 	gcc -c $(DEFINES) -std=c11 arr.c
@@ -34,9 +34,12 @@ all: clean
 	gcc -c $(DEFINES) -std=c11 util/hash.c
 	gcc -c $(DEFINES) -std=c11 bin_tree.c
 	gcc -c $(DEFINES) -std=c11 map.c
+	gcc -c $(DEFINES) -std=c11 mutex.c -o mutex.o.1
+	gcc -c $(DEFINES) -std=c11 atomic_op.c -o atomic_op.o.1
+	gcc -c $(DEFINES) -std=c11 sys_nanosleep.c -o sys_nanosleep.o.1
 	gcc -c $(DEFINES) -std=c11 ../data/mem_swp.c
 ##	gcc -c -std=c11 $(DEFINES) -o mem_tracker.o mem_tracker.c
-	g++ -std=c++11 $(DEFINES) -o main map.o bin_tree.o hash.o str_len.o mem_cmp.o main.cpp futex.o mem_blk.o time.o sys_nanosleep.o cond_lock.o atomic_op.o mutex.o flags.o mem_set.o mem_swp.o buff.o queue.o vec.o mem_cpy.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o arr.o mem_dupe.o thread.o task_pool.o task_worker.o signal.o -lpthread
+	g++ -std=c++11 $(DEFINES) -o main map.o sys_nanosleep.o.1 atomic_op.o.1 mutex.o.1 bin_tree.o hash.o str_len.o mem_cmp.o main.cpp futex.o mem_blk.o time.o sys_nanosleep.o.0 cond_lock.o atomic_op.o.0 mutex.o.0 flags.o mem_set.o mem_swp.o buff.o queue.o vec.o mem_cpy.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o arr.o mem_dupe.o thread.o task_pool.o task_worker.o signal.o -lpthread
 mutex:
 	nasm -f elf64 -o mutex.o asm/mutex.asm
 	gcc -std=c11 mutex.c mutex.o -lpthread

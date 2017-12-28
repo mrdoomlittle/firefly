@@ -230,27 +230,27 @@ ffly_byte_t static* read_literal(struct ffly_conf *__conf, mdl_u8_t *__kind, ffl
         mdl_u64_t no = ffly_stno((char*)tok->p);
         if (no >= 0 && no <= (mdl_u8_t)~0) {
             *(mdl_u8_t*)(p = __ffly_mem_alloc(sizeof(mdl_u8_t))) = no;
-            *__kind = _ffly_conf_vt_8l_int;
+            *__kind = _ffly_conf_8l_int;
             return (ffly_byte_t*)p;
         } else if (no > (mdl_u8_t)~0 && no <= (mdl_u16_t)~0) {
             *(mdl_u16_t*)(p = __ffly_mem_alloc(sizeof(mdl_u16_t))) = no;
-            *__kind = _ffly_conf_vt_16l_int;
+            *__kind = _ffly_conf_16l_int;
             return (ffly_byte_t*)p;
         } else if (no > (mdl_u16_t)~0 && no <= (mdl_u32_t)~0) {
             *(mdl_u32_t*)(p = __ffly_mem_alloc(sizeof(mdl_u32_t))) = no;
-            *__kind = _ffly_conf_vt_32l_int;
+            *__kind = _ffly_conf_32l_int;
             return (ffly_byte_t*)p;
         } else if (no > (mdl_u32_t)~0 && no <= ~(mdl_u64_t)0) {
             *(mdl_u64_t*)(p = __ffly_mem_alloc(sizeof(mdl_u64_t))) = no;
-            *__kind = _ffly_conf_vt_64l_int;
+            *__kind = _ffly_conf_64l_int;
             return (ffly_byte_t*)p;
         }
     }
 
     if (tok->kind == _tok_str)
-        *__kind = _ffly_conf_vt_str;
+        *__kind = _ffly_conf_str;
     else if (tok->kind == _tok_chr)
-        *__kind = _ffly_conf_vt_chr;
+        *__kind = _ffly_conf_chr;
     *__err = FFLY_SUCCESS;
     return (ffly_byte_t*)ffly_str_dupe((char*)tok->p); 
 }
@@ -495,20 +495,20 @@ ffly_err_t ffly_conf_free(struct ffly_conf *__conf) {
 }
 
 void static print_val(struct ffly_conf_val *__val) {
-    if (__val->kind == _ffly_conf_vt_str)
+    if (__val->kind == _ffly_conf_str)
         printf("%s\n", (char*)__val->p);
-    else if (__val->kind == _ffly_conf_vt_chr)
+    else if (__val->kind == _ffly_conf_chr)
         printf("%c\n", *(char*)__val->p);
-    else if (__val->kind == _ffly_conf_vt_64l_int)
+    else if (__val->kind == _ffly_conf_64l_int)
         printf("%lu\n", *(mdl_u64_t*)__val->p);
-    else if (__val->kind == _ffly_conf_vt_32l_int)
+    else if (__val->kind == _ffly_conf_32l_int)
         printf("%u\n", *(mdl_u32_t*)__val->p);
-    else if (__val->kind == _ffly_conf_vt_16l_int)
+    else if (__val->kind == _ffly_conf_16l_int)
         printf("%u\n", *(mdl_u16_t*)__val->p);
-    else if (__val->kind == _ffly_conf_vt_8l_int)
+    else if (__val->kind == _ffly_conf_8l_int)
         printf("%u\n", *(mdl_u8_t*)__val->p);
 }
-
+/*
 int main() {
     ffly_io_init();
     struct ffly_conf conf;
@@ -527,8 +527,6 @@ int main() {
  //   print_val((struct ffly_conf_val*)ffly_conf_get_arr_elem(&conf, arr, 1));
   //  print_val((struct ffly_conf_val*)ffly_conf_get_arr_elem(&conf, arr, 2));
    // print_val((struct ffly_conf_val*)ffly_conf_get_arr_elem(&conf, arr, 3));
-    //print_val((struct ffly_conf_val*)ffly_conf_get(&conf, "git_url"));
-
     ffly_conf_free(&conf);
     ffly_io_closeup();
-}
+}*/

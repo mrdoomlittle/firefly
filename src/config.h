@@ -34,12 +34,12 @@ struct ffly_conf {
 };
 
 enum {
-    _ffly_conf_vt_str,
-    _ffly_conf_vt_chr,
-    _ffly_conf_vt_64l_int,
-    _ffly_conf_vt_32l_int,
-    _ffly_conf_vt_16l_int,
-    _ffly_conf_vt_8l_int
+    _ffly_conf_str,
+    _ffly_conf_chr,
+    _ffly_conf_64l_int,
+    _ffly_conf_32l_int,
+    _ffly_conf_16l_int,
+    _ffly_conf_8l_int
 };
 
 ffly_err_t ffly_conf_init(struct ffly_conf*);
