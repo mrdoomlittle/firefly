@@ -1,7 +1,8 @@
 DEFINES=-I../eint_t/inc -D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
+nasm_flags="-I${PWD}/system/asm/"
 all:
 	rm -f *.o
-	nasm -f elf64 -o mutex.o system/asm/mutex.asm
+	nasm -f elf64 $(nasm_flags) -o mutex.o system/asm/mutex.asm
 	gcc -c -std=c11 -DARC64 $(DEFINES) maths/is_inside.c
 	gcc -c -std=c11 -DARC64 $(DEFINES) system/vec.c
 	gcc -c -std=c11 -DARC64 $(DEFINES) system/mem_tracker.c
@@ -27,7 +28,7 @@ config: clean
 	gcc -c -std=c11 data/mem_cpy.c
 	gcc -c -std=c11 data/mem_swp.c
 	gcc -c -std=c11 system/flags.c
-	nasm -f elf64 -o mutex.o.0 system/asm/mutex.asm
+	nasm -f elf64 $(nasm_flags) -o mutex.o.0 system/asm/mutex.asm
 	gcc -c -std=c11 data/str_len.c
 	gcc -c -std=c11 data/mem_dupe.c
 	gcc -c -std=c11 system/errno.c
@@ -41,7 +42,7 @@ config: clean
 	gcc -c -std=c11 -o mutex.o.1 system/mutex.c
 	gcc -c -std=c11 system/map.c
 	gcc -c -std=c11 system/util/hash.c
-	nasm -f elf64 -o sys_nanosleep.o system/asm/sys_nanosleep.asm
+	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o system/asm/sys_nanosleep.asm
 	gcc -std=c11 -o main config.c bin_tree.o hash.o map.o string.o sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o file.o mem_realloc.o mem_free.o mem_alloc.o
 script: clean
 	gcc -c -std=c11 system/io.c
@@ -56,7 +57,7 @@ script: clean
 	gcc -c -std=c11 data/mem_cpy.c
 	gcc -c -std=c11 data/mem_swp.c
 	gcc -c -std=c11 system/flags.c
-	nasm -f elf64 -o mutex.o.0 system/asm/mutex.asm
+	nasm -f elf64 $(nasm_flags) -o mutex.o.0 system/asm/mutex.asm
 	gcc -c -std=c11 data/str_len.c
 	gcc -c -std=c11 data/mem_dupe.c
 	gcc -c -std=c11 system/errno.c
@@ -70,7 +71,7 @@ script: clean
 	gcc -c -std=c11 -o mutex.o.1 system/mutex.c
 	gcc -c -std=c11 system/map.c
 	gcc -c -std=c11 system/util/hash.c
-	nasm -f elf64 -o sys_nanosleep.o system/asm/sys_nanosleep.asm
+	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o system/asm/sys_nanosleep.asm
 	gcc -std=c11 -o main script.c bin_tree.o hash.o map.o string.o sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o file.o parse.o lex.o gen.o mem_realloc.o mem_free.o mem_alloc.o
 clean:
 	rm -f main

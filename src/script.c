@@ -74,46 +74,46 @@ void pr_obj(struct obj *__obj) {
 	}
 }
 
-void op_alloc(struct obj *__obj, struct obj **__objp) {
+void op_alloc(struct obj *__obj) {
 	pr_obj(__obj);
 	__obj->p = __ffly_mem_alloc(__obj->_type->size);
 }
 
-void op_free(struct obj *__obj, struct obj **__objp) {
+void op_free(struct obj *__obj) {
 	pr_obj(__obj);
 	__ffly_mem_free(__obj->p);
 }
 
-void op_assign(struct obj *__obj, struct obj **__objp) {
+void op_assign(struct obj *__obj) {
 	pr_obj(__obj);
-	ffly_mem_cpy(__obj->to->p, __obj->p, __obj->_type->size);
+	ffly_mem_cpy((*__obj->to)->p, __obj->p, __obj->_type->size);
 }
 
-void op_copy(struct obj *__obj, struct obj **__objp) {
+void op_copy(struct obj *__obj) {
 	pr_obj(__obj);
-	ffly_mem_cpy(__obj->to->p, __obj->from->p, __obj->_type->size);
+	ffly_mem_cpy((*__obj->to)->p, (*__obj->from)->p, __obj->_type->size);
 }
 
-void op_compare(struct obj *__obj, struct obj **__objp) {
+void op_compare(struct obj *__obj) {
     mdl_u8_t l[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     mdl_u8_t r[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    ffly_mem_cpy(l, __obj->l->p, __obj->l->_type->size);
-    ffly_mem_cpy(r, __obj->r->p, __obj->r->_type->size);
+    ffly_mem_cpy(l, (*__obj->l)->p, (*__obj->l)->_type->size);
+    ffly_mem_cpy(r, (*__obj->r)->p, (*__obj->r)->_type->size);
     mdl_u8_t *flags = (mdl_u8_t*)__obj->flags->p;
     *flags = 0x0;
     ffly_printf("r %u, l: %u\n", *(mdl_u64_t*)l, *(mdl_u64_t*)r);
-    switch(__obj->l->_type->kind) {
+    switch((*__obj->l)->_type->kind) {
         case _u64_t: case _u32_t: case _u16_t: case _u8_t:
             if (*(mdl_u64_t*)l == *(mdl_u64_t*)r) *flags |= _flg_eq; else *flags |= _flg_neq;
             if (*(mdl_u64_t*)l > *(mdl_u64_t*)r) *flags |= _flg_gt;
             if (*(mdl_u64_t*)l < *(mdl_u64_t*)r) *flags |= _flg_lt;
         break;
         case _i64_t: case _i32_t: case _i16_t: case _i8_t:
-            if (*(mdl_u64_t*)l > (1<<(__obj->l->_type->size*8))>>1) {
-                *(mdl_u64_t*)l |= (~(mdl_u64_t)0)>>(__obj->l->_type->size*8);
+            if (*(mdl_u64_t*)l > (1<<((*__obj->l)->_type->size*8))>>1) {
+                *(mdl_u64_t*)l |= (~(mdl_u64_t)0)>>((*__obj->l)->_type->size*8);
             }
-            if (*(mdl_u64_t*)r > (1<<(__obj->r->_type->size*8))>>1) {
-                *(mdl_u64_t*)r |= (~(mdl_u64_t)0)>>(__obj->r->_type->size*8);
+            if (*(mdl_u64_t*)r > (1<<((*__obj->r)->_type->size*8))>>1) {
+                *(mdl_u64_t*)r |= (~(mdl_u64_t)0)>>((*__obj->r)->_type->size*8);
             }
 
             if (*(mdl_i64_t*)l == *(mdl_i64_t*)r) *flags |= _flg_eq; else *flags |= _flg_neq;
@@ -123,61 +123,80 @@ void op_compare(struct obj *__obj, struct obj **__objp) {
     }
 }
 
-void op_jump(struct obj *__obj, struct obj **__objp) {
-    if (!__obj->jmp) return;
-    *__objp = *__obj->jmp;
+void op_jump(struct obj *__objp) {
+    struct obj *_obj = *(struct obj**)__objp;
+    if (!_obj->jmp) return;
+    if (!*_obj->jmp) return;
+    *(struct obj**)__objp = **_obj->jmp;
+    ffly_printf("jump.\n");
 }
 
-void op_cond_jump(struct obj *__obj, struct obj **__objp) {
-    ffly_printf("------------------- %u\n", *(mdl_u8_t*)__obj->flags->p);
-    if (((*(mdl_u8_t*)__obj->flags->p)&__obj->cond)>0)
-        op_jump(__obj, __objp);
+void op_cond_jump(struct obj *__objp) {
+    struct obj *_obj = *(struct obj**)__objp;
+    ffly_printf("------------------- %u\n", *(mdl_u8_t*)_obj->flags->p);
+    if (((*(mdl_u8_t*)_obj->flags->p)&_obj->cond)>0)
+        op_jump(__objp);
 }
 
 // debug
-void op_print(struct obj *__obj, struct obj **__objp) {
+void op_print(struct obj *__obj) {
 	pr_obj(__obj);
+    struct obj *val = *__obj->val;
+    ffly_printf("--> %p\n", val);
 	if (__obj->_type->kind == _uint_t) {
-		ffly_printf("%lu\n", *(mdl_uint_t*)__obj->val->p);
+		ffly_printf("%lu\n", *(mdl_uint_t*)val->p);
 		return;
 	} else if (__obj->_type->kind == _int_t) {
-		ffly_printf("%ld\n", *(mdl_int_t*)__obj->val->p);
+		ffly_printf("%ld\n", *(mdl_int_t*)val->p);
 		return;
 	}
 
 	switch(__obj->_type->kind) {
 		case _u64_t:
-			ffly_printf("%lu\n", *(mdl_u64_t*)__obj->val->p);
+			ffly_printf("%lu\n", *(mdl_u64_t*)val->p);
 		break;
 		case _i64_t:
-			ffly_printf("%ld\n", *(mdl_i64_t*)__obj->val->p);
+			ffly_printf("%ld\n", *(mdl_i64_t*)val->p);
 		break;
 		case _u32_t:
-			ffly_printf("%u\n", *(mdl_u32_t*)__obj->val->p);
+			ffly_printf("%u\n", *(mdl_u32_t*)val->p);
 		break;
 		case _i32_t:
-			ffly_printf("%d\n", *(mdl_i32_t*)__obj->val->p);
+			ffly_printf("%d\n", *(mdl_i32_t*)val->p);
 		break;
 		case _u16_t:
-			ffly_printf("%u\n", *(mdl_u16_t*)__obj->val->p);
+			ffly_printf("%u\n", *(mdl_u16_t*)val->p);
 		break;
 		case _i16_t:
-			ffly_printf("%d\n", *(mdl_i16_t*)__obj->val->p);
+			ffly_printf("%d\n", *(mdl_i16_t*)val->p);
 		break;
 		case _u8_t:
-			ffly_printf("%u\n", *(mdl_u8_t*)__obj->val->p);
+			ffly_printf("%u\n", *(mdl_u8_t*)val->p);
 		break;
 		case _i8_t:
-			ffly_printf("%d\n", *(mdl_i8_t*)__obj->val->p);
+			ffly_printf("%d\n", *(mdl_i8_t*)val->p);
 		break;
 	}
 }
 
-void op_zero(struct obj *__obj, struct obj **__objp) {
-    ffly_mem_set(__obj->dst->p, 0x0, __obj->dst->_type->size);
+void op_zero(struct obj *__obj) {
+    ffly_mem_set((*__obj->dst)->p, 0x0, (*__obj->dst)->_type->size);
 }
 
-void(*op[])(struct obj*, struct obj**) = {
+struct obj *stack[20];
+struct obj **top = stack;
+
+void op_push(struct obj *__obj) {
+    *(top++) = __obj->_obj;
+    ffly_printf("push.\n");
+}
+
+void op_pop(struct obj *__obj) {
+    __obj->_obj = *(--top);
+    ffly_printf("pop.\n");
+}
+
+void(*op[])(struct obj*) = {
 	&op_alloc,
 	&op_free,
 	&op_assign,
@@ -186,14 +205,27 @@ void(*op[])(struct obj*, struct obj**) = {
     &op_compare,
     &op_jump,
     &op_cond_jump,
-    &op_zero
+    &op_zero,
+    &op_push,
+    &op_pop
 };
 
 ffly_err_t ffly_script_exec(struct ffly_script *__script) {
 	struct obj *_obj = (struct obj*)__script->top;
 	while(_obj != NULL) {
-		if (_obj->opcode >= _op_alloc && _obj->opcode <= _op_zero) {
-			op[_obj->opcode](_obj, &_obj);
+        usleep(10000);
+		if (_obj->opcode >= _op_alloc && _obj->opcode <= _op_pop) {
+            mdl_u8_t isjmp = (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump);
+            if (!isjmp)
+			    op[_obj->opcode](_obj);
+            else {
+                struct obj *p = _obj;
+                op[_obj->opcode]((struct obj*)&p);
+                if (p != _obj) {
+                    _obj = p;
+                    continue;
+                }
+            }
             if (!_obj) break;
         }
 		_obj = _obj->next;
@@ -233,19 +265,19 @@ ffly_bool_t expect_token(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_t
         if (__kind == TOK_KEYWORD) {
             switch(__id) {
                 case _l_brace:
-                    ffly_fprintf(ffly_out, "%u;%u: expected left side brace.\n", tokl(tok), tokcol(tok));
+                    ffly_fprintf(ffly_out, "%u;%u: expected left side brace, got %s.\n", tokl(tok), tokcol(tok), tokid_str(tok->id));
                 break;
                 case _r_brace:
-                    ffly_fprintf(ffly_out, "%u;%u: expected right side brace.\n", tokl(tok), tokcol(tok));
+                    ffly_fprintf(ffly_out, "%u;%u: expected right side brace, got %s.\n", tokl(tok), tokcol(tok), tokid_str(tok->id));
                 break;
                 case _semicolon:
-                    ffly_fprintf(ffly_out, "%u;%u: expected semicolon.\n", tokl(tok), tokcol(tok));
+                    ffly_fprintf(ffly_out, "%u;%u: expected semicolon, got %s.\n", tokl(tok), tokcol(tok), tokid_str(tok->id));
                 break;
                 case _l_paren:
-                    ffly_fprintf(ffly_out, "%u;%u: expected left side paren.\n", tokl(tok), tokcol(tok));
+                    ffly_fprintf(ffly_out, "%u;%u: expected left side paren, got %s.\n", tokl(tok), tokcol(tok), tokid_str(tok->id));
                 break;
                 case _r_paren:
-                    ffly_fprintf(ffly_out, "%u;%u: expected right side paren.\n", tokl(tok), tokcol(tok));
+                    ffly_fprintf(ffly_out, "%u;%u: expected right side paren, got %s.\n", tokl(tok), tokcol(tok), tokid_str(tok->id));
                 break;
             }
         }
@@ -341,6 +373,8 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
 		to_keyword(__tok, _k_u8_t);
 	else if (!ffly_str_cmp(__tok->p, "i8_t"))
 		to_keyword(__tok, _k_i8_t);
+    else if (!ffly_str_cmp(__tok->p, "fn"))
+        to_keyword(__tok, _k_fn);
 	else {
 		return 0;
 	}

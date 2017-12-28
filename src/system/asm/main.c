@@ -14,6 +14,7 @@ void call() {
 	while(i != pp) {
 		usleep(5999);
 		if (ffly_mutex_trylock(mutex) == FFLY_SUCCESS) {
+//        ffly_mutex_lock(mutex);
 			(*ii)++;
 		ffly_mutex_unlock(mutex);
 			i++;
@@ -21,12 +22,15 @@ void call() {
 	}
 }
 
-# define no_process 20
-
+# define no_process 8
 int main() {
 	mutex = mmap(NULL, sizeof(ffly_mutex_t), PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
 	ii = mmap(NULL, sizeof(mdl_uint_t), PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
 	*mutex = FFLY_MUTEX_INIT;
+
+    ffly_mutex_lock(mutex);
+    ffly_mutex_unlock(mutex);
+    printf("init.\n");
 	mdl_uint_t p = 0;
 	while(p != no_process) {
 		pid_t child = fork();

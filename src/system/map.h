@@ -3,7 +3,7 @@
 # include <mdlint.h>
 # include "../types/err_t.h"
 # include "vec.h"
-# define FFLY_MAP_SIZE 0xFFF
+# define FFLY_MAP_SIZE 0xFF
 struct ffly_map {
 	struct ffly_vec **table;
 };

@@ -25,6 +25,9 @@ struct ffly_script {
 # define TOK_NO 2
 # define TOK_NULL 3
 enum {
+    _l_arrow,
+    _r_arrow,
+    _comma,
     _eqeq,
 	_eq,
     _neq,
@@ -46,7 +49,8 @@ enum {
 	_k_i16_t,
 	_k_u8_t,
 	_k_i8_t,
-    _k_if
+    _k_if,
+    _k_fn
 };
 
 enum {
@@ -60,7 +64,9 @@ enum {
     _op_eq,
     _op_neq,
     _op_gt,
-    _op_lt
+    _op_lt,
+    _ast_func,
+    _ast_func_call
 };
 
 enum {
@@ -90,7 +96,9 @@ enum {
     _op_compare,
     _op_jump,
     _op_cond_jump,
-    _op_zero
+    _op_zero,
+    _op_push,
+    _op_pop
 };
 
 struct node {
@@ -98,10 +106,10 @@ struct node {
     struct type *_type;
     ffly_byte_t val[sizeof(mdl_u64_t)];
     struct node *init, *var, *arg;
-    struct obj *_obj;
+    struct obj *_obj, **jmp, **ret;
     struct node *l, *r;
-    struct node *cond;
-    struct ffly_vec vec;
+    struct node *cond, *call;
+    struct ffly_vec block, args, params;
 };
 
 struct token {
@@ -122,9 +130,10 @@ struct obj {
     void *p;
     struct type *_type;
     // dst/src? or'
-    struct obj *dst;
-    struct obj *to, *from, *l, *r;
-    struct obj *val, **jmp, *flags;
+    struct obj *objpp;
+    struct obj **dst, *_obj;
+    struct obj **to, **from, **l, **r;
+    struct obj **val, ***jmp, *flags;
     struct obj *next;
 };
 

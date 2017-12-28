@@ -6,7 +6,7 @@
 # include "data/str_dupe.h"
 # include "data/str_len.h"
 ffly_bool_t is_space(char __c) {
-	if (__c == ' ' || __c == '\n') return 1;
+	if (__c == ' ' || __c == '\n' || __c == '\t') return 1;
 	return 0;
 }
 
@@ -58,8 +58,23 @@ static struct token* read_token(struct ffly_script *__script) {
 	tok->p = NULL;
     ffly_off_t off = __script->off;
 	switch(fetchc(__script)) {
+        case '-':
+            if (is_next(__script, '>')) {
+                make_keyword(tok, _r_arrow);
+                __script->off++;
+            }
+            __script->off++;
+        break;
+        case ',':
+            make_keyword(tok, _comma);
+            __script->off++;
+        break;
         case '<':
-            make_keyword(tok, _lt);
+            if (is_next(__script, '-')) {
+                make_keyword(tok, _l_arrow);
+                __script->off++;
+            } else
+                make_keyword(tok, _lt);
             __script->off++;
         break;
         case '>':

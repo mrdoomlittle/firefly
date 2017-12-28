@@ -15,7 +15,7 @@ _ffly_mutex_lock:
 	ret
 _ffly_mutex_unlock:
 	mov al, [rdi]
-	lock xor BYTE[rdi], al
+	lock xor BYTE[rdi], al    
 	ret
 _ffly_mutex_trylock:
 	mov al, 1
