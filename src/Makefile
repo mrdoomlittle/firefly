@@ -72,7 +72,7 @@ script: clean
 	gcc -c -std=c11 system/map.c
 	gcc -c -std=c11 system/util/hash.c
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o system/asm/sys_nanosleep.asm
-	gcc -std=c11 -o main script.c bin_tree.o hash.o map.o string.o sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o file.o parse.o lex.o gen.o mem_realloc.o mem_free.o mem_alloc.o
+	gcc -std=c11 -Wall -o main script.c bin_tree.o hash.o map.o string.o sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o file.o parse.o lex.o gen.o mem_realloc.o mem_free.o mem_alloc.o
 clean:
 	rm -f main
 	cd ../ && make clean && cd src

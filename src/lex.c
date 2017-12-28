@@ -30,6 +30,7 @@ char static* read_ident(struct ffly_script *__script) {
 	char *s = ffly_str_dupe((char*)ffly_buff_begin(&__script->sbuf));
 	__script->off+= ffly_buff_off(&__script->sbuf);
 	ffly_buff_off_reset(&__script->sbuf);
+    cleanup(__script, (void*)s);
 	return s;
 }
 
@@ -45,6 +46,7 @@ char static* read_no(struct ffly_script *__script) {
 	char *s = ffly_str_dupe((char*)ffly_buff_begin(&__script->sbuf));
 	__script->off+= ffly_buff_off(&__script->sbuf);
 	ffly_buff_off_reset(&__script->sbuf);
+    cleanup(__script, (void*)s);
 	return s;
 }
 
@@ -136,9 +138,7 @@ static struct token* read_token(struct ffly_script *__script) {
     tok->line = curl(__script);
     tok->off = off;
     tok->lo = curlo(__script);
-	struct token **p;
-	ffly_vec_push_back(&__script->toks, (void**)&p);
-	*p = tok;
+	cleanup(__script, (void*)tok);
 	return tok;
 }
 

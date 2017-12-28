@@ -8,13 +8,18 @@
 struct ffly_script {
     struct ffly_map env;
 	ffly_byte_t *p, *end;
+    ffly_byte_t *stack;
+    ffly_byte_t *fresh;
 	ffly_off_t off;
 
     mdl_uint_t line, lo;
-	struct ffly_vec nodes;
-	struct ffly_vec toks;
+    struct ffly_vec nodes;
+    struct ffly_vec vecs;
+    struct ffly_vec maps;
+    
 	struct ffly_buff sbuf;
 	// token injection buffer
+    struct ffly_vec to_free;
 	struct ffly_buff iject_buff;
 	void *top;
 };
@@ -88,8 +93,7 @@ enum {
 # define _flg_lt 0x8
 
 enum {
-	_op_alloc,
-	_op_free,
+	_op_fresh,
 	_op_assign,
 	_op_copy,
 	_op_print,
@@ -98,7 +102,9 @@ enum {
     _op_cond_jump,
     _op_zero,
     _op_push,
-    _op_pop
+    _op_pop,
+    _op_incr,
+    _op_decr
 };
 
 struct node {
@@ -132,7 +138,7 @@ struct obj {
     // dst/src? or'
     struct obj *objpp;
     struct obj **dst, *_obj;
-    struct obj **to, **from, **l, **r;
+    struct obj **to, **from, **l, **r, **by;
     struct obj **val, ***jmp, *flags;
     struct obj *next;
 };
@@ -155,6 +161,9 @@ void ffly_script_ulex(struct ffly_script*, struct token*);
 ffly_bool_t maybe_keyword(struct token*);
 ffly_bool_t is_eof(struct ffly_script*);
 void pr_tok(struct token*);
+void vec_cleanup(struct ffly_script*, struct ffly_vec*);
+void map_cleanup(struct ffly_script*, struct ffly_map*);
+void cleanup(struct ffly_script*, void*);
 # endif
 ffly_err_t ffly_script_build(struct ffly_script*);
 ffly_err_t ffly_script_gen_free();

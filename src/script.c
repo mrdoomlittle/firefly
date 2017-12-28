@@ -58,50 +58,62 @@ void pr_tok(struct token *__tok) {
 
 char const* opstr(mdl_u8_t __op) {
 	switch(__op) {
-		case _op_alloc: return "alloc";
-		case _op_free: return "free";
+		case _op_fresh: return "fresh";
 		case _op_assign: return "assign";
 		case _op_copy: return "copy";
 		case _op_print: return "print";
+        case _op_jump: return "jump";
+        case _op_cond_jump: return "cond jump";
+        case _op_incr: return "incr";
+        case _op_decr: return "decr";
+        case _op_zero: return "zero";
+        case _op_push: return "push";
+        case _op_pop: return "pop";
+        case _op_compare: return "compare";
 	}
 	return "unknown";
 }
 
-void pr_obj(struct obj *__obj) {
-	ffly_printf("op: %s\n", opstr(__obj->opcode));
-	if (__obj->opcode == _op_alloc || __obj->opcode == _op_assign || __obj->opcode == _op_copy) {
-		ffly_printf("size: %u\n", __obj->_type->size);
-	}
+// get fresh pice of memory to use
+// cant free
+void op_fresh(struct ffly_script *__script, struct obj *__obj) {
+    __obj->p = (void*)__script->fresh;
+    __script->fresh+=__obj->_type->size; 
 }
 
-void op_alloc(struct obj *__obj) {
-	pr_obj(__obj);
-	__obj->p = __ffly_mem_alloc(__obj->_type->size);
-}
-
-void op_free(struct obj *__obj) {
-	pr_obj(__obj);
-	__ffly_mem_free(__obj->p);
-}
-
-void op_assign(struct obj *__obj) {
-	pr_obj(__obj);
+void op_assign(struct ffly_script *__script, struct obj *__obj) {
 	ffly_mem_cpy((*__obj->to)->p, __obj->p, __obj->_type->size);
 }
 
-void op_copy(struct obj *__obj) {
-	pr_obj(__obj);
+void op_copy(struct ffly_script *__script, struct obj *__obj) {
 	ffly_mem_cpy((*__obj->to)->p, (*__obj->from)->p, __obj->_type->size);
 }
 
-void op_compare(struct obj *__obj) {
+void vec_cleanup(struct ffly_script *__script, struct ffly_vec *__vec) {
+    struct ffly_vec *vec;
+    ffly_vec_push_back(&__script->vecs, (void**)&vec);
+    *vec = *__vec;
+}
+
+void map_cleanup(struct ffly_script *__script, struct ffly_map *__map) {
+    struct ffly_map *map;
+    ffly_vec_push_back(&__script->maps, (void**)&map);
+    *map = *__map;
+}
+
+void cleanup(struct ffly_script *__script, void *__p) {
+    void **p;
+    ffly_vec_push_back(&__script->to_free, (void**)&p);
+    *p = __p;
+}
+
+void op_compare(struct ffly_script *__script, struct obj *__obj) {
     mdl_u8_t l[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     mdl_u8_t r[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     ffly_mem_cpy(l, (*__obj->l)->p, (*__obj->l)->_type->size);
     ffly_mem_cpy(r, (*__obj->r)->p, (*__obj->r)->_type->size);
     mdl_u8_t *flags = (mdl_u8_t*)__obj->flags->p;
     *flags = 0x0;
-    ffly_printf("r %u, l: %u\n", *(mdl_u64_t*)l, *(mdl_u64_t*)r);
     switch((*__obj->l)->_type->kind) {
         case _u64_t: case _u32_t: case _u16_t: case _u8_t:
             if (*(mdl_u64_t*)l == *(mdl_u64_t*)r) *flags |= _flg_eq; else *flags |= _flg_neq;
@@ -123,26 +135,22 @@ void op_compare(struct obj *__obj) {
     }
 }
 
-void op_jump(struct obj *__objp) {
+void op_jump(struct ffly_script *__script, struct obj *__objp) {
     struct obj *_obj = *(struct obj**)__objp;
     if (!_obj->jmp) return;
     if (!*_obj->jmp) return;
     *(struct obj**)__objp = **_obj->jmp;
-    ffly_printf("jump.\n");
 }
 
-void op_cond_jump(struct obj *__objp) {
+void op_cond_jump(struct ffly_script *__script, struct obj *__objp) {
     struct obj *_obj = *(struct obj**)__objp;
-    ffly_printf("------------------- %u\n", *(mdl_u8_t*)_obj->flags->p);
     if (((*(mdl_u8_t*)_obj->flags->p)&_obj->cond)>0)
-        op_jump(__objp);
+        op_jump(__script, __objp);
 }
 
 // debug
-void op_print(struct obj *__obj) {
-	pr_obj(__obj);
+void op_print(struct ffly_script *__script, struct obj *__obj) {
     struct obj *val = *__obj->val;
-    ffly_printf("--> %p\n", val);
 	if (__obj->_type->kind == _uint_t) {
 		ffly_printf("%lu\n", *(mdl_uint_t*)val->p);
 		return;
@@ -179,26 +187,41 @@ void op_print(struct obj *__obj) {
 	}
 }
 
-void op_zero(struct obj *__obj) {
+void op_zero(struct ffly_script *__script, struct obj *__obj) {
     ffly_mem_set((*__obj->dst)->p, 0x0, (*__obj->dst)->_type->size);
 }
 
+/*
+    not memory!
+*/
 struct obj *stack[20];
 struct obj **top = stack;
-
-void op_push(struct obj *__obj) {
+void op_push(struct ffly_script *__script, struct obj *__obj) {
     *(top++) = __obj->_obj;
-    ffly_printf("push.\n");
 }
 
-void op_pop(struct obj *__obj) {
+void op_pop(struct ffly_script *__script, struct obj *__obj) {
     __obj->_obj = *(--top);
-    ffly_printf("pop.\n");
 }
 
-void(*op[])(struct obj*) = {
-	&op_alloc,
-	&op_free,
+void op_incr(struct ffly_script *__script, struct obj *__obj) {
+    mdl_u64_t val = 0;
+    ffly_mem_cpy(&val, __obj->p, __obj->_type->size);
+
+    mdl_u64_t by = 0;
+    ffly_mem_cpy(&val, (*__obj->by)->p, (*__obj->by)->_type->size);
+
+    val+=by;
+
+    ffly_mem_cpy(__obj->p, &val, __obj->_type->size);
+}
+
+void op_decr(struct ffly_script *__script, struct obj *__obj) {
+       
+}
+
+void(*op[])(struct ffly_script*, struct obj*) = {
+	&op_fresh,
 	&op_assign,
 	&op_copy,
 	&op_print,
@@ -207,20 +230,22 @@ void(*op[])(struct obj*) = {
     &op_cond_jump,
     &op_zero,
     &op_push,
-    &op_pop
+    &op_pop,
+    &op_incr,
+    &op_decr
 };
 
 ffly_err_t ffly_script_exec(struct ffly_script *__script) {
 	struct obj *_obj = (struct obj*)__script->top;
 	while(_obj != NULL) {
-        usleep(10000);
-		if (_obj->opcode >= _op_alloc && _obj->opcode <= _op_pop) {
+        ffly_fprintf(ffly_log, "op: %s\n", opstr(_obj->opcode));
+		if (_obj->opcode >= _op_fresh && _obj->opcode <= _op_pop) {
             mdl_u8_t isjmp = (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump);
             if (!isjmp)
-			    op[_obj->opcode](_obj);
+			    op[_obj->opcode](__script, _obj);
             else {
                 struct obj *p = _obj;
-                op[_obj->opcode]((struct obj*)&p);
+                op[_obj->opcode](__script, (struct obj*)&p);
                 if (p != _obj) {
                     _obj = p;
                     continue;
@@ -286,30 +311,29 @@ ffly_bool_t expect_token(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_t
 }
 
 ffly_err_t ffly_script_free(struct ffly_script *__script) {
-	struct node **_node = (struct node**)ffly_vec_begin(&__script->nodes);
-	if (ffly_vec_size(&__script->nodes)>0) {
-		while(_node <= (struct node**)ffly_vec_end(&__script->nodes)) {
-            if ((*_node)->_type != NULL)
-                __ffly_mem_free((*_node)->_type);
-			__ffly_mem_free(*_node);
-			_node++;
+	struct ffly_vec *vec;
+	if (ffly_vec_size(&__script->vecs)>0) {
+        vec = (struct ffly_vec*)ffly_vec_begin(&__script->vecs);
+		while(vec <= (struct ffly_vec*)ffly_vec_end(&__script->vecs)) {
+            ffly_vec_de_init(vec);
+			vec++;
 		}
 	}
 
-	struct token **tok = (struct token**)ffly_vec_begin(&__script->toks);
-	if (ffly_vec_size(&__script->toks)>0) {
-		while(tok <= (struct token**)ffly_vec_end(&__script->toks)) {
-			if ((*tok)->p != NULL)
-				__ffly_mem_free((*tok)->p);
-			__ffly_mem_free(*tok);
-			tok++;
+	struct ffly_map *map;
+	if (ffly_vec_size(&__script->maps)>0) {
+        map = (struct ffly_map*)ffly_vec_begin(&__script->maps);
+		while(map <= (struct ffly_map*)ffly_vec_end(&__script->maps)) {
+            ffly_map_de_init(map);
+	        map++;
 		}
 	}
 
     ffly_map_de_init(&__script->env);
     ffly_buff_de_init(&__script->sbuf);
+    ffly_vec_de_init(&__script->vecs);
+	ffly_vec_de_init(&__script->maps);
     ffly_vec_de_init(&__script->nodes);
-	ffly_vec_de_init(&__script->toks);
 	ffly_buff_de_init(&__script->iject_buff);
     ffly_script_gen_free();
 
@@ -320,6 +344,21 @@ ffly_err_t ffly_script_free(struct ffly_script *__script) {
         prev = _obj;
         _obj = _obj->next;
     }
+
+   if (prev != NULL)
+        __ffly_mem_free(prev);
+
+    void **p;
+    if (ffly_vec_size(&__script->to_free)>0) {
+        p = (void**)ffly_vec_begin(&__script->to_free);
+        while(p <= (void**)ffly_vec_end(&__script->to_free)) {
+            __ffly_mem_free(*p);
+            p++;
+        }
+    }
+    ffly_vec_de_init(&__script->to_free);
+    __ffly_mem_free(__script->stack);
+    __ffly_mem_free(__script->p);
 }
 
 struct token* peek_token(struct ffly_script *__script) {
@@ -382,14 +421,21 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
 }
 
 ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
+    __script->stack = (ffly_byte_t*)__ffly_mem_alloc(100);
+    __script->fresh = __script->stack;
 	ffly_buff_init(&__script->sbuf, 100, 1);
-	ffly_vec_clear_flags(&__script->nodes);
-	ffly_vec_clear_flags(&__script->toks);
-	ffly_vec_set_flags(&__script->nodes, VEC_AUTO_RESIZE);
-	ffly_vec_set_flags(&__script->toks, VEC_AUTO_RESIZE);
+    ffly_vec_set_flags(&__script->to_free, VEC_AUTO_RESIZE);
+    ffly_vec_init(&__script->to_free, sizeof(void*));
 
-	ffly_vec_init(&__script->nodes, sizeof(struct node*));
-	ffly_vec_init(&__script->toks, sizeof(struct token*));
+    ffly_vec_set_flags(&__script->vecs, VEC_AUTO_RESIZE);
+	ffly_vec_init(&__script->vecs, sizeof(struct ffly_vec));
+
+    ffly_vec_set_flags(&__script->vecs, VEC_AUTO_RESIZE);
+	ffly_vec_init(&__script->maps, sizeof(struct ffly_map));
+
+    ffly_vec_set_flags(&__script->nodes, VEC_AUTO_RESIZE);
+    ffly_vec_init(&__script->nodes, sizeof(struct node*));
+    
 	ffly_buff_init(&__script->iject_buff, 100, sizeof(struct token*));
     ffly_map_init(&__script->env);
 	__script->off = 0;

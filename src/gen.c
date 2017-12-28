@@ -4,8 +4,6 @@
 # include "memory/mem_free.h"
 # include "system/buff.h"
 struct obj *rg_8l_u, *rg_16l_u, *rg_32l_u, *rg_64l_u;
-
-struct ffly_vec to_free;
 void build_obj(struct obj **__obj, struct obj *__tmpl) {
 	*__obj = (struct obj*)__ffly_mem_alloc(sizeof(struct obj));
 	**__obj = *__tmpl;
@@ -32,12 +30,6 @@ struct obj* next_obj(struct ffly_script *__script, struct obj __tmpl) {
 	return _obj;
 }
 
-void push_free(struct obj *__obj) {
-    struct obj **_obj;
-    ffly_vec_push_back(&to_free, (void**)&_obj);
-    *_obj = __obj;
-}
-
 struct obj obj_tmpl = {
     .off = 0, .opcode = 0, .cond = 0,
     .p = NULL, ._type = NULL, .to = NULL, .from = NULL,
@@ -54,9 +46,9 @@ struct obj mk_op_copy(struct type *__type, struct obj **__to, struct obj **__fro
     return _obj;
 }
 
-struct obj mk_op_alloc(struct type *__type) {
+struct obj mk_op_fresh(struct type *__type) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_alloc;
+    _obj.opcode = _op_fresh;
     _obj._type = __type;
     return _obj;
 }
@@ -91,13 +83,6 @@ struct obj mk_op_zero(struct obj **__dst) {
     struct obj _obj = obj_tmpl;
     _obj.opcode = _op_zero;
     _obj.dst = __dst;
-    return _obj;
-}
-
-struct obj mk_op_free(struct obj *__obj) {
-    struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_alloc;
-    _obj.p = __obj->p;
     return _obj;
 }
 
@@ -141,14 +126,14 @@ void emit_decl_init(struct ffly_script *__script, struct node *__node, struct ob
 }
 
 void emit_decl(struct ffly_script *__script, struct node *__node) {
-    struct obj *m = next_obj(__script, mk_op_alloc(__node->var->_type));
+    struct obj *m = next_obj(__script, mk_op_fresh(__node->var->_type));
 	if (__node->init != NULL)
 		emit_decl_init(__script, __node, m);
     __node->var->_obj = m;
 }
 
 void emit_literal(struct ffly_script *__script, struct node *__node) {
-	struct obj *m = next_obj(__script, mk_op_alloc(__node->_type));
+	struct obj *m = next_obj(__script, mk_op_fresh(__node->_type));
 	next_obj(__script, mk_op_assign(__node->val, __node->_type, objpp(m)));
 	push(__script, m);
 }
@@ -185,6 +170,7 @@ void emit_if(struct ffly_script *__script, struct node *__node) {
     }
 
     _obj->jmp = (struct obj***)__ffly_mem_alloc(sizeof(struct obj***));
+    cleanup(__script, (void*)_obj->jmp);
     *_obj->jmp = &end->next;
 }
 
@@ -229,6 +215,7 @@ void emit_func(struct ffly_script *__script, struct node *__node) {
     struct obj *ret = next_obj(__script, mk_op_jump());
     ret->jmp = (struct obj***)ret_to;
     jmp->jmp = (struct obj***)__ffly_mem_alloc(sizeof(struct obj**));
+    cleanup(__script, (void*)jmp->jmp);
     *jmp->jmp = &end->next; 
 }
 
@@ -248,6 +235,7 @@ void emit_func_call(struct ffly_script *__script, struct node *__node) {
 
     struct obj *jmp = next_obj(__script, mk_op_jump());
     jmp->jmp = (struct obj***)__ffly_mem_alloc(sizeof(struct obj**));
+    cleanup(__script, (void*)jmp->jmp);
     *jmp->jmp = __node->call->jmp;
     ret->_obj = (struct obj*)&end->next;
 }
@@ -283,27 +271,24 @@ void emit(struct ffly_script *__script, struct node *__node) {
 }
 
 ffly_err_t ffly_script_gen_free() {
-    __ffly_mem_free(rg_8l_u);
-    __ffly_mem_free(rg_16l_u);
-    __ffly_mem_free(rg_32l_u);
-    __ffly_mem_free(rg_64l_u);
+    __ffly_mem_free(rg_8l_u->_type);
+    __ffly_mem_free(rg_16l_u->_type);
+    __ffly_mem_free(rg_32l_u->_type);
+    __ffly_mem_free(rg_64l_u->_type);
 }
 
 ffly_err_t ffly_script_gen(struct ffly_script *__script) {
 	if (!ffly_vec_size(&__script->nodes)) return FFLY_FAILURE;
-    ffly_vec_set_flags(&to_free, VEC_AUTO_RESIZE);
-    ffly_vec_init(&to_free, sizeof(struct obj*));
-
-    rg_8l_u = next_obj(__script, mk_op_alloc(NULL));
+    rg_8l_u = next_obj(__script, mk_op_fresh(NULL));
     *(rg_8l_u->_type = (struct type*)__ffly_mem_alloc(sizeof(struct type))) = (struct type){.kind=_u8_t, .size=1};
 
-    rg_16l_u = next_obj(__script, mk_op_alloc(NULL));
+    rg_16l_u = next_obj(__script, mk_op_fresh(NULL));
     *(rg_16l_u->_type = (struct type*)__ffly_mem_alloc(sizeof(struct type))) = (struct type){.kind=_u16_t, .size=2};
 
-    rg_32l_u = next_obj(__script, mk_op_alloc(NULL));
+    rg_32l_u = next_obj(__script, mk_op_fresh(NULL));
     *(rg_32l_u->_type = (struct type*)__ffly_mem_alloc(sizeof(struct type))) = (struct type){.kind=_u32_t, .size=4};
 
-    rg_64l_u = next_obj(__script, mk_op_alloc(NULL));
+    rg_64l_u = next_obj(__script, mk_op_fresh(NULL));
     *(rg_64l_u->_type = (struct type*)__ffly_mem_alloc(sizeof(struct type))) = (struct type){.kind=_u64_t, .size=8};
 
     if (ffly_vec_size(&__script->nodes)>0) {
@@ -313,14 +298,5 @@ ffly_err_t ffly_script_gen(struct ffly_script *__script) {
     		itr++;
     	}
     }
-
-    if (ffly_vec_size(&to_free)>0) {
-        struct obj **itr = (struct obj**)ffly_vec_begin(&to_free);
-        while(itr <= (struct obj**)ffly_vec_end(&to_free)) {
-            next_obj(__script, mk_op_free(*itr));   
-        }
-    }
-
-    ffly_vec_de_init(&to_free);
     return FFLY_SUCCESS;
 }
