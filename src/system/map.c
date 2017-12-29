@@ -51,11 +51,12 @@ map_entry_t static* map_find(struct ffly_map *__map, mdl_u8_t const *__key, mdl_
         return NULL;
     }
 
-	map_entry_t *itr = (map_entry_t*)ffly_vec_begin(*blk);
+	map_entry_t **itr = (map_entry_t*)ffly_vec_begin(*blk);
     if (ffly_vec_size(*blk)>0) {
-	    while(itr <= (map_entry_t*)ffly_vec_end(*blk)) {
-		    if (itr->val == val && itr->bc == __bc)
-			    if (!ffly_mem_cmp((void*)__key, (void*)itr->key, __bc)) return itr;
+	    while(itr <= (map_entry_t**)ffly_vec_end(*blk)) {
+            map_entry_t *entry = *itr;
+            if (entry->val == val && entry->bc == __bc)
+			    if (!ffly_mem_cmp((void*)__key, (void*)entry->key, __bc)) return *itr;
 		    itr++;
 	    }
     }
@@ -72,12 +73,12 @@ ffly_err_t ffly_map_put(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_
 		*blk = (struct ffly_vec*)__ffly_mem_alloc(sizeof(struct ffly_vec));
 		ffly_vec_clear_flags(*blk);
 		ffly_vec_tog_flag(*blk, VEC_AUTO_RESIZE);
-		if (_err(ffly_vec_init(*blk, sizeof(map_entry_t)))) {
+		if (_err(ffly_vec_init(*blk, sizeof(map_entry_t*)))) {
 	        ffly_fprintf(ffly_err, "failed to init vec.\n");
 		}
 	}
 
-	map_entry_t *entry;
+	map_entry_t **entry;
 	if (_err(ffly_vec_push_back(*blk, (void**)&entry))) {
         ffly_fprintf(ffly_err, "failed to push map entry.\n");
 	}
@@ -87,7 +88,8 @@ ffly_err_t ffly_map_put(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_
         ffly_fprintf(ffly_err, "failed to dupe key.\n");
 	}
 
-	*entry = (map_entry_t) {
+    *entry = (map_entry_t*)__ffly_mem_alloc(sizeof(map_entry_t));
+	**entry = (map_entry_t) {
 		.val = val,
 		.key = key,
 		.bc = __bc,
@@ -96,14 +98,14 @@ ffly_err_t ffly_map_put(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_
 	};
 
     if (__map->end != NULL) {
-        ((map_entry_t*)__map->end)->next = (void*)entry;
-        entry->prev = __map->end;
-        __map->end = (void*)entry;
+        ((map_entry_t*)__map->end)->next = (void*)*entry;
+        (*entry)->prev = __map->end;
+        __map->end = (void*)*entry;
     } else
-        __map->end = (void*)entry;
+        __map->end = (void*)*entry;
 
     if (!__map->begin)
-        __map->begin = (void*)entry;
+        __map->begin = (void*)*entry;
 }
 
 void const* ffly_map_get(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_t __bc) {
@@ -116,8 +118,12 @@ void const* ffly_map_get(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint
 }
 
 void static free_blk(struct ffly_vec **__blk) {
-	map_entry_t *itr = (map_entry_t*)ffly_vec_begin(*__blk);
-	while(itr <= (map_entry_t*)ffly_vec_end(*__blk)) __ffly_mem_free((void*)(itr++)->key);
+	map_entry_t **itr = (map_entry_t**)ffly_vec_begin(*__blk);
+	while(itr <= (map_entry_t**)ffly_vec_end(*__blk)) {
+        __ffly_mem_free((void*)(*itr++)->key);
+        __ffly_mem_free(*itr);
+        itr++;
+    }
 	ffly_vec_de_init(*__blk);
 	__ffly_mem_free(*__blk);
 }
