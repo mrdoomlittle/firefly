@@ -1,54 +1,28 @@
+firefly; map block is null, nothing hear.
+firefly; entry was not found.
 firefly; op: fresh
 firefly; op: fresh
 firefly; op: fresh
 firefly; op: fresh
 firefly; op: fresh
-firefly; op: assign
+firefly; op: fresh
 firefly; op: push
 firefly; op: fresh
 firefly; op: assign
 firefly; op: push
 firefly; op: pop
 firefly; op: pop
-firefly; op: compare
-firefly; op: cond jump
-firefly; op: fresh
-firefly; op: assign
+firefly; op: copy
 firefly; op: push
 firefly; op: fresh
 firefly; op: assign
 firefly; op: push
 firefly; op: pop
 firefly; op: pop
-firefly; op: compare
-firefly; op: cond jump
-firefly; op: fresh
-firefly; op: assign
+firefly; op: copy
 firefly; op: push
 firefly; op: pop
 firefly; op: print
-firefly; op: fresh
-firefly; op: assign
-firefly; op: push
-firefly; op: fresh
-firefly; op: assign
-firefly; op: push
-firefly; op: pop
-firefly; op: pop
-firefly; op: compare
-firefly; op: cond jump
-firefly; op: fresh
-firefly; op: assign
-firefly; op: push
-firefly; op: fresh
-firefly; op: assign
-firefly; op: push
-firefly; op: pop
-firefly; op: pop
-firefly; op: compare
-firefly; op: cond jump
-firefly; op: fresh
-firefly; op: assign
 firefly; op: push
 firefly; op: pop
 firefly; op: print

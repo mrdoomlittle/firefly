@@ -46,10 +46,17 @@ struct obj mk_op_copy(struct type *__type, struct obj **__to, struct obj **__fro
     return _obj;
 }
 
-struct obj mk_op_fresh(struct type *__type) {
+struct obj mk_op_fresh(mdl_uint_t __size) {
     struct obj _obj = obj_tmpl;
     _obj.opcode = _op_fresh;
-    _obj._type = __type;
+    _obj.size = __size;
+    return _obj;
+}
+
+struct obj mk_op_free(mdl_uint_t __size) {
+    struct obj _obj = obj_tmpl;
+    _obj.opcode = _op_free;
+    _obj.size = __size;
     return _obj;
 }
 
@@ -125,15 +132,36 @@ void emit_decl_init(struct ffly_script *__script, struct node *__node, struct ob
 	next_obj(__script, mk_op_copy(__node->init->_type, objpp(__to), from));
 }
 
-void emit_decl(struct ffly_script *__script, struct node *__node) {
-    struct obj *m = next_obj(__script, mk_op_fresh(__node->var->_type));
-	if (__node->init != NULL)
-		emit_decl_init(__script, __node, m);
-    __node->var->_obj = m;
+void emit_decl(struct ffly_script *__script, struct node *__node) { 
+    if (__node->var->_type->kind == _struct) {
+        ffly_vec_init(&__node->var->fields, sizeof(struct obj*));
+        ffly_vec_resize(&__node->var->fields, __node->var->_type->size);
+        void *itr = ffly_map_begin(&__node->var->_type->fields);
+        while(itr != NULL) {
+            ffly_printf("----------\n");
+            struct type *_type = (struct type*)ffly_map_getp(itr);
+            *(struct obj**)ffly_vec_at(&__node->var->fields, _type->off) = next_obj(__script, mk_op_fresh(_type->size)); 
+            ffly_map_itr(&__node->var->_type->fields, &itr, MAP_ITR_FD);
+        }
+    } else {
+        struct obj *m = next_obj(__script, mk_op_fresh(__node->var->_type->size));
+        if (__node->init != NULL)
+    	    emit_decl_init(__script, __node, m);
+        __node->var->_obj = m;
+    }
+}
+
+void emit_assign(struct ffly_script *__script, struct node *__node) {
+    emit(__script, __node->l);
+    emit(__script, __node->r);
+    struct obj **l, **r;
+    pop(__script, &r);
+    pop(__script, &l);
+    next_obj(__script, mk_op_copy(__node->_type, l, r));
 }
 
 void emit_literal(struct ffly_script *__script, struct node *__node) {
-	struct obj *m = next_obj(__script, mk_op_fresh(__node->_type));
+	struct obj *m = next_obj(__script, mk_op_fresh(__node->_type->size));
 	next_obj(__script, mk_op_assign(__node->val, __node->_type, objpp(m)));
 	push(__script, m);
 }
@@ -240,6 +268,13 @@ void emit_func_call(struct ffly_script *__script, struct node *__node) {
     ret->_obj = (struct obj*)&end->next;
 }
 
+void emit_struct_ref(struct ffly_script *__script, struct node *__node) {
+    //emit(__script, __node->_struct);
+  //  __node->_struct->_obj->off = __node->_type->off;
+    struct obj *m = *(struct obj**)ffly_vec_at(&__node->_struct->fields, __node->_type->off);
+    push(__script, m);
+}
+
 void emit(struct ffly_script *__script, struct node *__node) {
 	switch(__node->kind) {
 		case _ast_decl:
@@ -266,7 +301,12 @@ void emit(struct ffly_script *__script, struct node *__node) {
         case _ast_func_call:
             emit_func_call(__script, __node);
         break;
-
+        case _ast_struct_ref:
+            emit_struct_ref(__script, __node);
+        break;
+        case _ast_assign:
+            emit_assign(__script, __node);
+        break;
 	}
 }
 
@@ -279,16 +319,16 @@ ffly_err_t ffly_script_gen_free() {
 
 ffly_err_t ffly_script_gen(struct ffly_script *__script) {
 	if (!ffly_vec_size(&__script->nodes)) return FFLY_FAILURE;
-    rg_8l_u = next_obj(__script, mk_op_fresh(NULL));
+    rg_8l_u = next_obj(__script, mk_op_fresh(1));
     *(rg_8l_u->_type = (struct type*)__ffly_mem_alloc(sizeof(struct type))) = (struct type){.kind=_u8_t, .size=1};
 
-    rg_16l_u = next_obj(__script, mk_op_fresh(NULL));
+    rg_16l_u = next_obj(__script, mk_op_fresh(2));
     *(rg_16l_u->_type = (struct type*)__ffly_mem_alloc(sizeof(struct type))) = (struct type){.kind=_u16_t, .size=2};
 
-    rg_32l_u = next_obj(__script, mk_op_fresh(NULL));
+    rg_32l_u = next_obj(__script, mk_op_fresh(4));
     *(rg_32l_u->_type = (struct type*)__ffly_mem_alloc(sizeof(struct type))) = (struct type){.kind=_u32_t, .size=4};
 
-    rg_64l_u = next_obj(__script, mk_op_fresh(NULL));
+    rg_64l_u = next_obj(__script, mk_op_fresh(8));
     *(rg_64l_u->_type = (struct type*)__ffly_mem_alloc(sizeof(struct type))) = (struct type){.kind=_u64_t, .size=8};
 
     if (ffly_vec_size(&__script->nodes)>0) {

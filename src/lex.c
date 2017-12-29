@@ -60,6 +60,14 @@ static struct token* read_token(struct ffly_script *__script) {
 	tok->p = NULL;
     ffly_off_t off = __script->off;
 	switch(fetchc(__script)) {
+        case ':':
+            make_keyword(tok, _colon);
+            __script->off++;
+        break;
+        case '.':
+            make_keyword(tok, _period);
+            __script->off++;
+        break;
         case '-':
             if (is_next(__script, '>')) {
                 make_keyword(tok, _r_arrow);

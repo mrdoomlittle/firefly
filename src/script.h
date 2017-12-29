@@ -33,11 +33,13 @@ enum {
     _l_arrow,
     _r_arrow,
     _comma,
+    _colon,
     _eqeq,
 	_eq,
     _neq,
     _gt,
     _lt,
+    _period,
 	_semicolon,
 	_l_paren,
 	_r_paren,
@@ -55,7 +57,9 @@ enum {
 	_k_u8_t,
 	_k_i8_t,
     _k_if,
-    _k_fn
+    _k_fn,
+    _k_extern,
+    _k_struct,
 };
 
 enum {
@@ -71,7 +75,8 @@ enum {
     _op_gt,
     _op_lt,
     _ast_func,
-    _ast_func_call
+    _ast_func_call,
+    _ast_struct_ref
 };
 
 enum {
@@ -84,7 +89,8 @@ enum {
 	_u16_t,
 	_i16_t,
 	_u8_t,
-	_i8_t
+	_i8_t,
+    _struct
 };
 
 # define _flg_neq 0x1
@@ -94,6 +100,7 @@ enum {
 
 enum {
 	_op_fresh,
+    _op_free,
 	_op_assign,
 	_op_copy,
 	_op_print,
@@ -114,8 +121,10 @@ struct node {
     struct node *init, *var, *arg;
     struct obj *_obj, **jmp, **ret;
     struct node *l, *r;
-    struct node *cond, *call;
+    struct node *cond, *call, *_struct;
     struct ffly_vec block, args, params;
+
+    struct ffly_vec fields;
 };
 
 struct token {
@@ -128,10 +137,12 @@ struct token {
 struct type {
 	mdl_u8_t kind;
 	mdl_uint_t size;
+    ffly_off_t off;
+    struct ffly_map fields;
 };
 
 struct obj {
-    mdl_u32_t off;
+    mdl_u32_t off, size;
     mdl_u8_t opcode, cond;
     void *p;
     struct type *_type;

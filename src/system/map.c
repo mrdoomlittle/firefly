@@ -13,12 +13,34 @@ typedef struct {
 	mdl_u8_t const *key;
 	mdl_uint_t bc;
 	void const *p;
+    void *prev, *next;
 } map_entry_t;
 
 ffly_err_t ffly_map_init(struct ffly_map *__map) {
 	__map->table = (struct ffly_vec**)__ffly_mem_alloc(FFLY_MAP_SIZE*sizeof(struct ffly_vec*));
 	struct ffly_vec **itr = __map->table;
 	while(itr != __map->table+FFLY_MAP_SIZE) *(itr++) = NULL;
+    __map->begin = NULL;
+    __map->end = NULL;
+}
+
+void* ffly_map_begin(struct ffly_map *__map) {
+    return __map->begin;
+}
+
+void* ffly_map_end(struct ffly_map *__map) {
+    return __map->end;
+}
+
+void ffly_map_itr(struct ffly_map *__map, void **__itrp, mdl_u8_t __dir) {
+    if (__dir == MAP_ITR_FD)
+        *__itrp = ((map_entry_t*)*__itrp)->next;
+    else if (__dir == MAP_ITR_BK)
+        *__itrp = ((map_entry_t*)*__itrp)->prev;    
+}
+
+void const* ffly_map_getp(void *__p) {
+    return ((map_entry_t*)__p)->p;
 }
 
 map_entry_t static* map_find(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_t __bc) {
@@ -69,8 +91,19 @@ ffly_err_t ffly_map_put(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_
 		.val = val,
 		.key = key,
 		.bc = __bc,
-		.p = __p
+		.p = __p,
+        .next = NULL
 	};
+
+    if (__map->end != NULL) {
+        ((map_entry_t*)__map->end)->next = (void*)entry;
+        entry->prev = __map->end;
+        __map->end = (void*)entry;
+    } else
+        __map->end = (void*)entry;
+
+    if (!__map->begin)
+        __map->begin = (void*)entry;
 }
 
 void const* ffly_map_get(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_t __bc) {

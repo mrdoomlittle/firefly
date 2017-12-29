@@ -4,8 +4,11 @@
 # include "../types/err_t.h"
 # include "vec.h"
 # define FFLY_MAP_SIZE 0xFF
+# define MAP_ITR_FD 0x1
+# define MAP_ITR_BK 0x1
 struct ffly_map {
 	struct ffly_vec **table;
+    void *begin, *end;
 };
 
 # ifdef __cplusplus
@@ -15,6 +18,10 @@ ffly_err_t ffly_map_init(struct ffly_map*);
 ffly_err_t ffly_map_put(struct ffly_map*, mdl_u8_t const*, mdl_uint_t, void const*);
 void const* ffly_map_get(struct ffly_map*, mdl_u8_t const*, mdl_uint_t);
 ffly_err_t ffly_map_de_init(struct ffly_map*);
+void* ffly_map_begin(struct ffly_map*);
+void* ffly_map_end(struct ffly_map*);
+void ffly_map_itr(struct ffly_map*, void**, mdl_u8_t);
+void const* ffly_map_getp(void*);
 # ifdef __cplusplus
 }
 # include "../memory/mem_alloc.h"
