@@ -5,11 +5,31 @@
 # include "types/off_t.h"
 # include "system/vec.h"
 # include "system/map.h"
+# include <mdlint.h>
+# define ffly_conf_is_str(__p) \
+    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_str)
+# define ffly_conf_is_chr(__p) \
+    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_chr)
+# define ffly_conf_is_64l_u(__p) \
+    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_64l_u)
+# define ffly_conf_is_32l_u(__p) \
+    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_32l_u)
+# define ffly_conf_is_16l_u(__p) \
+    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_16l_u)
+# define ffly_conf_is_8l_u(__p) \
+    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_8l_u)
+# define ffly_conf_is_64l_s(__p) \
+    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_64l_s)
+# define ffly_conf_is_32l_s(__p) \
+    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_32l_s)
+# define ffly_conf_is_16l_s(__p) \
+    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_16l_s)
+# define ffly_conf_is_8l_s(__p) \
+    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_8l_s)
 struct ffly_conf_val {
     mdl_u8_t kind;
     ffly_byte_t *p;
 };
-
 
 struct ffly_conf_var {
     struct ffly_conf_val val;
@@ -36,14 +56,33 @@ struct ffly_conf {
 enum {
     _ffly_conf_str,
     _ffly_conf_chr,
-    _ffly_conf_64l_int,
-    _ffly_conf_32l_int,
-    _ffly_conf_16l_int,
-    _ffly_conf_8l_int
+// signed int
+    _ffly_conf_64l_s,
+    _ffly_conf_32l_s,
+    _ffly_conf_16l_s,
+    _ffly_conf_8l_s,
+// unsigned int
+    _ffly_conf_64l_u,
+    _ffly_conf_32l_u,
+    _ffly_conf_16l_u,
+    _ffly_conf_8l_u
 };
 
+void const* ffly_conf_get(struct ffly_conf*, char*);
+void* ffly_conf_get_arr_elem(struct ffly_conf*, void*, mdl_uint_t);
 ffly_err_t ffly_conf_init(struct ffly_conf*);
 ffly_err_t ffly_conf_read(struct ffly_conf*);
 ffly_err_t ffly_conf_ld(struct ffly_conf*, char*);
 ffly_err_t ffly_conf_free(struct ffly_conf*);
+char* ffly_conf_str(void*);
+char ffly_conf_chr(void*);
+mdl_u64_t ffly_conf_64l_u(void*);
+mdl_u32_t ffly_conf_32l_u(void*);
+mdl_u16_t ffly_conf_16l_u(void*);
+mdl_u8_t ffly_conf_8l_u(void*);
+
+mdl_i64_t ffly_conf_64l_s(void*);
+mdl_i32_t ffly_conf_32l_s(void*);
+mdl_i16_t ffly_conf_16l_s(void*);
+mdl_i8_t ffly_conf_8l_s(void*);
 # endif /*__ffly__config__h*/

@@ -6,8 +6,7 @@
 # include "data/str_dupe.h"
 # include "data/str_len.h"
 ffly_bool_t is_space(char __c) {
-	if (__c == ' ' || __c == '\n' || __c == '\t') return 1;
-	return 0;
+	return (__c == ' ' || __c == '\n' || __c == '\t');
 }
 
 char static fetchc(struct ffly_script *__script) {

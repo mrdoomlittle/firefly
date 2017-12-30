@@ -33,11 +33,11 @@ override ffly_objs+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/ma
 override ffly_objs+= src/data/str_cmb.o src/data/mem_swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o src/data/str_dupe.o src/data/mem_cmp.o src/data/str_cmp.o \
 src/data/str_cpy.o src/data/bzero.o src/data/bcopy.o
 # system
-override ffly_objs+= src/system/bin_tree.o src/system/arr.o src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
+override ffly_objs+= src/system/string.o src/system/bin_tree.o src/system/arr.o src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
 src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
 src/system/task_worker.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o src/system/event.o
 # network
-override ffly_objs+= src/network/sock.o src/network/resolve.o
+override ffly_objs+= src/network/http.o src/network/sock.o src/network/resolve.o
 # graphics
 override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o src/graphics/copy.o src/graphics/draw.o src/graphics/image.o src/graphics/png.o src/graphics/jpeg.o
 
@@ -46,8 +46,8 @@ override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o 
 # memory
 override ffly_objs+= src/ffly_system.o src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o src/memory/alloc_pixelmap.o
 
-
-override ffly_objs+= src/act.o
+# base
+override ffly_objs+= src/act.o src/config.o
 ifeq ($(shell bash find.bash "$(ffly_flags)" "--mal-track"), 0)
 	override ffly_objs+= src/system/mal_track.o
 endif
@@ -76,6 +76,20 @@ endif
 
 override ffly_objs+= src/firefly.o
 override ffly_defines+= -D__ffly_use_pulse_audio
+
+# NOTE: this is like this for debugging purposes
+src/system/string.o: src/system/string.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/string.o src/system/string.c
+
+src/config.o: src/config.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/config.o src/config.c
+
+src/system/config.o: src/system/config.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/config.o src/system/config.c
+
+src/network/http.o: src/network/http.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/network/http.o src/network/http.c
+
 src/ffly_system.o: src/ffly_system.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/ffly_system.o src/ffly_system.c
 
@@ -242,9 +256,6 @@ src/system/smem_buff.o: src/system/smem_buff.c
 
 src/system/event.o: src/system/event.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/event.o src/system/event.c
-
-src/system/config.o: src/system/config.cpp
-	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/system/config.o src/system/config.cpp
 
 src/system/errno.o: src/system/errno.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/errno.o src/system/errno.c

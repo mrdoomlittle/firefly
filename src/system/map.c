@@ -22,6 +22,7 @@ ffly_err_t ffly_map_init(struct ffly_map *__map) {
 	while(itr != __map->table+FFLY_MAP_SIZE) *(itr++) = NULL;
     __map->begin = NULL;
     __map->end = NULL;
+	return FFLY_SUCCESS;
 }
 
 void* ffly_map_begin(struct ffly_map *__map) {
@@ -51,7 +52,7 @@ map_entry_t static* map_find(struct ffly_map *__map, mdl_u8_t const *__key, mdl_
         return NULL;
     }
 
-	map_entry_t **itr = (map_entry_t*)ffly_vec_begin(*blk);
+	map_entry_t **itr = (map_entry_t**)ffly_vec_begin(*blk);
     if (ffly_vec_size(*blk)>0) {
 	    while(itr <= (map_entry_t**)ffly_vec_end(*blk)) {
             map_entry_t *entry = *itr;

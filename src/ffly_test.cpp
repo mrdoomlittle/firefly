@@ -3,11 +3,15 @@
 # include "asset_manager.h"
 # include "system/asset.h"
 # include "ffly_audio.h"
+# include "ffly_system.h"
 # include "system/aud_fformat.h"
+# include "system/config.h"
 using namespace mdl::firefly;
 int main() {
 	ffly_io_init();
+    ffly_system_init();
     mdl::ffly_audio::init();
+    ffly_printf("version: %s\n", __ffly_sysconf__.version);
 
     ffly_audio aud;
     ffly_ld_aud(NULL, "atest", _ffly_audf_wav, &aud);
