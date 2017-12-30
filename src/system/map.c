@@ -119,11 +119,14 @@ void const* ffly_map_get(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint
 }
 
 void static free_blk(struct ffly_vec **__blk) {
-	map_entry_t **itr = (map_entry_t**)ffly_vec_begin(*__blk);
-	while(itr <= (map_entry_t**)ffly_vec_end(*__blk)) {
-        __ffly_mem_free((void*)(*itr++)->key);
-        __ffly_mem_free(*itr);
-        itr++;
+	map_entry_t **itr;
+    if (ffly_vec_size(*__blk)>0) {
+        itr = (map_entry_t**)ffly_vec_begin(*__blk);
+	    while(itr <= (map_entry_t**)ffly_vec_end(*__blk)) {
+            __ffly_mem_free((void*)(*itr)->key);
+            __ffly_mem_free(*itr);
+            itr++;
+        }
     }
 	ffly_vec_de_init(*__blk);
 	__ffly_mem_free(*__blk);
