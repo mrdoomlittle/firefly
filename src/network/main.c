@@ -5,9 +5,9 @@
 # include "../system/io.h"
 int main() {
     ffly_io_init();
-    char buf[1000];
-    memset(buf, 0, 1000);
-	ffly_http_get("qg-desktop-d00", "hello.txt", 80, buf, 1000);
+    char *buf;
+    ffly_size_t size;
+	ffly_http_get("qg-desktop-d00", "hello.txt", 80, (void*)&buf, &size);
     printf("got: '%s'\n", buf);
 
     ffly_io_closeup();

@@ -7,9 +7,14 @@
 # include "../data/mem_cpy.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
+# include "../memory/mem_realloc.h"
 # include "../data/str_cmp.h"
 # include "../system/errno.h"
 # include "../data/bzero.h"
+# include <sys/ioctl.h>
+# include "../system/nanosleep.h"
+# define SLICE_SIZE 80
+# define MAX_TRYS 10
 struct http_hdr {
     char *date;
     char *server;
@@ -89,7 +94,7 @@ void free_http_hdr(struct http_hdr *__hdr) {
     if (__hdr->server != NULL)
         __ffly_mem_free(__hdr->server);
 }
-ffly_err_t ffly_http_get(char *__host, char *__path, mdl_u16_t __port, void *__buf, ffly_size_t __size) {
+ffly_err_t ffly_http_get(char *__host, char *__path, mdl_u16_t __port, void **__buf, ffly_size_t *__size) {
     struct ffly_socket sock;
     ffly_socket(&sock, AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in addr;
@@ -122,17 +127,50 @@ ffly_err_t ffly_http_get(char *__host, char *__path, mdl_u16_t __port, void *__b
     ffly_err_t err; 
     ffly_size_t sent = ffly_sock_send(&sock, hdr, s-hdr, 0, &err);
 
-    char buf[2000];
+    char *p = (char*)__ffly_mem_alloc(SLICE_SIZE);
+    mdl_uint_t off = 0, slice_c = 1, try_c = 0;
+    ffly_size_t recved;
+    int available;
 
-    ffly_size_t recved = ffly_sock_recv(&sock, buf, sizeof(buf), 0, &err);    
+    _again:
+    if (off >= slice_c*SLICE_SIZE)
+        p = (char*)__ffly_mem_realloc(p, (++slice_c)*SLICE_SIZE);
+    ffly_printf("%u\n", off);
+
+    ffly_nanosleep(0, 1000000);
+    _try_again:
+    if (!ioctl(sock.fd, FIONREAD, &available)) {
+        if (available>0) {
+            if ((recved = ffly_sock_recv(&sock, p+off, SLICE_SIZE, 0, &err))>0) {
+                ffly_printf("recved: %u\n", recved);
+                off+= recved;
+                goto _again;
+            }     
+        } else {
+            if (try_c < MAX_TRYS) {
+                try_c++;
+                goto _try_again;
+            }
+            // err
+        }
+    }
+
+    *(p+(off++)) = '\0';
+
     struct http_hdr h;
     ffly_bzero(&h, sizeof(struct http_hdr));
-    read_http_hdr(&h, buf);
+    read_http_hdr(&h, p);
     ffly_printf("date: %s\n", h.date);
     ffly_printf("server: %s\n", h.server);
     ffly_printf("data: %s\n", h.end);
+    
 
-    ffly_mem_cpy(__buf, h.end, h.end-buf);
+    ffly_size_t size  = (p+off)-h.end;
+    void *buf = __ffly_mem_alloc(size);
+    ffly_mem_cpy(buf, h.end, size);
+    *__buf = buf;
+    *__size = size;
+    __ffly_mem_free(p);
     free_http_hdr(&h);  
     ffly_sock_close(&sock);
 }
