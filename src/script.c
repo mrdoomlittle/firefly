@@ -225,6 +225,11 @@ void op_free(struct ffly_script *__script, struct obj *__obj) {
     __script->fresh-=__obj->size;
 }
 
+void op_call(struct ffly_script *__script, struct obj *__obj) {
+
+    ffly_vec_de_init(&__obj->params);
+}
+
 void(*op[])(struct ffly_script*, struct obj*) = {
 	&op_fresh,
     &op_free,
@@ -238,14 +243,15 @@ void(*op[])(struct ffly_script*, struct obj*) = {
     &op_push,
     &op_pop,
     &op_incr,
-    &op_decr
+    &op_decr,
+    &op_call
 };
 
 ffly_err_t ffly_script_exec(struct ffly_script *__script) {
 	struct obj *_obj = (struct obj*)__script->top;
 	while(_obj != NULL) {
         ffly_fprintf(ffly_log, "op: %s\n", opstr(_obj->opcode));
-		if (_obj->opcode >= _op_fresh && _obj->opcode <= _op_pop) {
+		if (_obj->opcode >= _op_fresh && _obj->opcode <= _op_call) {
             mdl_u8_t isjmp = (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump);
             if (!isjmp)
 			    op[_obj->opcode](__script, _obj);
@@ -365,6 +371,7 @@ ffly_err_t ffly_script_free(struct ffly_script *__script) {
     ffly_vec_de_init(&__script->to_free);
     __ffly_mem_free(__script->stack);
     __ffly_mem_free(__script->p);
+    ffly_map_de_init(&__script->macros);
 }
 
 struct token* peek_token(struct ffly_script *__script) {
@@ -374,10 +381,113 @@ struct token* peek_token(struct ffly_script *__script) {
 	return tok;
 }
 
+void read_define(struct ffly_script *__script) {
+    struct token *name = next_token(__script);
+    void *p = NULL;
+    if (!next_token_is(__script, TOK_KEYWORD, _semicolon)) {
+
+    }
+    ffly_map_put(&__script->macros, name->p, ffly_str_len((char*)name->p), p);
+}
+
+mdl_u8_t endif = 0;
+void read_ifdef(struct ffly_script *__script) {
+    struct token *name = next_token(__script);
+    ffly_err_t err;
+    ffly_map_get(&__script->macros, name->p, ffly_str_len((char*)name->p), &err);
+    if (_err(err)) {
+        struct token *tok = NULL;
+        while(!endif) tok = next_token(__script);
+        if (tok != NULL)
+            ffly_script_ulex(__script, tok);
+        endif = 0;
+    }
+}
+
+void read_ifndef(struct ffly_script *__script) {
+    struct token *name = next_token(__script);
+    ffly_err_t err;
+    ffly_map_get(&__script->macros, name->p, ffly_str_len((char*)name->p), &err);
+    if (_ok(err)) {
+        struct token *tok = NULL;
+        while(!endif) tok = next_token(__script);
+        if (tok != NULL)
+            ffly_script_ulex(__script, tok);
+        endif = 0;
+    }
+}
+
+# include <unistd.h>
+void read_include(struct ffly_script *__script) {
+    struct token *file = next_token(__script);
+
+    mdl_uint_t line = __script->line;
+    mdl_uint_t lo = __script->lo;
+    ffly_off_t off = __script->off;
+    ffly_byte_t *p = __script->p;
+    ffly_byte_t *end = __script->end;
+
+    ffly_printf("include: %s\n", (char*)file->p);
+
+    if (access((char*)file->p, F_OK) == -1) {
+        ffly_fprintf(ffly_err, "include file doesen't exist.\n");
+        return;
+    }
+
+    __script->line = 0;
+    __script->lo = 0;
+    __script->off = 0;
+    ffly_script_ld(__script, (char*)file->p);  
+    ffly_script_parse(__script);
+    __ffly_mem_free(__script->p);
+
+    __script->line = line;
+    __script->lo = lo;
+    __script->off = off;
+    __script->p = p;
+    __script->end = end;
+}
+
+void read_macro(struct ffly_script *__script) {
+    struct token *tok = next_token(__script);
+    if (tok->kind != TOK_IDENT) return;
+
+    if (!ffly_str_cmp(tok->p, "define")) {
+        read_define(__script);
+    } else if (!ffly_str_cmp(tok->p, "ifdef")) {
+        read_ifdef(__script);
+    } else if (!ffly_str_cmp(tok->p, "ifndef")) {
+        read_ifndef(__script);
+    } else if (!ffly_str_cmp(tok->p, "endif")) {
+        endif = 1;
+    } else if (!ffly_str_cmp(tok->p, "include")) {
+        read_include(__script);
+    }
+}
+
 ffly_bool_t maybe_keyword(struct token*);
 struct token* next_token(struct ffly_script *__script) {
 	ffly_err_t err;
-	struct token *tok = ffly_script_lex(__script, &err);
+	struct token *tok;
+    _back:
+    tok = ffly_script_lex(__script, &err);
+    if (!tok) return NULL;
+    if (is_keyword(tok, _percent)) {
+        read_macro(__script);
+        goto _back;
+    }
+/*
+    if (tok->kind == TOK_IDENT) {
+        struct ffly_vec *toks = (struct ffly_vec*)ffly_map_get(&__script->macros, tok->p, ffly_str_len((char*)tok->p));
+        if (tok != NULL) {
+            struct token **tok = (struct token**)ffly_vec_end(toks);
+            while(tok >= (struct token**)ffly_vec_begin(toks)) {
+            
+                tok++;
+            }
+        }
+    }
+*/
 	maybe_keyword(tok);
 	return tok;
 }
@@ -424,6 +534,8 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
         to_keyword(__tok, _k_extern);
     else if (!ffly_str_cmp(__tok->p, "struct"))
         to_keyword(__tok, _k_struct);
+    else if (!ffly_str_cmp(__tok->p, "void"))
+        to_keyword(__tok, _k_void);
 	else {
 		return 0;
 	}
@@ -452,6 +564,8 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
 	__script->top = NULL;
     __script->line = 0;
     __script->lo = 0;
+    __script->local = NULL;
+    ffly_map_init(&__script->macros);
 }
 
 ffly_err_t ffly_script_build(struct ffly_script *__script) {

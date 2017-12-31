@@ -3,7 +3,7 @@ ifeq ($(ffly_target), ffly_server)
  override ffly_objs+= src/ffly_server.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o \
  src/worker_manager.o src/memory/alloc_pixelmap.o src/graphics/draw_pixmap.clo src/player_manager.o src/player_handler.o src/worker_handler.o
 else ifeq ($(ffly_target), ffly_client)
- override ffly_objs+= src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/system/time_stamp.o src/layer_manager.o src/room_manager.o
+ override ffly_objs+= src/ui/camera.o src/uni.o src/chunk.o src/chunk_manager.o src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/system/time_stamp.o src/layer_manager.o src/room_manager.o
 else ifeq ($(ffly_target), ffly_studio)
  override ffly_objs+= src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixelmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
@@ -30,7 +30,7 @@ endif
 # maths
 override ffly_objs+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o src/maths/is_inside.o
 # data
-override ffly_objs+= src/data/str_cmb.o src/data/mem_swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o src/data/str_dupe.o src/data/mem_cmp.o src/data/str_cmp.o \
+override ffly_objs+= src/data/scale_pixelmap.o src/data/str_cmb.o src/data/mem_swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o src/data/str_dupe.o src/data/mem_cmp.o src/data/str_cmp.o \
 src/data/str_cpy.o src/data/bzero.o src/data/bcopy.o
 # system
 override ffly_objs+= src/system/string.o src/system/bin_tree.o src/system/arr.o src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
@@ -78,6 +78,18 @@ override ffly_objs+= src/firefly.o
 override ffly_defines+= -D__ffly_use_pulse_audio
 
 # NOTE: this is like this for debugging purposes
+src/data/scale_pixelmap.o: src/data/scale_pixelmap.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/data/scale_pixelmap.o src/data/scale_pixelmap.c
+
+src/uni.o: src/uni.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/uni.o src/uni.c
+
+src/chunk.o: src/chunk.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/chunk.o src/chunk.c
+
+src/chunk_manager.o: src/chunk_manager.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/chunk_manager.o src/chunk_manager.c
+
 src/system/string.o: src/system/string.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/string.o src/system/string.c
 
@@ -216,13 +228,19 @@ src/system/sys_nanosleep.o: src/system/asm/sys_nanosleep.asm
 	ld -r -o src/system/sys_nanosleep.o src/system/sys_nanosleep.o.0 src/system/sys_nanosleep.o.1
 
 src/maths/round.o: src/maths/asm/round.asm
-	nasm -f elf64 $(ffly_nasm_flags) -o src/maths/round.o src/maths/asm/round.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/maths/round.o.0 src/maths/asm/round.asm
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/maths/round.o.1 src/maths/round.c
+	ld -r -o src/maths/round.o src/maths/round.o.0 src/maths/round.o.1
 
 src/maths/ceil.o: src/maths/asm/ceil.asm
-	nasm -f elf64 $(ffly_nasm_flags) -o src/maths/ceil.o src/maths/asm/ceil.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/maths/ceil.o.0 src/maths/asm/ceil.asm
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/maths/ceil.o.1 src/maths/ceil.c
+	ld -r -o src/maths/ceil.o src/maths/ceil.o.0 src/maths/ceil.o.1
 
 src/maths/floor.o: src/maths/asm/floor.asm
-	nasm -f elf64 $(ffly_nasm_flags) -o src/maths/floor.o src/maths/asm/floor.asm
+	nasm -f elf64 $(ffly_nasm_flags) -o src/maths/floor.o.0 src/maths/asm/floor.asm
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/maths/floor.o.1 src/maths/floor.c
+	ld -r -o src/maths/floor.o src/maths/floor.o.0 src/maths/floor.o.1
 
 src/system/buff.o: src/system/buff.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/buff.o src/system/buff.c
@@ -295,9 +313,6 @@ src/firefly.o: src/firefly.cpp
 
 src/uni_manager.o: src/uni_manager.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/uni_manager.o src/uni_manager.cpp
-
-src/chunk_manager.o: src/chunk_manager.cpp
-	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/chunk_manager.o src/chunk_manager.cpp
 
 #src/system/task_handle.o: src/system/task_handle.cpp
 #	$(ffly_cxx) -c -Wall -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/system/task_handle.o src/system/task_handle.cpp

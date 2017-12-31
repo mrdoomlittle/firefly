@@ -66,7 +66,8 @@ mdl_i8_t ffly_conf_8l_s(void *__p) {
 }
 
 void const* ffly_conf_get(struct ffly_conf *__conf, char *__name) {
-    return ffly_map_get(&__conf->env, (mdl_u8_t*)__name, ffly_str_len(__name));
+    ffly_err_t err;
+    return ffly_map_get(&__conf->env, (mdl_u8_t*)__name, ffly_str_len(__name), &err);
 }
 
 void* ffly_conf_get_arr_elem(struct ffly_conf *__conf, void *__p, mdl_uint_t __no) {

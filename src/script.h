@@ -6,7 +6,8 @@
 # include "system/buff.h"
 # include "system/map.h"
 struct ffly_script {
-    struct ffly_map env;
+    struct ffly_map env, macros;
+    struct ffly_map *local;
 	ffly_byte_t *p, *end;
     ffly_byte_t *stack;
     ffly_byte_t *fresh;
@@ -29,6 +30,7 @@ struct ffly_script {
 # define TOK_KEYWORD 1
 # define TOK_NO 2
 # define TOK_NULL 3
+# define TOK_STR 4
 enum {
     _l_arrow,
     _r_arrow,
@@ -39,6 +41,7 @@ enum {
     _neq,
     _gt,
     _lt,
+    _percent,
     _period,
 	_semicolon,
 	_l_paren,
@@ -56,6 +59,7 @@ enum {
 	_k_i16_t,
 	_k_u8_t,
 	_k_i8_t,
+    _k_void,
     _k_if,
     _k_fn,
     _k_extern,
@@ -90,6 +94,7 @@ enum {
 	_i16_t,
 	_u8_t,
 	_i8_t,
+    _void,
     _struct
 };
 
@@ -111,7 +116,8 @@ enum {
     _op_push,
     _op_pop,
     _op_incr,
-    _op_decr
+    _op_decr,
+    _op_call
 };
 
 struct node {
@@ -142,7 +148,7 @@ struct type {
 };
 
 struct obj {
-    mdl_u32_t off, size;
+    mdl_u32_t off, size, id;
     mdl_u8_t opcode, cond;
     void *p;
     struct type *_type;
@@ -152,6 +158,7 @@ struct obj {
     struct obj **to, **from, **l, **r, **by;
     struct obj **val, ***jmp, *flags;
     struct obj *next;
+    struct ffly_vec params;
 };
 
 char const* tokk_str(mdl_u8_t);

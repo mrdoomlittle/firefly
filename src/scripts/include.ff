@@ -1,0 +1,2 @@
+%include "scripts/inclu.ff"
+print(0);

@@ -16,7 +16,7 @@ extern "C" {
 # endif
 ffly_err_t ffly_map_init(struct ffly_map*);
 ffly_err_t ffly_map_put(struct ffly_map*, mdl_u8_t const*, mdl_uint_t, void const*);
-void const* ffly_map_get(struct ffly_map*, mdl_u8_t const*, mdl_uint_t);
+void const* ffly_map_get(struct ffly_map*, mdl_u8_t const*, mdl_uint_t, ffly_err_t*);
 ffly_err_t ffly_map_de_init(struct ffly_map*);
 void* ffly_map_begin(struct ffly_map*);
 void* ffly_map_end(struct ffly_map*);
@@ -42,11 +42,11 @@ struct map {
 		ffly_map_put(&this->raw, __key, __bc, reinterpret_cast<void const*>(p));
 	}
 
-	_T get(char const* __s) {
-		return this->get(reinterpret_cast<u8_t const*>(__s), data::str_len(__s));}
+	_T get(char const* __s, types::err_t& __err) {
+		return this->get(reinterpret_cast<u8_t const*>(__s), data::str_len(__s), &__err);}
 
-	_T get(u8_t const *__key, uint_t __bc) {
-		return *static_cast<_T*>(const_cast<void*>(ffly_map_get(&this->raw, __key, __bc)));}
+	_T get(u8_t const *__key, uint_t __bc, types::err_t& __err) {
+		return *static_cast<_T*>(const_cast<void*>(ffly_map_get(&this->raw, __key, __bc, &__err)));}
 
 	types::err_t init() {
 		return ffly_map_init(&this->raw);}

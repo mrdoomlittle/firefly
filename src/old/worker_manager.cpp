@@ -1,156 +1,151 @@
 # include "worker_manager.hpp"
-#include <errno.h>
-#include <string.h>
-
-void mdl::firefly::worker_manager::worker_handler(int __sock, struct sockaddr_in __clientaddr, uint_t *__worker_id) {
-	uint_t worker_id = *__worker_id;
-
-	printf("thread has started, worker id: %d\n", worker_id);
-
-	types::worker_config_t *worker_config_ = std::get<1>(this-> worker_index[worker_id]);
-	types::worker_config_t& worker_config = *std::get<1>(this-> worker_index[worker_id]);
-
-	uint_t pixmap_size = (worker_config.chunk_xlen * worker_config.chunk_ylen * worker_config.chunk_zlen) * 4;
-
-	boost::uint8_t *pixmap = std::get<0>(this-> worker_index[worker_id]);
-
-	serializer serialize('\0');
-	types::player_info_t dummy;
-	std::size_t si_size = serialize.get_size(&dummy);
-	std::size_t cf_size = serialize.get_size(&worker_config);
-	serialize.init(cf_size);
-
-	serialize | 'r';
-	worker_config.achieve(serialize);
-	serialize.reset();
-	boost::int8_t *sock_state;
-
-	sock_state = this-> tcp_stream.begin_poll(__sock, 1000000000);
-
-	if (this-> tcp_stream.send(__sock, serialize.get_serial(), cf_size) == NET_FAULURE) {
-
+bool mdl::firefly::worker_manager::to_shutdown = false;
+mdl::firefly::types::err_t mdl::firefly::worker_manager::add_worker(types::id_t& __worker_id) {
+	types::id_t worker_id;
+	if ((worker_id = (types::id_t)memory::mem_alloc(sizeof(types::__id_t))) == NULL) {
+		fprintf(stderr, "worker_manager: failed to alloc memory for worker id, errno: %d\n", errno);
+		return FFLY_FAILURE;
 	}
 
-	// this player index will be sent to the worker
-	ublas::vector<types::player_info_t> _player_index;
+	*worker_id = this-> worker_indx.size();
+	__worker_id = worker_id;
 
-	uint_t in_range_players = 0;
+	this-> worker_indx.resize(this-> worker_indx.size()+1);
 
-	types::player_info_t pp = {0, 0, 0};
+	if ((std::get<0>(this-> worker_indx[*worker_id]) = memory::alloc_pixmap(
+		this-> chunk_xaxis_len,
+		this-> chunk_yaxis_len,
+		this-> chunk_zaxis_len
+	)) == NULL) {
+		fprintf(stderr, "worker_manager: failed to alloc memory for pixmap, errno: %d\n", errno);
+		return FFLY_FAILURE;
+	}
 
-//	in_range_players ++;
-//	_player_index.resize(in_range_players);
-//	_player_index[0] = pp;
+	memory::mem_init(std::get<0>(this-> worker_indx[*worker_id]), (this-> chunk_xaxis_len * this-> chunk_yaxis_len * this-> chunk_zaxis_len) * 4);
+	if ((std::get<1>(this-> worker_indx[*worker_id]) = (types::worker_config_t *)memory::mem_alloc(sizeof(types::worker_config_t)) ) == NULL) {
+		fprintf(stderr, "worker_manager: failed to alloc memory for worker config, errno: %d\n", errno);
+		return FFLY_FAILURE;
+	}
 
-	printf("worker connected, x: %d, y: %d, z: %d\n", worker_config.chunk_xaxis, worker_config.chunk_yaxis, worker_config.chunk_zaxis);
-	printf("xlen: %d, ylen: %d, zlen: %d\n", worker_config.chunk_xlen, worker_config.chunk_ylen, worker_config.chunk_zlen);
-	do {
-		if (*sock_state == SOCK_DEAD) {
-			printf("worker has disconnected i think?\n");
-			break;
-			//printf("worker has disconnect i think.\n");
-		}
+	types::worker_config_t& worker_config = *std::get<1>(this-> worker_indx[*worker_id]);
 
-		if (worker_id == 0) {
-               // printf("xlen_ptr: %d, xlen_ref: %d\n", worker_config_-> chunk_xlen, worker_config.chunk_xlen);
-   //printf("ticking, x: %d, y: %d, z: %d\n", player_info.xaxis, player_info.yaxis, player_info.zaxis);
-            //printf("x: %d, y: %d, z: %d\n", worker_config.chunk_xaxis, worker_config.chunk_yaxis, worker_config.chu$
-            //printf("xlen: %d, ylen: %d, zlen: %d\n", worker_config.chunk_xlen, worker_config.chunk_ylen, worker_con$
-     }
+	worker_config.chunk_xlen = this-> chunk_xaxis_len;
+	worker_config.chunk_ylen = this-> chunk_yaxis_len;
+	worker_config.chunk_zlen = this-> chunk_zaxis_len;
 
-		in_range_players = 0;
-		std::size_t crr = 0;
-		for (std::size_t o = 0; o != (*this-> player_index).size(); o ++) {
-			types::player_info_t& player_info = (*this-> player_index)[o];
+	worker_config.chunk_xaxis = this-> nxt_xaxis;
+	worker_config.chunk_yaxis = this-> nxt_yaxis;
+	worker_config.chunk_zaxis = this-> nxt_zaxis;
 
-	//		if (worker_id == 0) {
-	//			printf("xlen_ptr: %d, xlen_ref: %d\n", worker_config_-> chunk_xlen, worker_config.chunk_xlen);
-   //printf("ticking, x: %d, y: %d, z: %d\n", player_info.xaxis, player_info.yaxis, player_info.zaxis);
-			//printf("x: %d, y: %d, z: %d\n", worker_config.chunk_xaxis, worker_config.chunk_yaxis, worker_config.chunk_zaxis);
-			//printf("xlen: %d, ylen: %d, zlen: %d\n", worker_config.chunk_xlen, worker_config.chunk_ylen, worker_config.chunk_zlen);
-    // }
-			if ((player_info.xaxis > worker_config.chunk_xaxis && player_info.xaxis < (worker_config.chunk_xaxis + worker_config.chunk_xlen))
-			&& (player_info.yaxis > worker_config.chunk_yaxis && player_info.yaxis < (worker_config.chunk_yaxis + worker_config.chunk_ylen))) {
-//			&& (player_info.zaxis > worker_config.chunk_zaxis && player_info.zaxis < (worker_config.chunk_zaxis + worker_config.chunk_zlen))) {
-				in_range_players ++;
-				//printf("player has been found in chunk. worker: %d\n", worker_id);
-				_player_index.resize(in_range_players);
-				_player_index[crr] = player_info;
-				crr ++;
+	std::get<2>(this-> worker_indx[*worker_id]) = worker_id;
+	if (this-> nxt_xchunk_id == this-> xchunk_c) {
+		this-> nxt_xchunk_id = 0;
+		this-> nxt_xaxis = 0;
+
+		if (this-> nxt_ychunk_id == this-> ychunk_c) {
+			this-> nxt_ychunk_id = 0;
+			this-> ychunk_c = 0;
+
+			if (this-> nxt_zchunk_id == this-> zchunk_c) {
+				// somthing
+			} else {
+				this-> nxt_zchunk_id ++;
+				this-> nxt_zaxis += this-> chunk_zaxis_len;
 			}
+
+		} else {
+			this-> nxt_ychunk_id ++;
+			this-> nxt_yaxis += this-> chunk_yaxis_len;
+		}
+	} else {
+		this-> nxt_xchunk_id ++;
+		this-> nxt_xaxis += this-> chunk_xaxis_len;
+	}
+
+	this-> connected_workers ++;
+	return FFLY_SUCCESS;
+}
+
+mdl::firefly::types::err_t mdl::firefly::worker_manager::rm_worker(types::id_t __worker_id) {
+	static boost::mutex mx;
+
+	boost::mutex::scoped_lock scoped_lock(mx);
+	if (__worker_id == nullptr || this-> connected_workers == 0) return FFLY_NOP;
+	types::__id_t worker_id = *__worker_id;
+
+	if (worker_id == this-> worker_indx.size() - 1) {
+		memory::mem_free(std::get<0>(this-> worker_indx[worker_id]));
+		memory::mem_free(std::get<2>(this-> worker_indx[worker_id]));
+		memory::mem_free(std::get<1>(this-> worker_indx[worker_id]));
+		this-> worker_indx.resize(this-> worker_indx.size() - 1);
+	} else {
+		this-> th_control.th_id = this-> worker_indx.size() - 1;
+		this-> th_control.th_pause = true;
+		while (!this-> th_control.th_waiting) {}
+
+		memory::mem_free(std::get<0>(this-> worker_indx[worker_id]));
+		memory::mem_free(std::get<1>(this-> worker_indx[worker_id]));
+
+		*std::get<2>(*(this-> worker_indx.end() - 1)) = *std::get<2>(this-> worker_indx[worker_id]);
+		memory::mem_free(std::get<2>(this-> worker_indx[worker_id]));
+
+		this-> worker_indx[worker_id].swap(*(this-> worker_indx.end() - 1));
+
+		this-> th_control.th_msg = worker_manager::INX_SHIFT;
+		while(this-> th_control.th_reply == TH_NULL) {}
+
+		if(this-> th_control.th_reply == TH_FAILURE) {
+			return FFLY_FAILURE;
 		}
 
-		if (in_range_players == 0) continue;
-		//printf("player has entered chunk.\n");
+		this-> th_control.th_msg = worker_manager::MSG_NULL;
 
-		boost::int8_t sock_result = 0;
+		this-> worker_indx.resize(this-> worker_indx.size() - 1);
+		this-> th_control.th_pause = false;
+	}
 
-		if ((sock_result = tcp_stream.send(__sock, in_range_players)) == NET_FAULURE) {
-			fprintf(stderr, "error worker with id: %d has timedout or is offline, error code: %d, %s\n", worker_id, sock_result, strerror(errno));
-			break;
-		}
-
-		for (std::size_t o = 0; o != in_range_players; o ++) {
-			_player_index[o].achieve(serialize);
-			serialize.reset();
-
-			if ((sock_result = this-> tcp_stream.send(__sock, serialize.get_serial(), si_size)) == NET_FAULURE) {
-				fprintf(stderr, "error worker with id: %d has timedout or is offline, error code: %d, %s\n", worker_id, sock_result, strerror(errno));
-				break;
-			}
-		}
-
-		if ((sock_result = this-> udp_stream.recv(pixmap, pixmap_size, __clientaddr)) == NET_FAULURE) {
-			fprintf(stderr, "error worker with id: %d has timedout or is offline, error code: %d, %s\n", worker_id, sock_result, strerror(errno));
-			break;
-		}
-
-	} while(true);
-
-	end:
-	printf("worker with id: %d, thread has ended.\n\n", worker_id);
-
-	this-> del_worker(__worker_id);
+	this-> connected_workers --;
+	return FFLY_SUCCESS;
 }
 
 mdl::firefly::types::err_t mdl::firefly::worker_manager::listen() {
-	if (this-> tcp_stream.listen() == -1) return FFLY_FAILURE;
+	if (this-> tcp_server.listen() == FFLY_FAILURE)
+		return FFLY_FAILURE;
+
 	int sock, usock;
-
-	if (this-> tcp_stream.accept(sock) == -1) {
-		fprintf(stderr, "worker_manager: failed to accept worker, errno: %d\n", errno);
-		continue;
-	}
-
-	struct sockaddr_in worker_addr;
-	this-> udp_stream.recv_ack(worker_addr);
-	this-> udp_stream.send_ack(worker_addr);
-
-	types::__id_t worker_id;
-	this-> add_worker(worker_id);
-}
-/*
+	this-> connected_workers = 0;
 
 	do {
-		int sock;
-		int usock;
-		printf("waiting for worker/s to connect the server.\n");
+		printf("waiting for workers to connect.\n");
+		if (this-> tcp_server.accept(sock) == FFLY_FAILURE) {
+			fprintf(stderr, "worker_manager: failed to accept worker, errno: %d\n", errno);
+			continue;
+		}
+		printf("extrblished tcp connection.\n");
 
-		if (this-> tcp_stream.accept(sock) == -1) {
-			printf("failed to accept. %s\n", strerror(errno));
+		struct sockaddr_in client_addr;
 
+		this-> udp_server.recv_ack(client_addr);
+		this-> udp_server.send_ack(client_addr);
+
+		types::id_t worker_id;
+		if (this-> add_worker(worker_id) == FFLY_FAILURE) {
+			fprintf(stderr, "worker_manager: failed to add worker\n");
+			this-> tcp_server.close(sock);
 			continue;
 		}
 
-		struct sockaddr_in clientaddr;
+		boost::thread(&worker_handler, this, sock, client_addr, worker_id);
+		printf("worker_manager: worker has connected. ip: %s\n\n", this-> tcp_server.cl_ip_addr(sock));
+	} while(!worker_manager::to_shutdown);
+	this-> de_init();
 
-		this-> udp_stream.recv_ack(clientaddr);
-		this-> udp_stream.send_ack(clientaddr);
-
-		uint_t *worker_id = this-> add_worker();
-		boost::thread(boost::bind(&worker_manager::worker_handler, this, sock, clientaddr, worker_id));
-		printf("worker has connected to the server.\n");
-
-	} while(true);
+	return FFLY_SUCCESS;
 }
-*/
+
+mdl::firefly::types::err_t mdl::firefly::worker_manager::de_init() {
+	printf("worker_manager: deinitalizing.\n");
+	while(!this-> worker_indx.empty()) {}
+	this-> tcp_server.de_init();
+	return FFLY_SUCCESS;
+}

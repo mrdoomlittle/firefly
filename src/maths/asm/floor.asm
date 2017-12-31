@@ -1,6 +1,6 @@
 section .text
-global ffly_floor
-ffly_floor:
+global _ffly_floor
+_ffly_floor:
 	push rbp
 	mov rbp,rsp
 	sub rsp,16

@@ -78,7 +78,7 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(ffly_err_t(*__extern_loop)(i8
 
 	this->portal.init(this);
 	do {
-		ffly_nanosleep(0, 80000000); // debug
+		ffly_nanosleep(0, 40000000); // debug
 		if (timer.now<(ffly_tpv_t(*)(ffly_tpv_t))firefly::system::time::ns_to_ms>() > 1000) {
 			this->fps = this->frame_c;
 			this->frame_c = 0;
@@ -117,7 +117,7 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(ffly_err_t(*__extern_loop)(i8
 
         i16_t rootx = 0, rooty = 0, wdx = 0, wdy = 0;
         window.query_pointer(rootx, rooty, wdx, wdy);
-        firefly::system::io::printf("rootx: %d, rooty: %d, wdx: %d, wdy: %d\n", rootx, rooty, wdx, wdy);
+        firefly::system::io::fprintf(ffly_log, "rootx: %d, rooty: %d, wdx: %d, wdy: %d\n", rootx, rooty, wdx, wdy);
 
 		firefly::system::io::fprintf(ffly_log, "frame buff: %p\n", this->window.frame_buff());
 

@@ -1,5 +1,18 @@
 DEFINES=-I../eint_t/inc -D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
 nasm_flags="-I${PWD}/system/asm/"
+uni: clean
+	nasm -f elf64 $(nasm_flags) -o mutex.o.0 system/asm/mutex.asm
+	gcc -c -o mutex.o.1 system/mutex.c
+	gcc -c memory/mem_alloc.c
+	gcc -c memory/mem_free.c
+	gcc -c memory/mem_realloc.c
+	gcc -c chunk_manager.c
+	gcc -c memory/alloc_pixelmap.c
+	gcc -c uni.c
+	gcc -c chunk.c
+	gcc -c system/io.c
+	gcc main.c mutex.o.0 mutex.o.1 alloc_pixelmap.o uni.o io.o chunk.o chunk_manager.o mem_alloc.o mem_realloc.o mem_free.o
+
 all:
 	rm -f *.o
 	nasm -f elf64 $(nasm_flags) -o mutex.o system/asm/mutex.asm

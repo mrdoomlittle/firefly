@@ -1,6 +1,6 @@
 section .text
-global ffly_round
-ffly_round:
+global _ffly_round
+_ffly_round:
 	push rbp
 	mov rbp,rsp
 	sub rsp,16

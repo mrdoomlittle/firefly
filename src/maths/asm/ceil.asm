@@ -1,6 +1,6 @@
 section .text
-global ffly_ceil
-ffly_ceil:
+global _ffly_ceil
+_ffly_ceil:
 	push rbp
 	mov rbp,rsp
 	sub rsp,16

@@ -8,6 +8,11 @@ typedef struct {
 	ffly_byte_t r, g, b, a;
 } ffly_colour_t;
 
+typedef struct {
+    ffly_byte_t *r, *g, *b, *a;
+} ffly_colourp_t;
+
+
 # ifdef __cplusplus
 namespace mdl {
 namespace firefly {

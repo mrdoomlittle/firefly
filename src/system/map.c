@@ -109,12 +109,14 @@ ffly_err_t ffly_map_put(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_
         __map->begin = (void*)*entry;
 }
 
-void const* ffly_map_get(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_t __bc) {
+void const* ffly_map_get(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_t __bc, ffly_err_t *__err) {
 	map_entry_t *entry = map_find(__map, __key, __bc);
 	if (!entry) {
         ffly_fprintf(ffly_log, "entry was not found.\n");
+        *__err  = FFLY_FAILURE;
         return NULL;
     }
+    *__err = FFLY_SUCCESS;
 	return entry->p;
 }
 

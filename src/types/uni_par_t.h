@@ -2,7 +2,7 @@
 # define __uni__par__t__h
 # include "colour_t.h"
 typedef struct {
-	ffly_colour_t *colour;
+	ffly_colourp_t colour;
 } ffly_uni_par_t;
 
 # ifdef __cplusplus

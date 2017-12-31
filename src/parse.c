@@ -153,25 +153,26 @@ ffly_err_t read_struct_spec(struct ffly_script *__script, struct type **__type) 
         return FFLY_FAILURE;
     }
 
-    *__type = (struct type*)ffly_map_get(&__script->env, name->p, ffly_str_len((char*)name->p));
+    ffly_err_t err;
+    *__type = (struct type*)ffly_map_get(__script->local != NULL?__script->local:&__script->env, name->p, ffly_str_len((char*)name->p), &err);
     if (*__type != NULL) return FFLY_SUCCESS;
 
     struct ffly_map fields;    
     ffly_map_init(&fields);
     mdl_uint_t size;
-    ffly_err_t err;
     if (_err(err = read_struct_decl(__script, &fields, &size))) {
         return FFLY_FAILURE;
     }
 
     build_type(__script, __type, &(struct type){.kind=_struct, .size=size, .fields=fields});
-    ffly_map_put(&__script->env, name->p, ffly_str_len((char*)name->p), *__type);
+    ffly_map_put(__script->local != NULL?__script->local:&__script->env, name->p, ffly_str_len((char*)name->p), *__type);
     return FFLY_SUCCESS;
 }
 
 ffly_err_t read_struct_field(struct ffly_script *__script, struct node **__node, struct node *__struct) {
     struct token *name = next_token(__script); 
-    struct type *_type = (struct type*)ffly_map_get(&__struct->_type->fields, name->p, ffly_str_len((char*)name->p));
+    ffly_err_t err;
+    struct type *_type = (struct type*)ffly_map_get(&__struct->_type->fields, name->p, ffly_str_len((char*)name->p), &err);
     if (!_type) {
         ffly_fprintf(ffly_out, "structure field doesen't exist.\n");
         return FFLY_FAILURE;
@@ -186,6 +187,8 @@ ffly_err_t read_decl_spec(struct ffly_script *__script, struct token *__tok, str
 		make_notype(__script, __type, __tok->id);
 	} else if (__tok->id == _k_struct) {
         read_struct_spec(__script, __type);
+    } else if (__tok->id == _k_void) {
+        *__type = NULL;
     } else
         return FFLY_FAILURE;
     return FFLY_SUCCESS;
@@ -210,10 +213,16 @@ void read_no(struct ffly_script *__script, struct node **__node, char *__s) {
 
 ffly_err_t read_primary_expr(struct ffly_script *__script, struct node **__node) {
 	struct token *tok = next_token(__script);
+    ffly_err_t err;
 	if (!tok) return FFLY_SUCCESS;
 	switch(tok->kind) {
         case TOK_IDENT: {
-            *__node = (struct node*)ffly_map_get(&__script->env, tok->p, ffly_str_len((char*)tok->p));
+            if (__script->local != NULL) {
+                *__node = (struct node*)ffly_map_get(__script->local, tok->p, ffly_str_len((char*)tok->p), &err);
+                if (*__node != NULL) break;   
+            }
+
+            *__node = (struct node*)ffly_map_get(&__script->env, tok->p, ffly_str_len((char*)tok->p), &err);
             if (!*__node) {
                 ffly_fprintf(ffly_out, "%u;%u: '%s' could not find in environment.\n", tokl(tok), tokcol(tok), (char*)tok->p);
                 return FFLY_FAILURE;
@@ -374,7 +383,7 @@ ffly_err_t read_decl(struct ffly_script *__script, struct node **__node) {
     ast_var(__script, &var, _type);
 
 	ast_decl(__script, __node, var, init);
-    ffly_map_put(&__script->env, name->p, ffly_str_len((char*)name->p), var);
+    ffly_map_put(__script->local != NULL?__script->local:&__script->env, name->p, ffly_str_len((char*)name->p), var);
     if (!expect_token(__script, TOK_KEYWORD, _semicolon)) {
         return FFLY_FAILURE;
     }
@@ -488,6 +497,11 @@ ffly_err_t read_func_def(struct ffly_script *__script, struct node **__node) {
         return FFLY_FAILURE;
     }
 
+    struct ffly_map local, *save = NULL;
+    ffly_map_init(&local);
+    save = __script->local;
+    __script->local = &local;
+
     struct ffly_vec args;
     ffly_vec_set_flags(&args, VEC_AUTO_RESIZE);
     ffly_vec_init(&args, sizeof(struct node*));
@@ -509,6 +523,7 @@ ffly_err_t read_func_def(struct ffly_script *__script, struct node **__node) {
             ffly_vec_push_back(&args, (void**)&p);
             *p = decl;
 
+            ffly_map_put(&local, name->p, ffly_str_len((char*)name->p), var);
             if (next_token_is(__script, TOK_KEYWORD, _comma)) {  
                 goto _next;
             }
@@ -531,11 +546,13 @@ ffly_err_t read_func_def(struct ffly_script *__script, struct node **__node) {
     struct ffly_vec block;
     ffly_vec_set_flags(&block, VEC_AUTO_RESIZE);
     ffly_vec_init(&block, sizeof(struct node*));
-    read_compound_stmt(__script, &block);    
+    read_compound_stmt(__script, &block); 
+    __script->local = save;
+    ffly_map_de_init(&local);
+   
     vec_cleanup(__script, &block);
-
     ast_func(__script, __node, &args, &block, ret_type);
-    ffly_map_put(&__script->env, name->p, ffly_str_len((char*)name->p), *__node);
+    ffly_map_put(__script->local != NULL?__script->local:&__script->env, name->p, ffly_str_len((char*)name->p), *__node);
     return FFLY_SUCCESS;
 }
 
