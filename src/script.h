@@ -117,7 +117,8 @@ enum {
     _op_pop,
     _op_incr,
     _op_decr,
-    _op_call
+    _op_extern_call,
+    _op_exit 
 };
 
 struct node {
@@ -158,7 +159,7 @@ struct obj {
     struct obj **to, **from, **l, **r, **by;
     struct obj **val, ***jmp, *flags;
     struct obj *next;
-    struct ffly_vec params;
+    struct obj **params[12];
 };
 
 char const* tokk_str(mdl_u8_t);

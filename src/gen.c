@@ -127,7 +127,7 @@ void emit_decl_init(struct ffly_script *__script, struct node *__node, struct ob
 	emit(__script, __node->init);
 	struct obj **from;
 	pop(__script, &from);
-    if (__to->_type->size > __node->init->_type->size)
+    if (__node->var->_type->size > __node->init->_type->size)
         next_obj(__script, mk_op_zero(objpp(__to)));
 	next_obj(__script, mk_op_copy(__node->init->_type, objpp(__to), from));
 }
@@ -145,9 +145,10 @@ void emit_decl(struct ffly_script *__script, struct node *__node) {
         }
     } else {
         struct obj *m = next_obj(__script, mk_op_fresh(__node->var->_type->size));
+        m->_type = __node->var->_type;
+        __node->var->_obj = m;
         if (__node->init != NULL)
     	    emit_decl_init(__script, __node, m);
-        __node->var->_obj = m;
     }
 }
 
@@ -163,6 +164,7 @@ void emit_assign(struct ffly_script *__script, struct node *__node) {
 void emit_literal(struct ffly_script *__script, struct node *__node) {
 	struct obj *m = next_obj(__script, mk_op_fresh(__node->_type->size));
 	next_obj(__script, mk_op_assign(__node->val, __node->_type, objpp(m)));
+    m->_type = __node->_type;
 	push(__script, m);
 }
 

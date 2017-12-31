@@ -1,3 +1,7 @@
-%include "scripts/include.ff"
-print(1);
-print(2);
+/*
+%define test0
+*/
+%ifdef test0
+%include "scripts/test0.ff"
+%endif
+print(0);

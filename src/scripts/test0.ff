@@ -1,0 +1,18 @@
+fn a(u8_t __lhs, u8_t __rhs)->void{
+	print(__lhs);
+	print(__rhs);
+}
+
+fn b(u8_t __lhs, u8_t __rhs)->void{
+	print(__lhs);
+	print(__rhs);
+}
+
+fn c(u8_t __lhs, u8_t __rhs)->void{
+	print(__lhs);
+	print(__rhs);
+}
+
+a(0, 1);
+b(2, 3);
+c(4, 5);
