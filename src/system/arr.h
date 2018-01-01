@@ -11,18 +11,19 @@ struct ffly_arr {
 	ffly_size_t blk_size;
 };
 
+typedef struct ffly_arr* ffly_arrp;
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_arr_init(struct ffly_arr*, ffly_size_t, mdl_uint_t);
-ffly_err_t ffly_arr_resize(struct ffly_arr*, mdl_uint_t);
-ffly_err_t ffly_arr_de_init(struct ffly_arr*);
-void* ffly_arr_get(struct ffly_arr*, ffly_off_t);
-void ffly_arr_put(struct ffly_arr*, void*, ffly_off_t);
+ffly_err_t ffly_arr_init(ffly_arrp, ffly_size_t, mdl_uint_t);
+ffly_err_t ffly_arr_resize(ffly_arrp, mdl_uint_t);
+ffly_err_t ffly_arr_de_init(ffly_arrp);
+void* ffly_arr_get(ffly_arrp, ffly_off_t);
+void ffly_arr_put(ffly_arrp, void*, ffly_off_t);
 # ifdef __cplusplus
 }
 # endif
-mdl_uint_t static __inline__ ffly_arr_blk_c(struct ffly_arr *__arr) {return __arr->blk_c;}
+mdl_uint_t static __inline__ ffly_arr_blk_c(ffly_arrp __arr) {return __arr->blk_c;}
 # ifdef __cplusplus
 namespace mdl {
 namespace firefly {

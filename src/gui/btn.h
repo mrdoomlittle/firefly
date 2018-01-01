@@ -19,14 +19,17 @@ struct ffly_gui_btn {
     void *arg_p;
     void(*press_call)(void*);
 };
+
+typedef struct ffly_gui_btn* ffly_gui_btnp;
+
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_gui_btn_draw(struct ffly_gui_btn*, ffly_pixelmap_t, mdl_u16_t, mdl_u16_t);
-ffly_err_t ffly_gui_btn_enable_ir(struct ffly_gui_btn*);
-ffly_err_t ffly_gui_btn_handle(struct ffly_gui_btn*, ffly_event_t*);
-ffly_bool_t ffly_gui_btn_hovering(struct ffly_gui_btn*);
-ffly_bool_t ffly_gui_btn_pressed(struct ffly_gui_btn*);
+ffly_err_t ffly_gui_btn_draw(ffly_gui_btnp, ffly_pixelmap_t, mdl_u16_t, mdl_u16_t);
+ffly_err_t ffly_gui_btn_enable_ir(ffly_gui_btnp);
+ffly_err_t ffly_gui_btn_handle(ffly_gui_btnp, ffly_event_t*);
+ffly_bool_t ffly_gui_btn_hovering(ffly_gui_btnp);
+ffly_bool_t ffly_gui_btn_pressed(ffly_gui_btnp);
 # ifdef __cplusplus
 }
 namespace mdl {
@@ -35,7 +38,7 @@ namespace gui {
 class btn {
     public:
     void clear() {
-        ffly_bzero(&this->raw, sizeof(struct ffly_gui_btn));
+        ffly_bzero(&this->raw, sizeof(ffly_gui_btnp));
     }
     types::err_t draw(types::pixelmap_t __pixelbuff, u16_t __width, u16_t __height) {
         return ffly_gui_btn_draw(&this->raw, __pixelbuff, __width, __height);

@@ -28,26 +28,26 @@ struct ffly_vec {
 	mdl_uint_t page_c;
 	struct ffly_vec *uu_blks;
 };
-
+typedef struct ffly_vec* ffly_vecp;
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_vec_init(struct ffly_vec*, ffly_size_t);
-ffly_err_t ffly_vec_push_back(struct ffly_vec*, void**);
-ffly_err_t ffly_vec_pop_back(struct ffly_vec*, void*);
-ffly_err_t ffly_vec_de_init(struct ffly_vec*);
-ffly_err_t ffly_vec_resize(struct ffly_vec*, ffly_size_t);
-void* ffly_vec_at(struct ffly_vec*, mdl_uint_t);
-void ffly_vec_del(struct ffly_vec*, void*);
-void ffly_vec_itr(struct ffly_vec*, void**, mdl_u8_t, mdl_uint_t);
-void* ffly_vec_rbegin(struct ffly_vec*);
-void* ffly_vec_rend(struct ffly_vec*);
-void* ffly_vec_first(struct ffly_vec*);
-void* ffly_vec_last(struct ffly_vec*);
-void* ffly_vec_begin(struct ffly_vec*);
-void* ffly_vec_end(struct ffly_vec*);
-ffly_off_t ffly_vec_off(struct ffly_vec*, void*);
-mdl_uint_t ffly_vec_blk_off(struct ffly_vec*, void*);
+ffly_err_t ffly_vec_init(ffly_vecp, ffly_size_t);
+ffly_err_t ffly_vec_push_back(ffly_vecp, void**);
+ffly_err_t ffly_vec_pop_back(ffly_vecp, void*);
+ffly_err_t ffly_vec_de_init(ffly_vecp);
+ffly_err_t ffly_vec_resize(ffly_vecp, ffly_size_t);
+void* ffly_vec_at(ffly_vecp, mdl_uint_t);
+void ffly_vec_del(ffly_vecp, void*);
+void ffly_vec_itr(ffly_vecp, void**, mdl_u8_t, mdl_uint_t);
+void* ffly_vec_rbegin(ffly_vecp);
+void* ffly_vec_rend(ffly_vecp);
+void* ffly_vec_first(ffly_vecp);
+void* ffly_vec_last(ffly_vecp);
+void* ffly_vec_begin(ffly_vecp);
+void* ffly_vec_end(ffly_vecp);
+ffly_off_t ffly_vec_off(ffly_vecp, void*);
+mdl_uint_t ffly_vec_blk_off(ffly_vecp, void*);
 # ifdef __cplusplus
 }
 # endif
@@ -63,14 +63,14 @@ void static __inline__ ffly_vec_set_flags(struct ffly_vec *__vec, ffly_flag_t __
 namespace mdl {
 namespace firefly {
 namespace system {
-static types::err_t(*vec_init)(struct ffly_vec*, types::size_t) = &ffly_vec_init;
-static types::err_t(*vec_push_back)(struct ffly_vec*, void**) = &ffly_vec_push_back;
-static types::err_t(*vec_pop_back)(struct ffly_vec*, void*) = &ffly_vec_pop_back;
-static types::err_t(*vec_de_init)(struct ffly_vec*) = &ffly_vec_de_init;
-static types::err_t(*vec_resize)(struct ffly_vec*, types::size_t) = &ffly_vec_resize;
-static void(*vec_del)(struct ffly_vec*, void*) = &ffly_vec_del;
-static void*(*vec_first)(struct ffly_vec*) = &ffly_vec_first;
-static void*(*vec_last)(struct ffly_vec*) = &ffly_vec_last;
+static types::err_t(*vec_init)(ffly_vecp, types::size_t) = &ffly_vec_init;
+static types::err_t(*vec_push_back)(ffly_vecp, void**) = &ffly_vec_push_back;
+static types::err_t(*vec_pop_back)(ffly_vecp, void*) = &ffly_vec_pop_back;
+static types::err_t(*vec_de_init)(ffly_vecp) = &ffly_vec_de_init;
+static types::err_t(*vec_resize)(ffly_vecp, types::size_t) = &ffly_vec_resize;
+static void(*vec_del)(ffly_vecp, void*) = &ffly_vec_del;
+static void*(*vec_first)(ffly_vecp) = &ffly_vec_first;
+static void*(*vec_last)(ffly_vecp) = &ffly_vec_last;
 types::size_t static __inline__ vec_size(struct ffly_vec *__vec) {return ffly_vec_size(__vec);}
 void static __inline__* vec_begin(struct ffly_vec *__vec) {return ffly_vec_begin(__vec);}
 void static __inline__* vec_end(struct ffly_vec *__vec) {return ffly_vec_end(__vec);}

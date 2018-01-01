@@ -11,29 +11,29 @@
 # define VEC_BLK_FREE 0x2
 # define is_flag(__vec, __flag) ffly_is_flag(__vec->flags, __flag)
 # define is_set(__v) (__v&0x1)
-ffly_off_t ffly_vec_off(struct ffly_vec *__vec, void *__p) {
+ffly_off_t ffly_vec_off(ffly_vecp __vec, void *__p) {
 	return (mdl_u8_t*)__p-(mdl_u8_t*)__vec->p;
 }
 
-void* ffly_vec_at(struct ffly_vec *__vec, mdl_uint_t __off) {
+void* ffly_vec_at(ffly_vecp __vec, mdl_uint_t __off) {
     return (void*)((mdl_u8_t*)__vec->p+(__off*__vec->blk_size));
 }
 
-mdl_uint_t ffly_vec_blk_off(struct ffly_vec *__vec, void *__p) {
+mdl_uint_t ffly_vec_blk_off(ffly_vecp __vec, void *__p) {
 	ffly_off_t off = ffly_vec_off(__vec, __p);
 	if (is_flag(__vec, VEC_BLK_CHAIN))
 		return (off-sizeof(struct ffly_vec_blkd))/__vec->blk_size;
 	return off/__vec->blk_size;
 }
 
-void* ffly_vec_begin(struct ffly_vec *__vec) {
+void* ffly_vec_begin(ffly_vecp __vec) {
 	void *p = __vec->p;
 	if (is_flag(__vec, VEC_BLK_CHAIN))
 		p = (mdl_u8_t*)p+sizeof(struct ffly_vec_blkd);
 	return p;
 }
 
-void* ffly_vec_end(struct ffly_vec *__vec) {
+void* ffly_vec_end(ffly_vecp __vec) {
 	void *p;
 	p = (void*)((mdl_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size));
 	if (is_flag(__vec, VEC_BLK_CHAIN))
@@ -41,7 +41,7 @@ void* ffly_vec_end(struct ffly_vec *__vec) {
 	return p;
 }
 
-ffly_err_t ffly_vec_init(struct ffly_vec *__vec, ffly_size_t __blk_size) {
+ffly_err_t ffly_vec_init(ffly_vecp __vec, ffly_size_t __blk_size) {
 	__vec->p = NULL;
 	__vec->page_c = 0;
 
@@ -61,7 +61,7 @@ ffly_err_t ffly_vec_init(struct ffly_vec *__vec, ffly_size_t __blk_size) {
 	__vec->off = 0;
 	__vec->size = 0;
 	if (is_flag(__vec, VEC_BLK_CHAIN)) {
-		__vec->uu_blks = (struct ffly_vec*)__ffly_mem_alloc(sizeof(struct ffly_vec));
+		__vec->uu_blks = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
 		__vec->uu_blks->flags = VEC_AUTO_RESIZE;
 		if (ffly_vec_init(__vec->uu_blks, sizeof(ffly_off_t)) != FFLY_SUCCESS) {
 			ffly_fprintf(ffly_err, "vec: failed to init uu_blks->\n");
@@ -72,7 +72,7 @@ ffly_err_t ffly_vec_init(struct ffly_vec *__vec, ffly_size_t __blk_size) {
 	return FFLY_SUCCESS;
 }
 
-void ffly_vec_itr(struct ffly_vec *__vec, void **__p, mdl_u8_t __dir, mdl_uint_t __ia) {
+void ffly_vec_itr(ffly_vecp __vec, void **__p, mdl_u8_t __dir, mdl_uint_t __ia) {
 	while(__ia != 0) {
 		struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)(((mdl_u8_t*)*__p)-sizeof(struct ffly_vec_blkd));
 		if (__dir == VEC_ITR_FD) {
@@ -86,27 +86,27 @@ void ffly_vec_itr(struct ffly_vec *__vec, void **__p, mdl_u8_t __dir, mdl_uint_t
 	}
 }
 
-void* ffly_vec_rbegin(struct ffly_vec *__vec) {
+void* ffly_vec_rbegin(ffly_vecp __vec) {
 	void *itr = (void*)((mdl_u8_t*)ffly_vec_begin(__vec)-sizeof(struct ffly_vec_blkd));
 	while(ffly_is_flag(((struct ffly_vec_blkd*)itr)->flags, VEC_BLK_USED))
 		itr = (mdl_u8_t*)itr+__vec->blk_size;
 	return (void*)((mdl_u8_t*)itr+sizeof(struct ffly_vec_blkd));
 }
 
-void* ffly_vec_rend(struct ffly_vec *__vec) {
+void* ffly_vec_rend(ffly_vecp __vec) {
 	void *itr = (void*)((mdl_u8_t*)ffly_vec_end(__vec)-sizeof(struct ffly_vec_blkd));
 	while(ffly_is_flag(((struct ffly_vec_blkd*)itr)->flags, VEC_BLK_USED))
 		itr = (mdl_u8_t*)itr-__vec->blk_size;
 	return (void*)((mdl_u8_t*)itr+sizeof(struct ffly_vec_blkd));
 }
 
-void* ffly_vec_first(struct ffly_vec *__vec) {
+void* ffly_vec_first(ffly_vecp __vec) {
 	return (void*)((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_blkd)+((__vec->top>>1)*__vec->blk_size));}
 
-void* ffly_vec_last(struct ffly_vec *__vec) {
+void* ffly_vec_last(ffly_vecp __vec) {
 	return (void*)((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_blkd)+((__vec->end>>1)*__vec->blk_size));}
 
-void ffly_vec_dechain(struct ffly_vec *__vec, struct ffly_vec_blkd *__blk) {
+void ffly_vec_dechain(ffly_vecp __vec, struct ffly_vec_blkd *__blk) {
 	struct ffly_vec_blkd *prev = (struct ffly_vec_blkd*)((mdl_u8_t*)__vec->p+((__blk->prev>>1)*__vec->blk_size));
 	struct ffly_vec_blkd *next = (struct ffly_vec_blkd*)((mdl_u8_t*)__vec->p+((__blk->next>>1)*__vec->blk_size));
 	if (is_set(__vec->top)) {
@@ -136,7 +136,7 @@ void ffly_vec_dechain(struct ffly_vec *__vec, struct ffly_vec_blkd *__blk) {
 	}
 }
 
-void ffly_vec_del(struct ffly_vec *__vec, void *__p) {
+void ffly_vec_del(ffly_vecp __vec, void *__p) {
 	__vec->size--;
 	struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)((mdl_u8_t*)__p-sizeof(struct ffly_vec_blkd));
 
@@ -150,7 +150,7 @@ void ffly_vec_del(struct ffly_vec *__vec, void *__p) {
 	*p = ((mdl_u8_t*)blk-(mdl_u8_t*)__vec->p)/__vec->blk_size;
 }
 
-ffly_err_t ffly_vec_push_back(struct ffly_vec *__vec, void **__p) {
+ffly_err_t ffly_vec_push_back(ffly_vecp __vec, void **__p) {
 	__vec->size++;
 	if (is_flag(__vec, VEC_BLK_CHAIN) && is_flag(__vec, VEC_UUU_BLKS)) {
 		if (ffly_vec_size(__vec->uu_blks) > 0) {
@@ -201,7 +201,7 @@ ffly_err_t ffly_vec_push_back(struct ffly_vec *__vec, void **__p) {
 	__vec->off++;
 	return FFLY_SUCCESS;
 }
-ffly_err_t ffly_vec_pop_back(struct ffly_vec *__vec, void *__p) {
+ffly_err_t ffly_vec_pop_back(ffly_vecp __vec, void *__p) {
 	__vec->size--;
 	if (is_flag(__vec, VEC_AUTO_RESIZE)) {
 		// might cause issues - need to test
@@ -231,7 +231,7 @@ ffly_err_t ffly_vec_pop_back(struct ffly_vec *__vec, void *__p) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_vec_resize(struct ffly_vec *__vec, ffly_size_t __size) {
+ffly_err_t ffly_vec_resize(ffly_vecp __vec, ffly_size_t __size) {
 	__vec->size = __size;
 	if (!__size) {__ffly_mem_free(__vec->p); __vec->p = NULL; return FFLY_SUCCESS;}
 	if (!__vec->p) {__vec->p = __ffly_mem_alloc(__size*__vec->blk_size); return FFLY_SUCCESS;}
@@ -242,7 +242,7 @@ ffly_err_t ffly_vec_resize(struct ffly_vec *__vec, ffly_size_t __size) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_vec_de_init(struct ffly_vec *__vec) {
+ffly_err_t ffly_vec_de_init(ffly_vecp __vec) {
 	if (__vec->p != NULL) {
 		__ffly_mem_free(__vec->p);
 		__vec->p = NULL;

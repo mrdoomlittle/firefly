@@ -21,17 +21,18 @@ struct ffly_buff {
 	ffly_size_t blk_size;
 };
 
+typedef struct ffly_buff* ffly_buffp;
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_buff_init(struct ffly_buff*, mdl_uint_t, ffly_size_t);
-ffly_err_t ffly_buff_put(struct ffly_buff*, void*);
-ffly_err_t ffly_buff_get(struct ffly_buff*, void*);
-ffly_err_t ffly_buff_resize(struct ffly_buff*, mdl_uint_t);
-ffly_err_t ffly_buff_de_init(struct ffly_buff*);
-ffly_err_t ffly_buff_incr(struct ffly_buff*);
-ffly_err_t ffly_buff_decr(struct ffly_buff*);
-ffly_err_t ffly_buff_reset(struct ffly_buff*);
+ffly_err_t ffly_buff_init(ffly_buffp, mdl_uint_t, ffly_size_t);
+ffly_err_t ffly_buff_put(ffly_buffp, void*);
+ffly_err_t ffly_buff_get(ffly_buffp, void*);
+ffly_err_t ffly_buff_resize(ffly_buffp, mdl_uint_t);
+ffly_err_t ffly_buff_de_init(ffly_buffp);
+ffly_err_t ffly_buff_incr(ffly_buffp);
+ffly_err_t ffly_buff_decr(ffly_buffp);
+ffly_err_t ffly_buff_reset(ffly_buffp);
 # ifdef __cplusplus
 }
 # endif
@@ -48,17 +49,17 @@ ffly_off_t static __inline__ ffly_buff_off(struct ffly_buff *__buff){return __bu
 namespace mdl {
 namespace firefly {
 namespace system {
-static types::err_t(*buff_init)(struct ffly_buff*, uint_t, types::size_t) = &ffly_buff_init;
-static types::err_t(*buff_put)(struct ffly_buff*, void*) = &ffly_buff_put;
-static types::err_t(*buff_get)(struct ffly_buff*, void*) = &ffly_buff_get;
-static types::err_t(*buff_resize)(struct ffly_buff*, uint_t) = &ffly_buff_resize;
-static types::err_t(*buff_de_init)(struct ffly_buff*) = &ffly_buff_de_init;
+static types::err_t(*buff_init)(ffly_buffp, uint_t, types::size_t) = &ffly_buff_init;
+static types::err_t(*buff_put)(ffly_buffp, void*) = &ffly_buff_put;
+static types::err_t(*buff_get)(ffly_buffp, void*) = &ffly_buff_get;
+static types::err_t(*buff_resize)(ffly_buffp, uint_t) = &ffly_buff_resize;
+static types::err_t(*buff_de_init)(ffly_buffp) = &ffly_buff_de_init;
 types::err_t static __inline__ buff_incr(struct ffly_buff *__buff) {return ffly_buff_incr(__buff);}
 types::err_t static __inline__ buff_decr(struct ffly_buff *__buff) {return ffly_buff_decr(__buff);}
 void static __inline__ buff_off_reset(struct ffly_buff *__buff) {ffly_buff_off_reset(__buff);}
 void static __inline__* buff_begin(struct ffly_buff *__buff) {return ffly_buff_begin(__buff);}
 void static __inline__* buff_end(struct ffly_buff *__buff) {return ffly_buff_end(__buff);}
-static types::err_t(*buff_reset)(struct ffly_buff*) = &ffly_buff_reset;
+static types::err_t(*buff_reset)(ffly_buffp) = &ffly_buff_reset;
 
 template<typename _T>
 struct buff {

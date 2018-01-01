@@ -567,6 +567,8 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
         to_keyword(__tok, _k_exit);
     else if (!ffly_str_cmp(__tok->p, "while"))
         to_keyword(__tok, _k_while);
+    else if (!ffly_str_cmp(__tok->p, "match"))
+        to_keyword(__tok, _k_match);
 	else {
 		return 0;
 	}

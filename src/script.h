@@ -67,6 +67,7 @@ enum {
     _k_struct,
     _k_exit,
     _k_while,
+    _k_match,
     _incr,
     _decr
 };
@@ -89,7 +90,8 @@ enum {
     _ast_exit,
     _ast_while,
     _ast_incr,
-    _ast_decr
+    _ast_decr,
+    _ast_match
 };
 
 enum {

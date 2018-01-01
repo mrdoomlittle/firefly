@@ -19,3 +19,4 @@
 -. document shit
 -. remove old code
 -. add multithreading support for pixdraw/pixfill/etc
+-. start adding to errno list

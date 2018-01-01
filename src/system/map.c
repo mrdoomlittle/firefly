@@ -16,7 +16,7 @@ typedef struct {
     void *prev, *next;
 } map_entry_t;
 
-ffly_err_t ffly_map_init(struct ffly_map *__map) {
+ffly_err_t ffly_map_init(ffly_mapp __map) {
 	__map->table = (struct ffly_vec**)__ffly_mem_alloc(FFLY_MAP_SIZE*sizeof(struct ffly_vec*));
 	struct ffly_vec **itr = __map->table;
 	while(itr != __map->table+FFLY_MAP_SIZE) *(itr++) = NULL;
@@ -25,15 +25,15 @@ ffly_err_t ffly_map_init(struct ffly_map *__map) {
 	return FFLY_SUCCESS;
 }
 
-void* ffly_map_begin(struct ffly_map *__map) {
+void* ffly_map_begin(ffly_mapp __map) {
     return __map->begin;
 }
 
-void* ffly_map_end(struct ffly_map *__map) {
+void* ffly_map_end(ffly_mapp __map) {
     return __map->end;
 }
 
-void ffly_map_itr(struct ffly_map *__map, void **__itrp, mdl_u8_t __dir) {
+void ffly_map_itr(ffly_mapp __map, void **__itrp, mdl_u8_t __dir) {
     if (__dir == MAP_ITR_FD)
         *__itrp = ((map_entry_t*)*__itrp)->next;
     else if (__dir == MAP_ITR_BK)
@@ -44,7 +44,7 @@ void const* ffly_map_getp(void *__p) {
     return ((map_entry_t*)__p)->p;
 }
 
-map_entry_t static* map_find(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_t __bc) {
+map_entry_t static* map_find(ffly_mapp __map, mdl_u8_t const *__key, mdl_uint_t __bc) {
 	mdl_u64_t val = ffly_hash(__key, __bc);
 	struct ffly_vec **blk = __map->table+(val&FFLY_MAP_SIZE);
 	if (!*blk) {
@@ -66,7 +66,7 @@ map_entry_t static* map_find(struct ffly_map *__map, mdl_u8_t const *__key, mdl_
 	return NULL;
 }
 
-ffly_err_t ffly_map_put(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_t __bc, void const *__p) {
+ffly_err_t ffly_map_put(ffly_mapp __map, mdl_u8_t const *__key, mdl_uint_t __bc, void const *__p) {
 	mdl_u64_t val = ffly_hash(__key, __bc);
 	struct ffly_vec **blk = __map->table+(val&FFLY_MAP_SIZE);
 
@@ -109,7 +109,7 @@ ffly_err_t ffly_map_put(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_
         __map->begin = (void*)*entry;
 }
 
-void const* ffly_map_get(struct ffly_map *__map, mdl_u8_t const *__key, mdl_uint_t __bc, ffly_err_t *__err) {
+void const* ffly_map_get(ffly_mapp __map, mdl_u8_t const *__key, mdl_uint_t __bc, ffly_err_t *__err) {
 	map_entry_t *entry = map_find(__map, __key, __bc);
 	if (!entry) {
         ffly_fprintf(ffly_log, "entry was not found.\n");
@@ -134,7 +134,7 @@ void static free_blk(struct ffly_vec **__blk) {
 	__ffly_mem_free(*__blk);
 }
 
-ffly_err_t ffly_map_de_init(struct ffly_map *__map) {
+ffly_err_t ffly_map_de_init(ffly_mapp __map) {
 	struct ffly_vec **itr = __map->table;
 	while(itr != __map->table+FFLY_MAP_SIZE) {
 		if (*itr != NULL) free_blk(itr);

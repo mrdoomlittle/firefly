@@ -11,16 +11,18 @@ struct ffly_map {
     void *begin, *end;
 };
 
+
+typedef struct ffly_map* ffly_mapp;
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_map_init(struct ffly_map*);
-ffly_err_t ffly_map_put(struct ffly_map*, mdl_u8_t const*, mdl_uint_t, void const*);
-void const* ffly_map_get(struct ffly_map*, mdl_u8_t const*, mdl_uint_t, ffly_err_t*);
-ffly_err_t ffly_map_de_init(struct ffly_map*);
-void* ffly_map_begin(struct ffly_map*);
-void* ffly_map_end(struct ffly_map*);
-void ffly_map_itr(struct ffly_map*, void**, mdl_u8_t);
+ffly_err_t ffly_map_init(ffly_mapp);
+ffly_err_t ffly_map_put(ffly_mapp, mdl_u8_t const*, mdl_uint_t, void const*);
+void const* ffly_map_get(ffly_mapp, mdl_u8_t const*, mdl_uint_t, ffly_err_t*);
+ffly_err_t ffly_map_de_init(ffly_mapp);
+void* ffly_map_begin(ffly_mapp);
+void* ffly_map_end(ffly_mapp);
+void ffly_map_itr(ffly_mapp, void**, mdl_u8_t);
 void const* ffly_map_getp(void*);
 # ifdef __cplusplus
 }

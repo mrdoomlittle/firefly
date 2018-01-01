@@ -7,7 +7,7 @@
 # include "../memory/mem_free.h"
 # include "../memory/mem_realloc.h"
 # include "mutex.h"
-ffly_err_t ffly_buff_init(struct ffly_buff *__buff, mdl_uint_t __blk_c, ffly_size_t __blk_size) {
+ffly_err_t ffly_buff_init(ffly_buffp __buff, mdl_uint_t __blk_c, ffly_size_t __blk_size) {
 	if ((__buff->p = __ffly_mem_alloc(__blk_c*__blk_size)) == NULL) {
 		ffly_fprintf(ffly_err, "buff: failed to allocate memory.\n");
 		return FFLY_FAILURE;
@@ -20,7 +20,7 @@ ffly_err_t ffly_buff_init(struct ffly_buff *__buff, mdl_uint_t __blk_c, ffly_siz
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_buff_put(struct ffly_buff *__buff, void *__p) {
+ffly_err_t ffly_buff_put(ffly_buffp __buff, void *__p) {
 	ffly_err_t err;
 	ffly_mutex_lock(&__buff->m);
 	if (_err(err = ffly_mem_cpy((mdl_u8_t*)__buff->p+(__buff->off*__buff->blk_size), __p, __buff->blk_size)))
@@ -29,7 +29,7 @@ ffly_err_t ffly_buff_put(struct ffly_buff *__buff, void *__p) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_buff_get(struct ffly_buff *__buff, void *__p) {
+ffly_err_t ffly_buff_get(ffly_buffp __buff, void *__p) {
 	ffly_err_t err;
 	ffly_mutex_lock(&__buff->m);
 	if (_err(err = ffly_mem_cpy(__p, (mdl_u8_t*)__buff->p+(__buff->off*__buff->blk_size), __buff->blk_size)))
@@ -38,7 +38,7 @@ ffly_err_t ffly_buff_get(struct ffly_buff *__buff, void *__p) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_buff_incr(struct ffly_buff *__buff) {
+ffly_err_t ffly_buff_incr(ffly_buffp __buff) {
 	ffly_err_t err = FFLY_SUCCESS;
 	ffly_mutex_lock(&__buff->m);
 	if (__buff->off == __buff->blk_c-1) {
@@ -49,7 +49,7 @@ ffly_err_t ffly_buff_incr(struct ffly_buff *__buff) {
 	return err;
 }
 
-ffly_err_t ffly_buff_decr(struct ffly_buff *__buff) {
+ffly_err_t ffly_buff_decr(ffly_buffp __buff) {
 	ffly_err_t err = FFLY_SUCCESS;
 	ffly_mutex_lock(&__buff->m);
 	if (!__buff->off) {
@@ -60,7 +60,7 @@ ffly_err_t ffly_buff_decr(struct ffly_buff *__buff) {
 	return err;
 }
 
-ffly_err_t ffly_buff_resize(struct ffly_buff *__buff, mdl_uint_t __blk_c) {
+ffly_err_t ffly_buff_resize(ffly_buffp __buff, mdl_uint_t __blk_c) {
 	if ((__buff->p = __ffly_mem_realloc(__buff->p, (__buff->blk_c = __blk_c)*__buff->blk_size)) == NULL) {
 		ffly_fprintf(ffly_err, "buff: failed to realloc memory.\n");
 		return FFLY_FAILURE;
@@ -68,7 +68,7 @@ ffly_err_t ffly_buff_resize(struct ffly_buff *__buff, mdl_uint_t __blk_c) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_buff_reset(struct ffly_buff *__buff) {
+ffly_err_t ffly_buff_reset(ffly_buffp __buff) {
 	ffly_err_t err;
 	__buff->off = 0;
 	if (_err(err = ffly_buff_resize(__buff, __buff->rs_blk_c))) {
@@ -78,7 +78,7 @@ ffly_err_t ffly_buff_reset(struct ffly_buff *__buff) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_buff_de_init(struct ffly_buff *__buff) {
+ffly_err_t ffly_buff_de_init(ffly_buffp __buff) {
 	ffly_err_t err;
 	if (_err(err = __ffly_mem_free(__buff->p))) {
 		ffly_fprintf(ffly_err, "buff: failed to free.\n");

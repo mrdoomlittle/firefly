@@ -13,7 +13,7 @@ ffly_err_t static eir(ffly_event_t *__event, void *__arg_p) {
         ffly_gui_btn_handle((struct ffly_gui_btn*)__arg_p, __event);
 }
 
-ffly_err_t ffly_gui_btn_draw(struct ffly_gui_btn *__btn, ffly_pixelmap_t __pixelbuff, mdl_u16_t __width, mdl_u16_t __height) {
+ffly_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn, ffly_pixelmap_t __pixelbuff, mdl_u16_t __width, mdl_u16_t __height) {
     ffly_err_t err;
     if (_err(err = ffly_pixeldraw(__btn->xa, __btn->ya, __pixelbuff, __width, __btn->texture, __btn->width, __btn->height))) {
         return err;
@@ -21,7 +21,7 @@ ffly_err_t ffly_gui_btn_draw(struct ffly_gui_btn *__btn, ffly_pixelmap_t __pixel
     return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_gui_btn_handle(struct ffly_gui_btn *__btn, ffly_event_t *__event) {
+ffly_err_t ffly_gui_btn_handle(ffly_gui_btnp __btn, ffly_event_t *__event) {
     if (!__btn->enabled) return FFLY_SUCCESS;
     //reset
     __btn->hovering = ffly_false;
@@ -50,16 +50,16 @@ ffly_err_t ffly_gui_btn_handle(struct ffly_gui_btn *__btn, ffly_event_t *__event
     return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_gui_btn_enable_ir(struct ffly_gui_btn *__btn) {
+ffly_err_t ffly_gui_btn_enable_ir(ffly_gui_btnp __btn) {
     ffly_add_eir(&eir, __btn);
     ffly_fprintf(ffly_out, "added ir %p\n", __btn);
 }
 
-ffly_bool_t ffly_gui_btn_pressed(struct ffly_gui_btn *__btn) {
+ffly_bool_t ffly_gui_btn_pressed(ffly_gui_btnp __btn) {
     return __btn->pressed;
 }
 
-ffly_bool_t ffly_gui_btn_hovering(struct ffly_gui_btn *__btn) {
+ffly_bool_t ffly_gui_btn_hovering(ffly_gui_btnp __btn) {
     return __btn->hovering;
 }
 

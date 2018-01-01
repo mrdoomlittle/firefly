@@ -25,16 +25,17 @@ struct ffly_queue {
 	ffly_off_t top, end;
 };
 
+typedef struct ffly_queue* ffly_queuep;
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_queue_init(struct ffly_queue*, mdl_uint_t);
-ffly_err_t ffly_queue_de_init(struct ffly_queue*);
-ffly_size_t ffly_queue_size(struct ffly_queue*);
-ffly_err_t ffly_queue_push(struct ffly_queue*, void*);
-ffly_err_t ffly_queue_pop(struct ffly_queue*, void*);
-void* ffly_queue_front(struct ffly_queue*);
-void* ffly_queue_back(struct ffly_queue*);
+ffly_err_t ffly_queue_init(ffly_queuep, mdl_uint_t);
+ffly_err_t ffly_queue_de_init(ffly_queuep);
+ffly_size_t ffly_queue_size(ffly_queuep);
+ffly_err_t ffly_queue_push(ffly_queuep, void*);
+ffly_err_t ffly_queue_pop(ffly_queuep, void*);
+void* ffly_queue_front(ffly_queuep);
+void* ffly_queue_back(ffly_queuep);
 # ifdef __cplusplus
 }
 # include "io.h"
@@ -42,13 +43,13 @@ void* ffly_queue_back(struct ffly_queue*);
 namespace mdl {
 namespace firefly {
 namespace system {
-static types::err_t(*queue_init)(struct ffly_queue*, uint_t) = &ffly_queue_init;
-static types::err_t(*queue_de_init)(struct ffly_queue*) = &ffly_queue_de_init;
-static types::size_t(*queue_size)(struct ffly_queue*) = &ffly_queue_size;
-static types::err_t(*queue_push)(struct ffly_queue*, void*) = &ffly_queue_push;
-static types::err_t(*queue_pop)(struct ffly_queue*, void*) = &ffly_queue_pop;
-static void*(*queue_front)(struct ffly_queue*) = &ffly_queue_front;
-static void*(*queue_back)(struct ffly_queue*) = &ffly_queue_back;
+static types::err_t(*queue_init)(ffly_queuep, uint_t) = &ffly_queue_init;
+static types::err_t(*queue_de_init)(ffly_queuep) = &ffly_queue_de_init;
+static types::size_t(*queue_size)(ffly_queuep) = &ffly_queue_size;
+static types::err_t(*queue_push)(ffly_queuep, void*) = &ffly_queue_push;
+static types::err_t(*queue_pop)(ffly_queuep, void*) = &ffly_queue_pop;
+static void*(*queue_front)(ffly_queuep) = &ffly_queue_front;
+static void*(*queue_back)(ffly_queuep) = &ffly_queue_back;
 template<typename _T>
 struct queue {
 	queue() {

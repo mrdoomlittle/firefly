@@ -125,6 +125,10 @@ void ast_uop(struct ffly_script *__script, struct node **__node, mdl_u8_t __kind
     build_node(__script, __node, &(struct node){.kind=__kind, .operand=__operand});
 }
 
+void ast_match(struct ffly_script *__script, struct node **__node) {
+    build_node(__script, __node, &(struct node){.kind=_ast_match});
+}
+
 ffly_err_t read_decl_spec(struct ffly_script*, struct token*, struct type**);
 ffly_err_t read_struct_decl(struct ffly_script *__script, struct ffly_map *__fields, mdl_uint_t *__size) {
     if (!expect_token(__script, TOK_KEYWORD, _l_brace)) {
