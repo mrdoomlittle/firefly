@@ -1,1 +1,17 @@
+name:value,
 
+example0:"Hello",
+
+example0 = "Hello" <- string
+
+
+arrays
+example1:["Hello", 1000],
+
+example1[0] = "Hello"	<-	string
+example1[1] = 1000		<-	int
+
+
+example2:[[[["Hello"]]]]
+
+example2[0][0][0][0] = "Hello" <- stirng

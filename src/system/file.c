@@ -12,7 +12,7 @@
 # include <string.h>
 struct ffly_file* ffly_fopen(char *__path, int __flags, mode_t __mode, ffly_err_t *__err) {
 	struct ffly_file *file = (struct ffly_file*)__ffly_mem_alloc(sizeof(struct ffly_file));
-	if ((file->d = open(__path, __flags, __mode)) < 0) {
+	if ((file->fd = open(__path, __flags, __mode)) < 0) {
 		ffly_fprintf(ffly_err, "file, failed to open file, error: %d, %s\n", errno, strerror(errno));
 		return NULL;
 	}
@@ -47,7 +47,7 @@ ffly_err_t ffly_fstat(char *__path, struct ffly_stat *__stat) {
 }
 
 ffly_off_t ffly_fseek(struct ffly_file *__f, ffly_off_t __off, int __whence) {
-	off_t off = lseek(__f->d, __off, __whence);
+	off_t off = lseek(__f->fd, __off, __whence);
 	if (off == (off_t)-1) {
 		ffly_fprintf(ffly_err, "fseek failed.\n");
 		return 0;
@@ -69,11 +69,11 @@ ffly_err_t ffly_fcreat(char *__path, mode_t __mode) {
 }
 
 ffly_err_t ffly_fwrite(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
-	if (!valid_fd(__f->d)) {
+	if (!valid_fd(__f->fd)) {
 		ffly_fprintf(ffly_err, "file descriptor not valid.\n");
 		return FFLY_FAILURE;
 	}
-	if (write(__f->d, __p, __bc) == -1) {
+	if (write(__f->fd, __p, __bc) == -1) {
 		ffly_fprintf(ffly_err, "failed to write to file, %s\n", __f->path);
 		return FFLY_FAILURE;
 	}
@@ -81,12 +81,12 @@ ffly_err_t ffly_fwrite(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
 }
 
 ffly_err_t ffly_fread(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
-	if (!valid_fd(__f->d)) {
+	if (!valid_fd(__f->fd)) {
 		ffly_fprintf(ffly_err, "file descriptor not valid.\n");
 		return FFLY_FAILURE;
 	}
 
-	if (read(__f->d, __p, __bc) == -1) {
+	if (read(__f->fd, __p, __bc) == -1) {
 		ffly_fprintf(ffly_err, "failed to read file, %s\n", __f->path);
 		return FFLY_FAILURE;
 	}
@@ -94,12 +94,12 @@ ffly_err_t ffly_fread(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
 }
 
 ffly_err_t ffly_fclose(struct ffly_file *__f) {
-	if (!valid_fd(__f->d)) {
+	if (!valid_fd(__f->fd)) {
 		ffly_fprintf(ffly_err, "file descriptor not valid.\n");
 		return FFLY_FAILURE;
 	}
 
-	close(__f->d);
+	close(__f->fd);
 	ffly_err_t err;
 	__ffly_mem_free((void*)__f->path);
 	if (_err(err = __ffly_mem_free(__f))) {

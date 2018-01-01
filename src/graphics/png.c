@@ -34,7 +34,7 @@ ffly_err_t ffly_ld_png_img(char *__dir, char *__name, ffly_imagep __image) {
 	if (setjmp(png_jmpbuf(png_p)))
 		return FFLY_FAILURE;
 
-	int fd = dup(file->d);
+	int fd = dup(file->fd);
 	FILE *f = fdopen(fd, "rb");
 
 	png_init_io(png_p, f);

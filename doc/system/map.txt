@@ -1,0 +1,26 @@
+c style
+{
+	struct ffly_map map;
+	ffly_map_init(&map);
+
+	mdl_u8_t key = 21;
+	ffly_map_put(&map, &key, 1, 0x00?????);
+
+
+	ffly_err_t err;
+	void *p = ffly_map_get(&map, &key, 1, &err);
+	// p = 0x00?????
+
+	ffly_map_de_init(&map);
+}
+
+c++ style
+{
+	mdl::firefly::system::map<mdl::uint_t> map;
+
+
+	map.put(21299, "test");
+
+	mdl::firefly::types::err_t err;
+	mdl::firefly::system::io::printf("%u\n", map.get("test", err)); -> "21299"
+}

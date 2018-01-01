@@ -1,0 +1,32 @@
+c style
+{
+	struct ffly_wd window;
+	ffly_wd_init(&window, WIDTH, HEIGHT, "example");
+	ffly_wd_open(&window);
+
+	for(;;) {
+		ffly_byte_t *pixels = ffly_wd_frame_buff(&window);
+	
+
+		ffly_wd_display(&window); // display to screen
+	}
+
+	ffly_wd_close(&window);
+	ffly_wd_cleanup(&window);
+}
+
+c++ style 
+{
+	mdl::firefly::graphics::window window;
+	window.init(WIDTH, HEIGHT, "example");
+	window.open();
+
+	for(;;) {
+		mdl::firefly::types::byte_t *pixels = window.frame_buff();
+
+		window.display();
+	}
+
+	window.close();
+	window.cleanup();
+}

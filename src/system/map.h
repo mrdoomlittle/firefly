@@ -51,7 +51,16 @@ struct map {
 	types::err_t init() {
 		return ffly_map_init(&this->raw);}
 	types::err_t de_init() {
-		return ffly_map_de_init(&this->raw);}
+        void *itr = ffly_map_begin(&this->raw);
+        while(itr != nullptr) {
+            void *p = ffly_map_getp(itr);
+            if (p != nullptr)
+                __ffly_mem_free(p);
+            ffly_map_itr(&this->raw, &itr, MAP_ITR_FD);
+        }
+
+		return ffly_map_de_init(&this->raw);
+    }
 	struct ffly_map raw;
 };
 }

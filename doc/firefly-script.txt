@@ -1,1 +1,83 @@
 - underdevelopment
+
+if statment
+{
+	if (lhs {condition} rhs) {
+
+	}
+}
+
+condition operators
+'>'		-	grater then
+'<'		-	less then 
+'=='	-	eqal to
+'!='	-	not eqal to
+
+while statment
+{
+	while(lhs {condition} rhs) {
+
+
+	}
+}
+
+unary operators
+'++'
+'--'
+
+function definition
+{
+	fn example(u8_t __example, ...)->{return type} {
+
+
+	}
+}
+
+
+function call
+{
+	example(0, ...);
+}
+
+
+assginment
+{
+	u8_t example;
+	example = 0;
+}
+
+variable declaration
+{
+	{type} {name};
+}
+
+types
+'u8_t'
+'i8_t'
+
+'u16_t'
+'i16_t'
+
+'u32_t'
+'i32_t'
+
+'u64_t'
+'i64_t'
+
+'void'
+
+'var' <- auto
+
+{
+	var example = 21;
+	// var = {u8_t};
+}
+
+
+macro
+
+%define
+%ifndef
+%ifdef
+%endif
+%include "file"

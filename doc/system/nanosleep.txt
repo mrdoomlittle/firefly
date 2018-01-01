@@ -1,0 +1,4 @@
+c style
+{
+    ffly_nanosleep(seconds, nanoseconds);
+}

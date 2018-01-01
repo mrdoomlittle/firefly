@@ -1,0 +1,11 @@
+c style
+{
+    ffly_atomic_uint_t no = 0;
+    
+    ffly_atomic_add(&no, 21299);
+
+    ffly_atomic_sub(&no, 21299);
+
+    ffly_atomic_incr(&no);
+    ffly_atomic_decr(&no);
+}

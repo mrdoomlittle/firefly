@@ -7,14 +7,10 @@
 # include "../types/size_t.h"
 # include "../types/err_t.h"
 # include "../types/off_t.h"
+# include "stat.h"
 struct ffly_file {
 	char const *path;
-	int d;
-};
-
-
-struct ffly_stat {
-	ffly_size_t size;
+	int fd;
 };
 
 # define FF_O_TRUNC O_TRUNC
