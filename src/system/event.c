@@ -9,15 +9,17 @@ ffly_err_t(*ir_top[20])(ffly_event_t*, void*) = {NULL};
 ffly_err_t(**ir_end)(ffly_event_t*, void*) = ir_top;
 ffly_err_t ffly_add_eir(ffly_err_t(*__ir)(ffly_event_t*, void*), void *__arg_p) {
     *ir_end = __ir;
-    ir_arg[ir_top-ir_end] = __arg_p;
+    ir_arg[ir_end-ir_top] = __arg_p;
     *(++ir_end) = NULL;
 }
 
 struct ffly_queue ffly_event_queue;
 ffly_err_t ffly_event_push(ffly_event_t *__event) {
     ffly_err_t(**next)(ffly_event_t*, void*) = ir_top;
-    while(*next != NULL)
-        (*(next++))(__event, ir_arg[next-ir_top]);
+    while(*next != NULL) {
+        (*next)(__event, ir_arg[next-ir_top]);
+        next++;
+	}
 
 	if (ffly_queue_size(&ffly_event_queue) > 20) {
 		ffly_fprintf(ffly_err, "event queue overflow.\n");

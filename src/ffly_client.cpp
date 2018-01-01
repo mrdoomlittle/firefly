@@ -101,8 +101,11 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(ffly_err_t(*__extern_loop)(i8
 					case _ffly_wd_ek_key_press:
 						firefly::system::io::fprintf(ffly_log, "got key press event from window.\n");
 					break;
+                    case _ffly_wd_ek_btn_press:
+                        firefly::system::io::fprintf(ffly_log, "got button press event from window.\n");
+                    break;
 					default:
-						firefly::system::io::fprintf(ffly_log, "window event hasent been implemented.\n");
+    					firefly::system::io::fprintf(ffly_log, "window event hasent been implemented.\n");
 						firefly::free_event(this, event);
 						continue;
 				}

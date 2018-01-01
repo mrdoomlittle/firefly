@@ -122,13 +122,17 @@ ffly_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) 
             case ButtonPress: case ButtonRelease:
                 mk_event(__event, (ffly_event_t){.kind=event.type == ButtonPress?_ffly_wd_ek_btn_press:_ffly_wd_ek_btn_release, .data=ffly_mem_blk_alloc(&__wd->events)});
                 *((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
-                    .btn = ffly_x11_convert_btnno(event.xbutton.button) 
+                    .btn = ffly_x11_convert_btnno(event.xbutton.button),
+                    .x = event.xbutton.x,
+                    .y = event.xbutton.y
                 };
             break;
 			case KeyPress: case KeyRelease:
 				mk_event(__event, (ffly_event_t){.kind=event.type == KeyPress?_ffly_wd_ek_key_press:_ffly_wd_ek_key_release, .data=ffly_mem_blk_alloc(&__wd->events)});
 				*((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
-                    .keycode = ffly_x11_convert_keycode(event.xkey.keycode)
+                    .keycode = ffly_x11_convert_keycode(event.xkey.keycode),
+                    .x = event.xkey.x,
+                    .y = event.xkey.y
 				};
 			break;
 			default:

@@ -7,7 +7,7 @@
 # include "../types/event_t.h"
 # include "../data/bzero.h"
 # include "../ffly_def.h"
-struct ffly_ui_btn {
+struct ffly_gui_btn {
 	ffly_pixelmap_t texture;
 	ffly_bool_t pressed;
 	ffly_bool_t hovering;
@@ -22,10 +22,11 @@ struct ffly_ui_btn {
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_ui_btn_enable_ir(struct ffly_ui_btn*);
-ffly_err_t ffly_ui_btn_handle(struct ffly_ui_btn*, ffly_event_t*);
-ffly_bool_t ffly_ui_btn_hovering(struct ffly_ui_btn*);
-ffly_bool_t ffly_ui_btn_pressed(struct ffly_ui_btn*);
+ffly_err_t ffly_gui_btn_draw(struct ffly_gui_btn*, ffly_pixelmap_t, mdl_u16_t, mdl_u16_t);
+ffly_err_t ffly_gui_btn_enable_ir(struct ffly_gui_btn*);
+ffly_err_t ffly_gui_btn_handle(struct ffly_gui_btn*, ffly_event_t*);
+ffly_bool_t ffly_gui_btn_hovering(struct ffly_gui_btn*);
+ffly_bool_t ffly_gui_btn_pressed(struct ffly_gui_btn*);
 # ifdef __cplusplus
 }
 namespace mdl {
@@ -34,12 +35,15 @@ namespace gui {
 class btn {
     public:
     void clear() {
-        ffly_bzero(&this->raw, sizeof(struct ffly_ui_btn));
+        ffly_bzero(&this->raw, sizeof(struct ffly_gui_btn));
     }
-    types::err_t enable_ir() {return ffly_ui_btn_enable_ir(&this->raw);}
-    types::bool_t pressed() {return ffly_ui_btn_pressed(&this->raw);}
-    types::bool_t hovering() {return ffly_ui_btn_hovering(&this->raw);}
-    types::err_t handle(types::event_t& __event) {return ffly_ui_btn_handle(&this->raw, &__event);}
+    types::err_t draw(types::pixelmap_t __pixelbuff, u16_t __width, u16_t __height) {
+        return ffly_gui_btn_draw(&this->raw, __pixelbuff, __width, __height);
+    }
+    types::err_t enable_ir() {return ffly_gui_btn_enable_ir(&this->raw);}
+    types::bool_t pressed() {return ffly_gui_btn_pressed(&this->raw);}
+    types::bool_t hovering() {return ffly_gui_btn_hovering(&this->raw);}
+    types::err_t handle(types::event_t& __event) {return ffly_gui_btn_handle(&this->raw, &__event);}
     void set_width(u16_t __width) {this->raw.width = __width;}
     void set_height(u16_t __height) {this->raw.height = __height;}
     void set_xa(u16_t __xa) {this->raw.xa = __xa;}
@@ -49,7 +53,7 @@ class btn {
     void enable() {this->raw.enabled = ffly_true;}
     void disable() {this->raw.enabled = ffly_false;}
     void set_texture(types::pixelmap_t __texture) {this->raw.texture = __texture;}
-    struct ffly_ui_btn raw;
+    struct ffly_gui_btn raw;
 };
 }
 }
