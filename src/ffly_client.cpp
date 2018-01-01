@@ -68,7 +68,7 @@ mdl::firefly::types::err_t mdl::ffly_client::de_init() {
 # include "types/event_t.h"
 # include "graphics/pipe.h"
 # include "system/nanosleep.h"
-mdl::firefly::types::err_t mdl::ffly_client::begin(ffly_err_t(*__extern_loop)(i8_t, portal_t*, void*), void *__this) {
+mdl::firefly::types::err_t mdl::ffly_client::begin(ffly_err_t(*__extern_loop)(i8_t, portal_t*, void*), void *__arg_p) {
 	window.open();
 	firefly::types::err_t err;
 	firefly::data::mem_set(this->window.frame_buff(), 0xFF, this->window.get_width()*this->window.get_height()*4);
@@ -110,17 +110,12 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(ffly_err_t(*__extern_loop)(i8
 			}
 		}
 
-		if (_err(__extern_loop(0, &this->portal, NULL))) {
+		if (_err(__extern_loop(0, &this->portal, __arg_p))) {
 			firefly::system::io::fprintf(ffly_err, ".\n");
 			goto _fatal;
 		}
 
-        i16_t rootx = 0, rooty = 0, wdx = 0, wdy = 0;
-        window.query_pointer(rootx, rooty, wdx, wdy);
-        firefly::system::io::fprintf(ffly_log, "rootx: %d, rooty: %d, wdx: %d, wdy: %d\n", rootx, rooty, wdx, wdy);
-
 		firefly::system::io::fprintf(ffly_log, "frame buff: %p\n", this->window.frame_buff());
-
 		if (_err(this->layer_m.draw_layers(this->window.frame_buff(), this->window.get_width(), this->window.get_height()))) {
 			goto _fatal;
 		}

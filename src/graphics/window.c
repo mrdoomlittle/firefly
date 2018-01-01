@@ -106,24 +106,29 @@ void static mk_event(ffly_event_t **__event, ffly_event_t __tmpl) {
 
 # ifdef __ffly_use_x11
 ffly_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
+	ffly_err_t err;
 	XEvent event;
 	if (XPending(__wd->raw.d) > 0) {
-		*__event = ffly_alloc_event();
+		*__event = ffly_alloc_event(&err);
+		if (_err(err)) {
+			ffly_fprintf(ffly_err, "failed to allocate event.\n");
+			return err;
+		}
 		XNextEvent(__wd->raw.d, &event);
 		switch(event.type) {
 			case ClientMessage:
 				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_closed});
 			break;
-			case KeyPress:
-				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_key_press, .data=ffly_mem_blk_alloc(&__wd->events)});
+            case ButtonPress: case ButtonRelease:
+                mk_event(__event, (ffly_event_t){.kind=event.type == ButtonPress?_ffly_wd_ek_btn_press:_ffly_wd_ek_btn_release, .data=ffly_mem_blk_alloc(&__wd->events)});
+                *((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
+                    .btn = ffly_x11_convert_btnno(event.xbutton.button) 
+                };
+            break;
+			case KeyPress: case KeyRelease:
+				mk_event(__event, (ffly_event_t){.kind=event.type == KeyPress?_ffly_wd_ek_key_press:_ffly_wd_ek_key_release, .data=ffly_mem_blk_alloc(&__wd->events)});
 				*((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
-					.code = event.xkey.keycode
-				};
-			break;
-			case KeyRelease:
-				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_key_release, .data=ffly_mem_blk_alloc(&__wd->events)});
-				*((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
-					.code = event.xkey.keycode
+                    .keycode = ffly_x11_convert_keycode(event.xkey.keycode)
 				};
 			break;
 			default:
@@ -135,9 +140,15 @@ ffly_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) 
 # endif
 # ifdef __ffly_use_xcb
 ffly_err_t ffly_xcb_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
+    ffly_err_t err;
 	xcb_generic_event_t *event;
 	if ((event = xcb_poll_for_event(__wd->raw.conn)) != NULL) {
-		*__event = ffly_alloc_event();
+		*__event = ffly_alloc_event(&err);
+        if (_err(err)) {
+            free(event);
+            ffly_fprintf(ffly_err, "failed to allocate event.\n");
+            return err;
+        }
 		switch(event->response_type&~0x80) {
 			case XCB_CLIENT_MESSAGE:
 				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_closed});
@@ -168,7 +179,8 @@ ffly_event_t* ffly_wd_poll_event(struct ffly_wd *__wd, ffly_err_t *__err) {
 }
 
 ffly_err_t ffly_wd_free_event(struct ffly_wd *__wd, ffly_event_t *__event) {
-	if (__event->kind  == _ffly_wd_ek_key_press || __event->kind == _ffly_wd_ek_key_release) {
+	if (__event->kind  == _ffly_wd_ek_key_press || __event->kind == _ffly_wd_ek_key_release
+        || __event->kind == _ffly_wd_ek_btn_press || __event->kind == _ffly_wd_ek_btn_release) {
 		ffly_mem_blk_free(&__wd->events, __event->data);
 	}
 }

@@ -3,7 +3,8 @@ ifeq ($(ffly_target), ffly_server)
  override ffly_objs+= src/ffly_server.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o \
  src/worker_manager.o src/memory/alloc_pixelmap.o src/graphics/draw_pixmap.clo src/player_manager.o src/player_handler.o src/worker_handler.o
 else ifeq ($(ffly_target), ffly_client)
- override ffly_objs+= src/ui/camera.o src/uni.o src/chunk.o src/chunk_manager.o src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/system/time_stamp.o src/layer_manager.o src/room_manager.o
+ override ffly_objs+= src/ui/camera.o src/uni.o src/chunk.o src/chunk_manager.o src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o \
+ src/ffly_audio.o src/asset_manager.o src/system/time_stamp.o src/layer_manager.o src/room_manager.o src/gui/btn.o src/gui/btn_manager.o
 else ifeq ($(ffly_target), ffly_studio)
  override ffly_objs+= src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixelmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
  src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
@@ -78,6 +79,12 @@ override ffly_objs+= src/firefly.o
 override ffly_defines+= -D__ffly_use_pulse_audio
 
 # NOTE: this is like this for debugging purposes
+src/gui/btn_manager.o: src/gui/btn_manager.cpp
+	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/gui/btn_manager.o src/gui/btn_manager.cpp
+
+src/gui/btn.o: src/gui/btn.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/gui/btn.o src/gui/btn.c
+
 src/data/scale_pixelmap.o: src/data/scale_pixelmap.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/data/scale_pixelmap.o src/data/scale_pixelmap.c
 

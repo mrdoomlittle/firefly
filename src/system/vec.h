@@ -77,6 +77,7 @@ void static __inline__* vec_end(struct ffly_vec *__vec) {return ffly_vec_end(__v
 types::bool_t static __inline__ vec_empty(struct ffly_vec *__vec) {return ffly_vec_empty(__vec);}
 template<typename _T>
 struct vec {
+    typedef _T* iterator;
 	vec() {
 		if (_err(this->init(0)))
 			io::fprintf(ffly_err, "vec: failed to init.\n");}

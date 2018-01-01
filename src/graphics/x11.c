@@ -1,6 +1,28 @@
 # include "x11.h"
 # include "../macros.h"
 # include "../system/errno.h"
+# include "../system/keyborad.h"
+int unsigned static keycodes[] = {
+    _ffly_key_w,
+    _ffly_key_a,
+    _ffly_key_s,
+    _ffly_key_d
+};
+
+mdl_u8_t ffly_x11_convert_btnno(int unsigned __btn) {
+	return __btn;
+}
+
+ffly_keycode_t ffly_x11_convert_keycode(int unsigned __keycode) {
+	switch(__keycode) {
+		case 25: return _ffly_key_w;
+		case 38: return _ffly_key_a;
+		case 39: return _ffly_key_s;
+		case 40: return _ffly_key_d;
+	}
+	return 0xFF;
+}
+
 ffly_err_t ffly_x11_query_pointer(struct ffly_x11_wd *__wd, mdl_i16_t *__root_xa, mdl_i16_t *__root_ya, mdl_i16_t *__wd_xa, mdl_i16_t *__wd_ya) {
     Window root, child; // not needed for now
     int root_xa, root_ya, wd_xa, wd_ya;

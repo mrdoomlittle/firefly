@@ -54,8 +54,6 @@ namespace mdl { class ffly_client
 	firefly::room_manager room_m;
 	firefly::asset_manager asset_m;
 
-    i16_t root_xa, root_ya, wd_xa, wd_ya;
-
 	portal_t portal;
 	uint_t fps = 0, frame_c = 0;
 	firefly::graphics::window window;
