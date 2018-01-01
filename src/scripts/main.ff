@@ -5,12 +5,18 @@
 %ifdef test0
 %include "scripts/test0.ff"
 %endif
+fn hello(u8_t __a)->void{
+	print(__a);
+}
+
+
 u8_t a = 0;
 u8_t b = 0;
 while(a < 10) {
     b = 0;
     while(b < 10) {
-        print(a);
+		u8_t test = b;
+        hello(test);
         b++; 
     }
     a++;

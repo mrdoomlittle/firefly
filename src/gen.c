@@ -155,7 +155,7 @@ struct obj* pop(struct ffly_script *__script, struct obj ***__obj) {
     return _obj;
 }
 
-struct obj *frame(struct ffly_script *__script) {
+struct obj *create_frame(struct ffly_script *__script) {
     return next_obj(__script, mk_op_frame());
 }
 
@@ -229,6 +229,7 @@ void emit_var(struct ffly_script *__script, struct node *__node) {
 }
 
 void emit_if(struct ffly_script *__script, struct node *__node) {
+    struct obj *frame = create_frame(__script);
     emit(__script, __node->cond);
     mdl_u8_t flag = 0x0;
     if (__node->cond->kind == _op_eq)
@@ -251,10 +252,11 @@ void emit_if(struct ffly_script *__script, struct node *__node) {
     _obj->jmp = (struct obj***)__ffly_mem_alloc(sizeof(struct obj***));
     cleanup(__script, (void*)_obj->jmp);
     *_obj->jmp = &end->next;
+    free_frame(__script, frame);
 }
 
 void emit_while(struct ffly_script *__script, struct node *__node) {
-    struct obj *fr = frame(__script);
+    struct obj *frame = create_frame(__script);
     struct obj **top = &end->next;
     emit(__script, __node->cond);
     mdl_u8_t flag = 0x0;
@@ -284,7 +286,7 @@ void emit_while(struct ffly_script *__script, struct node *__node) {
     _obj->jmp = (struct obj***)__ffly_mem_alloc(sizeof(struct obj***));
     cleanup(__script, (void*)_obj->jmp);
     *_obj->jmp = &end->next;
-    free_frame(__script, fr);
+    free_frame(__script, frame);
 }
 
 void emit_binop(struct ffly_script *__script, struct node *__node) {
@@ -301,6 +303,7 @@ void emit_func(struct ffly_script *__script, struct node *__node) {
     struct obj *jmp = next_obj(__script, mk_op_jump());
     __node->jmp = &end->next;
 
+    struct obj *frame = create_frame(__script);
     struct node **itr = NULL;
     if (ffly_vec_size(&__node->args)>0) {
         itr = (struct node**)ffly_vec_end(&__node->args);
@@ -325,6 +328,7 @@ void emit_func(struct ffly_script *__script, struct node *__node) {
     struct obj **ret_to;
     pop(__script, &ret_to);
 
+    free_frame(__script, frame);
     struct obj *ret = next_obj(__script, mk_op_jump());
     ret->jmp = (struct obj***)ret_to;
     jmp->jmp = (struct obj***)__ffly_mem_alloc(sizeof(struct obj**));
