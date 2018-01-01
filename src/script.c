@@ -45,6 +45,16 @@ char const* tokid_str(mdl_u8_t __id) {
 		case _k_i8_t: return "i8_t";
 		case _semicolon: return ";";
 		case _eq: return "=";
+        case _incr: return "incr";
+        case _decr: return "decr";
+        case _comma: return "comma";
+        case _l_arrow: return "left arrow";
+        case _r_arrow: return "right arrow";
+        case _k_if: return "if";
+        case _l_brace: return "left brace";
+        case _r_brace: return "right brace";
+        case _l_paren: return "left paren";
+        case _r_paren: return "right paren";
 	}
 	return "unknown";
 }
@@ -207,14 +217,11 @@ void op_pop(struct ffly_script *__script, struct obj *__obj) {
 
 void op_incr(struct ffly_script *__script, struct obj *__obj) {
     mdl_u64_t val = 0;
-    ffly_mem_cpy(&val, __obj->p, __obj->_type->size);
+    ffly_mem_cpy(&val, (*__obj->val)->p, (*__obj->val)->_type->size);
 
-    mdl_u64_t by = 0;
-    ffly_mem_cpy(&val, (*__obj->by)->p, (*__obj->by)->_type->size);
+    val++;
 
-    val+=by;
-
-    ffly_mem_cpy(__obj->p, &val, __obj->_type->size);
+    ffly_mem_cpy((*__obj->val)->p, &val, (*__obj->val)->_type->size);
 }
 
 void op_decr(struct ffly_script *__script, struct obj *__obj) {
@@ -225,8 +232,17 @@ void op_free(struct ffly_script *__script, struct obj *__obj) {
     __script->fresh-=__obj->size;
 }
 
-void op_extern_call(struct ffly_script *__script, struct obj *__obj) {
+void op_call(struct ffly_script *__script, struct obj *__obj) {
 
+
+}
+
+void op_frame(struct ffly_script *__script, struct obj *__obj) {
+    __obj->p = (void*)__script->fresh;
+}
+
+void op_free_frame(struct ffly_script *__script, struct obj *__obj) {
+    __script->fresh = (ffly_byte_t*)__obj->frame->p;
 }
 
 void(*op[])(struct ffly_script*, struct obj*) = {
@@ -243,8 +259,10 @@ void(*op[])(struct ffly_script*, struct obj*) = {
     &op_pop,
     &op_incr,
     &op_decr,
-    &op_extern_call,
-    NULL
+    &op_call,
+    NULL,
+    &op_frame,
+    &op_free_frame
 };
 
 ffly_err_t ffly_script_exec(struct ffly_script *__script) {
@@ -252,7 +270,7 @@ ffly_err_t ffly_script_exec(struct ffly_script *__script) {
 	while(_obj != NULL) {
         ffly_fprintf(ffly_log, "op: %s\n", opstr(_obj->opcode));
         if (_obj->opcode == _op_exit) break;
-		if (_obj->opcode >= _op_fresh && _obj->opcode <= _op_extern_call) {
+		if (_obj->opcode >= _op_fresh && _obj->opcode <= _op_free_frame) {
             mdl_u8_t isjmp = (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump);
             if (!isjmp)
 			    op[_obj->opcode](__script, _obj);
@@ -543,6 +561,12 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
         to_keyword(__tok, _k_struct);
     else if (!ffly_str_cmp(__tok->p, "void"))
         to_keyword(__tok, _k_void);
+    else if (!ffly_str_cmp(__tok->p, "var"))
+        to_keyword(__tok, _k_var);
+    else if (!ffly_str_cmp(__tok->p, "exit"))
+        to_keyword(__tok, _k_exit);
+    else if (!ffly_str_cmp(__tok->p, "while"))
+        to_keyword(__tok, _k_while);
 	else {
 		return 0;
 	}
@@ -581,6 +605,7 @@ ffly_err_t ffly_script_build(struct ffly_script *__script) {
         return err;
     if (_err(err = ffly_script_gen(__script)))
         return err;
+    ffly_fprintf(ffly_out, "build successful.\n");
     return FFLY_SUCCESS;
 }
 

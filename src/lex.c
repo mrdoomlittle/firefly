@@ -93,6 +93,13 @@ static struct token* read_token(struct ffly_script *__script) {
 	tok->p = NULL;
     ffly_off_t off = __script->off;
 	switch(fetchc(__script)) {
+        case '+':
+            if (is_next(__script, '+')) {
+                make_keyword(tok, _incr);
+                __script->off++;
+            }
+            __script->off++;
+        break;
         case '"':
             __script->off++;
             *tok = (struct token) {
@@ -114,7 +121,10 @@ static struct token* read_token(struct ffly_script *__script) {
             __script->off++;
         break;
         case '-':
-            if (is_next(__script, '>')) {
+            if (is_next(__script, '-')) {
+                make_keyword(tok, _decr);
+                __script->off++;
+            } else if (is_next(__script, '>')) {
                 make_keyword(tok, _r_arrow);
                 __script->off++;
             }

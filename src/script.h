@@ -48,6 +48,7 @@ enum {
 	_r_paren,
     _l_brace,
     _r_brace,
+    _k_var,
 	_k_print,
 	_k_uint_t,
 	_k_int_t,
@@ -64,6 +65,10 @@ enum {
     _k_fn,
     _k_extern,
     _k_struct,
+    _k_exit,
+    _k_while,
+    _incr,
+    _decr
 };
 
 enum {
@@ -80,7 +85,11 @@ enum {
     _op_lt,
     _ast_func,
     _ast_func_call,
-    _ast_struct_ref
+    _ast_struct_ref,
+    _ast_exit,
+    _ast_while,
+    _ast_incr,
+    _ast_decr
 };
 
 enum {
@@ -95,7 +104,8 @@ enum {
 	_u8_t,
 	_i8_t,
     _void,
-    _struct
+    _struct,
+    _unknown
 };
 
 # define _flg_neq 0x1
@@ -117,8 +127,15 @@ enum {
     _op_pop,
     _op_incr,
     _op_decr,
-    _op_extern_call,
-    _op_exit 
+    _op_call,
+    _op_exit,
+    _op_frame,
+    _op_free_frame
+};
+
+enum {
+    _call_ffly_mem_cpy,
+    _call_ffly_str_len
 };
 
 struct node {
@@ -127,7 +144,7 @@ struct node {
     ffly_byte_t val[sizeof(mdl_u64_t)];
     struct node *init, *var, *arg;
     struct obj *_obj, **jmp, **ret;
-    struct node *l, *r;
+    struct node *l, *r, *operand;
     struct node *cond, *call, *_struct;
     struct ffly_vec block, args, params;
 
@@ -150,11 +167,11 @@ struct type {
 
 struct obj {
     mdl_u32_t off, size, id;
-    mdl_u8_t opcode, cond;
+    mdl_u8_t opcode, cond, call;
     void *p;
     struct type *_type;
     // dst/src? or'
-    struct obj *objpp;
+    struct obj *objpp, *frame;
     struct obj **dst, *_obj;
     struct obj **to, **from, **l, **r, **by;
     struct obj **val, ***jmp, *flags;
