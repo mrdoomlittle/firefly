@@ -69,7 +69,8 @@ enum {
     _k_while,
     _k_match,
     _incr,
-    _decr
+    _decr,
+    _k_else
 };
 
 enum {
@@ -91,7 +92,8 @@ enum {
     _ast_while,
     _ast_incr,
     _ast_decr,
-    _ast_match
+    _ast_match,
+    _ast_call
 };
 
 enum {
@@ -135,20 +137,16 @@ enum {
     _op_free_frame
 };
 
-enum {
-    _call_ffly_mem_cpy,
-    _call_ffly_str_len
-};
-
 struct node {
     mdl_u8_t kind;
     struct type *_type;
     ffly_byte_t val[sizeof(mdl_u64_t)];
     struct node *init, *var, *arg;
     struct obj *_obj, **jmp, **ret;
-    struct node *l, *r, *operand;
+    struct node *l, *r, *operand, *no;
     struct node *cond, *call, *_struct;
     struct ffly_vec block, args, params;
+    struct ffly_vec _else, _do;
 
     struct ffly_vec fields;
 };
@@ -169,12 +167,12 @@ struct type {
 
 struct obj {
     mdl_u32_t off, size, id;
-    mdl_u8_t opcode, cond, call;
+    mdl_u8_t opcode, cond;
     void *p;
     struct type *_type;
     // dst/src? or'
     struct obj *objpp, *frame;
-    struct obj **dst, *_obj;
+    struct obj **dst, *_obj, **no;
     struct obj **to, **from, **l, **r, **by;
     struct obj **val, ***jmp, *flags;
     struct obj *next;

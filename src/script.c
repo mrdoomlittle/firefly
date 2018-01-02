@@ -233,8 +233,14 @@ void op_free(struct ffly_script *__script, struct obj *__obj) {
 }
 
 void op_call(struct ffly_script *__script, struct obj *__obj) {
+    mdl_u8_t no = *(mdl_u8_t*)(*__obj->no)->p;
+    printf("called no %u\n", no);
+    if (no == 0) {
+        mdl_uint_t bc = 0;
+        ffly_mem_cpy(&bc, (*(__obj->params[0]))->p, (*(__obj->params[0]))->_type->size);
+        printf("%u\n", bc);
 
-
+    }
 }
 
 void op_frame(struct ffly_script *__script, struct obj *__obj) {
@@ -569,6 +575,8 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
         to_keyword(__tok, _k_while);
     else if (!ffly_str_cmp(__tok->p, "match"))
         to_keyword(__tok, _k_match);
+    else if (!ffly_str_cmp(__tok->p, "else"))
+        to_keyword(__tok, _k_else);
 	else {
 		return 0;
 	}

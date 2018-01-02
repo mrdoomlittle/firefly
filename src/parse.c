@@ -93,8 +93,8 @@ void ast_binop(struct ffly_script *__script, struct node **__node, mdl_u8_t __ki
     build_node(__script, __node, &(struct node){.kind=__kind, ._type=__type, .l=__l, .r=__r});
 }
 
-void ast_if(struct ffly_script *__script, struct node **__node, struct node *__cond, struct ffly_vec *__block) {
-    build_node(__script, __node, &(struct node){.kind=_ast_if, .cond=__cond, .block=*__block, ._type=NULL});
+void ast_if(struct ffly_script *__script, struct node **__node, struct node *__cond, struct ffly_vec *__do, struct ffly_vec *__else) {
+    build_node(__script, __node, &(struct node){.kind=_ast_if, .cond=__cond, ._do=*__do, ._else=*__else, ._type=NULL});
 }
 
 void ast_func(struct ffly_script *__script, struct node **__node, struct ffly_vec *__args, struct ffly_vec *__block, struct type *__type) {
@@ -127,6 +127,10 @@ void ast_uop(struct ffly_script *__script, struct node **__node, mdl_u8_t __kind
 
 void ast_match(struct ffly_script *__script, struct node **__node) {
     build_node(__script, __node, &(struct node){.kind=_ast_match});
+}
+
+void ast_call(struct ffly_script *__script, struct node **__node, struct node *__no, struct ffly_vec *__params) {
+    build_node(__script, __node, &(struct node){.kind=_ast_call, .no=__no, .params=*__params});
 }
 
 ffly_err_t read_decl_spec(struct ffly_script*, struct token*, struct type**);
@@ -477,14 +481,23 @@ ffly_err_t read_if_stmt(struct ffly_script *__script, struct node **__node) {
         return FFLY_FAILURE;
     }
 
-    struct ffly_vec block;
-    ffly_vec_set_flags(&block, VEC_AUTO_RESIZE);
-    ffly_vec_init(&block, sizeof(struct node*));
-    if (_err(err = read_compound_stmt(__script, &block)))
+    struct ffly_vec _do;
+    ffly_vec_set_flags(&_do, VEC_AUTO_RESIZE);
+    ffly_vec_init(&_do, sizeof(struct node*));
+    if (_err(err = read_compound_stmt(__script, &_do)))
         return err;
-    vec_cleanup(__script, &block);
+    vec_cleanup(__script, &_do);
 
-    ast_if(__script, __node, cond, &block);
+    struct ffly_vec _else;
+    ffly_vec_set_flags(&_else, VEC_AUTO_RESIZE);
+    ffly_vec_init(&_else, sizeof(struct node*));
+    if (next_token_is(__script, TOK_KEYWORD, _k_else)) {
+        if (_err(err = read_compound_stmt(__script, &_else)))
+            return err;
+    }
+
+    vec_cleanup(__script, &_else);
+    ast_if(__script, __node, cond, &_do, &_else);
     return FFLY_SUCCESS;
 }
 
@@ -675,6 +688,53 @@ ffly_err_t read_while_stmt(struct ffly_script *__script, struct node **__node) {
     return FFLY_SUCCESS;
 }
 
+ffly_err_t read_call(struct ffly_script *__script, struct node **__node) {
+    skip_token(__script);
+
+    struct node *no;
+    read_expr(__script, &no);    
+
+    if (!expect_token(__script, TOK_KEYWORD, _l_arrow)) {
+        return FFLY_FAILURE;
+    }
+
+    if (!expect_token(__script, TOK_KEYWORD, _l_brace)) {
+        return FFLY_FAILURE;
+    }
+
+    struct ffly_vec params;
+    ffly_vec_set_flags(&params, VEC_AUTO_RESIZE);
+    ffly_vec_init(&params, sizeof(struct node*));
+
+    if (!next_token_is(__script, TOK_KEYWORD, _r_brace)) {
+        _next:
+        {
+            struct node *param;
+            read_expr(__script, &param);
+
+            struct node **p;
+            ffly_vec_push_back(&params, (void**)&p);
+            *p = param;
+
+            if (next_token_is(__script, TOK_KEYWORD, _comma)) {
+                goto _next;
+            }
+        }
+
+        if (!expect_token(__script, TOK_KEYWORD, _r_brace)) {
+            return FFLY_FAILURE;
+        }
+    }
+
+    vec_cleanup(__script, &params);
+    if (!expect_token(__script, TOK_KEYWORD, _semicolon)) {
+        return FFLY_FAILURE;
+    }
+
+    ast_call(__script, __node, no, &params);
+    return FFLY_SUCCESS;
+}
+
 ffly_err_t ffly_script_parse(struct ffly_script *__script) {
     ffly_err_t err = FFLY_SUCCESS;
 	while((__script->p+__script->off) < __script->end) {
@@ -695,6 +755,11 @@ ffly_err_t ffly_script_parse(struct ffly_script *__script) {
 			} else if (tok->id == _k_fn) {
                 if (_err(err = read_func_def(__script, &_node))) {
                     ffly_fprintf(ffly_out, "failed to read function.\n");
+                    break;
+                }
+            } else if (tok->id == _colon) {
+                if (_err(err = read_call(__script, &_node))) {
+                    ffly_fprintf(ffly_out, "failed to read call.\n");
                     break;
                 }
             } else {

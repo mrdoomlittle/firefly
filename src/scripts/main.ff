@@ -5,20 +5,13 @@
 %ifdef test0
 %include "scripts/test0.ff"
 %endif
-fn hello(u8_t __a)->void{
-	print(__a);
-}
 
 
-u8_t a = 0;
-u8_t b = 0;
-while(a < 10) {
-    b = 0;
-    while(b < 10) {
-		u8_t test = b;
-        hello(test);
-        b++; 
-    }
-    a++;
+if (0 != 1) {
+    print(21299);
+} else {
+    print(1);
+    print(2);
 }
+
 exit;
