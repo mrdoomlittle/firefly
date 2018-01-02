@@ -38,7 +38,7 @@ namespace gui {
 class btn {
     public:
     void clear() {
-        ffly_bzero(&this->raw, sizeof(ffly_gui_btnp));
+        ffly_bzero(&this->raw, sizeof(struct ffly_gui_btn));
     }
     types::err_t draw(types::pixelmap_t __pixelbuff, u16_t __width, u16_t __height) {
         return ffly_gui_btn_draw(&this->raw, __pixelbuff, __width, __height);

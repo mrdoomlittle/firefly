@@ -36,7 +36,7 @@ src/data/str_cpy.o src/data/bzero.o src/data/bcopy.o
 # system
 override ffly_objs+= src/system/string.o src/system/bin_tree.o src/system/arr.o src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
 src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
-src/system/task_worker.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o src/system/event.o
+src/system/task_worker.o src/system/task.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o src/system/event.o
 # network
 override ffly_objs+= src/network/http.o src/network/sock.o src/network/resolve.o
 # graphics
@@ -79,6 +79,9 @@ override ffly_objs+= src/firefly.o
 override ffly_defines+= -D__ffly_use_pulse_audio
 
 # NOTE: this is like this for debugging purposes
+src/system/task.o: src/system/task.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/task.o src/system/task.c
+
 src/gui/btn_manager.o: src/gui/btn_manager.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/gui/btn_manager.o src/gui/btn_manager.cpp
 

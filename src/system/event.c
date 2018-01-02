@@ -60,7 +60,7 @@ ffly_bool_t ffly_pending_event() {
 	return ffly_queue_size(&ffly_event_queue)>0;
 }
 
-# define MAX_EVENTS 50
+# define FAST_EVENTS 50
 ffly_event_t static *events = NULL;
 ffly_event_t static *fresh_event;
 ffly_event_t static **free_events = NULL;
@@ -68,7 +68,7 @@ ffly_event_t static **next_free = NULL;
 ffly_event_t *ffly_alloc_event(ffly_err_t *__err) {
     *__err = FFLY_SUCCESS;
 	if (events == NULL) {
-		if ((events = (ffly_event_t*)__ffly_mem_alloc(MAX_EVENTS*sizeof(ffly_event_t))) == NULL) {
+		if ((events = (ffly_event_t*)__ffly_mem_alloc(FAST_EVENTS*sizeof(ffly_event_t))) == NULL) {
             *__err = FFLY_FAILURE;
             return NULL;
         }
@@ -79,10 +79,8 @@ ffly_event_t *ffly_alloc_event(ffly_err_t *__err) {
 	if (next_free > free_events)
 		return *(--next_free);
 
-    if (fresh_event >= events+MAX_EVENTS) {
-        ffly_fprintf(ffly_err, "max events.\n");
-        *__err = FFLY_FAILURE;
-        return NULL;
+    if (fresh_event >= events+FAST_EVENTS) {
+        return (ffly_event_t*)__ffly_mem_alloc(sizeof(ffly_event_t));
     }
 	return fresh_event++;
 }
@@ -90,15 +88,18 @@ ffly_event_t *ffly_alloc_event(ffly_err_t *__err) {
 ffly_err_t ffly_free_event(ffly_event_t *__event) {
     if (!__event) return FFLY_SUCCESS;
 	if (free_events == NULL) {
-		if ((free_events = (ffly_event_t**)__ffly_mem_alloc(MAX_EVENTS*sizeof(ffly_event_t*))) == NULL) {
+		if ((free_events = (ffly_event_t**)__ffly_mem_alloc(FAST_EVENTS*sizeof(ffly_event_t*))) == NULL) {
             return FFLY_FAILURE;
         }
 		ffly_event_t **itr = free_events;
-		while(itr != free_events+MAX_EVENTS) *(itr++) = NULL;
+		while(itr != free_events+FAST_EVENTS) *(itr++) = NULL;
 		next_free = free_events;
 	}
 
 	ffly_fprintf(ffly_log, "freed event.\n");
-	*(next_free++) = __event;
+    if ((__event < events || __event >= events+FAST_EVENTS) && next_free >= free_events+FAST_EVENTS) {
+        __ffly_mem_free(__event);
+    } else
+        *(next_free++) = __event;
     return FFLY_SUCCESS;
 }

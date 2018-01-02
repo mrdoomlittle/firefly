@@ -9,8 +9,9 @@
 // should use event .xa .ya from window
 // will be called every time new event is pushed
 ffly_err_t static eir(ffly_event_t *__event, void *__arg_p) {
+    ffly_printf("----> %p\n", __arg_p);
     if (__event->kind == _ffly_wd_ek_btn_press)
-        ffly_gui_btn_handle((struct ffly_gui_btn*)__arg_p, __event);
+        ffly_gui_btn_handle((ffly_gui_btnp)__arg_p, __event);
 }
 
 ffly_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn, ffly_pixelmap_t __pixelbuff, mdl_u16_t __width, mdl_u16_t __height) {
@@ -28,6 +29,7 @@ ffly_err_t ffly_gui_btn_handle(ffly_gui_btnp __btn, ffly_event_t *__event) {
     __btn->pressed = ffly_false;
     mdl_i16_t pt_xa, pt_ya;
 
+    ffly_printf("%p\n", __btn->pt_xa);
     if (!__btn->pt_xa)
         pt_xa = ((ffly_wd_event_t*)__event->data)->x;
     else
