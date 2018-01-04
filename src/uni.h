@@ -11,6 +11,14 @@
     (1<<__uni->splice)
 # define ffly_uni_chunk_zal(__uni) \
     (1<<__uni->splice)
+enum {
+    _ffly_uni_8 = 8,
+    _ffly_uni_16 = 16,
+    _ffly_uni_32 = 32,
+    _ffly_uni_64 = 64,
+    _ffly_uni_128 = 128,
+};
+
 struct ffly_uni {
     mdl_uint_t splice;
     mdl_uint_t xcnk_c, ycnk_c, zcnk_c;
@@ -27,7 +35,7 @@ ffly_err_t ffly_uni_obj_move(ffly_unip, ffly_objp, mdl_uint_t, mdl_uint_t, mdl_u
 /* capture frame */
 ffly_bool_t ffly_uni_frame(ffly_unip, ffly_byte_t*, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t);
 ffly_id_t ffly_uni_chunk(ffly_unip, ffly_off_t, ffly_off_t, ffly_off_t);
-ffly_err_t ffly_uni_build(ffly_unip, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_u8_t);
+ffly_err_t ffly_uni_build(ffly_unip, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_u8_t, mdl_u8_t);
 ffly_err_t ffly_uni_free(ffly_unip);
 # ifdef __cplusplus
 namespace mdl {

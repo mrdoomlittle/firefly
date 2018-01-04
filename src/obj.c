@@ -23,13 +23,12 @@ ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
         top = obj;
     }
 
-    if (!end) {
-        end = obj;
-    } else {
+    if (end != NULL) {
         end->next = obj;
         obj->prev = end;
-        end = obj;
     }
+
+    end = obj;
     return obj;
 }
 
@@ -63,6 +62,22 @@ ffly_err_t ffly_obj_free(ffly_objp __obj) {
     __obj->prev->next = __obj->next;
     __ffly_mem_free(__obj);
     return FFLY_SUCCESS;
+}
+
+ffly_err_t ffly_obj_cleanup() {
+    ffly_objp obj = top, prev = NULL;
+    while(obj != NULL) {
+        if (prev != NULL)
+            __ffly_mem_free(prev);
+        /*
+            free shit.
+        */
+        prev = obj;
+        obj = obj->next;
+    }
+
+    if (end != NULL)
+        __ffly_mem_free(end);
 }
 
 ffly_err_t ffly_obj_handle(ffly_objp __obj) {
