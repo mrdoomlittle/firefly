@@ -18,6 +18,8 @@ struct ffly_obj {
 };
 
 typedef struct ffly_obj* ffly_objp;
+typedef ffly_objp* ffly_objpp;
+ffly_err_t ffly_obj_draw(ffly_objp, ffly_byte_t*, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t);
 ffly_objp ffly_obj_alloc(ffly_err_t*);
 ffly_err_t ffly_obj_free(ffly_objp);
 ffly_err_t ffly_obj_handle(ffly_objp);

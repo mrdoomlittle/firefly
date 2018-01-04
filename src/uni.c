@@ -10,7 +10,27 @@ mdl_uint_t static get_cnk_off(ffly_unip __uni, mdl_uint_t __off) {
     return __off>>__uni->splice;
 }
 
-ffly_bool_t ffly_uni_pixcopy(ffly_unip __uni, ffly_byte_t *__dst, mdl_uint_t __xal, mdl_uint_t __yal, mdl_uint_t __zal, mdl_uint_t __xa, mdl_uint_t __ya, mdl_uint_t __za) {
+ffly_chunkp static get_chunk(ffly_unip __uni, mdl_uint_t __xa, mdl_uint_t __ya, mdl_uint_t __za) {
+    return ffly_cnk_man_fetch(&__uni->chunk_man, ffly_uni_chunk(__uni, __xa, __ya, __za));
+}
+
+ffly_objpp static get_obj(ffly_unip __uni, mdl_uint_t __xa, mdl_uint_t __ya, mdl_uint_t __za) {
+    ffly_chunkp chunk = get_chunk(__uni, __xa, __ya, __za);
+    mdl_uint_t x = __xa-(get_cnk_off(__uni, __xa)*ffly_uni_chunk_xal(__uni));
+    mdl_uint_t y = __ya-(get_cnk_off(__uni, __ya)*ffly_uni_chunk_yal(__uni));
+    mdl_uint_t z = __za-(get_cnk_off(__uni, __za)*ffly_uni_chunk_zal(__uni));
+    return chunk->objs+x+(y*chunk->xal)*(z*(chunk->yal*chunk->xal));
+}
+
+ffly_err_t ffly_uni_obj_move(ffly_unip __uni, ffly_objp __obj, mdl_uint_t __xa, mdl_uint_t __ya, mdl_uint_t __za) {
+    ffly_uni_detach_obj(__uni, __obj);
+    __obj->xa = __xa;
+    __obj->ya = __ya;
+    __obj->za = __za;
+    ffly_uni_attach_obj(__uni, __obj);
+}
+
+ffly_bool_t ffly_uni_frame(ffly_unip __uni, ffly_byte_t *__dst, mdl_uint_t __xal, mdl_uint_t __yal, mdl_uint_t __zal, mdl_uint_t __xa, mdl_uint_t __ya, mdl_uint_t __za) {
     mdl_uint_t cnk_xal = ffly_uni_chunk_xal(__uni);
     mdl_uint_t cnk_yal = ffly_uni_chunk_yal(__uni);
     mdl_uint_t cnk_zal = ffly_uni_chunk_zal(__uni);
@@ -21,26 +41,15 @@ ffly_bool_t ffly_uni_pixcopy(ffly_unip __uni, ffly_byte_t *__dst, mdl_uint_t __x
         while(ya != __ya+__yal) {
             xa = __xa;
             while(xa != __xa+__xal) {
-                ffly_byte_t *chunk = ffly_uni_chunk_pixelmap(__uni, ffly_uni_chunk(__uni, xa, ya, za));
-                mdl_uint_t x = xa-(get_cnk_off(__uni, xa)*cnk_xal);
-                mdl_uint_t y = ya-(get_cnk_off(__uni, ya)*cnk_yal);
-                mdl_uint_t z = za-(get_cnk_off(__uni, za)*cnk_zal);
-                ffly_byte_t *src = chunk+((x+(y*cnk_xal)+(z*(cnk_xal*cnk_yal)))*4);
-                ffly_byte_t *dst = __dst+(((xa-__xa)+((ya-__ya)*__xal)+((za-__za)*(__xal*__yal)))*4);
-                dst[0] = src[0];
-                dst[1] = src[1];
-                dst[2] = src[2];
-                dst[3] = src[3];
+                ffly_objp obj = *get_obj(__uni, xa, ya, za);
+                if (obj != NULL)
+                    ffly_obj_draw(obj, __dst, xa, ya, za, __xal, __yal, __zal, __xa+__xal, __ya+__yal, __za+__zal); 
                 xa++;
             }
             ya++;
         }
         za++;
     }
-}
-
-ffly_pixelmap_t ffly_uni_chunk_pixelmap(ffly_unip __uni, ffly_id_t __id) {
-    return ffly_cnk_man_fetch(&__uni->chunk_man, __id)->pixelmap;
 }
 
 ffly_id_t ffly_uni_chunk(ffly_unip __uni, ffly_off_t __xa, ffly_off_t __ya, ffly_off_t __za) {
@@ -56,6 +65,19 @@ ffly_err_t ffly_uni_free(ffly_unip __uni) {
     }
 
     __ffly_mem_free(__uni->chunks);
+//    __ffly_mem_free(__uni->objs);
+}
+
+ffly_err_t ffly_uni_attach_obj(ffly_unip __uni, ffly_objp __obj) {
+    ffly_objpp obj = get_obj(__uni, __obj->xa, __obj->ya, __obj->za);
+    if (!*obj)
+        *obj = __obj;
+}
+
+ffly_err_t ffly_uni_detach_obj(ffly_unip __uni, ffly_objp __obj) {
+    ffly_objpp obj = get_obj(__uni, __obj->xa, __obj->ya, __obj->za);
+    if (*obj == __obj)
+        *obj = NULL;
 }
 
 ffly_err_t ffly_uni_build(ffly_unip __uni, mdl_uint_t __xal, mdl_uint_t __yal, mdl_uint_t __zal, mdl_u8_t __splice) {
@@ -80,8 +102,9 @@ ffly_err_t ffly_uni_build(ffly_unip __uni, mdl_uint_t __xal, mdl_uint_t __yal, m
     __uni->ycnk_c = __yal>>__splice;
     __uni->zcnk_c = __zal>>__splice;
     ffly_fprintf(ffly_log, "building univirse, xcnk %u, ycnk %u, zcnk %u\n", __uni->xcnk_c, __uni->ycnk_c, __uni->zcnk_c);
-    __uni->chunks = (ffly_id_t*)__ffly_mem_alloc((__uni->zcnk_c*(__uni->ycnk_c*__uni->xcnk_c))*sizeof(ffly_id_t));
-
+    mdl_uint_t size = __uni->zcnk_c*(__uni->ycnk_c*__uni->xcnk_c);
+    __uni->chunks = (ffly_id_t*)__ffly_mem_alloc(size*sizeof(ffly_id_t));
+//    __uni->objs = (ffly_objp*)__ffly_mem_alloc(size*sizeof(ffly_objpp));
     __uni->chunk_c = 0;
     mdl_uint_t zcnk, ycnk, xcnk;
     zcnk = 0;
@@ -93,10 +116,6 @@ ffly_err_t ffly_uni_build(ffly_unip __uni, mdl_uint_t __xal, mdl_uint_t __yal, m
                 ffly_id_t id;
                 ffly_cnk_man_create(&__uni->chunk_man, &id);
                 *(__uni->chunks+xcnk+(ycnk*__uni->xcnk_c)+(zcnk*(__uni->ycnk_c*__uni->xcnk_c))) = id;
-                if (*id == 0)
-                    ffly_mem_set(ffly_cnk_man_fetch(&__uni->chunk_man, id)->pixelmap, 100, (1<<__splice)*(1<<__splice)*(1<<__splice)*4);
-                else if (*id == 1) 
-                    ffly_mem_set(ffly_cnk_man_fetch(&__uni->chunk_man, id)->pixelmap, 200, (1<<__splice)*(1<<__splice)*(1<<__splice)*4);
                 xcnk++;
                 __uni->chunk_c++;
             }

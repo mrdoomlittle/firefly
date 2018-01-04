@@ -1,13 +1,10 @@
 # ifndef __ffly__chunk__h
 # define __ffly__chunk__h
 # include <mdlint.h>
-# include "types/uni_par_t.h"
-# include "types/pixelmap_t.h"
-# include "system/vec.h"
+# include "obj.h"
 struct ffly_chunk {
-    struct ffly_vec objs;
-    ffly_pixelmap_t pixelmap;
-    ffly_uni_par_t *pars;
+    ffly_objpp objs;
+    mdl_uint_t xal, yal, zal;
 };
 
 typedef struct ffly_chunk* ffly_chunkp;

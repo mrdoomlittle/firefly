@@ -1,6 +1,7 @@
 DEFINES=-I../eint_t/inc -D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
 nasm_flags="-I${PWD}/system/asm/"
 uni: clean
+	gcc -c data/bcopy.c
 	nasm -f elf64 $(nasm_flags) -o mutex.o.0 system/asm/mutex.asm
 	gcc -c -o mutex.o.1 system/mutex.c
 	gcc -c memory/mem_alloc.c
@@ -19,7 +20,7 @@ uni: clean
 	gcc -c data/mem_set.c
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o.0 system/asm/sys_nanosleep.asm
 	gcc -c -o sys_nanosleep.o.1 system/sys_nanosleep.c
-	gcc main.c mutex.o.0 mem_set.o sys_nanosleep.o.0 sys_nanosleep.o.1 camera.o obj.o mutex.o.1 flags.o vec.o mem_cpy.o alloc_pixelmap.o uni.o io.o chunk.o chunk_manager.o mem_alloc.o mem_realloc.o mem_free.o
+	gcc main.c mutex.o.0 bcopy.o mem_set.o sys_nanosleep.o.0 sys_nanosleep.o.1 camera.o obj.o mutex.o.1 flags.o vec.o mem_cpy.o alloc_pixelmap.o uni.o io.o chunk.o chunk_manager.o mem_alloc.o mem_realloc.o mem_free.o
 
 all:
 	rm -f *.o

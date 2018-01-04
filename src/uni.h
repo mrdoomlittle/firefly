@@ -21,9 +21,12 @@ struct ffly_uni {
 };
 
 typedef struct ffly_uni* ffly_unip;
-ffly_bool_t ffly_uni_pixcopy(ffly_unip, ffly_byte_t*, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t);
+ffly_err_t ffly_uni_attach_obj(ffly_unip, ffly_objp);
+ffly_err_t ffly_uni_detach_obj(ffly_unip, ffly_objp);
+ffly_err_t ffly_uni_obj_move(ffly_unip, ffly_objp, mdl_uint_t, mdl_uint_t, mdl_uint_t);
+/* capture frame */
+ffly_bool_t ffly_uni_frame(ffly_unip, ffly_byte_t*, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t);
 ffly_id_t ffly_uni_chunk(ffly_unip, ffly_off_t, ffly_off_t, ffly_off_t);
-ffly_pixelmap_t ffly_uni_chunk_pixelmap(ffly_unip, ffly_id_t);
 ffly_err_t ffly_uni_build(ffly_unip, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_u8_t);
 ffly_err_t ffly_uni_free(ffly_unip);
 # ifdef __cplusplus
