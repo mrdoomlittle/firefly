@@ -70,7 +70,8 @@ enum {
     _k_match,
     _incr,
     _decr,
-    _k_else
+    _k_else,
+    _k_float
 };
 
 enum {
@@ -108,6 +109,7 @@ enum {
 	_u8_t,
 	_i8_t,
     _void,
+    _float,
     _struct,
     _unknown
 };
@@ -156,6 +158,7 @@ struct token {
 	mdl_u8_t kind, id;
     mdl_uint_t line;
     ffly_off_t off, lo;
+    mdl_u8_t is_float;
 };
 
 struct type {

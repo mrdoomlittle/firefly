@@ -32,6 +32,7 @@ char const* tokk_str(mdl_u8_t __kind) {
 
 char const* tokid_str(mdl_u8_t __id) {
 	switch(__id) {
+        case _k_float: return "float";
 		case _k_print: return "print";
 		case _k_uint_t: return "uint_t";
 		case _k_int_t: return "int_t";
@@ -171,6 +172,9 @@ void op_print(struct ffly_script *__script, struct obj *__obj) {
 	}
 
 	switch(__obj->_type->kind) {
+        case _float:
+            ffly_printf("%lf\n", *(double*)p);
+        break;
 		case _u64_t:
 			ffly_printf("%lu\n", *(mdl_u64_t*)p);
 		break;
@@ -577,6 +581,8 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
         to_keyword(__tok, _k_match);
     else if (!ffly_str_cmp(__tok->p, "else"))
         to_keyword(__tok, _k_else);
+    else if (!ffly_str_cmp(__tok->p, "float"))
+        to_keyword(__tok, _k_float);
 	else {
 		return 0;
 	}

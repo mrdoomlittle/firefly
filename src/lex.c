@@ -51,9 +51,10 @@ char static* read_ident(struct ffly_script *__script) {
 	return s;
 }
 
-char static* read_no(struct ffly_script *__script) {
+char static* read_no(struct ffly_script *__script, mdl_u8_t *__is_float) {
 	char *itr = (char*)(__script->p+__script->off);
-	while(*itr >= '0' && *itr <= '9') {
+	while((*itr >= '0' && *itr <= '9') || *itr == '.') {
+        if (*itr == '.') *__is_float = 1;
 		ffly_buff_put(&__script->sbuf, itr++);
 		ffly_buff_incr(&__script->sbuf);
 	}
@@ -187,11 +188,13 @@ static struct token* read_token(struct ffly_script *__script) {
 				.kind = TOK_IDENT,
 				.p = (void*)read_ident(__script)
 			};
-		} else if (fetchc(__script) >= '0' && fetchc(__script) <= '9') {
+		} else if ((fetchc(__script) >= '0' && fetchc(__script) <= '9') || fetchc(__script) == '-') {
+            mdl_u8_t is_float = 0;
 			*tok = (struct token) {
 				.kind = TOK_NO,
-				.p = (void*)read_no(__script)
+				.p = (void*)read_no(__script, &is_float)
 			};
+            tok->is_float = is_float;
 		} else {
 			__script->off++;
 			tok->kind = TOK_NULL;

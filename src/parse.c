@@ -18,6 +18,8 @@ void build_type(struct ffly_script *__script, struct type **__type, struct type 
     cleanup(__script, (void*)*__type);
 }
 
+struct type *float_t = &(struct type){.kind=_float, .size=sizeof(double)};
+
 struct type *uint_t = &(struct type){.kind=_uint_t, .size=sizeof(mdl_uint_t)};
 struct type *int_t = &(struct type){.kind=_int_t, .size=sizeof(mdl_int_t)};
 
@@ -36,6 +38,9 @@ struct type *i8_t = &(struct type){.kind=_i8_t, .size=1};
 void make_notype(struct ffly_script *__script, struct type **__type, mdl_u8_t __id) {
 	struct type *tmpl;
 	switch(__id) {
+        case _k_float:
+            tmpl = float_t;
+        break;
 		case _k_uint_t:
 			tmpl = uint_t;
 		break;
@@ -219,18 +224,27 @@ ffly_err_t read_decl_spec(struct ffly_script *__script, struct token *__tok, str
 ffly_err_t read_stmt(struct ffly_script*, struct node**);
 ffly_err_t read_decl(struct ffly_script*, struct node**);
 ffly_err_t read_print_call(struct ffly_script*, struct node**);
-void read_no(struct ffly_script *__script, struct node **__node, char *__s) {
-	mdl_u64_t val = ffly_stno(__s);
-	struct type *_type;
-	if (val >= 0 && val <= (mdl_u8_t)~0)
-		_type = u8_t;
-	else if (val > (mdl_u8_t)~0 && val <= (mdl_u16_t)~0)
-		_type = u16_t;
-	else if (val > (mdl_u16_t)~0 && val <= (mdl_u32_t)~0)
-		_type = u32_t;
-	else if (val > (mdl_u32_t)~0 && val <= (mdl_u64_t)~0)
-		_type = u64_t;
-	ast_int_type(__script, __node, _type, (ffly_byte_t*)&val);
+void read_no(struct ffly_script *__script, struct node **__node, char *__s, mdl_u8_t __is_float) {
+    mdl_u8_t sign = *__s == '-';
+    struct type *_type;
+    ffly_byte_t val[sizeof(mdl_u64_t)];
+    if (__is_float) {
+        *(double*)val = ffly_stfloat(__s);
+        _type = float_t;
+    } else {
+    	mdl_u64_t no = ffly_stno(__s);
+    	if (no >= 0 && no <= (mdl_u8_t)~0)
+    		_type = sign?i8_t:u8_t;
+    	else if (no > (mdl_u8_t)~0 && no <= (mdl_u16_t)~0)
+    		_type = sign?i16_t:u16_t;
+    	else if (no > (mdl_u16_t)~0 && no <= (mdl_u32_t)~0)
+    		_type = sign?i32_t:u32_t;
+    	else if (no > (mdl_u32_t)~0 && no <= (mdl_u64_t)~0)
+    		_type = sign?i64_t:u64_t;
+        *(mdl_u64_t*)val = no;
+    }
+
+	ast_int_type(__script, __node, _type, val);
 }
 
 ffly_err_t read_primary_expr(struct ffly_script *__script, struct node **__node) {
@@ -252,7 +266,7 @@ ffly_err_t read_primary_expr(struct ffly_script *__script, struct node **__node)
             break;
         }
 		case TOK_NO:
-			read_no(__script, __node, (char*)tok->p);
+			read_no(__script, __node, (char*)tok->p, tok->is_float);
 		break;
         default:
             *__node = NULL;
