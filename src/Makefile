@@ -1,27 +1,32 @@
 DEFINES=-I../eint_t/inc -D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
 nasm_flags="-I${PWD}/system/asm/"
 uni: clean
-	gcc -c data/bcopy.c
+	gcc -D__ffly_testing -c data/bcopy.c
 	nasm -f elf64 $(nasm_flags) -o mutex.o.0 system/asm/mutex.asm
-	gcc -c -o mutex.o.1 system/mutex.c
-	gcc -c lot.c
-	gcc -c memory/mem_alloc.c
-	gcc -c memory/mem_free.c
-	gcc -c memory/mem_realloc.c
-	gcc -c chunk_manager.c
-	gcc -c memory/alloc_pixelmap.c
-	gcc -c uni.c
-	gcc -c chunk.c
-	gcc -c system/io.c
-	gcc -c obj.c
-	gcc -c system/vec.c
-	gcc -c data/mem_cpy.c
-	gcc -c system/flags.c
-	gcc -c ui/camera.c
-	gcc -c data/mem_set.c
+	gcc -D__ffly_testing -c -o mutex.o.1 system/mutex.c
+	gcc -D__ffly_testing -c lot.c
+	gcc -D__ffly_testing -c memory/mem_alloc.c
+	gcc -D__ffly_testing -c memory/mem_free.c
+	gcc -D__ffly_testing -c memory/mem_realloc.c
+	gcc -D__ffly_testing -c chunk_manager.c
+	gcc -D__ffly_testing -c memory/alloc_pixelmap.c
+	gcc -D__ffly_testing -c uni.c
+	gcc -D__ffly_testing -c chunk.c
+	gcc -D__ffly_testing -c system/io.c
+	gcc -D__ffly_testing -c obj.c
+	gcc -D__ffly_testing -c system/vec.c
+	gcc -D__ffly_testing -c data/mem_cpy.c
+	gcc -D__ffly_testing -c system/flags.c
+	gcc -D__ffly_testing -c obj_pool.c
+	gcc -D__ffly_testing -c obj_manager.c
+	gcc -D__ffly_testing -c ui/camera.c
+	gcc -D__ffly_testing -c data/mem_set.c
+	gcc -D__ffly_testing -c data/bzero.c
+	gcc -D__ffly_testing -c maths/min.c
+	gcc -D__ffly_testing -c maths/max.c
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o.0 system/asm/sys_nanosleep.asm
-	gcc -c -o sys_nanosleep.o.1 system/sys_nanosleep.c
-	gcc main.c lot.o mutex.o.0 bcopy.o mem_set.o sys_nanosleep.o.0 sys_nanosleep.o.1 camera.o obj.o mutex.o.1 flags.o vec.o mem_cpy.o alloc_pixelmap.o uni.o io.o chunk.o chunk_manager.o mem_alloc.o mem_realloc.o mem_free.o
+	gcc -D__ffly_testing -c -o sys_nanosleep.o.1 system/sys_nanosleep.c
+	gcc -D__ffly_testing main.c bzero.o max.o min.o lot.o obj_manager.o obj_pool.o mutex.o.0 bcopy.o mem_set.o sys_nanosleep.o.0 sys_nanosleep.o.1 camera.o obj.o mutex.o.1 flags.o vec.o mem_cpy.o alloc_pixelmap.o uni.o io.o chunk.o chunk_manager.o mem_alloc.o mem_realloc.o mem_free.o
 
 all:
 	rm -f *.o

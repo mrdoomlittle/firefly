@@ -2,13 +2,15 @@ if exists("b:current_syntax")
 	finish
 endif
 
-syn match macro "^\s*%\(ifdef\|define\|include\|ifndef\|endif\)\>"hs=e-7
+syn match macro "^\s*%\(ifdef\|define\|include\|ifndef\|endif\)\>"
 syn region comment_block start="/\*" end="\*/"
 syn region string start=+"+ end=+"+
-syn match type "^\s*\(uint_t\|int_t\|u8_t\|i8_t\|u16_t\|i16_t\|u32_t\|i32_t\|u64_t\|i64_t\)\>"hs=e-6
-syn match builtin "^\s*\(print\|exit\|while\)\>"hs=e-10
-syn match statment "^\s*\(if\)\>"hs=e-2
+syn match type "\s*\(uint_t\|int_t\|u8_t\|i8_t\|u16_t\|i16_t\|u32_t\|i32_t\|u64_t\|i64_t\|void\)\>"
+syn match builtin "^\s*\(print\|exit\)\>"
+syn match statment "^\s*\(if\|while\|fn\)\>"
+syn region char start=+'+ end=+'+
 
+hi char ctermfg=108 guifg=#87af87 "rgb=135,175,135
 hi statment ctermfg=210 guifg=#ff8787 "rgb=255,135,135
 hi builtin ctermfg=170 guifg=#d75fd7 "rgb=215,95,215
 hi type ctermfg=110 guifg=#87afd7 "rgb=135,175,215

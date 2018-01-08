@@ -5,8 +5,13 @@
 # include "memory/mem_free.h"
 # include "data/str_dupe.h"
 # include "data/str_len.h"
+# include "system/string.h"
 char static fetchc(struct ffly_script *__script) {
 	return *(__script->p+__script->off);
+}
+
+char static nextc(struct ffly_script *__script) {
+    return *(__script->p+__script->off+1);
 }
 
 ffly_bool_t is_next(struct ffly_script *__script, char __c) {
@@ -32,14 +37,20 @@ ffly_bool_t is_space(struct ffly_script *__script) {
         return 1;
     }
     
-    return (c == ' ' || c == '\t' || c == '\n');
+    return (c == ' ' || c == '\t');
+}
+
+ffly_bool_t is_newline(struct ffly_script *__script) {
+    return (fetchc(__script) == '\n');
 }
 
 char static* read_ident(struct ffly_script *__script) {
 	char *itr = (char*)(__script->p+__script->off);
-	while((*itr >= 'a' && *itr <= 'z') || *itr == '_' || (*itr >= '0' && *itr <= '9')) {
+    char c = *itr;
+	while((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || (c >= '0' && c <= '9')) {
 		ffly_buff_put(&__script->sbuf, itr++);
 		ffly_buff_incr(&__script->sbuf);
+        c = *itr;
 	}
 
 	char end = '\0';
@@ -51,12 +62,15 @@ char static* read_ident(struct ffly_script *__script) {
 	return s;
 }
 
-char static* read_no(struct ffly_script *__script, mdl_u8_t *__is_float) {
+char static* read_no(struct ffly_script *__script, mdl_u8_t *__is_hex, mdl_u8_t *__is_float) {
 	char *itr = (char*)(__script->p+__script->off);
-	while((*itr >= '0' && *itr <= '9') || *itr == '.') {
+    char c = *itr;
+	while((c >= '0' && c <= '9') || c == '.' || c == '-' || ffly_tolow(c) == 'x' || (ffly_tolow(c) >= 'a' && ffly_tolow(c) <= 'f')) {
+        if (ffly_tolow(*itr) == 'x') *__is_hex = 1;
         if (*itr == '.') *__is_float = 1;
 		ffly_buff_put(&__script->sbuf, itr++);
 		ffly_buff_incr(&__script->sbuf);
+        c = *itr;
 	}
 
 	char end = '\0';
@@ -89,11 +103,37 @@ void make_keyword(struct token *__tok, mdl_u8_t __id) {
 	__tok->id = __id;
 }
 
+char* read_chr(struct ffly_script *__script) {
+    return (char*)(__script->p+(__script->off++));
+}
+
 static struct token* read_token(struct ffly_script *__script) {
 	struct token *tok = (struct token*)__ffly_mem_alloc(sizeof(struct token));
 	tok->p = NULL;
     ffly_off_t off = __script->off;
+    if (is_newline(__script))  {
+        if (__script->end-1 != __script->p+__script->off) {
+            __script->line++;
+            __script->lo = __script->off+1;
+        }
+        __script->off++;
+        tok->kind = TOK_NEWLINE;  
+        return tok;
+    }
+
 	switch(fetchc(__script)) {
+        case '\x27':
+            __script->off++;
+            *tok = (struct token) {
+                .kind = TOK_CHR,
+                .p = (void*)read_chr(__script) 
+            };
+            __script->off++;
+        break;
+        case '*':
+            make_keyword(tok, _astrisk);
+            __script->off++;
+        break;
         case '+':
             if (is_next(__script, '+')) {
                 make_keyword(tok, _incr);
@@ -122,6 +162,7 @@ static struct token* read_token(struct ffly_script *__script) {
             __script->off++;
         break;
         case '-':
+            if (nextc(__script) >= '0' && nextc(__script) <= '9') goto _no;
             if (is_next(__script, '-')) {
                 make_keyword(tok, _decr);
                 __script->off++;
@@ -183,22 +224,27 @@ static struct token* read_token(struct ffly_script *__script) {
             __script->off++;
         break;
 		default:
-		if ((fetchc(__script) >= 'a' && fetchc(__script) <= 'z') || fetchc(__script) == '_') {
+		if ((fetchc(__script) >= 'a' && fetchc(__script) <= 'z') || (fetchc(__script) >= 'A' && fetchc(__script) <= 'Z') || fetchc(__script) == '_') {
 			*tok = (struct token) {
 				.kind = TOK_IDENT,
 				.p = (void*)read_ident(__script)
 			};
-		} else if ((fetchc(__script) >= '0' && fetchc(__script) <= '9') || fetchc(__script) == '-') {
-            mdl_u8_t is_float = 0;
-			*tok = (struct token) {
-				.kind = TOK_NO,
-				.p = (void*)read_no(__script, &is_float)
-			};
+		} else if (fetchc(__script) >= '0' && fetchc(__script) <= '9') goto _no;
+		else {
+		    __script->off++;
+		    tok->kind = TOK_NULL;
+        }
+        break;
+        _no:
+        {
+            mdl_u8_t is_float = 0, is_hex = 0;
+            *tok = (struct token) {
+                .kind = TOK_NO,
+                .p = (void*)read_no(__script, &is_hex, &is_float)
+            };
             tok->is_float = is_float;
-		} else {
-			__script->off++;
-			tok->kind = TOK_NULL;
-		}
+            tok->is_hex = is_hex;
+        }
 	}
     
     tok->line = curl(__script);
@@ -222,15 +268,8 @@ struct token* ffly_script_lex(struct ffly_script *__script, ffly_err_t *__err) {
 		return tok;
 	}
 
-	while(is_space(__script) && !is_eof(__script)) {
-        if (fetchc(__script) == '\n') {
-            if (__script->end-1 != __script->p+__script->off) {
-                __script->line++;
-                __script->lo = __script->off+1;
-            }
-        }
+	while(is_space(__script) && !is_eof(__script))
         __script->off++;
-    }
 
     if (is_eof(__script)) return NULL;
 

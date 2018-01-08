@@ -208,7 +208,7 @@ ffly_err_t read_struct_field(struct ffly_script *__script, struct node **__node,
 }
 
 ffly_err_t read_decl_spec(struct ffly_script *__script, struct token *__tok, struct type **__type) {
-	if (__tok->id >= _k_uint_t && __tok->id <= _k_i8_t) {
+	if ((__tok->id >= _k_uint_t && __tok->id <= _k_i8_t) || __tok->id == _k_float) {
 		make_notype(__script, __type, __tok->id);
 	} else if (__tok->id == _k_struct) {
         read_struct_spec(__script, __type);
@@ -224,7 +224,7 @@ ffly_err_t read_decl_spec(struct ffly_script *__script, struct token *__tok, str
 ffly_err_t read_stmt(struct ffly_script*, struct node**);
 ffly_err_t read_decl(struct ffly_script*, struct node**);
 ffly_err_t read_print_call(struct ffly_script*, struct node**);
-void read_no(struct ffly_script *__script, struct node **__node, char *__s, mdl_u8_t __is_float) {
+void read_no(struct ffly_script *__script, struct node **__node, char *__s, mdl_u8_t __is_hex, mdl_u8_t __is_float) {
     mdl_u8_t sign = *__s == '-';
     struct type *_type;
     ffly_byte_t val[sizeof(mdl_u64_t)];
@@ -232,7 +232,15 @@ void read_no(struct ffly_script *__script, struct node **__node, char *__s, mdl_
         *(double*)val = ffly_stfloat(__s);
         _type = float_t;
     } else {
-    	mdl_u64_t no = ffly_stno(__s);
+    	mdl_u64_t no;
+        if (__is_hex) {
+            if (ffly_islen(__s, 2) == -1)
+                if (*__s == '0' && ffly_tolow(*(__s+1)) == 'x') __s+=2;
+            no = ffly_htint(__s);
+        } else
+            no = ffly_stno(__s);
+
+        if (sign) no = -no;
     	if (no >= 0 && no <= (mdl_u8_t)~0)
     		_type = sign?i8_t:u8_t;
     	else if (no > (mdl_u8_t)~0 && no <= (mdl_u16_t)~0)
@@ -241,7 +249,7 @@ void read_no(struct ffly_script *__script, struct node **__node, char *__s, mdl_
     		_type = sign?i32_t:u32_t;
     	else if (no > (mdl_u32_t)~0 && no <= (mdl_u64_t)~0)
     		_type = sign?i64_t:u64_t;
-        *(mdl_u64_t*)val = no;
+        *(mdl_u64_t*)val = sign?-no:no;
     }
 
 	ast_int_type(__script, __node, _type, val);
@@ -266,8 +274,11 @@ ffly_err_t read_primary_expr(struct ffly_script *__script, struct node **__node)
             break;
         }
 		case TOK_NO:
-			read_no(__script, __node, (char*)tok->p, tok->is_float);
+			read_no(__script, __node, (char*)tok->p, tok->is_hex, tok->is_float);
 		break;
+        case TOK_CHR:
+            ast_int_type(__script, __node, u8_t, tok->p);
+        break;
         default:
             *__node = NULL;
             ffly_script_ulex(__script, tok);
@@ -424,6 +435,12 @@ ffly_err_t read_compound_stmt(struct ffly_script *__script, struct ffly_vec *__v
     return FFLY_SUCCESS;
 }
 
+ffly_err_t read_declarator(struct ffly_script *__script, struct type **__type, struct type *__base_type) {
+    if (next_token_is(__script, TOK_KEYWORD, _astrisk)) {
+
+    }
+}
+
 ffly_err_t read_decl(struct ffly_script *__script, struct node **__node) {
     ffly_err_t err;
 	struct type *_type;
@@ -448,8 +465,10 @@ ffly_err_t read_decl(struct ffly_script *__script, struct node **__node) {
 	if (next_token_is(__script, TOK_KEYWORD, _eq)) {
 		if (_err(err = read_decl_init(__script, &init)))
             return err;
-        _type->kind = init->_type->kind;
-        _type->size = init->_type->size;
+        if (_type->kind == _unknown) {
+            _type->kind = init->_type->kind;
+            _type->size = init->_type->size;
+        }
     }
 
     struct node *var;
@@ -756,7 +775,7 @@ ffly_err_t ffly_script_parse(struct ffly_script *__script) {
 		struct node *_node = NULL;
 		if (!tok) break;
 		if (tok->kind == TOK_KEYWORD) {
-			if ((tok->id >= _k_uint_t && tok->id <= _k_i8_t) || tok->id == _k_struct || tok->id == _k_var) {
+			if ((tok->id >= _k_uint_t && tok->id <= _k_i8_t) || tok->id == _k_struct || tok->id == _k_var || tok->id == _k_float) {
 				if (_err(err = read_decl(__script, &_node))) {
                     ffly_fprintf(ffly_out, "failed to read decl.\n");
                     break;

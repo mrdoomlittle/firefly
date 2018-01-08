@@ -31,7 +31,10 @@ struct ffly_script {
 # define TOK_NO 2
 # define TOK_NULL 3
 # define TOK_STR 4
+# define TOK_NEWLINE 5
+# define TOK_CHR 6
 enum {
+    _astrisk,
     _l_arrow,
     _r_arrow,
     _comma,
@@ -99,14 +102,14 @@ enum {
 
 enum {
 	_uint_t,
+    _u64_t,
+    _u32_t,
+    _u16_t,
+    _u8_t,
 	_int_t,
-	_u64_t,
 	_i64_t,
-	_u32_t,
 	_i32_t,
-	_u16_t,
 	_i16_t,
-	_u8_t,
 	_i8_t,
     _void,
     _float,
@@ -158,7 +161,7 @@ struct token {
 	mdl_u8_t kind, id;
     mdl_uint_t line;
     ffly_off_t off, lo;
-    mdl_u8_t is_float;
+    mdl_u8_t is_float, is_hex;
 };
 
 struct type {
@@ -203,6 +206,7 @@ void pr_tok(struct token*);
 void vec_cleanup(struct ffly_script*, struct ffly_vec*);
 void map_cleanup(struct ffly_script*, struct ffly_map*);
 void cleanup(struct ffly_script*, void*);
+ffly_bool_t next_tok_nl(struct ffly_script*);
 # endif
 ffly_err_t ffly_script_build(struct ffly_script*);
 ffly_err_t ffly_script_gen_free();

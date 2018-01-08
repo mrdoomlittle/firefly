@@ -141,7 +141,8 @@ void static mk_chr(struct token *__tok, char *__s) {
 
 char static* read_ident(struct ffly_conf *__conf) {
     char *itr = (char*)(__conf->p+__conf->off);
-    while((*itr >= 'a' && *itr <= 'z') || *itr == '_') {
+    char c = *itr;
+    while((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
         ffly_buff_put(&__conf->sbuf, itr++);
         ffly_buff_incr(&__conf->sbuf);
     }
@@ -156,7 +157,8 @@ char static* read_ident(struct ffly_conf *__conf) {
 
 char static* read_no(struct ffly_conf *__conf) {
     char *itr = (char*)(__conf->p+__conf->off);
-    while((*itr >= '0' && *itr <= '9') || *itr == '.' || *itr == '-') {
+    char c = *itr;
+    while((c >= '0' && c <= '9') || c == '.' || c == '-') {
         ffly_buff_put(&__conf->sbuf, itr++);
         ffly_buff_incr(&__conf->sbuf);
     }

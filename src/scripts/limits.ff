@@ -1,0 +1,7 @@
+%ifndef __limits__ff
+%define __limits__ff
+%define U8_MAX 0xFF
+%define U16_MAX 0xFFFF
+%define U32_MAX 0xFFFFFFFF
+%define U64_MAX 0xFFFFFFFFFFFFFFFF
+%endif

@@ -7,6 +7,8 @@
 # include "data/str_cmp.h"
 # include "data/mem_cpy.h"
 # include "data/mem_set.h"
+# include "data/str_len.h"
+# include "system/errno.h"
 ffly_err_t ffly_script_ld(struct ffly_script *__script, char *__file) {
 	ffly_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
@@ -18,6 +20,7 @@ ffly_err_t ffly_script_ld(struct ffly_script *__script, char *__file) {
 	__script->end = __script->p+st.size;
 	ffly_fread(f, __script->p, st.size);
 	ffly_fclose(f);
+    return FFLY_SUCCESS;
 }
 
 char const* tokk_str(mdl_u8_t __kind) {
@@ -25,6 +28,7 @@ char const* tokk_str(mdl_u8_t __kind) {
 		case TOK_IDENT: return "ident";
 		case TOK_KEYWORD: return "keyword";
 		case TOK_NO: return "no";
+        case TOK_NEWLINE: return "newline";
 	}
 
 	return "unknown";
@@ -171,6 +175,7 @@ void op_print(struct ffly_script *__script, struct obj *__obj) {
 		return;
 	}
 
+//    ffly_printf("size: %u\n", __obj->_type->size);
 	switch(__obj->_type->kind) {
         case _float:
             ffly_printf("%lf\n", *(double*)p);
@@ -220,12 +225,21 @@ void op_pop(struct ffly_script *__script, struct obj *__obj) {
 }
 
 void op_incr(struct ffly_script *__script, struct obj *__obj) {
-    mdl_u64_t val = 0;
-    ffly_mem_cpy(&val, (*__obj->val)->p, (*__obj->val)->_type->size);
+    mdl_u8_t val[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    mdl_u8_t size = (*__obj->val)->_type->size;
+    ffly_mem_cpy(val, (*__obj->val)->p, size);
 
-    val++;
+    mdl_u8_t kind = (*__obj->val)->_type->kind;
+    if (kind >= _uint_t && kind <= _u8_t) {
+        (*(mdl_u64_t*)val)++;
+    } else if (kind >= _int_t && kind <= _i8_t) {
+        if (*(mdl_u64_t*)val > ((mdl_u64_t)1<<(size*8))>>1)
+            *(mdl_i64_t*)val = ((mdl_i64_t)((*(mdl_u64_t*)val)|((~(mdl_u64_t)0)<<((*__obj->val)->_type->size*8))))+1;
+        else
+            (*(mdl_u64_t*)val)++;
+    }
 
-    ffly_mem_cpy((*__obj->val)->p, &val, (*__obj->val)->_type->size);
+    ffly_mem_cpy((*__obj->val)->p, val, (*__obj->val)->_type->size);
 }
 
 void op_decr(struct ffly_script *__script, struct obj *__obj) {
@@ -296,6 +310,7 @@ ffly_err_t ffly_script_exec(struct ffly_script *__script) {
         }
 		_obj = _obj->next;
 	}
+    return FFLY_SUCCESS;
 }
 
 ffly_bool_t is_keyword(struct token *__tok, mdl_u8_t __id) {
@@ -401,21 +416,45 @@ ffly_err_t ffly_script_free(struct ffly_script *__script) {
     __ffly_mem_free(__script->stack);
     __ffly_mem_free(__script->p);
     ffly_map_de_init(&__script->macros);
+    return FFLY_SUCCESS;
 }
 
 struct token* peek_token(struct ffly_script *__script) {
-	ffly_err_t err;
 	struct token *tok = next_token(__script);
 	ffly_script_ulex(__script, tok);
 	return tok;
 }
 
+ffly_bool_t next_tok_nl(struct ffly_script *__script) {
+    ffly_err_t err;
+    struct token *tok = ffly_script_lex(__script, &err);
+    if (tok != NULL) {
+        if (tok->kind == TOK_NEWLINE) {
+            __ffly_mem_free(tok);
+            return 1;
+        }
+        ffly_script_ulex(__script, tok);
+    }
+    return 0;
+}
+
 void read_define(struct ffly_script *__script) {
     struct token *name = next_token(__script);
     void *p = NULL;
-//    if (!next_token_is(__script, TOK_KEYWORD, _semicolon)) {
-
-//    }
+    if (!next_tok_nl(__script)) {
+        struct ffly_vec *toks = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
+        ffly_vec_set_flags(toks, VEC_AUTO_RESIZE);
+        ffly_vec_init(toks, sizeof(struct token*));
+        p = toks;
+        struct token **tok;
+        _next:
+        ffly_vec_push_back(toks, (void**)&tok);
+        *tok = next_token(__script); 
+ 
+        if (!next_tok_nl(__script)) {
+            goto _next;
+        }
+    }
     ffly_map_put(&__script->macros, name->p, ffly_str_len((char*)name->p), p);
 }
 
@@ -437,6 +476,8 @@ void read_ifdef(struct ffly_script *__script) {
         for(;;) {
             if (!(tok = ffly_script_lex(__script, &err))) break;
             if (is_endif(__script, tok)) break;
+            if (tok->kind == TOK_NEWLINE)
+                __ffly_mem_free(tok);
         }
     }
 }
@@ -450,6 +491,8 @@ void read_ifndef(struct ffly_script *__script) {
         for(;;) {
             if (!(tok = ffly_script_lex(__script, &err))) break;
             if (is_endif(__script, tok)) break;
+            if (tok->kind == TOK_NEWLINE)
+                __ffly_mem_free(tok);
         }
     }
 }
@@ -507,22 +550,29 @@ struct token* next_token(struct ffly_script *__script) {
     _back:
     tok = ffly_script_lex(__script, &err);
     if (!tok) return NULL;
+
+    if (tok->kind == TOK_NEWLINE) {
+        __ffly_mem_free(tok);
+        goto _back;
+    }
+
     if (is_keyword(tok, _percent)) {
         read_macro(__script);
         goto _back;
     }
-/*
+
     if (tok->kind == TOK_IDENT) {
-        struct ffly_vec *toks = (struct ffly_vec*)ffly_map_get(&__script->macros, tok->p, ffly_str_len((char*)tok->p));
-        if (tok != NULL) {
-            struct token **tok = (struct token**)ffly_vec_end(toks);
-            while(tok >= (struct token**)ffly_vec_begin(toks)) {
-            
-                tok++;
+        struct ffly_vec *toks = (struct ffly_vec*)ffly_map_get(&__script->macros, tok->p, ffly_str_len((char*)tok->p), &err);
+        if (toks != NULL && _ok(err)) {
+            struct token **itr = (struct token**)ffly_vec_end(toks);
+            while(itr >= (struct token**)ffly_vec_begin(toks)) {
+                ffly_script_ulex(__script, *itr); 
+                itr--;
             }
+            tok = next_token(__script);
         }
     }
-*/
+
 	maybe_keyword(tok);
 	return tok;
 }
@@ -613,6 +663,7 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
     __script->lo = 0;
     __script->local = NULL;
     ffly_map_init(&__script->macros);
+    return FFLY_SUCCESS;
 }
 
 ffly_err_t ffly_script_build(struct ffly_script *__script) {
@@ -713,6 +764,7 @@ ffly_err_t ffly_script_save_bin(struct ffly_script *__script, char *__file) {
     ffly_fwrite(f, &top, sizeof(mdl_u32_t));
     ffly_fclose(f);
 */
+    return FFLY_SUCCESS;
 }
 
 # include "system/bin_tree.h"
@@ -791,6 +843,7 @@ ffly_err_t ffly_script_ld_bin(struct ffly_script *__script, char *__file) {
     ffly_fclose(f);
     ffly_bin_tree_de_init(&objs);
 */
+    return FFLY_SUCCESS;
 }
 //# define LOAD
 int main() {

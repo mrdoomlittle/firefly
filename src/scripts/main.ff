@@ -1,18 +1,11 @@
-/*
-%define test0
-*/
-
-%ifdef test0
+%include "scripts/limits.ff"
 %include "scripts/test0.ff"
-%endif
+%include "scripts/test1.ff"
+print(U8_MAX);
+print(U16_MAX);
+print(U32_MAX);
+print(U64_MAX);
 
-print(21299.21299);
 
-if (0 != 1) {
-    print(21299);
-} else {
-    print(1);
-    print(2);
-}
-
+print('A');
 exit;
