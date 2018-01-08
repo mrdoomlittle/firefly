@@ -1,0 +1,15 @@
+%include "../scripts/limits.ff"
+%include "../scripts/test0.ff"
+%include "../scripts/test1.ff"
+print(U8_MAX);
+print(U16_MAX);
+print(U32_MAX);
+print(U64_MAX);
+
+:0<- {
+    12,
+    212
+};
+
+print('A');
+exit;

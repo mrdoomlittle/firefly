@@ -4,6 +4,7 @@
 # include "graphics/image.h"
 # include "types/pixelmap_t.h"
 # include "system/vec.h"
+# include "script.h"
 # define ffly_set_objx(__obj, __x) \
     __obj->xa = __x;    
 # define ffly_set_objy(__obj, __y) \
@@ -14,7 +15,7 @@ struct ffly_obj {
     ffly_pixelmap_t texture;
     mdl_uint_t xal, yal, zal;
     mdl_uint_t xa, ya, za;
-
+    ffscriptp script;
     /* cleanup
     */
     struct ffly_obj *prev, *next;
@@ -23,9 +24,26 @@ struct ffly_obj {
 typedef struct ffly_obj* ffly_objp;
 typedef ffly_objp* ffly_objpp;
 typedef ffly_objpp* ffly_objppp;
+
+# ifdef __cplusplus
+extern "C" {
+# endif
 ffly_err_t ffly_obj_draw(ffly_objp, ffly_byte_t*, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t);
 ffly_objp ffly_obj_alloc(ffly_err_t*);
 ffly_err_t ffly_obj_free(ffly_objp);
 ffly_err_t ffly_obj_handle(ffly_objp);
 ffly_err_t ffly_obj_cleanup();
+# ifdef __cplusplus
+}
+namespace mdl {
+namespace firefly {
+typedef ffly_objp objp;
+typedef ffly_objpp objpp;
+typedef ffly_objppp objppp;
+struct obj {
+
+};
+}
+}
+# endif
 # endif /*__ffly__obj__h*/

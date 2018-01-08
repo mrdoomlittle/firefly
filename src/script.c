@@ -92,16 +92,16 @@ char const* opstr(mdl_u8_t __op) {
 
 // get fresh pice of memory to use
 // cant free
-void op_fresh(struct ffly_script *__script, struct obj *__obj) {
+void op_fresh(ffscriptp __script, struct obj *__obj) {
     __obj->p = (void*)__script->fresh;
     __script->fresh+=__obj->size; 
 }
 
-void op_assign(struct ffly_script *__script, struct obj *__obj) {
+void op_assign(ffscriptp __script, struct obj *__obj) {
 	ffly_mem_cpy((*__obj->to)->p, __obj->p, __obj->_type->size);
 }
 
-void op_copy(struct ffly_script *__script, struct obj *__obj) {
+void op_copy(ffscriptp __script, struct obj *__obj) {
 	ffly_mem_cpy((*__obj->to)->p, (*__obj->from)->p, __obj->_type->size);
 }
 
@@ -123,7 +123,7 @@ void cleanup(struct ffly_script *__script, void *__p) {
     *p = __p;
 }
 
-void op_compare(struct ffly_script *__script, struct obj *__obj) {
+void op_compare(ffscriptp __script, struct obj *__obj) {
     mdl_u8_t l[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     mdl_u8_t r[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     ffly_mem_cpy(l, (*__obj->l)->p, (*__obj->l)->_type->size);
@@ -151,21 +151,21 @@ void op_compare(struct ffly_script *__script, struct obj *__obj) {
     }
 }
 
-void op_jump(struct ffly_script *__script, struct obj *__objp) {
+void op_jump(ffscriptp __script, struct obj *__objp) {
     struct obj *_obj = *(struct obj**)__objp;
     if (!_obj->jmp) return;
     if (!*_obj->jmp) return;
     *(struct obj**)__objp = **_obj->jmp;
 }
 
-void op_cond_jump(struct ffly_script *__script, struct obj *__objp) {
+void op_cond_jump(ffscriptp __script, struct obj *__objp) {
     struct obj *_obj = *(struct obj**)__objp;
     if (((*(mdl_u8_t*)_obj->flags->p)&_obj->cond)>0)
         op_jump(__script, __objp);
 }
 
 // debug
-void op_print(struct ffly_script *__script, struct obj *__obj) {
+void op_print(ffscriptp __script, struct obj *__obj) {
     void *p = (*__obj->val)->p;
 	if (__obj->_type->kind == _uint_t) {
 		ffly_printf("%lu\n", *(mdl_uint_t*)p);
@@ -207,24 +207,28 @@ void op_print(struct ffly_script *__script, struct obj *__obj) {
 	}
 }
 
-void op_zero(struct ffly_script *__script, struct obj *__obj) {
+void op_zero(ffscriptp __script, struct obj *__obj) {
     ffly_mem_set((*__obj->dst)->p, 0x0, (*__obj->dst)->_type->size);
 }
 
+struct script {
+
+};
+
 /*
-    not memory!
+    object passing.
 */
-struct obj *stack[20];
-struct obj **top = stack;
-void op_push(struct ffly_script *__script, struct obj *__obj) {
+static struct obj *stack[20];
+static struct obj **top = stack;
+void op_push(ffscriptp __script, struct obj *__obj) {
     *(top++) = __obj->_obj;
 }
 
-void op_pop(struct ffly_script *__script, struct obj *__obj) {
+void op_pop(ffscriptp __script, struct obj *__obj) {
     __obj->_obj = *(--top);
 }
 
-void op_incr(struct ffly_script *__script, struct obj *__obj) {
+void op_incr(ffscriptp __script, struct obj *__obj) {
     mdl_u8_t val[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     mdl_u8_t size = (*__obj->val)->_type->size;
     ffly_mem_cpy(val, (*__obj->val)->p, size);
@@ -242,34 +246,36 @@ void op_incr(struct ffly_script *__script, struct obj *__obj) {
     ffly_mem_cpy((*__obj->val)->p, val, (*__obj->val)->_type->size);
 }
 
-void op_decr(struct ffly_script *__script, struct obj *__obj) {
+void op_decr(ffscriptp __script, struct obj *__obj) {
        
 }
 
-void op_free(struct ffly_script *__script, struct obj *__obj) {
+void op_free(ffscriptp __script, struct obj *__obj) {
     __script->fresh-=__obj->size;
 }
 
-void op_call(struct ffly_script *__script, struct obj *__obj) {
+void op_call(ffscriptp __script, struct obj *__obj) {
     mdl_u8_t no = *(mdl_u8_t*)(*__obj->no)->p;
     printf("called no %u\n", no);
-    if (no == 0) {
-        mdl_uint_t bc = 0;
-        ffly_mem_cpy(&bc, (*(__obj->params[0]))->p, (*(__obj->params[0]))->_type->size);
-        printf("%u\n", bc);
-
+    if (!no && __script->call != NULL) { // self
+        __script->call(*(mdl_u8_t*)(*(__obj->params[0]))->p, __script->arg_p, (*(__obj->params[1]))->p);
+        return;
     }
+
+    /*
+        internal calls
+    */
 }
 
-void op_frame(struct ffly_script *__script, struct obj *__obj) {
+void op_frame(ffscriptp __script, struct obj *__obj) {
     __obj->p = (void*)__script->fresh;
 }
 
-void op_free_frame(struct ffly_script *__script, struct obj *__obj) {
+void op_free_frame(ffscriptp __script, struct obj *__obj) {
     __script->fresh = (ffly_byte_t*)__obj->frame->p;
 }
 
-void(*op[])(struct ffly_script*, struct obj*) = {
+void(*op[])(ffscriptp, struct obj*) = {
 	&op_fresh,
     &op_free,
 	&op_assign,
@@ -289,7 +295,9 @@ void(*op[])(struct ffly_script*, struct obj*) = {
     &op_free_frame
 };
 
-ffly_err_t ffly_script_exec(struct ffly_script *__script) {
+ffly_err_t ffscript_exec(ffscriptp __script, void*(*__call)(mdl_u8_t, void*, void*), void *__arg_p) {
+    __script->call = __call;
+    __script->arg_p = __arg_p;
 	struct obj *_obj = (struct obj*)__script->top;
 	while(_obj != NULL) {
         ffly_fprintf(ffly_log, "op: %s\n", opstr(_obj->opcode));
@@ -366,6 +374,20 @@ ffly_bool_t expect_token(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_t
     return ret_val;
 }
 
+ffly_err_t ffscript_free(ffscriptp __script) {
+    struct obj *_obj = (struct obj*)__script->top, *prev = NULL;
+    while(_obj != NULL) {
+        if (prev != NULL)
+            __ffly_mem_free(prev);
+        prev = _obj;
+        _obj = _obj->next;
+    }
+
+    if (prev != NULL)
+        __ffly_mem_free(prev);
+    __ffly_mem_free(__script->stack);
+}
+
 ffly_err_t ffly_script_free(struct ffly_script *__script) {
 	struct ffly_vec *vec;
 	if (ffly_vec_size(&__script->vecs)>0) {
@@ -393,17 +415,6 @@ ffly_err_t ffly_script_free(struct ffly_script *__script) {
 	ffly_buff_de_init(&__script->iject_buff);
     ffly_script_gen_free();
 
-    struct obj *_obj = (struct obj*)__script->top, *prev = NULL;
-    while(_obj != NULL) {
-        if (prev != NULL)
-            __ffly_mem_free(prev);
-        prev = _obj;
-        _obj = _obj->next;
-    }
-
-   if (prev != NULL)
-        __ffly_mem_free(prev);
-
     void **p;
     if (ffly_vec_size(&__script->to_free)>0) {
         p = (void**)ffly_vec_begin(&__script->to_free);
@@ -413,7 +424,6 @@ ffly_err_t ffly_script_free(struct ffly_script *__script) {
         }
     }
     ffly_vec_de_init(&__script->to_free);
-    __ffly_mem_free(__script->stack);
     __ffly_mem_free(__script->p);
     ffly_map_de_init(&__script->macros);
     return FFLY_SUCCESS;
@@ -639,9 +649,12 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
 	return 1;
 }
 
-ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
-    __script->stack = (ffly_byte_t*)__ffly_mem_alloc(100);
+ffly_err_t ffscript_init(ffscriptp __script, mdl_uint_t __stack_size) {
+    __script->stack = (ffly_byte_t*)__ffly_mem_alloc(__stack_size);
     __script->fresh = __script->stack;
+}
+
+ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
 	ffly_buff_init(&__script->sbuf, 100, 1);
     ffly_vec_set_flags(&__script->to_free, VEC_AUTO_RESIZE);
     ffly_vec_init(&__script->to_free, sizeof(void*));
@@ -658,7 +671,6 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
 	ffly_buff_init(&__script->iject_buff, 100, sizeof(struct token*));
     ffly_map_init(&__script->env);
 	__script->off = 0;
-	__script->top = NULL;
     __script->line = 0;
     __script->lo = 0;
     __script->local = NULL;
@@ -666,11 +678,11 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
     return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_script_build(struct ffly_script *__script) {
+ffly_err_t ffly_script_build(struct ffly_script *__script, void ** __top) {
     ffly_err_t err;
     if (_err(err = ffly_script_parse(__script)))
         return err;
-    if (_err(err = ffly_script_gen(__script)))
+    if (_err(err = ffly_script_gen(__script, __top)))
         return err;
     ffly_fprintf(ffly_out, "build successful.\n");
     return FFLY_SUCCESS;
@@ -846,26 +858,33 @@ ffly_err_t ffly_script_ld_bin(struct ffly_script *__script, char *__file) {
     return FFLY_SUCCESS;
 }
 //# define LOAD
+
+void* me(mdl_u8_t __id, void *__arg_p, void *__p) {
+    printf("HI, id{%u}, data: %u\n", __id, *(mdl_u8_t*)__p);
+}
+
 int main() {
 	struct ffly_script script;
+    ffscript ff;
+    ffscript_init(&ff, 100);
 	ffly_io_init();
 	ffly_printf("loading script.\n");
 	ffly_script_prepare(&script);
 # ifndef LOAD
-	ffly_script_ld(&script, "scripts/main.ff");
+	ffly_script_ld(&script, "../scripts/main.ff");
 	ffly_printf("building script.\n");
-	if (_err(ffly_script_build(&script))) {
+	if (_err(ffly_script_build(&script, &ff.top))) {
         ffly_printf("failed to build.\n");
         return -1;
     }
 	ffly_printf("executing script.\n");
-	ffly_script_exec(&script);
+	ffscript_exec(&ff, &me, NULL);
 //    ffly_script_save_bin(&script, "test.bin");
 # else
     ffly_script_ld_bin(&script, "test.bin");
-    ffly_script_exec(&script);
+    ffscript_exec(&ff, &me, NULL);
 # endif
-
+    ffscript_free(&ff);
 	ffly_script_free(&script);
 	ffly_io_closeup();
 }

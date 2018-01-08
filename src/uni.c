@@ -83,7 +83,7 @@ ffly_err_t ffly_uni_attach_obj(ffly_unip __uni, ffly_objp __obj) {
         ffly_lot_prepare(*lot, (__obj->xa>>chunk->lotsize)*chunk->lotsize, (__obj->ya>>chunk->lotsize)*chunk->lotsize, (__obj->za>>chunk->lotsize)*chunk->lotsize);
     }
 
-    ffly_fprintf(ffly_log, "added to lot.\n");
+//    ffly_fprintf(ffly_log, "added to lot.\n");
     ffly_lot_add(*lot, __obj);
 }
     

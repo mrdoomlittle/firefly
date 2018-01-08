@@ -23,7 +23,7 @@ while statment
 
 unary operators
 '++'
-'--'
+'--' <- not implemented
 
 function definition
 {
@@ -74,10 +74,33 @@ types
 }
 
 
-macro
+macros
 
 %define
 %ifndef
 %ifdef
 %endif
 %include "file"
+
+calling
+{
+    :{call number}<-{
+        {parameters}
+    };
+
+    example: this will call a user defined function. 1 > ... are reserved for internal calls.
+    
+    :0<- {
+        0, // id
+        0 // data
+    };
+}
+
+// '__p' will be the pointer of the allocated memory for whatever was passed thru for param 1.
+void* call_me(mdl_u8_t __id, void *__arg_p, void *__p) {
+
+}
+
+
+
+

@@ -22,8 +22,8 @@ types::err_t static pixeldraw(types::off_t __xa, types::off_t __ya, types::byte_
 }
 extern "C" {
 # endif
-ffly_err_t pixeldraw(ffly_off_t, ffly_off_t, ffly_byte_t*, mdl_uint_t, ffly_byte_t*, mdl_uint_t, mdl_uint_t);
-ffly_err_t pixdraw(ffly_off_t, ffly_off_t, ffly_byte_t*, mdl_uint_t, ffly_byte_t*, mdl_uint_t, mdl_uint_t);
+ffly_err_t ffly_pixeldraw(ffly_off_t, ffly_off_t, ffly_byte_t*, mdl_uint_t, ffly_byte_t*, mdl_uint_t, mdl_uint_t);
+ffly_err_t ffly_pixdraw(ffly_off_t, ffly_off_t, ffly_byte_t*, mdl_uint_t, ffly_byte_t*, mdl_uint_t, mdl_uint_t);
 # ifdef __cplusplus
 }
 # endif

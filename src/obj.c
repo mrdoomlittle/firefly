@@ -32,7 +32,11 @@ ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
     return obj;
 }
 
+# ifdef __ffly_testing
+#   include "graphics/draw.h"
+# endif
 ffly_err_t ffly_obj_draw(ffly_objp __obj, ffly_byte_t *__dst, mdl_uint_t __xa, mdl_uint_t __ya, mdl_uint_t __za, mdl_uint_t __xal, mdl_uint_t __yal, mdl_uint_t __zal, mdl_uint_t __xmax, mdl_uint_t __ymax, mdl_uint_t __zmax) {
+# ifdef __ffly_testing
     mdl_uint_t xa, ya, za = 0;
     while(za != __obj->zal && __obj->za+za < __zmax) {
         ya = 0;
@@ -46,6 +50,8 @@ ffly_err_t ffly_obj_draw(ffly_objp __obj, ffly_byte_t *__dst, mdl_uint_t __xa, m
         }
         za++;
     }
+# else
+# endif
 }
 
 ffly_err_t ffly_obj_free(ffly_objp __obj) {

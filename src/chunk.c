@@ -14,7 +14,7 @@ ffly_lotpp ffly_fetch_lot(ffly_chunkp __chunk, mdl_uint_t __xa, mdl_uint_t __ya,
     mdl_uint_t x = lotsplice(__xa-__chunk->xa, __chunk->lotsize);
     mdl_uint_t y = lotsplice(__ya-__chunk->ya, __chunk->lotsize);
     mdl_uint_t z = lotsplice(__za-__chunk->za, __chunk->lotsize);
-    ffly_fprintf(ffly_log, "fetching lot at %ux%ux%u or %ux%ux%u, lotsize: %u, chunk: %ux%ux%u\n", x, y, z, __xa, __ya, __za, 1<<__chunk->lotsize, __chunk->xa, __chunk->ya, __chunk->za);
+//    ffly_fprintf(ffly_log, "fetching lot at %ux%ux%u or %ux%ux%u, lotsize: %u, chunk: %ux%ux%u\n", x, y, z, __xa, __ya, __za, 1<<__chunk->lotsize, __chunk->xa, __chunk->ya, __chunk->za);
     return __chunk->lots+x+(y*__chunk->lotx)+(z*(__chunk->loty*__chunk->lotx));
 }
 

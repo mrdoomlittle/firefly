@@ -1,5 +1,9 @@
 defines=-D__ffly_use_task_pool
 nasm_flags=-Iasm/
+test:
+	gcc -c string.c
+	gcc test.c string.o
+
 all: clean
 	nasm -f elf64 $(nasm_flags) -o cond_lock.o asm/cond_lock.asm
 	nasm -f elf64 $(nasm_flags) -o mutex.o.0 asm/mutex.asm

@@ -6,6 +6,9 @@ extern "C" {
 # endif
 mdl_u64_t ffly_stno(char*);
 double ffly_stfloat(char*);
+char ffly_tolow(char);
+mdl_u64_t ffly_htint(char*);
+mdl_i8_t ffly_islen(char*, mdl_uint_t);
 # ifdef __cplusplus
 }
 # endif

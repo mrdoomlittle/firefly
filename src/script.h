@@ -5,12 +5,21 @@
 # include "types/off_t.h"
 # include "system/buff.h"
 # include "system/map.h"
+
+typedef struct {
+    ffly_byte_t *stack;
+    ffly_byte_t *fresh;
+    void *top;
+    void *arg_p;
+    void*(*call)(mdl_u8_t, void*, void*);
+} ffscript;
+
+typedef ffscript* ffscriptp;
+
 struct ffly_script {
     struct ffly_map env, macros;
     struct ffly_map *local;
 	ffly_byte_t *p, *end;
-    ffly_byte_t *stack;
-    ffly_byte_t *fresh;
 	ffly_off_t off;
 
     mdl_uint_t line, lo;
@@ -22,7 +31,6 @@ struct ffly_script {
 	// token injection buffer
     struct ffly_vec to_free;
 	struct ffly_buff iject_buff;
-	void *top;
 };
 
 # ifdef __ffly_script_internal
@@ -208,13 +216,16 @@ void map_cleanup(struct ffly_script*, struct ffly_map*);
 void cleanup(struct ffly_script*, void*);
 ffly_bool_t next_tok_nl(struct ffly_script*);
 # endif
-ffly_err_t ffly_script_build(struct ffly_script*);
+ffly_err_t ffly_script_build(struct ffly_script*, void**);
 ffly_err_t ffly_script_gen_free();
 ffly_err_t ffly_script_prepare(struct ffly_script*);
 ffly_err_t ffly_script_ld(struct ffly_script*, char*);
 ffly_err_t ffly_script_parse(struct ffly_script*);
-ffly_err_t ffly_script_gen(struct ffly_script*);
-ffly_err_t ffly_script_exec(struct ffly_script*);
+ffly_err_t ffly_script_gen(struct ffly_script*, void**);
+// ()
+ffly_err_t ffscript_init(ffscriptp, mdl_uint_t);
+ffly_err_t ffscript_exec(ffscriptp, void*(*)(mdl_u8_t, void*, void*), void*);
+ffly_err_t ffscript_free(ffscriptp);
 ffly_err_t ffly_script_free(struct ffly_script*);
 ffly_err_t ffly_script_save_bin(struct ffly_script*, char*);
 # endif /*__ffly__script__h*/

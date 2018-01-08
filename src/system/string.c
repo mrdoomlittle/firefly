@@ -30,6 +30,39 @@ mdl_u64_t ffly_stno(char *__s) {
 	return no;
 }
 
+char ffly_tolow(char __c) {
+    if (__c >= 'a' && __c <= 'z') return __c;
+    return 'a'+(__c-'A');
+}
+
+mdl_i8_t ffly_islen(char *__s, mdl_uint_t __l) {
+    while(*__s != '\0') {
+        if (!(__l--)) { 
+            if (*(__s+1) == '\0')
+                return 1;  
+            else
+                return -1;     
+        }
+        __s++;
+    }    
+    return 0;
+}
+
+mdl_u64_t ffly_htint(char *__s) {
+    char *itr = __s, c;
+    mdl_u64_t ret = 0;
+    while(*itr != '\0') {
+        c = *(itr++);
+        if (c >= 'A' && c <= 'F')
+            c = ffly_tolow(c);
+        if (c >= '0' && c <= '9')
+            ret = (ret<<4)|((c-'0')&0xF);
+        else if (c >= 'a' && c <= 'f')
+            ret = (ret<<4)|(((c-'a')+10)&0xF);
+    }
+    return ret;
+}
+
 // needs testing
 static double t[] = {
     0.1,

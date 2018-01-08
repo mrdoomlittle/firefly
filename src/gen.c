@@ -14,13 +14,14 @@ struct obj** objpp(struct obj *__obj) {
     return &__obj->objpp;
 }
 
-struct obj *end = NULL;
+static struct obj *top = NULL;
+static struct obj *end = NULL;
 struct obj* next_obj(struct ffly_script *__script, struct obj __tmpl) {
 	struct obj *_obj;
 	build_obj(&_obj, &__tmpl);
     _obj->next = NULL;
-	if (__script->top == NULL)
-		__script->top = (void*)_obj;
+	if (top == NULL)
+		top = (void*)_obj;
 	else {
 		end->next = _obj;
 		end = _obj;
@@ -487,7 +488,7 @@ ffly_err_t ffly_script_gen_free() {
     __ffly_mem_free(rg_64l_u->_type);
 }
 
-ffly_err_t ffly_script_gen(struct ffly_script *__script) {
+ffly_err_t ffly_script_gen(struct ffly_script *__script, void **__top) {
 	if (!ffly_vec_size(&__script->nodes)) return FFLY_FAILURE;
     rg_8l_u = __fresh(__script, 1);
     *(rg_8l_u->_type = (struct type*)__ffly_mem_alloc(sizeof(struct type))) = (struct type){.kind=_u8_t, .size=1};
@@ -508,5 +509,6 @@ ffly_err_t ffly_script_gen(struct ffly_script *__script) {
     		itr++;
     	}
     }
+    *__top = (void*)top;
     return FFLY_SUCCESS;
 }
