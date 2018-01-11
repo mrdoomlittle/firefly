@@ -29,7 +29,8 @@ endif
 #ffly_objs+= src/firefly.o
 # lower level core - things that are needed for things to work
 # maths
-override ffly_objs+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o src/maths/max.o src/maths/min.o src/maths/rotate.o src/maths/barycentric.o
+override ffly_objs+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o src/maths/max.o src/maths/min.o src/maths/rotate.o src/maths/barycentric.o \
+src/maths/centre.o
 # data
 override ffly_objs+= src/data/scale_pixelmap.o src/data/str_cmb.o src/data/mem_swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o src/data/str_dupe.o src/data/mem_cmp.o src/data/str_cmp.o \
 src/data/str_cpy.o src/data/bzero.o src/data/bcopy.o
@@ -79,7 +80,10 @@ override ffly_objs+= src/firefly.o
 override ffly_defines+= -D__ffly_use_pulse_audio
 
 # NOTE: this is like this for debugging purposes
-src/obj.o: src/obj.o
+src/maths/centre.o: src/maths/centre.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/maths/centre.o src/maths/centre.c
+
+src/obj.o: src/obj.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/obj.o src/obj.c
 
 src/lot.o: src/lot.c

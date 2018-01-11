@@ -43,7 +43,7 @@ ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
 }
 
 ffly_err_t ffly_obj_draw(ffly_objp __obj, ffly_byte_t *__frame, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z, mdl_uint_t __width, mdl_uint_t __height, mdl_uint_t __xmax, mdl_uint_t __ymax) {
-    ffly_draw_polygon(&__obj->shape, __frame, __obj->texture, __x, __y, __z, __width, __height, __xmax, __ymax, __obj->angle);
+    ffly_draw_polygon(&__obj->shape, __frame, __obj->texture, __obj->xl, __x, __y, __z, __width, __height, __xmax, __ymax, __obj->angle);
 }
 
 ffly_err_t ffly_obj_free(ffly_objp __obj) {

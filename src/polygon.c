@@ -20,7 +20,7 @@ void static rotate_vertex(ffly_vertexp __vertex, mdl_uint_t __x, mdl_uint_t __y,
 
 
 // cache this
-void ffly_draw_polygon(ffly_polygonp __poly, ffly_byte_t *__frame, ffly_byte_t *__texture, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z, mdl_uint_t __width, mdl_uint_t __height, mdl_uint_t __xmax, mdl_uint_t __ymax, float __angle) {
+void ffly_draw_polygon(ffly_polygonp __poly, ffly_byte_t *__frame, ffly_byte_t *__texture, mdl_uint_t __texw, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z, mdl_uint_t __width, mdl_uint_t __height, mdl_uint_t __xmax, mdl_uint_t __ymax, float __angle) {
     ffly_vertex v0 = *__poly->vertexs;
     ffly_vertex v1 = *(__poly->vertexs+1);
     ffly_vertex v2 = *(__poly->vertexs+2);
@@ -42,10 +42,10 @@ void ffly_draw_polygon(ffly_polygonp __poly, ffly_byte_t *__frame, ffly_byte_t *
         while(x != xmax && ffly_abs(xmin-x)+__x < __xmax) {
             ffly_barycentric(x, y, __z, &v0, &v1, &v2, &a, &b, &g);
             if (a>=0.0&&b>=0.0&&g>=0.0 || (x == xmin || y == ymin || x == xmax || y == ymax)) {
-                ffly_byte_t *dst = __frame+(((__x+ffly_abs(xmin-x))+((__y+ffly_abs(ymin-y))*__height))*4);
-                //ffly_mem_set(__frame+(((__x+ffly_abs(xmin-x))+((__y+ffly_abs(ymin-y))*__height))*4), 200, 4);
-
-                ffly_bcopy(dst, __texture+(dst-__frame), 4);
+                mdl_uint_t x0 = ffly_abs(xmin-x);
+                mdl_uint_t y0 = ffly_abs(ymin-y);
+                ffly_byte_t *dst = __frame+(((__x+x0)+((__y+y0)*__height))*4);
+                ffly_bcopy(dst, __texture+((x0+(y0*__texw))*4), 4);
             }
             x++;
         }

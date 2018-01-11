@@ -42,6 +42,12 @@ struct camera {
     types::err_t draw(types::byte_t *__dst, uint_t __width, uint_t __height, uint_t __x, uint_t __y) {
         return ffly_camera_draw(&this->raw, __dst, __width, __height, __x, __y);
     }
+    void setx(uint_t __x){ffly_set_camerax(this->raw, __x);}
+    void sety(uint_t __y){ffly_set_cameray(this->raw, __y);}
+    void __inline__ set_coords(uint_t __x, uint_t __y) {
+        this->setx(__x);
+        this->sety(__y);
+    }
     struct ffly_camera raw;
 };
 }

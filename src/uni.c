@@ -81,7 +81,7 @@ ffly_err_t ffly_uni_attach_obj(ffly_unip __uni, ffly_objp __obj) {
         ffly_fprintf(ffly_log, "new lot.\n");
         ffly_chunkp chunk = get_chunk(__uni, __obj->x, __obj->y, __obj->z);
         *lot = ffly_alloc_lot(1<<chunk->lotsize, 1<<chunk->lotsize, 1<<chunk->lotsize);
-        ffly_lot_prepare(*lot, (__obj->x>>chunk->lotsize)*chunk->lotsize, (__obj->y>>chunk->lotsize)*chunk->lotsize, (__obj->z>>chunk->lotsize)*chunk->lotsize);
+        ffly_lot_prepare(*lot, (__obj->x>>chunk->lotsize)*(1<<chunk->lotsize), (__obj->y>>chunk->lotsize)*(1<<chunk->lotsize), (__obj->z>>chunk->lotsize)*(1<<chunk->lotsize));
     }
 
 //    ffly_fprintf(ffly_log, "added to lot.\n");
