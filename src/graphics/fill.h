@@ -12,10 +12,10 @@
 namespace mdl {
 namespace firefly {
 namespace graphics {
-types::err_t gpu_pixfill(types::byte_t *__buff, mdl_uint_t __nopix, types::colour_t __colour);
+types::err_t gpu_pixfill(types::byte_t *__dst, mdl_uint_t __nopix, types::colour_t __colour);
 # ifndef __NVCC__
-types::err_t static pixelfill(types::pixelmap_t __buff, mdl_uint_t __nopix, types::colour_t __colour) {
-	return pipe_inject(&__ffly_grp__, mk_job(_grj_pixfill, __buff, __nopix, __colour));
+types::err_t static pixelfill(types::pixelmap_t __dst, mdl_uint_t __nopix, types::colour_t __colour) {
+	return pipe_inject(&__ffly_grp__, mk_job(_grj_pixfill, __dst, __nopix, __colour));
 }
 # endif
 }

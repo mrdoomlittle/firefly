@@ -32,14 +32,13 @@ struct ffly_grj* ffly_grj_mk(mdl_u8_t __kind, void *__par) {
 # include "copy.h"
 # include "draw.h"
 # include "../types/byte_t.h"
-# include "../types/off_t.h"
 ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 	ffly_err_t err;
 	ffly_fprintf(ffly_log, "about to prosess graphics job.\n");
 	switch(__job->kind) {
 		case _grj_pixfill: {
 			mdl_u8_t *p = (mdl_u8_t*)__job->par;
-			ffly_byte_t *buf = *(ffly_byte_t**)p;
+			ffly_byte_t *dst = *(ffly_byte_t**)p;
 			p+= sizeof(ffly_byte_t**);
 
 			mdl_uint_t nopix = *(mdl_uint_t*)p;
@@ -47,10 +46,10 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 
 			ffly_colour_t colour = *(ffly_colour_t*)p;
 
-			if (_err(err = ffly_pixfill(buf, nopix, colour))) {
+			if (_err(err = ffly_pixfill(dst, nopix, colour))) {
 				ffly_fprintf(ffly_err, "failed to fill with pixels.\n");
 			}
-			ffly_fprintf(ffly_log, "graphics job-%s, %p %u, %u-%u-%u-%u\n", kstr(__job->kind), buf, nopix, colour.r, colour.g, colour.b, colour.a);
+			ffly_fprintf(ffly_log, "graphics job-%s, %p %u, %u-%u-%u-%u\n", kstr(__job->kind), dst, nopix, colour.r, colour.g, colour.b, colour.a);
 			break;
 		}
 		case _grj_pixcopy: {
@@ -73,7 +72,7 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 		}
 		case _grj_pixdraw: {
 			mdl_u8_t *p = (mdl_u8_t*)__job->par;
-			ffly_off_t x, y;
+			mdl_uint_t x, y;
 
 			x = *(ffly_off_t*)p;
 			p+= sizeof(ffly_off_t);
@@ -81,10 +80,10 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 			y = *(ffly_off_t*)p;
 			p+= sizeof(ffly_off_t);
 
-			ffly_byte_t *buff = *(ffly_byte_t**)p;
+			ffly_byte_t *dst = *(ffly_byte_t**)p;
 			p+= sizeof(ffly_byte_t*);
 
-			mdl_uint_t bufw = *(mdl_uint_t*)p;
+			mdl_uint_t dstw = *(mdl_uint_t*)p;
 			p+= sizeof(mdl_uint_t);
 
 			ffly_byte_t *pixels = *(ffly_byte_t**)p;
@@ -95,10 +94,10 @@ ffly_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 
 			mdl_uint_t height = *(mdl_uint_t*)p;
 
-			if (_err(err = ffly_pixdraw(x, y, buff, bufw, pixels, width, height))) {
+			if (_err(err = ffly_pixdraw(x, y, dst, dstw, pixels, width, height))) {
 				ffly_fprintf(ffly_err, "failed to draw pixels.\n");
 			}
-			ffly_fprintf(ffly_log, "graphics job-%s, %u, %u, %p, %u, %p, %u, %u\n", kstr(__job->kind), x, y, buff, bufw, pixels, width, height);
+			ffly_fprintf(ffly_log, "graphics job-%s, %u, %u, %p, %u, %p, %u, %u\n", kstr(__job->kind), x, y, dst, dstw, pixels, width, height);
 			break;
 		}
 		default:

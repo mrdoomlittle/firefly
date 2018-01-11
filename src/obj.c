@@ -5,10 +5,17 @@
 # include "system/io.h"
 # include "types/byte_t.h"
 # include "data/bcopy.h"
+# include "data/bzero.h"
 static ffly_objp top = NULL;
 static ffly_objp end = NULL;
 void ffly_obj_rotate(ffly_objp __obj, float __angle) {
     __obj->angle = __angle;
+}
+
+ffly_err_t ffly_obj_prepare(ffly_objp __obj) {
+    __obj->angle = 0.0;
+    __obj->lot = NULL;
+    ffly_bzero(&__obj->shape, sizeof(ffly_polygon));
 }
 
 ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
@@ -31,19 +38,12 @@ ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
         end->next = obj;
         obj->prev = end;
     }
-    obj->angle = 0.0;
     end = obj;
     return obj;
 }
 
-# ifdef __ffly_testing
-#   include "graphics/draw.h"
-# endif
 ffly_err_t ffly_obj_draw(ffly_objp __obj, ffly_byte_t *__frame, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z, mdl_uint_t __width, mdl_uint_t __height, mdl_uint_t __xmax, mdl_uint_t __ymax) {
-# ifdef __ffly_testing
     ffly_draw_polygon(&__obj->shape, __frame, __obj->texture, __x, __y, __z, __width, __height, __xmax, __ymax, __obj->angle);
-# else
-# endif
 }
 
 ffly_err_t ffly_obj_free(ffly_objp __obj) {

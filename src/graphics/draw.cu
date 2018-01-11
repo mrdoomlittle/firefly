@@ -7,9 +7,9 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../firefly.hpp"
-__global__ void static pixdraw(mdl::firefly::types::off_t __xa, mdl::firefly::types::byte_t *__buff, mdl::uint_t __bufw, mdl::firefly::types::byte_t *__pixels) {
+__global__ void static pixdraw(mdl::uint_t __x, mdl::firefly::types::byte_t *__dst, mdl::uint_t __dstw, mdl::firefly::types::byte_t *__pixels) {
 	mdl::firefly::types::byte_t *src = __pixels+((threadIdx.x+(blockIdx.x*blockDim.x))*4);
-	mdl::firefly::types::byte_t *dst = __buff+((threadIdx.x+(blockIdx.x*__bufw)+__xa)*4);
+	mdl::firefly::types::byte_t *dst = __dst+((threadIdx.x+(blockIdx.x*__dstw)+__x)*4);
 
 	mdl::firefly::types::byte_t alpha = *(src+A_OFF);
 	mdl::firefly::types::byte_t invr_alpha = ~*(src+A_OFF);
@@ -23,23 +23,23 @@ __global__ void static pixdraw(mdl::firefly::types::off_t __xa, mdl::firefly::ty
 }
 
 
-mdl::firefly::types::byte_t static *buff = nullptr, *pixels = nullptr;
+mdl::firefly::types::byte_t static *dst = nullptr, *pixels = nullptr;
 void static cleanup(void *__arg_p) {
 	mdl::firefly::system::io::fprintf(ffly_log, "cleanup for draw.\n");
-	if (buff != nullptr)
-		mdl::firefly::memory::gpu_mem_free(buff);
+	if (dst != nullptr)
+		mdl::firefly::memory::gpu_mem_free(dst);
 	if (pixels != nullptr)
 		mdl::firefly::memory::gpu_mem_free(pixels);
 }
 
-mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixdraw(types::off_t __xa, types::off_t __ya, types::byte_t *__buff, uint_t __bufw, types::byte_t *__pixels, uint_t __width, uint_t __height) {
+mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixdraw(uint_t __x, uint_t __y, types::byte_t *__dst, uint_t __dstw, types::byte_t *__pixels, uint_t __width, uint_t __height) {
 	types::cl_err_t err;
 	types::bool_t static inited = ffly_false;
-	uint_t bufsize = __bufw*__height*4;
+	uint_t dstsize = __dstw*__height*4;
 	uint_t size = __width*__height*4;
 
 	if (!inited) {
-		if (memory::gpu_mem_alloc((void**)&buff, bufsize) != FFLY_SUCCESS) {
+		if (memory::gpu_mem_alloc((void**)&dst, dstsize) != FFLY_SUCCESS) {
 			return FFLY_FAILURE;
 		}
 
@@ -51,14 +51,14 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixdraw(types::off_t __xa
 		inited = ffly_true;
 	}
 
-	uint_t static _bufsize = bufsize;
-	if (_bufsize != bufsize) {
-		if (buff != nullptr)
-			mdl::firefly::memory::gpu_mem_free(buff);
-		if (memory::gpu_mem_alloc((void**)&buff, bufsize) != FFLY_SUCCESS) {
+	uint_t static _dstsize = dstsize;
+	if (_dstsize != dstsize) {
+		if (dst != nullptr)
+			mdl::firefly::memory::gpu_mem_free(dst);
+		if (memory::gpu_mem_alloc((void**)&dst, dstsize) != FFLY_SUCCESS) {
 			return FFLY_FAILURE;
 		}
-		_bufsize = bufsize;
+		_dstsize = dstsize;
 	}
 
 	uint_t static _size = size;
@@ -71,8 +71,8 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixdraw(types::off_t __xa
 		_size = size;
 	}
 
-	if ((err = cudaMemcpy(buff, __buff, bufsize, cudaMemcpyHostToDevice)) != ffly_cl_success) {
-		system::io::fprintf(ffly_err, "failed to copy buffer to device, %s\n", cudaGetErrorString(err));
+	if ((err = cudaMemcpy(dst, __dst, dstsize, cudaMemcpyHostToDevice)) != ffly_cl_success) {
+		system::io::fprintf(ffly_err, "failed to copy dest to device, %s\n", cudaGetErrorString(err));
 		return FFLY_FAILURE;
 	}
 
@@ -82,8 +82,8 @@ mdl::firefly::types::err_t mdl::firefly::graphics::gpu_pixdraw(types::off_t __xa
 	}
 
 	// for now
-	pixdraw<<<__height, __width>>>(__xa, buff, __bufw, pixels);
-	if ((err = cudaMemcpy(__buff+((__ya*__bufw)*4), buff, bufsize, cudaMemcpyDeviceToHost)) != ffly_cl_success) {
+	pixdraw<<<__height, __width>>>(__x, dst, __dstw, pixels);
+	if ((err = cudaMemcpy(__dst+((__y*__dstw)*4), dst, dstsize, cudaMemcpyDeviceToHost)) != ffly_cl_success) {
 		return FFLY_FAILURE;
 	}
 	return FFLY_SUCCESS;

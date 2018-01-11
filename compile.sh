@@ -21,7 +21,7 @@ elif [ $ffly_target = "ffly_bare"]; then
 fi
 
 if [ $ffly_cl = "cuda" ]; then
-	ffly_defines="$ffly_defined -D__ffly_use_cuda"
+	ffly_defines="$ffly_defines -D__ffly_use_cuda"
 elif [ $ffly_cl = "opencl" ];then
 	ffly_defines="$ffly_defines -D__ffly_use_opencl"
 fi

@@ -3,7 +3,7 @@ ifeq ($(ffly_target), ffly_server)
  override ffly_objs+= src/ffly_server.o src/networking/tcp_server.o src/networking/tcp_client.o src/networking/udp_server.o src/networking/udp_client.o \
  src/worker_manager.o src/memory/alloc_pixelmap.o src/graphics/draw_pixmap.clo src/player_manager.o src/player_handler.o src/worker_handler.o
 else ifeq ($(ffly_target), ffly_client)
- override ffly_objs+= src/ui/camera.o src/uni.o src/chunk.o src/chunk_manager.o src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o \
+ override ffly_objs+= src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o \
  src/ffly_audio.o src/asset_manager.o src/system/time_stamp.o src/layer_manager.o src/room_manager.o src/gui/btn.o src/gui/btn_manager.o
 else ifeq ($(ffly_target), ffly_studio)
  override ffly_objs+= src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixelmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
@@ -29,7 +29,7 @@ endif
 #ffly_objs+= src/firefly.o
 # lower level core - things that are needed for things to work
 # maths
-override ffly_objs+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o src/maths/is_inside.o
+override ffly_objs+= src/maths/round.o src/maths/ceil.o src/maths/floor.o src/maths/sq.o src/maths/max.o src/maths/min.o src/maths/rotate.o src/maths/barycentric.o
 # data
 override ffly_objs+= src/data/scale_pixelmap.o src/data/str_cmb.o src/data/mem_swp.o src/data/mem_cpy.o src/data/str_len.o src/data/mem_dupe.o src/data/mem_set.o src/data/str_dupe.o src/data/mem_cmp.o src/data/str_cmp.o \
 src/data/str_cpy.o src/data/bzero.o src/data/bcopy.o
@@ -47,8 +47,8 @@ override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o 
 # memory
 override ffly_objs+= src/ffly_system.o src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o src/memory/alloc_pixelmap.o
 
-# base
-override ffly_objs+= src/act.o src/config.o
+# core
+override ffly_objs+= src/obj_manager.o src/act.o src/polygon.o src/config.o src/lot.o src/uni.o src/chunk.o src/obj.o src/ui/camera.o src/chunk_manager.o
 ifeq ($(shell bash find.bash "$(ffly_flags)" "--mal-track"), 0)
 	override ffly_objs+= src/system/mal_track.o
 endif
@@ -79,6 +79,27 @@ override ffly_objs+= src/firefly.o
 override ffly_defines+= -D__ffly_use_pulse_audio
 
 # NOTE: this is like this for debugging purposes
+src/obj.o: src/obj.o
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/obj.o src/obj.c
+
+src/lot.o: src/lot.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/lot.o src/lot.c
+
+src/maths/min.o: src/maths/min.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/maths/min.o src/maths/min.c
+
+src/maths/max.o: src/maths/max.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/maths/max.o src/maths/max.c
+
+src/maths/rotate.o: src/maths/rotate.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/maths/rotate.o src/maths/rotate.c
+
+maths/barycentric.o: maths/barycentric.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o maths/barycentric.o maths/barycentric.c
+
+src/polygon.o: src/polygon.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/polygon.o src/polygon.c
+
 src/system/task.o: src/system/task.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/task.o src/system/task.c
 
@@ -312,8 +333,8 @@ src/alsa_audio.o: src/alsa_audio.cpp
 src/entity_manager.o: src/entity_manager.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/entity_manager.o src/entity_manager.cpp
 
-src/ui/camera.o: src/ui/camera.cpp
-	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/ui/camera.o src/ui/camera.cpp
+src/ui/camera.o: src/ui/camera.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/ui/camera.o src/ui/camera.c
 
 src/graphics/crop_pixmap.o: src/graphics/crop_pixmap.cu
 	$(ffly_nvcc) -c -std=c++11 $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/graphics/crop_pixmap.o src/graphics/crop_pixmap.cu
@@ -439,8 +460,8 @@ src/graphics/window.o: src/graphics/window.cpp src/graphics/window.c
 src/layer_manager.o: src/layer_manager.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/layer_manager.o src/layer_manager.cpp
 
-src/obj_manager.o: src/obj_manager.cpp
-	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/obj_manager.o src/obj_manager.cpp
+src/obj_manager.o: src/obj_manager.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/obj_manager.o src/obj_manager.c
 
 src/maths/cal_dist.o: src/maths/cal_dist.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/maths/cal_dist.o src/maths/cal_dist.cpp

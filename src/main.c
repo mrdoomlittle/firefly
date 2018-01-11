@@ -85,6 +85,7 @@ int main() {
     ffly_objp obj = ffly_obj_man_get(&obj_man, obj0);
     ffly_byte_t *texture = (ffly_byte_t*)__ffly_mem_alloc(60*60*4);
     ffly_mem_set(texture, 200, 60*60*4);
+
     ffly_bzero(&obj->shape, sizeof(ffly_polygon));
     ffly_obj_vertex(obj, -4, -4, 0);
     ffly_obj_vertex(obj, 4, -4, 0);
@@ -98,7 +99,7 @@ int main() {
     obj->z = 0;
 
     ffly_uni_attach_obj(&uni, obj);
-
+/*
     obj = ffly_obj_man_get(&obj_man, obj1);
     ffly_bzero(&obj->shape, sizeof(ffly_polygon));
     ffly_obj_vertex(obj, -8, -8, 0);
@@ -113,6 +114,7 @@ int main() {
     obj->z = 0;
 
     ffly_uni_attach_obj(&uni, obj);
+*/
     int fd;
     if ((fd = open("/dev/input/event2", O_RDONLY|O_NONBLOCK)) == -1) {
         ffly_printf("failed to open.\n");
@@ -186,12 +188,11 @@ int main() {
         if (y == 20)
             dir = -1;
         y+=dir;
-
-        ffly_uni_obj_move(&uni, ffly_obj_man_get(&obj_man, obj0), x, y, 0);
+        ffly_uni_obj_move(&uni, ffly_obj_man_get(&obj_man, obj0), x, y, 0); 
         if (i > update) {
-            if (r >= 360) r = 0.0;
-            ffly_obj_rotate(obj, r);
-            r+= 1;         
+ //           if (r >= 360) r = 0.0;
+   //         ffly_obj_rotate(obj, r);
+     //       r+= 1;         
             ffly_camera_handle(&camera);
             system("clear");
             printf("-------------- x: %u:%u, y: %u:%u -------------\n", x, cam_x, y, cam_y);

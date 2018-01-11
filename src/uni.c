@@ -1,4 +1,5 @@
 # include "uni.h"
+# include "system/errno.h"
 # include "system/io.h"
 # include "system/errno.h"
 # include "memory/mem_alloc.h"
@@ -32,7 +33,7 @@ ffly_err_t ffly_uni_obj_move(ffly_unip __uni, ffly_objp __obj, mdl_uint_t __x, m
     ffly_uni_attach_obj(__uni, __obj);
 }
 
-ffly_bool_t ffly_uni_frame(ffly_unip __uni, ffly_byte_t *__dst, mdl_uint_t __xl, mdl_uint_t __yl, mdl_uint_t __zl, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z) {
+ffly_err_t ffly_uni_frame(ffly_unip __uni, ffly_byte_t *__dst, mdl_uint_t __xl, mdl_uint_t __yl, mdl_uint_t __zl, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z) {
     mdl_uint_t cnk_xl = ffly_uni_chunk_xal(__uni);
     mdl_uint_t cnk_yl = ffly_uni_chunk_yal(__uni);
     mdl_uint_t cnk_zl = ffly_uni_chunk_zal(__uni);
@@ -85,10 +86,15 @@ ffly_err_t ffly_uni_attach_obj(ffly_unip __uni, ffly_objp __obj) {
 
 //    ffly_fprintf(ffly_log, "added to lot.\n");
     ffly_lot_add(*lot, __obj);
+    __obj->lot = *lot;
 }
     
 ffly_err_t ffly_uni_detach_obj(ffly_unip __uni, ffly_objp __obj) {
-    ffly_lot_rm(*get_lot(__uni, __obj->x, __obj->y, __obj->z), __obj);
+    if (!__uni || !__obj) {
+        ffly_fprintf(ffly_err, "object detach failed.\n");
+        return FFLY_FAILURE;
+    }
+    ffly_lot_rm(__obj->lot, __obj);
 }
 
 ffly_err_t ffly_uni_build(ffly_unip __uni, mdl_uint_t __xl, mdl_uint_t __yl, mdl_uint_t __zl, mdl_u8_t __splice, mdl_u8_t __lotsize) {

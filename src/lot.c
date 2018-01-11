@@ -1,4 +1,6 @@
 # include "lot.h"
+# include "system/io.h"
+# include "system/errno.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 static ffly_lotp top = NULL;
@@ -12,11 +14,16 @@ void ffly_lot_add(ffly_lotp __lot, ffly_objp __obj) {
 }
 
 void ffly_lot_rm(ffly_lotp __lot, ffly_objp __obj) {
+    if (!__lot || !__obj) {
+        ffly_fprintf(ffly_err, "failed to remove from lot.\n");
+        return;
+    }
+
     mdl_uint_t xoff = __obj->x-__lot->x;
     mdl_uint_t yoff = __obj->y-__lot->y;
     mdl_uint_t zoff = __obj->z-__lot->z;
     ffly_objppp obj = __lot->objs+xoff+(yoff*__lot->yl)+(zoff*(__lot->yl*__lot->xl)); 
-    if ((*obj)+1 == __lot->end)
+    if (*obj == __lot->end-1)
         __lot->end--;
     else
         **obj = *(--__lot->end);

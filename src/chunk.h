@@ -19,9 +19,15 @@ struct ffly_chunk {
 };
 
 typedef struct ffly_chunk* ffly_chunkp;
+# ifdef __cplusplus
+extern "C" {
+# endif
 void ffly_chunk_cleanup();
 ffly_lotpp ffly_fetch_lot(ffly_chunkp, mdl_uint_t, mdl_uint_t, mdl_uint_t);
 void ffly_chunk_prepare(ffly_chunkp, mdl_uint_t, mdl_uint_t, mdl_uint_t);
 ffly_chunkp ffly_alloc_chunk(mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_u8_t);
 void ffly_free_chunk(ffly_chunkp);
+# ifdef __cplusplus
+}
+# endif
 # endif /*__ffly__chunk__h*/

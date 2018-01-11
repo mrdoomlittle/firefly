@@ -29,22 +29,44 @@ struct ffly_uni {
 };
 
 typedef struct ffly_uni* ffly_unip;
+# ifdef __cplusplus
+extern "C" {
+# endif
 ffly_err_t ffly_uni_attach_obj(ffly_unip, ffly_objp);
 ffly_err_t ffly_uni_detach_obj(ffly_unip, ffly_objp);
 ffly_err_t ffly_uni_obj_move(ffly_unip, ffly_objp, mdl_uint_t, mdl_uint_t, mdl_uint_t);
 /* capture frame */
-ffly_bool_t ffly_uni_frame(ffly_unip, ffly_byte_t*, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t);
+ffly_err_t ffly_uni_frame(ffly_unip, ffly_byte_t*, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t);
 ffly_id_t ffly_uni_chunk(ffly_unip, ffly_off_t, ffly_off_t, ffly_off_t);
 ffly_err_t ffly_uni_build(ffly_unip, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_u8_t, mdl_u8_t);
 ffly_err_t ffly_uni_free(ffly_unip);
 # ifdef __cplusplus
+}
+# include "obj.h"
 namespace mdl {
 namespace firefly {
-class uni {
-    types::err_t build(uint_t __xl, uint_t __yl, uint_t __zl, u8_t __splice) {
-        return ffly_uni_build(&this->raw, __xl, __yl, __zl, __splice);
+struct uni {
+    types::err_t build(uint_t __xl, uint_t __yl, uint_t __zl, u8_t __splice, u8_t __lotsize) {
+        return ffly_uni_build(&this->raw, __xl, __yl, __zl, __splice, __lotsize);
     }
-
+    types::err_t attach_obj(obj& __obj) {
+        return ffly_uni_attach_obj(&this->raw, __obj.raw);
+    }
+    types::err_t detach_obj(obj& __obj) {
+        return ffly_uni_detach_obj(&this->raw, __obj.raw);
+    }
+    types::err_t move_obj(obj __obj, uint_t __x, uint_t __y, uint_t __z) {
+        return ffly_uni_obj_move(&this->raw, __obj.raw, __x, __y, __z);
+    }
+    types::err_t move_obj(obj *__obj, uint_t __x, uint_t __y, uint_t __z) {
+        return ffly_uni_obj_move(&this->raw, __obj->raw, __x, __y, __z);
+    }
+    types::err_t move_obj(obj& __obj, uint_t __x, uint_t __y, uint_t __z) {
+        return ffly_uni_obj_move(&this->raw, __obj.raw, __x, __y, __z);
+    }
+    types::err_t frame(types::byte_t *__frame, uint_t __xl, uint_t __yl, uint_t __zl, uint_t __x, uint_t __y, uint_t __z) {
+        return ffly_uni_frame(&this->raw, __frame, __xl, __yl, __zl, __x, __y, __z);
+    }
     types::err_t free() {
         ffly_uni_free(&this->raw);
     }
