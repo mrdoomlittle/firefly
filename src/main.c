@@ -32,54 +32,35 @@ char *frame;
 
 */
 # include "maths/dot.h"
-
-
-
-mdl_u8_t inside(mdl_int_t __x, mdl_int_t __y, ffly_vertex_t *__a, ffly_vertex_t *__b, ffly_vertex_t *__c) {
-    ffly_vertex_t v0 = {
-        .xa=__b->xa-__a->xa,
-        .ya=__b->ya-__a->ya
-    };
-
-    ffly_vertex_t v1 = {
-        .xa=__c->xa-__a->xa, 
-        .ya=__c->ya-__a->ya
-    };
-
-    ffly_vertex_t v2 = {
-        .xa=__x-__a->xa,
-        .ya=__y-__a->ya
-    };
-
-    float d00 = ffly_dot(v0.xa, v0.xa, v0.ya, v0.ya);
-    float d01 = ffly_dot(v0.xa, v1.xa, v0.ya, v1.ya); 
-    float d11 = ffly_dot(v1.xa, v1.xa, v1.ya, v1.ya);
-    float d02 = ffly_dot(v0.xa, v2.xa, v0.ya, v2.ya);
-    float d12 = ffly_dot(v1.xa, v2.xa, v1.ya, v2.ya);
-
-    float den = 1.0/(d00*d11-d01*d01);
-    float a = (d11*d02-d01*d12)*den;
-    float b = (d00*d12-d01*d02)*den;
-    float g = (1.0-a)-b;
- 
-    return (a>0.0 && b>0.0 && g>0.0);
-}
+# include "maths/barycentric.h"
 
 int main() {
     ffly_io_init();
 /*
-    struct ffly_polygon poly;
-    ffly_bzero(&poly, sizeof(struct ffly_polygon));
-    
+    frame = __ffly_mem_alloc(xal*yal);
+    ffly_mem_set(frame, '.', xal*yal);
+    ffly_polygon poly;
+    ffly_bzero(&poly, sizeof(ffly_polygon));
 
-    ffly_vertex3(&poly, 10, 10, 0);
+    ffly_vertex3(&poly, 0, 0, 0);
     ffly_vertex3(&poly, 30, 0, 0);
-    ffly_vertex3(&poly, 10, 30, 0);
-  //  ffly_vertex3(&poly, 10, 10, 0);
-    print_poly(&poly);
+    ffly_vertex3(&poly, 30, 30, 0);
+   
+    ffly_draw_polygon(&poly, frame, NULL, 10, 10, xal, yal, 30, 30);
+ 
+    mdl_uint_t x, y = 0;
+    while(y != yal) {
+        x = 0;
+        while(x != xal) {
+            printf("%c", frame[x+(y*xal)]); 
+            x++;
+        }
+        printf("\n");
+        y++;
+    }
 
+    __ffly_mem_free(frame);
     ffly_io_closeup();
-    return 0;
 */
     ffly_err_t err;
     struct ffly_obj_man obj_man;
@@ -102,24 +83,32 @@ int main() {
     ffly_objp obj = ffly_obj_man_get(&obj_man, obj0);
     ffly_byte_t *texture = (ffly_byte_t*)__ffly_mem_alloc(8*8*4);
     ffly_mem_set(texture, 200, 8*8*4);
+    ffly_bzero(&obj->shape, sizeof(ffly_polygon));
+    ffly_obj_vertex(obj, 0, 0, 0);
+    ffly_obj_vertex(obj, 8, 0, 0);
+    ffly_obj_vertex(obj, 8, 8, 0);
     obj->texture = texture;
-    obj->xal = 8;
-    obj->yal = 8;
-    obj->zal = 1;
-    obj->xa = 20;
-    obj->ya = 20;
-    obj->za = 0;
+    obj->xl = 8;
+    obj->yl = 8;
+    obj->zl = 1;
+    obj->x = 20;
+    obj->y = 20;
+    obj->z = 0;
 
     ffly_uni_attach_obj(&uni, obj);
 
     obj = ffly_obj_man_get(&obj_man, obj1);
+    ffly_bzero(&obj->shape, sizeof(ffly_polygon));
+    ffly_obj_vertex(obj, 0, 0, 0);
+    ffly_obj_vertex(obj, 8, 0, 0);
+    ffly_obj_vertex(obj, 8, 8, 0);
     obj->texture = texture;
-    obj->xal = 8;
-    obj->yal = 8;
-    obj->zal = 1;
-    obj->xa = 10;
-    obj->ya = 0;
-    obj->za = 0;
+    obj->xl = 8;
+    obj->yl = 8;
+    obj->zl = 1;
+    obj->x = 10;
+    obj->y = 0;
+    obj->z = 0;
 
     ffly_uni_attach_obj(&uni, obj);
     int fd;
@@ -131,7 +120,7 @@ int main() {
     mdl_u64_t update = 200000, i = 0;
 
     mdl_i8_t dir = -1;
-    mdl_uint_t cam_x = 0, cam_y = 0, x = ffly_obj_man_get(&obj_man, obj0)->xa, y = ffly_obj_man_get(&obj_man, obj0)->ya;
+    mdl_uint_t cam_x = 0, cam_y = 0, x = ffly_obj_man_get(&obj_man, obj0)->x, y = ffly_obj_man_get(&obj_man, obj0)->y;
     while(1) {
         struct input_event event;
         if (read(fd, &event, sizeof(struct input_event)) < 0) goto _sk;

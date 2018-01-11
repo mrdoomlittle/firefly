@@ -41,6 +41,14 @@ struct ffly_conf_arr {
     char *name;
 };
 
+// config bare
+typedef struct {
+    struct ffly_vec arrs;
+    struct ffly_vec free;
+    struct ffly_map env;
+} ffconf;
+
+typedef ffconf* ffconfp;
 struct ffly_conf {
     struct ffly_buff sbuf;
     ffly_byte_t *p, *end;
@@ -68,12 +76,14 @@ enum {
     _ffly_conf_8l_u
 };
 
-void const* ffly_conf_get(struct ffly_conf*, char*);
-void* ffly_conf_get_arr_elem(struct ffly_conf*, void*, mdl_uint_t);
+void const* ffly_conf_get(ffconfp, char*);
+void* ffly_conf_get_arr_elem(void*, mdl_uint_t);
 ffly_err_t ffly_conf_init(struct ffly_conf*);
 ffly_err_t ffly_conf_read(struct ffly_conf*);
 ffly_err_t ffly_conf_ld(struct ffly_conf*, char*);
 ffly_err_t ffly_conf_free(struct ffly_conf*);
+ffly_err_t ffconf_free(ffconfp);
+void ffly_conf_depos(struct ffly_conf*, ffconfp);
 char* ffly_conf_str(void*);
 char ffly_conf_chr(void*);
 mdl_u64_t ffly_conf_64l_u(void*);

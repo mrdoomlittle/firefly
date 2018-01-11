@@ -122,6 +122,10 @@ static struct token* read_token(struct ffly_script *__script) {
     }
 
 	switch(fetchc(__script)) {
+        case '&':
+            make_keyword(tok, _ampersand);
+            __script->off++;
+        break;
         case '\x27':
             __script->off++;
             *tok = (struct token) {

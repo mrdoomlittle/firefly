@@ -21,7 +21,9 @@ ffly_err_t ffly_ld_sysconf(char *__path) {
         return err;
     }
 
-    void* version = ffly_conf_get(&conf, "version");
+    ffconf cf;
+    ffly_conf_depos(&conf, &cf);
+    void* version = ffly_conf_get(&cf, "version");
     if (!ffly_conf_is_str(version)) {
         ffly_fprintf(ffly_err, "can't read version as type does not match.\n");
         err = FFLY_FAILURE;
@@ -32,6 +34,10 @@ ffly_err_t ffly_ld_sysconf(char *__path) {
 
     _failure:
     if (_err(err = ffly_conf_free(&conf))) {
+        return err;
+    }
+
+    if (_err(err = ffconf_free(&cf))) {
         return err;
     }
     return err;

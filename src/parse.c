@@ -9,6 +9,7 @@
 void build_node(struct ffly_script *__script, struct node **__node, struct node *__tmpl) {
 	*__node = (struct node*)__ffly_mem_alloc(sizeof(struct node));
 	**__node = *__tmpl;
+    (*__node)->p = NULL;
     cleanup(__script, (void*)*__node);
 }
 
@@ -126,8 +127,8 @@ void ast_while(struct ffly_script *__script, struct node **__node, struct node *
     build_node(__script, __node, &(struct node){.kind=_ast_while, .cond=__cond, .block=*__block, ._type=NULL});
 }
 
-void ast_uop(struct ffly_script *__script, struct node **__node, mdl_u8_t __kind, struct node *__operand) {
-    build_node(__script, __node, &(struct node){.kind=__kind, .operand=__operand});
+void ast_uop(struct ffly_script *__script, struct node **__node, mdl_u8_t __kind, struct node *__operand, struct type *__type) {
+    build_node(__script, __node, &(struct node){.kind=__kind, .operand=__operand, ._type=__type});
 }
 
 void ast_match(struct ffly_script *__script, struct node **__node) {
@@ -316,28 +317,53 @@ ffly_err_t read_conditional_expr(struct ffly_script *__script, struct node **__n
     return FFLY_SUCCESS;
 }
 
+ffly_err_t read_expr(struct ffly_script*, struct node**);
+ffly_err_t read_unary_addrof(struct ffly_script *__script, struct node **__node) {
+    struct node *_node;
+    ffly_err_t err;
+    if (_err(err = read_expr(__script, &_node)))
+        return err;
+
+    
+    struct type *_type;
+    build_type(__script, &_type, u64_t);
+    ast_uop(__script, __node, _ast_addrof, _node, _type);
+    return FFLY_SUCCESS;
+}
+
+ffly_err_t read_unary_expr(struct ffly_script *__script, struct node **__node) {
+    if (next_token_is(__script, TOK_KEYWORD, _incr))
+        ast_uop(__script, __node, _ast_incr, *__node, (*__node)->_type);
+    else if (next_token_is(__script, TOK_KEYWORD, _decr))
+        ast_uop(__script, __node, _ast_decr, *__node, (*__node)->_type);
+    else {
+        struct token *tok = next_token(__script);
+        switch(tok->id) {
+            case _ampersand: read_unary_addrof(__script, __node); goto _end;
+        }
+
+        ffly_script_ulex(__script, tok);
+        return FFLY_SUCCESS;
+    }
+
+    if (!expect_token(__script, TOK_KEYWORD, _semicolon)) {
+        return FFLY_FAILURE;
+    }
+
+    _end:
+    return FFLY_SUCCESS;
+}
+
 ffly_err_t read_postfix_expr(struct ffly_script *__script, struct node **__node) {
     ffly_err_t err;
     if (next_token_is(__script, TOK_KEYWORD, _period)) {
         if (_err(err = read_struct_field(__script, __node, *__node))) {
             return FFLY_FAILURE;
         }
-    } else {
-        if (next_token_is(__script, TOK_KEYWORD, _incr)) {
-            ast_uop(__script, __node, _ast_incr, *__node);
-        } else if (next_token_is(__script, TOK_KEYWORD, _decr)) {
-            ast_uop(__script, __node, _ast_decr, *__node);
-        } else
-            return FFLY_SUCCESS;
-
-        if (!expect_token(__script, TOK_KEYWORD, _semicolon)) {
-            return FFLY_FAILURE;
-        }
     }
     return FFLY_SUCCESS;
 }
 
-ffly_err_t read_expr(struct ffly_script*, struct node**);
 ffly_err_t read_assign_expr(struct ffly_script *__script, struct node **__node) {
     if (next_token_is(__script, TOK_KEYWORD, _eq)) {
         struct node *l = *__node;
@@ -357,6 +383,8 @@ ffly_err_t read_expr(struct ffly_script *__script, struct node **__node) {
     if (_err(err = read_primary_expr(__script, __node)))
         return err;
     if (_err(err = read_postfix_expr(__script, __node)))
+        return err;
+    if (_err(err = read_unary_expr(__script, __node)))
         return err;
     if (_err(err = read_conditional_expr(__script, __node)))
         return err;

@@ -24,7 +24,7 @@ struct ffly_uni {
     mdl_uint_t xcnk_c, ycnk_c, zcnk_c;
     struct ffly_cnk_man chunk_man;
     ffly_id_t *chunks;
-    mdl_uint_t xal, yal, zal;
+    mdl_uint_t xl, yl, zl;
     mdl_uint_t chunk_c;
 };
 
@@ -41,8 +41,8 @@ ffly_err_t ffly_uni_free(ffly_unip);
 namespace mdl {
 namespace firefly {
 class uni {
-    types::err_t build(uint_t __xal, uint_t __yal, uint_t __zal, u8_t __splice) {
-        return ffly_uni_build(&this->raw, __xal, __yal, __zal, __splice);
+    types::err_t build(uint_t __xl, uint_t __yl, uint_t __zl, u8_t __splice) {
+        return ffly_uni_build(&this->raw, __xl, __yl, __zl, __splice);
     }
 
     types::err_t free() {

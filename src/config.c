@@ -65,12 +65,18 @@ mdl_i8_t ffly_conf_8l_s(void *__p) {
     return *(mdl_i8_t*)((struct ffly_conf_val*)__p)->p;
 }
 
-void const* ffly_conf_get(struct ffly_conf *__conf, char *__name) {
+void ffly_conf_depos(struct ffly_conf *__conf, ffconfp __d) {
+    __d->arrs = __conf->arrs;
+    __d->free = __conf->free;
+    __d->env = __conf->env;
+}
+
+void const* ffly_conf_get(ffconfp __conf, char *__name) {
     ffly_err_t err;
     return ffly_map_get(&__conf->env, (mdl_u8_t*)__name, ffly_str_len(__name), &err);
 }
 
-void* ffly_conf_get_arr_elem(struct ffly_conf *__conf, void *__p, mdl_uint_t __no) {
+void* ffly_conf_get_arr_elem(void *__p, mdl_uint_t __no) {
     return *(void**)ffly_vec_at(&((struct ffly_conf_arr*)__p)->data, __no);
 }
 
@@ -145,6 +151,7 @@ char static* read_ident(struct ffly_conf *__conf) {
     while((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
         ffly_buff_put(&__conf->sbuf, itr++);
         ffly_buff_incr(&__conf->sbuf);
+        c = *itr;
     }
 
     char end = '\0';
@@ -161,6 +168,7 @@ char static* read_no(struct ffly_conf *__conf) {
     while((c >= '0' && c <= '9') || c == '.' || c == '-') {
         ffly_buff_put(&__conf->sbuf, itr++);
         ffly_buff_incr(&__conf->sbuf);
+        c = *itr;
     }
 
     char end = '\0';
@@ -494,36 +502,8 @@ ffly_err_t ffly_conf_ld(struct ffly_conf *__conf, char *__file) {
     return FFLY_SUCCESS; 
 }
 
-ffly_err_t ffly_conf_free(struct ffly_conf *__conf) {
+ffly_err_t ffconf_free(ffconfp __conf) {
     ffly_err_t err;
-    if (_err(err = ffly_buff_de_init(&__conf->sbuf))) {
-        ffly_fprintf(ffly_err, "failed to de-init buff.\n");
-        return err;
-    }
-
-    if (ffly_vec_size(&__conf->toks)>0) {
-        struct token *tok;
-        struct token **itr = (struct token**)ffly_vec_begin(&__conf->toks);
-        while(itr <= (struct token**)ffly_vec_end(&__conf->toks)) {
-            tok = *(itr++);
-            if (tok->p != NULL) {
-                if ((mdl_u8_t*)tok->p >= __conf->end || (mdl_u8_t*)tok->p < __conf->p)
-                    __ffly_mem_free(tok->p);
-            }
-            __ffly_mem_free(tok);
-        }
-    }
-
-    if (_err(err = ffly_vec_de_init(&__conf->toks))) {
-        ffly_fprintf(ffly_err, "failed to de-init vec.\n");
-        return err;
-    }
-
-    if (_err(err = ffly_buff_de_init(&__conf->iject_buff))) {
-        ffly_fprintf(ffly_err, "failed to de-init buff.\n");
-        return err;
-    }
-
     if (ffly_vec_size(&__conf->arrs)>0) {
         struct ffly_conf_arr **itr = (struct ffly_conf_arr**)ffly_vec_begin(&__conf->arrs);
         while(itr <= (struct ffly_conf_arr**)ffly_vec_end(&__conf->arrs)) {
@@ -553,7 +533,38 @@ ffly_err_t ffly_conf_free(struct ffly_conf *__conf) {
         ffly_fprintf(ffly_err, "failed to de-init map.\n");
         return err;
     }
+    return FFLY_SUCCESS;
+}
 
+ffly_err_t ffly_conf_free(struct ffly_conf *__conf) {
+    ffly_err_t err;
+    if (_err(err = ffly_buff_de_init(&__conf->sbuf))) {
+        ffly_fprintf(ffly_err, "failed to de-init buff.\n");
+        return err;
+    }
+
+    if (ffly_vec_size(&__conf->toks)>0) {
+        struct token *tok;
+        struct token **itr = (struct token**)ffly_vec_begin(&__conf->toks);
+        while(itr <= (struct token**)ffly_vec_end(&__conf->toks)) {
+            tok = *(itr++);
+            if (tok->p != NULL) {
+                if ((mdl_u8_t*)tok->p >= __conf->end || (mdl_u8_t*)tok->p < __conf->p)
+                    __ffly_mem_free(tok->p);
+            }
+            __ffly_mem_free(tok);
+        }
+    }
+
+    if (_err(err = ffly_vec_de_init(&__conf->toks))) {
+        ffly_fprintf(ffly_err, "failed to de-init vec.\n");
+        return err;
+    }
+
+    if (_err(err = ffly_buff_de_init(&__conf->iject_buff))) {
+        ffly_fprintf(ffly_err, "failed to de-init buff.\n");
+        return err;
+    }
     __ffly_mem_free(__conf->p);
     return FFLY_SUCCESS;
 }
@@ -589,8 +600,10 @@ int main() {
     ffly_conf_init(&conf);
     ffly_conf_ld(&conf, "test.conf");
     ffly_conf_read(&conf);
+    ffconf cf;
+    ffly_conf_depos(&conf, &cf);
 
-    void const *val = ffly_conf_get(&conf, "info");
+    void const *val = ffly_conf_get(&cf, "info");
     if (!val) {
         ffly_fprintf(ffly_out, "(null)\n");
         return -1;
@@ -602,7 +615,9 @@ int main() {
  //   print_val((struct ffly_conf_val*)ffly_conf_get_arr_elem(&conf, arr, 1));
   //  print_val((struct ffly_conf_val*)ffly_conf_get_arr_elem(&conf, arr, 2));
    // print_val((struct ffly_conf_val*)ffly_conf_get_arr_elem(&conf, arr, 3));
+
     ffly_conf_free(&conf);
+    ffconf_free(&cf);    
     ffly_io_closeup();
 }
 # endif

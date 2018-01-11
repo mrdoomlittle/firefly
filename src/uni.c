@@ -15,58 +15,58 @@ mdl_uint_t static get_cnk_no(ffly_unip __uni, mdl_uint_t __off) {
     return __off>>__uni->splice;
 }
 
-ffly_chunkp static get_chunk(ffly_unip __uni, mdl_uint_t __xa, mdl_uint_t __ya, mdl_uint_t __za) {
-    return ffly_cnk_man_fetch(&__uni->chunk_man, ffly_uni_chunk(__uni, __xa, __ya, __za));
+ffly_chunkp static get_chunk(ffly_unip __uni, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z) {
+    return ffly_cnk_man_fetch(&__uni->chunk_man, ffly_uni_chunk(__uni, __x, __y, __z));
 }
 
-ffly_lotpp static get_lot(ffly_unip __uni, mdl_uint_t __xa, mdl_uint_t __ya, mdl_uint_t __za) {
-    ffly_chunkp chunk = get_chunk(__uni, __xa, __ya, __za);
-    return ffly_fetch_lot(chunk, __xa, __ya, __za);
+ffly_lotpp static get_lot(ffly_unip __uni, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z) {
+    ffly_chunkp chunk = get_chunk(__uni, __x, __y, __z);
+    return ffly_fetch_lot(chunk, __x, __y, __z);
 }
 
-ffly_err_t ffly_uni_obj_move(ffly_unip __uni, ffly_objp __obj, mdl_uint_t __xa, mdl_uint_t __ya, mdl_uint_t __za) {
+ffly_err_t ffly_uni_obj_move(ffly_unip __uni, ffly_objp __obj, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z) {
     ffly_uni_detach_obj(__uni, __obj);
-    __obj->xa = __xa;
-    __obj->ya = __ya;
-    __obj->za = __za;
+    __obj->x = __x;
+    __obj->y = __y;
+    __obj->z = __z;
     ffly_uni_attach_obj(__uni, __obj);
 }
 
-ffly_bool_t ffly_uni_frame(ffly_unip __uni, ffly_byte_t *__dst, mdl_uint_t __xal, mdl_uint_t __yal, mdl_uint_t __zal, mdl_uint_t __xa, mdl_uint_t __ya, mdl_uint_t __za) {
-    mdl_uint_t cnk_xal = ffly_uni_chunk_xal(__uni);
-    mdl_uint_t cnk_yal = ffly_uni_chunk_yal(__uni);
-    mdl_uint_t cnk_zal = ffly_uni_chunk_zal(__uni);
+ffly_bool_t ffly_uni_frame(ffly_unip __uni, ffly_byte_t *__dst, mdl_uint_t __xl, mdl_uint_t __yl, mdl_uint_t __zl, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z) {
+    mdl_uint_t cnk_xl = ffly_uni_chunk_xal(__uni);
+    mdl_uint_t cnk_yl = ffly_uni_chunk_yal(__uni);
+    mdl_uint_t cnk_zl = ffly_uni_chunk_zal(__uni);
 
-    mdl_uint_t xa = __xa, ya = __ya, za = __za;
+    mdl_uint_t x = __x, y = __y, z = __z;
     ffly_chunkp chunk;
-    while(za < __za+__zal) {
-        ya = __ya;
-        while(ya < __ya+__yal) {
-            xa = __xa;
-            while(xa < __xa+__xal) {
-                chunk = get_chunk(__uni, xa, ya, za);
-                ffly_lotp lot = *ffly_fetch_lot(chunk, xa, ya, za);
+    while(z < __z+__zl) {
+        y = __y;
+        while(y < __y+__yl) {
+            x = __x;
+            while(x < __x+__xl) {
+                chunk = get_chunk(__uni, x, y, z);
+                ffly_lotp lot = *ffly_fetch_lot(chunk, x, y, z);
                 if (lot != NULL) {
                     ffly_objpp itr = lot->top;
                     ffly_objp obj;
                     while(itr != lot->end) {
                         obj = *itr;
-                        if ((obj->xa < __xa+__xal && obj->xa >= __xa) && (obj->ya < __ya+__yal && obj->ya >= __ya) && (obj->za < __za+__zal && obj->za >= __za)) {
-                            ffly_obj_draw(obj, __dst, obj->xa-__xa, obj->ya-__ya, obj->za-__za, __xal, __yal, __zal, __xa+__xal, __ya+__yal, __za+__zal);
+                        if ((obj->x < __x+__xl && obj->x >= __x) && (obj->y < __y+__yl && obj->y >= __y) && (obj->z < __z+__zl && obj->z >= __z)) {
+                            ffly_obj_draw(obj, __dst, obj->x-__x, obj->y-__y, __xl, __yl, __x+__xl, __y+__yl);
                         }
                         itr++;
                     }
                 }
-                xa+= 1<<chunk->lotsize;
+                x+= 1<<chunk->lotsize;
             }
-            ya+= 1<<chunk->lotsize;
+            y+= 1<<chunk->lotsize;
         }
-        za+= 1<<chunk->lotsize;
+        z+= 1<<chunk->lotsize;
     }
 }
 
-ffly_id_t ffly_uni_chunk(ffly_unip __uni, ffly_off_t __xa, ffly_off_t __ya, ffly_off_t __za) {
-    return *(__uni->chunks+(__xa>>__uni->splice)+((__ya>>__uni->splice)*__uni->xcnk_c)+((__za>>__uni->splice)*(__uni->ycnk_c*__uni->xcnk_c)));
+ffly_id_t ffly_uni_chunk(ffly_unip __uni, ffly_off_t __x, ffly_off_t __y, ffly_off_t __z) {
+    return *(__uni->chunks+(__x>>__uni->splice)+((__y>>__uni->splice)*__uni->xcnk_c)+((__z>>__uni->splice)*(__uni->ycnk_c*__uni->xcnk_c)));
 }
 
 ffly_err_t ffly_uni_free(ffly_unip __uni) {
@@ -75,12 +75,12 @@ ffly_err_t ffly_uni_free(ffly_unip __uni) {
 }
 
 ffly_err_t ffly_uni_attach_obj(ffly_unip __uni, ffly_objp __obj) {
-    ffly_lotpp lot = get_lot(__uni, __obj->xa, __obj->ya, __obj->za);
+    ffly_lotpp lot = get_lot(__uni, __obj->x, __obj->y, __obj->z);
     if (!*lot) {
         ffly_fprintf(ffly_log, "new lot.\n");
-        ffly_chunkp chunk = get_chunk(__uni, __obj->xa, __obj->ya, __obj->za);
+        ffly_chunkp chunk = get_chunk(__uni, __obj->x, __obj->y, __obj->z);
         *lot = ffly_alloc_lot(1<<chunk->lotsize, 1<<chunk->lotsize, 1<<chunk->lotsize);
-        ffly_lot_prepare(*lot, (__obj->xa>>chunk->lotsize)*chunk->lotsize, (__obj->ya>>chunk->lotsize)*chunk->lotsize, (__obj->za>>chunk->lotsize)*chunk->lotsize);
+        ffly_lot_prepare(*lot, (__obj->x>>chunk->lotsize)*chunk->lotsize, (__obj->y>>chunk->lotsize)*chunk->lotsize, (__obj->z>>chunk->lotsize)*chunk->lotsize);
     }
 
 //    ffly_fprintf(ffly_log, "added to lot.\n");
@@ -88,30 +88,30 @@ ffly_err_t ffly_uni_attach_obj(ffly_unip __uni, ffly_objp __obj) {
 }
     
 ffly_err_t ffly_uni_detach_obj(ffly_unip __uni, ffly_objp __obj) {
-    ffly_lot_rm(*get_lot(__uni, __obj->xa, __obj->ya, __obj->za), __obj);
+    ffly_lot_rm(*get_lot(__uni, __obj->x, __obj->y, __obj->z), __obj);
 }
 
-ffly_err_t ffly_uni_build(ffly_unip __uni, mdl_uint_t __xal, mdl_uint_t __yal, mdl_uint_t __zal, mdl_u8_t __splice, mdl_u8_t __lotsize) {
-    if (!is_sliceable(__xal, __splice)) {
-        ffly_fprintf(ffly_err, "xal not sliceable by %u.\n", 1<<__splice);
+ffly_err_t ffly_uni_build(ffly_unip __uni, mdl_uint_t __xl, mdl_uint_t __yl, mdl_uint_t __zl, mdl_u8_t __splice, mdl_u8_t __lotsize) {
+    if (!is_sliceable(__xl, __splice)) {
+        ffly_fprintf(ffly_err, "length of x not sliceable by %u.\n", 1<<__splice);
         return FFLY_FAILURE;
     }
 
-    if (!is_sliceable(__yal, __splice)) {
-        ffly_fprintf(ffly_err, "yal not sliceable by %u.\n", 1<<__splice);
+    if (!is_sliceable(__yl, __splice)) {
+        ffly_fprintf(ffly_err, "length of y not sliceable by %u.\n", 1<<__splice);
         return FFLY_FAILURE;
 
     }
 
-    if (!is_sliceable(__zal, __splice)) {
-        ffly_fprintf(ffly_err, "zal not sliceable by %u.\n", 1<<__splice);
+    if (!is_sliceable(__zl, __splice)) {
+        ffly_fprintf(ffly_err, "length of z sliceable by %u.\n", 1<<__splice);
         return FFLY_FAILURE;
     }
     
     ffly_cnk_man_init(&__uni->chunk_man, 1<<__splice, 1<<__splice, 1<<__splice);
-    __uni->xcnk_c = __xal>>__splice;
-    __uni->ycnk_c = __yal>>__splice;
-    __uni->zcnk_c = __zal>>__splice;
+    __uni->xcnk_c = __xl>>__splice;
+    __uni->ycnk_c = __yl>>__splice;
+    __uni->zcnk_c = __zl>>__splice;
     ffly_fprintf(ffly_log, "building univirse, xcnk %u, ycnk %u, zcnk %u\n", __uni->xcnk_c, __uni->ycnk_c, __uni->zcnk_c);
     mdl_uint_t size = __uni->xcnk_c*__uni->ycnk_c*__uni->zcnk_c;
     __uni->chunks = (ffly_id_t*)__ffly_mem_alloc(size*sizeof(ffly_id_t));

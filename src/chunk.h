@@ -10,8 +10,8 @@ struct ffly_chunk {
     mdl_u8_t lotsize;
     ffly_lotpp lots;
     mdl_uint_t lotx, loty, lotz;
-    mdl_uint_t xal, yal, zal;
-    mdl_uint_t xa, ya, za;
+    mdl_uint_t xl, yl, zl;
+    mdl_uint_t x, y, z;
     ffly_no_t no;
 
     // cleanup

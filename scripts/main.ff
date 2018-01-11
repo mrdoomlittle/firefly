@@ -1,3 +1,4 @@
+/*
 %include "../scripts/limits.ff"
 %include "../scripts/test0.ff"
 %include "../scripts/test1.ff"
@@ -5,11 +6,21 @@ print(U8_MAX);
 print(U16_MAX);
 print(U32_MAX);
 print(U64_MAX);
+*/
 
-:0<- {
-    12,
-    212
-};
+/*
+fn testing()->void {
+    print(21299);
+}
+*/
 
-print('A');
+
+u8_t i = 0;
+while(i < 20) {
+    if (i == 12) {
+        print(i);
+    }
+    i++;
+}
+
 exit;

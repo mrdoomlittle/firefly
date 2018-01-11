@@ -14,8 +14,8 @@ struct ffly_lot {
     ffly_objpp top;
     ffly_objpp end;
     ffly_objppp objs;
-    mdl_uint_t xal, yal, zal;
-    mdl_uint_t xa, ya, za;
+    mdl_uint_t xl, yl, zl;
+    mdl_uint_t x, y, z;
     /*
         cleanup
     */
