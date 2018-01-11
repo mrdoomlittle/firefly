@@ -7,6 +7,10 @@
 # include "data/bcopy.h"
 static ffly_objp top = NULL;
 static ffly_objp end = NULL;
+void ffly_obj_rotate(ffly_objp __obj, float __angle) {
+    __obj->angle = __angle;
+}
+
 ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
     *__err = FFLY_SUCCESS;
     /*
@@ -27,7 +31,7 @@ ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
         end->next = obj;
         obj->prev = end;
     }
-
+    obj->angle = 0.0;
     end = obj;
     return obj;
 }
@@ -35,9 +39,9 @@ ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
 # ifdef __ffly_testing
 #   include "graphics/draw.h"
 # endif
-ffly_err_t ffly_obj_draw(ffly_objp __obj, ffly_byte_t *__frame, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __width, mdl_uint_t __height, mdl_uint_t __xmax, mdl_uint_t __ymax) {
+ffly_err_t ffly_obj_draw(ffly_objp __obj, ffly_byte_t *__frame, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z, mdl_uint_t __width, mdl_uint_t __height, mdl_uint_t __xmax, mdl_uint_t __ymax) {
 # ifdef __ffly_testing
-    ffly_draw_polygon(&__obj->shape, __frame, NULL, __x, __y, __width, __height, __xmax, __ymax);
+    ffly_draw_polygon(&__obj->shape, __frame, __obj->texture, __x, __y, __z, __width, __height, __xmax, __ymax, __obj->angle);
 # else
 # endif
 }

@@ -33,7 +33,7 @@ char *frame;
 */
 # include "maths/dot.h"
 # include "maths/barycentric.h"
-
+# include "maths/pi.h"
 int main() {
     ffly_io_init();
 /*
@@ -42,11 +42,12 @@ int main() {
     ffly_polygon poly;
     ffly_bzero(&poly, sizeof(ffly_polygon));
 
-    ffly_vertex3(&poly, 0, 0, 0);
-    ffly_vertex3(&poly, 30, 0, 0);
-    ffly_vertex3(&poly, 30, 30, 0);
-   
-    ffly_draw_polygon(&poly, frame, NULL, 10, 10, xal, yal, 30, 30);
+    ffly_vertex3(&poly, -4, -4, 0);
+    ffly_vertex3(&poly, 4, -4, 0);
+    ffly_vertex3(&poly, 4, 4, 0);
+  
+    ffly_rotate_polygon(&poly, 0, 0, 10); 
+    ffly_draw_polygon(&poly, frame, NULL, 10, 10, 0, xal, yal, 30, 30);
  
     mdl_uint_t x, y = 0;
     while(y != yal) {
@@ -61,14 +62,15 @@ int main() {
 
     __ffly_mem_free(frame);
     ffly_io_closeup();
+    return 0;
 */
     ffly_err_t err;
     struct ffly_obj_man obj_man;
     ffly_obj_man_prepare(&obj_man);
 
     struct ffly_camera camera;
-    ffly_camera_init(&camera, 34, 34);
-    ffly_mem_set(camera.pixels, 0, 34*34*4);
+    ffly_camera_init(&camera, 60, 60);
+    ffly_mem_set(camera.pixels, 0, 60*60*4);
     struct ffly_uni uni;
     ffly_uni_build(&uni, _ffly_uni_128, _ffly_uni_128, _ffly_uni_64, 3, _ffly_lotsize_8);
 
@@ -81,12 +83,12 @@ int main() {
     ffly_id_t obj1 = ffly_obj_man_add(&obj_man, ffly_obj_alloc(&err));
 
     ffly_objp obj = ffly_obj_man_get(&obj_man, obj0);
-    ffly_byte_t *texture = (ffly_byte_t*)__ffly_mem_alloc(8*8*4);
-    ffly_mem_set(texture, 200, 8*8*4);
+    ffly_byte_t *texture = (ffly_byte_t*)__ffly_mem_alloc(60*60*4);
+    ffly_mem_set(texture, 200, 60*60*4);
     ffly_bzero(&obj->shape, sizeof(ffly_polygon));
-    ffly_obj_vertex(obj, 0, 0, 0);
-    ffly_obj_vertex(obj, 8, 0, 0);
-    ffly_obj_vertex(obj, 8, 8, 0);
+    ffly_obj_vertex(obj, -4, -4, 0);
+    ffly_obj_vertex(obj, 4, -4, 0);
+    ffly_obj_vertex(obj, 4, 4, 0);
     obj->texture = texture;
     obj->xl = 8;
     obj->yl = 8;
@@ -99,15 +101,15 @@ int main() {
 
     obj = ffly_obj_man_get(&obj_man, obj1);
     ffly_bzero(&obj->shape, sizeof(ffly_polygon));
-    ffly_obj_vertex(obj, 0, 0, 0);
-    ffly_obj_vertex(obj, 8, 0, 0);
+    ffly_obj_vertex(obj, -8, -8, 0);
+    ffly_obj_vertex(obj, 8, -8, 0);
     ffly_obj_vertex(obj, 8, 8, 0);
     obj->texture = texture;
-    obj->xl = 8;
-    obj->yl = 8;
+    obj->xl = 60;
+    obj->yl = 60;
     obj->zl = 1;
     obj->x = 10;
-    obj->y = 0;
+    obj->y = 10;
     obj->z = 0;
 
     ffly_uni_attach_obj(&uni, obj);
@@ -119,6 +121,7 @@ int main() {
 
     mdl_u64_t update = 200000, i = 0;
 
+    float r = 0.0;
     mdl_i8_t dir = -1;
     mdl_uint_t cam_x = 0, cam_y = 0, x = ffly_obj_man_get(&obj_man, obj0)->x, y = ffly_obj_man_get(&obj_man, obj0)->y;
     while(1) {
@@ -126,6 +129,8 @@ int main() {
         if (read(fd, &event, sizeof(struct input_event)) < 0) goto _sk;
         if (event.type == EV_KEY) {
             switch(event.code) {
+                case KEY_SPACE:
+                break;
                 case KEY_ESC:
                     goto _exit;
                 break;
@@ -183,7 +188,10 @@ int main() {
         y+=dir;
 
         ffly_uni_obj_move(&uni, ffly_obj_man_get(&obj_man, obj0), x, y, 0);
-        if (i > update) {            
+        if (i > update) {
+            if (r >= 360) r = 0.0;
+            ffly_obj_rotate(obj, r);
+            r+= 1;         
             ffly_camera_handle(&camera);
             system("clear");
             printf("-------------- x: %u:%u, y: %u:%u -------------\n", x, cam_x, y, cam_y);

@@ -52,7 +52,7 @@ ffly_bool_t ffly_uni_frame(ffly_unip __uni, ffly_byte_t *__dst, mdl_uint_t __xl,
                     while(itr != lot->end) {
                         obj = *itr;
                         if ((obj->x < __x+__xl && obj->x >= __x) && (obj->y < __y+__yl && obj->y >= __y) && (obj->z < __z+__zl && obj->z >= __z)) {
-                            ffly_obj_draw(obj, __dst, obj->x-__x, obj->y-__y, __xl, __yl, __x+__xl, __y+__yl);
+                            ffly_obj_draw(obj, __dst, obj->x-__x, obj->y-__y, 0, __xl, __yl, __x+__xl, __y+__yl);
                         }
                         itr++;
                     }

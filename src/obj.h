@@ -22,6 +22,7 @@ struct ffly_obj {
     ffscriptp script;
     /* cleanup
     */
+    float angle;
     struct ffly_obj *prev, *next;
 };
 
@@ -32,7 +33,8 @@ typedef ffly_objpp* ffly_objppp;
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_obj_draw(ffly_objp, ffly_byte_t*, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t);
+void ffly_obj_rotate(ffly_objp, float);
+ffly_err_t ffly_obj_draw(ffly_objp, ffly_byte_t*, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t);
 ffly_objp ffly_obj_alloc(ffly_err_t*);
 ffly_err_t ffly_obj_free(ffly_objp);
 ffly_err_t ffly_obj_handle(ffly_objp);

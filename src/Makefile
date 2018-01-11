@@ -26,10 +26,13 @@ uni: clean
 	gcc -D__ffly_testing -c maths/max.c
 	gcc -D__ffly_testing -c maths/barycentric.c
 	gcc -D__ffly_testing -c polygon.c
+	gcc -D__ffly_testing -c maths/rotate.c
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o.0 system/asm/sys_nanosleep.asm
-	gcc -D__ffly_testing -c -o sys_nanosleep.o.1 system/sys_nanosleep.c
-	gcc -D__ffly_testing main.c bzero.o polygon.o max.o barycentric.o min.o lot.o obj_manager.o obj_pool.o mutex.o.0 bcopy.o mem_set.o sys_nanosleep.o.0 sys_nanosleep.o.1 camera.o obj.o mutex.o.1 flags.o vec.o mem_cpy.o alloc_pixelmap.o uni.o io.o chunk.o chunk_manager.o mem_alloc.o mem_realloc.o mem_free.o
+	nasm -f elf64 $(nasm_flags) -o round.o.0 maths/asm/round.asm
+	gcc -D__ffly_testing -c -o round.o.1 maths/round.c
 
+	gcc -D__ffly_testing -c -o sys_nanosleep.o.1 system/sys_nanosleep.c
+	gcc -D__ffly_testing main.c bzero.o round.o.0 round.o.1 rotate.o polygon.o max.o barycentric.o min.o lot.o obj_manager.o obj_pool.o mutex.o.0 bcopy.o mem_set.o sys_nanosleep.o.0 sys_nanosleep.o.1 camera.o obj.o mutex.o.1 flags.o vec.o mem_cpy.o alloc_pixelmap.o uni.o io.o chunk.o chunk_manager.o mem_alloc.o mem_realloc.o mem_free.o -lm
 all:
 	rm -f *.o
 	nasm -f elf64 $(nasm_flags) -o mutex.o system/asm/mutex.asm
