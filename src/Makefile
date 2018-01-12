@@ -1,8 +1,14 @@
 DEFINES=-I../eint_t/inc -D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
 nasm_flags="-I${PWD}/system/asm/"
+ca: clean
+	gcc -c memory/mem_alloc.c
+	gcc -c memory/mem_free.c
+	gcc -c memory/mem_realloc.c
+	gcc cache.c mem_alloc.o mem_free.o mem_realloc.o
 uni: clean
 	gcc -D__ffly_testing -c data/bcopy.c
 	nasm -f elf64 $(nasm_flags) -o mutex.o.0 system/asm/mutex.asm
+	gcc -D__ffly_testing -c cache.c
 	gcc -D__ffly_testing -c -o mutex.o.1 system/mutex.c
 	gcc -D__ffly_testing -c lot.c
 	gcc -D__ffly_testing -c memory/mem_alloc.c
@@ -28,84 +34,87 @@ uni: clean
 	gcc -D__ffly_testing -c polygon.c
 	gcc -D__ffly_testing -c maths/rotate.c
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o.0 system/asm/sys_nanosleep.asm
+	
+
 	nasm -f elf64 $(nasm_flags) -o round.o.0 maths/asm/round.asm
 	gcc -D__ffly_testing -c -o round.o.1 maths/round.c
 
 	gcc -D__ffly_testing -c -o sys_nanosleep.o.1 system/sys_nanosleep.c
-	gcc -D__ffly_testing main.c bzero.o round.o.0 round.o.1 rotate.o polygon.o max.o barycentric.o min.o lot.o obj_manager.o obj_pool.o mutex.o.0 bcopy.o mem_set.o sys_nanosleep.o.0 sys_nanosleep.o.1 camera.o obj.o mutex.o.1 flags.o vec.o mem_cpy.o alloc_pixelmap.o uni.o io.o chunk.o chunk_manager.o mem_alloc.o mem_realloc.o mem_free.o -lm
+	gcc -D__ffly_testing main.c bzero.o cache.o round.o.0 round.o.1 rotate.o polygon.o max.o barycentric.o min.o lot.o obj_manager.o obj_pool.o mutex.o.0 bcopy.o mem_set.o sys_nanosleep.o.0 sys_nanosleep.o.1 camera.o obj.o mutex.o.1 flags.o vec.o mem_cpy.o alloc_pixelmap.o uni.o io.o chunk.o chunk_manager.o mem_alloc.o mem_realloc.o mem_free.o -lm
 all:
 	rm -f *.o
 	nasm -f elf64 $(nasm_flags) -o mutex.o system/asm/mutex.asm
-	gcc -c -std=c11 -DARC64 $(DEFINES) maths/is_inside.c
-	gcc -c -std=c11 -DARC64 $(DEFINES) system/vec.c
-	gcc -c -std=c11 -DARC64 $(DEFINES) system/mem_tracker.c
-	gcc -c -std=c11 -DARC64 $(DEFINES) memory/alloc_pixmap.c
-	gcc -c -std=c11 -DARC64 $(DEFINES) data/mem_cpy.c
-	gcc -c -std=c11 -DARC64 $(DEFINES) data/swp.c
-	gcc -c -std=c11 -DARC64 $(DEFINES) system/io.c
-	gcc -c -std=c11 -DARC64 $(DEFINES) memory/mem_alloc.c
-	gcc -c -std=c11 -DARC64 $(DEFINES) memory/mem_free.c
-	gcc -c -std=c11 -DARC64 $(DEFINES) memory/mem_realloc.c
-	gcc -c -std=c11 -DARC64 $(DEFINES) -o chunk_keeper.o chunk_keeper.c
+	gcc -c -DARC64 $(DEFINES) maths/is_inside.c
+	gcc -c -DARC64 $(DEFINES) system/vec.c
+	gcc -c -DARC64 $(DEFINES) system/mem_tracker.c
+	gcc -c -DARC64 $(DEFINES) memory/alloc_pixmap.c
+	gcc -c -DARC64 $(DEFINES) data/mem_cpy.c
+	gcc -c -DARC64 $(DEFINES) data/swp.c
+	gcc -c -DARC64 $(DEFINES) system/io.c
+	gcc -c -DARC64 $(DEFINES) memory/mem_alloc.c
+	gcc -c -DARC64 $(DEFINES) memory/mem_free.c
+	gcc -c -DARC64 $(DEFINES) memory/mem_realloc.c
+	gcc -c -DARC64 $(DEFINES) -o chunk_keeper.o chunk_keeper.c
 	g++ -c -std=c++11 -DARC64 $(DEFINES) -o chunk_manager.o chunk_manager.cpp
-	gcc -c -std=c11 -DARC64 $(DEFINES) data/mem_cmp.c
-	gcc -c -std=c11 -DARC64 $(DEFINES) data/find.c
+	gcc -c -DARC64 $(DEFINES) data/mem_cmp.c
+	gcc -c -DARC64 $(DEFINES) data/find.c
 	g++ -std=c++11 -DARC64 $(DEFINES) -o main main.cpp mutex.o is_inside.o vec.o find.o mem_tracker.o chunk_manager.o mem_cmp.o swp.o alloc_pixmap.o mem_cpy.o io.o chunk_keeper.o mem_alloc.o mem_free.o mem_realloc.o
 config: clean
-	gcc -c -std=c11 system/io.c
-	gcc -c -std=c11 memory/mem_alloc.c
-	gcc -c -std=c11 memory/mem_free.c
-	gcc -c -std=c11 memory/mem_realloc.c
-	gcc -c -std=c11 system/file.c
-	gcc -c -std=c11 system/vec.c
-	gcc -c -std=c11 data/mem_cpy.c
-	gcc -c -std=c11 data/mem_swp.c
-	gcc -c -std=c11 system/flags.c
+	gcc -c system/io.c
+	gcc -c memory/mem_alloc.c
+	gcc -c memory/mem_free.c
+	gcc -c memory/mem_realloc.c
+	gcc -c system/file.c
+	gcc -c system/vec.c
+	gcc -c data/mem_cpy.c
+	gcc -c data/mem_swp.c
+	gcc -c system/flags.c
 	nasm -f elf64 $(nasm_flags) -o mutex.o.0 system/asm/mutex.asm
-	gcc -c -std=c11 data/str_len.c
-	gcc -c -std=c11 data/mem_dupe.c
-	gcc -c -std=c11 system/errno.c
-	gcc -c -std=c11 data/mem_set.c
-	gcc -c -std=c11 data/str_cmp.c
-	gcc -c -std=c11 system/buff.c
-	gcc -c -std=c11 data/str_dupe.c
-	gcc -c -std=c11 data/mem_cmp.c
-	gcc -c -std=c11 system/string.c
-	gcc -c -std=c11 system/bin_tree.c
-	gcc -c -std=c11 -o mutex.o.1 system/mutex.c
-	gcc -c -std=c11 system/map.c
-	gcc -c -std=c11 system/util/hash.c
+	gcc -c data/str_len.c
+	gcc -c data/mem_dupe.c
+	gcc -c system/errno.c
+	gcc -c data/mem_set.c
+	gcc -c data/str_cmp.c
+	gcc -c system/buff.c
+	gcc -c data/str_dupe.c
+	gcc -c data/mem_cmp.c
+	gcc -c system/string.c
+	gcc -c system/bin_tree.c
+	gcc -c -o mutex.o.1 system/mutex.c
+	gcc -c system/map.c
+	gcc -c system/util/hash.c
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o system/asm/sys_nanosleep.asm
-	gcc -std=c11 -o main config.c bin_tree.o hash.o map.o string.o sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o file.o mem_realloc.o mem_free.o mem_alloc.o
+	gcc  -o main config.c bin_tree.o hash.o map.o string.o sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o file.o mem_realloc.o mem_free.o mem_alloc.o
 script: clean
-	gcc -c -std=c11 system/io.c
-	gcc -c -std=c11 memory/mem_alloc.c
-	gcc -c -std=c11 memory/mem_free.c
-	gcc -c -std=c11 memory/mem_realloc.c
-	gcc -c -std=c11 parse.c
-	gcc -c -std=c11 lex.c
-	gcc -c -std=c11 gen.c
-	gcc -c -std=c11 system/file.c
-	gcc -c -std=c11 system/vec.c
-	gcc -c -std=c11 data/mem_cpy.c
-	gcc -c -std=c11 data/mem_swp.c
-	gcc -c -std=c11 system/flags.c
+	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o.0 system/asm/sys_nanosleep.asm
+	gcc -c -o sys_nanosleep.o.1 system/sys_nanosleep.c
+	gcc -c system/io.c
+	gcc -c memory/mem_alloc.c
+	gcc -c memory/mem_free.c
+	gcc -c memory/mem_realloc.c
+	gcc -c parse.c
+	gcc -c lex.c
+	gcc -c gen.c
+	gcc -c system/file.c
+	gcc -c system/vec.c
+	gcc -c data/mem_cpy.c
+	gcc -c data/mem_swp.c
+	gcc -c system/flags.c
 	nasm -f elf64 $(nasm_flags) -o mutex.o.0 system/asm/mutex.asm
-	gcc -c -std=c11 data/str_len.c
-	gcc -c -std=c11 data/mem_dupe.c
-	gcc -c -std=c11 system/errno.c
-	gcc -c -std=c11 data/mem_set.c
-	gcc -c -std=c11 data/str_cmp.c
-	gcc -c -std=c11 system/buff.c
-	gcc -c -std=c11 data/str_dupe.c
-	gcc -c -std=c11 data/mem_cmp.c
-	gcc -c -std=c11 system/string.c
-	gcc -c -std=c11 system/bin_tree.c
-	gcc -c -std=c11 -o mutex.o.1 system/mutex.c
-	gcc -c -std=c11 system/map.c
-	gcc -c -std=c11 system/util/hash.c
-	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o system/asm/sys_nanosleep.asm
-	gcc -std=c11 -Wall -o main script.c bin_tree.o hash.o map.o string.o sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o file.o parse.o lex.o gen.o mem_realloc.o mem_free.o mem_alloc.o
+	gcc -c data/str_len.c
+	gcc -c data/mem_dupe.c
+	gcc -c system/errno.c
+	gcc -c data/mem_set.c
+	gcc -c data/str_cmp.c
+	gcc -c system/buff.c
+	gcc -c data/str_dupe.c
+	gcc -c data/mem_cmp.c
+	gcc -c system/string.c
+	gcc -c system/bin_tree.c
+	gcc -c -o mutex.o.1 system/mutex.c
+	gcc -c system/map.c
+	gcc -c system/util/hash.c
+	gcc  -Wall -o main script.c bin_tree.o hash.o map.o string.o sys_nanosleep.o.0 sys_nanosleep.o.1 mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o file.o parse.o lex.o gen.o mem_realloc.o mem_free.o mem_alloc.o
 clean:
 	rm -f main
 	cd ../ && make clean && cd src

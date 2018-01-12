@@ -1,0 +1,19 @@
+%include "../scripts/types.ff"
+%define FFLY_MUTEX_INIT 0x0
+fn ffly_nanosleep(u64_t __sec, u64_t __nsec)->void{
+    :1<-{
+        __sec, __nsec
+    };
+}
+
+fn ffly_mutex_lock(ffly_mutex_t *__mutex)->void{
+    :2<-{
+        __mutex
+    };
+}
+
+fn ffly_mutex_unlock(ffly_mutex_t *__mutex)->void{
+    :3<-{
+        __mutex
+    };
+}

@@ -34,8 +34,10 @@ char *frame;
 # include "maths/dot.h"
 # include "maths/barycentric.h"
 # include "maths/pi.h"
+# include "cache.h"
 int main() {
     ffly_io_init();
+    ffly_cache_prepare(20);
 /*
     frame = __ffly_mem_alloc(xal*yal);
     ffly_mem_set(frame, '.', xal*yal);
@@ -210,5 +212,6 @@ int main() {
     ffly_lot_cleanup();
     ffly_uni_free(&uni);
     close(fd);
+    ffly_cache_free();
     ffly_io_closeup();
 }

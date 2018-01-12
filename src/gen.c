@@ -459,7 +459,6 @@ void emit_addrof(struct ffly_script *__script, struct node *__node) {
         p = &__node->operand->pair;
     else
         p = __node->operand->_obj;
-
     p = stack_push(&p, sizeof(void*));
     next_obj(__script, mk_op_assign(p, rg_64l_u->size, objpp(rg_64l_u)));
     push(__script, rg_64l_u);

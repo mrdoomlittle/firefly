@@ -9,6 +9,7 @@
 # include "maths/abs.h"
 # include "maths/round.h"
 # include "system/io.h"
+# include "types/id_t.h"
 void static rotate_vertex(ffly_vertexp __vertex, mdl_uint_t __x, mdl_uint_t __y, float __angle) {
     double x = __vertex->x-(mdl_int_t)__x, y = __vertex->y-(mdl_int_t)__y;
     ffly_rotate(&x, &y, __angle);
@@ -17,7 +18,6 @@ void static rotate_vertex(ffly_vertexp __vertex, mdl_uint_t __x, mdl_uint_t __y,
     __vertex->y = ffly_round(y)+(mdl_int_t)__y;
     ffly_fprintf(ffly_log, "%d, %d\n",  __vertex->x, __vertex->y);
 }
-
 
 // cache this
 void ffly_draw_polygon(ffly_polygonp __poly, ffly_byte_t *__frame, ffly_byte_t *__texture, mdl_uint_t __texw, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z, mdl_uint_t __width, mdl_uint_t __height, mdl_uint_t __xmax, mdl_uint_t __ymax, float __angle) {

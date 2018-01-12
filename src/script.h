@@ -35,7 +35,8 @@ struct ffly_script {
     struct ffly_vec nodes;
     struct ffly_vec vecs;
     struct ffly_vec maps;
-    
+   
+    struct ffly_map typedefs; 
 	struct ffly_buff sbuf;
 	// token injection buffer
     struct ffly_vec to_free;
@@ -105,7 +106,8 @@ enum {
     _incr,
     _decr,
     _k_else,
-    _k_float
+    _k_float,
+    _k_typedef
 };
 
 enum {
@@ -202,6 +204,7 @@ struct type {
 	mdl_uint_t size;
     ffly_off_t off;
     struct ffly_map fields;
+    struct type *ptr;
 };
 
 struct obj {

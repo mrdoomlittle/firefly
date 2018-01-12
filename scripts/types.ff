@@ -1,0 +1,4 @@
+%ifndef __ffly__types__ff
+%define __ffly__types__ff
+typedef u8_t ffly_mutex_t;
+%endif

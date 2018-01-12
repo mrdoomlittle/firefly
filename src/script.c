@@ -9,6 +9,7 @@
 # include "data/mem_set.h"
 # include "data/str_len.h"
 # include "system/errno.h"
+# include "system/nanosleep.h"
 ffly_err_t ffly_script_ld(struct ffly_script *__script, char *__file) {
 	ffly_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
@@ -239,6 +240,29 @@ void op_free(ffscriptp __script, struct obj *__obj) {
     __script->fresh-=__obj->size;
 }
 
+
+void nanosleep(struct obj ***__params) {
+    mdl_u64_t sec = *(mdl_u64_t*)(*__params[0])->p;
+    mdl_u64_t nsec = *(mdl_u64_t*)(*__params[1])->p;
+    ffly_nanosleep(sec, nsec);
+}
+
+void mutex_lock(struct obj ***__params) {
+    ffly_mutex_t *mutex = (ffly_mutex_t*)(*((struct obj**)(*__params[0])->p))->p;
+    ffly_mutex_lock(mutex);
+}
+
+void mutex_unlock(struct obj ***__params) {
+    ffly_mutex_t *mutex = (ffly_mutex_t*)(*((struct obj**)(*__params[0])->p))->p;
+    ffly_mutex_unlock(mutex);
+}
+
+void static(*call[])(struct obj***) = {
+    &nanosleep,
+    &mutex_lock,
+    &mutex_unlock
+};
+
 void op_call(ffscriptp __script, struct obj *__obj) {
     mdl_u8_t no = *(mdl_u8_t*)(*__obj->no)->p;
     printf("called no %u\n", no);
@@ -253,6 +277,8 @@ void op_call(ffscriptp __script, struct obj *__obj) {
         __script->call(*(mdl_u8_t*)(**__obj->params)->p, __script->arg_p, params);
         return;
     }
+
+    call[no-1](__obj->params);
 
     /*
         internal calls
@@ -422,6 +448,7 @@ ffly_err_t ffly_script_free(struct ffly_script *__script) {
     ffly_vec_de_init(&__script->to_free);
     __ffly_mem_free(__script->p);
     ffly_map_de_init(&__script->macros);
+    ffly_map_de_init(&__script->typedefs);
     return FFLY_SUCCESS;
 }
 
@@ -496,6 +523,7 @@ void read_ifndef(struct ffly_script *__script) {
         struct token *tok = NULL;
         for(;;) {
             if (!(tok = ffly_script_lex(__script, &err))) break;
+            if (_err(err)) break;
             if (is_endif(__script, tok)) break;
             if (tok->kind == TOK_NEWLINE)
                 __ffly_mem_free(tok);
@@ -639,6 +667,8 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
         to_keyword(__tok, _k_else);
     else if (!ffly_str_cmp(__tok->p, "float"))
         to_keyword(__tok, _k_float);
+    else if (!ffly_str_cmp(__tok->p, "typedef"))
+        to_keyword(__tok, _k_typedef);
 	else {
 		return 0;
 	}
@@ -666,6 +696,7 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
     
 	ffly_buff_init(&__script->iject_buff, 100, sizeof(struct token*));
     ffly_map_init(&__script->env);
+    ffly_map_init(&__script->typedefs);
 	__script->off = 0;
     __script->line = 0;
     __script->lo = 0;
