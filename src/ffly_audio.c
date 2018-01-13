@@ -234,6 +234,7 @@ ffly_err_t ffly_audio_de_init() {
 # ifdef __ffly_use_alsa_audio
     ffly_alsa_free(&__alsa__);
 # endif
+    return FFLY_SUCCESS;
 }
 
 /*

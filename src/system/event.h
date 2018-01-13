@@ -9,6 +9,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
+ffly_event_t* ffly_event_dup(ffly_event_t*);
 extern struct ffly_queue ffly_event_queue;
 ffly_err_t ffly_event_push(ffly_event_t*);
 ffly_err_t ffly_event_pop(ffly_event_t**);

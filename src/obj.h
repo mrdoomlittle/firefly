@@ -6,6 +6,7 @@
 # include "system/vec.h"
 # include "script.h"
 # include "polygon.h"
+# include "types/no_t.h"
 # define ffly_set_objx(__obj, __x) \
     (__obj)->x = __x;    
 # define ffly_set_objy(__obj, __y) \
@@ -38,8 +39,10 @@ struct ffly_obj {
     ffscriptp script;
     /* cleanup
     */
+    ffly_no_t no;
     float angle;
     ffly_lotp lot;
+
     struct ffly_obj *prev, *next;
 };
 
@@ -66,6 +69,7 @@ typedef ffly_objpp objpp;
 typedef ffly_objppp objppp;
 /*
     x, y, z can only be set before being attached to the univirse
+    for an object to be moved it must be thru ffly_uni_obj_move.
 */
 struct obj {
     types::err_t prepare() {

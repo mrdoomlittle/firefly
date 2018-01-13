@@ -22,7 +22,8 @@
 # define PAGE_SIZE 4
 # define UU_PAGE_SIZE 26
 # define DSS 0xFFF
-
+# include "../ffly_system.h"
+# include "config.h"
 struct ffly_thread {
 	pthread_t thread;
 	ffly_cond_lock_t lock;
@@ -69,7 +70,7 @@ ffly_err_t static ffly_thread_del(ffly_tid_t __tid) {
 			}
 		} else {
 			if ((uu_ids.p = (ffly_tid_t*)__ffly_mem_realloc(uu_ids.p, ((++uu_ids.page_c)*UU_PAGE_SIZE)*sizeof(ffly_id_t))) == NULL) {
-				ffly_fprintf(ffly_err, "thread: failed to realloc memory space for unused thread ids.\n");
+				ffly_fprintf(ffly_err, "thread: failed to realloc memory for unused thread ids.\n");
 				return FFLY_FAILURE;
 			}
 		}
@@ -90,7 +91,8 @@ ffly_bool_t ffly_thread_dead(ffly_tid_t __tid) {
 
 void static* ffly_thr_proxy(void *__arg_p) {
 	struct ffly_thread *thr = (struct ffly_thread*)__arg_p;
-	thr->pid = getpid();
+    ffly_setpid();
+	thr->pid = ffly_getpid();
     id = thr->tid;
 	ffly_fprintf(ffly_log, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
 	ffly_atomic_incr(&active_threads);
@@ -134,14 +136,14 @@ void ffly_thread_wait(ffly_tid_t __tid) {
 }
 
 ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg_p) {
-	if (no_threads() == MAX_THREADS) {
-		ffly_fprintf(ffly_log, "thread: only %u threads are allowed.\n", MAX_THREADS);
+	if (no_threads() == __ffly_sysconf__.max_threads) {
+		ffly_fprintf(ffly_log, "thread: only %u threads are allowed.\n", __ffly_sysconf__.max_threads);
 		return FFLY_FAILURE;
 	}
 
 	ffly_mutex_lock(&mutex);
 	mdl_u8_t reused_tid = 0;
-	if ((reused_tid = (uu_ids.off > 0))) {
+	if ((reused_tid = (uu_ids.off>0))) {
 		*__tid = *(uu_ids.p+(--uu_ids.off));
 		if (uu_ids.off < ((uu_ids.page_c-1)*UU_PAGE_SIZE) && uu_ids.page_c > 1) {
 			if ((uu_ids.p = (ffly_tid_t*)__ffly_mem_realloc(uu_ids.p, ((--uu_ids.page_c)*UU_PAGE_SIZE)*sizeof(ffly_id_t))) == NULL) {

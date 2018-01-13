@@ -90,9 +90,11 @@ mdl_u64_t ffly_conf_64l_u(void*);
 mdl_u32_t ffly_conf_32l_u(void*);
 mdl_u16_t ffly_conf_16l_u(void*);
 mdl_u8_t ffly_conf_8l_u(void*);
+mdl_u64_t ffly_conf_int_u(void*);
 
 mdl_i64_t ffly_conf_64l_s(void*);
 mdl_i32_t ffly_conf_32l_s(void*);
 mdl_i16_t ffly_conf_16l_s(void*);
 mdl_i8_t ffly_conf_8l_s(void*);
+mdl_i64_t ffly_conf_int_s(void*);
 # endif /*__ffly__config__h*/

@@ -12,13 +12,14 @@ mdl_uint_t *ii = 0;
 void call() {
 	mdl_uint_t i = 0;
 	while(i != pp) {
-		usleep(5999);
-		if (ffly_mutex_trylock(mutex) == FFLY_SUCCESS) {
-//        ffly_mutex_lock(mutex);
+		usleep(599);
+//		if (ffly_mutex_trylock(mutex) == FFLY_SUCCESS) {
+        ffly_mutex_lock(mutex);
+			usleep(200);
 			(*ii)++;
 		ffly_mutex_unlock(mutex);
 			i++;
-		}
+//		}
 	}
 }
 

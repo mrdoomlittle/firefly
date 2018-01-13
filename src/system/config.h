@@ -3,7 +3,8 @@
 # include "../types/err_t.h"
 # include "../data/str_dupe.h"
 struct ffly_sysconf {
-    char const* version; 
+    char const *version;
+    mdl_uint_t max_threads;
 };
 
 # ifdef __cplusplus

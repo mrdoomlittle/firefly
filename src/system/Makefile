@@ -1,4 +1,4 @@
-defines=-D__ffly_use_task_pool
+defines=-Wall -D__ffly_use_task_pool
 nasm_flags=-Iasm/
 test:
 	gcc -c string.c
@@ -10,6 +10,8 @@ all: clean
 	nasm -f elf64 $(nasm_flags) -o atomic_op.o.0 asm/atomic_op.asm
 	nasm -f elf64 $(nasm_flags) -o signal.o asm/signal.asm
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o.0 asm/sys_nanosleep.asm
+	gcc -c $(defines) -std=c11 ../ffly_system.c
+	gcc -c $(defines) -std=c11 config.c
 	gcc -c $(defines) -std=gnu11 time.c
 	gcc -c $(defines) -std=c11 flags.c
 	gcc -c $(defines) -std=c11 arr.c
@@ -46,7 +48,7 @@ all: clean
 	gcc -c $(defines) -std=c11 ../memory/temp.c
 	gcc -c $(defines) -std=c11 ../data/bzero.c
 ##	gcc -c -std=c11 $(defines) -o mem_tracker.o mem_tracker.c
-	gcc -std=c11 $(defines) -o main task.o map.o temp.o bzero.o sys_nanosleep.o.1 atomic_op.o.1 mutex.o.1 bin_tree.o hash.o str_len.o mem_cmp.o main.c futex.o mem_blk.o time.o sys_nanosleep.o.0 cond_lock.o atomic_op.o.0 mutex.o.0 flags.o mem_set.o mem_swp.o buff.o queue.o vec.o mem_cpy.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o arr.o mem_dupe.o thread.o task_pool.o task_worker.o signal.o -lm -lpthread
+	gcc -std=c11 $(defines) -o main config.o ffly_system.o task.o map.o temp.o bzero.o sys_nanosleep.o.1 atomic_op.o.1 mutex.o.1 bin_tree.o hash.o str_len.o mem_cmp.o main.c futex.o mem_blk.o time.o sys_nanosleep.o.0 cond_lock.o atomic_op.o.0 mutex.o.0 flags.o mem_set.o mem_swp.o buff.o queue.o vec.o mem_cpy.o io.o errno.o mem_alloc.o mem_free.o mem_realloc.o arr.o mem_dupe.o thread.o task_pool.o task_worker.o signal.o -lm -lpthread
 mutex:
 	nasm -f elf64 -o mutex.o asm/mutex.asm
 	gcc -std=c11 mutex.c mutex.o -lpthread

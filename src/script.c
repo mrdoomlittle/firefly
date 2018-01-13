@@ -487,6 +487,8 @@ void read_define(struct ffly_script *__script) {
         if (!next_tok_nl(__script)) {
             goto _next;
         }
+        vec_cleanup(__script, toks);
+        cleanup(__script, toks);
     }
     ffly_map_put(&__script->macros, name->p, ffly_str_len((char*)name->p), p);
 }
@@ -885,7 +887,9 @@ ffly_err_t ffly_script_ld_bin(struct ffly_script *__script, char *__file) {
     return FFLY_SUCCESS;
 }
 //# define LOAD
+//# define DEBUG
 
+# ifdef DEBUG
 void* me(mdl_u8_t __id, void *__arg_p, void **__p) {
     printf("HI, id{%u}\n", __id);
 /*
@@ -898,6 +902,7 @@ void* me(mdl_u8_t __id, void *__arg_p, void **__p) {
 
     ffscript_call((ffscriptp)__arg_p, *__p);
 }
+
 
 int main() {
 	struct ffly_script script;
@@ -925,4 +930,4 @@ int main() {
 	ffly_io_closeup();
 }
 
-
+# endif

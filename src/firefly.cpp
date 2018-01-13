@@ -47,6 +47,8 @@ mdl::firefly::types::err_t static cleanup() {
 
 mdl::firefly::types::err_t mdl::firefly::de_init() {
 	firefly::types::err_t err;
+    
+    firefly::system::io::fprintf(ffly_log, "commencing cleanup.\n");
 	if (_err(err = cleanup())) {
 		firefly::system::io::fprintf(ffly_err, "failed to cleanup.\n");
 		return err;

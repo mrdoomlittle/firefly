@@ -13,6 +13,7 @@ fn testing()->void {
     print(21299);
 }
 */
+%include "../scripts/fflib.ff"
 /*
 %include "../scripts/fflib.ff"
 ffly_mutex_t mutex = FFLY_MUTEX_INIT;

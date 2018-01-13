@@ -6,26 +6,35 @@
 # include "errno.h"
 # include "time.h"
 # include "io.h"
+# include "nanosleep.h"
 void static lock_task(ffly_taskp);
 void static unlock_task(ffly_taskp);
-
-static void* handle(void *__arg_p) {
+void static* handle(void *__arg_p) {
     ffly_fprintf(ffly_out, "task worker running.\n");
     ffly_task_workerp arg = (ffly_task_workerp)__arg_p;
-    mdl_uint_t begin = 0;
+    mdl_u64_t begin = ffly_get_us();
     do {
-        mdl_uint_t end = ffly_get_us_tp();
-        arg->latency = ffly_get_us_tp()-begin;
+        arg->latency = ffly_get_us()-begin;
 
-        begin = ffly_get_us_tp();
-        ffly_taskp task = arg->top;
+        begin = ffly_get_us();
+        ffly_taskp task, next;
+        _again:
+        task = arg->top;
+        if (!task) {
+            ffly_nanosleep(0, 100);
+            if (ffly_is_flag(arg->flags, FF_TWK_FLG_KILL))
+                break;
+            goto _again;
+        }
         while(task != NULL) {
-            if (!task->call(task->arg_p))
-                ffly_rm_task(arg, task);      
-            task = task->next;
+            next = task->next;
+            if (!task->call(task->arg_p)) {
+                ffly_rm_task(arg, task);
+                __ffly_mem_free(task);
+            }
+            task = next;
         }
     } while(!ffly_is_flag(arg->flags, FF_TWK_FLG_KILL));
-    __ffly_mem_free(__arg_p);
     ffly_add_flag(&arg->flags, FF_TWK_FLG_DEAD, 0);
 }
 
@@ -34,6 +43,7 @@ ffly_task_workerp ffly_task_worker(ffly_err_t *__err) {
     ffly_task_workerp p = (ffly_task_workerp)__ffly_mem_alloc(sizeof(struct ffly_task_worker));
     ffly_bzero(p, sizeof(struct ffly_task_worker));
     p->mutex = FFLY_MUTEX_INIT;
+    p->top = NULL;
     *__err = ffly_thread_create(&p->tid, &handle, p);
     return p;  
 }
@@ -54,38 +64,32 @@ void ffly_add_task(ffly_task_workerp __worker, ffly_taskp __task) {
     if (!__worker->top) {
         __worker->top = __task;
     } else {
-        lock_task(__worker->top);
-        __worker->top->prev = __task;
-        unlock_task(__worker->top);
+        ffly_taskp top = __worker->top;
 
-        __task->next = __worker->top;
+        top->prev = __task;
+        __task->next = top;
+
         __worker->top = __task;
+
     }
     ffly_mutex_unlock(&__worker->mutex);
+    ffly_atomic_incr(&__worker->task_c);
 }
 
 void ffly_rm_task(ffly_task_workerp __worker, ffly_taskp __task) {
-    lock_task(__task);
     ffly_mutex_lock(&__worker->mutex);
     if (__task == __worker->top) {
+        if (__task->next != NULL)
+            __task->next->prev = NULL;
         __worker->top = __task->next;
         ffly_mutex_unlock(&__worker->mutex);
     } else {
         ffly_mutex_unlock(&__worker->mutex);
-        if (__task->prev != NULL)
-            lock_task(__task->prev);
-        if (__task->next != NULL)
-            lock_task(__task->next);
-
-        if (__task->prev != NULL)
-            __task->prev->next = __task->next;
-        if (__task->next != NULL)
-            __task->next->prev = __task->prev;
-
-        if (__task->prev != NULL)
-            unlock_task(__task->prev);
-        if (__task->next != NULL)
-            unlock_task(__task->next);
+        ffly_taskp prev = __task->prev, next = __task->next;
+        if (prev != NULL)
+            prev->next = next;
+        if (next != NULL)
+            next->prev = prev;
     }
-    unlock_task(__task);
+    ffly_atomic_decr(&__worker->task_c);
 }

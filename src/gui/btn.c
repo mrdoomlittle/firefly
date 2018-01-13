@@ -6,12 +6,54 @@
 # include "../system/io.h"
 # include "../types/wd_event_t.h"
 # include "../graphics/draw.h"
+# include "../system/task_pool.h"
+# include "../system/mutex.h"
 // should use event .xa .ya from window
 // will be called every time new event is pushed
+typedef struct {
+    ffly_event_t *event;
+    ffly_gui_btnp btn;
+} arg;
+
+arg static top[20];
+arg static *fresh = top;
+arg static *bin[20];
+arg static **next = bin;
+ffly_mutex_t static mutex = FFLY_MUTEX_INIT;
+
+mdl_i8_t static *proxy(void *__arg_p) {
+    arg *p = (arg*)__arg_p;
+    ffly_gui_btn_handle(p->btn, p->event);
+    __ffly_mem_free(p->event);
+    __ffly_mem_free(p->event->data);
+    ffly_mutex_lock(&mutex);
+    if (p == fresh-1)
+        fresh--;
+    else
+        *(next++) = p; 
+    ffly_mutex_unlock(&mutex); 
+    return 0;
+}
+
 ffly_err_t static eir(ffly_event_t *__event, void *__arg_p) {
-    ffly_printf("----> %p\n", __arg_p);
-    if (__event->kind == _ffly_wd_ek_btn_press)
-        ffly_gui_btn_handle((ffly_gui_btnp)__arg_p, __event);
+    if (__event->kind == _ffly_wd_ek_btn_press) {
+        arg *p;
+        ffly_mutex_lock(&mutex);
+        if (next != bin) 
+            p = *(--next);
+        else {
+            if (fresh >= top+sizeof(top)) {
+                return FFLY_FAILURE;
+            }
+            p = fresh++;
+        }
+        ffly_mutex_unlock(&mutex);
+
+        p->event = ffly_event_dup(__event);
+        p->btn = (ffly_gui_btnp)__arg_p;
+        ffly_task_pool_add(&__ffly_task_pool__, &proxy, p); 
+    }
+    return FFLY_SUCCESS;
 }
 
 ffly_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn, ffly_pixelmap_t __pixelbuff, mdl_u16_t __width, mdl_u16_t __height) {
@@ -29,7 +71,6 @@ ffly_err_t ffly_gui_btn_handle(ffly_gui_btnp __btn, ffly_event_t *__event) {
     __btn->pressed = ffly_false;
     mdl_i16_t pt_xa, pt_ya;
 
-    ffly_printf("%p\n", __btn->pt_xa);
     if (!__btn->pt_xa)
         pt_xa = ((ffly_wd_event_t*)__event->data)->x;
     else
@@ -43,9 +84,12 @@ ffly_err_t ffly_gui_btn_handle(ffly_gui_btnp __btn, ffly_event_t *__event) {
     if (pt_xa >= __btn->xa && pt_ya >= __btn->ya) {
         if (pt_xa < __btn->xa+__btn->width && pt_ya < __btn->ya+__btn->height) {
                 __btn->hovering = ffly_true;
+                if (__btn->hover_call != NULL)
+                    __btn->hover_call(__btn, __btn->arg_p);
             if (__event->kind == _ffly_wd_ek_btn_press) {
                 __btn->pressed = ffly_true;
-                ffly_printf("gui button pressed.\n");
+                if (__btn->press_call != NULL)
+                    __btn->press_call(__btn, __btn->arg_p);
             }
         }
     }

@@ -17,11 +17,11 @@ struct ffly_gui_btn {
     ffly_bool_t enabled;
 // for later
     void *arg_p;
-    void(*press_call)(void*);
+    void(*press_call)(struct ffly_gui_btn*, void*);
+    void(*hover_call)(struct ffly_gui_btn*, void*);
 };
 
 typedef struct ffly_gui_btn* ffly_gui_btnp;
-
 # ifdef __cplusplus
 extern "C" {
 # endif
@@ -55,6 +55,9 @@ class btn {
     void set_pt_ya(i16_t& __ya_p) {this->raw.pt_ya = &__ya_p;}
     void enable() {this->raw.enabled = ffly_true;}
     void disable() {this->raw.enabled = ffly_false;}
+    void set_arg_p(void *__arg_p){this->raw.arg_p = __arg_p;}
+    void press_call(void(*__press_call)(ffly_gui_btnp, void*)){this->raw.press_call = __press_call;}
+    void hover_call(void(*__hover_call)(ffly_gui_btnp, void*)){this->raw.hover_call = __hover_call;}
     void set_texture(types::pixelmap_t __texture) {this->raw.texture = __texture;}
     struct ffly_gui_btn raw;
 };

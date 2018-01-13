@@ -78,7 +78,7 @@ mdl::firefly::types::err_t mdl::ffly_client::begin(ffly_err_t(*__extern_loop)(i8
 
 	this->portal.init(this);
 	do {
-		ffly_nanosleep(0, 40000000); // debug
+//		ffly_nanosleep(0, 40000000); // debug
 		if (timer.now<(ffly_tpv_t(*)(ffly_tpv_t))firefly::system::time::ns_to_ms>() > 1000) {
 			this->fps = this->frame_c;
 			this->frame_c = 0;

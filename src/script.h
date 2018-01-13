@@ -6,6 +6,9 @@
 # include "system/buff.h"
 # include "system/map.h"
 # include "data/pair.h"
+/*
+    TODO add multithreading support.
+*/
 typedef struct {
 /*
     

@@ -45,9 +45,12 @@ ffly_size_t ffly_read(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ffly_err_
 }
 
 ffly_err_t ffly_io_init() {
+/*
 	if (!(ffly_out = fopen("/dev/tty", "w"))) {
 		return FFLY_FAILURE;
 	}
+*/
+    ffly_out = stdout;
 	if (!(ffly_log = fopen("log", "w+"))) {
 		return FFLY_FAILURE;
 	}
@@ -62,7 +65,7 @@ void ffly_io_closeup() {
 	fflush(ffly_log);
 	fflush(ffly_err);
 
-	fclose(ffly_out);
+	//fclose(ffly_out);
 	fclose(ffly_log);
 	fclose(ffly_err);
 }

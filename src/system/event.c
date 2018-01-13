@@ -2,6 +2,7 @@
 # include "errno.h"
 # include "err.h"
 # include "io.h"
+# include "../types/wd_event_t.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 void *ir_arg[20];
@@ -11,6 +12,24 @@ ffly_err_t ffly_add_eir(ffly_err_t(*__ir)(ffly_event_t*, void*), void *__arg_p) 
     *ir_end = __ir;
     ir_arg[ir_end-ir_top] = __arg_p;
     *(++ir_end) = NULL;
+    return FFLY_SUCCESS;
+}
+# include "event_field.h"
+# include "event_kind.h"
+ffly_event_t* ffly_event_dup(ffly_event_t *__event) {
+    ffly_event_t *event = (ffly_event_t*)__ffly_mem_alloc(sizeof(ffly_event_t)); 
+    *event = *__event;
+    if (__event->field == _ffly_ef_wd) {
+        mdl_u8_t kind = __event->kind;
+        if (kind == _ffly_wd_ek_btn_press
+            || kind == _ffly_wd_ek_btn_release
+            || kind == _ffly_wd_ek_key_press
+            || kind == _ffly_wd_ek_key_release) {
+            event->data = __ffly_mem_alloc(sizeof(ffly_event_t));
+            *(ffly_wd_event_t*)event->data = *(ffly_wd_event_t*)__event->data;
+        }
+    }
+    return event; 
 }
 
 struct ffly_queue ffly_event_queue;
@@ -99,7 +118,11 @@ ffly_err_t ffly_free_event(ffly_event_t *__event) {
 	ffly_fprintf(ffly_log, "freed event.\n");
     if ((__event < events || __event >= events+FAST_EVENTS) && next_free >= free_events+FAST_EVENTS) {
         __ffly_mem_free(__event);
-    } else
-        *(next_free++) = __event;
+    } else {
+        if (__event == fresh_event-1)
+            fresh_event--;
+        else
+            *(next_free++) = __event;
+    }
     return FFLY_SUCCESS;
 }

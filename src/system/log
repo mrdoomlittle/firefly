@@ -1,0 +1,197 @@
+firefly; pid: 3439, tid: 0
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 67
+firefly; pid: 3439, tid: 1
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 67
+firefly; added task, 0.
+firefly; latency: 67
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 67
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 67
+firefly; added task, 0.
+firefly; latency: 67
+firefly; worker latency too high, skipping...
+firefly; latency: 30
+firefly; added task, 1.
+firefly; latency: 67
+firefly; worker latency too high, skipping...
+firefly; latency: 30
+firefly; added task, 1.
+firefly; latency: 67
+firefly; worker latency too high, skipping...
+firefly; latency: 30
+firefly; added task, 1.
+firefly; latency: 67
+firefly; worker latency too high, skipping...
+firefly; latency: 30
+firefly; added task, 1.
+firefly; latency: 67
+firefly; worker latency too high, skipping...
+firefly; latency: 30
+firefly; added task, 1.
+firefly; latency: 67
+firefly; worker latency too high, skipping...
+firefly; latency: 30
+firefly; added task, 1.
+firefly; latency: 67
+firefly; added task, 0.
+firefly; latency: 67
+firefly; added task, 0.
+firefly; latency: 67
+firefly; worker latency too high, skipping...
+firefly; latency: 89
+firefly; added task, 1.
+firefly; latency: 67
+firefly; worker latency too high, skipping...
+firefly; latency: 89
+firefly; added task, 1.
+firefly; latency: 67
+firefly; added task, 0.
+firefly; latency: 67
+firefly; worker latency too high, skipping...
+firefly; latency: 89
+firefly; added task, 1.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; added task, 0.
+firefly; latency: 0
+firefly; worker latency too high, skipping...
+firefly; latency: 1
+firefly; added task, 1.
+firefly; latency: 0
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 0
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 0
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 0
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 0
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 0
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 0
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 182
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 182
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 182
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 182
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 182
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 1.
+firefly; latency: 182
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; pid: 3439, tid: 2
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 2.
+firefly; latency: 182
+firefly; worker latency too high, skipping...
+firefly; latency: 227
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 2.
+firefly; latency: 182
+firefly; worker latency too high, skipping...
+firefly; latency: 227
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 2.
+firefly; latency: 182
+firefly; worker latency too high, skipping...
+firefly; latency: 227
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 2.
+firefly; latency: 182
+firefly; worker latency too high, skipping...
+firefly; latency: 227
+firefly; worker latency too high, skipping...
+firefly; latency: 0
+firefly; added task, 2.

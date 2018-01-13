@@ -15,6 +15,7 @@ void ffly_obj_rotate(ffly_objp __obj, float __angle) {
 ffly_err_t ffly_obj_prepare(ffly_objp __obj) {
     __obj->angle = 0.0;
     __obj->lot = NULL;
+    __obj->script = NULL;
     ffly_bzero(&__obj->shape, sizeof(ffly_polygon));
 }
 
@@ -29,6 +30,7 @@ ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
     ffly_fprintf(ffly_log, "alloced new object.\n");
     obj->next = NULL;
     obj->prev = NULL;
+    obj->no = 0;
 
     if (!top) {
         top = obj;
@@ -37,6 +39,7 @@ ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
     if (end != NULL) {
         end->next = obj;
         obj->prev = end;
+        obj->no = end->no+1;
     }
     end = obj;
     return obj;
@@ -47,7 +50,7 @@ ffly_err_t ffly_obj_draw(ffly_objp __obj, ffly_byte_t *__frame, mdl_uint_t __x, 
 }
 
 ffly_err_t ffly_obj_free(ffly_objp __obj) {
-    ffly_fprintf(ffly_log, "freed object.\n");
+    ffly_fprintf(ffly_log, "freed object %u.\n", __obj->no);
     if (__obj == top) {
         top = __obj->next;
     }
@@ -63,6 +66,7 @@ ffly_err_t ffly_obj_free(ffly_objp __obj) {
 }
 
 ffly_err_t ffly_obj_cleanup() {
+    ffly_fprintf(ffly_log, "cleaning up objects.\n");
     ffly_objp obj = top, prev = NULL;
     while(obj != NULL) {
         if (prev != NULL)

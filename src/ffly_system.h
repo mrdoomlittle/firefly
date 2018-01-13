@@ -7,6 +7,9 @@ pid_t extern ffly_ppid;
 extern "C" {
 # endif
 void ffly_set_ppid(pid_t);
+void ffly_setpid();
+pid_t ffly_get_ppid();
+pid_t ffly_getpid();
 ffly_err_t ffly_system_init();
 ffly_err_t ffly_system_de_init();
 # ifdef __cplusplus

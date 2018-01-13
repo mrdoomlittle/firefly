@@ -49,7 +49,7 @@ override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o 
 override ffly_objs+= src/ffly_system.o src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o src/memory/alloc_pixelmap.o
 
 # core
-override ffly_objs+= src/obj_manager.o src/act.o src/polygon.o src/config.o src/lot.o src/uni.o src/chunk.o src/obj.o src/ui/camera.o src/chunk_manager.o
+override ffly_objs+= src/obj_manager.o src/script.o src/parse.o src/lex.o src/gen.o src/act.o src/polygon.o src/config.o src/lot.o src/uni.o src/chunk.o src/obj.o src/ui/camera.o src/chunk_manager.o
 ifeq ($(shell bash find.bash "$(ffly_flags)" "--mal-track"), 0)
 	override ffly_objs+= src/system/mal_track.o
 endif
@@ -80,6 +80,18 @@ override ffly_objs+= src/firefly.o
 override ffly_defines+= -D__ffly_use_pulse_audio
 
 # NOTE: this is like this for debugging purposes
+src/script.o: src/script.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/script.o src/script.c
+
+src/parse.o: src/parse.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/parse.o src/parse.c
+
+src/lex.o: src/lex.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/lex.o src/lex.c
+
+src/gen.o: src/gen.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/gen.o src/gen.c
+
 src/maths/centre.o: src/maths/centre.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/maths/centre.o src/maths/centre.c
 

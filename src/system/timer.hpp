@@ -10,13 +10,13 @@ struct timer {
 	types::tpv_t begin_point;
 	types::tpv_t end_point;
 
-	void begin() {this->begin_point = time::get_ns_tp();}
-	void end() {this->end_point = time::get_ns_tp();}
+	void begin() {this->begin_point = time::get_ns();}
+	void end() {this->end_point = time::get_ns();}
 	void reset() {this->begin();}
 
 	template<types::tpv_t(*__e)(types::tpv_t)>
 	types::tpv_t now() {
-		return time::unit_cast<__e>(time::get_ns_tp()-this->begin_point);}
+		return time::unit_cast<__e>(time::get_ns()-this->begin_point);}
 
 	template<types::tpv_t(*__e)(types::tpv_t)>
 	types::tpv_t delta() {

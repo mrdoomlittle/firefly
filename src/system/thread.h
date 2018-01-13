@@ -10,7 +10,7 @@
 # include "../types/thread.h"
 # include "../types/bool_t.h"
 # include <sys/types.h>
-# define FFLY_TID_NULL (ffly_tid_t)~0
+# define FFLY_TID_NULL ((ffly_tid_t)~0)
 # ifdef __cplusplus
 extern "C" {
 # endif
