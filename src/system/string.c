@@ -1,13 +1,69 @@
 # include "string.h"
+# include "../ffly_def.h"
+mdl_u64_t static powof10[] = {
+    1,
+    10,
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+    10000000,
+    100000000,
+    1000000000,
+    10000000000,
+    100000000000,
+    1000000000000,
+    10000000000000,
+    100000000000000,
+    1000000000000000,
+    10000000000000000,
+    100000000000000000
+};
+
+mdl_uint_t ffly_nots(mdl_u64_t __no, char *__buf) {
+    if (!__no) {
+        *(__buf++) = '0';
+        *__buf = '\n';
+        return 1;
+    }
+
+    mdl_uint_t l = 0;
+    mdl_u64_t ret = 0, pl = 1;
+    for (;pl <= __no;pl*=10,l++);
+
+    mdl_u64_t g = 0, i = l-1, r;
+    char *p = __buf;
+    while(p != __buf+l) {
+        switch(r = ((__no-g)/powof10[i])) { 
+            case 0: *p = '0';break;
+            case 1: *p = '1';break;
+            case 2: *p = '2';break;
+            case 3: *p = '3';break;
+            case 4: *p = '4';break;
+            case 5: *p = '5';break;
+            case 6: *p = '6';break;
+            case 7: *p = '7';break;
+            case 8: *p = '8';break;
+            case 9: *p = '9';break;
+        }
+        g += r*powof10[i];
+        p++;
+        i--;
+    }
+    *p = '\0';
+    return l;
+}
+
 mdl_u64_t ffly_stno(char *__s) {
     mdl_u8_t sign;
     if (sign = (*__s == '-')) __s++;
 
 	mdl_u64_t no = 0;
-	char *itr = __s;
-	for(;*itr != '\0';itr++) {
+	char *p = __s;
+	for(;*p != '\0';p++) {
         no = no*10;
-		switch(*itr) {
+		switch(*p) {
 			case '0': break;
 			case '1': no += 1; break;
 			case '2': no += 2; break;
@@ -49,10 +105,10 @@ mdl_i8_t ffly_islen(char *__s, mdl_uint_t __l) {
 }
 
 mdl_u64_t ffly_htint(char *__s) {
-    char *itr = __s, c;
+    char *p = __s, c;
     mdl_u64_t ret = 0;
-    while(*itr != '\0') {
-        c = *(itr++);
+    while(*p != '\0') {
+        c = *(p++);
         if (c >= 'A' && c <= 'F')
             c = ffly_tolow(c);
         if (c >= '0' && c <= '9')
@@ -61,6 +117,68 @@ mdl_u64_t ffly_htint(char *__s) {
             ret = (ret<<4)|(((c-'a')+10)&0xF);
     }
     return ret;
+}
+
+# include <stdio.h>
+// needs testing
+mdl_uint_t ffly_floatts(double __no, char *__buf) {
+    mdl_u8_t i = 0;
+    double v = __no;
+    while(i != 9) {
+        if (v<1) break; 
+        v *= 0.1;
+        i++;       
+    }
+
+    mdl_u64_t no, s = 0;
+    if (__no<1) {
+        while(((*(mdl_u64_t*)&__no)&0x000fffffffffffff)>0) {
+            if (__no>0) {
+                __buf[s] = '0';
+                s++;
+            }
+            __no*=10;
+        }
+        s--; 
+        no = (mdl_u64_t)__no;
+    } else
+        no = (mdl_u64_t)(__no/0.00000001); // needs to be rounded
+    mdl_uint_t l = ffly_nots(no, __buf+s);
+    char *p = __buf+l+s;
+    *(p+1) = '\0';
+    while((p-__buf) >= i) {
+        *(p+1) = *p;
+        p--;
+    }
+    *(__buf+i) = '.';
+    *(__buf+s+l+1) = '\n';
+    return l+s;
+}
+
+mdl_uint_t ffly_noths(mdl_u64_t __no, char *__buf) {
+    if (!__no) {
+        *(__buf++) = '0';
+        *__buf = '\0';
+        return 1;
+    }
+
+    char *p = __buf;
+    mdl_u8_t sk = 1;
+    while(__no != 0) {
+        mdl_u8_t b = __no>>60&0xF;
+        if (b>0 && sk) // skip until somthing other then zero pops up
+            sk = 0;
+        if (!sk) {
+            if (b>=0 && b<10) {
+                *(p++) = '0'+b;
+            } else if (b>=10 && b <=15) {
+                *(p++) = 'a'+(b-10); 
+            }
+        }
+        __no<<=4;
+    }
+    *p = '\0';
+    return p-__buf;
 }
 
 // needs testing
@@ -76,8 +194,28 @@ static double t[] = {
     0.000000001,
     0.0000000001
 };
-
+/*
+# include "../data/str_len.h"
 # include <stdio.h>
+int main() {
+    char s[1000];
+//    mdl_uint_t ii = ffly_floatts(21.22, s);
+    //ffly_nots(2129900000000, s);
+//    mdl_uint_t i = ffly_str_len(s);
+    ffly_noths(101987, s);
+    printf("'%s'\n", s);
+
+
+//    mdl_u8_t i = 0;
+  //  while(i != 4) {
+    //    printf("%lf\n", 0.01/t[i]);
+     //  i++;
+    //}
+
+    //printf("%u\n", 21299/1000);
+//    ffly_floatts(4.2332, s);
+}
+*/
 double ffly_stfloat(char *__s) {
     double ret;
     mdl_u8_t sign;
