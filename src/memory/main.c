@@ -45,14 +45,23 @@ void test1() {
 void test2() {
     struct ffly_vec vec;
     ffly_vec_set_flags(&vec, VEC_AUTO_RESIZE);
-    ffly_vec_init(&vec, 1);
-    mdl_u8_t i = 0;
-    mdl_u8_t *p;
-    while(i != 20) {
+    ffly_vec_init(&vec, 2);
+    mdl_u16_t i = 0;
+    mdl_u16_t *p;
+    while(i != 800) {
         ffly_vec_push_back(&vec, (void**)&p);
         *p = i;
+        i++;
     }
 
+    mdl_u16_t v;
+    i = 0;
+    while(i != 800) {
+        ffly_vec_pop_back(&vec, &v);
+        ffly_printf("%u\n", i);
+        i++;
+    }
+    
     ffly_vec_de_init(&vec);
 }
 

@@ -2,6 +2,8 @@
 # define __ffly__mem__realloc__h
 # ifndef __ffly_use_allocr
 #   include <malloc.h>
+# else
+#   include "allocr.h"
 # endif
 
 # include <mdlint.h>

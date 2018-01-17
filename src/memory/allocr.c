@@ -326,6 +326,7 @@ void _ffly_free(potp __pot, void *__p) {
 }
 
 void ffly_free(void *__p) {
+    if (!__p) return;
     _ffly_free(&main_pot, __p);
 }
 
@@ -334,6 +335,7 @@ void *ffly_realloc(void *__p, mdl_uint_t __bc) {
     void *p = ffly_alloc(__bc);
 
     ar_uint_t size = blk->size-blk->pad;
+   // ffly_printf("%u\n", size);
     copy(p, __p, size<__bc?size:__bc);
     ffly_free(__p);
     return p;

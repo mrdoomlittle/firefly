@@ -904,12 +904,14 @@ void* me(mdl_u8_t __id, void *__arg_p, void **__p) {
     ffscript_call((ffscriptp)__arg_p, *__p);
 }
 
+void pr();
+void pf();
 
 int main() {
+    ffly_io_init();
 	struct ffly_script script;
     ffscript ff;
     ffscript_init(&ff, 1000);
-	ffly_io_init();
 	ffly_printf("loading script.\n");
 	ffly_script_prepare(&script);
 # ifndef LOAD
@@ -928,6 +930,8 @@ int main() {
     ffscript_exec(&ff, &me, NULL, NULL, NULL);
 # endif
     ffscript_free(&ff);
+    pr();
+    pf();
 	ffly_io_closeup();
 }
 

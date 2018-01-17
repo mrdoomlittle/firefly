@@ -38,8 +38,6 @@ uni: clean
 	gcc -D__ffly_testing -c polygon.c
 	gcc -D__ffly_testing -c maths/rotate.c
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o.0 system/asm/sys_nanosleep.asm
-	
-
 	nasm -f elf64 $(nasm_flags) -o round.o.0 maths/asm/round.asm
 	gcc -D__ffly_testing -c -o round.o.1 maths/round.c
 
@@ -112,7 +110,7 @@ script: clean
 	gcc -c -o mutex.o.1 system/mutex.c
 	gcc -c system/map.c
 	gcc -c system/util/hash.c
-	gcc  -Wall -o main str_cpy.o script.c $(ffly_objs) bin_tree.o hash.o map.o string.o sys_nanosleep.o.0 sys_nanosleep.o.1 mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o file.o parse.o lex.o gen.o
+	gcc  -Wall -o main str_cpy.o script.c $(ffly_objs) bin_tree.o hash.o map.o sys_nanosleep.o.0 sys_nanosleep.o.1 mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o parse.o lex.o gen.o
 clean:
 	rm -f main
 	cd ../ && make clean && cd src
