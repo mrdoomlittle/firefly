@@ -63,29 +63,38 @@ int main(void) {
 	pr(c);
 	pr(d);
 
-	printf("\n\n");
+	printf("--\n\n");
 
 	struct test save;
 	struct test t;
+	save = *a;
+    printf("s0.\n");
+	if (_err(ffly_vec_pop_back(&vec, &t))) failure;
+	if (ffly_mem_cmp(&t, &save, sizeof(struct test))) failure;
+	pr(&t);
 	save = *d;
+    printf("s1.\n");
 	if (_err(ffly_vec_pop_back(&vec, &t))) failure;
 	if (ffly_mem_cmp(&t, &save, sizeof(struct test))) failure;
 	pr(&t);
 	save = *c;
+    printf("s2.\n");
 	if (_err(ffly_vec_pop_back(&vec, &t))) failure;
 	if (ffly_mem_cmp(&t, &save, sizeof(struct test))) failure;
 	pr(&t);
 	save = *b;
-	if (_err(ffly_vec_pop_back(&vec, &t))) failure;
-	if (ffly_mem_cmp(&t, &save, sizeof(struct test))) failure;
-	pr(&t);
-	save = *a;
+    printf("s3.\n");
 	if (_err(ffly_vec_pop_back(&vec, &t))) failure;
 	if (ffly_mem_cmp(&t, &save, sizeof(struct test))) failure;
 	pr(&t);
 	_end:
-	if (_err(ffly_vec_de_init(&vec)))
+    if (_err(err)) {
+        printf("failure.\n");
+    }
+
+	if (_err(ffly_vec_de_init(&vec))) {
 		err = FFLY_FAILURE;
+    }
 	ffly_io_closeup();
 	return err;
 }

@@ -28,9 +28,17 @@ ffly_err_t ffly_mem_free(void *__p) {
 	mdl_u8_t *p = ((mdl_u8_t*)__p)-sizeof(mdl_uint_t);
 	ffly_atomic_add(&ffly_mem_free_bc, *(mdl_uint_t*)p);
 	ffly_atomic_incr(&ffly_mem_free_c);
+# ifndef __ffly_use_allocr
 	free((void*)p);
 # else
+    ffly_free((void*)p);
+# endif
+# else
+# ifndef __ffly_use_allocr
 	free(__p);
+# else
+    ffly_free(__p);
+# endif
 # endif
 # ifdef __ffly_mal_track
 	return any_err;

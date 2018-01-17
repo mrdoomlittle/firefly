@@ -1,6 +1,11 @@
 # ifndef __ffly__mem__free__h
 # define __ffly__mem__free__h
-# include <malloc.h>
+# ifndef __ffly_use_allocr
+#   include <malloc.h>
+# else
+#   include "allocr.h"
+# endif
+
 # include <mdlint.h>
 # include "../types/bool_t.h"
 # include "../types/err_t.h"

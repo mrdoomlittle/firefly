@@ -65,10 +65,10 @@ template<typename _T>
 struct buff {
 	buff(uint_t __size) {
 		if (this->init(__size) != FFLY_SUCCESS)
-			io::fprintf(stderr, "buff: failed to init.\n");}
+			io::fprintf(ffly_err, "buff: failed to init.\n");}
 	~buff() {
 		if (this->de_init() != FFLY_SUCCESS)
-			io::fprintf(stderr, "buff: failed to de_init.\n");}
+			io::fprintf(ffly_err, "buff: failed to de_init.\n");}
 	types::err_t init(types::size_t __size) {buff_init(&this->raw, __size, sizeof(_T));}
 	types::err_t de_init() {buff_de_init(&this->raw);}
 

@@ -1,12 +1,14 @@
 # include "mem_set.h"
 # include "../system/err.h"
 # include "../system/io.h"
-# include "../types/off_t.h"
-# include "../system/task_pool.h"
-# include "../memory/mem_alloc.h"
-# include "../memory/mem_free.h"
-# include "../system/atomic.h"
-# include "../system/nanosleep.h"
+# ifndef __ffly_no_task_pool
+#   include "../types/off_t.h"
+#   include "../system/task_pool.h"
+#   include "../memory/mem_alloc.h"
+#   include "../memory/mem_free.h"
+#   include "../system/atomic.h"
+#   include "../system/nanosleep.h"
+# endif
 void static * _ffly_mem_set(void *__dst, mdl_u8_t __val, mdl_uint_t __bc) {
     mdl_u8_t _8l = __val;
     mdl_u16_t _16l = _8l|_8l<<8;
@@ -26,25 +28,27 @@ void static * _ffly_mem_set(void *__dst, mdl_u8_t __val, mdl_uint_t __bc) {
         goto _end;
     }
 
-	mdl_u8_t *itr = (mdl_u8_t*)__dst;
-	while(itr != (mdl_u8_t*)__dst+__bc) {
-        mdl_uint_t left = __bc-(itr-(mdl_u8_t*)__dst);
+	mdl_u8_t *p = (mdl_u8_t*)__dst;
+    mdl_u8_t *end = p+__bc;
+	while(p != end) {
+        mdl_uint_t left = __bc-(p-(mdl_u8_t*)__dst);
         if (left>>3 > 0) {
-            *(mdl_u64_t*)itr = _64l;
-            itr+= sizeof(mdl_u64_t);
+            *(mdl_u64_t*)p = _64l;
+            p+= sizeof(mdl_u64_t);
         } else if (left>>2 > 0) {
-            *(mdl_u32_t*)itr = _32l;
-            itr+= sizeof(mdl_u32_t);
+            *(mdl_u32_t*)p = _32l;
+            p+= sizeof(mdl_u32_t);
         } else if (left>>1 > 0) {
-            *(mdl_u16_t*)itr = _16l;
-            itr+= sizeof(mdl_u16_t);
+            *(mdl_u16_t*)p = _16l;
+            p+= sizeof(mdl_u16_t);
         } else
-		    *(itr++) = __val;
+		    *(p++) = __val;
     }
     _end:
 	return __dst;
 }
 
+# ifndef __ffly_no_task_pool
 typedef struct {
     void *dst;
     mdl_u8_t val;
@@ -62,32 +66,35 @@ mdl_i8_t proxy(void *__arg_p) {
 
 # define MIN_SLICE_C 2
 # define SLICE_SHIFT 13
+# endif
 void *ffly_mem_set(void *__dst, mdl_u8_t __val, mdl_uint_t __bc) {
+# ifndef __ffly_no_task_pool
     if ((__bc>>SLICE_SHIFT) >= MIN_SLICE_C) {
         mdl_uint_t slice_c = __bc>>SLICE_SHIFT;
         arg *p = __ffly_mem_alloc(slice_c*sizeof(arg));
 
         mdl_uint_t slice_size = 1<<SLICE_SHIFT;
         ffly_atomic_uint_t done = 0;
-        mdl_u8_t *dst_itr = (mdl_u8_t*)__dst;
+        mdl_u8_t *dst = (mdl_u8_t*)__dst;
         arg *itr = p;
         for (;itr != p+slice_c;itr++) {
-            itr->dst = dst_itr;
+            itr->dst = dst;
             itr->bc = slice_size;
             itr->val = __val;
             itr->done = &done;
             if (_err(ffly_task_pool_add(&__ffly_task_pool__, &proxy, itr))) {
                 ffly_fprintf(ffly_err, "failed to add task to pool.\n");
             }
-            dst_itr+= slice_size; 
+            dst+= slice_size; 
         }
 
         mdl_uint_t extra;
         if ((extra = (__bc-(slice_c*slice_size))) > 0)
-            _ffly_mem_set(dst_itr, __val, extra);
+            _ffly_mem_set(dst, __val, extra);
         while(done != slice_c);
         ffly_mem_free(p);
         return __dst;
     } else
+# endif
         return _ffly_mem_set(__dst, __val, __bc);
 }

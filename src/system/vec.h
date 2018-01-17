@@ -14,10 +14,13 @@
 # include "err.h"
 # include "../types/off_t.h"
 # include "../types/size_t.h"
+# define FF_VEC struct ffly_vec
 struct ffly_vec_blkd {
 	ffly_flag_t flags;
 	ffly_off_t prev, next;
 };
+
+typedef struct ffly_vec_blkd* ffly_vec_blkdp;
 
 struct ffly_vec {
 	ffly_off_t top, end;

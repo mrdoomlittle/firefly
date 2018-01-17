@@ -2,7 +2,8 @@
 # include "str_len.h"
 # include "mem_cpy.h"
 # include "../system/errno.h"
-ffly_err_t ffly_str_cpy(char *__dst, char *__src) {
-    ffly_mem_cpy(__dst, __src, ffly_str_len(__src)+1);
-    return FFLY_SUCCESS;
+mdl_uint_t ffly_str_cpy(char *__dst, char *__src) {
+    mdl_uint_t l;
+    ffly_mem_cpy(__dst, __src, (l = ffly_str_len(__src))+1);
+    return l;
 }

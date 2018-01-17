@@ -140,6 +140,10 @@ void ast_call(struct ffly_script *__script, struct node **__node, struct node *_
     build_node(__script, __node, &(struct node){.kind=_ast_call, .no=__no, .params=*__params});
 }
 
+void ast_ret(struct ffly_script *__script, struct node **__node, struct node *__ret) {
+    build_node(__script, __node, &(struct node){.kind=_ast_ret, .ret=__ret});
+}
+
 void mk_ptr_type(struct ffly_script *__script, struct type **__type, struct type *__ptr) {
     build_type(__script, __type, ptr);
     (*__type)->ptr = __ptr;

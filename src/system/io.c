@@ -4,12 +4,15 @@
 # include "mutex.h"
 # include "errno.h"
 # include <unistd.h>
+/*
 # include <sys/stat.h>
 # include <fcntl.h>
+*/
 # include "../types/size_t.h"
-FILE *ffly_out = NULL;
-FILE *ffly_log = NULL;
-FILE *ffly_err = NULL;
+FF_FILE *ffly_out = NULL;
+FF_FILE *ffly_log = NULL;
+FF_FILE *ffly_err = NULL;
+/*
 ffly_fd_t ffly_open(char const *__path, int __flags, mode_t __mode) {
 	return open(__path, __flags, __mode);
 }
@@ -43,33 +46,31 @@ ffly_size_t ffly_read(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ffly_err_
     *__err = FFLY_SUCCESS;
     return res;
 }
-
-ffly_err_t ffly_io_init() {
-/*
-	if (!(ffly_out = fopen("/dev/tty", "w"))) {
-		return FFLY_FAILURE;
-	}
 */
-    ffly_out = stdout;
-	if (!(ffly_log = fopen("log", "w+"))) {
+ffly_err_t ffly_io_init() {
+    ffly_err_t err;
+	if (!(ffly_out = ffly_fopen("/dev/tty", FF_O_WRONLY, 0, &err))) {
 		return FFLY_FAILURE;
 	}
-	if (!(ffly_err = fopen("err", "w+"))) {
+	if (!(ffly_log = ffly_fopen("log", FF_O_WRONLY|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err))) {
+		return FFLY_FAILURE;
+	}
+	if (!(ffly_err = ffly_fopen("err", FF_O_WRONLY|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err))) {
 		return FFLY_FAILURE;
 	}
 	return FFLY_SUCCESS;
 }
 
 void ffly_io_closeup() {
-	fflush(ffly_out);
-	fflush(ffly_log);
-	fflush(ffly_err);
+	fsync(ffly_fileno(ffly_out));
+    fsync(ffly_fileno(ffly_log));
+    fsync(ffly_fileno(ffly_err));
 
-	//fclose(ffly_out);
-	fclose(ffly_log);
-	fclose(ffly_err);
+	ffly_fclose(ffly_out);
+	ffly_fclose(ffly_log);
+	ffly_fclose(ffly_err);
 }
-
+/*
 ffly_mutex_t static mutex = FFLY_MUTEX_INIT;
 void static ffly_print(FILE *__stream, char const *__s, va_list __args) {
 	if (__stream == NULL || __s == NULL) return;
@@ -94,5 +95,5 @@ void ffly_printf(char const *__s, ...) {
 	va_start(args, __s);
 	ffly_print(ffly_out, __s, args);
 	va_end(args);
-}
+}*/
 

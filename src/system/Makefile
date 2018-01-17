@@ -3,6 +3,22 @@ nasm_flags=-Iasm/
 test:
 	gcc -c string.c
 	gcc test.c string.o
+print: clean
+	nasm -f elf64 asm/sys_write.asm -o sys_write.o.0
+	gcc -c sys_write.c -o sys_write.o.1
+	gcc -c ../data/str_len.c
+	gcc -c io.c 
+	gcc -c file.c
+	gcc -c errno.c
+	gcc -c string.c
+	gcc -c ../memory/mem_alloc.c
+	gcc -c ../memory/mem_free.c
+	gcc -c ../memory/mem_realloc.c
+	gcc -c ../data/str_cpy.c
+	gcc -D__ffly_no_task_pool -c ../data/mem_set.c
+	gcc -D__ffly_no_task_pool -c ../data/mem_cpy.c
+	gcc -c ../data/mem_dupe.c
+	gcc printf.c string.o str_cpy.o errno.o mem_dupe.o mem_cpy.o mem_set.o mem_free.o mem_alloc.o mem_realloc.o file.o io.o str_len.o sys_write.o.0 sys_write.o.1 -o main
 
 all: clean
 	nasm -f elf64 $(nasm_flags) -o cond_lock.o asm/cond_lock.asm

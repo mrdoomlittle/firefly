@@ -265,7 +265,7 @@ void static(*call[])(struct obj***) = {
 
 void op_call(ffscriptp __script, struct obj *__obj) {
     mdl_u8_t no = *(mdl_u8_t*)(*__obj->no)->p;
-    printf("called no %u\n", no);
+    ffly_printf("called no %u\n", no);
     if (!no && __script->call != NULL) { // self
         void *params[12];
         mdl_uint_t i = 0;
@@ -704,6 +704,7 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
     __script->lo = 0;
     __script->local = NULL;
     ffly_map_init(&__script->macros);
+    __script->ret_type = NULL;
     return FFLY_SUCCESS;
 }
 

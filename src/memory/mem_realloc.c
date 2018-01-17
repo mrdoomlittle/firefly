@@ -9,11 +9,14 @@ void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc) {
 # ifdef __ffly_debug_enabled
 	p = (mdl_u8_t*)__p-sizeof(mdl_uint_t);
 	mdl_uint_t mem_size = *((mdl_uint_t*)p);
-
+# ifndef __ffly_use_allocr
 	if ((p = (mdl_u8_t*)realloc(p, __nbc+sizeof(mdl_uint_t))) == NULL) {
 		ffly_printf(stderr, "mem_realloc: failed to reallocate memory.\n");
 		return NULL;
 	}
+# else
+
+# endif
 
 	if (__nbc > mem_size)
 		ffly_atomic_add(&ffly_mem_alloc_bc, __nbc-mem_size);
@@ -22,7 +25,10 @@ void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc) {
 	*((mdl_uint_t*)p) = __nbc;
 	p += sizeof(mdl_uint_t);
 # else
+# ifndef __ffly_use_allocr
 	p = (mdl_u8_t*)realloc(__p, __nbc);
+# else
+# endif
 # endif
 
 # ifdef __ffly_mal_track

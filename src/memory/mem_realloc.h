@@ -1,6 +1,9 @@
 # ifndef __ffly__mem__realloc__h
 # define __ffly__mem__realloc__h
-# include <malloc.h>
+# ifndef __ffly_use_allocr
+#   include <malloc.h>
+# endif
+
 # include <mdlint.h>
 # include "mem_alloc.h"
 # include "../ffly_def.h"

@@ -10,9 +10,11 @@
 # include "../data/mem_dupe.h"
 # include "err.h"
 # include <string.h>
+mdl_int_t ffly_open(char const*, mdl_int_t, mdl_int_t);
+mdl_int_t ffly_close(mdl_int_t);
 struct ffly_file* ffly_fopen(char *__path, int __flags, mode_t __mode, ffly_err_t *__err) {
 	struct ffly_file *file = (struct ffly_file*)__ffly_mem_alloc(sizeof(struct ffly_file));
-	if ((file->fd = open(__path, __flags, __mode)) < 0) {
+	if ((file->fd = ffly_open(__path, __flags, __mode)) < 0) {
 		ffly_fprintf(ffly_err, "file, failed to open file, error: %d, %s\n", errno, strerror(errno));
 		return NULL;
 	}
@@ -99,7 +101,7 @@ ffly_err_t ffly_fclose(struct ffly_file *__f) {
 		return FFLY_FAILURE;
 	}
 
-	close(__f->fd);
+	ffly_close(__f->fd);
 	ffly_err_t err;
 	__ffly_mem_free((void*)__f->path);
 	if (_err(err = __ffly_mem_free(__f))) {

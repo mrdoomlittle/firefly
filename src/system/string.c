@@ -24,7 +24,7 @@ mdl_u64_t static powof10[] = {
 mdl_uint_t ffly_nots(mdl_u64_t __no, char *__buf) {
     if (!__no) {
         *(__buf++) = '0';
-        *__buf = '\n';
+        *__buf = '\0';
         return 1;
     }
 
@@ -151,7 +151,7 @@ mdl_uint_t ffly_floatts(double __no, char *__buf) {
         p--;
     }
     *(__buf+i) = '.';
-    *(__buf+s+l+1) = '\n';
+    *(__buf+s+l+1) = '\0';
     return l+s;
 }
 

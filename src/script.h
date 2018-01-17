@@ -29,6 +29,7 @@ typedef struct {
 typedef ffscript* ffscriptp;
 
 struct ffly_script {
+    void *ret_type;
     struct ffly_map env, macros;
     struct ffly_map *local;
 	ffly_byte_t *p, *end;
@@ -114,6 +115,7 @@ enum {
 };
 
 enum {
+    _ast_ret,
     _ast_if,
 	_ast_decl,
 	_ast_assign,
@@ -184,8 +186,8 @@ struct node {
     struct type *_type;
     ffly_byte_t val[sizeof(mdl_u64_t)];
     struct node *init, *var, *arg;
-    struct obj *_obj, **jmp, **ret;
-    struct node *l, *r, *operand, *no;
+    struct obj *_obj, **jmp;
+    struct node *l, *r, *operand, *no, *ret;
     struct node *cond, *call, *_struct;
     struct ffly_vec block, args, params;
     struct ffly_vec _else, _do;

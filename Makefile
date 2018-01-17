@@ -37,7 +37,8 @@ src/data/str_cpy.o src/data/bzero.o src/data/bcopy.o
 # system
 override ffly_objs+= src/system/string.o src/system/bin_tree.o src/system/arr.o src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
 src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
-src/system/task_worker.o src/system/task.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o src/system/event.o
+src/system/task_worker.o src/system/task.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o src/system/event.o src/system/printf.o \
+src/system/sys_fcntl.o src/system/sys_open.o src/system/sys_close.o src/system/sys_write.o src/system/sys_brk.o
 # network
 override ffly_objs+= src/network/http.o src/network/sock.o src/network/resolve.o
 # graphics
@@ -80,6 +81,34 @@ override ffly_objs+= src/firefly.o
 override ffly_defines+= -D__ffly_use_pulse_audio
 
 # NOTE: this is like this for debugging purposes
+src/system/sys_fcntl.o: src/system/sys_fcntl.c
+	nasm -f elf64 -o src/system/sys_fcntl.o.0 src/system/asm/sys_fcntl.asm
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/sys_fcntl.o.1 src/system/sys_fcntl.c
+	ld -r -o src/system/sys_fcntl.o src/system/sys_fcntl.o.0 src/system/sys_fcntl.o.1
+
+src/system/sys_open.o: src/system/sys_open.c
+	nasm -f elf64 -o src/system/sys_open.o.0 src/system/asm/sys_open.asm
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/sys_open.o.1 src/system/sys_open.c
+	ld -r -o src/system/sys_open.o src/system/sys_open.o.0 src/system/sys_open.o.1
+
+src/system/sys_close.o: src/system/sys_close.c
+	nasm -f elf64 -o src/system/sys_close.o.0 src/system/asm/sys_close.asm
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/sys_close.o.1 src/system/sys_close.c
+	ld -r -o src/system/sys_close.o src/system/sys_close.o.0 src/system/sys_close.o.1
+
+src/system/sys_write.o: src/system/sys_write.c
+	nasm -f elf64 -o src/system/sys_write.o.0 src/system/asm/sys_write.asm
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/sys_write.o.1 src/system/sys_write.c
+	ld -r -o src/system/sys_write.o src/system/sys_write.o.0 src/system/sys_write.o.1
+
+src/system/sys_brk.o: src/system/sys_brk.c
+	nasm -f elf64 -o src/system/sys_brk.o.0 src/system/asm/sys_brk.asm
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/sys_brk.o.1 src/system/sys_brk.c
+	ld -r -o src/system/sys_brk.o src/system/sys_brk.o.0 src/system/sys_brk.o.1
+
+src/system/printf.o: src/system/printf.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/printf.o src/system/printf.c
+
 src/script.o: src/script.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/script.o src/script.c
 

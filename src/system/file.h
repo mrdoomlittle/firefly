@@ -1,4 +1,5 @@
 # ifndef __ffly__file__h
+# define __ffly__file__h
 # include <sys/types.h>
 # include <mdlint.h>
 # include <fcntl.h>
@@ -8,9 +9,12 @@
 # include "../types/err_t.h"
 # include "../types/off_t.h"
 # include "stat.h"
+# define ffly_fileno(__file) \
+    (__file)->fd
+
 struct ffly_file {
 	char const *path;
-	int fd;
+	mdl_int_t fd;
 };
 
 # define FF_O_TRUNC O_TRUNC
