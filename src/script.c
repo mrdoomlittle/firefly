@@ -194,6 +194,8 @@ void op_print(ffscriptp __script, struct obj *__obj) {
 		case _8l_s:
 			ffly_printf("%d\n", *(mdl_i8_t*)p);
 		break;
+        default:
+            ffly_printf("unknown type.\n");
 	}
 }
 
@@ -671,6 +673,8 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
         to_keyword(__tok, _k_float);
     else if (!ffly_str_cmp(__tok->p, "typedef"))
         to_keyword(__tok, _k_typedef);
+    else if (!ffly_str_cmp(__tok->p, "ret"))
+        to_keyword(__tok, _k_ret);
 	else {
 		return 0;
 	}
@@ -888,7 +892,7 @@ ffly_err_t ffly_script_ld_bin(struct ffly_script *__script, char *__file) {
     return FFLY_SUCCESS;
 }
 //# define LOAD
-//# define DEBUG
+# define DEBUG
 
 # ifdef DEBUG
 void* me(mdl_u8_t __id, void *__arg_p, void **__p) {
@@ -930,8 +934,8 @@ int main() {
     ffscript_exec(&ff, &me, NULL, NULL, NULL);
 # endif
     ffscript_free(&ff);
-    pr();
-    pf();
+//    pr();
+//    pf();
 	ffly_io_closeup();
 }
 

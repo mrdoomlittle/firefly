@@ -4,6 +4,43 @@ ffly_cc=gcc
 dst_dir=${PWD}
 ffly_objs=$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=system;. system/compile.sh;echo $$ffly_objs) \
 $(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=memory;. memory/compile.sh;echo $$ffly_objs)
+db:
+	gcc -c system/io.c
+	gcc -c data/bcopy.c
+	gcc -c data/bzero.c
+	gcc -c data/str_cmp.c
+	gcc -c data/str_cpy.c
+	gcc -c data/str_dupe.c
+	gcc -c data/str_len.c
+	gcc -c data/mem_dupe.c
+	gcc -c data/mem_cmp.c
+	gcc -c system/errno.c
+	gcc -Wall -c network/sock.c
+	gcc -c network/input.c
+	gcc -c network/output.c
+	gcc -D__ffly_no_task_pool -c data/mem_set.c
+	gcc -D__ffly_no_task_pool -c data/mem_cpy.c
+	gcc -Wall -c net.c
+	gcc -Wall -o client db.c $(ffly_objs) input.o output.o sock.o errno.o mem_cmp.o mem_cpy.o mem_set.o mem_dupe.o str_len.o str_cpy.o str_dupe.o str_cmp.o bcopy.o bzero.o io.o  net.o
+net: clean
+	gcc -c system/io.c
+	gcc -c data/bcopy.c
+	gcc -c data/bzero.c
+	gcc -c data/str_cmp.c
+	gcc -c data/str_cpy.c
+	gcc -c data/str_dupe.c
+	gcc -c data/str_len.c
+	gcc -c data/mem_dupe.c
+	gcc -c data/mem_cmp.c
+	gcc -c system/errno.c
+	gcc -Wall -c network/sock.c
+	gcc -c network/input.c
+	gcc -c network/output.c
+	gcc -D__ffly_no_task_pool -c data/mem_set.c
+	gcc -D__ffly_no_task_pool -c data/mem_cpy.c
+	gcc -Wall -c net.c
+	gcc -Wall -o client client.c $(ffly_objs) input.o output.o sock.o errno.o mem_cmp.o mem_cpy.o mem_set.o mem_dupe.o str_len.o str_cpy.o str_dupe.o str_cmp.o bcopy.o bzero.o io.o  net.o
+	gcc -Wall -o server server.c $(ffly_objs) input.o output.o sock.o errno.o mem_cmp.o mem_cpy.o mem_set.o mem_dupe.o str_len.o str_cpy.o str_dupe.o str_cmp.o bcopy.o bzero.o io.o net.o
 ca: clean
 	gcc -c memory/mem_alloc.c
 	gcc -c memory/mem_free.c

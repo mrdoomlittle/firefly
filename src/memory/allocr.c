@@ -181,6 +181,51 @@ void pf() {
     ffly_printf("|-----------------------|\n");
 }
 
+/*
+void static*
+shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
+    blkdp prev = blk_prev(__pot, __blk);
+    blkdp next = blk_next(__pot, __blk);
+    blkdp fwd = get_blk(__pot, __blk->fd);
+    blkdp bck = get_blk(__pot, __blk->bk);
+    struct blkd blk;
+
+    ar_unit_t dif = (__blk->size-__blk->pad)-__size;
+    ar_off_t off;
+    void *p;
+    if (not_null(__blk->prev)) {
+        if (is_free(prev) && prev->size > dif<<1) {
+            off = __blk->off-dif;
+            __blk->off = off;
+            prev->next = off;
+            next->prev = off;
+            if (not_null(__blk->fd))
+                fwd->bk = off;
+            if (not_null(__blk->bk))
+                bck->fd = off;
+            blk->size-=dif;
+            copy(&blk, __blk, blkd_size);
+            __blk = (blkdp)((mdl_u8_t*)__blk-dif);
+            copy(__blk, &blk, blkd_size);
+            return (void*)((mdl_u8_t*)__blk+blkd_size);
+        }
+    }
+
+    if (not_null(__blk->next)) {
+        if (is_free(next)) {
+             
+            return p;
+        }
+    } 
+    return NULL;
+}
+
+void static*
+grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
+
+}
+*/
+
 void _ffly_free(potp, void*);
 void* _ffly_alloc(potp __pot, mdl_uint_t __bc) {
     ar_off_t bin;

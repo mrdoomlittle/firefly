@@ -366,14 +366,14 @@ void emit_func(struct ffly_script *__script, struct node *__node) {
         }
     }
 
+    struct obj **ret_to;
+    pop(__script, &ret_to);
+
     if (ffly_vec_size(&__node->block)>0) {
         itr = (struct node**)ffly_vec_begin(&__node->block);
         while(itr <= (struct node**)ffly_vec_end(&__node->block))
             emit(__script, *(itr++));
     }
-
-    struct obj **ret_to;
-    pop(__script, &ret_to);
 
     free_frame(__script, frame);
     struct obj *ret = next_obj(__script, mk_op_jump());
@@ -464,6 +464,15 @@ void emit_addrof(struct ffly_script *__script, struct node *__node) {
     push(__script, rg_64l_u);
 }
 
+void emit_ret(struct ffly_script *__script, struct node *__node) {
+    emit(__script, __node->ret);
+    struct obj **from;
+    pop(__script, &from);
+
+    next_obj(__script, mk_op_copy(__node->_type->size, objpp(rg_64l_u), from));
+    push(__script, rg_64l_u);
+}
+
 void emit(struct ffly_script *__script, struct node *__node) {
 	switch(__node->kind) {
 		case _ast_decl:
@@ -513,6 +522,9 @@ void emit(struct ffly_script *__script, struct node *__node) {
         break;
         case _ast_addrof:
             emit_addrof(__script, __node);
+        break;
+        case _ast_ret:
+            emit_ret(__script, __node);
         break;
         default:    
             ffly_printf("unknown.\n");

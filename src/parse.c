@@ -109,7 +109,7 @@ void ast_func(struct ffly_script *__script, struct node **__node, struct ffly_ve
 }
 
 void ast_func_call(struct ffly_script *__script, struct node **__node, struct node *__call, struct ffly_vec *__params) {
-    build_node(__script, __node, &(struct node){.kind=_ast_func_call, .call=__call, .params=*__params});
+    build_node(__script, __node, &(struct node){.kind=_ast_func_call, .call=__call, .params=*__params, ._type=__call->_type});
 }
 
 void ast_struct_ref(struct ffly_script *__script, struct node **__node, struct node *__struct, struct type *__type){
@@ -140,8 +140,8 @@ void ast_call(struct ffly_script *__script, struct node **__node, struct node *_
     build_node(__script, __node, &(struct node){.kind=_ast_call, .no=__no, .params=*__params});
 }
 
-void ast_ret(struct ffly_script *__script, struct node **__node, struct node *__ret) {
-    build_node(__script, __node, &(struct node){.kind=_ast_ret, .ret=__ret});
+void ast_ret(struct ffly_script *__script, struct node **__node, struct node *__ret, struct type *__type) {
+    build_node(__script, __node, &(struct node){.kind=_ast_ret, .ret=__ret, ._type=__type});
 }
 
 void mk_ptr_type(struct ffly_script *__script, struct type **__type, struct type *__ptr) {
@@ -165,6 +165,7 @@ ffly_bool_t is_type(struct ffly_script *__script, struct token *__tok) {
     return ((__tok->id >= _k_uint_t && __tok->id <= _k_i8_t) || __tok->id == _k_struct || __tok->id == _k_var || __tok->id == _k_float || __tok->id == _k_typedef);
 }
 
+ffly_err_t read_func_call(struct ffly_script*, struct node**, struct node*);
 ffly_err_t read_decl_spec(struct ffly_script*, struct token*, struct type**);
 ffly_err_t read_struct_decl(struct ffly_script *__script, struct ffly_map *__fields, mdl_uint_t *__size) {
     if (!expect_token(__script, TOK_KEYWORD, _l_brace)) {
@@ -382,10 +383,6 @@ ffly_err_t read_unary_expr(struct ffly_script *__script, struct node **__node) {
         return FFLY_SUCCESS;
     }
 
-    if (!expect_token(__script, TOK_KEYWORD, _semicolon)) {
-        return FFLY_FAILURE;
-    }
-
     _end:
     return FFLY_SUCCESS;
 }
@@ -397,6 +394,14 @@ ffly_err_t read_postfix_expr(struct ffly_script *__script, struct node **__node)
             return FFLY_FAILURE;
         }
     }
+
+    struct token *tok = peek_token(__script);
+    if (tok->kind == TOK_KEYWORD && tok->id == _l_paren) {
+        if (_err(err = read_func_call(__script, __node, *__node))) {
+            return FFLY_FAILURE;
+        }    
+    }    
+
     return FFLY_SUCCESS;
 }
 
@@ -444,7 +449,6 @@ ffly_err_t read_decl_init(struct ffly_script *__script, struct node **__node) {
 }
 
 ffly_err_t read_call(struct ffly_script*, struct node**);
-ffly_err_t read_func_call(struct ffly_script*, struct node**);
 ffly_bool_t is_func_call(struct ffly_script*);
 ffly_err_t read_compound_stmt(struct ffly_script *__script, struct ffly_vec *__vec) {
     if (!expect_token(__script, TOK_KEYWORD, _l_brace)) {
@@ -454,7 +458,7 @@ ffly_err_t read_compound_stmt(struct ffly_script *__script, struct ffly_vec *__v
     ffly_err_t err = FFLY_SUCCESS;
     struct token *tok = peek_token(__script);
     while(!is_keyword(tok, _r_brace)) {
-        struct node *_node;
+        struct node *_node = NULL;
         if (is_type(__script, tok)) {
 
         } else if (tok->kind == TOK_KEYWORD) {
@@ -474,7 +478,7 @@ ffly_err_t read_compound_stmt(struct ffly_script *__script, struct ffly_vec *__v
                     break;
                 }
             } else {
-                if (tok->id == _k_if || tok->id == _k_while) {
+                if (tok->id == _k_if || tok->id == _k_while || tok->id == _k_ret) {
                     if (_err(err = read_stmt(__script, &_node))) {
                         ffly_fprintf(ffly_out, "failed to read statment.\n");
                         break;
@@ -482,16 +486,18 @@ ffly_err_t read_compound_stmt(struct ffly_script *__script, struct ffly_vec *__v
                 }
             }
         } else if (tok->kind == TOK_IDENT) {
-            if (is_func_call(__script)) {
-                if (_err(err = read_func_call(__script, &_node))) {
-                    ffly_fprintf(ffly_out, "failed to read function call.\n");
+            if (_err(err = read_stmt(__script, &_node))) {
+                ffly_fprintf(ffly_out, "failed to read statment.\n");
+                break;
+            }
+
+            if (!_node) {
+                if (_err(err = read_expr(__script, &_node))) {
+                    ffly_fprintf(ffly_out, "failed to read expression.\n");
                     break;
                 }
-            } else {
-                if (_err(err = read_stmt(__script, &_node))) {
-                    ffly_fprintf(ffly_out, "failed to read statment.\n");
-                    break;
-                }
+
+                expect_token(__script, TOK_KEYWORD, _semicolon);
             }
         }
 
@@ -625,6 +631,19 @@ ffly_err_t read_exit_stmt(struct ffly_script *__script, struct node **__node) {
     return FFLY_SUCCESS;
 }
 
+ffly_err_t read_ret_stmt(struct ffly_script *__script, struct node **__node) {
+    skip_token(__script);
+
+    struct node *ret;
+    read_expr(__script, &ret);
+
+    if (!expect_token(__script, TOK_KEYWORD, _semicolon)) {
+        return FFLY_FAILURE;
+    }
+    ast_ret(__script, __node, ret, __script->ret_type);
+    return FFLY_SUCCESS;
+}
+
 ffly_err_t read_while_stmt(struct ffly_script*, struct node**);
 ffly_err_t read_stmt(struct ffly_script *__script, struct node **__node) {
     ffly_err_t err;
@@ -644,23 +663,16 @@ ffly_err_t read_stmt(struct ffly_script *__script, struct node **__node) {
             ffly_fprintf(ffly_out, "failed to read while statment.\n");
             return err;
         }
-    } else if (tok->kind == TOK_IDENT) {
-        if (_err(err = read_expr(__script, __node))) {
-            ffly_fprintf(ffly_out, "failed to read expression.\n");
+    } else if (is_keyword(tok, _k_ret)) {
+        if (_err(err = read_ret_stmt(__script, __node))) {
+            ffly_fprintf(ffly_out, "failed to read return statment.\n");
             return err;
         }
     }
     return FFLY_SUCCESS;
 }
 
-ffly_err_t read_func_call(struct ffly_script *__script, struct node **__node) {
-    struct node *call = NULL;
-    read_expr(__script, &call);
-    if (!call) {
-        ffly_fprintf(ffly_out, "can't call function that doesen't exist.\n");
-        return FFLY_FAILURE;
-    }
-
+ffly_err_t read_func_call(struct ffly_script *__script, struct node **__node, struct node *__call) {
     if (!expect_token(__script, TOK_KEYWORD, _l_paren)) {
         return FFLY_FAILURE;
     }
@@ -690,11 +702,7 @@ ffly_err_t read_func_call(struct ffly_script *__script, struct node **__node) {
     }
     
     vec_cleanup(__script, &params);
-    if (!expect_token(__script, TOK_KEYWORD, _semicolon)) {
-        return FFLY_FAILURE;
-    }
-
-    ast_func_call(__script, __node, call, &params);
+    ast_func_call(__script, __node, __call, &params);
     return FFLY_SUCCESS;
 }
 
@@ -713,7 +721,7 @@ ffly_err_t read_func_def(struct ffly_script *__script, struct node **__node) {
 
     struct ffly_vec args;
     ffly_vec_set_flags(&args, VEC_AUTO_RESIZE);
-    ffly_vec_init(&args, sizeof(struct node*));
+    ffly_vec_init(&args, sizeof(struct node*)); 
     if (!next_token_is(__script, TOK_KEYWORD, _r_paren)) {
         _next:
         {
@@ -757,6 +765,8 @@ ffly_err_t read_func_def(struct ffly_script *__script, struct node **__node) {
     struct ffly_vec block;
     ffly_vec_set_flags(&block, VEC_AUTO_RESIZE);
     ffly_vec_init(&block, sizeof(struct node*));
+
+    __script->ret_type = ret_type;
     read_compound_stmt(__script, &block); 
     __script->local = save;
     ffly_map_de_init(&local);
@@ -887,20 +897,22 @@ ffly_err_t ffly_script_parse(struct ffly_script *__script) {
                 }
             }
 		} else if (tok->kind == TOK_IDENT) {
-            if (is_func_call(__script)) {
-                if (_err(err = read_func_call(__script, &_node))) {
-                    ffly_fprintf(ffly_out, "failed to read function call.\n");
+            if (_err(err = read_stmt(__script, &_node))) {
+                ffly_fprintf(ffly_out, "failed to read statement.\n");
+                break;
+            }
+
+            if (!_node) {
+                if (_err(err = read_expr(__script, &_node))) {
+                    ffly_fprintf(ffly_out, "failed to read expression.\n");
                     break;
                 }
-            } else {
-                if (_err(err = read_stmt(__script, &_node))) {
-                    ffly_fprintf(ffly_out, "failed to read statement.\n");
-                    break;
-                }
+            
+                expect_token(__script, TOK_KEYWORD, _semicolon);
             }
         }
 
-		pr_tok(tok);
+		//pr_tok(tok);
 		if (_node != NULL) {
 			struct node **p;
 			ffly_vec_push_back(&__script->nodes, (void**)&p);

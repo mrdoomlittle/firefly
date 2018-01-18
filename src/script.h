@@ -111,7 +111,8 @@ enum {
     _decr,
     _k_else,
     _k_float,
-    _k_typedef
+    _k_typedef,
+    _k_ret
 };
 
 enum {
