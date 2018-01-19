@@ -3,8 +3,10 @@ void* ffly_brk(void*);
 # include <sys/resource.h>
 # include <sys/mman.h>
 # include "../system/util/checksum.h"
+# include "../system/thread.h"
+# include "../system/mutex.h"
 ffly_err_t ffly_printf(char*, ...);
-# define ALIGN 2
+# define ALIGN 8
 # define align_to(__no, __to)(((__no)+((__to)-1))&((~(__to))+1))
 # define is_aligned_to(__no, __align)(((__no&__align) == __align)||!(__no&__align))
 # define PAGE_SHIFT 8
@@ -20,6 +22,7 @@ typedef mdl_u32_t ar_uint_t;
 # define BLK_FREE 0x1
 # define BLK_USED 0x2
 # define FIXED 0x1
+# define MMAPED 0x2
 
 # define is_flag(__flags, __flag) \
     ((__flags&__flag)==__flag)
@@ -30,7 +33,7 @@ typedef mdl_u32_t ar_uint_t;
     is_flag((__blk)->flags, BLK_USED)
 
 # define get_blk(__pot, __off) \
-    ((blkdp)(((mdl_u8_t*)(__pot)->top)+(__off)))
+    ((blkdp)(((mdl_u8_t*)(__pot)->end)+(__off)))
 
 # define next_blk(__pot, __blk) \
     get_blk(__pot, (__blk)->next)
@@ -40,10 +43,17 @@ typedef mdl_u32_t ar_uint_t;
 # define AR_NULL ((ar_off_t)~0)
 # define is_null(__p) (__p==AR_NULL) 
 # define not_null(__p) (__p!=AR_NULL)
+# define POT_SIZE 0xfff
 
-# define no_bins 255
+# define lock_pot(__pot) \
+    ffly_mutex_lock(&(__pot)->lock)
+# define unlock_pot(__pot) \
+    ffly_mutex_unlock(&(__pot)->lock)
+
+# define no_bins 80
 # define bin_no(__bc) \
-    ((__bc)>>24)
+    (((mdl_u32_t)(__bc))>>3 > 16?16+(((mdl_u32_t)(__bc))>>7 > 16?16+(((mdl_u32_t)(__bc))>>11 > 16?16+(((mdl_u32_t)(__bc))>>15 > 16?16+(((mdl_u32_t)(__bc))>>19 > 16?16: \
+    (((mdl_u32_t)(__bc))>>19)):(((mdl_u32_t)(__bc))>>15)):(((mdl_u32_t)(__bc))>>11)):(((mdl_u32_t)(__bc))>>7)):(((mdl_u32_t)(__bc))>>3))
 
 # define get_bin(__pot, __bc) \
     *((__pot)->bins+bin_no(__bc))
@@ -52,9 +62,16 @@ typedef mdl_u32_t ar_uint_t;
 void static copy(void *__dst, void *__src, mdl_uint_t __bc) {
     mdl_u8_t *p = (mdl_u8_t*)__dst;
     mdl_u8_t *end = p+__bc;
+    mdl_uint_t left;
     while(p != end) {
-        *p = *((mdl_u8_t*)__src+(p-(mdl_u8_t*)__dst));
-        p++;
+        left = __bc-(p-(mdl_u8_t*)__dst);
+        if (left>>3 > 0) {
+            *(mdl_u64_t*)p = *(mdl_u64_t*)((mdl_u8_t*)__src+(p-(mdl_u8_t*)__dst));
+            p+=sizeof(mdl_u64_t);
+        } else {
+            *p = *((mdl_u8_t*)__src+(p-(mdl_u8_t*)__dst));
+            p++;
+        }
     }
 }
 
@@ -64,10 +81,15 @@ struct pot {
     void *top, *end;
     mdl_u8_t flags;
     ar_off_t bins[no_bins];
+    struct pot *next;
+    ffly_mutex_t lock;
 };
 
 typedef struct pot* potp;
 struct pot main_pot;
+
+__thread struct pot arena;
+__thread mdl_u8_t inited = 0;
 
 struct blkd {
     ar_off_t prev, next, fd, bk;
@@ -76,6 +98,7 @@ struct blkd {
     ar_off_t off, end;
     mdl_u8_t flags;
 } __attribute__((packed));
+
 
 typedef struct blkd* blkdp;
 # define blkd_size sizeof(struct blkd)
@@ -120,20 +143,27 @@ void static decouple(potp __pot, blkdp __blk) {
 }
 
 ffly_err_t init_pot(potp __pot) {
-    __pot->top = ffly_brk((void*)0);
-    __pot->end = __pot->top;
+    __pot->end = ffly_brk((void*)0);
+    __pot->top = __pot->end;
     __pot->top_blk = AR_NULL;
     __pot->end_blk = AR_NULL;
     __pot->off = 0;
     __pot->page_c = 0;
     __pot->flags = 0;
+    __pot->next = NULL;
+    __pot->flags = 0x0;
+    __pot->lock = FFLY_MUTEX_INIT;
     ar_off_t *bin = __pot->bins;
     while(bin != __pot->bins+no_bins)
         *(bin++) = AR_NULL;
 }
 
+ffly_err_t ffly_ar_init() {
+    init_pot(&main_pot);
+}
+
 ffly_err_t _ffly_ar_cleanup(potp __pot) {
-    ffly_brk(__pot->top);
+    ffly_brk(__pot->end);
 }
 
 ffly_err_t ffly_ar_cleanup() {
@@ -141,44 +171,63 @@ ffly_err_t ffly_ar_cleanup() {
 }
 
 void pr() {
+    struct pot *p = &main_pot;
+    mdl_uint_t no = 0;
+    blkdp blk;
+    _next_pot:
+    ffly_printf("****pot %u\n", no++);
     ffly_printf("\nblocks:\n");
-    if (is_null(main_pot.top_blk)) return;
-    blkdp blk = get_blk(&main_pot, main_pot.top_blk);
+    if (is_null(p->top_blk)) return;
+    blk = get_blk(p, p->top_blk);
     _next:
 
     ffly_printf("|-----------------------|\n");
     ffly_printf("| size: %u\t\t| 0x%x\n", blk->size, blk->off);
     if (not_null(blk->next)) {
-        blk = get_blk(&main_pot, blk->next);
+        blk = get_blk(p, blk->next);
         goto _next;
     }
     ffly_printf("|-----------------------|\n");
-    ffly_printf("used: %u\n", main_pot.off);
+    ffly_printf("used: %u\n", p->off);
+    if (p->next != NULL) {
+        p = p->next;
+        goto _next_pot;
+    }
 }
 
 void pf() {
-    ffly_printf("\nfree blocks: 0x%x\n", main_pot.off);
-    ar_off_t *bin = main_pot.bins;
+    struct pot *p = &main_pot;
+    mdl_uint_t no = 0;
+    ar_off_t *bin;
+
+    _next_pot:
+    ffly_printf("****pot %u\n", no++);
+    ffly_printf("\nfree blocks: 0x%x\n", p->off);
+    bin = p->bins;
     blkdp blk;
     _next:
     if (is_null(*bin)) goto _sk;
-    blk = get_blk(&main_pot, *bin);
+    blk = get_blk(p, *bin);
     _fd:
 
-    ffly_printf("|-----------------------| bin: %u\n", bin-main_pot.bins);
+    ffly_printf("|-----------------------| bin: %u\n", bin-p->bins);
     ffly_printf("| size: %u\t\t| {0x%x, 0x%x}, fd: 0x%x, bk: 0x%x\n", blk->size, blk->off, blk->end, blk->fd, blk->bk);
     if (not_null(blk->fd)) {
-        blk = get_blk(&main_pot, blk->fd);
+        blk = get_blk(p, blk->fd);
         goto _fd;
     }
 
     _sk:
-    if (bin < main_pot.bins+(no_bins-1)) {
+    if (bin < p->bins+(no_bins-1)) {
         bin++;
         goto _next;
     }
 
     ffly_printf("|-----------------------|\n");
+    if (p->next != NULL) {
+        p = p->next;
+        goto _next_pot;
+    }
 }
 
 /*
@@ -226,22 +275,47 @@ grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 }
 */
 
+void* _ffly_alloc(potp, mdl_uint_t);
 void _ffly_free(potp, void*);
+/*
+struct pot* alloc_pot(mdl_uint_t __size) {
+    struct pot *p = _ffly_alloc(&main_pot, sizeof(struct pot));
+    init_pot(p);
+    p->flags |= FIXED;
+    if (__size>ALLOC_THRESH) {
+        p->top = mmap(NULL, __size, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
+        p->flags |= MMAPED;
+    } else {
+        p->top = _ffly_alloc(&main_pot, __size);
+    }
+    p->end = (void*)((mdl_u8_t*)p->top+__size);
+    return p;
+}
+
+void free_pot(struct pot *__pot) {
+    if (is_flag(__pot->flags, MMAPED)) {
+        munmap(__pot->top, __pot->end-__pot->pot);
+    } else {
+        _ffly_free(&main_pot, __pot->p);
+    }
+    _ffly_free(&main_pot, __pot);
+}
+*/
 void* _ffly_alloc(potp __pot, mdl_uint_t __bc) {
+    lock_pot(__pot);
     ar_off_t bin;
     if (not_null((bin = get_bin(__pot, __bc)))) {
         while(not_null(bin)) {
             blkdp blk = get_blk(__pot, bin);
-            ar_uint_t bc;
-            if (blk->size >= (bc = align_to(__bc, ALIGN))) {
+            if (blk->size >= __bc) {
                 unlink(__pot, blk);
                 blk->pad = blk->size-__bc;
                 blk->flags = (blk->flags&~BLK_FREE)|BLK_USED;
 
                 ar_uint_t junk;
-                if ((junk = (blk->size-bc)) > blkd_size) {
-                    ar_off_t off = blk->off+blkd_size+bc;
-                    blkdp p = (blkdp)((mdl_u8_t*)__pot->top+off); 
+                if ((junk = (blk->size-__bc)) > blkd_size) {
+                    ar_off_t off = blk->off+blkd_size+__bc;
+                    blkdp p = (blkdp)((mdl_u8_t*)__pot->end+off); 
                     *p = (struct blkd){
                         .prev = blk->off, .next = blk->next,
                         .size = junk-blkd_size, .off = off, .end = blk->end,
@@ -249,7 +323,7 @@ void* _ffly_alloc(potp __pot, mdl_uint_t __bc) {
                         .flags = BLK_FREE
                     };
 
-                    blk->size = bc;
+                    blk->size = __bc;
                     blk->next = p->off;
                     blk->end = off;
                     if (__pot->off == p->end) {
@@ -260,6 +334,7 @@ void* _ffly_alloc(potp __pot, mdl_uint_t __bc) {
                         get_blk(__pot, p->next)->prev = p->off;
                     _ffly_free(__pot, (void*)((mdl_u8_t*)p+blkd_size));
                 }
+                unlock_pot(__pot);
                 return (void*)((mdl_u8_t*)blk+blkd_size);
             } 
            
@@ -268,16 +343,18 @@ void* _ffly_alloc(potp __pot, mdl_uint_t __bc) {
     }
 
     mdl_uint_t size = align_to(blkd_size+__bc, ALIGN);
-    mdl_uint_t page_c;
-    ar_off_t end = __pot->off+size;
-    if ((page_c = ((end<<PAGE_SHIFT)+((end-((end<<PAGE_SHIFT)*PAGE_SIZE))>0))) >= __pot->page_c) {
-        ffly_brk(__pot->end = (__pot->top+((__pot->page_c = page_c)*PAGE_SIZE)));
+    ar_off_t top = __pot->off+size;
+    if (!is_flag(__pot->flags, FIXED)) {
+        mdl_uint_t page_c;
+        if ((page_c = ((top<<PAGE_SHIFT)+((top-((top<<PAGE_SHIFT)*PAGE_SIZE))>0))) >= __pot->page_c) {
+            ffly_brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE)));
+        }
     }
 
-    blkdp blk = (blkdp)((mdl_u8_t*)__pot->top+__pot->off);
+    blkdp blk = (blkdp)((mdl_u8_t*)__pot->end+__pot->off);
     *blk = (struct blkd) {
         .prev = __pot->end_blk, .next = AR_NULL,
-        .size = size-blkd_size, .off = __pot->off, .end = end,
+        .size = size-blkd_size, .off = __pot->off, .end = top,
         .fd = AR_NULL, .bk = AR_NULL,
         .flags = BLK_USED
     };
@@ -289,21 +366,28 @@ void* _ffly_alloc(potp __pot, mdl_uint_t __bc) {
     if (not_null(__pot->end_blk))
         get_blk(__pot, __pot->end_blk)->next = __pot->off;
     __pot->end_blk = __pot->off;
-    __pot->off = end;
+    __pot->off = top;
+    unlock_pot(__pot);
     return (void*)((mdl_u8_t*)blk+blkd_size);
 }
 
-mdl_u8_t inited = 0;
 void* ffly_alloc(mdl_uint_t __bc) {
     if (!inited) {
-        init_pot(&main_pot);
         inited = 1;
-    }
+        init_pot(&arena);
 
-    return _ffly_alloc(&main_pot, __bc);
+        arena.flags |= FIXED;
+        arena.end = _ffly_alloc(&main_pot, POT_SIZE);
+        arena.top = (mdl_u8_t*)arena.top+POT_SIZE;
+        if (main_pot.next != NULL)
+            arena.next = main_pot.next;
+        main_pot.next = &arena;
+    }
+    return _ffly_alloc(&arena, __bc);
 }
 
 void _ffly_free(potp __pot, void *__p) {
+    lock_pot(__pot);
     blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);
     decouple(__pot, blk);
 # ifdef DEBUG
@@ -357,6 +441,11 @@ void _ffly_free(potp __pot, void *__p) {
 
     if (blk->end == __pot->off) {
         __pot->off = blk->off;
+        mdl_uint_t page_c;
+        if ((page_c = ((__pot->off<<PAGE_SHIFT)+((__pot->off-((__pot->off<<PAGE_SHIFT)*PAGE_SIZE))>0))) < __pot->page_c) {
+            ffly_brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE)));
+        }
+        unlock_pot(__pot);
         return;
     }
 
@@ -368,11 +457,12 @@ void _ffly_free(potp __pot, void *__p) {
         blk->fd = bin;
     }
     *(__pot->bins+bin_no(blk->size)) = blk->off;
+    unlock_pot(__pot);
 }
 
 void ffly_free(void *__p) {
     if (!__p) return;
-    _ffly_free(&main_pot, __p);
+    _ffly_free(&arena, __p);
 }
 
 void *ffly_realloc(void *__p, mdl_uint_t __bc) {
@@ -380,7 +470,7 @@ void *ffly_realloc(void *__p, mdl_uint_t __bc) {
     void *p = ffly_alloc(__bc);
 
     ar_uint_t size = blk->size-blk->pad;
-   // ffly_printf("%u\n", size);
+    ffly_printf("prev size: %u\n", size);
     copy(p, __p, size<__bc?size:__bc);
     ffly_free(__p);
     return p;

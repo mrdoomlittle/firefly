@@ -31,7 +31,11 @@ ffly_err_t ffly_vfprintf(FF_FILE *__file, char const *__s, va_list __args) {
 
 # include <stdio.h>
 ffly_err_t ffly_vsfprintf(FF_FILE *__file, ffly_size_t __n, char const *__s, va_list __args) {
-    char buf[1024];// = (char*)__ffly_mem_alloc(1024);
+# ifdef __ffly_debug
+    char buf[1024];
+# else
+    char *buf = (char*)__ffly_mem_alloc(1024);
+# endif
     char *p = __s, *bufp = buf;
     while(p != __s+__n) {
         if (*(p++) == '%') {
@@ -55,6 +59,7 @@ ffly_err_t ffly_vsfprintf(FF_FILE *__file, ffly_size_t __n, char const *__s, va_
                 char c = va_arg(__args, int);
                 *(bufp++) = c;      
             } else if (*p == 'f') {
+//
 //                double v = va_arg(__args, double);
 //                bufp+= ffly_floatts(v, bufp++);
             } else if (*p == 'p') {
@@ -72,7 +77,9 @@ ffly_err_t ffly_vsfprintf(FF_FILE *__file, ffly_size_t __n, char const *__s, va_
     }
     *bufp = '\0';
     ffly_write(ffly_fileno(__file), buf, bufp-buf);
-//    __ffly_mem_free(buf);
+# ifndef __ffly_debug
+    __ffly_mem_free(buf);
+# endif
 }
 
 /*
