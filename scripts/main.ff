@@ -1,44 +1,8 @@
-/*
-%include "../scripts/limits.ff"
-%include "../scripts/test0.ff"
-%include "../scripts/test1.ff"
-print(U8_MAX);
-print(U16_MAX);
-print(U32_MAX);
-print(U64_MAX);
-*/
-
-/*
-fn testing()->void {
-    print(21299);
-}
-*/
 %include "../scripts/fflib.ff"
+fn hello(u8_t __a)->void{
 
-/*
-%include "../scripts/fflib.ff"
-ffly_mutex_t mutex = FFLY_MUTEX_INIT;
-
-ffly_mutex_lock(&mutex);
-
-ffly_mutex_lock(&mutex);
-*/
-/*ffly_mutex_lock(&mutex);
-*/
-
-fn hello()->u8_t{
-    print(21299);
-    ret 21;
 }
 
-print(hello());
-
-u8_t i = 0;
-while(i < 20) {
-    if (i == 12) {
-        print(i);
-    }
-    i++;
-}
+hello(21299);
 
 exit;

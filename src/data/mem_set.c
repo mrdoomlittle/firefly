@@ -9,7 +9,7 @@
 #   include "../system/atomic.h"
 #   include "../system/nanosleep.h"
 # endif
-void static * _ffly_mem_set(void *__dst, mdl_u8_t __val, mdl_uint_t __bc) {
+void* _ffly_mem_set(void *__dst, mdl_u8_t __val, mdl_uint_t __bc) {
     mdl_u8_t _8l = __val;
     mdl_u16_t _16l = _8l|_8l<<8;
     mdl_u32_t _32l = _16l|((mdl_u32_t)_16l)<<16;

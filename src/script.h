@@ -6,6 +6,7 @@
 # include "system/buff.h"
 # include "system/map.h"
 # include "data/pair.h"
+# include "types/bool_t.h"
 /*
     TODO add multithreading support.
 */
@@ -35,6 +36,7 @@ struct ffly_script {
 	ffly_byte_t *p, *end;
 	ffly_off_t off;
 
+    char *path;
     mdl_uint_t line, lo;
     struct ffly_vec nodes;
     struct ffly_vec vecs;
@@ -48,6 +50,7 @@ struct ffly_script {
 };
 
 # ifdef __ffly_script_internal
+# define errmsg(__s) ffly_fprintf(ffly_out, "%s:%u, %s\n", __FILE__, __LINE__, __s)
 # define TOK_IDENT 0
 # define TOK_KEYWORD 1
 # define TOK_NO 2
@@ -112,7 +115,8 @@ enum {
     _k_else,
     _k_float,
     _k_typedef,
-    _k_ret
+    _k_ret,
+    _ellipsis
 };
 
 enum {
@@ -194,6 +198,7 @@ struct node {
     struct ffly_vec _else, _do;
     ffly_pair pair;
     void *p;
+    ffly_bool_t va;
     struct ffly_vec fields;
 };
 

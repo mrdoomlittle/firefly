@@ -10,9 +10,12 @@
 # include "data/str_len.h"
 # include "system/errno.h"
 # include "system/nanosleep.h"
+# include "data/str_cpy.h"
+# include <stdlib.h>
 ffly_err_t ffly_script_ld(struct ffly_script *__script, char *__file) {
 	ffly_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
+    __script->path = realpath(__file, NULL);
 
 	struct ffly_stat st;
 	ffly_fstat(__file, &st);
@@ -28,7 +31,7 @@ char const* tokk_str(mdl_u8_t __kind) {
 	switch(__kind) {
 		case TOK_IDENT: return "ident";
 		case TOK_KEYWORD: return "keyword";
-		case TOK_NO: return "no";
+		case TOK_NO: return "number";
         case TOK_NEWLINE: return "newline";
 	}
 
@@ -37,6 +40,7 @@ char const* tokk_str(mdl_u8_t __kind) {
 
 char const* tokid_str(mdl_u8_t __id) {
 	switch(__id) {
+        case _k_void: return "void";
         case _k_float: return "float";
 		case _k_print: return "print";
 		case _k_uint_t: return "uint_t";
@@ -49,10 +53,12 @@ char const* tokid_str(mdl_u8_t __id) {
 		case _k_i16_t: return "i16_t";
 		case _k_u8_t: return "u8_t";
 		case _k_i8_t: return "i8_t";
+        case _k_var: return "var";
 		case _semicolon: return ";";
 		case _eq: return "=";
         case _incr: return "incr";
         case _decr: return "decr";
+        case _colon: return "colon";
         case _comma: return "comma";
         case _l_arrow: return "left arrow";
         case _r_arrow: return "right arrow";
@@ -61,6 +67,17 @@ char const* tokid_str(mdl_u8_t __id) {
         case _r_brace: return "right brace";
         case _l_paren: return "left paren";
         case _r_paren: return "right paren";
+        case _k_struct: return "struct";
+        case _k_else: return "else";
+        case _k_ret: return "return";
+        case _period: return ".";
+        case _k_match: return "match";
+        case _gt: return "grater then";
+        case _lt: return "less then";
+        case _k_fn: return "function";
+        case _k_while: return "while";
+        case _k_exit: return "exit";
+        case _k_typedef: return "typedef";
 	}
 	return "unknown";
 }
@@ -69,7 +86,6 @@ void pr_tok(struct token *__tok) {
 	if (!__tok) return;
 	ffly_printf("tok kind: %s\n", tokk_str(__tok->kind));
 	ffly_printf("tok id: %s\n", tokid_str(__tok->id));
-	ffly_printf("tokp: %s\n", (char*)__tok->p);
 }
 
 char const* opstr(mdl_u8_t __op) {
@@ -371,32 +387,63 @@ mdl_uint_t tokcol(struct token *__tok) {
     return __tok->off-toklo(__tok);
 }
 
+void print_line(struct ffly_script *__script, mdl_uint_t __off) {
+    char *p = (char*)__script->p+__off;
+    while(*p != '\n' && *p != '\0') {
+        ffly_printf("%c", *p);
+        p++;
+    }
+    ffly_printf("\n");
+}
+
+# define expectmsg(__s) ffly_fprintf(ffly_out, "%s:%u;%u: %s, got %s.\n", __script->path, tokl(tok), tokcol(tok), __s, tokid_str(tok->id))
 ffly_bool_t expect_token(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_t __id) {
 	struct token *tok = next_token(__script);
-	if (!tok) return 0;
-	mdl_u8_t ret_val;
-    if (!(ret_val = (tok->kind == __kind && tok->id == __id))) {
+    if (!tok) {
+        errmsg("token is null.");
+        return 0;
+    }
+
+	mdl_u8_t ret;
+    if (!(ret = (tok->kind == __kind && tok->id == __id))) {
         if (__kind == TOK_KEYWORD) {
             switch(__id) {
+                case _colon:
+                    expectmsg("expected colon");
+                break;
                 case _l_brace:
-                    ffly_fprintf(ffly_out, "%u;%u: expected left side brace, got %s.\n", tokl(tok), tokcol(tok), tokid_str(tok->id));
+                    expectmsg("expected left side brace");
                 break;
                 case _r_brace:
-                    ffly_fprintf(ffly_out, "%u;%u: expected right side brace, got %s.\n", tokl(tok), tokcol(tok), tokid_str(tok->id));
+                    expectmsg("expected right side brace");
                 break;
                 case _semicolon:
-                    ffly_fprintf(ffly_out, "%u;%u: expected semicolon, got %s.\n", tokl(tok), tokcol(tok), tokid_str(tok->id));
+                    expectmsg("expected semicolon");
                 break;
                 case _l_paren:
-                    ffly_fprintf(ffly_out, "%u;%u: expected left side paren, got %s.\n", tokl(tok), tokcol(tok), tokid_str(tok->id));
+                    expectmsg("expected left side paren");
                 break;
                 case _r_paren:
-                    ffly_fprintf(ffly_out, "%u;%u: expected right side paren, got %s.\n", tokl(tok), tokcol(tok), tokid_str(tok->id));
+                    expectmsg("expected right side paren");
+                break;
+                case _l_arrow:
+                    expectmsg("expected left arrow");
+                break;
+                case _r_arrow:
+                    expectmsg("expected right arrow");
                 break;
             }
+            print_line(__script, tok->lo);
+            mdl_uint_t pad = tok->off-toklo(tok);
+            while(pad != 0) {
+                ffly_printf(" ");
+                pad--;
+            }
+
+            ffly_printf("^\n");
         }
     }
-    return ret_val;
+    return ret;
 }
 
 ffly_err_t ffscript_free(ffscriptp __script) {
@@ -451,6 +498,7 @@ ffly_err_t ffly_script_free(struct ffly_script *__script) {
     __ffly_mem_free(__script->p);
     ffly_map_de_init(&__script->macros);
     ffly_map_de_init(&__script->typedefs);
+    free(__script->path);
     return FFLY_SUCCESS;
 }
 
@@ -544,7 +592,7 @@ void read_include(struct ffly_script *__script) {
     ffly_off_t off = __script->off;
     ffly_byte_t *p = __script->p;
     ffly_byte_t *end = __script->end;
-
+    char *path = __script->path;
     ffly_printf("include: %s\n", (char*)file->p);
 
     if (access((char*)file->p, F_OK) == -1) {
@@ -557,8 +605,10 @@ void read_include(struct ffly_script *__script) {
     __script->off = 0;
     ffly_script_ld(__script, (char*)file->p);  
     ffly_script_parse(__script);
+    free(__script->path);
     __ffly_mem_free(__script->p);
 
+    __script->path = path;
     __script->line = line;
     __script->lo = lo;
     __script->off = off;

@@ -15,6 +15,18 @@ struct obj** objpp(struct obj *__obj) {
     return &__obj->objpp;
 }
 
+struct obj *get_reg(mdl_u8_t __kind) {
+    switch(__kind) {
+        case _8l_u: return rg_8l_u;
+        case _16l_u: return rg_16l_u;
+        case _32l_u: return rg_32l_u;
+        case _64l_u: return rg_64l_u;
+        case _8l_s: return NULL;
+        case _16l_s: return NULL;
+        case _32l_s: return NULL;
+        case _64l_s: return NULL;
+    }
+}
 
 ffly_byte_t static **stack;
 static struct obj *top = NULL;
@@ -207,6 +219,8 @@ void *stack_push(void *__p, mdl_uint_t __n) {
     ffly_mem_cpy(p, __p, __n);
     return p;
 }
+
+
 
 void emit(struct ffly_script*, struct node*);
 void emit_decl_init(struct ffly_script *__script, struct node *__node, struct obj *__to) {
@@ -466,11 +480,12 @@ void emit_addrof(struct ffly_script *__script, struct node *__node) {
 
 void emit_ret(struct ffly_script *__script, struct node *__node) {
     emit(__script, __node->ret);
+    struct obj *reg = get_reg(convtk(__node->_type->kind));
     struct obj **from;
     pop(__script, &from);
 
-    next_obj(__script, mk_op_copy(__node->_type->size, objpp(rg_64l_u), from));
-    push(__script, rg_64l_u);
+    next_obj(__script, mk_op_copy(__node->_type->size, objpp(reg), from));
+    push(__script, reg);
 }
 
 void emit(struct ffly_script *__script, struct node *__node) {

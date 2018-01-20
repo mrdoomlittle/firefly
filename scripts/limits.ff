@@ -1,7 +1,10 @@
-%ifndef __limits__ff
-%define __limits__ff
-%define U8_MAX 0xFF
-%define U16_MAX 0xFFFF
-%define U32_MAX 0xFFFFFFFF
-%define U64_MAX 0xFFFFFFFFFFFFFFFF
-%endif
+%ifndef __ffly__limits__ff
+%define __ffly__limits__ff
+%define I8_MIN -128
+%define I8_MAX 127
+
+%define U8_MAX 0xff
+%define U16_MAX 0xffff
+%define U32_MAX 0xffffffff
+%define U64_MAX 0xffffffffffffffff
+%endif /*__ffly__limits__ff*/

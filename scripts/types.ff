@@ -2,4 +2,17 @@
 %define __ffly__types__ff
 typedef u8_t ffly_mutex_t;
 typedef u8_t char;
-%endif
+typedef u8_t uint8_t;
+typedef u16_t uint16_t;
+typedef u32_t uint32_t;
+typedef u64_t uint64_t;
+typedef i8_t int8_t;
+typedef i16_t int16_t;
+typedef i32_t int32_t;
+typedef i64_t int64_t;
+typedef uint_t ffly_size_t;
+typedef int_t ffly_ssize_t;
+typedef uint_t ffly_off_t;
+typedef u8_t ffly_byte_t;
+typedef uint_t ffly_no_t;
+%endif /*__ffly__type__ff*/

@@ -23,16 +23,16 @@ ffly_bool_t is_prev(struct ffly_script *__script, char __c) {
 }
 
 ffly_bool_t is_space(struct ffly_script *__script) {
-    char c;
+    char c = fetchc(__script);
     mdl_u8_t static comment = 0;
     if (comment) {
-        if (fetchc(__script) == '/' && is_prev(__script, '*')) {
+        if (c == '/' && is_prev(__script, '*')) {
             comment = 0;
         }
         return 1;
     }
 
-    if ((c = fetchc(__script)) == '/' && is_next(__script, '*')) {
+    if (c == '/' && is_next(__script, '*')) {
         comment = 1;
         return 1;
     }
@@ -107,15 +107,15 @@ char* read_chr(struct ffly_script *__script) {
     return (char*)(__script->p+(__script->off++));
 }
 
+# define register_line(__script) \
+    __script->line++; \
+    __script->lo = __script->off+1;
+
 static struct token* read_token(struct ffly_script *__script) {
 	struct token *tok = (struct token*)__ffly_mem_alloc(sizeof(struct token));
 	tok->p = NULL;
-    ffly_off_t off = __script->off;
-    if (is_newline(__script))  {
-        if (__script->end-1 != __script->p+__script->off) {
-            __script->line++;
-            __script->lo = __script->off+1;
-        }
+    if (is_newline(__script)) {
+        register_line(__script);
         __script->off++;
         tok->kind = TOK_NEWLINE;  
         return tok;
@@ -162,7 +162,14 @@ static struct token* read_token(struct ffly_script *__script) {
             __script->off++;
         break;
         case '.':
-            make_keyword(tok, _period);
+            if (is_next(__script, '.')) {
+                __script->off++;
+                if (is_next(__script, '.')) {
+                    make_keyword(tok, _ellipsis);
+                    __script->off++;
+                }
+            } else
+                make_keyword(tok, _period);
             __script->off++;
         break;
         case '-':
@@ -251,8 +258,8 @@ static struct token* read_token(struct ffly_script *__script) {
         }
 	}
     
-    tok->line = curl(__script);
-    tok->off = off;
+    tok->line = curl(__script)-1;
+    tok->off = __script->off-1;
     tok->lo = curlo(__script);
 	cleanup(__script, (void*)tok);
 	return tok;
@@ -272,8 +279,12 @@ struct token* ffly_script_lex(struct ffly_script *__script, ffly_err_t *__err) {
 		return tok;
 	}
 
-	while(is_space(__script) && !is_eof(__script))
+	while(is_space(__script) && !is_eof(__script)) {
+        if (is_newline(__script)) {
+            register_line(__script); 
+        }
         __script->off++;
+    }
 
     if (is_eof(__script)) return NULL;
 

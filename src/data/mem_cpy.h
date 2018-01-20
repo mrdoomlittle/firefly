@@ -5,6 +5,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
+void _ffly_mem_cpy(void*, void*, mdl_uint_t);
 ffly_err_t ffly_mem_cpy(void*, void*, mdl_uint_t);
 # ifdef __cplusplus
 }

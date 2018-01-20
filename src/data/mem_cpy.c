@@ -10,7 +10,7 @@
 #   include "../system/atomic.h"
 #   include "../system/nanosleep.h"
 # endif
-void static _ffly_mem_cpy(void *__dst, void *__src, mdl_uint_t __bc) {
+void _ffly_mem_cpy(void *__dst, void *__src, mdl_uint_t __bc) {
 	if (__bc == sizeof(mdl_u8_t)) {
 		*(mdl_u8_t*)__dst = *(mdl_u8_t*)__src;
 		return;
