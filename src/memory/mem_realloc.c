@@ -11,7 +11,7 @@ void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc) {
 	mdl_uint_t mem_size = *((mdl_uint_t*)p);
 # ifndef __ffly_use_allocr
 	if ((p = (mdl_u8_t*)realloc(p, __nbc+sizeof(mdl_uint_t))) == NULL) {
-		ffly_printf(stderr, "mem_realloc: failed to reallocate memory.\n");
+		ffly_fprintf(ffly_err, "mem_realloc: failed to reallocate memory.\n");
 		return NULL;
 	}
 # else
@@ -22,7 +22,7 @@ void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc) {
 		ffly_atomic_add(&ffly_mem_alloc_bc, __nbc-mem_size);
 	else if (__nbc < mem_size)
 		ffly_atomic_sub(&ffly_mem_alloc_bc, mem_size-__nbc);
-	*((mdl_uint_t*)p) = __nbc;
+	*(mdl_uint_t*)p = __nbc;
 	p += sizeof(mdl_uint_t);
 # else
 # ifndef __ffly_use_allocr
@@ -40,7 +40,7 @@ void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc) {
 		ffly_mal_track_update(&__ffly_mal_track__, __p, (void*)p)
 # ifdef __ffly_debug_enabled
 		!= FFLY_SUCCESS) {
-			ffly_printf(stderr, "mem_realloc: mal track failure.\n");
+			ffly_fprintf(ffly_err, "mem_realloc: mal track failure.\n");
 		}
 # else
 ;

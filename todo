@@ -20,3 +20,9 @@
 -. remove old code
 -. add multithreading support for pixdraw/pixfill/etc
 -. start adding to errno list
+-. cleanup & test shm, system pipe.
+-. work on database.
+-. allow for vec & buff as a option to be allocated in pages of non contiguous memory.
+-. work on terminal,hatch to make debugging easer. this will allow a live view on infomation from within engine
+	e.g. memory, opened files, threads etc.
+-. remove useless submodules

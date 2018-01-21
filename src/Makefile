@@ -2,8 +2,15 @@ DEFINES=-I../eint_t/inc -D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
 nasm_flags="-I${PWD}/system/asm/"
 ffly_cc=gcc
 dst_dir=${PWD}
-ffly_objs=$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=system;. system/compile.sh;echo $$ffly_objs) \
-$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=memory;. memory/compile.sh;echo $$ffly_objs)
+ffly_objs=$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=system;. ./system/compile.sh;echo $$ffly_objs) \
+$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=memory;. ./memory/compile.sh;echo $$ffly_objs) \
+$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=data;. ./data/compile.sh;echo $$ffly_objs)
+hatch: clean
+	gcc -c firefly.c
+	gcc -Wall -o hatch hatch.c $(ffly_objs) firefly.o
+terminal: clean
+	gcc -c firefly.c
+	gcc -Wall -o terminal terminal.c $(ffly_objs) firefly.o
 db:
 	gcc -c system/io.c
 	gcc -c data/bcopy.c

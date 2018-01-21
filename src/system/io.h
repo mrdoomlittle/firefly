@@ -13,12 +13,14 @@
 extern "C" {
 # endif
 extern FF_FILE *ffly_out;
+extern FF_FILE *ffly_in;
 extern FF_FILE *ffly_log;
 extern  FF_FILE *ffly_err;
 ffly_err_t ffly_io_init();
 void ffly_io_closeup();
 mdl_int_t ffly_open(char const*, mdl_int_t, mdl_int_t);
 mdl_int_t ffly_close(mdl_int_t);
+mdl_uint_t ffly_rdline(void*, mdl_uint_t, FF_FILE*);
 /*
 ffly_size_t ffly_write(ffly_fd_t, void*, ffly_size_t, ffly_err_t*);
 ffly_size_t ffly_read(ffly_fd_t, void*, ffly_size_t, ffly_err_t*);

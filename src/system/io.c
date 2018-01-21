@@ -12,6 +12,19 @@
 FF_FILE *ffly_out = NULL;
 FF_FILE *ffly_log = NULL;
 FF_FILE *ffly_err = NULL;
+FF_FILE *ffly_in = NULL;
+mdl_uint_t ffly_rdline(void *__buf, mdl_uint_t __size, FF_FILE *__file) {
+    mdl_u8_t *p = (mdl_u8_t*)__buf;
+    while((p-(mdl_u8_t*)__buf)<__size) {
+
+        char c;
+        if (read(__file->fd, &c, 1) <= 0) continue;
+        if (c == '\n') break;
+        *(p++) = c;
+    } 
+
+    *p = '\0';
+}
 /*
 ffly_fd_t ffly_open(char const *__path, int __flags, mode_t __mode) {
 	return open(__path, __flags, __mode);
@@ -49,7 +62,7 @@ ffly_size_t ffly_read(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ffly_err_
 */
 ffly_err_t ffly_io_init() {
     ffly_err_t err;
-	if (!(ffly_out = ffly_fopen("/dev/tty", FF_O_WRONLY, 0, &err))) {
+	if (!(ffly_out = ffly_fopen("/dev/tty", FF_O_RDWR, 0, &err))) {
 		return FFLY_FAILURE;
 	}
 	if (!(ffly_log = ffly_fopen("log", FF_O_WRONLY|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err))) {
@@ -58,6 +71,8 @@ ffly_err_t ffly_io_init() {
 	if (!(ffly_err = ffly_fopen("err", FF_O_WRONLY|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err))) {
 		return FFLY_FAILURE;
 	}
+
+    ffly_in = ffly_out;
 	return FFLY_SUCCESS;
 }
 

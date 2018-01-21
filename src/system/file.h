@@ -20,6 +20,7 @@ struct ffly_file {
 # define FF_O_TRUNC O_TRUNC
 # define FF_O_RDONLY O_RDONLY
 # define FF_O_WRONLY O_WRONLY
+# define FF_O_RDWR O_RDWR
 # define FF_O_CREAT O_CREAT
 # define FF_S_IRWXU S_IRWXU // r/w/x
 # define FF_S_IRUSR S_IRUSR // r

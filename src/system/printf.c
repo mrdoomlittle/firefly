@@ -59,7 +59,6 @@ ffly_err_t ffly_vsfprintf(FF_FILE *__file, ffly_size_t __n, char const *__s, va_
                 char c = va_arg(__args, int);
                 *(bufp++) = c;      
             } else if (*p == 'f') {
-//
 //                double v = va_arg(__args, double);
 //                bufp+= ffly_floatts(v, bufp++);
             } else if (*p == 'p') {
