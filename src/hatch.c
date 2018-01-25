@@ -10,14 +10,47 @@
 # define __ffly_debug_enabled
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
+# include "system/vec.h"
+# include "system/map.h"
 char const tmpl[] = "/tmp/hatch.XXXXXX";
 mdl_u8_t rcvop(mdl_uint_t __pipe) {
     mdl_u8_t op = 0;
     ffly_printf("recving op.\n");
-    ffly_pipe_read(&op, 1, __pipe);
+    op = ffly_pipe_rd8l(__pipe);
     ffly_printf("recved.\n");
     return op;
 } 
+
+void static lsvec(mdl_uint_t __pipe) {
+    ffly_vecp p;
+    if (!(p = ffly_vec_list())) {
+        ffly_printf("nothing to be sent.\n");
+        ffly_pipe_wr8l(-1, __pipe);
+        return;
+    }
+
+    ffly_pipe_wr8l(0, __pipe);
+    mdl_uint_t l = 1024;
+    char *buf = (char*)__ffly_mem_alloc(l);
+    ffly_pipe_write(&l, sizeof(mdl_uint_t), __pipe);
+    mdl_uint_t i = 0;
+    while(p != NULL) {
+        ffly_sprintf(buf, "vec %u; size: %u, page_c: %u, blk_size: %u - off: %u\n", i, p->size, p->page_c, p->blk_size, p->off);
+        ffly_printf("sent: %s\n", buf);
+        ffly_pipe_write(buf, l, __pipe);
+        p = vec_next(p);
+        if (!p)
+            ffly_pipe_wr8l(-1, __pipe); 
+        else
+            ffly_pipe_wr8l(0, __pipe);
+    } 
+
+    __ffly_mem_free(buf);
+}
+
+void static lsmap(mdl_uint_t __pipe) {
+
+}
 
 ffly_err_t ffly_hatch_run() {
     char file[sizeof(tmpl)];
@@ -41,12 +74,16 @@ ffly_err_t ffly_hatch_run() {
             struct ffly_meminfo info;
             info.used = ffly_mem_alloc_bc-ffly_mem_free_bc;
             ffly_pipe_write(&info, sizeof(struct ffly_meminfo), pipe);  
-        } else if (op == _ffly_ho_lsvec) {
         } else if (op == _ffly_ho_disconnect) {
             goto _back;  
         } else if (op == _ffly_ho_shutdown) {
             ffly_printf("recved shutdown command.\n");
             break;
+        } else {
+            switch(op) {
+                case _ffly_ho_lsvec: lsvec(pipe); break;
+                case _ffly_ho_lsmap: lsmap(pipe); break;
+            }
         }
     }
 
@@ -54,7 +91,11 @@ ffly_err_t ffly_hatch_run() {
     unlink(file);
 }
 
+# include "system/vec.h"
 ffly_err_t ffmain(int __argc, char **__argv) {
+    ffly_err_t err;
+    ffly_vecp p = ffly_vec(1, VEC_AUTO_RESIZE, &err);
     ffly_hatch_run();
+    ffly_vec_destroy(p);
     retok;
 }

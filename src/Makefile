@@ -5,6 +5,8 @@ dst_dir=${PWD}
 ffly_objs=$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=system;. ./system/compile.sh;echo $$ffly_objs) \
 $(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=memory;. ./memory/compile.sh;echo $$ffly_objs) \
 $(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=data;. ./data/compile.sh;echo $$ffly_objs)
+crypto: clean
+	gcc -Wall -o main crypto.c $(ffly_objs)
 hatch: clean
 	gcc -c firefly.c
 	gcc -Wall -o hatch hatch.c $(ffly_objs) firefly.o
@@ -128,33 +130,12 @@ config: clean
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o system/asm/sys_nanosleep.asm
 	gcc  -o main config.c str_cpy.o bin_tree.o hash.o map.o $(ffly_objs) sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o
 script: clean
-	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o.0 system/asm/sys_nanosleep.asm
-	gcc -c -o sys_nanosleep.o.1 system/sys_nanosleep.c
-	gcc -c system/io.c
 	gcc -c parse.c
 	gcc -c lex.c
 	gcc -c gen.c
 	gcc -c system/file.c
-	gcc -c system/vec.c
-	gcc -D__ffly_no_task_pool -c data/mem_cpy.c
 	gcc -c data/mem_swp.c
-	gcc -c system/flags.c
-	nasm -f elf64 $(nasm_flags) -o mutex.o.0 system/asm/mutex.asm
-	gcc -c data/str_len.c
-	gcc -c data/mem_dupe.c
-	gcc -c system/errno.c
-	gcc -D__ffly_no_task_pool -c data/mem_set.c
-	gcc -c data/str_cmp.c
-	gcc -c data/str_cpy.c
-	gcc -c system/buff.c
-	gcc -c data/str_dupe.c
-	gcc -c data/mem_cmp.c
-	gcc -c system/string.c
-	gcc -c system/bin_tree.c
-	gcc -c -o mutex.o.1 system/mutex.c
-	gcc -c system/map.c
-	gcc -c system/util/hash.c
-	gcc  -Wall -o main str_cpy.o script.c $(ffly_objs) bin_tree.o hash.o map.o sys_nanosleep.o.0 sys_nanosleep.o.1 mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o parse.o lex.o gen.o
+	gcc  -Wall -o main script.c $(ffly_objs) mem_swp.o parse.o lex.o gen.o
 clean:
 	rm -f main
 	cd ../ && make clean && cd src

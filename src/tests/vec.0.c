@@ -40,7 +40,7 @@ int main(void) {
 	ffly_io_init();
 	struct ffly_vec vec;
 	ffly_vec_clear_flags(&vec);
-	ffly_vec_tog_flag(&vec, VEC_AUTO_RESIZE|VEC_BLK_CHAIN|VEC_UUU_BLKS);
+	ffly_vec_tog_flag(&vec, VEC_AUTO_RESIZE|VEC_BLK_CHAIN|VEC_UUU_BLKS|VEC_NONCONTINUOUS);
 	if (_err(ffly_vec_init(&vec, sizeof(struct test)))) failure;
 
 	struct test *a, *b, *c, *d;

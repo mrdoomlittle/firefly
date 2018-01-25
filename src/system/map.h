@@ -3,20 +3,37 @@
 # include <mdlint.h>
 # include "../types/err_t.h"
 # include "vec.h"
-# define FFLY_MAP_SIZE 0xFF
 # define MAP_ITR_FD 0x1
 # define MAP_ITR_BK 0x1
 struct ffly_map {
 	struct ffly_vec **table;
     void *begin, *end;
+    mdl_uint_t size;
+    struct ffly_map *parent;
 };
 
+enum {
+    _ffly_map_15 = 4,
+    _ffly_map_31,
+    _ffly_map_63,
+    _ffly_map_127,
+    _ffly_map_255,
+    _ffly_map_511,
+    _ffly_map_1023,
+    _ffly_map_2047,
+    _ffly_map_4095,
+    _ffly_map_8191
+};
 
 typedef struct ffly_map* ffly_mapp;
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_map_init(ffly_mapp);
+ffly_mapp ffly_map(mdl_uint_t);
+void ffly_map_free(ffly_mapp);
+void ffly_map_destroy(ffly_mapp);
+void ffly_map_parent(ffly_mapp, ffly_mapp);
+ffly_err_t ffly_map_init(ffly_mapp, mdl_uint_t);
 ffly_err_t ffly_map_put(ffly_mapp, mdl_u8_t const*, mdl_uint_t, void const*);
 void const* ffly_map_get(ffly_mapp, mdl_u8_t const*, mdl_uint_t, ffly_err_t*);
 ffly_err_t ffly_map_de_init(ffly_mapp);

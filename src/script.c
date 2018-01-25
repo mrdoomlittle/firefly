@@ -9,6 +9,7 @@
 # include "data/mem_set.h"
 # include "data/str_len.h"
 # include "system/errno.h"
+# include "data/bcopy.h"
 # include "system/nanosleep.h"
 # include "data/str_cpy.h"
 # include <stdlib.h>
@@ -311,6 +312,19 @@ void op_free_frame(ffscriptp __script, struct obj *__obj) {
     __script->fresh = (ffly_byte_t*)__obj->frame->p;
 }
 
+void op_conv(ffscriptp __script, struct obj *__obj) {
+    struct obj *dst = *__obj->dst;
+    struct obj *src = *__obj->src;
+    if ((src->_type >= _64l_u && src->_type <= _8l_u)
+        && (dst->_type >= _64l_u && dst->_type <= _8l_u)) {
+        mdl_u64_t tmp = 0;
+        ffly_bcopy(&tmp, src->p, src->size);
+        ffly_bcopy(dst->p, &tmp, dst->size);
+
+        ffly_printf("%u %u\n", dst->_type, src->_type);
+    }
+}
+
 void(*op[])(ffscriptp, struct obj*) = {
 	&op_fresh,
     &op_free,
@@ -328,7 +342,8 @@ void(*op[])(ffscriptp, struct obj*) = {
     &op_call,
     NULL,
     &op_frame,
-    &op_free_frame
+    &op_free_frame,
+    &op_conv
 };
 
 ffly_err_t ffscript_exec(ffscriptp __script, void*(*__call)(mdl_u8_t, void*, void**), void *__arg_p, void *__entry, void *__end) {
@@ -338,7 +353,7 @@ ffly_err_t ffscript_exec(ffscriptp __script, void*(*__call)(mdl_u8_t, void*, voi
 	while(_obj != (struct obj*)__end) {
         ffly_fprintf(ffly_log, "op: %s\n", opstr(_obj->opcode));
         if (_obj->opcode == _op_exit) break;
-		if (_obj->opcode >= _op_fresh && _obj->opcode <= _op_free_frame) {
+		if (_obj->opcode >= _op_fresh && _obj->opcode <= _op_conv) {
             mdl_u8_t isjmp = (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump);
             if (!isjmp)
 			    op[_obj->opcode](__script, _obj);
@@ -751,13 +766,13 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
     ffly_vec_init(&__script->nodes, sizeof(struct node*));
     
 	ffly_buff_init(&__script->iject_buff, 100, sizeof(struct token*));
-    ffly_map_init(&__script->env);
-    ffly_map_init(&__script->typedefs);
+    ffly_map_init(&__script->env, _ffly_map_127);
+    ffly_map_init(&__script->typedefs, _ffly_map_127);
 	__script->off = 0;
     __script->line = 0;
     __script->lo = 0;
     __script->local = NULL;
-    ffly_map_init(&__script->macros);
+    ffly_map_init(&__script->macros, _ffly_map_127);
     __script->ret_type = NULL;
     return FFLY_SUCCESS;
 }

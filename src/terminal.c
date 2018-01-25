@@ -7,6 +7,8 @@
 # include "memory/mem_free.h"
 # include "system/file.h"
 # include "hatch.h"
+# include "memory/mem_alloc.h"
+# include "memory/mem_free.h"
 char* read_part(char **__p, char *__buf) {
     char *p = __buf;
     while(**__p != ' ' && **__p != '\n' && **__p != '\0') *(p++) = *((*__p)++);
@@ -27,8 +29,32 @@ void help() {
 
 void static sndop(mdl_u8_t __op, mdl_uint_t __pipe) {
     ffly_printf("sending op.\n");
-    ffly_pipe_write(&__op, 1, __pipe);
+    ffly_pipe_wr8l(__op, __pipe);
     ffly_printf("sent.\n");
+}
+
+void static lsvec(mdl_uint_t __pipe) {
+    sndop(_ffly_ho_lsvec, __pipe);
+    mdl_uint_t l;
+    if ((mdl_i8_t)ffly_pipe_rd8l(__pipe) == -1) {
+        ffly_printf("nothing to be recved.\n");
+        return; 
+    }
+    ffly_pipe_read(&l, sizeof(mdl_uint_t), __pipe); 
+    ffly_printf("buffer size: %u\n", l);
+    if (l > 4000) return;
+    char *s = (char*)__ffly_mem_alloc(l);
+    _next:
+    ffly_pipe_read(s, l, __pipe);
+    ffly_printf("%s", s);
+    if (!ffly_pipe_rd8l(__pipe)) {
+        goto _next;
+    }
+
+    __ffly_mem_free(s);
+}
+
+void static lsmap(mdl_uint_t __pipe) {
 }
 
 ffly_err_t ffmain(int __argc, char **__argv) {
@@ -59,7 +85,11 @@ ffly_err_t ffmain(int __argc, char **__argv) {
             conn = 0; 
             ffly_fclose(file); 
             __ffly_mem_free(key);
-        } else if (!ffly_str_cmp(part, "help"))
+        } else if (!ffly_str_cmp(part, "lsvec"))
+            lsvec(pipe);
+        else if (!ffly_str_cmp(part, "lsmap"))
+            lsmap(pipe);
+        else if (!ffly_str_cmp(part, "help"))
             help();
         else if (!ffly_str_cmp(part, "shutdown")) {
             sndop(_ffly_ho_shutdown, pipe);

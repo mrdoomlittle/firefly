@@ -1,11 +1,13 @@
 # ifndef __ffly__vec__h
 # define __ffly__vec__h
-# define VEC_PAGE_SIZE 32 // dont change
+# define VEC_PAGE_SHIFT 5
+# define VEC_PAGE_SIZE (1<<VEC_PAGE_SHIFT) // dont change
 # define VEC_AUTO_RESIZE 0x1
 # define VEC_ITR_FD 0x0
 # define VEC_ITR_BK 0x1
 # define VEC_BLK_CHAIN 0x2
 # define VEC_UUU_BLKS 0x4
+# define VEC_NONCONTINUOUS 0x8
 # include <mdlint.h>
 # include "io.h"
 # include "../types/err_t.h"
@@ -15,13 +17,21 @@
 # include "../types/off_t.h"
 # include "../types/size_t.h"
 # define FF_VEC struct ffly_vec
+# define vec_prev(__vec) ((__vec)->prev)
+# define vec_next(__vec) ((__vec)->next)
+
+/*
+    needs testing - 'VEC_NONCONTINUOUS'
+
+*/
 struct ffly_vec_blkd {
 	ffly_flag_t flags;
+    mdl_u16_t page; // page no
+    mdl_u8_t off; // offset from page in blocks
 	ffly_off_t prev, next;
 };
 
 typedef struct ffly_vec_blkd* ffly_vec_blkdp;
-
 struct ffly_vec {
 	ffly_off_t top, end;
 	void *p;
@@ -30,11 +40,22 @@ struct ffly_vec {
 	ffly_size_t size, blk_size;
 	mdl_uint_t page_c;
 	struct ffly_vec *uu_blks;
+    struct ffly_vec *prev, *next;
 };
 typedef struct ffly_vec* ffly_vecp;
 # ifdef __cplusplus
 extern "C" {
 # endif
+// de-init and then free
+ffly_err_t ffly_vec_destroy(ffly_vecp);
+// detach and {free - not the same as de-init}
+ffly_err_t ffly_vec_free(ffly_vecp);
+// attach/detach vector to/from list
+void ffly_vec_attach(ffly_vecp);
+void ffly_vec_detach(ffly_vecp);
+// allocate and then attach and init
+ffly_vecp ffly_vec(ffly_size_t, ffly_flag_t, ffly_err_t*);
+ffly_vecp ffly_vec_list(); //get list of all vectors
 ffly_err_t ffly_vec_init(ffly_vecp, ffly_size_t);
 ffly_err_t ffly_vec_push_back(ffly_vecp, void**);
 ffly_err_t ffly_vec_pop_back(ffly_vecp, void*);

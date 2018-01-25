@@ -142,6 +142,8 @@ enum {
     _ast_match,
     _ast_call,
     _ast_addrof,
+    _ast_conv,
+    _op_cast
 };
 
 enum {
@@ -183,12 +185,13 @@ enum {
     _op_call,
     _op_exit,
     _op_frame,
-    _op_free_frame
+    _op_free_frame,
+    _op_conv
 };
 
 struct node {
     mdl_u8_t kind;
-    struct type *_type;
+    struct type *_type, *to;
     ffly_byte_t val[sizeof(mdl_u64_t)];
     struct node *init, *var, *arg;
     struct obj *_obj, **jmp;
@@ -228,7 +231,7 @@ struct obj {
 
     // dst/src? or'
     struct obj *objpp, *frame;
-    struct obj **dst, *_obj, **no;
+    struct obj **dst, **src, *_obj, **no;
     struct obj **to, **from, **l, **r, **by;
     struct obj **val, ***jmp, *flags;
     struct obj *next;

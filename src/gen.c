@@ -123,6 +123,14 @@ struct obj mk_op_cond_jump(struct obj *__flags, mdl_u8_t __cond) {
     return _obj;
 }
 
+struct obj mk_op_conv(struct obj **__dst, struct obj **__src) {
+    struct obj _obj = obj_tmpl;
+    _obj.opcode = _op_conv;
+    _obj.dst = __dst;
+    _obj.src = __src;
+    return _obj;
+}
+
 struct obj mk_op_zero(struct obj **__dst) {
     struct obj _obj = obj_tmpl;
     _obj.opcode = _op_zero;
@@ -220,15 +228,28 @@ void *stack_push(void *__p, mdl_uint_t __n) {
     return p;
 }
 
-
-
 void emit(struct ffly_script*, struct node*);
+void conv(struct ffly_script *__script, mdl_u8_t __to) {
+    struct obj **_obj, *reg = get_reg(__to);
+    pop(__script, &_obj);
+    next_obj(__script, mk_op_conv(objpp(reg), _obj)); 
+    push(__script, reg);
+} 
+
+void emit_conv(struct ffly_script *__script, struct node *__node) {
+    emit(__script, __node->operand);
+    conv(__script, convtk(__node->to->kind));
+}
+
+void emit_cast(struct ffly_script *__script, struct node *__node) {
+    emit(__script, __node->operand);
+    conv(__script, convtk(__node->_type->kind)); 
+}
+
 void emit_decl_init(struct ffly_script *__script, struct node *__node, struct obj *__to) {
 	emit(__script, __node->init);
 	struct obj **from;
 	pop(__script, &from);
-    if (__node->var->_type->size > __node->init->_type->size)
-        next_obj(__script, mk_op_zero(objpp(__to)));
 	next_obj(__script, mk_op_copy(__node->init->_type->size, objpp(__to), from));
 }
 
@@ -541,6 +562,12 @@ void emit(struct ffly_script *__script, struct node *__node) {
         case _ast_ret:
             emit_ret(__script, __node);
         break;
+        case _ast_conv:
+            emit_conv(__script, __node);
+        break;
+        case _op_cast:
+            emit_cast(__script, __node);
+        break;
         default:    
             ffly_printf("unknown.\n");
 	}
@@ -553,13 +580,13 @@ ffly_err_t ffly_script_gen(struct ffly_script *__script, void **__top, ffly_byte
     rg_8l_u->_type = _8l_u;
 
     rg_16l_u = __fresh(__script, 2);
-    rg_8l_u->_type = _16l_u;
+    rg_16l_u->_type = _16l_u;
 
     rg_32l_u = __fresh(__script, 4);
-    rg_8l_u->_type = _32l_u;
+    rg_32l_u->_type = _32l_u;
 
     rg_64l_u = __fresh(__script, 8);
-    rg_8l_u->_type = _64l_u;
+    rg_64l_u->_type = _64l_u;
 
     if (ffly_vec_size(&__script->nodes)>0) {
     	struct node **itr = (struct node**)ffly_vec_begin(&__script->nodes);

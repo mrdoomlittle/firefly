@@ -11,12 +11,13 @@
 	goto _end;}
 ffly_err_t err = FFLY_SUCCESS;
 # include "../system/io.h"
-# define NO_ELEMENTS 400
+# define NO_ELEMENTS 1238
 int main(void) {
 	ffly_io_init();
 	struct ffly_vec vec;
 	ffly_vec_clear_flags(&vec);
 	ffly_vec_tog_flag(&vec, VEC_AUTO_RESIZE);
+   // ffly_vec_tog_flag(&vec, VEC_NONCONTINUOUS);
 	if (_err(ffly_vec_init(&vec, sizeof(mdl_u64_t)))) failure;
 
 	double push_time = 0.0;

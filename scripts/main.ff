@@ -1,8 +1,2 @@
 %include "../scripts/fflib.ff"
-fn hello(u8_t __a)->void{
-
-}
-
-hello(21299);
-
 exit;

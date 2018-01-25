@@ -18,8 +18,6 @@ struct hdr {
 # define STOP 0x2
 # define DUMP 0x4
 # define OK 0x8
-# define N0 0x16
-# define N1 0x32
 struct pipe {
     mdl_uint_t shm_id;
     mdl_u8_t *bits;
@@ -32,7 +30,7 @@ struct pipe {
 # define is_flag(__flags, __flag) \
     ((__flags&__flag) == __flag)
 # define clr_bit(__bits, __bit) \
-    (*__bits) ^= (*__bits)&__bit;
+    (*__bits) ^= *__bits&__bit;
 # define set_bit(__bits, __bit)\
     (*__bits) |= __bit;
 # define is_bit(__bits, __bit) \
@@ -43,6 +41,16 @@ struct pipe static pipes[MAX];
 struct pipe static *next = pipes;
 mdl_uint_t ffly_pipe_get_shmid(mdl_uint_t __id) {
     return get_pipe(__id)->shm_id;
+}
+
+void ffly_pipe_wrl(mdl_u64_t __val, mdl_u8_t __l, mdl_uint_t __pipe) {
+    ffly_pipe_write(&__val, __l, __pipe);
+}
+
+mdl_u64_t ffly_pipe_rdl(mdl_u8_t __l, mdl_uint_t __pipe) {
+    mdl_u64_t ret = 0;
+    ffly_pipe_read(&ret, __l, __pipe);
+    return ret;
 }
 
 mdl_uint_t ffly_pipe(mdl_uint_t __width, mdl_u8_t __flags, mdl_uint_t __id) {
@@ -78,12 +86,13 @@ void ffly_pipe_listen(mdl_uint_t __id) {
 void ffly_pipe_connect(mdl_uint_t __id) {
     struct pipe *pi = get_pipe(__id);
     set_bit(pi->bits, OK); 
+    while(is_bit(pi->bits, OK));
 }
 
 void ffly_pipe_write(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
     struct pipe *pi = get_pipe(__id);
+    ffly_printf("write. %u\n", *pi->bits);
     set_bit(pi->bits, STRT);
-    ffly_printf("write.\n");
 
     mdl_u8_t *p = (mdl_u8_t*)__buf;
     mdl_u8_t *end = p+__size;
@@ -100,14 +109,14 @@ void ffly_pipe_write(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
     }
 
     set_bit(pi->bits, STOP);
-    while(!is_bit(pi->bits, OK));
-    ffly_printf("got ok.\n");
+    while(!is_bit(pi->bits, OK));  
+    clr_bit(pi->bits, OK);
 }
 
 void ffly_pipe_read(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
     struct pipe *pi = get_pipe(__id);
-    ffly_printf("read.\n");
-    clr_bit(pi->bits, OK);
+    while(is_bit(pi->bits, OK));
+    ffly_printf("read. %u\n", *pi->bits);
     while(!is_bit(pi->bits, STRT));
     ffly_printf("got start bit.\n");
     clr_bit(pi->bits, STRT);
