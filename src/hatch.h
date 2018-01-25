@@ -5,6 +5,8 @@ enum {
     _ffly_ho_lsvec,
     _ffly_ho_lsmap,
     _ffly_ho_meminfo,
+    _ffly_ho_login,
+    _ffly_ho_logout,
     _ffly_ho_disconnect
 };
 
