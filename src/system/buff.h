@@ -47,6 +47,7 @@ void static __inline__ ffly_buff_unlock(struct ffly_buff *__buff) {ffly_mutex_un
 ffly_bool_t static __inline__ ffly_buff_full(struct ffly_buff *__buff) {return (__buff->off == __buff->blk_c-1);}
 ffly_bool_t static __inline__ ffly_buff_empty(struct ffly_buff *__buff) {return !__buff->off;}
 ffly_off_t static __inline__ ffly_buff_off(struct ffly_buff *__buff){return __buff->off;}
+mdl_uint_t static __inline__ ffly_buff_size(struct ffly_buff *__buff){return __buff->blk_c;}
 # ifdef __cplusplus
 namespace mdl {
 namespace firefly {

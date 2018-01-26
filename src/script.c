@@ -270,27 +270,81 @@ void op_free(ffscriptp __script, struct obj *__obj) {
     __script->fresh-=__obj->size;
 }
 
-
 void nanosleep(struct obj ***__params) {
-    mdl_u64_t sec = *(mdl_u64_t*)(*__params[0])->p;
-    mdl_u64_t nsec = *(mdl_u64_t*)(*__params[1])->p;
+    mdl_u64_t sec = *(mdl_u64_t*)(**(__params++))->p;
+    mdl_u64_t nsec = *(mdl_u64_t*)(**__params)->p;
     ffly_nanosleep(sec, nsec);
 }
 
 void mutex_lock(struct obj ***__params) {
-    ffly_mutex_t *mutex = (ffly_mutex_t*)(*((struct obj**)(*__params[0])->p))->p;
+    ffly_mutex_t *mutex = (ffly_mutex_t*)(*((struct obj**)(**__params)->p))->p;
     ffly_mutex_lock(mutex);
 }
 
 void mutex_unlock(struct obj ***__params) {
-    ffly_mutex_t *mutex = (ffly_mutex_t*)(*((struct obj**)(*__params[0])->p))->p;
+    ffly_mutex_t *mutex = (ffly_mutex_t*)(*((struct obj**)(**__params)->p))->p;
     ffly_mutex_unlock(mutex);
+}
+
+struct ffly_buff buffers[20];
+ffly_buffp fresh_buff = buffers;
+ffly_buffp free_buffs[20];
+ffly_buffp *next_buff = free_buffs;
+
+void creat_buff(struct obj ***__params) {
+    mdl_uint_t *id = (mdl_uint_t*)(*((struct obj**)(**(__params++))->p))->p;
+    mdl_uint_t size = *(mdl_uint_t*)(**(__params++))->p;
+    mdl_uint_t blk_size = *(mdl_uint_t*)(**__params)->p;
+
+    ffly_buffp buff = fresh_buff++;
+    *id = buff-buffers;
+    ffly_buff_init(buff, size, blk_size); 
+}
+
+void del_buff(struct obj ***__params) {
+    mdl_uint_t id = *(mdl_uint_t*)(**__params)->p;    
+    ffly_buff_de_init(buffers+id);
+}
+
+void buff_incr(struct obj ***__params) {
+    mdl_uint_t id = *(mdl_uint_t*)(**__params)->p;
+    ffly_buff_incr(buffers+id);
+}
+
+void buff_decr(struct obj ***__params) {
+    mdl_uint_t id = *(mdl_uint_t*)(**__params)->p;
+    ffly_buff_decr(buffers+id);
+}
+
+void buff_off(struct obj ***__params) {
+    mdl_uint_t id = *(mdl_uint_t*)(**(__params++))->p;
+    mdl_uint_t *off = (mdl_uint_t*)(*((struct obj**)(**__params)->p))->p;
+    *off = ffly_buff_off(buffers+id);
+}
+
+void buff_resize(struct obj ***__params) {
+    mdl_uint_t id = *(mdl_uint_t*)(**(__params++))->p;
+    mdl_uint_t size = *(mdl_uint_t*)(**__params)->p;
+    ffly_buff_resize(buffers+id, size);
+}
+
+void buff_size(struct obj ***__params) {
+    mdl_uint_t id = *(mdl_uint_t*)(**(__params++))->p;
+    mdl_uint_t *size = (mdl_uint_t*)(*((struct obj**)(**__params)->p))->p;
+    *size = ffly_buff_size(buffers+id);
 }
 
 void static(*call[])(struct obj***) = {
     &nanosleep,
     &mutex_lock,
-    &mutex_unlock
+    &mutex_unlock,
+    &creat_buff,
+    &del_buff,
+    &buff_incr,
+    &buff_decr,
+    &buff_off,
+    &buff_resize,
+    &buff_size
 };
 
 void op_call(ffscriptp __script, struct obj *__obj) {
@@ -309,7 +363,6 @@ void op_call(ffscriptp __script, struct obj *__obj) {
     }
 
     call[no-1](__obj->params);
-
     /*
         internal calls
     */
@@ -331,8 +384,6 @@ void op_conv(ffscriptp __script, struct obj *__obj) {
         mdl_u64_t tmp = 0;
         ffly_bcopy(&tmp, src->p, src->size);
         ffly_bcopy(dst->p, &tmp, dst->size);
-
-        ffly_printf("%u %u\n", dst->_type, src->_type);
     }
 }
 
@@ -386,6 +437,7 @@ ffly_err_t ffscript_exec(ffscriptp __script, void*(*__call)(mdl_u8_t, void*, voi
 void* ffscript_call(ffscriptp __script, void *__func) {
     ffly_pair *func = *(ffly_pair**)__func;
     ffscript_exec(__script, NULL, NULL, *(struct obj**)func->p0, *(struct obj**)func->p1);    
+    return NULL;
 }
 
 ffly_bool_t is_keyword(struct token *__tok, mdl_u8_t __id) {
@@ -484,6 +536,7 @@ ffly_err_t ffscript_free(ffscriptp __script) {
     if (prev != NULL)
         __ffly_mem_free(prev);
     __ffly_mem_free(__script->stack);
+    retok;
 }
 
 ffly_err_t ffly_script_free(struct ffly_script *__script) {
@@ -579,35 +632,30 @@ ffly_bool_t is_endif(struct ffly_script *__script, struct token *__tok) {
     return 0;
 }
 
+void skip_until_endif(struct ffly_script *__script) {
+    ffly_err_t err;
+    struct token *tok = NULL;
+    for(;;) {
+        if (!(tok = ffly_script_lex(__script, &err))) break;
+        if (_err(err)) break;
+        if (is_endif(__script, tok)) break;
+        if (tok->kind == TOK_NEWLINE)
+            __ffly_mem_free(tok);
+    }
+}
+
 void read_ifdef(struct ffly_script *__script) {
     struct token *name = next_token(__script);
     ffly_err_t err;
     ffly_map_get(&__script->macros, name->p, ffly_str_len((char*)name->p), &err);
-    if (_err(err)) {
-        struct token *tok = NULL;
-        for(;;) {
-            if (!(tok = ffly_script_lex(__script, &err))) break;
-            if (is_endif(__script, tok)) break;
-            if (tok->kind == TOK_NEWLINE)
-                __ffly_mem_free(tok);
-        }
-    }
+    if (_err(err)) skip_until_endif(__script);
 }
 
 void read_ifndef(struct ffly_script *__script) {
     struct token *name = next_token(__script);
     ffly_err_t err;
     ffly_map_get(&__script->macros, name->p, ffly_str_len((char*)name->p), &err);
-    if (_ok(err)) {
-        struct token *tok = NULL;
-        for(;;) {
-            if (!(tok = ffly_script_lex(__script, &err))) break;
-            if (_err(err)) break;
-            if (is_endif(__script, tok)) break;
-            if (tok->kind == TOK_NEWLINE)
-                __ffly_mem_free(tok);
-        }
-    }
+    if (_ok(err)) skip_until_endif(__script);
 }
 
 # include <unistd.h>
@@ -740,7 +788,9 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
         to_keyword(__tok, _k_typedef);
     else if (!ffly_str_cmp(__tok->p, "ret"))
         to_keyword(__tok, _k_ret);
-	else {
+    else if (!ffly_str_cmp(__tok->p, "brk"))
+        to_keyword(__tok, _k_brk);
+    else {
 		return 0;
 	}
 	return 1;
@@ -749,6 +799,7 @@ ffly_bool_t maybe_keyword(struct token *__tok) {
 ffly_err_t ffscript_init(ffscriptp __script, mdl_uint_t __stack_size) {
     __script->stack = (ffly_byte_t*)__ffly_mem_alloc(__stack_size);
     __script->fresh = __script->stack;
+    retok;
 }
 
 ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
@@ -797,6 +848,8 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
         errmsg("failed to init map.");
         return err;
     }
+
+    __script->brkp = __script->brk;
 	__script->file->off = 0;
     __script->file->line = 0;
     __script->file->lo = 0;
@@ -809,6 +862,10 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
     return FFLY_SUCCESS;
 }
 
+ffly_err_t ffly_script_finalize(struct ffly_script *__script) {
+
+}
+
 ffly_err_t ffly_script_build(struct ffly_script *__script, void ** __top, ffly_byte_t **__stack) {
     ffly_err_t err;
     if (_err(err = ffly_script_parse(__script))) {
@@ -819,6 +876,8 @@ ffly_err_t ffly_script_build(struct ffly_script *__script, void ** __top, ffly_b
         errmsg("failed to generate.");
         return err;
     }
+
+    ffly_script_finalize(__script);
     ffly_fprintf(ffly_out, "build successful.\n");
     return FFLY_SUCCESS;
 }
@@ -1007,6 +1066,7 @@ void* me(mdl_u8_t __id, void *__arg_p, void **__p) {
   //  printf("HI, id{%u}\n", *(mdl_u8_t*)*__p);
 
     ffscript_call((ffscriptp)__arg_p, *__p);
+    return NULL;
 }
 
 void pr();
@@ -1032,7 +1092,7 @@ int main() {
     ffly_script_free(&script);
 	ffly_printf("executing script.\n");
 	ffscript_exec(&ff, &me, &ff, NULL, NULL);
-    printf("stack used: %u\n", ff.fresh-ff.stack);
+    ffly_printf("stack used: %lu\n", ff.fresh-ff.stack);
 # else
     ffly_script_ld_bin(&script, "test.bin");
     ffscript_exec(&ff, &me, NULL, NULL, NULL);

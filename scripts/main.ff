@@ -1,3 +1,2 @@
 %include "../scripts/fflib.ff"
-ffly_nanosleep(1, 0);
 exit;

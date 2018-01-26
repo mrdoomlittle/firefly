@@ -20,7 +20,7 @@ struct obj *get_reg(mdl_u8_t __kind) {
         case _8l_u: return rg_8l_u;
         case _16l_u: return rg_16l_u;
         case _32l_u: return rg_32l_u;
-        case _64l_u: return rg_64l_u;
+        case _64l_u: return rg_64l_u; 
         case _8l_s: return NULL;
         case _16l_s: return NULL;
         case _32l_s: return NULL;
@@ -47,6 +47,14 @@ struct obj* next_obj(struct ffly_script *__script, struct obj __tmpl) {
 }
 
 mdl_u8_t convtk(mdl_u8_t __kind) {
+    if (__kind == _uint_t) {
+        switch(sizeof(mdl_uint_t)) {
+            case 1: return _8l_u;
+            case 2: return _16l_u;
+            case 4: return _32l_u;
+            case 8: return _64l_u;
+        }
+    }
     switch(__kind) {
         case _u64_t: return _64l_u;
         case _u32_t: return _32l_u;
@@ -229,21 +237,22 @@ void *stack_push(void *__p, mdl_uint_t __n) {
 }
 
 void emit(struct ffly_script*, struct node*);
-void conv(struct ffly_script *__script, mdl_u8_t __to) {
-    struct obj **_obj, *reg = get_reg(__to);
+void conv(struct ffly_script *__script, mdl_u8_t __to, mdl_uint_t __size) {
+    struct obj **_obj, *dst = __fresh(__script, __size);
+    dst->_type = __to;
     pop(__script, &_obj);
-    next_obj(__script, mk_op_conv(objpp(reg), _obj)); 
-    push(__script, reg);
+    next_obj(__script, mk_op_conv(objpp(dst), _obj)); 
+    push(__script, dst);
 } 
 
 void emit_conv(struct ffly_script *__script, struct node *__node) {
     emit(__script, __node->operand);
-    conv(__script, convtk(__node->to->kind));
+    conv(__script, convtk(__node->_type->kind), __node->_type->size);
 }
 
 void emit_cast(struct ffly_script *__script, struct node *__node) {
     emit(__script, __node->operand);
-    conv(__script, convtk(__node->_type->kind)); 
+    conv(__script, convtk(__node->_type->kind), __node->_type->size); 
 }
 
 void emit_decl_init(struct ffly_script *__script, struct node *__node, struct obj *__to) {
@@ -341,6 +350,7 @@ void emit_if(struct ffly_script *__script, struct node *__node) {
 
 void emit_while(struct ffly_script *__script, struct node *__node) {
     struct obj *frame = create_frame(__script);
+    __script->frame = frame;
     struct obj **top = &end->next;
     emit(__script, __node->cond);
     mdl_u8_t flag = 0x0;
@@ -352,7 +362,6 @@ void emit_while(struct ffly_script *__script, struct node *__node) {
         flag = _flg_lt|_flg_eq;
     else if (__node->cond->kind == _op_lt)
         flag = _flg_gt|_flg_eq;
-
 
     struct obj *_obj = next_obj(__script, mk_op_cond_jump(rg_8l_u, flag));
     struct node **itr = NULL;
@@ -369,6 +378,13 @@ void emit_while(struct ffly_script *__script, struct node *__node) {
     p = &end->next;
     _obj->jmp = (struct obj***)stack_push(&p, sizeof(struct obj**));
     free_frame(__script, frame);
+
+    void **brk = __script->brk;
+    while(brk != __script->brkp) {
+        ((struct obj*)*brk)->jmp = _obj->jmp;  
+        brk++;
+    }
+    __script->brkp = __script->brk;
 }
 
 void emit_binop(struct ffly_script *__script, struct node *__node) {
@@ -381,11 +397,11 @@ void emit_binop(struct ffly_script *__script, struct node *__node) {
 }
 
 void emit_func(struct ffly_script *__script, struct node *__node) {
-    ffly_printf("emit func.\n");
     struct obj *jmp = next_obj(__script, mk_op_jump());
     __node->jmp = &end->next;
     __node->pair.p0 = &end->next;
     struct obj *frame = create_frame(__script);
+    __script->frame = frame;
     struct node **itr = NULL;
     if (ffly_vec_size(&__node->args)>0) {
         itr = (struct node**)ffly_vec_end(&__node->args);
@@ -396,13 +412,13 @@ void emit_func(struct ffly_script *__script, struct node *__node) {
             pop(__script, &to);
             pop(__script, &from);
             next_obj(__script, mk_op_copy((*itr)->var->_type->size, to, from));
-            ffly_printf("----------------------------\n");
             itr--;
         }
     }
 
     struct obj **ret_to;
     pop(__script, &ret_to);
+    __script->ret_to = ret_to;
 
     if (ffly_vec_size(&__node->block)>0) {
         itr = (struct node**)ffly_vec_begin(&__node->block);
@@ -420,7 +436,7 @@ void emit_func(struct ffly_script *__script, struct node *__node) {
 }
 
 void emit_func_call(struct ffly_script *__script, struct node *__node) {
-    ffly_printf("emit func call.\n");
+    struct obj *frame = create_frame(__script);
     struct node **itr = NULL;
     struct obj *ret = push(__script, NULL);
 
@@ -428,7 +444,6 @@ void emit_func_call(struct ffly_script *__script, struct node *__node) {
         itr = (struct node**)ffly_vec_begin(&__node->params);
         while(itr <= (struct node**)ffly_vec_end(&__node->params)) {
             emit(__script, *itr); 
-            ffly_printf("-------> size: %u\n", (*itr)->_type->size);
             itr++;
         }
     }
@@ -438,6 +453,7 @@ void emit_func_call(struct ffly_script *__script, struct node *__node) {
     struct obj **p = __node->call->jmp;
     jmp->jmp = (struct obj***)stack_push(&p, sizeof(struct obj**));
     ret->_obj = (struct obj*)&end->next;
+    free_frame(__script, frame);
 }
 
 void emit_struct_ref(struct ffly_script *__script, struct node *__node) {
@@ -500,13 +516,24 @@ void emit_addrof(struct ffly_script *__script, struct node *__node) {
 }
 
 void emit_ret(struct ffly_script *__script, struct node *__node) {
-    emit(__script, __node->ret);
-    struct obj *reg = get_reg(convtk(__node->_type->kind));
-    struct obj **from;
-    pop(__script, &from);
+    if (__node->ret != NULL) {
+        emit(__script, __node->ret);
+        struct obj *reg = get_reg(convtk(__node->_type->kind));
+        struct obj **from;
+        pop(__script, &from);
 
-    next_obj(__script, mk_op_copy(__node->_type->size, objpp(reg), from));
-    push(__script, reg);
+        next_obj(__script, mk_op_copy(__node->_type->size, objpp(reg), from));
+        push(__script, reg);
+    }
+
+    free_frame(__script, (struct obj*)__script->frame);
+    struct obj *ret = next_obj(__script, mk_op_jump());
+    ret->jmp = (struct obj***)__script->ret_to;
+}
+
+void emit_brk(struct ffly_script *__script, struct node *__node) {
+    free_frame(__script, (struct obj*)__script->frame);    
+    *(__script->brkp++) = (void*)next_obj(__script, mk_op_jump());
 }
 
 void emit(struct ffly_script *__script, struct node *__node) {
@@ -567,6 +594,9 @@ void emit(struct ffly_script *__script, struct node *__node) {
         break;
         case _op_cast:
             emit_cast(__script, __node);
+        break;
+        case _ast_brk:
+            emit_brk(__script, __node);
         break;
         default:    
             ffly_printf("unknown.\n");

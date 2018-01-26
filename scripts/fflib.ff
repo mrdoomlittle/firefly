@@ -22,4 +22,57 @@ fn ffly_mutex_unlock(ffly_mutex_t *__mutex)->void{
         __mutex
     };
 }
+
+fn ffly_buff_creat(uint_t __size, uint_t __blk_size)->uint_t{
+    uint_t id;
+    :4<-{
+        &id,
+        __size,
+        __blk_size
+    };
+    ret id;
+}
+
+fn ffly_buff_del(uint_t __id)->void{
+    :5<-{
+        __id
+    };
+}
+
+fn ffly_buff_incr(uint_t __id)->void{
+    :6<-{
+        __id
+    };
+}
+
+fn ffly_buff_decr(uint_t __id)->void{
+    :7<-{
+        __id
+    };
+}
+
+fn ffly_buff_off(uint_t __id)->uint_t{
+    uint_t off;
+    :8<-{
+        __id,
+        &off
+    };
+    ret off;
+}
+
+fn ffly_buff_resize(uint_t __id, uint_t __size)->void{
+    :9<-{
+        __id,
+        __size
+    };
+}
+
+fn ffly_buff_size(uint_t __id)->uint_t{
+    uint_t size;
+    :10<-{
+        __id,
+        &size
+    };
+    ret size;
+}
 %endif /*__ffly__lib__ff*/

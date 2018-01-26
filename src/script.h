@@ -9,6 +9,7 @@
 # include "types/bool_t.h"
 /*
     TODO add multithreading support.
+    cleanup
 */
 
 struct ffly_script_file {
@@ -42,12 +43,11 @@ struct ffly_script {
     void *ret_type;
     struct ffly_map env, macros;
     struct ffly_map *local;
-//	ffly_byte_t *p, *end;
-//	ffly_off_t off;
+    void *frame, *ret_to;
+    void *brk[20], **brkp;
 
     struct ffly_script_file *file;
-//    char *path;
-//    mdl_uint_t line, lo;
+
     struct ffly_vec nodes;
     struct ffly_vec vecs;
     struct ffly_vec maps;
@@ -127,6 +127,7 @@ enum {
     _k_float,
     _k_typedef,
     _k_ret,
+    _k_brk,
     _ellipsis
 };
 
@@ -154,7 +155,8 @@ enum {
     _ast_call,
     _ast_addrof,
     _ast_conv,
-    _op_cast
+    _op_cast,
+    _ast_brk
 };
 
 enum {
@@ -236,7 +238,6 @@ struct obj {
     mdl_u32_t off;
     mdl_u8_t opcode, cond;
     void *p;
-
     mdl_uint_t size;
     mdl_u8_t _type;
 
@@ -277,6 +278,7 @@ ffly_err_t ffly_script_prepare(struct ffly_script*);
 ffly_err_t ffly_script_ld(struct ffly_script*, char*);
 ffly_err_t ffly_script_parse(struct ffly_script*);
 ffly_err_t ffly_script_gen(struct ffly_script*, void**, ffly_byte_t**);
+ffly_err_t ffly_script_finalize(struct ffly_script*);
 // ()
 ffly_err_t ffscript_init(ffscriptp, mdl_uint_t);
 ffly_err_t ffscript_exec(ffscriptp, void*(*)(mdl_u8_t, void*, void**), void*, void*, void*);
