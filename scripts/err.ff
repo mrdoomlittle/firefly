@@ -3,4 +3,6 @@
 typedef i8_t ffly_err_t;
 %define FFLY_SUCCESS 0
 %define FFLY_FAILURE -1
+%define reterr ret FFLY_FAILURE
+%define retok ret FFLY_SUCCESS
 %endif /*__ffly__err__ff*/

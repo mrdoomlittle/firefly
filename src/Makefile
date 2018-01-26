@@ -13,24 +13,12 @@ hatch: clean
 terminal: clean
 	gcc -c firefly.c
 	gcc -Wall -o terminal terminal.c $(ffly_objs) firefly.o
-db:
-	gcc -c system/io.c
-	gcc -c data/bcopy.c
-	gcc -c data/bzero.c
-	gcc -c data/str_cmp.c
-	gcc -c data/str_cpy.c
-	gcc -c data/str_dupe.c
-	gcc -c data/str_len.c
-	gcc -c data/mem_dupe.c
-	gcc -c data/mem_cmp.c
-	gcc -c system/errno.c
+db: clean
 	gcc -Wall -c network/sock.c
 	gcc -c network/input.c
 	gcc -c network/output.c
-	gcc -D__ffly_no_task_pool -c data/mem_set.c
-	gcc -D__ffly_no_task_pool -c data/mem_cpy.c
 	gcc -Wall -c net.c
-	gcc -Wall -o client db.c $(ffly_objs) input.o output.o sock.o errno.o mem_cmp.o mem_cpy.o mem_set.o mem_dupe.o str_len.o str_cpy.o str_dupe.o str_cmp.o bcopy.o bzero.o io.o  net.o
+	gcc -Wall -o main db.c $(ffly_objs) input.o output.o sock.o net.o
 net: clean
 	gcc -c system/io.c
 	gcc -c data/bcopy.c
