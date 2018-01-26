@@ -8,6 +8,7 @@
 # include "../types/off_t.h"
 # include "../types/size_t.h"
 # include "err.h"
+# include "flags.h"
 # ifdef __cplusplus
 #	include "errno.h"
 # endif
@@ -19,6 +20,7 @@ struct ffly_buff {
 	mdl_uint_t rs_blk_c;
 	mdl_uint_t blk_c;
 	ffly_size_t blk_size;
+    ffly_flag_t flags; //for later
 };
 
 typedef struct ffly_buff* ffly_buffp;

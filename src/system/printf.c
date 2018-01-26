@@ -72,6 +72,10 @@ mdl_uint_t static gen(char *__buf, ffly_size_t __n, char const *__format, va_lis
     return bufp-__buf;
 }
 
+mdl_uint_t ffly_vsprintf(char *__buf, char const *__format, va_list __args) {
+    return gen(__buf, ffly_str_len(__format), __format, __args);
+}
+
 mdl_uint_t ffly_sprintf(char *__buf, char const *__format, ...) {
     va_list args;
     mdl_uint_t l;

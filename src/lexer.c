@@ -7,19 +7,19 @@
 # include "data/str_len.h"
 # include "system/string.h"
 char static fetchc(struct ffly_script *__script) {
-	return *(__script->p+__script->off);
+	return *(__script->file->p+__script->file->off);
 }
 
 char static nextc(struct ffly_script *__script) {
-    return *(__script->p+__script->off+1);
+    return *(__script->file->p+__script->file->off+1);
 }
 
 ffly_bool_t is_next(struct ffly_script *__script, char __c) {
-    return (*(__script->p+__script->off+1) == __c);
+    return (*(__script->file->p+__script->file->off+1) == __c);
 }
 
 ffly_bool_t is_prev(struct ffly_script *__script, char __c) {
-    return (*(__script->p+__script->off-1) == __c);
+    return (*(__script->file->p+__script->file->off-1) == __c);
 }
 
 ffly_bool_t is_space(struct ffly_script *__script) {
@@ -45,7 +45,7 @@ ffly_bool_t is_newline(struct ffly_script *__script) {
 }
 
 char static* read_ident(struct ffly_script *__script) {
-	char *itr = (char*)(__script->p+__script->off);
+	char *itr = (char*)(__script->file->p+__script->file->off);
     char c = *itr;
 	while((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || (c >= '0' && c <= '9')) {
 		ffly_buff_put(&__script->sbuf, itr++);
@@ -56,14 +56,14 @@ char static* read_ident(struct ffly_script *__script) {
 	char end = '\0';
 	ffly_buff_put(&__script->sbuf, &end);
 	char *s = ffly_str_dupe((char*)ffly_buff_begin(&__script->sbuf));
-	__script->off+= ffly_buff_off(&__script->sbuf);
+	__script->file->off+= ffly_buff_off(&__script->sbuf);
 	ffly_buff_off_reset(&__script->sbuf);
     cleanup(__script, (void*)s);
 	return s;
 }
 
 char static* read_no(struct ffly_script *__script, mdl_u8_t *__is_hex, mdl_u8_t *__is_float) {
-	char *itr = (char*)(__script->p+__script->off);
+	char *itr = (char*)(__script->file->p+__script->file->off);
     char c = *itr;
 	while((c >= '0' && c <= '9') || c == '.' || c == '-' || ffly_tolow(c) == 'x' || (ffly_tolow(c) >= 'a' && ffly_tolow(c) <= 'f')) {
         if (ffly_tolow(*itr) == 'x') *__is_hex = 1;
@@ -76,14 +76,14 @@ char static* read_no(struct ffly_script *__script, mdl_u8_t *__is_hex, mdl_u8_t 
 	char end = '\0';
 	ffly_buff_put(&__script->sbuf, &end);
 	char *s = ffly_str_dupe((char*)ffly_buff_begin(&__script->sbuf));
-	__script->off+= ffly_buff_off(&__script->sbuf);
+	__script->file->off+= ffly_buff_off(&__script->sbuf);
 	ffly_buff_off_reset(&__script->sbuf);
     cleanup(__script, (void*)s);
 	return s;
 }
 
 char static* read_str(struct ffly_script *__script) {
-    char *itr = (char*)(__script->p+__script->off);
+    char *itr = (char*)(__script->file->p+__script->file->off);
     while(*itr != '"') {
         ffly_buff_put(&__script->sbuf, itr++);
         ffly_buff_incr(&__script->sbuf);
@@ -92,7 +92,7 @@ char static* read_str(struct ffly_script *__script) {
     char end = '\0';
     ffly_buff_put(&__script->sbuf, &end);
     char *s = ffly_str_dupe((char*)ffly_buff_begin(&__script->sbuf));
-    __script->off+= ffly_buff_off(&__script->sbuf);
+    __script->file->off+= ffly_buff_off(&__script->sbuf);
     ffly_buff_off_reset(&__script->sbuf);
     cleanup(__script, (void*)s);
     return s;
@@ -104,19 +104,21 @@ void make_keyword(struct token *__tok, mdl_u8_t __id) {
 }
 
 char* read_chr(struct ffly_script *__script) {
-    return (char*)(__script->p+(__script->off++));
+    return (char*)(__script->file->p+(__script->file->off++));
 }
 
 # define register_line(__script) \
-    __script->line++; \
-    __script->lo = __script->off+1;
+    __script->file->line++; \
+    __script->file->lo = __script->file->off+1;
+
+# define incr_off __script->file->off++
 
 static struct token* read_token(struct ffly_script *__script) {
 	struct token *tok = (struct token*)__ffly_mem_alloc(sizeof(struct token));
 	tok->p = NULL;
     if (is_newline(__script)) {
         register_line(__script);
-        __script->off++;
+        incr_off;
         tok->kind = TOK_NEWLINE;  
         return tok;
     }
@@ -124,115 +126,115 @@ static struct token* read_token(struct ffly_script *__script) {
 	switch(fetchc(__script)) {
         case '&':
             make_keyword(tok, _ampersand);
-            __script->off++;
+            incr_off;
         break;
         case '\x27':
-            __script->off++;
+            incr_off;
             *tok = (struct token) {
                 .kind = TOK_CHR,
                 .p = (void*)read_chr(__script) 
             };
-            __script->off++;
+            incr_off;
         break;
         case '*':
             make_keyword(tok, _astrisk);
-            __script->off++;
+            incr_off;
         break;
         case '+':
             if (is_next(__script, '+')) {
                 make_keyword(tok, _incr);
-                __script->off++;
+                incr_off;
             }
-            __script->off++;
+            incr_off;
         break;
         case '"':
-            __script->off++;
+            incr_off;
             *tok = (struct token) {
                 .kind = TOK_STR,
                 .p = (void*)read_str(__script)
             };
-            __script->off++;
+            incr_off;
         break;
         case '%':
             make_keyword(tok, _percent);
-            __script->off++;
+            incr_off;
         break;
         case ':':
             make_keyword(tok, _colon);
-            __script->off++;
+            incr_off;
         break;
         case '.':
             if (is_next(__script, '.')) {
-                __script->off++;
+                incr_off;
                 if (is_next(__script, '.')) {
                     make_keyword(tok, _ellipsis);
-                    __script->off++;
+                    incr_off;
                 }
             } else
                 make_keyword(tok, _period);
-            __script->off++;
+            incr_off;
         break;
         case '-':
             if (nextc(__script) >= '0' && nextc(__script) <= '9') goto _no;
             if (is_next(__script, '-')) {
                 make_keyword(tok, _decr);
-                __script->off++;
+                incr_off;
             } else if (is_next(__script, '>')) {
                 make_keyword(tok, _r_arrow);
-                __script->off++;
+                incr_off;
             }
-            __script->off++;
+            incr_off;
         break;
         case ',':
             make_keyword(tok, _comma);
-            __script->off++;
+            incr_off;
         break;
         case '<':
             if (is_next(__script, '-')) {
                 make_keyword(tok, _l_arrow);
-                __script->off++;
+                incr_off;
             } else
                 make_keyword(tok, _lt);
-            __script->off++;
+            incr_off;
         break;
         case '>':
             make_keyword(tok, _gt);
-            __script->off++;
+            incr_off;
         break;
         case '!':
             if (is_next(__script, '=')) {
                 make_keyword(tok, _neq);
-                __script->off++;
+                incr_off;
             }
-            __script->off++;
+            incr_off;
         break;
 		case ';':
 			make_keyword(tok, _semicolon);
-			__script->off++;
+			incr_off;
 		break;
 		case '=':
             if (is_next(__script, '=')) {
                 make_keyword(tok, _eqeq);
-                __script->off++;
+                incr_off;
             } else
 			    make_keyword(tok, _eq);
-			__script->off++;
+			incr_off;
 		break;
 		case '(':
 			make_keyword(tok, _l_paren);
-			__script->off++;
+			incr_off;
 		break;
 		case ')':
 			make_keyword(tok, _r_paren);
-			__script->off++;
+			incr_off;
 		break;
         case '{':
             make_keyword(tok, _l_brace);
-            __script->off++;
+            incr_off;
         break;
         case '}':
             make_keyword(tok, _r_brace);
-            __script->off++;
+            incr_off;
         break;
 		default:
 		if ((fetchc(__script) >= 'a' && fetchc(__script) <= 'z') || (fetchc(__script) >= 'A' && fetchc(__script) <= 'Z') || fetchc(__script) == '_') {
@@ -242,7 +244,7 @@ static struct token* read_token(struct ffly_script *__script) {
 			};
 		} else if (fetchc(__script) >= '0' && fetchc(__script) <= '9') goto _no;
 		else {
-		    __script->off++;
+		    incr_off;
 		    tok->kind = TOK_NULL;
         }
         break;
@@ -259,7 +261,7 @@ static struct token* read_token(struct ffly_script *__script) {
 	}
     
     tok->line = curl(__script)-1;
-    tok->off = __script->off-1;
+    tok->off = __script->file->off-1;
     tok->lo = curlo(__script);
 	cleanup(__script, (void*)tok);
 	return tok;
@@ -283,7 +285,7 @@ struct token* ffly_script_lex(struct ffly_script *__script, ffly_err_t *__err) {
         if (is_newline(__script)) {
             register_line(__script); 
         }
-        __script->off++;
+        incr_off;
     }
 
     if (is_eof(__script)) return NULL;

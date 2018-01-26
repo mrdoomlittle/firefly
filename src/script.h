@@ -10,6 +10,15 @@
 /*
     TODO add multithreading support.
 */
+
+struct ffly_script_file {
+    ffly_byte_t *p, *end;
+    ffly_off_t off;
+
+    char *path;
+    mdl_uint_t line, lo;
+};
+
 typedef struct {
 /*
     
@@ -33,24 +42,26 @@ struct ffly_script {
     void *ret_type;
     struct ffly_map env, macros;
     struct ffly_map *local;
-	ffly_byte_t *p, *end;
-	ffly_off_t off;
+//	ffly_byte_t *p, *end;
+//	ffly_off_t off;
 
-    char *path;
-    mdl_uint_t line, lo;
+    struct ffly_script_file *file;
+//    char *path;
+//    mdl_uint_t line, lo;
     struct ffly_vec nodes;
     struct ffly_vec vecs;
     struct ffly_vec maps;
    
     struct ffly_map typedefs; 
 	struct ffly_buff sbuf;
-	// token injection buffer
     struct ffly_vec to_free;
+    // token injection buffer
 	struct ffly_buff iject_buff;
 };
 
 # ifdef __ffly_script_internal
-# define errmsg(__s) ffly_fprintf(ffly_out, "%s:%u, %s\n", __FILE__, __LINE__, __s)
+# define errmsg(...) _errmsg(__FILE__, __LINE__, __VA_ARGS__)
+void _errmsg(char const*, int unsigned, char const*, ...);
 # define TOK_IDENT 0
 # define TOK_KEYWORD 1
 # define TOK_NO 2

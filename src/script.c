@@ -13,17 +13,28 @@
 # include "system/nanosleep.h"
 # include "data/str_cpy.h"
 # include <stdlib.h>
+# include <stdarg.h>
+void _errmsg(char const *__file, int unsigned __line, char const *__s, ...) {
+    char buf[200];
+    *buf = '\0';
+    va_list args;
+    va_start(args, __s);
+    ffly_vsprintf(buf, __s, args);
+    va_end(args);
+    ffly_fprintf(ffly_out, "%s:%u, %s\n", __file, __line, buf);
+}
+
 ffly_err_t ffly_script_ld(struct ffly_script *__script, char *__file) {
 	ffly_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
-    __script->path = realpath(__file, NULL);
+    __script->file->path = realpath(__file, NULL);
 
 	struct ffly_stat st;
 	ffly_fstat(__file, &st);
 
-	__script->p = (ffly_byte_t*)__ffly_mem_alloc(st.size);
-	__script->end = __script->p+st.size;
-	ffly_fread(f, __script->p, st.size);
+	__script->file->p = (ffly_byte_t*)__ffly_mem_alloc(st.size);
+	__script->file->end = __script->file->p+st.size;
+	ffly_fread(f, __script->file->p, st.size);
 	ffly_fclose(f);
     return FFLY_SUCCESS;
 }
@@ -386,7 +397,7 @@ ffly_off_t toklo(struct token *__tok) {
 }
 
 ffly_off_t curlo(struct ffly_script *__script) {
-    return __script->lo;
+    return __script->file->lo;
 }
 
 ffly_bool_t next_token_is(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_t __id) {
@@ -403,7 +414,7 @@ mdl_uint_t tokcol(struct token *__tok) {
 }
 
 void print_line(struct ffly_script *__script, mdl_uint_t __off) {
-    char *p = (char*)__script->p+__off;
+    char *p = (char*)__script->file->p+__off;
     while(*p != '\n' && *p != '\0') {
         ffly_printf("%c", *p);
         p++;
@@ -411,7 +422,7 @@ void print_line(struct ffly_script *__script, mdl_uint_t __off) {
     ffly_printf("\n");
 }
 
-# define expectmsg(__s) ffly_fprintf(ffly_out, "%s:%u;%u: %s, got %s.\n", __script->path, tokl(tok), tokcol(tok), __s, tokid_str(tok->id))
+# define expectmsg(__s) ffly_fprintf(ffly_out, "%s:%u;%u: %s, got %s.\n", __script->file->path, tokl(tok), tokcol(tok), __s, tokid_str(tok->id))
 ffly_bool_t expect_token(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_t __id) {
 	struct token *tok = next_token(__script);
     if (!tok) {
@@ -510,10 +521,11 @@ ffly_err_t ffly_script_free(struct ffly_script *__script) {
         }
     }
     ffly_vec_de_init(&__script->to_free);
-    __ffly_mem_free(__script->p);
+    __ffly_mem_free(__script->file->p);
     ffly_map_de_init(&__script->macros);
     ffly_map_de_init(&__script->typedefs);
-    free(__script->path);
+    free(__script->file->path);
+    __ffly_mem_free(__script->file);
     return FFLY_SUCCESS;
 }
 
@@ -601,13 +613,7 @@ void read_ifndef(struct ffly_script *__script) {
 # include <unistd.h>
 void read_include(struct ffly_script *__script) {
     struct token *file = next_token(__script);
-
-    mdl_uint_t line = __script->line;
-    mdl_uint_t lo = __script->lo;
-    ffly_off_t off = __script->off;
-    ffly_byte_t *p = __script->p;
-    ffly_byte_t *end = __script->end;
-    char *path = __script->path;
+    __script->file++;
     ffly_printf("include: %s\n", (char*)file->p);
 
     if (access((char*)file->p, F_OK) == -1) {
@@ -615,20 +621,14 @@ void read_include(struct ffly_script *__script) {
         return;
     }
 
-    __script->line = 0;
-    __script->lo = 0;
-    __script->off = 0;
+    __script->file->line = 0;
+    __script->file->lo = 0;
+    __script->file->off = 0;
     ffly_script_ld(__script, (char*)file->p);  
     ffly_script_parse(__script);
-    free(__script->path);
-    __ffly_mem_free(__script->p);
-
-    __script->path = path;
-    __script->line = line;
-    __script->lo = lo;
-    __script->off = off;
-    __script->p = p;
-    __script->end = end;
+    free(__script->file->path);
+    __ffly_mem_free(__script->file->p);
+    __script->file--;
 }
 
 void read_macro(struct ffly_script *__script) {
@@ -752,47 +752,83 @@ ffly_err_t ffscript_init(ffscriptp __script, mdl_uint_t __stack_size) {
 }
 
 ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
-	ffly_buff_init(&__script->sbuf, 100, 1);
+    ffly_err_t err;
+    __script->file = (struct ffly_script_file*)__ffly_mem_alloc(12*sizeof(struct ffly_script_file));
+	if (_err(err = ffly_buff_init(&__script->sbuf, 100, 1))) {
+        errmsg("failed to init buffer.");
+        return err;
+    }
+
     ffly_vec_set_flags(&__script->to_free, VEC_AUTO_RESIZE);
-    ffly_vec_init(&__script->to_free, sizeof(void*));
+    if (_err(err = ffly_vec_init(&__script->to_free, sizeof(void*)))) {
+        errmsg("failed to init vec.");
+        return err;
+    }
 
     ffly_vec_set_flags(&__script->vecs, VEC_AUTO_RESIZE);
-	ffly_vec_init(&__script->vecs, sizeof(struct ffly_vec));
+	if (_err(err = ffly_vec_init(&__script->vecs, sizeof(struct ffly_vec)))) {
+        errmsg("failed to init vec.");
+        return err;
+    }
 
     ffly_vec_set_flags(&__script->vecs, VEC_AUTO_RESIZE);
-	ffly_vec_init(&__script->maps, sizeof(struct ffly_map));
+	if (_err(err = ffly_vec_init(&__script->maps, sizeof(struct ffly_map)))) {
+        errmsg("failed to init vec.");
+        return err;
+    }
 
     ffly_vec_set_flags(&__script->nodes, VEC_AUTO_RESIZE);
-    ffly_vec_init(&__script->nodes, sizeof(struct node*));
-    
-	ffly_buff_init(&__script->iject_buff, 100, sizeof(struct token*));
-    ffly_map_init(&__script->env, _ffly_map_127);
-    ffly_map_init(&__script->typedefs, _ffly_map_127);
-	__script->off = 0;
-    __script->line = 0;
-    __script->lo = 0;
+    if (_err(err = ffly_vec_init(&__script->nodes, sizeof(struct node*)))) {
+        errmsg("failed to init vec.");
+        return err;
+    }
+
+	if (_err(err = ffly_buff_init(&__script->iject_buff, 100, sizeof(struct token*)))) {
+        errmsg("failed to init buffer.");
+        return err;
+    }
+
+    if (_err(err = ffly_map_init(&__script->env, _ffly_map_127))) {
+        errmsg("failed to init map.");
+        return err;
+    }
+
+    if (_err(err = ffly_map_init(&__script->typedefs, _ffly_map_127))) {
+        errmsg("failed to init map.");
+        return err;
+    }
+	__script->file->off = 0;
+    __script->file->line = 0;
+    __script->file->lo = 0;
     __script->local = NULL;
-    ffly_map_init(&__script->macros, _ffly_map_127);
+    if (_err(err = ffly_map_init(&__script->macros, _ffly_map_127))) {
+        errmsg("failed to init map.");
+        return err;
+    }
     __script->ret_type = NULL;
     return FFLY_SUCCESS;
 }
 
 ffly_err_t ffly_script_build(struct ffly_script *__script, void ** __top, ffly_byte_t **__stack) {
     ffly_err_t err;
-    if (_err(err = ffly_script_parse(__script)))
+    if (_err(err = ffly_script_parse(__script))) {
+        errmsg("failed to parse.");
         return err;
-    if (_err(err = ffly_script_gen(__script, __top, __stack)))
+    }
+    if (_err(err = ffly_script_gen(__script, __top, __stack))) {
+        errmsg("failed to generate.");
         return err;
+    }
     ffly_fprintf(ffly_out, "build successful.\n");
     return FFLY_SUCCESS;
 }
 
 ffly_bool_t is_eof(struct ffly_script *__script) {
-	return (__script->p+__script->off) >= __script->end;
+	return (__script->file->p+__script->file->off) >= __script->file->end;
 }
 
 mdl_uint_t curl(struct ffly_script *__script) {
-    return __script->line;
+    return __script->file->line;
 }
 
 void skip_token(struct ffly_script *__script) {
@@ -982,7 +1018,10 @@ int main() {
     ffscript ff;
     ffscript_init(&ff, 1000);
 	ffly_printf("loading script.\n");
-	ffly_script_prepare(&script);
+	if (_err(ffly_script_prepare(&script))) {
+        ffly_printf("failed to prepare.\n");
+        return -1;
+    }
 # ifndef LOAD
 	ffly_script_ld(&script, "../scripts/main.ff");
 	ffly_printf("building script.\n");
