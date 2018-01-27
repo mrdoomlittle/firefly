@@ -1,8 +1,0 @@
-#!/bin/dash
-t=(1, 2, 3)
-echo "${#t[@]}"
-i=0
-while [ $i -lt 5 ]; do
-	echo "H"
-	i=$(expr $i + 1);
-done

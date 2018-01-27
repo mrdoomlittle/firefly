@@ -8,8 +8,10 @@
 # include "system/file.h"
 # define MAX_PILES 20
 struct ffdb_blkd {
-    mdl_uint_t size;
-    ffly_off_t off;
+    mdl_uint_t size, end, off;
+    struct ffdb_blkd *fd, *bk, *p;
+    mdl_u64_t prev, next;
+    mdl_u8_t inuse;
 };
 
 struct ffdb_pile;
@@ -18,12 +20,13 @@ struct ffdb_record;
 struct ffdb {
     FF_FILE *file;
     ffly_off_t off;
+    
     struct ffdb_pile *top, *free[20], **next;
     struct ffly_map map;
 };
 
 struct ffdb_pile {
-    struct ffly_map map;
+    struct ffly_map map; 
     struct ffdb_record *top;
     struct ffdb_pile *prev, *next;
 };
@@ -33,6 +36,7 @@ struct ffdb_record {
     struct ffdb_record *prev, *next;
 };
 
+typedef struct ffdb_blkd* ffdb_blkdp;
 typedef struct ffdb_record* ffdb_recordp;
 typedef struct ffdb_pile* ffdb_pilep;
 typedef struct ffdb* ffdbp;
