@@ -5,10 +5,22 @@
 # include "memory/mem_free.h"
 # include "memory/mem_realloc.h"
 # include "system/err.h"
-# define msgsize sizeof(struct ffdb_msg)
+# include "crypto.h"
+# include "data/mem_cpy.h"
+# define msgsize sizeof(struct ff_db_msg)
 # define blkd_size sizeof(struct ffdb_blkd)
 # define PAGE_SHIFT 6
 # define PAGE_SIZE (1<<PAGE_SHIFT)
+char const* ff_db_errno_str(ff_db_errno __errno) {
+    switch(__errno) {
+        case _ff_err_null: return "no error";
+        case _ff_err_lci: return "login credentials incorrect";
+        case _ff_err_nsu: return "no such user";
+        case _ff_err_ali: return "already logged in";
+    }
+    return "unknown";
+}
+
 ffly_err_t ffdb_init(ffdbp __db) {
     __db->off = 0;
     __db->top = NULL;
@@ -21,7 +33,43 @@ ffly_err_t ffdb_open(ffdbp __db, char const *__file) {
     __db->file = ffly_fopen(__file, FF_O_RDWR|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err);
 }
 
-ffly_err_t ffdb_sndmsg(FF_SOCKET *__sock, ffdb_msgp __msg) {
+ffly_err_t ff_db_snd_key(FF_SOCKET *__sock, mdl_u8_t *__key) {
+    ffly_err_t err;
+    ff_net_send(__sock, __key, KEY_SIZE, &err);
+    return err;
+}
+
+ffly_err_t ff_db_rcv_key(FF_SOCKET *__sock, mdl_u8_t *__key) {
+    ffly_err_t err;
+    ff_net_recv(__sock, __key, KEY_SIZE, &err);
+    return err;
+}
+
+ffly_err_t ff_db_snd_err(FF_SOCKET *__sock, ffly_err_t __err) {
+    ffly_err_t err;
+    ff_net_send(__sock, &__err, sizeof(ffly_err_t), &err);
+    return err;
+}
+
+ffly_err_t ff_db_rcv_err(FF_SOCKET *__sock, ffly_err_t *__err) {
+    ffly_err_t err;
+    ff_net_recv(__sock, __err, sizeof(ffly_err_t), &err);
+    return err;
+}
+
+ffly_err_t ff_db_snd_errno(FF_SOCKET *__sock, ff_db_errno __err) {
+    ffly_err_t err;
+    ff_net_send(__sock, &__err, sizeof(ff_db_errno), &err);
+    return err;
+}
+
+ffly_err_t ff_db_rcv_errno(FF_SOCKET *__sock, ff_db_errno *__err) {
+    ffly_err_t err;
+    ff_net_recv(__sock, __err, sizeof(ff_db_errno), &err);
+    return err;
+}
+
+ffly_err_t ff_db_sndmsg(FF_SOCKET *__sock, ff_db_msgp __msg) {
     ffly_err_t err;
     mdl_uint_t sent;
 
@@ -38,7 +86,7 @@ ffly_err_t ffdb_sndmsg(FF_SOCKET *__sock, ffdb_msgp __msg) {
     retok;
 }
 
-ffly_err_t ffdb_rcvmsg(FF_SOCKET *__sock, ffdb_msgp __msg) {
+ffly_err_t ff_db_rcvmsg(FF_SOCKET *__sock, ff_db_msgp __msg) {
     ffly_err_t err;
     mdl_uint_t recved;
 
@@ -509,7 +557,7 @@ void ts4(ffdbp __db) {
 
     ffly_printf("passwd: %s\n", passwd);
 }
-
+/*
 int main() {
     ffly_io_init();
     struct ffdb db;
@@ -534,4 +582,4 @@ int main() {
     ffdb_close(&db);
     ffdb_cleanup(&db);
     ffly_io_closeup();
-}
+}*/

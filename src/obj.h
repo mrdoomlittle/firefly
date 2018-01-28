@@ -43,6 +43,11 @@ struct ffly_obj {
     float angle;
     ffly_lotp lot;
 
+    // later - main events
+    void(*create)(void*);
+    void(*destroy)(void*);
+    void(*free)(void*);
+    void(*init)(void*);
     struct ffly_obj *prev, *next;
 };
 

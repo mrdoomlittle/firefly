@@ -6,8 +6,17 @@
 # include "types/byte_t.h"
 # include "data/bcopy.h"
 # include "data/bzero.h"
-static ffly_objp top = NULL;
-static ffly_objp end = NULL;
+/*
+    using malloc for allocation is fine for now.
+    it's only going to be slow when creating and destroying objs repeatedly.
+*/
+# define FASTSIZE 88
+// needs testing
+ffly_objp fastpool[FASTSIZE];
+ffly_objp static *fast = fastpool;
+
+ffly_objp static top = NULL;
+ffly_objp static end = NULL;
 void ffly_obj_rotate(ffly_objp __obj, float __angle) {
     __obj->angle = __angle;
 }
@@ -26,7 +35,11 @@ ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
         as malloc can be slow when calling lots of times.
     */
 
-    ffly_objp obj = (ffly_objp)__ffly_mem_alloc(sizeof(struct ffly_obj));
+    ffly_objp obj;
+    if (fast > fastpool)
+        obj = *(--fast);
+    else
+        obj = (ffly_objp)__ffly_mem_alloc(sizeof(struct ffly_obj));
     ffly_fprintf(ffly_log, "alloced new object.\n");
     obj->next = NULL;
     obj->prev = NULL;
@@ -53,15 +66,22 @@ ffly_err_t ffly_obj_free(ffly_objp __obj) {
     ffly_fprintf(ffly_log, "freed object %u.\n", __obj->no);
     if (__obj == top) {
         top = __obj->next;
+        if (top != NULL)
+            top->prev = NULL;
     }
 
     if (__obj == end) {
         end = __obj->prev;
+        if (end != NULL)
+            end->next = NULL;
     } 
 
     __obj->next->prev = __obj->prev;
     __obj->prev->next = __obj->next;
-    __ffly_mem_free(__obj);
+    if (fast < fastpool+FASTSIZE)
+        *(fast++) = __obj;
+    else
+        __ffly_mem_free(__obj);
     return FFLY_SUCCESS;
 }
 
@@ -80,6 +100,17 @@ ffly_err_t ffly_obj_cleanup() {
 
     if (end != NULL)
         __ffly_mem_free(end);
+    top = NULL;
+    end = NULL;
+
+    if (fast > fastpool) {
+        ffly_objp *p = fastpool;
+        while(p != fast) {
+            __ffly_mem_free(*p);
+            p++;
+        }
+    }
+    fast = fastpool;
 }
 
 ffly_err_t ffly_obj_handle(ffly_objp __obj) {

@@ -484,7 +484,7 @@ ffly_err_t ffly_conf_init(struct ffly_conf *__conf) {
         return err;
     }
 
-    if (_err(err = ffly_map_init(&__conf->env))) {
+    if (_err(err = ffly_map_init(&__conf->env, _ffly_map_127))) {
         ffly_fprintf(ffly_err, "failed to init map.\n");
         return err;
     }

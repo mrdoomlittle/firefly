@@ -7,7 +7,7 @@ ffly_size_t ff_net_send(FF_SOCKET *__sock, void *__buf, mdl_uint_t __size, ffly_
 
     };
     ffly_err_t err;
-    if (_err(err = ff_net_snd_hdr(__sock, &hdr))) {
+    if (_err(err = ff_net_sndhdr(__sock, &hdr))) {
         *__err = FFLY_FAILURE;
         return 0; 
     }

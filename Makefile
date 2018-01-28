@@ -37,7 +37,7 @@ src/data/str_cpy.o src/data/bzero.o src/data/bcopy.o
 # system
 override ffly_objs+= src/system/string.o src/system/bin_tree.o src/system/arr.o src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
 src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
-src/system/task_worker.o src/system/task.o src/system/sys_nanosleep.o src/system/mem_blk.o src/system/cond_lock.o src/system/signal.o src/system/event.o src/system/printf.o \
+src/system/task_worker.o src/system/task.o src/system/sys_nanosleep.o src/system/pool.o src/system/cond_lock.o src/system/signal.o src/system/event.o src/system/printf.o \
 src/system/sys_fcntl.o src/system/sys_open.o src/system/sys_close.o src/system/sys_write.o src/system/sys_brk.o
 # network
 override ffly_objs+= src/network/http.o src/network/sock.o src/network/resolve.o
@@ -50,7 +50,7 @@ override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o 
 override ffly_objs+= src/ffly_system.o src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o src/memory/alloc_pixelmap.o
 
 # core
-override ffly_objs+= src/obj_manager.o src/script.o src/parse.o src/lex.o src/gen.o src/act.o src/polygon.o src/config.o src/lot.o src/uni.o src/chunk.o src/obj.o src/ui/camera.o src/chunk_manager.o
+override ffly_objs+= src/obj_manager.o src/script.o src/parser.o src/lexer.o src/gen.o src/act.o src/polygon.o src/config.o src/lot.o src/uni.o src/chunk.o src/obj.o src/ui/camera.o src/chunk_manager.o
 ifeq ($(shell bash find.bash "$(ffly_flags)" "--mal-track"), 0)
 	override ffly_objs+= src/system/mal_track.o
 endif
@@ -112,11 +112,11 @@ src/system/printf.o: src/system/printf.c
 src/script.o: src/script.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/script.o src/script.c
 
-src/parse.o: src/parse.c
-	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/parse.o src/parse.c
+src/parser.o: src/parser.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/parser.o src/parser.c
 
-src/lex.o: src/lex.c
-	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/lex.o src/lex.c
+src/lexer.o: src/lexer.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/lexer.o src/lexer.c
 
 src/gen.o: src/gen.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/gen.o src/gen.c
@@ -228,8 +228,8 @@ src/graphics/pipe.o: src/graphics/pipe.c
 src/act.o: src/act.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/act.o src/act.c
 
-src/system/mem_blk.o: src/system/mem_blk.c
-	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/mem_blk.o src/system/mem_blk.c
+src/system/pool.o: src/system/pool.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/pool.o src/system/pool.c
 
 src/system/task_pool.o: src/system/task_pool.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/task_pool.o src/system/task_pool.c

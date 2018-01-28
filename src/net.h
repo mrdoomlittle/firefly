@@ -13,6 +13,6 @@ ffly_size_t ff_net_recv(FF_SOCKET*, void*, mdl_uint_t, ffly_err_t*);
 ffly_err_t ff_net_bind(FF_SOCKET*, struct sockaddr*, socklen_t);
 ffly_err_t ff_net_listen(FF_SOCKET*);
 ffly_err_t ff_net_close(FF_SOCKET*);
-ffly_err_t ff_net_snd_hdr(FF_SOCKET*, FF_NET_HDR*);
-ffly_err_t ff_net_rcv_hdr(FF_SOCKET*, FF_NET_HDR*);
+ffly_err_t ff_net_sndhdr(FF_SOCKET*, FF_NET_HDR*);
+ffly_err_t ff_net_rcvhdr(FF_SOCKET*, FF_NET_HDR*);
 # endif /*__ffly__net__h*/

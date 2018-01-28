@@ -6,14 +6,26 @@
 # include "types/off_t.h"
 # include "system/map.h"
 # include "system/file.h"
+# define KEY_SIZE 2 // bytes
+// needs testing
 enum {
-    _ffdb_msg_login,
-    _ffdb_msg_logout,
-    _ffdb_msg_pulse,
-    _ffdb_msg_shutdown,
-    _ffdb_msg_disconnect
+    _ff_db_msg_login,
+    _ff_db_msg_logout,
+    _ff_db_msg_pulse,
+    _ff_db_msg_shutdown,
+    _ff_db_msg_disconnect,
+    _ff_db_msg_req_errno
 };
 
+
+enum {
+    _ff_err_null,
+    _ff_err_lci,
+    _ff_err_nsu,
+    _ff_err_ali
+};
+
+typedef mdl_u8_t ff_db_errno;
 # define MAX_PILES 20
 struct ffdb_blkd {
     mdl_uint_t size, end, off;
@@ -22,9 +34,8 @@ struct ffdb_blkd {
     mdl_u8_t inuse;
 };
 
-struct ffdb_msg {
-    mdl_u8_t kind : 5;
-    mdl_u8_t err : 1;   
+struct ff_db_msg {
+    mdl_u8_t kind;   
 };
 
 struct ffdb_pile;
@@ -37,6 +48,19 @@ struct ffdb {
     struct ffdb_pile *top, *free[20], **next;
     struct ffly_map map;
 };
+
+typedef struct ff_db_user {
+    mdl_u8_t const *id;
+    mdl_u32_t passkey;
+    mdl_u8_t loggedin;
+    mdl_u8_t auth_level;
+} *ff_db_userp;
+
+typedef struct ff_dbd {
+    void **list;
+    struct ffly_map users; 
+    struct ffdb db;
+} *ff_dbdp;
 
 struct ffdb_pile {
     struct ffly_map map; 
@@ -53,10 +77,28 @@ typedef struct ffdb_blkd* ffdb_blkdp;
 typedef struct ffdb_record* ffdb_recordp;
 typedef struct ffdb_pile* ffdb_pilep;
 typedef struct ffdb* ffdbp;
-typedef struct ffdb_msg* ffdb_msgp;
+typedef struct ff_db_msg* ff_db_msgp;
 
-ffly_err_t ffdb_sndmsg(FF_SOCKET*, ffdb_msgp);
-ffly_err_t ffdb_rcvmsg(FF_SOCKET*, ffdb_msgp);
+void ff_db_keygen(mdl_u8_t*);
+void ff_db_add_key(ff_dbdp, mdl_u8_t*);
+void ff_db_rm_key(ff_dbdp, mdl_u8_t*);
+mdl_u8_t ff_db_valid_key(ff_dbdp, mdl_u8_t*);
+
+ff_db_userp ff_db_get_user(ff_dbdp, mdl_u8_t const*, mdl_uint_t, ffly_err_t*);
+ff_db_userp ff_db_add_user(ff_dbdp, mdl_u8_t const*, mdl_uint_t, mdl_u32_t);
+void ff_db_del_user(ff_dbdp, mdl_u8_t const*, mdl_uint_t, mdl_u32_t);
+
+ffly_err_t ff_db_snd_key(FF_SOCKET*, mdl_u8_t*);
+ffly_err_t ff_db_rcv_key(FF_SOCKET*, mdl_u8_t*);
+
+char const* ff_db_errno_str(ff_db_errno);
+ffly_err_t ff_db_snd_err(FF_SOCKET*, ffly_err_t);
+ffly_err_t ff_db_rcv_err(FF_SOCKET*, ffly_err_t*);
+
+ffly_err_t ff_db_snd_errno(FF_SOCKET*, ff_db_errno);
+ffly_err_t ff_db_rcv_errno(FF_SOCKET*, ff_db_errno*);
+ffly_err_t ff_db_sndmsg(FF_SOCKET*, ff_db_msgp);
+ffly_err_t ff_db_rcvmsg(FF_SOCKET*, ff_db_msgp);
 ffdb_recordp ffdb_creat_record(ffdbp, ffdb_pilep, mdl_uint_t);
 ffdb_recordp ffdb_fetch_record(ffdbp, char const*, char const*);
 void ffdb_del_record(ffdbp, ffdb_pilep, ffdb_recordp);

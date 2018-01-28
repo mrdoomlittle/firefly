@@ -18,7 +18,13 @@ db: clean
 	gcc -c network/input.c
 	gcc -c network/output.c
 	gcc -Wall -c net.c
-	gcc -Wall -o main db.c $(ffly_objs) input.o output.o sock.o net.o
+	gcc -c db.c
+#	gcc -Wall -o main db.c $(ffly_objs) input.o output.o sock.o net.o
+	gcc -Wall -c db/user.c
+	gcc -Wall -c db/key.c
+	gcc -Wall -o connect db/connect.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
+	gcc -Wall -o daemon db/daemon.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
+#	gcc -Wall -o main db/key.c $(ffly_objs)
 net: clean
 	gcc -c system/io.c
 	gcc -c data/bcopy.c
@@ -44,39 +50,25 @@ ca: clean
 	gcc -c memory/mem_realloc.c
 	gcc cache.c mem_alloc.o mem_free.o mem_realloc.o
 uni: clean
-	gcc -D__ffly_testing -c data/bcopy.c
-	nasm -f elf64 $(nasm_flags) -o mutex.o.0 system/asm/mutex.asm
 	gcc -D__ffly_testing -c cache.c
-	gcc -D__ffly_testing -c -o mutex.o.1 system/mutex.c
 	gcc -D__ffly_testing -c lot.c
-	gcc -D__ffly_testing -c memory/mem_alloc.c
-	gcc -D__ffly_testing -c memory/mem_free.c
-	gcc -D__ffly_testing -c memory/mem_realloc.c
 	gcc -D__ffly_testing -c chunk_manager.c
 	gcc -D__ffly_testing -c memory/alloc_pixelmap.c
 	gcc -D__ffly_testing -c uni.c
 	gcc -D__ffly_testing -c chunk.c
-	gcc -D__ffly_testing -c system/io.c
 	gcc -D__ffly_testing -c obj.c
-	gcc -D__ffly_testing -c system/vec.c
-	gcc -D__ffly_testing -c data/mem_cpy.c
-	gcc -D__ffly_testing -c system/flags.c
 	gcc -D__ffly_testing -c obj_pool.c
 	gcc -D__ffly_testing -c obj_manager.c
 	gcc -D__ffly_testing -c ui/camera.c
-	gcc -D__ffly_testing -c data/mem_set.c
-	gcc -D__ffly_testing -c data/bzero.c
 	gcc -D__ffly_testing -c maths/min.c
 	gcc -D__ffly_testing -c maths/max.c
 	gcc -D__ffly_testing -c maths/barycentric.c
 	gcc -D__ffly_testing -c polygon.c
 	gcc -D__ffly_testing -c maths/rotate.c
-	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o.0 system/asm/sys_nanosleep.asm
 	nasm -f elf64 $(nasm_flags) -o round.o.0 maths/asm/round.asm
 	gcc -D__ffly_testing -c -o round.o.1 maths/round.c
 
-	gcc -D__ffly_testing -c -o sys_nanosleep.o.1 system/sys_nanosleep.c
-	gcc -D__ffly_testing main.c bzero.o cache.o round.o.0 round.o.1 rotate.o polygon.o max.o barycentric.o min.o lot.o obj_manager.o obj_pool.o mutex.o.0 bcopy.o mem_set.o sys_nanosleep.o.0 sys_nanosleep.o.1 camera.o obj.o mutex.o.1 flags.o vec.o mem_cpy.o alloc_pixelmap.o uni.o io.o chunk.o chunk_manager.o mem_alloc.o mem_realloc.o mem_free.o -lm
+	gcc -D__ffly_testing main.c cache.o round.o.0 round.o.1 rotate.o polygon.o max.o barycentric.o min.o lot.o obj_manager.o obj_pool.o camera.o obj.o alloc_pixelmap.o uni.o chunk.o chunk_manager.o $(ffly_objs) -lm
 all:
 	rm -f *.o
 	nasm -f elf64 $(nasm_flags) -o mutex.o system/asm/mutex.asm

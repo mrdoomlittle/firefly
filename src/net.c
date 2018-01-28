@@ -53,7 +53,7 @@ ffly_err_t ff_net_bind(FF_SOCKET *__sock, struct sockaddr *__addr, socklen_t __l
     return FFLY_SUCCESS;
 }
 
-ffly_err_t ff_net_snd_hdr(FF_SOCKET *__sock, FF_NET_HDR *__hdr) {
+ffly_err_t ff_net_sndhdr(FF_SOCKET *__sock, FF_NET_HDR *__hdr) {
     ffly_err_t err;
     ffly_size_t res;
     if ((res = ffly_sock_send(__sock, __hdr, sizeof(FF_NET_HDR), 0, &err)) < sizeof(FF_NET_HDR)) {
@@ -65,7 +65,7 @@ ffly_err_t ff_net_snd_hdr(FF_SOCKET *__sock, FF_NET_HDR *__hdr) {
     return FFLY_SUCCESS;
 }
 
-ffly_err_t ff_net_rcv_hdr(FF_SOCKET *__sock, FF_NET_HDR *__hdr) {
+ffly_err_t ff_net_rcvhdr(FF_SOCKET *__sock, FF_NET_HDR *__hdr) {
     ffly_err_t err;
     ffly_size_t res;
     if ((res = ffly_sock_recv(__sock, __hdr, sizeof(FF_NET_HDR), 0, &err)) < sizeof(FF_NET_HDR)) {

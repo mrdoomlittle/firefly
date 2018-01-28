@@ -12,6 +12,10 @@ struct ffly_map {
     struct ffly_map *parent;
 };
 
+/*
+    TODO: add ffly_map_del
+*/
+
 enum {
     _ffly_map_15 = 4,
     _ffly_map_31,

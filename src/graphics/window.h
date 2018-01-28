@@ -4,7 +4,7 @@
 # include "../types/err_t.h"
 # include "../system/flags.h"
 # include "../types/bool_t.h"
-# include "../system/mem_blk.h"
+# include "../system/pool.h"
 # include "../system/mutex.h"
 # include "../types/event_t.h"
 # include "../types/byte_t.h"
@@ -22,7 +22,7 @@ struct ffly_wd {
 	struct ffly_xcb_wd raw;
 # endif
 	ffly_flag_t flags;
-	struct ffly_mem_blk events;
+	struct ffly_pool events;
 };
 # ifdef __cplusplus
 extern "C" {

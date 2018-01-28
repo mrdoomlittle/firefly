@@ -72,7 +72,7 @@ ffly_err_t ffly_wd_init(struct ffly_wd *__wd, mdl_u16_t __width, mdl_u16_t __hei
 		return err;
 	}
 
-	ffly_mem_blk_init(&__wd->events, 20, sizeof(ffly_wd_event_t));
+	ffly_pool_init(&__wd->events, 20, sizeof(ffly_wd_event_t));
 	return FFLY_SUCCESS;
 }
 
@@ -87,6 +87,7 @@ ffly_err_t ffly_wd_cleanup(struct ffly_wd *__wd) {
 		ffly_fprintf(ffly_err, "failed to cleanup window.\n");
 		return err;
 	}
+    ffly_pool_de_init(&__wd->events);
 	return FFLY_SUCCESS;
 }
 
@@ -120,7 +121,7 @@ ffly_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) 
 				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_closed});
 			break;
             case ButtonPress: case ButtonRelease:
-                mk_event(__event, (ffly_event_t){.kind=event.type == ButtonPress?_ffly_wd_ek_btn_press:_ffly_wd_ek_btn_release, .data=ffly_mem_blk_alloc(&__wd->events)});
+                mk_event(__event, (ffly_event_t){.kind=event.type == ButtonPress?_ffly_wd_ek_btn_press:_ffly_wd_ek_btn_release, .data=ffly_pool_alloc(&__wd->events)});
                 *((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
                     .btn = ffly_x11_convert_btnno(event.xbutton.button),
                     .x = event.xbutton.x,
@@ -128,7 +129,7 @@ ffly_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) 
                 };
             break;
 			case KeyPress: case KeyRelease:
-				mk_event(__event, (ffly_event_t){.kind=event.type == KeyPress?_ffly_wd_ek_key_press:_ffly_wd_ek_key_release, .data=ffly_mem_blk_alloc(&__wd->events)});
+				mk_event(__event, (ffly_event_t){.kind=event.type == KeyPress?_ffly_wd_ek_key_press:_ffly_wd_ek_key_release, .data=ffly_pool_alloc(&__wd->events)});
 				*((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
                     .keycode = ffly_x11_convert_keycode(event.xkey.keycode),
                     .x = event.xkey.x,
@@ -185,6 +186,6 @@ ffly_event_t* ffly_wd_poll_event(struct ffly_wd *__wd, ffly_err_t *__err) {
 ffly_err_t ffly_wd_free_event(struct ffly_wd *__wd, ffly_event_t *__event) {
 	if (__event->kind  == _ffly_wd_ek_key_press || __event->kind == _ffly_wd_ek_key_release
         || __event->kind == _ffly_wd_ek_btn_press || __event->kind == _ffly_wd_ek_btn_release) {
-		ffly_mem_blk_free(&__wd->events, __event->data);
+		ffly_pool_free(&__wd->events, __event->data);
 	}
 }
