@@ -64,6 +64,7 @@ void ffdb_write(ffdbp, ffdb_pilep, ffdb_recordp, ffly_off_t, void*, mdl_uint_t);
 void ffdb_read(ffdbp, ffdb_pilep, ffdb_recordp, ffly_off_t, void*, mdl_uint_t);
 
 ffdb_pilep ffdb_creat_pile(ffdbp);
+void ffdb_record_alias(ffdbp, ffdb_pilep, char const*, ffdb_recordp); 
 void ffdb_pile_alias(ffdbp, char const*, ffdb_pilep);
 ffdb_pilep ffdb_fetch_pile(ffdbp, char const*);
 void ffdb_del_pile(ffdbp, ffdb_pilep);

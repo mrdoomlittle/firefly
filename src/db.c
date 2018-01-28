@@ -7,7 +7,7 @@
 # include "system/err.h"
 # define msgsize sizeof(struct ffdb_msg)
 # define blkd_size sizeof(struct ffdb_blkd)
-# define PAGE_SHIFT 8
+# define PAGE_SHIFT 6
 # define PAGE_SIZE (1<<PAGE_SHIFT)
 ffly_err_t ffdb_init(ffdbp __db) {
     __db->off = 0;
@@ -64,12 +64,18 @@ void prepare_pile(ffdb_pilep __p) {
     __p->top = NULL;
 }
 
-void destroy_pile(ffdb_pilep __p) {
+void destroy_pile(ffdbp __db, ffdb_pilep __p) {
+    ffdb_recordp rec = __p->top;
+    while(rec != NULL) {
+        ffdb_del_record(__db, __p, rec);
+        rec = rec->next;
+    } 
+
     ffly_map_de_init(&__p->map);
 }
 
-void free_pile(ffdb_pilep __p) {
-    destroy_pile(__p);
+void free_pile(ffdbp __db, ffdb_pilep __p) {
+    destroy_pile(__db, __p);
     __ffly_mem_free(__p);
 }
 
@@ -82,11 +88,11 @@ ffly_err_t ffdb_cleanup(ffdbp __db) {
     prev = NULL;
     while(cur != NULL) {
         if (prev != NULL)
-            free_pile(prev);
+            free_pile(__db, prev);
         prev = cur;
         cur = cur->next;
     }
-    free_pile(prev);
+    free_pile(__db, prev);
     __db->top = NULL;
 
     _sk:
@@ -119,7 +125,11 @@ ffdb_recordp ffdb_creat_record(ffdbp __db, ffdb_pilep __pile, mdl_uint_t __size)
 }
 
 ffdb_recordp ffdb_fetch_record(ffdbp __db, char const *__pile, char const *__name) {
-    
+    ffdb_recordp p;
+
+    ffly_err_t err;
+    p = (ffdb_recordp)ffly_map_get(&ffdb_fetch_pile(__db, __pile)->map, (mdl_u8_t const*)__name, ffly_str_len(__name), &err);    
+    return p;
 }
 
 void ffdb_del_record(ffdbp __db, ffdb_pilep __pile, ffdb_recordp __rec) {
@@ -210,12 +220,12 @@ void ffdb_del_pile(ffdbp __db, ffdb_pilep __pile) {
 
     _sk:
     if (__db->next-__db->free < 20) {
-        destroy_pile(__pile);
+        destroy_pile(__db, __pile);
         *(__db->next++) = __pile;
         return;
     } 
 
-    free_pile(__pile);
+    free_pile(__db, __pile);
 }
 
 
@@ -464,9 +474,9 @@ void ts3(ffdbp __db) {
 void _pf() {
     struct ffdb_blkd *blk = bin;
     ffly_printf("---- free ----\n");
-    while(bin != NULL) {
-        ffly_printf("size: %u\n", bin->size);
-        bin = bin->fd;
+    while(blk != NULL) {
+        ffly_printf("size: %u\n", blk->size);
+        blk = blk->fd;
     }
 }
 
@@ -482,16 +492,40 @@ void _pr(ffdbp __db) {
     }
 }
 
+
+void ts4(ffdbp __db) {
+    ffdb_recordp rec = ffdb_fetch_record(__db, "users", "mrdoomlittle");
+    ffdb_pilep p = ffdb_fetch_pile(__db, "users");
+    char passwd[40];
+    char c;
+    mdl_uint_t off = 0;
+    while(1) {
+        ffdb_read(__db, p, rec, off, &c, 1);
+        if (c == '\0') break;
+        *(passwd+off) = c;
+        off++;
+    }
+    *(passwd+off) = '\0';
+
+    ffly_printf("passwd: %s\n", passwd);
+}
+
 int main() {
     ffly_io_init();
     struct ffdb db;
+    char const *passwd = "21299";
+    mdl_uint_t l = ffly_str_len(passwd);
     ffdb_init(&db);
     ffdb_open(&db, "test.db");
 
     ffdb_pilep p = ffdb_creat_pile(&db);
-    ffdb_pile_alias(&db, "example-pile", p);    
-    ts1(&db, "example-pile");
-
+    ffdb_pile_alias(&db, "users", p); 
+    ffdb_recordp rec = ffdb_creat_record(&db, p, l+1);
+    ffdb_write(&db, p, rec, 0, passwd, l+1);
+    ffdb_record_alias(&db, p, "mrdoomlittle", rec);
+//    ts1(&db, "example-pile");
+    ts4(&db);
+    
     ffdb_del_pile(&db, p);
 
 //    ts2(&db);
