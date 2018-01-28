@@ -6,12 +6,25 @@
 # include "types/off_t.h"
 # include "system/map.h"
 # include "system/file.h"
+enum {
+    _ffdb_msg_login,
+    _ffdb_msg_logout,
+    _ffdb_msg_pulse,
+    _ffdb_msg_shutdown,
+    _ffdb_msg_disconnect
+};
+
 # define MAX_PILES 20
 struct ffdb_blkd {
     mdl_uint_t size, end, off;
     struct ffdb_blkd *fd, *bk, *p;
     mdl_u64_t prev, next;
     mdl_u8_t inuse;
+};
+
+struct ffdb_msg {
+    mdl_u8_t kind : 5;
+    mdl_u8_t err : 1;   
 };
 
 struct ffdb_pile;
@@ -40,7 +53,10 @@ typedef struct ffdb_blkd* ffdb_blkdp;
 typedef struct ffdb_record* ffdb_recordp;
 typedef struct ffdb_pile* ffdb_pilep;
 typedef struct ffdb* ffdbp;
+typedef struct ffdb_msg* ffdb_msgp;
 
+ffly_err_t ffdb_sndmsg(FF_SOCKET*, ffdb_msgp);
+ffly_err_t ffdb_rcvmsg(FF_SOCKET*, ffdb_msgp);
 ffdb_recordp ffdb_creat_record(ffdbp, ffdb_pilep, mdl_uint_t);
 ffdb_recordp ffdb_fetch_record(ffdbp, char const*, char const*);
 void ffdb_del_record(ffdbp, ffdb_pilep, ffdb_recordp);

@@ -4,8 +4,11 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "memory/mem_realloc.h"
-
+# include "system/err.h"
+# define msgsize sizeof(struct ffdb_msg)
 # define blkd_size sizeof(struct ffdb_blkd)
+# define PAGE_SHIFT 8
+# define PAGE_SIZE (1<<PAGE_SHIFT)
 ffly_err_t ffdb_init(ffdbp __db) {
     __db->off = 0;
     __db->top = NULL;
@@ -16,6 +19,40 @@ ffly_err_t ffdb_init(ffdbp __db) {
 ffly_err_t ffdb_open(ffdbp __db, char const *__file) {
     ffly_err_t err;
     __db->file = ffly_fopen(__file, FF_O_RDWR|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err);
+}
+
+ffly_err_t ffdb_sndmsg(FF_SOCKET *__sock, ffdb_msgp __msg) {
+    ffly_err_t err;
+    mdl_uint_t sent;
+
+    sent = ff_net_send(__sock, __msg, msgsize, &err); 
+    if (_err(err)) {
+        ffly_fprintf(ffly_err, "failed to send message.\n");
+        return err;
+    }
+
+    if (sent != msgsize) {
+        ffly_fprintf(ffly_err, "message was not fully sent.\n");
+        reterr;
+    }
+    retok;
+}
+
+ffly_err_t ffdb_rcvmsg(FF_SOCKET *__sock, ffdb_msgp __msg) {
+    ffly_err_t err;
+    mdl_uint_t recved;
+
+    recved = ff_net_recv(__sock, __msg, msgsize, &err); 
+    if (_err(err)) {
+        ffly_fprintf(ffly_err, "failed to recv message.\n");
+        return err;
+    }
+
+    if (recved != msgsize) {
+        ffly_fprintf(ffly_err, "message was not fully recved.\n");
+        reterr;
+    }
+    retok;
 }
 
 ffly_err_t ffdb_close(ffdbp __db) {
@@ -74,7 +111,10 @@ ffdb_recordp ffdb_creat_record(ffdbp __db, ffdb_pilep __pile, mdl_uint_t __size)
         __pile->top->prev = p;
         __pile->top = p;
     }
-    p->p = ffdb_alloc(__db, __size);
+
+    mdl_uint_t page_c = __size>>PAGE_SHIFT;
+    page_c = page_c+((__size-(page_c*PAGE_SIZE))>0);
+    p->p = ffdb_alloc(__db, page_c*PAGE_SIZE);
     return p;
 }
 
@@ -182,6 +222,7 @@ void ffdb_del_pile(ffdbp __db, ffdb_pilep __pile) {
 # define FFDB_NULL ((mdl_uint_t)~0)
 mdl_uint_t static top = FFDB_NULL;
 ffdb_blkdp static bin = NULL;
+void ffdb_unlink(ffdb_blkdp);
 mdl_uint_t ffdb_alloc(ffdbp __db, mdl_uint_t __bc) {
     if (!__bc) return FFDB_NULL;
     if (bin != NULL) {
@@ -190,6 +231,7 @@ mdl_uint_t ffdb_alloc(ffdbp __db, mdl_uint_t __bc) {
             ffly_printf("%u >= %u\n", p->size, __bc);
             if (p->size >= __bc) {
                 ffly_printf("found free space.\n");
+                ffdb_unlink(p);
                 return p->off+blkd_size; 
             }
             p = p->fd;
@@ -221,52 +263,70 @@ mdl_uint_t ffdb_alloc(ffdbp __db, mdl_uint_t __bc) {
     return off+blkd_size;
 }
 
-void ffdb_detatch(ffdbp __db, mdl_uint_t __p) {
-    struct ffdb_blkd blk, prev, next;
-    read_blkd(__db, &blk, __p);
-    if (__p == top) {
-        top = blk.next;
+void ffdb_reattach(ffdbp __db, struct ffdb_blkd *__blk) {
+    struct ffdb_blkd prev, next;
+    if (__blk->end == __db->off) {
+        struct ffdb_blkd blk;
+        read_blkd(__db, &blk, top);
+        blk.next = __blk->off;
+        write_blkd(__db, &blk, top);
+        top = __blk->off;
+        return;
+    }  
+
+    if (__blk->prev != FFDB_NULL) {
+        read_blkd(__db, &prev, __blk->prev);
+        prev.next = __blk->off;
+        write_blkd(__db, &prev, __blk->prev); 
+    }
+
+    if (__blk->next != FFDB_NULL) {
+        read_blkd(__db, &next, __blk->next);
+        next.prev = __blk->off;
+        write_blkd(__db, &next, __blk->next);
+    }
+}
+
+void ffdb_detatch(ffdbp __db, struct ffdb_blkd *__blk) {
+    struct ffdb_blkd prev, next;
+    if (__blk->off == top) {
+        top = __blk->prev;
         if (top != FFDB_NULL) {
             struct ffdb_blkd blk;
             read_blkd(__db, &blk, top);
-            blk.prev = FFDB_NULL;
+            blk.next = FFDB_NULL;
             write_blkd(__db, &blk, top);
         }
-        goto _sk;
-    }
-
-    if (blk.prev != FFDB_NULL) {
-        read_blkd(__db, &prev, blk.prev);
-        prev.next = blk.next;
-        write_blkd(__db, &prev, blk.prev);
-    }
-
-    if (blk.next != FFDB_NULL) {
-        read_blkd(__db, &next, blk.next);
-        next.prev = blk.prev;
-        write_blkd(__db, &next, blk.next);
-    }
-
-    _sk:
-    write_blkd(__db, &blk, __p);
-}
-
-void ffdb_unlink(ffdb_blkdp __blk) {
-    __ffly_mem_free(__blk->p);
-    if (__blk->p == bin) {
-        bin = __blk->p->fd;
-        if (bin != NULL)
-            bin->bk = NULL;
         return;
     }
 
-    if (__blk->fd != NULL) {
-        __blk->fd->bk = __blk->bk;
+    if (__blk->prev != FFDB_NULL) {
+        read_blkd(__db, &prev, __blk->prev);
+        prev.next = __blk->next;
+        write_blkd(__db, &prev, __blk->prev);
     }
 
-    if (__blk->bk != NULL) {
-        __blk->bk->fd = __blk->fd;
+    if (__blk->next != FFDB_NULL) {
+        read_blkd(__db, &next, __blk->next);
+        next.prev = __blk->prev;
+        write_blkd(__db, &next, __blk->next);
     }
+}
+
+void ffdb_unlink(ffdb_blkdp __blk) {
+    if (__blk->p == bin) {
+        bin = __blk->fd;
+        if (bin != NULL)
+            bin->bk = NULL;
+        goto _end;
+    }
+
+    if (__blk->fd != NULL)
+        __blk->fd->bk = __blk->bk;
+    if (__blk->bk != NULL)
+        __blk->bk->fd = __blk->fd;
+    _end:
+    __ffly_mem_free(__blk);
 }
 
 # include <unistd.h>
@@ -275,39 +335,43 @@ void ffdb_free(ffdbp __db, mdl_uint_t __p) {
     struct ffdb_blkd blk;
     ffly_off_t off = __p-blkd_size;
     read_blkd(__db, &blk, off);
+    ffdb_detatch(__db, &blk);
 
+    ffly_printf("blockd size: %u\n", blkd_size);
+    ffly_printf("0; %ubytes.\n", blk.size);
     struct ffdb_blkd prev, next;
     if (blk.prev != FFDB_NULL) {
         read_blkd(__db, &prev, blk.prev);
         if (!prev.inuse) {
-            ffly_printf("prev not inuse.\n");
-            ffdb_detatch(__db, blk.prev);
-            ffdb_unlink(&prev);
-            off = blk.prev;
+            ffly_printf("prev not inuse, %ubytes.\n", blk.size);
+            ffdb_detatch(__db, &prev);
+            ffdb_unlink(prev.p);
             blk.size += prev.size+blkd_size;
             blk.prev = prev.prev;
             blk.off = prev.off;
+            off = blk.off;
         }
     }
-
+    ffly_printf("1; %ubytes.\n", blk.size);
     if (blk.next != FFDB_NULL) {
         read_blkd(__db, &next, blk.next);
         if (!next.inuse) {
-            ffly_printf("next not inuse.\n");
-            ffdb_detatch(__db, blk.next);
-            ffdb_unlink(&next);
+            ffly_printf("next not inuse, %ubytes.\n", blk.size);
+            ffdb_detatch(__db, &next);
+            ffdb_unlink(next.p);
             blk.next = next.next;
             blk.size += next.size+blkd_size;
             blk.end = next.end; 
         }
     }
-
+    ffly_printf("2; %ubytes.\n", blk.size);
     if (blk.end == __db->off) {
         __db->off = off;
         ftruncate(ffly_fileno(__db->file), off);
         return;
     }
 
+    ffdb_reattach(__db, &blk);
     blk.inuse = 0;
     blk.p = (ffdb_blkdp)__ffly_mem_alloc(sizeof(struct ffdb_blkd));
     *blk.p = blk;
@@ -318,7 +382,7 @@ void ffdb_free(ffdbp __db, mdl_uint_t __p) {
         blk.p->fd = bin;
         bin = blk.p;
     }
-
+    ffly_printf("freed: %u\n", blk.size);
     write_blkd(__db, &blk, off);    
 }
 
@@ -354,12 +418,68 @@ void ts1(ffdbp __db, char const *__pile) {
     ffdb_recordp rec1 = ffdb_creat_record(__db, p, 1);
     ffdb_del_record(__db, p, rec0);
 
-    while(i != 0xff) {
+    while(i != 0xf) {
         ffdb_recordp rec = ffdb_creat_record(__db, p, rand()%100);
         ffdb_del_record(__db, p, rec); 
         i++;
     }
     ffdb_del_record(__db, p, rec1);
+}
+
+void ts2(ffdbp __db) {
+    mdl_uint_t p0, p1, p2, p3, p4, p5;
+    p0 = ffdb_alloc(__db, 1);
+    p1 = ffdb_alloc(__db, 1);
+    p2 = ffdb_alloc(__db, 1);
+    p3 = ffdb_alloc(__db, 1);
+    p4 = ffdb_alloc(__db, 1);
+    p5 = ffdb_alloc(__db, 1);
+
+    ffdb_free(__db, p0);
+    ffdb_free(__db, p2);
+    ffdb_free(__db, p4);
+
+    ffdb_free(__db, p3);
+    ffdb_free(__db, p1);
+    ffdb_free(__db, p5); 
+}
+
+void ts3(ffdbp __db) {
+    mdl_uint_t p0, p1, p2, p3, p4, p5;
+    p0 = ffdb_alloc(__db, 1);
+    p1 = ffdb_alloc(__db, 2);
+    p2 = ffdb_alloc(__db, 3);
+    p3 = ffdb_alloc(__db, 4);
+    p4 = ffdb_alloc(__db, 5);
+    p5 = ffdb_alloc(__db, 6);
+
+    ffdb_free(__db, p0);
+    ffdb_free(__db, p1);
+    ffdb_free(__db, p2);
+    ffdb_free(__db, p3);
+    ffdb_free(__db, p4);
+    ffdb_free(__db, p5);
+}
+
+void _pf() {
+    struct ffdb_blkd *blk = bin;
+    ffly_printf("---- free ----\n");
+    while(bin != NULL) {
+        ffly_printf("size: %u\n", bin->size);
+        bin = bin->fd;
+    }
+}
+
+
+void _pr(ffdbp __db) {
+    mdl_uint_t off = top;
+    struct ffdb_blkd blk;
+    ffly_printf("---- all ----\n");
+    while(off != FFDB_NULL) {
+        read_blkd(__db, &blk, off);
+        ffly_printf("size: %u\n", blk.size);
+        off = blk.prev;
+    }
 }
 
 int main() {
@@ -373,6 +493,10 @@ int main() {
     ts1(&db, "example-pile");
 
     ffdb_del_pile(&db, p);
+
+//    ts2(&db);
+    _pf();
+    _pr(&db);
     ffdb_close(&db);
     ffdb_cleanup(&db);
     ffly_io_closeup();
