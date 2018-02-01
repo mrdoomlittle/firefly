@@ -17,6 +17,7 @@ char const* ff_db_errno_str(ff_db_errno __errno) {
         case _ff_err_lci: return "login credentials incorrect";
         case _ff_err_nsu: return "no such user";
         case _ff_err_ali: return "already logged in";
+        case _ff_err_prd: return "permission denied";
     }
     return "unknown";
 }
@@ -33,15 +34,19 @@ ffly_err_t ffdb_open(ffdbp __db, char const *__file) {
     __db->file = ffly_fopen(__file, FF_O_RDWR|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err);
 }
 
-ffly_err_t ff_db_snd_key(FF_SOCKET *__sock, mdl_u8_t *__key) {
+ffly_err_t ff_db_snd_key(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey) {
     ffly_err_t err;
-    ff_net_send(__sock, __key, KEY_SIZE, &err);
+    mdl_u8_t tmp[KEY_SIZE];
+    ffly_mem_cpy(tmp, __key, KEY_SIZE);
+    mdl_encrypt(tmp, KEY_SIZE, __enckey);
+    ff_net_send(__sock, tmp, KEY_SIZE, &err);
     return err;
 }
 
-ffly_err_t ff_db_rcv_key(FF_SOCKET *__sock, mdl_u8_t *__key) {
-    ffly_err_t err;
+ffly_err_t ff_db_rcv_key(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey) {
+    ffly_err_t err; 
     ff_net_recv(__sock, __key, KEY_SIZE, &err);
+    mdl_decrypt(__key, KEY_SIZE, __enckey);
     return err;
 }
 
@@ -288,6 +293,12 @@ mdl_uint_t ffdb_alloc(ffdbp __db, mdl_uint_t __bc) {
         while(p != NULL) {
             ffly_printf("%u >= %u\n", p->size, __bc);
             if (p->size >= __bc) {
+                mdl_uint_t leftover = p->size-__bc;
+                if (leftover>blkd_size) {
+                    if (leftover-blkd_size >= PAGE_SIZE) {
+
+                    }
+                }
                 ffly_printf("found free space.\n");
                 ffdb_unlink(p);
                 return p->off+blkd_size; 

@@ -1,2 +1,8 @@
 %include "../scripts/fflib.ff"
+/*
+%define ts0
+%define ts1
+*/
+%define ts2
+%include "../scripts/test.ff"
 exit;

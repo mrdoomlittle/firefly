@@ -128,7 +128,9 @@ enum {
     _k_typedef,
     _k_ret,
     _k_brk,
-    _ellipsis
+    _ellipsis,
+    _plus,
+    _minus
 };
 
 enum {
@@ -156,7 +158,11 @@ enum {
     _ast_addrof,
     _ast_conv,
     _op_cast,
-    _ast_brk
+    _ast_brk,
+    _op_add,
+    _op_sub,
+    _op_mul,
+    _op_div
 };
 
 enum {
@@ -182,28 +188,32 @@ enum {
 # define _flg_lt 0x8
 
 enum {
-	_op_fresh,
-    _op_free,
-	_op_assign,
-	_op_copy,
-	_op_print,
-    _op_compare,
-    _op_jump,
-    _op_cond_jump,
-    _op_zero,
-    _op_push,
-    _op_pop,
-    _op_incr,
-    _op_decr,
-    _op_call,
-    _op_exit,
-    _op_frame,
-    _op_free_frame,
-    _op_conv
+	_op_fresh_,
+    _op_free_,
+	_op_assign_,
+	_op_copy_,
+	_op_print_,
+    _op_compare_,
+    _op_jump_,
+    _op_cond_jump_,
+    _op_zero_,
+    _op_push_,
+    _op_pop_,
+    _op_incr_,
+    _op_decr_,
+    _op_call_,
+    _op_exit_,
+    _op_frame_,
+    _op_free_frame_,
+    _op_conv_,
+    _op_add_,
+    _op_sub_,
+    _op_mul_,
+    _op_div_
 };
 
 struct node {
-    mdl_u8_t kind;
+    mdl_u8_t kind, op;
     struct type *_type, *to;
     ffly_byte_t val[sizeof(mdl_u64_t)];
     struct node *init, *var, *arg;

@@ -1,21 +1,25 @@
 # define __ffly_script_internal
+# define __ffly_generator
 # include "script.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/buff.h"
 # include "data/mem_cpy.h"
-struct obj *rg_8l_u, *rg_16l_u, *rg_32l_u, *rg_64l_u;
-void build_obj(struct obj **__obj, struct obj *__tmpl) {
+struct obj static *rg_8l_u, *rg_16l_u, *rg_32l_u, *rg_64l_u;
+void static
+build_obj(struct obj **__obj, struct obj *__tmpl) {
 	*__obj = (struct obj*)__ffly_mem_alloc(sizeof(struct obj));
 	**__obj = *__tmpl;
 }
 
-struct obj** objpp(struct obj *__obj) {
+struct obj static**
+objpp(struct obj *__obj) {
     __obj->objpp = __obj;
     return &__obj->objpp;
 }
 
-struct obj *get_reg(mdl_u8_t __kind) {
+struct obj static*
+get_reg(mdl_u8_t __kind) {
     switch(__kind) {
         case _8l_u: return rg_8l_u;
         case _16l_u: return rg_16l_u;
@@ -31,7 +35,8 @@ struct obj *get_reg(mdl_u8_t __kind) {
 ffly_byte_t static **stack;
 static struct obj *top = NULL;
 static struct obj *end = NULL;
-struct obj* next_obj(struct ffly_script *__script, struct obj __tmpl) {
+struct obj static*
+next_obj(struct ffly_script *__script, struct obj __tmpl) {
 	struct obj *_obj;
 	build_obj(&_obj, &__tmpl);
     _obj->next = NULL;
@@ -46,7 +51,8 @@ struct obj* next_obj(struct ffly_script *__script, struct obj __tmpl) {
 	return _obj;
 }
 
-mdl_u8_t convtk(mdl_u8_t __kind) {
+mdl_u8_t static
+convtk(mdl_u8_t __kind) {
     if (__kind == _uint_t) {
         switch(sizeof(mdl_uint_t)) {
             case 1: return _8l_u;
@@ -76,168 +82,196 @@ struct obj obj_tmpl = {
     .flags = NULL, .next = NULL
 };
 
-struct obj mk_op_copy(mdl_uint_t __size, struct obj **__to, struct obj **__from) {
+struct obj static
+mk_op_copy(mdl_uint_t __size, struct obj **__to, struct obj **__from) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_copy;
+    _obj.opcode = _op_copy_;
     _obj.size = __size;
     _obj.to = __to;
     _obj.from = __from;
     return _obj;
 }
 
-struct obj mk_op_fresh(mdl_uint_t __size) {
+struct obj static
+mk_op_fresh(mdl_uint_t __size) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_fresh;
+    _obj.opcode = _op_fresh_;
     _obj.size = __size;
     return _obj;
 }
 
-struct obj mk_op_free(mdl_uint_t __size) {
+struct obj static
+mk_op_free(mdl_uint_t __size) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_free;
+    _obj.opcode = _op_free_;
     _obj.size = __size;
     return _obj;
 }
 
-struct obj mk_exit() {
+struct obj static
+mk_exit() {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_exit;
+    _obj.opcode = _op_exit_;
     return _obj;
 }
 
-struct obj mk_op_assign(void *__p, mdl_uint_t __size, struct obj **__to) {
+struct obj static
+mk_op_assign(void *__p, mdl_uint_t __size, struct obj **__to) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_assign;
+    _obj.opcode = _op_assign_;
     _obj.p = __p;
     _obj.size = __size;
     _obj.to = __to;
     return _obj;
 }
 
-struct obj mk_op_compare(struct obj *__flags, struct obj **__l, struct obj **__r) {
+struct obj static
+mk_op_compare(struct obj *__flags, struct obj **__l, struct obj **__r) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_compare;
+    _obj.opcode = _op_compare_;
     _obj.l = __l;
     _obj.r = __r;
     _obj.flags = __flags;
     return _obj;
 }
 
-struct obj mk_op_cond_jump(struct obj *__flags, mdl_u8_t __cond) {
+struct obj static
+mk_op_cond_jump(struct obj *__flags, mdl_u8_t __cond) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_cond_jump;
+    _obj.opcode = _op_cond_jump_;
     _obj.flags = __flags;
     _obj.cond = __cond;
     return _obj;
 }
 
-struct obj mk_op_conv(struct obj **__dst, struct obj **__src) {
+struct obj static
+mk_op_conv(struct obj **__dst, struct obj **__src) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_conv;
+    _obj.opcode = _op_conv_;
     _obj.dst = __dst;
     _obj.src = __src;
     return _obj;
 }
 
-struct obj mk_op_zero(struct obj **__dst) {
+struct obj static
+mk_op_zero(struct obj **__dst) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_zero;
+    _obj.opcode = _op_zero_;
     _obj.dst = __dst;
     return _obj;
 }
 
-struct obj mk_op_jump() {
+struct obj static
+mk_op_jump() {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_jump;
+    _obj.opcode = _op_jump_;
     return _obj;
 }
 
-struct obj mk_op_push(struct obj *__obj) {
+struct obj static
+mk_op_push(struct obj *__obj) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_push;
+    _obj.opcode = _op_push_;
     _obj._obj = __obj;
     return _obj;
 }
 
-struct obj mk_op_pop() {
+struct obj static mk_op_pop() {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_pop;
+    _obj.opcode = _op_pop_;
     return _obj;
 }
 
-struct obj mk_incr(struct obj **__obj) {
+struct obj static 
+mk_incr(struct obj **__obj) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_incr;
+    _obj.opcode = _op_incr_;
     _obj.val = __obj;
     return _obj;
 }
 
-struct obj mk_decr(struct obj **__obj) {
+struct obj static
+mk_decr(struct obj **__obj) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_decr;
+    _obj.opcode = _op_decr_;
     _obj.val = __obj;
     return _obj;
 }
 
-struct obj mk_op_frame() {
+struct obj static 
+mk_op_frame() {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_frame;
+    _obj.opcode = _op_frame_;
     return _obj;
 }
 
-struct obj mk_op_call(struct obj **__no) {
+struct obj static 
+mk_op_call(struct obj **__no) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_call;
+    _obj.opcode = _op_call_;
     _obj.no = __no;
     return _obj;
 }
 
-struct obj mk_op_free_frame(struct obj *__frame) {
+struct obj static
+mk_op_free_frame(struct obj *__frame) {
     struct obj _obj = obj_tmpl;
-    _obj.opcode = _op_free_frame;
+    _obj.opcode = _op_free_frame_;
     _obj.frame = __frame;
     return _obj;
 }
 
-struct obj* push(struct ffly_script *__script, struct obj *__obj) {
+struct obj static*
+push(struct ffly_script *__script, struct obj *__obj) {
     return next_obj(__script, mk_op_push(__obj));
 }
 
-struct obj* pop(struct ffly_script *__script, struct obj ***__obj) {
+struct obj static*
+pop(struct ffly_script *__script, struct obj ***__obj) {
     struct obj *_obj = next_obj(__script, mk_op_pop());
     *__obj = &_obj->_obj;
     return _obj;
 }
 
-struct obj*** call(struct ffly_script *__script, struct obj **__no) {
+struct obj static***
+call(struct ffly_script *__script, struct obj **__no) {
     return next_obj(__script, mk_op_call(__no))->params;
 }
 
-struct obj *create_frame(struct ffly_script *__script) {
+struct obj static*
+create_frame(struct ffly_script *__script) {
     return next_obj(__script, mk_op_frame());
 }
 
-void free_frame(struct ffly_script *__script, struct obj *__frame) {
+void static
+free_frame(struct ffly_script *__script, struct obj *__frame) {
     next_obj(__script, mk_op_free_frame(__frame));
 }
 
-struct obj *__fresh(struct ffly_script *__script, mdl_uint_t __size) {
+struct obj static*
+__fresh(struct ffly_script *__script, mdl_uint_t __size) {
     return next_obj(__script, mk_op_fresh(__size));
 }
 
-void __free(struct ffly_script *__script, mdl_uint_t __n) {
+void static
+__free(struct ffly_script *__script, mdl_uint_t __n) {
     next_obj(__script, mk_op_free(__n));
 }
 
-void *stack_push(void *__p, mdl_uint_t __n) {
+void static*
+stack_push(void *__p, mdl_uint_t __n) {
     void *p = *stack;
     (*stack)+=__n;
     ffly_mem_cpy(p, __p, __n);
     return p;
 }
 
-void emit(struct ffly_script*, struct node*);
-void conv(struct ffly_script *__script, mdl_u8_t __to, mdl_uint_t __size) {
+/*      emit      */
+void static
+emit(struct ffly_script*, struct node*);
+
+void static
+conv(struct ffly_script *__script, mdl_u8_t __to, mdl_uint_t __size) {
     struct obj **_obj, *dst = __fresh(__script, __size);
     dst->_type = __to;
     pop(__script, &_obj);
@@ -245,24 +279,28 @@ void conv(struct ffly_script *__script, mdl_u8_t __to, mdl_uint_t __size) {
     push(__script, dst);
 } 
 
-void emit_conv(struct ffly_script *__script, struct node *__node) {
+void static
+emit_conv(struct ffly_script *__script, struct node *__node) {
     emit(__script, __node->operand);
     conv(__script, convtk(__node->_type->kind), __node->_type->size);
 }
 
-void emit_cast(struct ffly_script *__script, struct node *__node) {
+void static
+emit_cast(struct ffly_script *__script, struct node *__node) {
     emit(__script, __node->operand);
     conv(__script, convtk(__node->_type->kind), __node->_type->size); 
 }
 
-void emit_decl_init(struct ffly_script *__script, struct node *__node, struct obj *__to) {
+void static
+emit_decl_init(struct ffly_script *__script, struct node *__node, struct obj *__to) {
 	emit(__script, __node->init);
 	struct obj **from;
 	pop(__script, &from);
 	next_obj(__script, mk_op_copy(__node->init->_type->size, objpp(__to), from));
 }
 
-void emit_decl(struct ffly_script *__script, struct node *__node) { 
+void static
+emit_decl(struct ffly_script *__script, struct node *__node) { 
     if (__node->var->_type->kind == _struct) {
         ffly_vec_init(&__node->var->fields, sizeof(struct obj*));
         ffly_vec_resize(&__node->var->fields, __node->var->_type->size);
@@ -282,7 +320,8 @@ void emit_decl(struct ffly_script *__script, struct node *__node) {
     }
 }
 
-void emit_assign(struct ffly_script *__script, struct node *__node) {
+void static
+emit_assign(struct ffly_script *__script, struct node *__node) {
     emit(__script, __node->l);
     emit(__script, __node->r);
     struct obj **l, **r;
@@ -291,7 +330,8 @@ void emit_assign(struct ffly_script *__script, struct node *__node) {
     next_obj(__script, mk_op_copy(__node->_type->size, l, r));
 }
 
-void emit_literal(struct ffly_script *__script, struct node *__node) {
+void static
+emit_literal(struct ffly_script *__script, struct node *__node) {
 	struct obj *m = __fresh(__script, __node->_type->size);
     void *p = stack_push(__node->val, __node->_type->size);
 	next_obj(__script, mk_op_assign(p, __node->_type->size, objpp(m)));
@@ -299,18 +339,21 @@ void emit_literal(struct ffly_script *__script, struct node *__node) {
 	push(__script, m);
 }
 
-void emit_print_call(struct ffly_script *__script, struct node *__node) {
+void static
+emit_print_call(struct ffly_script *__script, struct node *__node) {
 	struct obj **arg;
 	emit(__script, __node->arg);
     pop(__script, &arg);
-    next_obj(__script, (struct obj){.opcode=_op_print, .p=NULL, ._type=convtk(__node->arg->_type->kind), .to=NULL, .from=NULL, .val=arg});
+    next_obj(__script, (struct obj){.opcode=_op_print_, .p=NULL, ._type=convtk(__node->arg->_type->kind), .to=NULL, .from=NULL, .val=arg});
 }
 
-void emit_var(struct ffly_script *__script, struct node *__node) {
+void static
+emit_var(struct ffly_script *__script, struct node *__node) {
     push(__script, __node->_obj);    
 }
 
-void emit_if(struct ffly_script *__script, struct node *__node) {
+void static
+emit_if(struct ffly_script *__script, struct node *__node) {
     struct obj *frame = create_frame(__script);
     emit(__script, __node->cond);
     mdl_u8_t flag = 0x0;
@@ -348,7 +391,8 @@ void emit_if(struct ffly_script *__script, struct node *__node) {
     free_frame(__script, frame);
 }
 
-void emit_while(struct ffly_script *__script, struct node *__node) {
+void static
+emit_while(struct ffly_script *__script, struct node *__node) {
     struct obj *frame = create_frame(__script);
     __script->frame = frame;
     struct obj **top = &end->next;
@@ -387,16 +431,22 @@ void emit_while(struct ffly_script *__script, struct node *__node) {
     __script->brkp = __script->brk;
 }
 
-void emit_binop(struct ffly_script *__script, struct node *__node) {
+void static
+emit_binop(struct ffly_script *__script, struct node *__node) {
     emit(__script, __node->l);
     emit(__script, __node->r);
     struct obj **l, **r;
     pop(__script, &r);
     pop(__script, &l);
-    next_obj(__script, mk_op_compare(rg_8l_u, l, r));
+
+    mdl_u8_t op = __node->kind;
+    if (op == _op_eq || op ==  _op_neq || op == _op_gt || op == _op_lt) { 
+        next_obj(__script, mk_op_compare(rg_8l_u, l, r));
+    }
 }
 
-void emit_func(struct ffly_script *__script, struct node *__node) {
+void static
+emit_func(struct ffly_script *__script, struct node *__node) {
     struct obj *jmp = next_obj(__script, mk_op_jump());
     __node->jmp = &end->next;
     __node->pair.p0 = &end->next;
@@ -435,7 +485,8 @@ void emit_func(struct ffly_script *__script, struct node *__node) {
     __node->pair.p1 = *jmp->jmp; 
 }
 
-void emit_func_call(struct ffly_script *__script, struct node *__node) {
+void static
+emit_func_call(struct ffly_script *__script, struct node *__node) {
     struct obj *frame = create_frame(__script);
     struct node **itr = NULL;
     struct obj *ret = push(__script, NULL);
@@ -456,32 +507,37 @@ void emit_func_call(struct ffly_script *__script, struct node *__node) {
     free_frame(__script, frame);
 }
 
-void emit_struct_ref(struct ffly_script *__script, struct node *__node) {
+void static
+emit_struct_ref(struct ffly_script *__script, struct node *__node) {
     //emit(__script, __node->_struct);
   //  __node->_struct->_obj->off = __node->_type->off;
     struct obj *m = *(struct obj**)ffly_vec_at(&__node->_struct->fields, __node->_type->off);
     push(__script, m);
 }
 
-void emit_exit(struct ffly_script *__script, struct node *__node) {
+void static
+emit_exit(struct ffly_script *__script, struct node *__node) {
     next_obj(__script, mk_exit());
 }
 
-void emit_incr(struct ffly_script *__script, struct node *__node) {
+void static
+emit_incr(struct ffly_script *__script, struct node *__node) {
     emit(__script, __node->operand);
     struct obj **_obj;
     pop(__script, &_obj);
     next_obj(__script, mk_incr(_obj));
 }
 
-void emit_decr(struct ffly_script *__script, struct node *__node) {
+void static
+emit_decr(struct ffly_script *__script, struct node *__node) {
     emit(__script, __node->operand);
     struct obj **_obj;
     pop(__script, &_obj);
     next_obj(__script, mk_decr(_obj));
 }
 
-void emit_call(struct ffly_script *__script, struct node *__node) {
+void static
+emit_call(struct ffly_script *__script, struct node *__node) {
     struct obj **no;
     emit(__script, __node->no);
     pop(__script, &no);
@@ -504,7 +560,8 @@ void emit_call(struct ffly_script *__script, struct node *__node) {
     while((*(param++) = params[i++]) != NULL);
 }
 
-void emit_addrof(struct ffly_script *__script, struct node *__node) {
+void static
+emit_addrof(struct ffly_script *__script, struct node *__node) {
     void *p;
     if (__node->operand->kind == _ast_func)
         p = &__node->operand->pair;
@@ -515,7 +572,8 @@ void emit_addrof(struct ffly_script *__script, struct node *__node) {
     push(__script, rg_64l_u);
 }
 
-void emit_ret(struct ffly_script *__script, struct node *__node) {
+void static
+emit_ret(struct ffly_script *__script, struct node *__node) {
     if (__node->ret != NULL) {
         emit(__script, __node->ret);
         struct obj *reg = get_reg(convtk(__node->_type->kind));
@@ -531,7 +589,8 @@ void emit_ret(struct ffly_script *__script, struct node *__node) {
     ret->jmp = (struct obj***)__script->ret_to;
 }
 
-void emit_brk(struct ffly_script *__script, struct node *__node) {
+void static
+emit_brk(struct ffly_script *__script, struct node *__node) {
     free_frame(__script, (struct obj*)__script->frame);    
     *(__script->brkp++) = (void*)next_obj(__script, mk_op_jump());
 }
@@ -552,9 +611,6 @@ void emit(struct ffly_script *__script, struct node *__node) {
         break;
         case _ast_if:
             emit_if(__script, __node);
-        break;
-        case _op_eq: case _op_neq: case _op_gt: case _op_lt:
-            emit_binop(__script, __node);
         break;
         case _ast_func:
             emit_func(__script, __node);
@@ -598,8 +654,8 @@ void emit(struct ffly_script *__script, struct node *__node) {
         case _ast_brk:
             emit_brk(__script, __node);
         break;
-        default:    
-            ffly_printf("unknown.\n");
+        default:
+            emit_binop(__script, __node);
 	}
 }
 

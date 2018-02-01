@@ -4,35 +4,63 @@
 # include "../types/err_t.h"
 # include "../data/str_cmp.h"
 # include "../system/string.h"
+# include "../system/util/hash.h"
+ff_db_errno static get_errno(FF_SOCKET*, ffly_err_t*);
 
 void ff_db_shutdown(FF_SOCKET *__sock) {
     struct ff_db_msg msg = {
         .kind = _ff_db_msg_shutdown
     };
-    
-    ff_db_sndmsg(__sock, &msg);
+
+    ffly_err_t err;
+    if (_err(err = ff_db_sndmsg(__sock, &msg))) {
+
+    }
+
+    ff_db_rcv_err(__sock, &err);
+    if (_err(err)) {
+        ffly_printf("errstr: %s\n", ff_db_errno_str(get_errno(__sock, &err)));
+        return;
+    }
 }
 
-ff_db_errno static get_errno(FF_SOCKET *__sock, ffly_err_t *__err) {
+ff_db_errno get_errno(FF_SOCKET *__sock, ffly_err_t *__err) {
     struct ff_db_msg msg = {
         .kind = _ff_db_msg_req_errno
     };
 
-    ff_db_sndmsg(__sock, &msg);
+    ffly_err_t err;
+    if (_err(err = ff_db_sndmsg(__sock, &msg))) {
+
+    }
+
+    ff_db_rcv_err(__sock, &err);
+    if (_err(err)) {
+
+    }
 
     ff_db_errno ern;
     ff_db_rcv_errno(__sock, &ern);
     return ern;
 }
 
-ffly_err_t ff_db_login(FF_SOCKET *__sock, mdl_u8_t const *__id, mdl_uint_t __il, mdl_u32_t __passkey, mdl_u8_t *__key) {
+ffly_err_t ff_db_login(FF_SOCKET *__sock, mdl_u8_t const *__id, mdl_uint_t __il, mdl_u32_t __passkey, mdl_u8_t *__key, mdl_u64_t __enckey) {
     struct ff_db_msg msg = {
         .kind = _ff_db_msg_login
     };
 
-    ff_db_sndmsg(__sock, &msg);
-    ffly_printf("sent message.\n");
     ffly_err_t err;
+    if (_err(err = ff_db_sndmsg(__sock, &msg))) {
+    
+    }
+
+    ff_db_rcv_err(__sock, &err);
+    if (_err(err)) {
+        ffly_printf("errstr: %s\n", ff_db_errno_str(get_errno(__sock, &err)));
+        return err;
+    }
+
+    ffly_printf("sent message.\n");
     ff_net_send(__sock, &__il, sizeof(mdl_uint_t), &err);
     ffly_printf("sent id length.\n");
 
@@ -43,23 +71,31 @@ ffly_err_t ff_db_login(FF_SOCKET *__sock, mdl_u8_t const *__id, mdl_uint_t __il,
 
     ff_db_rcv_err(__sock, &err);
     if (_err(err)) {
-        ff_db_errno ern = get_errno(__sock, &err);
-        ffly_printf("errstr: %s\n", ff_db_errno_str(ern));
+        ffly_printf("errstr: %s\n", ff_db_errno_str(get_errno(__sock, &err)));
         return err;
     }
 
-    ff_db_rcv_key(__sock, __key);
+    ff_db_rcv_key(__sock, __key, __enckey);
     retok;
 }
 
-ffly_err_t ff_db_logout(FF_SOCKET *__sock, mdl_u8_t *__key) {
+ffly_err_t ff_db_logout(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey) {
     struct ff_db_msg msg = {
         .kind = _ff_db_msg_logout
     };
-    ff_db_sndmsg(__sock, &msg);
 
     ffly_err_t err;
-    ff_db_snd_key(__sock, __key);
+    if (_err(err = ff_db_sndmsg(__sock, &msg))) {
+
+    } 
+
+    ff_db_rcv_err(__sock, &err);
+    if (_err(err)) {
+        ffly_printf("errstr: %s\n", ff_db_errno_str(get_errno(__sock, &err)));
+        return err;
+    }
+
+    ff_db_snd_key(__sock, __key, __enckey);
 
     ff_db_rcv_err(__sock, &err);
     if (_err(err)) {
@@ -105,11 +141,12 @@ int main(int __argc, char const *__argv[]) {
     mdl_u8_t key[KEY_SIZE];
 
     char const *uname = "root";
-    ff_db_login(sock, uname, ffly_str_len(uname), 21299, key);
-    ff_db_logout(sock, key);
+    ff_db_login(sock, uname, ffly_str_len(uname), ffly_hash("21299", 5), key, 9331413);
 
+
+    ff_db_logout(sock, key, 9331413);
     ff_db_shutdown(sock);
-
+    
     ff_net_close(sock);
     ffly_io_closeup();
     return 0;  

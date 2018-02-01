@@ -1,0 +1,8 @@
+u8_t i = 0;
+while(i != 20) {
+    if (i == 10) {
+        brk;
+    }
+    print(i);
+    i++;
+}

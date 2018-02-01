@@ -1,0 +1,9 @@
+%ifdef ts0
+%include "../scripts/ts0.ff"
+%endif
+%ifdef ts1
+%include "../scripts/ts1.ff"
+%endif
+%ifdef ts2
+%include "../scripts/ts2.ff"
+%endif

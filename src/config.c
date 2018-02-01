@@ -146,13 +146,14 @@ void static mk_chr(struct token *__tok, char *__s) {
     *__tok = (struct token){.kind=_tok_chr, .p=(void*)__s};
 }
 
-char static* read_ident(struct ffly_conf *__conf, char **__end) {
-    char *itr = (char*)(__conf->p+__conf->off);
-    char c = *itr;
+char static*
+read_ident(struct ffly_conf *__conf, char **__end) {
+    char *p = (char*)(__conf->p+__conf->off);
+    char c = *p;
     while((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || (c >= '0' && c <= '9')) {
-        ffly_buff_put(&__conf->sbuf, itr++);
+        ffly_buff_put(&__conf->sbuf, p++);
         ffly_buff_incr(&__conf->sbuf);
-        c = *itr;
+        c = *p;
     }
 
     char end = '\0';
@@ -165,13 +166,14 @@ char static* read_ident(struct ffly_conf *__conf, char **__end) {
     return s;
 }
 
-char static* read_no(struct ffly_conf *__conf, char **__end) {
-    char *itr = (char*)(__conf->p+__conf->off);
-    char c = *itr;
+char static*
+read_no(struct ffly_conf *__conf, char **__end) {
+    char *p = (char*)(__conf->p+__conf->off);
+    char c = *p;
     while((c >= '0' && c <= '9') || c == '.' || c == '-') {
-        ffly_buff_put(&__conf->sbuf, itr++);
+        ffly_buff_put(&__conf->sbuf, p++);
         ffly_buff_incr(&__conf->sbuf);
-        c = *itr;
+        c = *p;
     }
 
     char end = '\0';
@@ -184,10 +186,11 @@ char static* read_no(struct ffly_conf *__conf, char **__end) {
     return s;
 }
 
-char static* read_str(struct ffly_conf *__conf, char **__end) {
-    char *itr = (char*)(__conf->p+__conf->off);
-    while(*itr != '"') {
-        ffly_buff_put(&__conf->sbuf, itr++);
+char static*
+read_str(struct ffly_conf *__conf, char **__end) {
+    char *p = (char*)(__conf->p+__conf->off);
+    while(*p != '"') {
+        ffly_buff_put(&__conf->sbuf, p++);
         ffly_buff_incr(&__conf->sbuf);
     }
 

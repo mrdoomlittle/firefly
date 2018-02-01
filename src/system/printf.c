@@ -30,7 +30,8 @@ ffly_err_t ffly_vfprintf(FF_FILE *__file, char const *__format, va_list __args) 
 }
 
 mdl_uint_t static gen(char *__buf, ffly_size_t __n, char const *__format, va_list __args) {
-    char *p = __format, *bufp = __buf;
+    char const *p = __format;
+    char *bufp = __buf;
     while(p != __format+__n) {
         if (*(p++) == '%') {
             mdl_u8_t is_long;

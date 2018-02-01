@@ -3,7 +3,9 @@
 # include <mdlint.h>
 # define FF_NET_HDR struct ff_net_hdr
 struct ff_net_hdr {
-    mdl_u32_t cksum; 
+    mdl_uint_t size; 
+    mdl_u16_t seg_no;
 } __attribute__((packed));
 // keep packed
+
 # endif /*__ffly_header__h*/

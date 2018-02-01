@@ -1,4 +1,5 @@
 # define __ffly_script_internal
+# define __ffly_lexer
 # include "script.h"
 # include "types/bool_t.h"
 # include "memory/mem_alloc.h"
@@ -6,23 +7,28 @@
 # include "data/str_dupe.h"
 # include "data/str_len.h"
 # include "system/string.h"
-char static fetchc(struct ffly_script *__script) {
+char static
+fetchc(struct ffly_script *__script) {
 	return *(__script->file->p+__script->file->off);
 }
 
-char static nextc(struct ffly_script *__script) {
+char static
+nextc(struct ffly_script *__script) {
     return *(__script->file->p+__script->file->off+1);
 }
 
-ffly_bool_t is_next(struct ffly_script *__script, char __c) {
+ffly_bool_t static
+is_next(struct ffly_script *__script, char __c) {
     return (*(__script->file->p+__script->file->off+1) == __c);
 }
 
-ffly_bool_t is_prev(struct ffly_script *__script, char __c) {
+ffly_bool_t static
+is_prev(struct ffly_script *__script, char __c) {
     return (*(__script->file->p+__script->file->off-1) == __c);
 }
 
-ffly_bool_t is_space(struct ffly_script *__script) {
+ffly_bool_t static
+is_space(struct ffly_script *__script) {
     char c = fetchc(__script);
     mdl_u8_t static comment = 0;
     if (comment) {
@@ -40,17 +46,18 @@ ffly_bool_t is_space(struct ffly_script *__script) {
     return (c == ' ' || c == '\t');
 }
 
-ffly_bool_t is_newline(struct ffly_script *__script) {
+ffly_bool_t static is_newline(struct ffly_script *__script) {
     return (fetchc(__script) == '\n');
 }
 
-char static* read_ident(struct ffly_script *__script) {
-	char *itr = (char*)(__script->file->p+__script->file->off);
-    char c = *itr;
+char static*
+read_ident(struct ffly_script *__script) {
+	char *p = (char*)(__script->file->p+__script->file->off);
+    char c = *p;
 	while((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || (c >= '0' && c <= '9')) {
-		ffly_buff_put(&__script->sbuf, itr++);
+		ffly_buff_put(&__script->sbuf, p++);
 		ffly_buff_incr(&__script->sbuf);
-        c = *itr;
+        c = *p;
 	}
 
 	char end = '\0';
@@ -62,15 +69,16 @@ char static* read_ident(struct ffly_script *__script) {
 	return s;
 }
 
-char static* read_no(struct ffly_script *__script, mdl_u8_t *__is_hex, mdl_u8_t *__is_float) {
-	char *itr = (char*)(__script->file->p+__script->file->off);
-    char c = *itr;
+char static* 
+read_no(struct ffly_script *__script, mdl_u8_t *__is_hex, mdl_u8_t *__is_float) {
+	char *p = (char*)(__script->file->p+__script->file->off);
+    char c = *p;
 	while((c >= '0' && c <= '9') || c == '.' || c == '-' || ffly_tolow(c) == 'x' || (ffly_tolow(c) >= 'a' && ffly_tolow(c) <= 'f')) {
-        if (ffly_tolow(*itr) == 'x') *__is_hex = 1;
-        if (*itr == '.') *__is_float = 1;
-		ffly_buff_put(&__script->sbuf, itr++);
+        if (ffly_tolow(*p) == 'x') *__is_hex = 1;
+        if (*p == '.') *__is_float = 1;
+		ffly_buff_put(&__script->sbuf, p++);
 		ffly_buff_incr(&__script->sbuf);
-        c = *itr;
+        c = *p;
 	}
 
 	char end = '\0';
@@ -82,10 +90,11 @@ char static* read_no(struct ffly_script *__script, mdl_u8_t *__is_hex, mdl_u8_t 
 	return s;
 }
 
-char static* read_str(struct ffly_script *__script) {
-    char *itr = (char*)(__script->file->p+__script->file->off);
-    while(*itr != '"') {
-        ffly_buff_put(&__script->sbuf, itr++);
+char static* 
+read_str(struct ffly_script *__script) {
+    char *p = (char*)(__script->file->p+__script->file->off);
+    while(*p != '"') {
+        ffly_buff_put(&__script->sbuf, p++);
         ffly_buff_incr(&__script->sbuf);
     }
 
@@ -98,12 +107,14 @@ char static* read_str(struct ffly_script *__script) {
     return s;
 }
 
-void make_keyword(struct token *__tok, mdl_u8_t __id) {
+void static
+make_keyword(struct token *__tok, mdl_u8_t __id) {
 	__tok->kind = TOK_KEYWORD;
 	__tok->id = __id;
 }
 
-char* read_chr(struct ffly_script *__script) {
+char static*
+read_chr(struct ffly_script *__script) {
     return (char*)(__script->file->p+(__script->file->off++));
 }
 
@@ -112,8 +123,8 @@ char* read_chr(struct ffly_script *__script) {
     __script->file->lo = __script->file->off+1;
 
 # define incr_off __script->file->off++
-
-static struct token* read_token(struct ffly_script *__script) {
+struct token static*
+read_token(struct ffly_script *__script) {
 	struct token *tok = (struct token*)__ffly_mem_alloc(sizeof(struct token));
 	tok->p = NULL;
     if (is_newline(__script)) {
@@ -144,7 +155,8 @@ static struct token* read_token(struct ffly_script *__script) {
             if (is_next(__script, '+')) {
                 make_keyword(tok, _incr);
                 incr_off;
-            }
+            } else
+                make_keyword(tok, _plus);
             incr_off;
         break;
         case '"':
@@ -182,7 +194,8 @@ static struct token* read_token(struct ffly_script *__script) {
             } else if (is_next(__script, '>')) {
                 make_keyword(tok, _r_arrow);
                 incr_off;
-            }
+            } else
+                make_keyword(tok, _minus);
             incr_off;
         break;
         case ',':
@@ -273,7 +286,8 @@ void ffly_script_ulex(struct ffly_script *__script, struct token *__tok) {
 	ffly_buff_incr(&__script->iject_buff);
 }
 
-struct token* ffly_script_lex(struct ffly_script *__script, ffly_err_t *__err) {
+struct token*
+ffly_script_lex(struct ffly_script *__script, ffly_err_t *__err) {
 	if (ffly_buff_off(&__script->iject_buff)>0) {
 		ffly_buff_decr(&__script->iject_buff);
 		struct token *tok;

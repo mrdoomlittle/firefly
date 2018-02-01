@@ -5,11 +5,17 @@
 # include "network/sock.h"
 # include <mdlint.h>
 # define FF_MTU 20000
+// add udp
+
+ffly_err_t ff_net_shutdown(FF_SOCKET*, int);
 FF_SOCKET* ff_net_creat(ffly_err_t*, int, int, int);
 ffly_err_t ff_net_connect(FF_SOCKET*, struct sockaddr*, socklen_t);
 FF_SOCKET* ff_net_accept(FF_SOCKET*, struct sockaddr*, socklen_t*, ffly_err_t*);
-ffly_size_t ff_net_send(FF_SOCKET*, void*, mdl_uint_t, ffly_err_t*);
+ffly_size_t ff_net_send(FF_SOCKET*, void const*, mdl_uint_t, ffly_err_t*);
 ffly_size_t ff_net_recv(FF_SOCKET*, void*, mdl_uint_t, ffly_err_t*);
+ffly_size_t ff_net_sendto(FF_SOCKET*, struct sockaddr*, socklen_t, void const*, mdl_uint_t, ffly_err_t*);
+ffly_size_t ff_net_recvfrom(FF_SOCKET*, struct sockaddr*, socklen_t*, void*, mdl_uint_t, ffly_err_t*);
+
 ffly_err_t ff_net_bind(FF_SOCKET*, struct sockaddr*, socklen_t);
 ffly_err_t ff_net_listen(FF_SOCKET*);
 ffly_err_t ff_net_close(FF_SOCKET*);

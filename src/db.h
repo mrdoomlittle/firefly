@@ -9,12 +9,22 @@
 # define KEY_SIZE 2 // bytes
 // needs testing
 enum {
+    _ff_db_auth_root,
+    _ff_db_auth_user,
+    _ff_db_auth_null
+};
+
+enum {
     _ff_db_msg_login,
     _ff_db_msg_logout,
     _ff_db_msg_pulse,
     _ff_db_msg_shutdown,
     _ff_db_msg_disconnect,
-    _ff_db_msg_req_errno
+    _ff_db_msg_req_errno,
+    _ff_db_msg_creat_pile,
+    _ff_db_msg_del_pile,
+    _ff_db_msg_creat_record,
+    _ff_db_msg_del_record
 };
 
 
@@ -22,7 +32,8 @@ enum {
     _ff_err_null,
     _ff_err_lci,
     _ff_err_nsu,
-    _ff_err_ali
+    _ff_err_ali,
+    _ff_err_prd
 };
 
 typedef mdl_u8_t ff_db_errno;
@@ -54,6 +65,7 @@ typedef struct ff_db_user {
     mdl_u32_t passkey;
     mdl_u8_t loggedin;
     mdl_u8_t auth_level;
+    mdl_u64_t enckey;
 } *ff_db_userp;
 
 typedef struct ff_dbd {
@@ -88,8 +100,8 @@ ff_db_userp ff_db_get_user(ff_dbdp, mdl_u8_t const*, mdl_uint_t, ffly_err_t*);
 ff_db_userp ff_db_add_user(ff_dbdp, mdl_u8_t const*, mdl_uint_t, mdl_u32_t);
 void ff_db_del_user(ff_dbdp, mdl_u8_t const*, mdl_uint_t, mdl_u32_t);
 
-ffly_err_t ff_db_snd_key(FF_SOCKET*, mdl_u8_t*);
-ffly_err_t ff_db_rcv_key(FF_SOCKET*, mdl_u8_t*);
+ffly_err_t ff_db_snd_key(FF_SOCKET*, mdl_u8_t*, mdl_u64_t);
+ffly_err_t ff_db_rcv_key(FF_SOCKET*, mdl_u8_t*, mdl_u64_t);
 
 char const* ff_db_errno_str(ff_db_errno);
 ffly_err_t ff_db_snd_err(FF_SOCKET*, ffly_err_t);

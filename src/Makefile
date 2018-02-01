@@ -5,6 +5,10 @@ dst_dir=${PWD}
 ffly_objs=$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=system;. ./system/compile.sh;echo $$ffly_objs) \
 $(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=memory;. ./memory/compile.sh;echo $$ffly_objs) \
 $(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=data;. ./data/compile.sh;echo $$ffly_objs)
+pkg: clean
+	gcc -c extract.c
+	gcc -c build.c
+	gcc -Wall -o main pkg.c build.o extract.o $(ffly_objs)
 crypto: clean
 	gcc -Wall -o main crypto.c $(ffly_objs)
 hatch: clean
@@ -19,31 +23,20 @@ db: clean
 	gcc -c network/output.c
 	gcc -Wall -c net.c
 	gcc -c db.c
+	gcc -c crypto.c
 #	gcc -Wall -o main db.c $(ffly_objs) input.o output.o sock.o net.o
 	gcc -Wall -c db/user.c
 	gcc -Wall -c db/key.c
-	gcc -Wall -o connect db/connect.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
-	gcc -Wall -o daemon db/daemon.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
+	gcc -Wall -o connect crypto.o db/connect.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
+	gcc -Wall -o daemon crypto.o db/daemon.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
 #	gcc -Wall -o main db/key.c $(ffly_objs)
 net: clean
-	gcc -c system/io.c
-	gcc -c data/bcopy.c
-	gcc -c data/bzero.c
-	gcc -c data/str_cmp.c
-	gcc -c data/str_cpy.c
-	gcc -c data/str_dupe.c
-	gcc -c data/str_len.c
-	gcc -c data/mem_dupe.c
-	gcc -c data/mem_cmp.c
-	gcc -c system/errno.c
 	gcc -Wall -c network/sock.c
-	gcc -c network/input.c
-	gcc -c network/output.c
-	gcc -D__ffly_no_task_pool -c data/mem_set.c
-	gcc -D__ffly_no_task_pool -c data/mem_cpy.c
+	gcc -Wall -c network/input.c
+	gcc -Wall -c network/output.c
 	gcc -Wall -c net.c
-	gcc -Wall -o client client.c $(ffly_objs) input.o output.o sock.o errno.o mem_cmp.o mem_cpy.o mem_set.o mem_dupe.o str_len.o str_cpy.o str_dupe.o str_cmp.o bcopy.o bzero.o io.o  net.o
-	gcc -Wall -o server server.c $(ffly_objs) input.o output.o sock.o errno.o mem_cmp.o mem_cpy.o mem_set.o mem_dupe.o str_len.o str_cpy.o str_dupe.o str_cmp.o bcopy.o bzero.o io.o net.o
+	gcc -Wall -o client client.c $(ffly_objs) net.o input.o output.o sock.o
+	gcc -Wall -o server server.c $(ffly_objs) net.o input.o output.o sock.o
 ca: clean
 	gcc -c memory/mem_alloc.c
 	gcc -c memory/mem_free.c
@@ -113,9 +106,10 @@ script: clean
 	gcc -c parser.c
 	gcc -c lexer.c
 	gcc -c gen.c
+	gcc -c execute.c
 	gcc -c system/file.c
 	gcc -c data/mem_swp.c
-	gcc  -Wall -o main script.c $(ffly_objs) mem_swp.o parser.o lexer.o gen.o
+	gcc  -Wall -o main script.c $(ffly_objs) mem_swp.o parser.o execute.o lexer.o gen.o
 clean:
 	rm -f main
 	cd ../ && make clean && cd src
