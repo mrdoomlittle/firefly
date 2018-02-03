@@ -6,17 +6,13 @@ else ifeq ($(ffly_target), ffly_client)
  override ffly_objs+= src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o \
  src/ffly_audio.o src/asset_manager.o src/system/time_stamp.o src/layer_manager.o src/room_manager.o src/gui/btn.o src/gui/btn_manager.o
 else ifeq ($(ffly_target), ffly_studio)
- override ffly_objs+= src/skel_creator.o src/graphics/draw_grid.o src/ffly_audio.o src/memory/alloc_pixelmap.o src/graphics/window.o src/graphics/draw_pixmap.o src/graphics/fill_pixmap.o \
- src/gui/btn_manager.o src/graphics/draw_skelmap.o src/graphics/draw_bitmap.o src/pulse_audio.o src/maths/rotate_point.o \
- src/graphics/png.o src/room_manager.o src/asset_manager.o src/system/time_stamp.o  src/graphics/draw_rect.o \
- src/gui/wd_frame.o src/gui/window.o src/data/scale_pixmap.o src/graphics/draw_pixmap.clo src/system/task_handle.o src/system/task_worker.o \
- src/system/smem_buff.o
+ override ffly_objs+= src/audio/pulse.o
 else ifeq ($(ffly_target), ffly_worker)
  override ffly_objs+= src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png.o src/memory/alloc_pixelmap.o
 else ifeq ($(ffly_target), ffly_test)
- override ffly_objs+= src/graphics/window.o src/audio/alsa.o src/audio/pulse.o src/ffly_audio.o src/asset_manager.o src/system/time_stamp.o
+ override ffly_objs+= src/audio/pulse.o
 else ifeq ($(ffly_target), ffly_bare)
- override ffly_objs+= 
+ override ffly_objs+= src/audio/pulse.o
 endif
 
 #ifeq ($(GPU_CL_TYPE), -DUSING_OPENCL)
@@ -38,19 +34,21 @@ src/data/str_cpy.o src/data/bzero.o src/data/bcopy.o
 override ffly_objs+= src/system/string.o src/system/bin_tree.o src/system/arr.o src/system/buff.o src/system/vec.o src/system/time.o src/system/config.o src/system/errno.o src/system/io.o src/system/thread.o src/system/flags.o \
 src/system/mutex.o src/system/atomic_op.o src/system/queue.o src/system/util/hash.o src/system/map.o src/system/file.o src/system/dir.o src/system/task_pool.o \
 src/system/task_worker.o src/system/task.o src/system/sys_nanosleep.o src/system/pool.o src/system/cond_lock.o src/system/signal.o src/system/event.o src/system/printf.o \
-src/system/sys_fcntl.o src/system/sys_open.o src/system/sys_close.o src/system/sys_write.o src/system/sys_brk.o
+src/system/sys_fcntl.o src/system/sys_open.o src/system/sys_close.o src/system/sys_write.o src/system/sys_brk.o src/system/realpath.o src/system/err.o
 # network
 override ffly_objs+= src/network/http.o src/network/sock.o src/network/resolve.o
 # graphics
 override ffly_objs+= src/graphics/job.o src/graphics/pipe.o src/graphics/fill.o src/graphics/copy.o src/graphics/draw.o src/graphics/image.o src/graphics/png.o src/graphics/jpeg.o
+# audio
+override ffly_objs+= 
 
 #src/graphics/draw_pixelmap.o src/graphics/fill_pixmap.o src/graphics/fill_pixelmap.o
 #ffly_objs+= src/ffly_graphics.o
 # memory
-override ffly_objs+= src/ffly_system.o src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o src/memory/alloc_pixelmap.o
+override ffly_objs+= src/memory/allocr.o src/ffly_memory.o src/memory/mem_alloc.o src/memory/mem_free.o src/memory/mem_realloc.o src/memory/alloc_pixelmap.o
 
 # core
-override ffly_objs+= src/obj_manager.o src/script.o src/parser.o src/lexer.o src/gen.o src/act.o src/polygon.o src/config.o src/lot.o src/uni.o src/chunk.o src/obj.o src/ui/camera.o src/chunk_manager.o
+override ffly_objs+= src/ffly_audio.o src/ffly_system.o src/obj_manager.o src/script.o src/execute.o src/parser.o src/lexer.o src/gen.o src/act.o src/polygon.o src/config.o src/lot.o src/uni.o src/chunk.o src/obj.o src/ui/camera.o src/chunk_manager.o
 ifeq ($(shell bash find.bash "$(ffly_flags)" "--mal-track"), 0)
 	override ffly_objs+= src/system/mal_track.o
 endif
@@ -106,11 +104,20 @@ src/system/sys_brk.o: src/system/sys_brk.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/sys_brk.o.1 src/system/sys_brk.c
 	ld -r -o src/system/sys_brk.o src/system/sys_brk.o.0 src/system/sys_brk.o.1
 
+src/system/err.o: src/system/err.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/err.o src/system/err.c
+
+src/system/realpath.o: src/system/realpath.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/realpath.o src/system/realpath.c
+
 src/system/printf.o: src/system/printf.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/printf.o src/system/printf.c
 
 src/script.o: src/script.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/script.o src/script.c
+
+src/execute.o: src/execute.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/execute.o src/execute.c
 
 src/parser.o: src/parser.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/parser.o src/parser.c
@@ -270,6 +277,9 @@ src/audio/pulse.o: src/audio/pulse.c
 src/system/flags.o: src/system/flags.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/system/flags.o src/system/flags.c
 
+src/memory/allocr.o: src/memory/allocr.c
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=gnu11 -D__$(ffly_target) $(ffly_defines) -o src/memory/allocr.o src/memory/allocr.c
+
 src/system/thread.o: src/system/thread.c
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_ccflags) -std=gnu11 -D__$(ffly_target) $(ffly_defines) -o src/system/thread.o src/system/thread.c
 
@@ -384,8 +394,10 @@ src/ui/camera.o: src/ui/camera.c
 src/graphics/crop_pixmap.o: src/graphics/crop_pixmap.cu
 	$(ffly_nvcc) -c -std=c++11 $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/graphics/crop_pixmap.o src/graphics/crop_pixmap.cu
 
-src/firefly.o: src/firefly.cpp
-	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/firefly.o src/firefly.cpp
+src/firefly.o: src/firefly.c src/firefly.cpp
+	$(ffly_cc) -c $(ffly_cflags) $(ffly_cflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/firefly.o.0 src/firefly.c
+	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/firefly.o.1 src/firefly.cpp
+	ld -r -o src/firefly.o src/firefly.o.0 src/firefly.o.1
 
 src/uni_manager.o: src/uni_manager.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/uni_manager.o src/uni_manager.cpp

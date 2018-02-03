@@ -1,0 +1,2 @@
+#!/bin/sh
+./ffly_test.exec ../config/sys.conf

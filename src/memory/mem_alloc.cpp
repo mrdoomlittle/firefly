@@ -1,5 +1,6 @@
 # include "mem_alloc.h"
 # include "../system/errno.h"
+# include "../system/io.h"
 # ifdef __ffly_use_cuda
 #	include <cuda_runtime.h>
 # endif
@@ -20,7 +21,7 @@ mdl::firefly::types::err_t mdl::firefly::memory::gpu_mem_alloc(void** __p, uint_
 # ifdef __ffly_use_cuda
 	types::cl_err_t err;
 	if ((err = cudaMalloc(__p, __bc)) != ffly_cl_success) {
-		fprintf(stderr, "mem_alloc: gpu, cuda: failed to alloc memory, errno: %d\n", err);
+		ffly_fprintf(ffly_err, "mem_alloc: gpu, cuda: failed to alloc memory, errno: %d\n", err);
 		return FFLY_FAILURE;
 	}
 	return FFLY_SUCCESS;
@@ -29,7 +30,7 @@ mdl::firefly::types::err_t mdl::firefly::memory::gpu_mem_alloc(void** __p, uint_
 	types::cl_err_t err;
 	cl_mem mem = clCreateBuffer(__context, __mem_flags, __bc, __p, &err);
 	if (err != ffly_cl_success) {
-		fprintf(stderr, "mem_alloc: gpu, opencl: failed to alloc memory, errno: %d\n", err);
+		ffly_fprintf(ffly_err, "mem_alloc: gpu, opencl: failed to alloc memory, errno: %d\n", err);
 		__err = FFLY_FAILURE;
 		return mem;
 	}

@@ -6,6 +6,15 @@
 # include <mdlint.h>
 # include "types/err_t.h"
 # include "system/errno.h"
+# include "types/size_t.h"
+# include <cstdint>
+void inline* operator new(std::size_t __size) {
+	return mdl::firefly::memory::mem_alloc(__size);
+}
+
+void inline operator delete(void *__p) {
+	mdl::firefly::memory::mem_free(__p);
+}
 namespace mdl {
 namespace ffly_memory {
 # ifdef __DEBUG_ENABLED
@@ -16,6 +25,5 @@ firefly::types::err_t init();
 firefly::types::err_t de_init();
 }
 }
-
 
 # endif /*__ffly__memory__hpp*/

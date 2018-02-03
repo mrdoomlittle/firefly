@@ -35,6 +35,8 @@ ffly_err_t ffly_buff_de_init(ffly_buffp);
 ffly_err_t ffly_buff_incr(ffly_buffp);
 ffly_err_t ffly_buff_decr(ffly_buffp);
 ffly_err_t ffly_buff_reset(ffly_buffp);
+void* ffly_buff_at(ffly_buffp, mdl_uint_t);
+void* ffly_buff_getp(ffly_buffp);
 # ifdef __cplusplus
 }
 # endif
@@ -89,7 +91,13 @@ struct buff {
 	void reset_off() {buff_off_reset(&this->raw);}
 	void reset() {buff_reset(&this->raw);}
 	void incr() {buff_incr(&this->raw);}
-	void decr() {buff_decr(&this->_buff);}
+	void decr() {buff_decr(&this->raw);}
+
+	void operator++(int) {this->incr();}
+	void operator--(int) {this->decr();}
+	_T& operator*() {
+		return *static_cast<_T*>(ffly_buff_getp(&this->raw));
+	}
 	struct ffly_buff raw;
 };
 }

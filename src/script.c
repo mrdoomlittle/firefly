@@ -730,7 +730,7 @@ ffly_err_t ffly_script_ld_bin(struct ffly_script *__script, char *__file) {
     return FFLY_SUCCESS;
 }
 //# define LOAD
-# define DEBUG
+//# define DEBUG
 
 # ifdef DEBUG
 void* me(mdl_u8_t __id, void *__arg_p, void **__p) {
@@ -770,11 +770,11 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
     }
 
 	ffly_script_free(&script);
-/*
+
 	ffly_printf("executing script.\n");
 	ffscript_exec(&ff, &me, &ff, NULL, NULL);
     ffly_printf("stack used: %lu\n", ff.fresh-ff.stack);
-
+/*
 # else
     ffly_script_ld_bin(&script, "test.bin");
     ffscript_exec(&ff, &me, NULL, NULL, NULL);

@@ -5,6 +5,7 @@
 # include "vec.h"
 # define MAP_ITR_FD 0x1
 # define MAP_ITR_BK 0x1
+# define FF_MAP struct ffly_map
 struct ffly_map {
 	struct ffly_vec **table;
     void *begin, *end;
@@ -51,6 +52,7 @@ void const* ffly_map_getp(void*);
 # ifdef __cplusplus
 }
 # include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
 # include "../data/str_len.h"
 namespace mdl {
 namespace firefly {
@@ -68,20 +70,26 @@ struct map {
 		ffly_map_put(&this->raw, __key, __bc, reinterpret_cast<void const*>(p));
 	}
 
-	_T get(char const* __s, types::err_t& __err) {
-		return this->get(reinterpret_cast<u8_t const*>(__s), data::str_len(__s), &__err);}
+	_T get(char const *__s, types::err_t& __err) {
+		return this->get(reinterpret_cast<u8_t const*>(__s), data::str_len(__s), __err);}
 
 	_T get(u8_t const *__key, uint_t __bc, types::err_t& __err) {
 		return *static_cast<_T*>(const_cast<void*>(ffly_map_get(&this->raw, __key, __bc, &__err)));}
 
+	void del(char const *__s, types::err_t& __err) {
+		this->del(reinterpret_cast<u8_t const*>(__s), data::str_len(__s), __err);}
+
+	void del(u8_t const *__key, uint_t __bc, types::err_t& __err) {
+		ffly_map_del(&this->raw, ffly_map_fetch(&this->raw, __key, __bc));}
+
 	types::err_t init() {
-		return ffly_map_init(&this->raw);}
+		return ffly_map_init(&this->raw, _ffly_map_127);}
 	types::err_t de_init() {
         void *itr = ffly_map_begin(&this->raw);
         while(itr != nullptr) {
-            void *p = ffly_map_getp(itr);
+            void const *p = ffly_map_getp(itr);
             if (p != nullptr)
-                __ffly_mem_free(p);
+             	memory::mem_free((void*)p);
             ffly_map_itr(&this->raw, &itr, MAP_ITR_FD);
         }
 

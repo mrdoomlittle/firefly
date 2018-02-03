@@ -20,6 +20,14 @@ ffly_err_t ffly_buff_init(ffly_buffp __buff, mdl_uint_t __blk_c, ffly_size_t __b
 	return FFLY_SUCCESS;
 }
 
+void* ffly_buff_getp(ffly_buffp __buff) {
+	return (mdl_u8_t*)__buff->p+(__buff->off*__buff->blk_size);
+}
+
+void* ffly_buff_at(ffly_buffp __buff, mdl_uint_t __off) {
+	return (mdl_u8_t*)__buff->p+(__off*__buff->blk_size);
+}
+
 ffly_err_t ffly_buff_put(ffly_buffp __buff, void *__p) {
 	ffly_err_t err;
 	ffly_mutex_lock(&__buff->m);

@@ -44,6 +44,10 @@ if [ $ffly_mal_track -eq 1 ]; then
 	ffly_defines="$ffly_defines -D__ffly_mal_track"
 fi
 
+if [ $ffly_use_allocr -eq 1 ]; then
+	ffly_defines="$ffly_defines -D__ffly_use_allocr"
+fi
+
 . ./cac_dirs.bash
 . ./copy_headers.bash
 . ./mac_libs.bash

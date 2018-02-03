@@ -57,7 +57,7 @@ if [ $(bash find.bash "$1" "--ffly-client") -eq 0 ]; then
 elif [ $(bash find.bash "$1" "--ffly-server") -eq 0 ]; then
 	ffly_target="ffly_server"
 elif [ $(bash find.bash "$1" "--ffly-studio") -eq 0 ]; then
-	ffly_ld_flags="$ffly_ld_flags -lX11 -lGL -lGLU -lglut -lfreetype -lm -lpulse -lpulse-simple"
+	ffly_ld_flags="$ffly_ld_flags -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm -lpulse -lpulse-simple -lasound -ljpeg"
 	ffly_inc_flags="$ffly_inc_flags -I/usr/include/freetype2"
 	ffly_target="ffly_studio"
 elif [ $(bash find.bash "$1" "--ffly-worker") -eq 0 ]; then
@@ -94,8 +94,14 @@ elif [ $(bash find.bash "$1" "--use-xcb") -eq 0 ]; then
 	ffly_flags="$ffly_flags --use-xcb"
 	ffly_use_xcb=1
 else
-	ffly_flags="$ffly_flags --using-x11"
+	ffly_flags="$ffly_flags --use-x11"
 	ffly_using_x11=1
+fi
+
+ffly_use_allocr=0
+if [ $(bash find.bash "$1" "--use-allocr") -eq 0 ]; then
+	ffly_flags="$ffly_flags --use-allocr"
+	ffly_use_allocr=1
 fi
 
 if command -v pkg-config > /dev/null 2>&1; then
