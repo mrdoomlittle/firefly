@@ -6,7 +6,7 @@ syn match ffmacro "^\s*%\(include\|define\|ifndef\|ifdef\|endif\)\>"
 syn region ffcomment_block start="/\*" end="\*/"
 syn region ffstring start=+"+ end=+"+
 syn match fftype "\s*\(uint_t\|int_t\|u8_t\|i8_t\|u16_t\|i16_t\|u32_t\|i32_t\|u64_t\|i64_t\|void\|float\|char\|struct\)\>"
-syn match ffbuiltin "^\s*\(print\|exit\)\>"
+syn match ffbuiltin "^\s*\(print\|exit\|typedef\)\>"
 syn match ffstatment "^\s*\(if\|while\|fn\|ret\|brk\)\>"
 syn region ffchar start=+'+ end=+'+
 syn keyword ffconstant I8_MIN I8_MAX U8_MAX U16_MAX U32_MAX U64_MAX FFLY_SUCCESS FFLY_FAILURE FFLY_MUTEX_INIT

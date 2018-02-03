@@ -1,0 +1,6 @@
+%ifndef __ffly__tsinc__ff
+%define __ffly__tsinc__ff
+%define ABC
+%define BCA
+%define CAB
+%endif

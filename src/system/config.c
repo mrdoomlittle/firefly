@@ -3,9 +3,12 @@
 # include "errno.h"
 # include "err.h"
 # include "io.h"
+# include "../memory/mem_free.h"
 # define DEF_MAX_THREADS 20
-struct ffly_sysconf __ffly_sysconf__;
-ffly_err_t ffly_ld_sysconf(char *__path) {
+struct ffly_sysconf __ffly_sysconf__ = {
+	.version = NULL, .root_dir = NULL
+};
+ffly_err_t ffly_ld_sysconf(char const *__path) {
     struct ffly_conf conf;
     ffly_err_t err = FFLY_SUCCESS;
     if (_err(err = ffly_conf_init(&conf))) {
@@ -32,6 +35,11 @@ ffly_err_t ffly_ld_sysconf(char *__path) {
         goto _failure;
     }
 
+	void *root_dir = ffly_conf_get(&cf, "root_dir");
+	if (!ffly_conf_is_str(root_dir)) {
+
+	}
+
     void *max_threads = ffly_conf_get(&cf, "max_threads");
     if (!max_threads)
         __ffly_sysconf__.max_threads = ffly_conf_int_u(max_threads);
@@ -40,6 +48,7 @@ ffly_err_t ffly_ld_sysconf(char *__path) {
     ffly_fprintf(ffly_log, "max threads: %u\n", __ffly_sysconf__.max_threads);
 
     __ffly_sysconf__.version = (char const*)ffly_str_dupe(ffly_conf_str(version));
+	__ffly_sysconf__.root_dir = (char const*)ffly_str_dupe(ffly_conf_str(root_dir));
 
     _failure:
     if (_err(err = ffly_conf_free(&conf))) {
@@ -53,4 +62,10 @@ ffly_err_t ffly_ld_sysconf(char *__path) {
     }
 
     return FFLY_SUCCESS;;
+}
+
+# include "../macros.h"
+void ffly_free_sysconf() {
+	__ffly_finn(__ffly_sysconf__.version);
+	__ffly_finn(__ffly_sysconf__.root_dir);
 }

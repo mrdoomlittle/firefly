@@ -13,21 +13,11 @@
 # include "system/nanosleep.h"
 # include "data/str_cpy.h"
 # include <stdlib.h>
-# include <stdarg.h>
-void _errmsg(char const *__file, int unsigned __line, char const *__s, ...) {
-    char buf[200];
-    *buf = '\0';
-    va_list args;
-    va_start(args, __s);
-    ffly_vsprintf(buf, __s, args);
-    va_end(args);
-    ffly_fprintf(ffly_out, "%s:%u, %s\n", __file, __line, buf);
-}
-
+# include "system/realpath.h"
 ffly_err_t ffly_script_ld(struct ffly_script *__script, char *__file) {
 	ffly_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
-    __script->file->path = realpath(__file, NULL);
+    __script->file->path = ffly_realpath(__file);
 
 	struct ffly_stat st;
 	ffly_fstat(__file, &st);
@@ -102,20 +92,20 @@ void pr_tok(struct token *__tok) {
 
 void vec_cleanup(struct ffly_script *__script, struct ffly_vec *__vec) {
     struct ffly_vec *vec;
-    ffly_vec_push_back(&__script->vecs, (void**)&vec);
-    *vec = *__vec;
+	ffly_vec_push_back(&__script->vecs, (void**)&vec);
+	*vec = *__vec;
 }
 
 void map_cleanup(struct ffly_script *__script, struct ffly_map *__map) {
     struct ffly_map *map;
-    ffly_vec_push_back(&__script->maps, (void**)&map);
-    *map = *__map;
+	ffly_vec_push_back(&__script->maps, (void**)&map);
+	*map = *__map;
 }
 
 void cleanup(struct ffly_script *__script, void *__p) {
-    void **p;
-    ffly_vec_push_back(&__script->to_free, (void**)&p);
-    *p = __p;
+    void **p;	
+	ffly_vec_push_back(&__script->to_free, (void**)&p);
+	*p = __p;
 }
 
 
@@ -258,13 +248,16 @@ ffly_err_t ffly_script_free(struct ffly_script *__script) {
             p++;
         }
     }
-    ffly_vec_de_init(&__script->to_free);
-    __ffly_mem_free(__script->file->p);
-    ffly_map_de_init(&__script->macros);
-    ffly_map_de_init(&__script->typedefs);
-    free(__script->file->path);
+
+	ffly_vec_de_init(&__script->to_free);
+	if (__script->file->p != NULL)
+		__ffly_mem_free(__script->file->p);
+	ffly_map_de_init(&__script->macros);
+	ffly_map_de_init(&__script->typedefs);
+	if (__script->file->path != NULL)
+		__ffly_mem_free(__script->file->path);
     __ffly_mem_free(__script->file);
-    return FFLY_SUCCESS;
+	return FFLY_SUCCESS;
 }
 
 struct token* peek_token(struct ffly_script *__script) {
@@ -359,7 +352,7 @@ void read_include(struct ffly_script *__script) {
     __script->file->off = 0;
     ffly_script_ld(__script, (char*)file->p);  
     ffly_script_parse(__script);
-    free(__script->file->path);
+    __ffly_mem_free(__script->file->path);
     __ffly_mem_free(__script->file->p);
     __script->file--;
 }
@@ -367,7 +360,6 @@ void read_include(struct ffly_script *__script) {
 void read_macro(struct ffly_script *__script) {
     struct token *tok = next_token(__script);
     if (tok->kind != TOK_IDENT) return;
-
     if (!ffly_str_cmp(tok->p, "define")) {
         read_define(__script);
     } else if (!ffly_str_cmp(tok->p, "ifdef")) {
@@ -533,17 +525,18 @@ ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
         errmsg("failed to init map.");
         return err;
     }
-
     __script->brkp = __script->brk;
 	__script->file->off = 0;
     __script->file->line = 0;
     __script->file->lo = 0;
     __script->local = NULL;
-    if (_err(err = ffly_map_init(&__script->macros, _ffly_map_127))) {
+	__script->file->p = NULL;
+	__script->file->path = NULL;
+	if (_err(err = ffly_map_init(&__script->macros, _ffly_map_127))) {
         errmsg("failed to init map.");
         return err;
     }
-    __script->ret_type = NULL;
+	__script->ret_type = NULL;
     return FFLY_SUCCESS;
 }
 
@@ -557,11 +550,11 @@ ffly_err_t ffly_script_build(struct ffly_script *__script, void ** __top, ffly_b
         errmsg("failed to parse.");
         return err;
     }
+
     if (_err(err = ffly_script_gen(__script, __top, __stack))) {
         errmsg("failed to generate.");
         return err;
     }
-
     ffly_script_finalize(__script);
     ffly_fprintf(ffly_out, "build successful.\n");
     return FFLY_SUCCESS;
@@ -756,9 +749,7 @@ void* me(mdl_u8_t __id, void *__arg_p, void **__p) {
 
 void pr();
 void pf();
-
-int main() {
-    ffly_io_init();
+ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	struct ffly_script script;
     ffscript ff;
     ffscript_init(&ff, 1000);
@@ -767,25 +758,31 @@ int main() {
         ffly_printf("failed to prepare.\n");
         return -1;
     }
-# ifndef LOAD
+	
+
+//# ifndef LOAD
 	ffly_script_ld(&script, "../scripts/main.ff");
 	ffly_printf("building script.\n");
+
 	if (_err(ffly_script_build(&script, &ff.top, &ff.fresh))) {
         ffly_printf("failed to build.\n");
         return -1;
     }
-    ffly_script_free(&script);
+
+	ffly_script_free(&script);
+/*
 	ffly_printf("executing script.\n");
 	ffscript_exec(&ff, &me, &ff, NULL, NULL);
     ffly_printf("stack used: %lu\n", ff.fresh-ff.stack);
+
 # else
     ffly_script_ld_bin(&script, "test.bin");
     ffscript_exec(&ff, &me, NULL, NULL, NULL);
 # endif
-    ffscript_free(&ff);
-//    pr();
-//    pf();
-	ffly_io_closeup();
+*/
+	ffscript_free(&ff);
+	pr();
+	pf();
 }
 
 # endif

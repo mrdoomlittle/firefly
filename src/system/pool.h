@@ -6,6 +6,8 @@
 # include "../types/mutex_t.h"
 # include "../types/off_t.h"
 # include "../types/size_t.h"
+
+// move to memory
 struct ffly_pool {
 	void *p, *uu_slices;
 	ffly_size_t size, slice_size;

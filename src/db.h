@@ -9,80 +9,80 @@
 # define KEY_SIZE 2 // bytes
 // needs testing
 enum {
-    _ff_db_auth_root,
-    _ff_db_auth_user,
-    _ff_db_auth_null
+	_ff_db_auth_root,
+	_ff_db_auth_user,
+	_ff_db_auth_null
 };
 
 enum {
-    _ff_db_msg_login,
-    _ff_db_msg_logout,
-    _ff_db_msg_pulse,
-    _ff_db_msg_shutdown,
-    _ff_db_msg_disconnect,
-    _ff_db_msg_req_errno,
-    _ff_db_msg_creat_pile,
-    _ff_db_msg_del_pile,
-    _ff_db_msg_creat_record,
-    _ff_db_msg_del_record
+	_ff_db_msg_login,
+	_ff_db_msg_logout,
+	_ff_db_msg_pulse,
+	_ff_db_msg_shutdown,
+	_ff_db_msg_disconnect,
+	_ff_db_msg_req_errno,
+	_ff_db_msg_creat_pile,
+	_ff_db_msg_del_pile,
+	_ff_db_msg_creat_record,
+	_ff_db_msg_del_record
 };
 
 
 enum {
-    _ff_err_null,
-    _ff_err_lci,
-    _ff_err_nsu,
-    _ff_err_ali,
-    _ff_err_prd
+	_ff_err_null,
+	_ff_err_lci,
+	_ff_err_nsu,
+	_ff_err_ali,
+	_ff_err_prd
 };
 
 typedef mdl_u8_t ff_db_errno;
 # define MAX_PILES 20
 struct ffdb_blkd {
-    mdl_uint_t size, end, off;
-    struct ffdb_blkd *fd, *bk, *p;
-    mdl_u64_t prev, next;
-    mdl_u8_t inuse;
+	mdl_uint_t size, end, off;
+	struct ffdb_blkd *fd, *bk, *p;
+	mdl_u64_t prev, next;
+	mdl_u8_t inuse;
 };
 
 struct ff_db_msg {
-    mdl_u8_t kind;   
+	mdl_u8_t kind;	 
 };
 
 struct ffdb_pile;
 struct ffdb_record;
 
 struct ffdb {
-    FF_FILE *file;
-    ffly_off_t off;
-    
-    struct ffdb_pile *top, *free[20], **next;
-    struct ffly_map map;
+	FF_FILE *file;
+	ffly_off_t off;
+	
+	struct ffdb_pile *top, *free[20], **next;
+	struct ffly_map map;
 };
 
 typedef struct ff_db_user {
-    mdl_u8_t const *id;
-    mdl_u32_t passkey;
-    mdl_u8_t loggedin;
-    mdl_u8_t auth_level;
-    mdl_u64_t enckey;
+	mdl_u8_t const *id;
+	mdl_u32_t passkey;
+	mdl_u8_t loggedin;
+	mdl_u8_t auth_level;
+	mdl_u64_t enckey;
 } *ff_db_userp;
 
 typedef struct ff_dbd {
-    void **list;
-    struct ffly_map users; 
-    struct ffdb db;
+	void **list;
+	struct ffly_map users; 
+	struct ffdb db;
 } *ff_dbdp;
 
 struct ffdb_pile {
-    struct ffly_map map; 
-    struct ffdb_record *top;
-    struct ffdb_pile *prev, *next;
+	struct ffly_map map; 
+	struct ffdb_record *top;
+	struct ffdb_pile *prev, *next;
 };
 
 struct ffdb_record {
-    mdl_uint_t p;
-    struct ffdb_record *prev, *next;
+	mdl_uint_t p;
+	struct ffdb_record *prev, *next;
 };
 
 typedef struct ffdb_blkd* ffdb_blkdp;

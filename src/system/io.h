@@ -7,8 +7,6 @@
 # include "../types/size_t.h"
 # include "file.h"
 # include "printf.h"
-# define ffly_errmsg(...) ffly_fprintf(ffly_err, __VA_ARGS__)
-# define ffly_logmsg(...) ffly_fprintf(ffly_log, __VA_ARGS__)
 # ifdef __cplusplus
 extern "C" {
 # endif

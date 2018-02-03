@@ -60,8 +60,8 @@ struct ffly_script {
 };
 
 # ifdef __ffly_script_internal
-# define errmsg(...) _errmsg(__FILE__, __LINE__, __VA_ARGS__)
-void _errmsg(char const*, int unsigned, char const*, ...);
+# include "system/err.h"
+# define errmsg(...) ffly_errmsg(__VA_ARGS__)
 # define TOK_IDENT 0
 # define TOK_KEYWORD 1
 # define TOK_NO 2

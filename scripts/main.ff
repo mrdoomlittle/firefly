@@ -1,8 +1,9 @@
-%include "../scripts/fflib.ff"
-/*
-%define ts0
-%define ts1
-*/
-%define ts2
-%include "../scripts/test.ff"
+print(21299);
+print(21299);
+print(21299);
+print(21299);
+print(21299);
+print(21299);
+print(21299);
+print(21299);
 exit;

@@ -220,7 +220,8 @@ char static fetchc(struct ffly_conf *__conf) {
     return *(__conf->p+__conf->off);
 }
 
-struct token static* read_token(struct ffly_conf *__conf, ffly_err_t *__err) {
+struct token static*
+read_token(struct ffly_conf *__conf, ffly_err_t *__err) {
     ffly_err_t err;
     if (ffly_buff_off(&__conf->iject_buff)>0){
         struct token *tok;
@@ -230,13 +231,27 @@ struct token static* read_token(struct ffly_conf *__conf, ffly_err_t *__err) {
         return tok;
     }
 
+	_again:
     while(is_space(fetchc(__conf)) && !is_eof(__conf)) __conf->off++;
-    if (is_eof(__conf)) {
+	if (fetchc(__conf) == '#' && !is_eof(__conf)) {
+		while(fetchc(__conf) != '\n') {
+			if (is_eof(__conf)) goto _eof;
+			__conf->off++;
+		}
+		goto _again;
+	}
+
+	if (is_eof(__conf)) {
+		_eof:
         *__err = FFLY_SUCCESS;
         return NULL;
     }
 
-    struct token *tok = (struct token*)__ffly_mem_alloc(sizeof(struct token));
+    struct token *tok;
+	if (!(tok = (struct token*)__ffly_mem_alloc(sizeof(struct token)))) {
+		//err
+	}
+
     char *end;
     switch(fetchc(__conf)) {
         case '~':

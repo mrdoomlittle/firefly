@@ -2,9 +2,11 @@ defines=-Wall -D__ffly_use_task_pool
 nasm_flags=-Iasm/
 ffly_cc=gcc
 dst_dir=${PWD}
-ffly_objs=$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=${PWD};. ./compile.sh;echo $$ffly_objs) \
-$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=memory;cd ../;. ./memory/compile.sh;cd system;echo $$ffly_objs) \
-$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=data;cd ../;. ./data/compile.sh;cd system;echo $$ffly_objs)
+ffly_objs=$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);cd ../;export root_dir=${PWD};. ./compile.sh;echo $$ffly_objs)
+#ffly_objs=$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=${PWD};. ./compile.sh;echo $$ffly_objs) \
+#$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=memory;cd ../;. ./memory/compile.sh;cd system;echo $$ffly_objs) \
+#$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=data;cd ../;. ./data/compile.sh;cd system;echo $$ffly_objs) \
+#$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=maths;cd ../;. ./maths/compile.sh;cd maths;echo $$ffly_objs)
 pipe: clean
 	gcc -o n0 n0.c $(ffly_objs)
 	gcc -o n1 n1.c $(ffly_objs)

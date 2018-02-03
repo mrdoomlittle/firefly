@@ -1,20 +1,19 @@
 # include <time.h>
 # include <mdlint.h>
-# include <math.h>
+# include "../maths/round.h"
 # include "time.h"
 mdl_u64_t ffly_get_sec();
 mdl_u64_t ffly_ns_to_us(mdl_u64_t __ns) {
-	return (mdl_u64_t)round((double)__ns*0.001);}
+	return (mdl_u64_t)ffly_round((double)__ns*0.001);}
 
 mdl_u64_t ffly_ns_to_ms(mdl_u64_t __ns) {
-	return (mdl_u64_t)round((double)__ns*0.000001);}
+	return (mdl_u64_t)ffly_round((double)__ns*0.000001);}
 
 mdl_u64_t ffly_ns_to_sec(mdl_u64_t __ns) {
-	return (mdl_u64_t)round((double)__ns*0.000000001);}
+	return (mdl_u64_t)ffly_round((double)__ns*0.000000001);}
 
 mdl_u64_t ffly_ns_to_min(mdl_u64_t __ns) {
-	return (mdl_u64_t)round((double)__ns*0.00000000001666667);}
-
+	return (mdl_u64_t)ffly_round((double)__ns*0.00000000001666667);}
 
 void ffly_gettime(ffly_timespec *__time){
     struct timespec time;

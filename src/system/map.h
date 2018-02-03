@@ -38,12 +38,15 @@ void ffly_map_free(ffly_mapp);
 void ffly_map_destroy(ffly_mapp);
 void ffly_map_parent(ffly_mapp, ffly_mapp);
 ffly_err_t ffly_map_init(ffly_mapp, mdl_uint_t);
+void ffly_map_del(ffly_mapp, void*);
 ffly_err_t ffly_map_put(ffly_mapp, mdl_u8_t const*, mdl_uint_t, void const*);
 void const* ffly_map_get(ffly_mapp, mdl_u8_t const*, mdl_uint_t, ffly_err_t*);
 ffly_err_t ffly_map_de_init(ffly_mapp);
 void* ffly_map_begin(ffly_mapp);
 void* ffly_map_end(ffly_mapp);
 void ffly_map_itr(ffly_mapp, void**, mdl_u8_t);
+// fetch entry
+void* ffly_map_fetch(ffly_mapp, mdl_u8_t const*, mdl_uint_t);
 void const* ffly_map_getp(void*);
 # ifdef __cplusplus
 }

@@ -24,7 +24,7 @@ void* ffly_mem_alloc(mdl_uint_t __bc) {
 	*((mdl_uint_t*)p) = __bc;
 	ffly_atomic_add(&ffly_mem_alloc_bc, __bc);
 	ffly_atomic_incr(&ffly_mem_alloc_c);
-	p += sizeof(mdl_uint_t);
+	p+=sizeof(mdl_uint_t);
 # else
 # ifndef __ffly_use_allocr
 	p = (mdl_u8_t*)malloc(__bc);
