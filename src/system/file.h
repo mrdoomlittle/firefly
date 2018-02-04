@@ -1,14 +1,12 @@
 # ifndef __ffly__file__h
 # define __ffly__file__h
-# include <sys/types.h>
 # include <mdlint.h>
-# include <fcntl.h>
-# include <sys/stat.h>
-# include <sys/types.h>
 # include "../types/size_t.h"
 # include "../types/err_t.h"
 # include "../types/off_t.h"
 # include "stat.h"
+# include "../linux/stat.h"
+# include "../linux/fcntl.h"
 # define ffly_fileno(__file) \
     (__file)->fd
 
@@ -32,8 +30,8 @@ struct ffly_file {
 # ifdef __cplusplus
 extern "C" {
 # endif
-struct ffly_file* ffly_fopen(char*, int, mode_t, ffly_err_t*);
-ffly_err_t ffly_fcreat(char*, mode_t);
+struct ffly_file* ffly_fopen(char*, int, mdl_u32_t, ffly_err_t*);
+ffly_err_t ffly_fcreat(char*, mdl_u32_t);
 ffly_err_t ffly_fstat(char*, struct ffly_stat*);
 ffly_err_t ffly_fwrite(struct ffly_file*, void*, mdl_uint_t);
 ffly_off_t ffly_fseek(struct ffly_file*, ffly_off_t, int);

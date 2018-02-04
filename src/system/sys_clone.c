@@ -1,6 +1,6 @@
 # include <mdlint.h>
-mdl_i64_t ffly_clone(mdl_u64_t __flags, mdl_u64_t __newsp, int *__parent, int *__child, mdl_u64_t __tls) {
-	mdl_i64_t ret;
+mdl_s64_t ffly_clone(mdl_u64_t __flags, mdl_u64_t __newsp, int *__parent, int *__child, mdl_u64_t __tls) {
+	mdl_s64_t ret;
 	__asm__("mov %1, %%rdi\n\t"
 			"mov %2, %%rsi\n\t"
 			"mov %3, %%rdx\n\t"

@@ -1,12 +1,33 @@
 nasm_flags=-I../system/asm/
-objs=ffly_system.o allocr.o thread.o flags.o vec.o checksum.o sys_fcntl.o.0 sys_fcntl.o.1 \
+objs=ffly_system.o allocr.o flags.o vec.o checksum.o sys_fcntl.o.0 sys_fcntl.o.1 \
 sys_open.o.0 sys_open.o.1 sys_close.o.0 sys_close.o.1 printf.o sys_brk.o.0 sys_brk.o.1 string.o str_cpy.o \
 errno.o mem_dupe.o mem_cpy.o mem_set.o mem_free.o mem_alloc.o mem_realloc.o file.o io.o str_len.o \
 sys_write.o.0 sys_write.o.1 mutex.o.0 mutex.o.1 atomic_op.o.0 atomic_op.o.1 cond_lock.o \
 sys_nanosleep.o.0 sys_nanosleep.o.1 bzero.o buff.o err.o \
 sys_mmap.o.0 sys_mmap.o.1 sys_munmap.o.0 sys_munmap.o.1 \
-sys_getpid.o.0 sys_getpid.o.1 sys_kill.o.0 sys_kill.o.1
+sys_getpid.o.0 sys_getpid.o.1 sys_kill.o.0 sys_kill.o.1 \
+sys_access.o.0 sys_access.o.1 sys_fsync.o.0 sys_fsync.o.1 \
+sys_read.o.0 sys_read.o.1 sys_stat.o.0 sys_stat.o.1 \
+sys_lseek.o.0 sys_lseek.o.1 sys_creat.o.0 sys_creat.o.1
 all: clean
+	nasm $(nasm_flags) -f elf64 ../system/asm/sys_stat.asm -o sys_stat.o.0
+	gcc -c ../system/sys_stat.c -o sys_stat.o.1
+
+	nasm $(nasm_flags) -f elf64 ../system/asm/sys_lseek.asm -o sys_lseek.o.0
+	gcc -c ../system/sys_lseek.c -o sys_lseek.o.1
+
+	nasm $(nasm_flags) -f elf64 ../system/asm/sys_creat.asm -o sys_creat.o.0
+	gcc -c ../system/sys_creat.c -o sys_creat.o.1
+
+	nasm $(nasm_flags) -f elf64 ../system/asm/sys_read.asm -o sys_read.o.0
+	gcc -c ../system/sys_read.c -o sys_read.o.1
+
+	nasm $(nasm_flags) -f elf64 ../system/asm/sys_access.asm -o sys_access.o.0
+	gcc -c ../system/sys_access.c -o sys_access.o.1
+
+	nasm $(nasm_flags) -f elf64 ../system/asm/sys_fsync.asm -o sys_fsync.o.0
+	gcc -c ../system/sys_fsync.c -o sys_fsync.o.1
+
 	nasm $(nasm_flags) -f elf64 ../system/asm/sys_getpid.asm -o sys_getpid.o.0
 	gcc -c ../system/sys_getpid.c -o sys_getpid.o.1
 
@@ -60,8 +81,8 @@ all: clean
 	gcc -c ../system/flags.c
 	gcc -c ../data/bzero.c
 	gcc -c ../system/err.c
-	gcc -D__ffly_no_sysconf -D__ffly_no_task_pool -c ../ffly_system.c
-	gcc -D__ffly_no_sysconf -D__ffly_use_allocr -c ../system/thread.c
+	gcc -D__ffly_no_sysconf -D__ffly_no_task_pool -D__ffly_no_thread -c ../ffly_system.c
+#	gcc -D__ffly_no_sysconf -D__ffly_use_allocr -c ../system/thread.c
 	gcc -c ../system/buff.c
 	gcc -o main main.c -nostdlib $(objs)
 ts0: cl

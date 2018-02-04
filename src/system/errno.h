@@ -5,7 +5,7 @@
 # else
 #	include <mdlint.h>
 # endif
-# include <errno.h>
+//# include <errno.h>
 
 # ifdef __ffly_use_opencl
 #   include <CL/cl.hpp>

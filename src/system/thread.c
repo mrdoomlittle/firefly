@@ -1,23 +1,15 @@
-# define _GNU_SOURCE
-# include <unistd.h>
 # include "thread.h"
-# include <signal.h>
-# include <sys/types.h>
-# include <errno.h>
 # include "io.h"
-# include <sys/wait.h>
 # include "../types/bool_t.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_realloc.h"
 # include "../memory/mem_free.h"
 # include "../types/off_t.h"
 # include "mutex.h"
-# include <sched.h>
 # include "atomic.h"
 # include "../types/byte_t.h"
 # include "../types/flag_t.h"
 # include "cond_lock.h"
-# include <pthread.h>
 # define MAX_THREADS 20
 # define PAGE_SIZE 4
 # define UU_PAGE_SIZE 26
@@ -45,7 +37,7 @@ ffly_atomic_uint_t active_threads = 0;
 
 # include "../linux/signal.h"
 # include "../linux/types.h"
-int ffly_kill(__linux_pid_t, int);
+# include "../linux/sched.h"
 
 struct {
 	ffly_tid_t *p;
@@ -200,9 +192,11 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	}
 
 # ifdef __ffly_use_allocr
+	*(void**)(thr->sp+DSS-8) = (void*)&ffly_thr_proxy;
     pid_t pid;
-    if ((pid = clone(&ffly_thr_proxy, thr->sp+DSS, CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD, (void*)thr)) == -1) {
-		ffly_fprintf(ffly_err, "thread: failed.\n");
+//  if ((pid = ffly_clone(&ffly_thr_proxy, thr->sp+DSS, CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD, (void*)thr)) == -1) {
+	if ((pid = ffly_clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS, thr->sp+DSS-8, NULL, NULL, 0))) {
+		ly_fprintf(ffly_err, "thread: failed.\n");
 		return FFLY_FAILURE;
 	}
 # else

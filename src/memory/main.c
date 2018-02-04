@@ -307,6 +307,22 @@ void prr(struct r *__r) {
 # include <time.h>
 # include "../data/str_cpy.h"
 void copy(void *__dst, void *__src, mdl_uint_t __bc);
+# include "../linux/stat.h"
+void _start() {
+	ffly_ar_init();
+	ffly_io_init();
+
+	struct __linux_stat st;
+	mdl_s32_t res = ffly_stat("test", &st);
+
+	ffly_printf("res %d.\n", res);
+
+	ffly_io_closeup();
+	ffly_ar_cleanup();
+	__asm__("mov $60, %rax\n\t"
+			"syscall");
+}
+
 int main(int __argc, char **__argv) {
 	ffly_ar_init();
 	ffly_io_init();

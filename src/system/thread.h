@@ -2,14 +2,13 @@
 # define __ffly__thread__h
 # include "../types/err_t.h"
 # include "../system/errno.h"
-# include <stdio.h>
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../data/mem_cpy.h"
 # include "../data/mem_dupe.h"
 # include "../types/thread.h"
 # include "../types/bool_t.h"
-# include <sys/types.h>
+# include "../linux/types.h"
 # define FFLY_TID_NULL ((ffly_tid_t)~0)
 # ifdef __cplusplus
 extern "C" {
@@ -20,7 +19,7 @@ ffly_err_t ffly_thread_kill(ffly_tid_t);
 ffly_bool_t ffly_thread_alive(ffly_tid_t);
 ffly_bool_t ffly_thread_dead(ffly_tid_t);
 void ffly_thread_wait(ffly_tid_t);
-pid_t ffly_thread_getpid(ffly_tid_t);
+__linux_pid_t ffly_thread_getpid(ffly_tid_t);
 ffly_err_t ffly_thread_cleanup();
 # ifdef __cplusplus
 }

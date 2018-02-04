@@ -33,19 +33,19 @@ void ffly_exit(int);
 __linux_pid_t ffly_getpid();
 mdl_i64_t ffly_clone(mdl_u64_t, mdl_u64_t, int*, int*, mdl_u64_t);
 
-void test() {
-	printf("Hello\n");	
-
+void test(void *__arg) {
 	ffly_exit(SIGKILL);
 }
 
 int main() {
 	void *stack;
-	stack = mmap(NULL, 2048, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
-	*(void**)((mdl_u8_t*)stack+(2048-8)) = (void*)test;
+	stack = mmap(NULL, 2024, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
+	*(void**)((mdl_u8_t*)stack+(2024-8)) = (void*)test;
+
+	*(void**)((mdl_u8_t*)stack+(2024-16)) = (void*)21;
 
 	int a, b;
-	mdl_u64_t r = ffly_clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS, (mdl_u8_t*)stack+2048-8, NULL, NULL, 0);
+	mdl_u64_t r = ffly_clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS, (mdl_u8_t*)stack+2024-8, NULL, NULL, 0);
 	printf("bye. %u\n", r);	
 	while(1);
 /*

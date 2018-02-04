@@ -3,7 +3,7 @@
 #   include "system/config.h"
 #   include "network/http.h"
 # endif
-# include <unistd.h>
+# include "linux/unistd.h"
 # include "system/err.h"
 # include "system/io.h"
 # ifndef __ffly_no_task_pool
@@ -12,7 +12,7 @@
 # include "system/thread.h"
 ffly_err_t ffly_system_init() {
 # ifndef __ffly_no_sysconf
-    if (access("sys.conf", F_OK) == -1) {
+    if (ffly_access("sys.conf", F_OK) == -1) {
        // download config
         return FFLY_FAILURE;
     }
@@ -33,7 +33,9 @@ ffly_err_t ffly_system_de_init() {
 # ifndef __ffly_no_task_pool
     ffly_task_pool_cleanup(&__ffly_task_pool__);
 # endif
+# ifndef __ffly_no_thread
     ffly_thread_cleanup();
+# endif
     return FFLY_SUCCESS;
 }
 

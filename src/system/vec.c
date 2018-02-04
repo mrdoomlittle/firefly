@@ -5,7 +5,6 @@
 # include "io.h"
 # include "../data/mem_cpy.h"
 # include "errno.h"
-# include <errno.h>
 # include <mdlint.h>
 # define VEC_NULL ((ffly_off_t)~0)
 # define VEC_BLK_USED 0x1
@@ -114,7 +113,7 @@ ffly_err_t ffly_vec_init(ffly_vecp __vec, ffly_size_t __blk_size) {
 			*(void**)__vec->p = __ffly_mem_alloc(VEC_PAGE_SIZE*__vec->blk_size);
 		} else {
 			if ((__vec->p = __ffly_mem_alloc(VEC_PAGE_SIZE*__vec->blk_size)) == NULL) {
-				ffly_fprintf(ffly_err, "vec: failed to alloc memory, errno: %d.\n", errno);
+				ffly_fprintf(ffly_err, "vec: failed to alloc memory, errno: %d.\n", 0);
 				return FFLY_FAILURE;
 			}
 		}
@@ -267,7 +266,7 @@ ffly_err_t ffly_vec_push_back(ffly_vecp __vec, void **__p) {
 				*((void**)__vec->p+(__vec->page_c-1)) = __ffly_mem_alloc(VEC_PAGE_SIZE*__vec->blk_size);
 			} else {
 				if ((__vec->p = __ffly_mem_realloc(__vec->p, (++__vec->page_c)*(VEC_PAGE_SIZE*__vec->blk_size))) == NULL) {
-					ffly_fprintf(ffly_err, "vec: failed to realloc memory for next page, errno: %d.\n", errno);
+					ffly_fprintf(ffly_err, "vec: failed to realloc memory for next page, errno: %d.\n", 0);
 					return FFLY_FAILURE;
 				}
 			}
@@ -314,7 +313,7 @@ ffly_err_t ffly_vec_pop_back(ffly_vecp __vec, void *__p) {
 				__vec->p = __ffly_mem_realloc(__vec->p, __vec->page_c*sizeof(void*)); 
 			} else {
 				if ((__vec->p = __ffly_mem_realloc(__vec->p, (--__vec->page_c)*(VEC_PAGE_SIZE*__vec->blk_size))) == NULL) {
-					ffly_fprintf(ffly_err, "vec: failed to realloc memory for next page, errno: %d.\n", errno);
+					ffly_fprintf(ffly_err, "vec: failed to realloc memory for next page, errno: %d.\n", 0);
 					return FFLY_FAILURE;
 				}
 			}
@@ -347,7 +346,7 @@ ffly_err_t ffly_vec_resize(ffly_vecp __vec, ffly_size_t __size) {
 	if (!__size) {__ffly_mem_free(__vec->p); __vec->p = NULL; return FFLY_SUCCESS;}
 	if (!__vec->p) {__vec->p = __ffly_mem_alloc(__size*__vec->blk_size); return FFLY_SUCCESS;}
 	if ((__vec->p = __ffly_mem_realloc(__vec->p, __size*__vec->blk_size)) == NULL) {
-		ffly_fprintf(ffly_err, "vec: failed to realloc memory for resize, errno: %d\n", errno);
+		ffly_fprintf(ffly_err, "vec: failed to realloc memory for resize, errno: %d\n", 0);
 		return FFLY_FAILURE;}
 	ffly_fprintf(ffly_log, "resize.\n");
 	return FFLY_SUCCESS;

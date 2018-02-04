@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _ffly_brk
-_ffly_brk:
-	mov rax, sys_brk
+global _ffly_read
+_ffly_read:
+	mov rax, sys_read
 	syscall
 	ret
