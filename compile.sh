@@ -83,5 +83,5 @@ echo "target: $ffly_target"
 echo "defines: $ffly_defines"
 echo "flags: $ffly_flags"
 echo "dest: $1"
-g++ -std=c++17 -D__$arc $ffly_cxxflags $ffly_cflags -D__$ffly_target $ffly_defines -Iinc -Llib -Wall -o $1 $2 /usr/lib/x86_64-linux-gnu/libGLU.so.1 $ffly_linker $ffly_ld_flags
+g++ -std=c++17 -D__$arc $ffly_cxxflags $ffly_cflags -D__$ffly_target $ffly_defines -Iinc -Llib -Wall -o $1 $2 /usr/lib/x86_64-linux-gnu/libGLU.so.1 $ffly_linker $ffly_ld_flags -nostartfiles -nostdlib
 echo "finished."

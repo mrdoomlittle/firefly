@@ -1,3 +1,5 @@
+
+/*
 # include "types/err_t.h"
 # include "system/io.h"
 # include "main.h"
@@ -69,7 +71,9 @@ void static ts2() {
 }
 
 ffly_err_t ffmain(int __argc, char const **__argv) {
-	ts0();
+//	ts0();
 	pr();
 	pf();
 }
+*/
+

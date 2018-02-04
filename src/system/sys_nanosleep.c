@@ -1,5 +1,4 @@
 # include "nanosleep.h"
-void extern _ffly_nanosleep(mdl_u64_t, mdl_u64_t);
 void ffly_nanosleep(mdl_u64_t __sec, mdl_u64_t __nsec) {
     __asm__("mov %0, %%rdi\n\t"
         "mov %1, %%rsi\n\t"

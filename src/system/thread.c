@@ -43,6 +43,10 @@ mdl_uint_t static page_c = 0;
 ffly_off_t static off = 0;
 ffly_atomic_uint_t active_threads = 0;
 
+# include "../linux/signal.h"
+# include "../linux/types.h"
+int ffly_kill(__linux_pid_t, int);
+
 struct {
 	ffly_tid_t *p;
 	mdl_uint_t page_c;
@@ -104,8 +108,8 @@ int static ffly_thr_proxy(void *__arg_p) {
 void static* ffly_thr_proxy(void *__arg_p) {
 # endif
 	struct ffly_thread *thr = (struct ffly_thread*)__arg_p;
-    ffly_setpid();
-	thr->pid = ffly_getpid();
+    ff_setpid();
+	thr->pid = ff_getpid();
     id = thr->tid;
 	ffly_fprintf(ffly_out, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
 	ffly_atomic_incr(&active_threads);
@@ -129,7 +133,7 @@ void static* ffly_thr_proxy(void *__arg_p) {
 ffly_err_t ffly_thread_kill(ffly_tid_t __tid) {
     struct ffly_thread *thr = get_thr(__tid);
 # ifdef __ffly_use_allocr
-    if (kill(thr->pid, SIGKILL) == -1) {
+    if (ffly_kill(thr->pid, SIGKILL) == -1) {
         ffly_fprintf(ffly_err, "thread, failed to kill, errno{%d}\n", errno);
         return FFLY_FAILURE;
     }

@@ -6,11 +6,11 @@ else ifeq ($(ffly_target), ffly_client)
  override ffly_objs+= src/ffly_client.o src/graphics/window.o src/audio/alsa.o src/audio/pulse.o \
  src/ffly_audio.o src/asset_manager.o src/system/time_stamp.o src/layer_manager.o src/room_manager.o src/gui/btn.o src/gui/btn_manager.o
 else ifeq ($(ffly_target), ffly_studio)
- override ffly_objs+= src/audio/pulse.o
+ override ffly_objs+= src/audio/pulse.o src/graphics/window.o
 else ifeq ($(ffly_target), ffly_worker)
  override ffly_objs+= src/uni_worker.o src/networking/tcp_client.o src/networking/udp_client.o src/graphics/png.o src/memory/alloc_pixelmap.o
 else ifeq ($(ffly_target), ffly_test)
- override ffly_objs+= src/audio/pulse.o
+ override ffly_objs+=
 else ifeq ($(ffly_target), ffly_bare)
  override ffly_objs+= src/audio/pulse.o
 endif
@@ -75,7 +75,8 @@ else ifeq ($(ffly_target), ffly_bare)
 all ffly_bare
 endif
 
-override ffly_objs+= src/firefly.o
+
+override ffly_objs= src/firefly.o src/system/printf.o src/memory/allocr.o
 override ffly_defines+= -D__ffly_use_pulse_audio
 
 # NOTE: this is like this for debugging purposes
@@ -396,8 +397,8 @@ src/graphics/crop_pixmap.o: src/graphics/crop_pixmap.cu
 
 src/firefly.o: src/firefly.c src/firefly.cpp
 	$(ffly_cc) -c $(ffly_cflags) $(ffly_cflags) -std=$(ffly_stdc) -D__$(ffly_target) $(ffly_defines) -o src/firefly.o.0 src/firefly.c
-	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/firefly.o.1 src/firefly.cpp
-	ld -r -o src/firefly.o src/firefly.o.0 src/firefly.o.1
+#	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/firefly.o.1 src/firefly.cpp
+	ld -r -o src/firefly.o src/firefly.o.0 #src/firefly.o.1
 
 src/uni_manager.o: src/uni_manager.cpp
 	$(ffly_cxx) -c $(ffly_cflags) $(ffly_cxxflags) -std=$(ffly_stdcxx) $(CXX_IFLAGS) -D__$(ffly_target) $(ffly_defines) -o src/uni_manager.o src/uni_manager.cpp

@@ -1,5 +1,7 @@
 # include "allocr.h"
 void* ffly_brk(void*);
+void* ffly_mmap(void*, mdl_u64_t, mdl_u64_t, mdl_u64_t, mdl_u64_t, mdl_u64_t);
+void ffly_munmap(void*, mdl_u64_t);
 # include <sys/resource.h>
 # include <sys/mman.h>
 # include "../system/util/checksum.h"
@@ -424,7 +426,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 void*
 ffly_alloc(mdl_uint_t __bc) {
 	if (__bc+blkd_size >= POT_SIZE) {
-		void *p = mmap(NULL, blkd_size+__bc, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+		void *p = ffly_mmap(NULL, blkd_size+__bc, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 		blkdp blk = (blkdp)p;
 		blk->size = __bc;
 		blk->flags = MMAPED;
@@ -552,7 +554,7 @@ ffly_free(void *__p) {
 	}
 	blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);
 	if (is_flag(blk->flags, MMAPED)) {
-		munmap((void*)blk, blkd_size+blk->size);
+		ffly_munmap((void*)blk, blkd_size+blk->size);
 		return;
 	}
     potp p = arena;

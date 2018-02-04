@@ -1,2 +1,2 @@
 #!/bin/sh
-./ffly_test.exec ../config/sys.conf
+LD_PRELOAD="$(realpath ../)/lib/libmalloc.so" ./ffly_test.exec

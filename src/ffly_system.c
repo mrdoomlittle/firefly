@@ -37,13 +37,15 @@ ffly_err_t ffly_system_de_init() {
     return FFLY_SUCCESS;
 }
 
-static pid_t ppid;
-static __thread pid_t pid;
-void ffly_set_ppid(pid_t __id) {
+__linux_pid_t ffly_getpid();
+
+static __linux_pid_t ppid;
+static __thread __linux_pid_t pid;
+void ff_set_ppid(__linux_pid_t __id) {
     ppid = __id;
 }
-void ffly_setpid() {
-    pid = getpid();
+void ff_setpid() {
+    pid = ffly_getpid();
 }
-pid_t ffly_get_ppid(){return ppid;}
-pid_t ffly_getpid(){return pid;}
+__linux_pid_t ff_get_ppid(){return ppid;}
+__linux_pid_t ff_getpid(){return pid;}
