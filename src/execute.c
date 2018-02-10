@@ -7,6 +7,8 @@
 # include "data/mem_set.h"
 # include "system/nanosleep.h"
 # include "data/bcopy.h"
+
+// move to dir named script
 char const static* 
 opstr(mdl_u8_t __op) {
 	switch(__op) {

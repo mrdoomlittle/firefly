@@ -18,11 +18,15 @@
 # ifndef __ffly_no_sysconf
 #   include "config.h"
 # endif
+# ifndef __ffly_use_allocr
+# include <pthread.h>
+# include <errno.h>
+# endif
 # define MAX_THREADS 20
 struct ffly_thread {
 	pthread_t thread;
 	ffly_cond_lock_t lock;
-	pid_t pid;
+	__linux_pid_t pid;
 	ffly_tid_t tid;
 	ffly_bool_t alive;
     ffly_byte_t *sp;
@@ -55,7 +59,7 @@ ffly_tid_t ffly_gettid() {
     return id;
 }
 
-pid_t ffly_thread_getpid(ffly_tid_t __tid) {
+__linux_pid_t ffly_thread_getpid(ffly_tid_t __tid) {
     return get_thr(__tid)->pid;
 }
 
@@ -193,7 +197,7 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 
 # ifdef __ffly_use_allocr
 	*(void**)(thr->sp+DSS-8) = (void*)&ffly_thr_proxy;
-    pid_t pid;
+    __linux_pid_t pid;
 //  if ((pid = ffly_clone(&ffly_thr_proxy, thr->sp+DSS, CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD, (void*)thr)) == -1) {
 	if ((pid = ffly_clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS, thr->sp+DSS-8, NULL, NULL, 0))) {
 		ly_fprintf(ffly_err, "thread: failed.\n");

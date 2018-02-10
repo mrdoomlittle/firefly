@@ -1,5 +1,6 @@
 #!/bin/sh
 ffly_cc=gcc
+cc_flags=
 ffly_objs=$(
 	dst_dir=$PWD/data
 	root_dir=data;

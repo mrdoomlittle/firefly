@@ -4,7 +4,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-mdl_i8_t ffly_mem_cmp(void*, void*, mdl_uint_t);
+mdl_i8_t ffly_mem_cmp(void const*, void const*, mdl_uint_t);
 # ifdef __cplusplus
 }
 # endif

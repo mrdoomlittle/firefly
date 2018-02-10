@@ -1,5 +1,5 @@
-
 # include "types/err_t.h"
+# include "linux/unistd.h"
 /*
 # include "memory/allocr.h"
 # include "system/io.h"
@@ -40,6 +40,5 @@ void _start() {
 	//ffly_printf("%u\n", argc);
     //ffly_io_closeup();
     //ffly_ar_cleanup();
-	__asm__("mov $60, %rax\t\n"
-			"syscall");
+	ffly_exit(0);
 }

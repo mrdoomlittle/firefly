@@ -1,0 +1,62 @@
+# include "as.h"
+# include "../ffly_def.h"
+# include "../data/str_len.h"
+void putsymbol(symbolp __sy) {
+	hash_put(&symbols, __sy->p, ffly_str_len(__sy->p), __sy);
+}
+
+symbolp getsymbol(char *__s) {
+	return (symbolp)hash_get(&symbols, __s, ffly_str_len(__s));
+}
+
+# define isno(__c) (__c >= '0' && __c <= '9')
+
+# define is_next(__p, __c) \
+	(*(__p+1) == __c)
+
+# define nextc(__p) (*(__p+1))
+symbolp eval(char *__s) {
+	char *p = __s;
+	if (*p == '\n' || *p == '\0') return NULL;
+	symbolp head = _alloca(sizeof(struct symbol));
+	symbolp cur = head;
+
+	while(*p != '\0') {
+		while(*p == ' ') p++;
+		switch(*p) {
+			case '$':
+				if (isno(nextc(p))) {
+					// grama error
+				}
+				p++;
+			break;
+			case ',': {
+				p++;
+				if (*p >= 'a' && *p <= 'z') {
+					cur->next = _alloca(sizeof(struct symbol));
+					cur = cur->next;
+					mdl_uint_t len;
+					cur->p = read_str(p, &len);
+					putsymbol(cur);
+					p+= len;
+				}
+			}
+			default:
+				if (isno(*p)) {
+					mdl_uint_t len;
+					cur->p = _alloca(sizeof(mdl_uint_t));
+					*(mdl_uint_t*)cur->p = read_no(p, &len);
+					p+= len;
+					cur->len = sizeof(mdl_uint_t);
+				} else if (*p >= 'a' && *p <= 'z') {
+					mdl_uint_t len;
+					cur->p = read_str(p, &len);	
+					putsymbol(cur);
+					p+= len;
+				}
+		}
+	}
+
+	cur->next = NULL;
+	return head;
+}
