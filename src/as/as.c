@@ -23,7 +23,7 @@ char* read_str(char *__p, mdl_uint_t *__len) {
 	char *p = __p;
 	char buf[128];
 	char *bufp = buf;
-	while(*p >= 'a' && *p <= 'z') {
+	while((*p >= 'a' && *p <= 'z') | *p == '_') {
 		*(bufp++) = *(p++);
 	}
 	*bufp = '\0';
@@ -31,10 +31,12 @@ char* read_str(char *__p, mdl_uint_t *__len) {
 	return memdup(buf, (bufp-buf)+1);
 }
 
-mdl_uint_t read_no(char *__p, mdl_uint_t *__len) {
+mdl_uint_t read_no(char *__p, mdl_uint_t *__len, mdl_u8_t *__sign) {
 	char *p = __p;
 	char buf[128];
-	char *bufp = buf;
+	char *bufp = buf; 
+	if ((*__sign = (*p == '-')))
+		p++;
 	while(*p >= '0' && *p <= '9') {
 		*(bufp++) = *(p++);
 	}
@@ -42,6 +44,8 @@ mdl_uint_t read_no(char *__p, mdl_uint_t *__len) {
 	*bufp = '\0';
 	*__len = bufp-buf;
 
+	if (*__sign)
+		return -ffly_stno(buf);
 	return ffly_stno(buf);
 }
 
@@ -63,7 +67,7 @@ assemble(char *__p, char *__end) {
 	char *p = __p;
 	mdl_uint_t len;
 	while(p < __end) {
-		while (*p == ' ' && p < __end) p++;
+		while ((*p == ' ' | *p == '\t' | *p == '\n') && p < __end) p++;
 		if (*p == '\0') break;
 
 		p = copyln(buf, p, __end, &len)+1;
@@ -71,21 +75,34 @@ assemble(char *__p, char *__end) {
 
 		symbolp sy;
 		if ((sy = parse(buf)) != NULL) {
-			if (is_flag(sy->flags, SY_MAC)) {
+			if (is_symac(sy)) {
 				if (!ffly_str_cmp(sy->p, "define")) {
 					printf("got: macro\n");
 				}
+			} else if (is_sylabel(sy)) {
+				labelp la = (labelp)_alloca(sizeof(struct label));
+				la->offset = offset;
+				hash_put(&globl, sy->p, sy->len, la);
+				printf("label\n");
+			} else if (is_sydir(sy)) {
+				printf("directive\n");	
 			} else {
 				insp ins;
-
-				if ((ins = (insp)hash_get(&globl, sy->p, sy->len))) {
-					ins->post(ins);	
+				if ((ins = (insp)hash_get(&globl, sy->p, sy->len))) {		
+					ins->l = sy->next;
+					if (ins->next != NULL)
+						ins->r = sy->next->next;
+					ins->post(ins);
 					printf("got: %s\n", ins->name);
-
 				} else
 					printf("unknown.\n");
 			}
 		}
+	}
+
+	char const *entry = "_start";
+	if (!hash_get(&globl, entry, ffly_str_len(entry))) {
+		printf("entry point not found.\n");
 	}
 }
 

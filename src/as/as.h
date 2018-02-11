@@ -8,12 +8,29 @@ int extern in;
 	((__flags&__flag)==__flag)
 # define SY_STR 0x1
 # define SY_MAC 0x2
-
+# define SY_CHR 0x3
+# define SY_INT 0x4
+# define SY_LABEL 0x5
+# define SY_DIR 0x6
+# define is_symac(__sy) \
+	((__sy)->sort==SY_MAC)
+# define is_systr(__sy) \
+	((__sy)->sort==SY_STR)
+# define is_sychr(__sy) \
+	((__sy)->sort==SY_CHR)
+# define is_syint(__sy) \
+	((__sy)->sort==SY_INT)
+# define is_sylabel(__sy) \
+	((__sy)->sort==SY_LABEL)
+# define is_sydir(__sy) \
+	((__sy)->sort==SY_DIR)
+# define SIGNED 0x1
 typedef struct symbol {
 	void *p;
-	mdl_u8_t len:6;
-	mdl_u8_t flags:4;
-	mdl_u8_t sign:1;
+	mdl_u8_t len:6; // max 64
+	mdl_u8_t flags:4; // max 16
+	mdl_u8_t sign:1; 
+	mdl_u8_t sort:4; // max 16
 	struct symbol *next;
 } *symbolp;
 
@@ -21,8 +38,13 @@ typedef struct ins {
 	char *name;
 	struct ins *next;
 	void(*post)(struct ins*);
+	symbolp l, r;
 	mdl_u8_t opcode[8];
 } *insp;
+
+typedef struct label {
+	mdl_uint_t offset;	
+} *labelp;
 
 typedef struct hash_entry {
 	struct hash_entry *next;
@@ -45,7 +67,7 @@ void _cleanup();
 void* _alloca(mdl_uint_t);
 void oustbyte(mdl_u8_t);
 symbolp parse(char*);
-mdl_uint_t read_no(char*, mdl_uint_t*);
+mdl_uint_t read_no(char*, mdl_uint_t*, mdl_u8_t*);
 void hash_init(struct hash*);
 void hash_put(struct hash*, mdl_u8_t const*, mdl_uint_t, void*);
 void* hash_get(struct hash*, mdl_u8_t const*, mdl_uint_t);

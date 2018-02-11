@@ -15,7 +15,8 @@ mdl_u64_t extern offset;
 int main(int __argc, char const *__argv[]) {
 	char const *infile = NULL;
 	char const *outfile = NULL;
-	
+	char const *format = NULL;
+
 	char const **arg = __argv;
 	char const **last = arg+__argc;
 	arg++;
@@ -25,6 +26,8 @@ int main(int __argc, char const *__argv[]) {
 			outfile = *(++arg);
 		else if (!ffly_str_cmp(*arg, "-i"))
 			infile = *(++arg);
+		else if (!ffly_str_cmp(*arg, "-f"))
+			format = *(++arg);
 		arg++;
 	}
 
@@ -44,7 +47,9 @@ int main(int __argc, char const *__argv[]) {
 		return -1;
 	}
 
+	
 	load(x86);
+
 	struct stat st;
 	stat(infile, &st);
 

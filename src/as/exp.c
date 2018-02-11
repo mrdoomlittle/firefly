@@ -25,32 +25,36 @@ symbolp eval(char *__s) {
 		while(*p == ' ') p++;
 		switch(*p) {
 			case '$':
+				p++;
 				if (isno(nextc(p))) {
 					// grama error
 				}
-				p++;
+				goto _no;
 			break;
 			case ',': {
 				p++;
+				cur->next = _alloca(sizeof(struct symbol));
+				cur = cur->next;
 				if (*p >= 'a' && *p <= 'z') {
-					cur->next = _alloca(sizeof(struct symbol));
-					cur = cur->next;
-					mdl_uint_t len;
-					cur->p = read_str(p, &len);
-					putsymbol(cur);
-					p+= len;
+					goto _str;
 				}
+				break;
 			}
 			default:
-				if (isno(*p)) {
+				if (isno(*p)) _no: {
 					mdl_uint_t len;
+					mdl_u8_t sign;
 					cur->p = _alloca(sizeof(mdl_uint_t));
-					*(mdl_uint_t*)cur->p = read_no(p, &len);
+					*(mdl_uint_t*)cur->p = read_no(p, &len, &sign);
 					p+= len;
+					cur->sort = SY_INT;
+					if (sign)
+						cur->flags |= SIGNED;
 					cur->len = sizeof(mdl_uint_t);
-				} else if (*p >= 'a' && *p <= 'z') {
+				} else if (*p >= 'a' && *p <= 'z') _str: {
 					mdl_uint_t len;
 					cur->p = read_str(p, &len);	
+					cur->sort = SY_STR;
 					putsymbol(cur);
 					p+= len;
 				}

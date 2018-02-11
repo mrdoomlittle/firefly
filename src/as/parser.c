@@ -4,7 +4,7 @@
 symbolp parse(char *__s) {
 	char *p = __s;
 
-	mdl_u8_t sec = 0;
+	mdl_u8_t dir = 0;
 	mdl_uint_t len;
 	while(*p == ' ') p++;
 	char buf[128], *bufp;
@@ -13,27 +13,30 @@ symbolp parse(char *__s) {
 
 	symbolp sy = _alloca(sizeof(struct symbol)), cur;
 	if (*p == '.') {
-		sec = 1;
+		dir = 1;
 		p++;
 		while(*p >= 'a' && *p <= 'z') {
 			*(bufp++) = *(p++); 
 		}
 		*bufp = '\0';
+
+		sy->sort = SY_DIR;
+		sy->p = memdup(buf, (sy->len = (bufp-buf)+1));
+		sy->next = _alloca(sizeof(struct symbol));
+		sy = sy->next;
 	} else if (*p == '%') {
 		p++;
-		sy->flags = SY_MAC;
+		sy->sort = SY_MAC;
 	}
 
-	if (sec) {
-		if (!ffly_str_cmp(buf, "section")) {
-			p++;
-			s = read_str(p, &len);
-			p+=len;
-			sy->len = len;
-		}
-
-		printf("[%s], [%s]\n", buf, s);
-		return NULL;
+	if (dir) {
+		p++; //space
+		s = read_str(p, &len);
+		p+=len;
+		sy->sort = SY_DIR;
+		sy->p = s;
+		sy->len = len;
+		return sy;
 	}
 
 	sy->p = read_str(p, &len);
@@ -42,8 +45,10 @@ symbolp parse(char *__s) {
 
 	if (*p == ':') {
 		// label
+		sy->sort = SY_LABEL;
 		goto _ret;
-	}
+	} else
+		sy->sort = SY_STR;	
 
 	sy->next = eval(p);
 /*
