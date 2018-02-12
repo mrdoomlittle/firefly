@@ -5,7 +5,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-void ff_set_ppid(pid_t);
+void ff_set_ppid(__linux_pid_t);
 void ff_setpid();
 __linux_pid_t ff_get_ppid();
 __linux_pid_t ff_getpid();

@@ -1,8 +1,8 @@
 # include "pipe.h"
 # include "shm.h"
 # include "../data/bcopy.h"
-# include <sys/ipc.h>
-# include <sys/stat.h>
+# include "../linux/ipc.h"
+# include "../linux/stat.h"
 # include "io.h"
 // needs testing
 /*

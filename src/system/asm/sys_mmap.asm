@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _ffly_mmap
-_ffly_mmap:
+global _mmap
+_mmap:
 	mov rax, sys_mmap
 	syscall
 	ret

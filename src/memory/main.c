@@ -357,7 +357,7 @@ void _start() {
 
 	ffly_io_closeup();
 	ffly_ar_cleanup();
-	ffly_exit(0);
+	exit(0);
 }
 
 int main(int __argc, char **__argv) {

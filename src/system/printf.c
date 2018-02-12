@@ -9,7 +9,7 @@
 # include <mdlint.h>
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
-void ffly_write(int, void*, mdl_uint_t);
+void write(int, void*, mdl_uint_t);
 ffly_err_t ffly_printf(char const *__format, ...) {
 	va_list args;
 	va_start(args, __format);
@@ -93,7 +93,7 @@ ffly_err_t ffly_vsfprintf(FF_FILE *__file, ffly_size_t __n, char const *__format
 	char *buf = (char*)__ffly_mem_alloc(1024);
 # endif
 	mdl_uint_t l = gen(buf, __n, __format, __args);
-	ffly_write(ffly_fileno(__file), buf, l);
+	write(ffly_fileno(__file), buf, l);
 # ifndef __ffly_debug
 	__ffly_mem_free(buf);
 # endif

@@ -659,7 +659,7 @@ void emit(struct ffly_script *__script, struct node *__node) {
 	}
 }
 
-ffly_err_t ffly_script_gen(struct ffly_script *__script, void **__top, ffly_byte_t **__stack) {
+ffly_err_t ffly_gen(struct ffly_script *__script, void **__top, ffly_byte_t **__stack) {
 	if (!ffly_vec_size(&__script->nodes)) return FFLY_FAILURE;
     stack = __stack;
     rg_8l_u = __fresh(__script, 1);

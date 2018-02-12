@@ -652,25 +652,25 @@ mdl_i64_t ffly_conf_int_s(void *__val) {
 
 void static print_val(struct ffly_conf_val *__val) {
     if (__val->kind == _ffly_conf_str)
-        printf("%s\n", (char*)__val->p);
+        ffly_printf("%s\n", (char*)__val->p);
     else if (__val->kind == _ffly_conf_chr)
-        printf("%c\n", *(char*)__val->p);
+        ffly_printf("%c\n", *(char*)__val->p);
     else if (__val->kind == _ffly_conf_64l_u)
-        printf("%lu\n", *(mdl_u64_t*)__val->p);
+        ffly_printf("%lu\n", *(mdl_u64_t*)__val->p);
     else if (__val->kind == _ffly_conf_32l_u)
-        printf("%u\n", *(mdl_u32_t*)__val->p);
+        ffly_printf("%u\n", *(mdl_u32_t*)__val->p);
     else if (__val->kind == _ffly_conf_16l_u)
-        printf("%u\n", *(mdl_u16_t*)__val->p);
+        ffly_printf("%u\n", *(mdl_u16_t*)__val->p);
     else if (__val->kind == _ffly_conf_8l_u)
-        printf("%u\n", *(mdl_u8_t*)__val->p);
+        ffly_printf("%u\n", *(mdl_u8_t*)__val->p);
     else if (__val->kind == _ffly_conf_64l_s)
-        printf("%ld\n", *(mdl_i64_t*)__val->p);
+        ffly_printf("%ld\n", *(mdl_i64_t*)__val->p);
     else if (__val->kind == _ffly_conf_32l_s)
-        printf("%d\n", *(mdl_i32_t*)__val->p);
+        ffly_printf("%d\n", *(mdl_i32_t*)__val->p);
     else if (__val->kind == _ffly_conf_16l_s)
-        printf("%d\n", *(mdl_i16_t*)__val->p);
+        ffly_printf("%d\n", *(mdl_i16_t*)__val->p);
     else if (__val->kind == _ffly_conf_8l_s)
-        printf("%d\n", *(mdl_i8_t*)__val->p);
+        ffly_printf("%d\n", *(mdl_i8_t*)__val->p);
 }
 
 //# define DEBUG

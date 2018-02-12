@@ -1,9 +1,6 @@
 # include "allocr.h"
-void* ffly_brk(void*);
-void* ffly_mmap(void*, mdl_u64_t, mdl_u64_t, mdl_u64_t, mdl_u64_t, mdl_u64_t);
-void ffly_munmap(void*, mdl_u64_t);
-# include <sys/resource.h>
-# include <sys/mman.h>
+# include "../linux/unistd.h"
+# include "../linux/mman.h"
 # include "../system/util/checksum.h"
 # include "../system/thread.h"
 # include "../system/mutex.h"
@@ -180,13 +177,13 @@ ffly_err_t init_pot(potp __pot) {
 
 ffly_err_t ffly_ar_init() {
     init_pot(&main_pot);
-    main_pot.end = ffly_brk((void*)0);
+    main_pot.end = brk((void*)0);
     main_pot.top = main_pot.end;
     main_pot.flags |= USE_BRK;
 }
 
 ffly_err_t _ffly_ar_cleanup(potp __pot) {
-    ffly_brk(__pot->end);
+    brk(__pot->end);
 }
 
 ffly_err_t ffly_ar_cleanup() {
@@ -392,7 +389,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
     if (is_flag(__pot->flags, USE_BRK)) {
         mdl_uint_t page_c;
         if ((page_c = ((top<<PAGE_SHIFT)+((top-((top<<PAGE_SHIFT)*PAGE_SIZE))>0))) >= __pot->page_c) {
-            if (ffly_brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
+            if (brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
 				ffly_errmsg("error: brk.");
 			}
         }
@@ -426,7 +423,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 void*
 ffly_alloc(mdl_uint_t __bc) {
 	if (__bc+blkd_size >= POT_SIZE) {
-		void *p = ffly_mmap(NULL, blkd_size+__bc, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+		void *p = mmap(NULL, blkd_size+__bc, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 		blkdp blk = (blkdp)p;
 		blk->size = __bc;
 		blk->flags = MMAPED;
@@ -526,7 +523,7 @@ _ffly_free(potp __pot, void *__p) {
         if (is_flag(__pot->flags, USE_BRK)) { 
             mdl_uint_t page_c;
             if ((page_c = ((__pot->off<<PAGE_SHIFT)+((__pot->off-((__pot->off<<PAGE_SHIFT)*PAGE_SIZE))>0))) < __pot->page_c) {
-            	if (ffly_brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
+            	if (brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
 					ffly_errmsg("error: brk.");
 				}
             }
@@ -554,7 +551,7 @@ ffly_free(void *__p) {
 	}
 	blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);
 	if (is_flag(blk->flags, MMAPED)) {
-		ffly_munmap((void*)blk, blkd_size+blk->size);
+		munmap((void*)blk, blkd_size+blk->size);
 		return;
 	}
     potp p = arena;

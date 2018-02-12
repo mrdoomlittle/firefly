@@ -39,8 +39,9 @@ typedef struct {
 
 typedef ffscript* ffscriptp;
 
+// ffly_compiler
 struct ffly_script {
-    void *ret_type;
+	void *ret_type;
     struct ffly_map env, macros;
     struct ffly_map *local;
     void *frame, *ret_to;
@@ -273,8 +274,8 @@ ffly_bool_t is_keyword(struct token*, mdl_u8_t);
 ffly_bool_t expect_token(struct ffly_script*, mdl_u8_t, mdl_u8_t);
 struct token* next_token(struct ffly_script*);
 struct token* peek_token(struct ffly_script*);
-struct token* ffly_script_lex(struct ffly_script*, ffly_err_t*);
-void ffly_script_ulex(struct ffly_script*, struct token*);
+struct token* ffly_lex(struct ffly_script*, ffly_err_t*);
+void ffly_ulex(struct ffly_script*, struct token*);
 ffly_bool_t maybe_keyword(struct token*);
 ffly_bool_t is_eof(struct ffly_script*);
 void pr_tok(struct token*);
@@ -286,8 +287,8 @@ ffly_bool_t next_tok_nl(struct ffly_script*);
 ffly_err_t ffly_script_build(struct ffly_script*, void**, ffly_byte_t**);
 ffly_err_t ffly_script_prepare(struct ffly_script*);
 ffly_err_t ffly_script_ld(struct ffly_script*, char*);
-ffly_err_t ffly_script_parse(struct ffly_script*);
-ffly_err_t ffly_script_gen(struct ffly_script*, void**, ffly_byte_t**);
+ffly_err_t ffly_parse(struct ffly_script*);
+ffly_err_t ffly_gen(struct ffly_script*, void**, ffly_byte_t**);
 ffly_err_t ffly_script_finalize(struct ffly_script*);
 // ()
 ffly_err_t ffscript_init(ffscriptp, mdl_uint_t);

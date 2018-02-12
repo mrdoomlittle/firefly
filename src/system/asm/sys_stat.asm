@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _ffly_stat
-_ffly_stat:
+global _stat
+_stat:
 	mov rax, sys_stat
 	syscall
 	ret

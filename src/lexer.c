@@ -280,14 +280,14 @@ read_token(struct ffly_script *__script) {
 	return tok;
 }
 
-void ffly_script_ulex(struct ffly_script *__script, struct token *__tok) {
+void ffly_ulex(struct ffly_script *__script, struct token *__tok) {
 	if (!__tok) return;
 	ffly_buff_put(&__script->iject_buff, (void*)&__tok);
 	ffly_buff_incr(&__script->iject_buff);
 }
 
 struct token*
-ffly_script_lex(struct ffly_script *__script, ffly_err_t *__err) {
+ffly_lex(struct ffly_script *__script, ffly_err_t *__err) {
 	if (ffly_buff_off(&__script->iject_buff)>0) {
 		ffly_buff_decr(&__script->iject_buff);
 		struct token *tok;

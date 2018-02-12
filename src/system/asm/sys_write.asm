@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _ffly_write
-_ffly_write:
+global _write
+_write:
 	mov rax, sys_write
 	syscall
 	ret

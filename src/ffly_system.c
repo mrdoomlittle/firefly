@@ -12,7 +12,7 @@
 # include "system/thread.h"
 ffly_err_t ffly_system_init() {
 # ifndef __ffly_no_sysconf
-    if (ffly_access("sys.conf", F_OK) == -1) {
+    if (access("sys.conf", F_OK) == -1) {
        // download config
         return FFLY_FAILURE;
     }
@@ -39,15 +39,13 @@ ffly_err_t ffly_system_de_init() {
     return FFLY_SUCCESS;
 }
 
-__linux_pid_t ffly_getpid();
-
 static __linux_pid_t ppid;
 static __thread __linux_pid_t pid;
 void ff_set_ppid(__linux_pid_t __id) {
     ppid = __id;
 }
 void ff_setpid() {
-    pid = ffly_getpid();
+    pid = getpid();
 }
 __linux_pid_t ff_get_ppid(){return ppid;}
 __linux_pid_t ff_getpid(){return pid;}

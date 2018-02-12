@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _ffly_getppid
-_ffly_getppid:
+global _getppid
+_getppid:
 	mov rax, sys_getppid
 	syscall
 	ret

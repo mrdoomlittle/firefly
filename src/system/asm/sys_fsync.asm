@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _ffly_fsync
-_ffly_fsync:
+global _fsync
+_fsync:
 	mov rax, sys_fsync
 	syscall
 	ret

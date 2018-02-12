@@ -11,7 +11,7 @@
 
 # define F_GETFD 1
 
-mdl_s32_t ffly_fcntl(mdl_u32_t, mdl_s32_t, mdl_u64_t);
-mdl_s32_t ffly_close(mdl_u32_t);
-mdl_s32_t ffly_creat(char const*, mdl_s32_t);
+mdl_s32_t fcntl(mdl_u32_t, mdl_s32_t, mdl_u64_t);
+mdl_s32_t close(mdl_u32_t);
+mdl_s32_t creat(char const*, mdl_s32_t);
 # endif /*__ffly__linux__fcntl__h*/

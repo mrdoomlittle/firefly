@@ -15,7 +15,7 @@
 
 struct ffly_file* ffly_fopen(char *__path, int __flags, mdl_u32_t __mode, ffly_err_t *__err) {
 	struct ffly_file *file = (struct ffly_file*)__ffly_mem_alloc(sizeof(struct ffly_file));
-	if ((file->fd = ffly_open(__path, __flags, __mode)) < 0) {
+	if ((file->fd = open(__path, __flags, __mode)) < 0) {
 //		ffly_fprintf(ffly_err, "file, failed to open file, error: %d, %s\n", errno, strerror(errno));
 		return NULL;
 	}
@@ -30,15 +30,15 @@ struct ffly_file* ffly_fopen(char *__path, int __flags, mdl_u32_t __mode, ffly_e
 }
 
 ffly_bool_t static valid_fd(int __fd) {
-	if (ffly_fcntl(__fd, F_GETFD, 0) == -1)
+	if (fcntl(__fd, F_GETFD, 0) == -1)
 		return 0;
 	return 1;
 }
 
 ffly_err_t ffly_fstat(char *__path, struct ffly_stat *__stat) {
-	struct __linux_stat st;
-	ffly_mem_set(&st, 0, sizeof(struct __linux_stat));
-	if (ffly_stat(__path, &st) < 0) {
+	struct stat st;
+	ffly_mem_set(&st, 0, sizeof(struct stat));
+	if (stat(__path, &st) < 0) {
 //		ffly_fprintf(ffly_err, "file, failed to stat file, errno: %d, %s\n", errno, strerror(errno));
 		return FFLY_FAILURE;
 	}
@@ -50,7 +50,7 @@ ffly_err_t ffly_fstat(char *__path, struct ffly_stat *__stat) {
 }
 
 ffly_off_t ffly_fseek(struct ffly_file *__f, ffly_off_t __off, int __whence) {
-	off_t off = ffly_lseek(__f->fd, __off, __whence);
+	off_t off = lseek(__f->fd, __off, __whence);
 	if (off == (off_t)-1) {
 		ffly_fprintf(ffly_err, "fseek failed.\n");
 		return 0;
@@ -59,12 +59,12 @@ ffly_off_t ffly_fseek(struct ffly_file *__f, ffly_off_t __off, int __whence) {
 }
 
 ffly_err_t ffly_fcreat(char *__path, mdl_u32_t __mode) {
-	if (ffly_access(__path, F_OK)) {
+	if (access(__path, F_OK)) {
 		ffly_fprintf(ffly_err, "file at '%s' allready exists.\n");
 		return FFLY_FAILURE;
 	}
 
-	if (ffly_creat(__path, __mode) < 0) {
+	if (creat(__path, __mode) < 0) {
 //		ffly_fprintf(ffly_err, "file, failed to create file, errno: %d, %s\n", errno, strerror(errno));
 		return FFLY_FAILURE;
 	}
@@ -76,7 +76,7 @@ ffly_err_t ffly_fwrite(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
 		ffly_fprintf(ffly_err, "file descriptor not valid.\n");
 		return FFLY_FAILURE;
 	}
-	if (ffly_write(__f->fd, __p, __bc) == -1) {
+	if (write(__f->fd, __p, __bc) == -1) {
 		ffly_fprintf(ffly_err, "failed to write to file, %s\n", __f->path);
 		return FFLY_FAILURE;
 	}
@@ -89,7 +89,7 @@ ffly_err_t ffly_fread(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
 		return FFLY_FAILURE;
 	}
 
-	if (ffly_read(__f->fd, __p, __bc) == -1) {
+	if (read(__f->fd, __p, __bc) == -1) {
 		ffly_fprintf(ffly_err, "failed to read file, %s\n", __f->path);
 		return FFLY_FAILURE;
 	}
@@ -102,7 +102,7 @@ ffly_err_t ffly_fclose(struct ffly_file *__f) {
 		return FFLY_FAILURE;
 	}
 
-	ffly_close(__f->fd);
+	close(__f->fd);
 	ffly_err_t err;
 	__ffly_mem_free((void*)__f->path);
 	if (_err(err = __ffly_mem_free(__f))) {

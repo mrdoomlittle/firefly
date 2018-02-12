@@ -1,7 +1,7 @@
 # include "shm.h"
-# include <sys/shm.h>
-# include <sys/stat.h>
-# include <unistd.h>
+# include "../linux/ipc/shm.h"
+# include "../linux/stat.h"
+# include "../linux/unistd.h"
 # include "io.h"
 
 // needs testing

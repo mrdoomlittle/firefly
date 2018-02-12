@@ -1,6 +1,6 @@
 section .text
-global _ffly_fcntl
-_ffly_fcntl:
+global _fcntl
+_fcntl:
     mov rax, 72
     syscall
     ret

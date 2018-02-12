@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _ffly_lseek
-_ffly_lseek:
+global _lseek
+_lseek:
     mov rax, sys_lseek
     syscall
     ret

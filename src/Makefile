@@ -107,7 +107,7 @@ script: clean
 	gcc -c execute.c
 	gcc -c system/file.c
 	gcc -c data/mem_swp.c
-	gcc  -Wall -o main script.c $(ffly_objs) mem_swp.o parser.o execute.o lexer.o gen.o
+	gcc  -Wall -o main script.c $(ffly_objs) mem_swp.o parser.o execute.o lexer.o gen.o -nostdlib
 clean:
 	rm -f main
 	cd ../ && make clean && cd src

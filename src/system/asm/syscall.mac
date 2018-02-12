@@ -74,5 +74,6 @@
 %define sys_flock 73
 %define sys_fsync 74
 
+%define sys_getcwd 79
 %define sys_creat 85
 %define sys_getppid 110

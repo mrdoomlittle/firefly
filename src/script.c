@@ -12,7 +12,6 @@
 # include "data/bcopy.h"
 # include "system/nanosleep.h"
 # include "data/str_cpy.h"
-# include <stdlib.h>
 # include "system/realpath.h"
 ffly_err_t ffly_script_ld(struct ffly_script *__script, char *__file) {
 	ffly_err_t err;
@@ -132,7 +131,7 @@ ffly_bool_t next_token_is(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_
 	if (!tok) return 0;
 	if (tok->kind == __kind && tok->id == __id)
 		return 1;
-	ffly_script_ulex(__script, tok);
+	ffly_ulex(__script, tok);
 	return 0;
 }
 
@@ -262,19 +261,19 @@ ffly_err_t ffly_script_free(struct ffly_script *__script) {
 
 struct token* peek_token(struct ffly_script *__script) {
 	struct token *tok = next_token(__script);
-	ffly_script_ulex(__script, tok);
+	ffly_ulex(__script, tok);
 	return tok;
 }
 
 ffly_bool_t next_tok_nl(struct ffly_script *__script) {
     ffly_err_t err;
-    struct token *tok = ffly_script_lex(__script, &err);
+    struct token *tok = ffly_lex(__script, &err);
     if (tok != NULL) {
         if (tok->kind == TOK_NEWLINE) {
             __ffly_mem_free(tok);
             return 1;
         }
-        ffly_script_ulex(__script, tok);
+        ffly_ulex(__script, tok);
     }
     return 0;
 }
@@ -304,7 +303,7 @@ void read_define(struct ffly_script *__script) {
 ffly_bool_t is_endif(struct ffly_script *__script, struct token *__tok) {
     if (is_keyword(__tok, _percent)) {
         ffly_err_t err;
-        struct token *tok = ffly_script_lex(__script, &err);
+        struct token *tok = ffly_lex(__script, &err);
         return !ffly_str_cmp(tok->p, "endif");
     }
     return 0;
@@ -314,7 +313,7 @@ void skip_until_endif(struct ffly_script *__script) {
     ffly_err_t err;
     struct token *tok = NULL;
     for(;;) {
-        if (!(tok = ffly_script_lex(__script, &err))) break;
+        if (!(tok = ffly_lex(__script, &err))) break;
         if (_err(err)) break;
         if (is_endif(__script, tok)) break;
         if (tok->kind == TOK_NEWLINE)
@@ -336,7 +335,7 @@ void read_ifndef(struct ffly_script *__script) {
     if (_ok(err)) skip_until_endif(__script);
 }
 
-# include <unistd.h>
+# include "linux/unistd.h"
 void read_include(struct ffly_script *__script) {
     struct token *file = next_token(__script);
     __script->file++;
@@ -351,7 +350,7 @@ void read_include(struct ffly_script *__script) {
     __script->file->lo = 0;
     __script->file->off = 0;
     ffly_script_ld(__script, (char*)file->p);  
-    ffly_script_parse(__script);
+    ffly_parse(__script);
     __ffly_mem_free(__script->file->path);
     __ffly_mem_free(__script->file->p);
     __script->file--;
@@ -376,7 +375,7 @@ struct token* next_token(struct ffly_script *__script) {
 	ffly_err_t err;
 	struct token *tok;
     _back:
-    tok = ffly_script_lex(__script, &err);
+    tok = ffly_lex(__script, &err);
     if (!tok) return NULL;
 
     if (tok->kind == TOK_NEWLINE) {
@@ -394,7 +393,7 @@ struct token* next_token(struct ffly_script *__script) {
         if (toks != NULL && _ok(err)) {
             struct token **itr = (struct token**)ffly_vec_end(toks);
             while(itr >= (struct token**)ffly_vec_begin(toks)) {
-                ffly_script_ulex(__script, *itr); 
+                ffly_ulex(__script, *itr); 
                 itr--;
             }
             tok = next_token(__script);
@@ -546,12 +545,12 @@ ffly_err_t ffly_script_finalize(struct ffly_script *__script) {
 
 ffly_err_t ffly_script_build(struct ffly_script *__script, void ** __top, ffly_byte_t **__stack) {
     ffly_err_t err;
-    if (_err(err = ffly_script_parse(__script))) {
+    if (_err(err = ffly_parse(__script))) {
         errmsg("failed to parse.");
         return err;
     }
 
-    if (_err(err = ffly_script_gen(__script, __top, __stack))) {
+    if (_err(err = ffly_gen(__script, __top, __stack))) {
         errmsg("failed to generate.");
         return err;
     }
@@ -730,11 +729,11 @@ ffly_err_t ffly_script_ld_bin(struct ffly_script *__script, char *__file) {
     return FFLY_SUCCESS;
 }
 //# define LOAD
-//# define DEBUG
+# define DEBUG
 
 # ifdef DEBUG
 void* me(mdl_u8_t __id, void *__arg_p, void **__p) {
-    printf("HI, id{%u}\n", __id);
+    ffly_printf("HI, id{%u}\n", __id);
 /*
     while(*__p != NULL) {
         printf("...\n");
@@ -749,7 +748,8 @@ void* me(mdl_u8_t __id, void *__arg_p, void **__p) {
 
 void pr();
 void pf();
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+
+ffly_err_t ffmain(int __argc, char const **__argv) {
 	struct ffly_script script;
     ffscript ff;
     ffscript_init(&ff, 1000);
@@ -758,7 +758,6 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
         ffly_printf("failed to prepare.\n");
         return -1;
     }
-	
 
 //# ifndef LOAD
 	ffly_script_ld(&script, "../scripts/main.ff");

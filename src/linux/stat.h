@@ -1,6 +1,7 @@
 # ifndef __ffly__linux__stat__h
 # define __ffly__linux__stat__h
-
+# include <mdlint.h>
+# include "time.h"
 # ifndef S_IRWXU
 # define S_IRWXU 00700
 # endif
@@ -37,28 +38,27 @@
 # ifndef S_IXOTH
 # define S_IXOTH 00001
 # endif
-struct __linux_stat {
+struct stat { //needs testing
 	unsigned long st_dev;
 	unsigned long st_ino;
+	unsigned long st_nlink;
 	unsigned int st_mode;
-	unsigned int st_nlink;
 	unsigned int st_uid;
 	unsigned int st_gid;
+	int __pad0;
 	unsigned long st_rdev;
-	unsigned long __pad1;
 	long st_size;
-	int st_blksize;	
-	int __pad2;
+	int long st_blksize;	
 	long st_blocks;
-	long st_atime;
-	unsigned long st_atime_nsec;
-	long st_mtime;	
-	unsigned long st_mtime_nsec;
-	long st_ctime;
-	unsigned long st_ctime_nsec;
-	unsigned int __unused4;
-	unsigned int __unused5;
+	__linux_time_t st_atime;
+	mdl_u64_t st_atime_nsec;
+	__linux_time_t st_mtime;	
+	mdl_u64_t st_mtime_nsec;
+	__linux_time_t st_ctime;
+	mdl_u64_t st_ctime_nsec;
+	unsigned long __unused4;
+	unsigned long __unused5;
 };
 
-mdl_s32_t ffly_stat(char const*, struct __linux_stat*);
+mdl_s32_t stat(char const*, struct stat*);
 # endif /*__ffly__linux__stat__h*/

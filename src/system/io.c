@@ -18,7 +18,7 @@ mdl_uint_t ffly_rdline(void *__buf, mdl_uint_t __size, FF_FILE *__file) {
     while((p-(mdl_u8_t*)__buf)<__size) {
 
         char c;
-        if (ffly_read(__file->fd, &c, 1) <= 0) continue;
+        if (read(__file->fd, &c, 1) <= 0) continue;
         if (c == '\n') break;
         *(p++) = c;
     } 
@@ -77,9 +77,9 @@ ffly_err_t ffly_io_init() {
 }
 
 void ffly_io_closeup() {
-	ffly_fsync(ffly_fileno(ffly_out));
-    ffly_fsync(ffly_fileno(ffly_log));
-    ffly_fsync(ffly_fileno(ffly_err));
+	fsync(ffly_fileno(ffly_out));
+    fsync(ffly_fileno(ffly_log));
+    fsync(ffly_fileno(ffly_err));
 
 	ffly_fclose(ffly_out);
 	ffly_fclose(ffly_log);

@@ -403,7 +403,7 @@ ffly_err_t parser_primary_expr(struct ffly_script *__script, struct node **__nod
         break;
         default:
             *__node = NULL;
-            ffly_script_ulex(__script, tok);
+            ffly_ulex(__script, tok);
     }
     retok;
 }
@@ -435,7 +435,7 @@ ffly_err_t parser_conditional_expr(struct ffly_script *__script, struct node **_
         retok;
     }
 
-    ffly_script_ulex(__script, tok);
+    ffly_ulex(__script, tok);
     retok;
 }
 
@@ -462,7 +462,7 @@ ffly_err_t parser_unary_expr(struct ffly_script *__script, struct node **__node)
             case _ampersand: parser_unary_addrof(__script, __node); goto _end;
         }
 
-        ffly_script_ulex(__script, tok);
+        ffly_ulex(__script, tok);
         return FFLY_SUCCESS;
     }
 
@@ -551,7 +551,7 @@ ffly_err_t parser_cast_expr(struct ffly_script *__script, struct node **__node) 
         retok; 
     }
 
-    ffly_script_ulex(__script, tok);
+    ffly_ulex(__script, tok);
     retok;
 }
 
@@ -566,7 +566,7 @@ ffly_err_t parser_binary_expr(struct ffly_script *__script, struct node **__node
     } else if (is_keyword(tok, _minus)) {
         op = _opr_sub;
     } else {
-        ffly_script_ulex(__script, tok);
+        ffly_ulex(__script, tok);
         retok;
     }
     
@@ -1105,8 +1105,8 @@ ffly_bool_t is_func_call(struct ffly_script *__script) {
     struct token *l_paren = next_token(__script);
     if (!name || !l_paren) return 0;
     mdl_u8_t res = !(name->kind != TOK_IDENT || !is_keyword(l_paren, _l_paren));
-    ffly_script_ulex(__script, l_paren);
-    ffly_script_ulex(__script, name);
+    ffly_ulex(__script, l_paren);
+    ffly_ulex(__script, name);
     return res;
 }
 
@@ -1193,7 +1193,8 @@ ffly_err_t parser_call(struct ffly_script *__script, struct node **__node) {
     retok;
 }
 
-ffly_err_t ffly_script_parse(struct ffly_script *__script) {
+ffly_err_t
+ffly_parse(struct ffly_script *__script) {
     ffly_err_t err = FFLY_SUCCESS;
     while((__script->file->p+__script->file->off) < __script->file->end) {
         struct token *tok = peek_token(__script);

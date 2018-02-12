@@ -18,13 +18,8 @@
 # ifndef __ffly_no_sysconf
 #   include "config.h"
 # endif
-# ifndef __ffly_use_allocr
-# include <pthread.h>
-# include <errno.h>
-# endif
 # define MAX_THREADS 20
 struct ffly_thread {
-	pthread_t thread;
 	ffly_cond_lock_t lock;
 	__linux_pid_t pid;
 	ffly_tid_t tid;
@@ -98,11 +93,7 @@ ffly_bool_t ffly_thread_dead(ffly_tid_t __tid) {
 	return !get_thr(__tid)->alive;
 }
 
-# ifdef __ffly_use_allocr
 int static ffly_thr_proxy(void *__arg_p) {
-# else
-void static* ffly_thr_proxy(void *__arg_p) {
-# endif
 	struct ffly_thread *thr = (struct ffly_thread*)__arg_p;
     ff_setpid();
 	thr->pid = ff_getpid();
@@ -118,24 +109,16 @@ void static* ffly_thr_proxy(void *__arg_p) {
 
 	ffly_atomic_decr(&active_threads);
 	thr->alive = 0;
-# ifndef __ffly_use_allocr
-	pthread_exit(NULL);
-	return NULL;
-# else
-    return 0;
-# endif
+	return 0;
 }
 
 ffly_err_t ffly_thread_kill(ffly_tid_t __tid) {
     struct ffly_thread *thr = get_thr(__tid);
-# ifdef __ffly_use_allocr
-    if (ffly_kill(thr->pid, SIGKILL) == -1) {
-        ffly_fprintf(ffly_err, "thread, failed to kill, errno{%d}\n", errno);
+    if (kill(thr->pid, SIGKILL) == -1) {
+        ffly_fprintf(ffly_err, "thread, failed to kill..\n");
         return FFLY_FAILURE;
     }
-# else
-	pthread_cancel(thr->thread);
-# endif
+
 	return FFLY_SUCCESS;
 }
 
@@ -178,34 +161,27 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	thr->alive = 0;
 	thr->lock = FFLY_COND_LOCK_INIT;
 	if (reused_tid) {
-# ifdef __ffly_use_allocr
 	    if (thr->sp == NULL)
 			thr->sp = (ffly_byte_t*)__ffly_mem_alloc(DSS);
-# endif
 		thr->arg_p = __arg_p;
 		thr->routine = __p;
 	} else {
 		*thr = (struct ffly_thread) {
 			.tid = *__tid,
-# ifdef __ffly_use_allocr
             .sp = (ffly_byte_t*)__ffly_mem_alloc(DSS),
-# endif
 			.arg_p = __arg_p,
 			.routine = __p
 		};
 	}
 
-# ifdef __ffly_use_allocr
 	*(void**)(thr->sp+DSS-8) = (void*)&ffly_thr_proxy;
     __linux_pid_t pid;
 //  if ((pid = ffly_clone(&ffly_thr_proxy, thr->sp+DSS, CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD, (void*)thr)) == -1) {
-	if ((pid = ffly_clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS, thr->sp+DSS-8, NULL, NULL, 0))) {
-		ly_fprintf(ffly_err, "thread: failed.\n");
+	if ((pid = clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS, thr->sp+DSS-8, NULL, NULL, 0))) {
+		ffly_fprintf(ffly_err, "thread: failed.\n");
 		return FFLY_FAILURE;
 	}
-# else
-	pthread_create(&thr->thread, NULL, &ffly_thr_proxy, (void*)thr);
-# endif
+
 	ffly_cond_lock_wait(&thr->lock);
 	}
 	return FFLY_SUCCESS;
@@ -215,12 +191,12 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	if (off > page_c*PAGE_SIZE) {
 		if (!threads) {
 			if ((threads = (struct ffly_thread**)__ffly_mem_alloc(((++page_c)*PAGE_SIZE)*sizeof(struct ffly_thread*))) == NULL) {
-				ffly_fprintf(ffly_err, "thread: failed to alloc memory, errno{%d}, ffly_errno{%u}\n", errno, ffly_errno);
+				ffly_fprintf(ffly_err, "thread: failed to alloc memory, errno{%d}, ffly_errno{%u}\n", 0, ffly_errno);
 				goto _err;
 			}
 		} else {
 			if ((threads = (struct ffly_thread**)__ffly_mem_realloc(threads, ((++page_c)*PAGE_SIZE)*sizeof(struct ffly_thread*))) == NULL) {
-				ffly_fprintf(ffly_err, "thread: failed to realloc memory, errno{%d}, ffly_errno{%u}\n", errno, ffly_errno);
+				ffly_fprintf(ffly_err, "thread: failed to realloc memory, errno{%d}, ffly_errno{%u}\n", 0, ffly_errno);
 				goto _err;
 			}
 		}

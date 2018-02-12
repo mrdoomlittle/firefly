@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _ffly_clone
-_ffly_clone:
+global _clone
+_clone:
     mov rax, sys_clone
     syscall
     ret

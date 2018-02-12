@@ -26,5 +26,5 @@
 # define CLONE_NEWNET 0x40000000
 # define CLONE_IO 0x80000000
 
-mdl_s64_t ffly_clone(mdl_u64_t, mdl_u64_t, int*, int*, mdl_u64_t);
+mdl_s64_t clone(mdl_u64_t, mdl_u64_t, void*, void*, mdl_u64_t);
 # endif /*__ffly__linux__sched__h*/
