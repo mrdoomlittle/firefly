@@ -136,22 +136,31 @@ ffly_err_t ffly_vec_init(ffly_vecp __vec, ffly_size_t __blk_size) {
 	return FFLY_SUCCESS;
 }
 
+void ffly_vec_fd(ffly_vecp __vec, void **__p) {
+	struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)(((mdl_u8_t*)*__p)-sizeof(struct ffly_vec_blkd));
+	if (!not_null(blk->next)) {*__p = NULL;return;}
+	if (is_flag(__vec, VEC_NONCONTINUOUS))
+		*__p = (void*)((mdl_u8_t*)get_at(__vec, blk->next)+sizeof(struct ffly_vec_blkd));
+	else
+		*__p = (void*)(((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_blkd))+(blk->next*__vec->blk_size));
+}
+
+void ffly_vec_bk(ffly_vecp __vec,  void **__p) {
+	struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)(((mdl_u8_t*)*__p)-sizeof(struct ffly_vec_blkd));
+	if (!not_null(blk->prev)) {*__p = NULL;return;}
+	if (is_flag(__vec, VEC_NONCONTINUOUS))
+		*__p = (void*)((mdl_u8_t*)get_at(__vec, blk->prev)+sizeof(struct ffly_vec_blkd));
+	else
+		*__p = (void*)(((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_blkd))+(blk->prev*__vec->blk_size));
+}
+
 void ffly_vec_itr(ffly_vecp __vec, void **__p, mdl_u8_t __dir, mdl_uint_t __ia) {
 	while(__ia != 0) {
-		struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)(((mdl_u8_t*)*__p)-sizeof(struct ffly_vec_blkd));
-		if (__dir == VEC_ITR_FD) {
-			if (!not_null(blk->next)) {*__p = NULL;return;}
-			if (is_flag(__vec, VEC_NONCONTINUOUS))
-				*__p = (void*)((mdl_u8_t*)get_at(__vec, blk->next)+sizeof(struct ffly_vec_blkd));
-			else
-				*__p = (void*)(((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_blkd))+(blk->next*__vec->blk_size));
-		} else if (__dir == VEC_ITR_BK) {
-			if (!not_null(blk->prev)) {*__p = NULL;return;}
-			if (is_flag(__vec, VEC_NONCONTINUOUS))
-				*__p = (void*)((mdl_u8_t*)get_at(__vec, blk->prev)+sizeof(struct ffly_vec_blkd));
-			else
-				*__p = (void*)(((mdl_u8_t*)__vec->p+sizeof(struct ffly_vec_blkd))+(blk->prev*__vec->blk_size));
-		}
+		if (__dir == VEC_ITR_FD)
+			ffly_vec_fd(__vec, __p);
+		else if (__dir == VEC_ITR_BK)
+			ffly_vec_bk(__vec, __p);
+		if (!*__p) return;
 		__ia--;
 	}
 }

@@ -4,7 +4,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-mdl_uint_t ffly_str_cpy(char*, char*);
+mdl_uint_t ffly_str_cpy(char*, char const*);
 # ifdef __cplusplus
 }
 # endif

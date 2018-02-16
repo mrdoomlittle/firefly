@@ -101,13 +101,14 @@ config: clean
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o system/asm/sys_nanosleep.asm
 	gcc  -o main config.c str_cpy.o bin_tree.o hash.o map.o $(ffly_objs) sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o
 script: clean
+	gcc -c system/lat.c
 	gcc -c parser.c
 	gcc -c lexer.c
 	gcc -c gen.c
 	gcc -c execute.c
-	gcc -c system/file.c
 	gcc -c data/mem_swp.c
-	gcc  -Wall -o main script.c $(ffly_objs) mem_swp.o parser.o execute.o lexer.o gen.o -nostdlib
+	gcc -c compiler.c
+	gcc  -Wall -o main script.c compiler.o $(ffly_objs) lat.o mem_swp.o execute.o parser.o gen.o lexer.o -nostdlib
 clean:
 	rm -f main
 	cd ../ && make clean && cd src

@@ -1,5 +1,7 @@
+# define __ffly_compiler_internal
 # define __ffly_script_internal
 # include "script.h"
+# include "compiler.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/io.h"

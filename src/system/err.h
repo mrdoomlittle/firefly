@@ -21,3 +21,9 @@ void _ffly_errmsg(char const*, int unsigned, char const*, ...);
 # ifndef retok
 #   define retok return FFLY_SUCCESS
 # endif
+# ifndef FF_ERR
+#	define FF_ERR ffly_err_t
+# endif
+# ifndef _ret
+#	define _ret return err
+# endif

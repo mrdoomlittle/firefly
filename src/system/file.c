@@ -13,14 +13,15 @@
 # include "../linux/fcntl.h"
 # include "../linux/stat.h"
 
-struct ffly_file* ffly_fopen(char *__path, int __flags, mdl_u32_t __mode, ffly_err_t *__err) {
+struct ffly_file*
+ffly_fopen(char const *__path, int __flags, mdl_u32_t __mode, ffly_err_t *__err) {
 	struct ffly_file *file = (struct ffly_file*)__ffly_mem_alloc(sizeof(struct ffly_file));
 	if ((file->fd = open(__path, __flags, __mode)) < 0) {
 //		ffly_fprintf(ffly_err, "file, failed to open file, error: %d, %s\n", errno, strerror(errno));
 		return NULL;
 	}
 
-	if (_err(ffly_mem_dupe((void**)&file->path, __path, ffly_str_len(__path)+1))) {
+	if (_err(ffly_mem_dupe((void**)&file->path, __path, ffly_str_len(__path)+1))) { // <- remove +1
 		ffly_fprintf(ffly_err, "failed to dupe file path.\n");
 		*__err = FFLY_FAILURE;
 		return NULL;
@@ -35,7 +36,7 @@ ffly_bool_t static valid_fd(int __fd) {
 	return 1;
 }
 
-ffly_err_t ffly_fstat(char *__path, struct ffly_stat *__stat) {
+ffly_err_t ffly_fstat(char const *__path, struct ffly_stat *__stat) {
 	struct stat st;
 	ffly_mem_set(&st, 0, sizeof(struct stat));
 	if (stat(__path, &st) < 0) {
@@ -58,7 +59,7 @@ ffly_off_t ffly_fseek(struct ffly_file *__f, ffly_off_t __off, int __whence) {
 	return (ffly_off_t)off;
 }
 
-ffly_err_t ffly_fcreat(char *__path, mdl_u32_t __mode) {
+ffly_err_t ffly_fcreat(char const *__path, mdl_u32_t __mode) {
 	if (access(__path, F_OK)) {
 		ffly_fprintf(ffly_err, "file at '%s' allready exists.\n");
 		return FFLY_FAILURE;

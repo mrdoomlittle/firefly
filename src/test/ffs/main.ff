@@ -1,0 +1,6 @@
+fn hello()->void{
+	print(21299);
+}
+
+hello();
+exit;

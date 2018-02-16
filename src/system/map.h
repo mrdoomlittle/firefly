@@ -6,12 +6,13 @@
 # define MAP_ITR_FD 0x1
 # define MAP_ITR_BK 0x1
 # define FF_MAP struct ffly_map
-struct ffly_map {
+# define ff_map struct ffly_map
+typedef struct ffly_map {
 	struct ffly_vec **table;
     void *begin, *end;
     mdl_uint_t size;
     struct ffly_map *parent;
-};
+} *ffly_mapp;
 
 /*
     TODO: add ffly_map_del
@@ -30,7 +31,6 @@ enum {
     _ffly_map_8191
 };
 
-typedef struct ffly_map* ffly_mapp;
 # ifdef __cplusplus
 extern "C" {
 # endif

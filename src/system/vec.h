@@ -17,9 +17,12 @@
 # include "../types/off_t.h"
 # include "../types/size_t.h"
 # define FF_VEC struct ffly_vec
+# define ff_vec struct ffly_vec
+# define ___ffly_vec_nonempty(__vec) if (ffly_vec_nonempty(__vec))
 # define vec_prev(__vec) ((__vec)->prev)
 # define vec_next(__vec) ((__vec)->next)
 
+# define vec_deadstop(__p, __vec) ((void*)__p <= ffly_vec_end(__vec))
 /*
     needs testing - 'VEC_NONCONTINUOUS'
 
@@ -32,7 +35,7 @@ struct ffly_vec_blkd {
 };
 
 typedef struct ffly_vec_blkd* ffly_vec_blkdp;
-struct ffly_vec {
+typedef struct ffly_vec {
 	ffly_off_t top, end;
 	void *p;
 	ffly_flag_t flags;
@@ -41,8 +44,8 @@ struct ffly_vec {
 	mdl_uint_t page_c;
 	struct ffly_vec *uu_blks;
     struct ffly_vec *prev, *next;
-};
-typedef struct ffly_vec* ffly_vecp;
+} *ffly_vecp;
+
 # ifdef __cplusplus
 extern "C" {
 # endif
@@ -53,6 +56,8 @@ ffly_err_t ffly_vec_free(ffly_vecp);
 // attach/detach vector to/from list
 void ffly_vec_attach(ffly_vecp);
 void ffly_vec_detach(ffly_vecp);
+void ffly_vec_fd(ffly_vecp, void**);
+void ffly_vec_bk(ffly_vecp, void**);
 // allocate and then attach and init
 ffly_vecp ffly_vec(ffly_size_t, ffly_flag_t, ffly_err_t*);
 ffly_vecp ffly_vec_list(); //get list of all vectors
@@ -78,6 +83,7 @@ mdl_uint_t ffly_vec_blk_off(ffly_vecp, void*);
 void static __inline__* ffly_vec_p(struct ffly_vec *__vec){return __vec->p;}
 ffly_size_t static __inline__ ffly_vec_size(struct ffly_vec *__vec) {return __vec->size;}
 ffly_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return !__vec->size;}
+ffly_bool_t static __inline__ ffly_vec_nonempty(struct ffly_vec *__vec) {return __vec->size>0;}
 void static __inline__ ffly_vec_tog_flag(struct ffly_vec *__vec, ffly_flag_t __flag) {ffly_add_flag(&__vec->flags, __flag, 0);}
 void static __inline__ ffly_vec_clear_flags(struct ffly_vec *__vec){__vec->flags = 0x0;} // remove
 void static __inline__ ffly_vec_clr_flags(struct ffly_vec *__vec){__vec->flags = 0x0;}

@@ -24,7 +24,4 @@ mdl_u64_t static mdl_dvhash(mdl_u8_t const *__key, mdl_uint_t __bc) {
 	return ret_val;
 }
 
-mdl_u64_t ffly_hash(mdl_u8_t const *__key, mdl_uint_t __bc) {
-	return mdl_dvhash(__key, __bc);
-//	return mdl_hash(__key, __bc);
-}
+mdl_u64_t(*ffly_hash)(mdl_u8_t const*, mdl_uint_t) = &mdl_dvhash;

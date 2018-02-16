@@ -10,3 +10,8 @@ ffobj - product
 ff_obj - partially a product
 
 function args - double underscore each arg.
+
+
+what is end?
+a b c d e f # # # # #
+		  ^ end not end+1

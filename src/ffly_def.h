@@ -21,4 +21,10 @@
 # endif
 
 # define force_inline __attribute__((always_inline)) inline
+# ifndef retnull
+#	define retnull return (void*)0;
+# endif
+# ifndef null
+#	define null(__p) (__p == (void*)0)
+# endif
 # endif /*__ffly__def__h*/

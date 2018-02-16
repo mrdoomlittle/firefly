@@ -7,5 +7,5 @@ void _ffly_errmsg(char const *__file, int unsigned __line, char const *__s, ...)
 	va_start(args, __s);
 	ffly_vsprintf(buf, __s, args);
 	va_end(args);
-	ffly_fprintf(ffly_out, "%s:%u, %s\n", __file, __line, buf);
+	ffly_fprintf(ffly_out, "%s:%u, %s", __file, __line, buf);
 }

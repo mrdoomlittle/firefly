@@ -30,9 +30,9 @@ struct ffly_file {
 # ifdef __cplusplus
 extern "C" {
 # endif
-struct ffly_file* ffly_fopen(char*, int, mdl_u32_t, ffly_err_t*);
-ffly_err_t ffly_fcreat(char*, mdl_u32_t);
-ffly_err_t ffly_fstat(char*, struct ffly_stat*);
+struct ffly_file* ffly_fopen(char const*, int, mdl_u32_t, ffly_err_t*);
+ffly_err_t ffly_fcreat(char const*, mdl_u32_t);
+ffly_err_t ffly_fstat(char const*, struct ffly_stat*);
 ffly_err_t ffly_fwrite(struct ffly_file*, void*, mdl_uint_t);
 ffly_off_t ffly_fseek(struct ffly_file*, ffly_off_t, int);
 ffly_err_t ffly_fread(struct ffly_file*, void*, mdl_uint_t);

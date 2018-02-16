@@ -1,787 +1,287 @@
-# define __ffly_script_internal
 # include "script.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
+# include "ffly_def.h"
 # include "system/io.h"
-# include "system/file.h"
-# include "data/str_cmp.h"
-# include "data/mem_cpy.h"
-# include "data/mem_set.h"
-# include "data/str_len.h"
-# include "system/errno.h"
-# include "data/bcopy.h"
-# include "system/nanosleep.h"
-# include "data/str_cpy.h"
-# include "system/realpath.h"
-ffly_err_t ffly_script_ld(struct ffly_script *__script, char *__file) {
-	ffly_err_t err;
-	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
-    __script->file->path = ffly_realpath(__file);
+/* enabled keywords
+*/
+char const static *keywords[] = {
+	"print",
+	"if",
+	"uint_t",
+	"int_t",
+	"u64_t",
+	"i64_t",
+	"u32_t",
+	"i32_t",
+	"u16_t",
+	"i16_t",
+	"u8_t",
+	"i8_t",
+	"fn",
+	"void",
+	"exit",
+	"while",
+	"else",
+	"typedef",
+	"ret",
+	"brk",
+	NULL
+};
 
-	struct ffly_stat st;
-	ffly_fstat(__file, &st);
-
-	__script->file->p = (ffly_byte_t*)__ffly_mem_alloc(st.size);
-	__script->file->end = __script->file->p+st.size;
-	ffly_fread(f, __script->file->p, st.size);
-	ffly_fclose(f);
-    return FFLY_SUCCESS;
-}
-
-char const* tokk_str(mdl_u8_t __kind) {
-	switch(__kind) {
-		case TOK_IDENT: return "ident";
-		case TOK_KEYWORD: return "keyword";
-		case TOK_NO: return "number";
-        case TOK_NEWLINE: return "newline";
+// load keywords
+void static
+ldkeywds(struct ffly_script *__script) {
+	char const **keywd = keywords;
+	while(*keywd != NULL) {
+		ffly_compiler_ldkeywd(&__script->c_ctx, ffly_compiler_kwno(*keywd));
+		ffly_printf("loaded keyword {'%s'}\n", *keywd);
+		keywd++;
 	}
-
-	return "unknown";
 }
 
-char const* tokid_str(mdl_u8_t __id) {
-	switch(__id) {
-        case _k_void: return "void";
-        case _k_float: return "float";
-		case _k_print: return "print";
-		case _k_uint_t: return "uint_t";
-		case _k_int_t: return "int_t";
-		case _k_u64_t: return "u64_t";
-		case _k_i64_t: return "i64_t";
-		case _k_u32_t: return "u32_t";
-		case _k_i32_t: return "i32_t";
-		case _k_u16_t: return "u16_t";
-		case _k_i16_t: return "i16_t";
-		case _k_u8_t: return "u8_t";
-		case _k_i8_t: return "i8_t";
-        case _k_var: return "var";
-		case _semicolon: return ";";
-		case _eq: return "=";
-        case _incr: return "incr";
-        case _decr: return "decr";
-        case _colon: return "colon";
-        case _comma: return "comma";
-        case _l_arrow: return "left arrow";
-        case _r_arrow: return "right arrow";
-        case _k_if: return "if";
-        case _l_brace: return "left brace";
-        case _r_brace: return "right brace";
-        case _l_paren: return "left paren";
-        case _r_paren: return "right paren";
-        case _k_struct: return "struct";
-        case _k_else: return "else";
-        case _k_ret: return "return";
-        case _period: return ".";
-        case _k_match: return "match";
-        case _gt: return "grater then";
-        case _lt: return "less then";
-        case _k_fn: return "function";
-        case _k_while: return "while";
-        case _k_exit: return "exit";
-        case _k_typedef: return "typedef";
-	}
-	return "unknown";
-}
-
-void pr_tok(struct token *__tok) {
-	if (!__tok) return;
-	ffly_printf("tok kind: %s\n", tokk_str(__tok->kind));
-	ffly_printf("tok id: %s\n", tokid_str(__tok->id));
-}
-
-void vec_cleanup(struct ffly_script *__script, struct ffly_vec *__vec) {
-    struct ffly_vec *vec;
-	ffly_vec_push_back(&__script->vecs, (void**)&vec);
-	*vec = *__vec;
-}
-
-void map_cleanup(struct ffly_script *__script, struct ffly_map *__map) {
-    struct ffly_map *map;
-	ffly_vec_push_back(&__script->maps, (void**)&map);
-	*map = *__map;
-}
-
-void cleanup(struct ffly_script *__script, void *__p) {
-    void **p;	
-	ffly_vec_push_back(&__script->to_free, (void**)&p);
-	*p = __p;
-}
-
-
-void* ffscript_call(ffscriptp __script, void *__func) {
-    ffly_pair *func = *(ffly_pair**)__func;
-    ffscript_exec(__script, NULL, NULL, *(struct obj**)func->p0, *(struct obj**)func->p1);    
-    return NULL;
-}
-
-ffly_bool_t is_keyword(struct token *__tok, mdl_u8_t __id) {
-	return (__tok->kind == TOK_KEYWORD && __tok->id == __id);
-}
-
-ffly_off_t toklo(struct token *__tok) {
-    return __tok->lo;
-}
-
-ffly_off_t curlo(struct ffly_script *__script) {
-    return __script->file->lo;
-}
-
-ffly_bool_t next_token_is(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_t __id) {
-	struct token *tok = next_token(__script);
-	if (!tok) return 0;
-	if (tok->kind == __kind && tok->id == __id)
-		return 1;
-	ffly_ulex(__script, tok);
-	return 0;
-}
-
-mdl_uint_t tokcol(struct token *__tok) {
-    return __tok->off-toklo(__tok);
-}
-
-void print_line(struct ffly_script *__script, mdl_uint_t __off) {
-    char *p = (char*)__script->file->p+__off;
-    while(*p != '\n' && *p != '\0') {
-        ffly_printf("%c", *p);
-        p++;
-    }
-    ffly_printf("\n");
-}
-
-# define expectmsg(__s) ffly_fprintf(ffly_out, "%s:%u;%u: %s, got %s.\n", __script->file->path, tokl(tok), tokcol(tok), __s, tokid_str(tok->id))
-ffly_bool_t expect_token(struct ffly_script *__script, mdl_u8_t __kind, mdl_u8_t __id) {
-	struct token *tok = next_token(__script);
-    if (!tok) {
-        errmsg("token is null.");
-        return 0;
-    }
-
-	mdl_u8_t ret;
-    if (!(ret = (tok->kind == __kind && tok->id == __id))) {
-        if (__kind == TOK_KEYWORD) {
-            switch(__id) {
-                case _colon:
-                    expectmsg("expected colon");
-                break;
-                case _l_brace:
-                    expectmsg("expected left side brace");
-                break;
-                case _r_brace:
-                    expectmsg("expected right side brace");
-                break;
-                case _semicolon:
-                    expectmsg("expected semicolon");
-                break;
-                case _l_paren:
-                    expectmsg("expected left side paren");
-                break;
-                case _r_paren:
-                    expectmsg("expected right side paren");
-                break;
-                case _l_arrow:
-                    expectmsg("expected left arrow");
-                break;
-                case _r_arrow:
-                    expectmsg("expected right arrow");
-                break;
-            }
-            print_line(__script, tok->lo);
-            mdl_uint_t pad = tok->off-toklo(tok);
-            while(pad != 0) {
-                ffly_printf(" ");
-                pad--;
-            }
-
-            ffly_printf("^\n");
-        }
-    }
-    return ret;
-}
-
-ffly_err_t ffscript_free(ffscriptp __script) {
-    struct obj *_obj = (struct obj*)__script->top, *prev = NULL;
-    while(_obj != NULL) {
-        if (prev != NULL)
-            __ffly_mem_free(prev);
-        prev = _obj;
-        _obj = _obj->next;
-    }
-
-    if (prev != NULL)
-        __ffly_mem_free(prev);
-    __ffly_mem_free(__script->stack);
-    retok;
-}
-
-ffly_err_t ffly_script_free(struct ffly_script *__script) {
-	struct ffly_vec *vec;
-	if (ffly_vec_size(&__script->vecs)>0) {
-        vec = (struct ffly_vec*)ffly_vec_begin(&__script->vecs);
-		while(vec <= (struct ffly_vec*)ffly_vec_end(&__script->vecs)) {
-            ffly_vec_de_init(vec);
-			vec++;
-		}
-	}
-
-	struct ffly_map *map;
-	if (ffly_vec_size(&__script->maps)>0) {
-        map = (struct ffly_map*)ffly_vec_begin(&__script->maps);
-		while(map <= (struct ffly_map*)ffly_vec_end(&__script->maps)) {
-            ffly_map_de_init(map);
-	        map++;
-		}
-	}
-
-    ffly_map_de_init(&__script->env);
-    ffly_buff_de_init(&__script->sbuf);
-    ffly_vec_de_init(&__script->vecs);
-	ffly_vec_de_init(&__script->maps);
-    ffly_vec_de_init(&__script->nodes);
-	ffly_buff_de_init(&__script->iject_buff);
-
-    void **p;
-    if (ffly_vec_size(&__script->to_free)>0) {
-        p = (void**)ffly_vec_begin(&__script->to_free);
-        while(p <= (void**)ffly_vec_end(&__script->to_free)) {
-            __ffly_mem_free(*p);
-            p++;
-        }
-    }
-
-	ffly_vec_de_init(&__script->to_free);
-	if (__script->file->p != NULL)
-		__ffly_mem_free(__script->file->p);
-	ffly_map_de_init(&__script->macros);
-	ffly_map_de_init(&__script->typedefs);
-	if (__script->file->path != NULL)
-		__ffly_mem_free(__script->file->path);
-    __ffly_mem_free(__script->file);
-	return FFLY_SUCCESS;
-}
-
-struct token* peek_token(struct ffly_script *__script) {
-	struct token *tok = next_token(__script);
-	ffly_ulex(__script, tok);
-	return tok;
-}
-
-ffly_bool_t next_tok_nl(struct ffly_script *__script) {
-    ffly_err_t err;
-    struct token *tok = ffly_lex(__script, &err);
-    if (tok != NULL) {
-        if (tok->kind == TOK_NEWLINE) {
-            __ffly_mem_free(tok);
-            return 1;
-        }
-        ffly_ulex(__script, tok);
-    }
-    return 0;
-}
-
-void read_define(struct ffly_script *__script) {
-    struct token *name = next_token(__script);
-    void *p = NULL;
-    if (!next_tok_nl(__script)) {
-        struct ffly_vec *toks = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
-        ffly_vec_set_flags(toks, VEC_AUTO_RESIZE);
-        ffly_vec_init(toks, sizeof(struct token*));
-        p = toks;
-        struct token **tok;
-        _next:
-        ffly_vec_push_back(toks, (void**)&tok);
-        *tok = next_token(__script); 
- 
-        if (!next_tok_nl(__script)) {
-            goto _next;
-        }
-        vec_cleanup(__script, toks);
-        cleanup(__script, toks);
-    }
-    ffly_map_put(&__script->macros, name->p, ffly_str_len((char*)name->p), p);
-}
-
-ffly_bool_t is_endif(struct ffly_script *__script, struct token *__tok) {
-    if (is_keyword(__tok, _percent)) {
-        ffly_err_t err;
-        struct token *tok = ffly_lex(__script, &err);
-        return !ffly_str_cmp(tok->p, "endif");
-    }
-    return 0;
-}
-
-void skip_until_endif(struct ffly_script *__script) {
-    ffly_err_t err;
-    struct token *tok = NULL;
-    for(;;) {
-        if (!(tok = ffly_lex(__script, &err))) break;
-        if (_err(err)) break;
-        if (is_endif(__script, tok)) break;
-        if (tok->kind == TOK_NEWLINE)
-            __ffly_mem_free(tok);
-    }
-}
-
-void read_ifdef(struct ffly_script *__script) {
-    struct token *name = next_token(__script);
-    ffly_err_t err;
-    ffly_map_get(&__script->macros, name->p, ffly_str_len((char*)name->p), &err);
-    if (_err(err)) skip_until_endif(__script);
-}
-
-void read_ifndef(struct ffly_script *__script) {
-    struct token *name = next_token(__script);
-    ffly_err_t err;
-    ffly_map_get(&__script->macros, name->p, ffly_str_len((char*)name->p), &err);
-    if (_ok(err)) skip_until_endif(__script);
-}
-
-# include "linux/unistd.h"
-void read_include(struct ffly_script *__script) {
-    struct token *file = next_token(__script);
-    __script->file++;
-    ffly_printf("include: %s\n", (char*)file->p);
-
-    if (access((char*)file->p, F_OK) == -1) {
-        ffly_fprintf(ffly_err, "include file doesen't exist.\n");
-        return;
-    }
-
-    __script->file->line = 0;
-    __script->file->lo = 0;
-    __script->file->off = 0;
-    ffly_script_ld(__script, (char*)file->p);  
-    ffly_parse(__script);
-    __ffly_mem_free(__script->file->path);
-    __ffly_mem_free(__script->file->p);
-    __script->file--;
-}
-
-void read_macro(struct ffly_script *__script) {
-    struct token *tok = next_token(__script);
-    if (tok->kind != TOK_IDENT) return;
-    if (!ffly_str_cmp(tok->p, "define")) {
-        read_define(__script);
-    } else if (!ffly_str_cmp(tok->p, "ifdef")) {
-        read_ifdef(__script);
-    } else if (!ffly_str_cmp(tok->p, "ifndef")) {
-        read_ifndef(__script);
-    } else if (!ffly_str_cmp(tok->p, "include")) {
-        read_include(__script);
-    }
-}
-
-ffly_bool_t maybe_keyword(struct token*);
-struct token* next_token(struct ffly_script *__script) {
-	ffly_err_t err;
-	struct token *tok;
-    _back:
-    tok = ffly_lex(__script, &err);
-    if (!tok) return NULL;
-
-    if (tok->kind == TOK_NEWLINE) {
-        __ffly_mem_free(tok);
-        goto _back;
-    }
-
-    if (is_keyword(tok, _percent)) {
-        read_macro(__script);
-        goto _back;
-    }
-
-    if (tok->kind == TOK_IDENT) {
-        struct ffly_vec *toks = (struct ffly_vec*)ffly_map_get(&__script->macros, tok->p, ffly_str_len((char*)tok->p), &err);
-        if (toks != NULL && _ok(err)) {
-            struct token **itr = (struct token**)ffly_vec_end(toks);
-            while(itr >= (struct token**)ffly_vec_begin(toks)) {
-                ffly_ulex(__script, *itr); 
-                itr--;
-            }
-            tok = next_token(__script);
-        }
-    }
-
-	maybe_keyword(tok);
-	return tok;
-}
-
-mdl_uint_t tokl(struct token *__tok) {
-    return __tok->line;
-}
-
-void to_keyword(struct token *__tok, mdl_u8_t __id) {
-	__tok->kind = TOK_KEYWORD;
-	__tok->id = __id;
-}
-
-ffly_bool_t maybe_keyword(struct token *__tok) {
-	if (!__tok) return 0;
-	if (__tok->kind != TOK_IDENT || __tok->p == NULL) return 0;
-	if (!ffly_str_cmp(__tok->p, "print"))
-		to_keyword(__tok, _k_print);
-    else if (!ffly_str_cmp(__tok->p, "if"))
-        to_keyword(__tok, _k_if);
-	else if (!ffly_str_cmp(__tok->p, "uint_t"))
-		to_keyword(__tok, _k_uint_t);
-	else if (!ffly_str_cmp(__tok->p, "int_t"))
-		to_keyword(__tok, _k_int_t);
-	else if (!ffly_str_cmp(__tok->p, "u64_t"))
-		to_keyword(__tok, _k_u64_t);
-	else if (!ffly_str_cmp(__tok->p, "i64_t"))
-		to_keyword(__tok, _k_i64_t);
-	else if (!ffly_str_cmp(__tok->p, "u32_t"))
-		to_keyword(__tok, _k_u32_t);
-	else if (!ffly_str_cmp(__tok->p, "i32_t"))
-		to_keyword(__tok, _k_i32_t);
-	else if (!ffly_str_cmp(__tok->p, "u16_t"))
-		to_keyword(__tok, _k_u16_t);
-	else if (!ffly_str_cmp(__tok->p, "i16_t"))
-		to_keyword(__tok, _k_i16_t);
-	else if (!ffly_str_cmp(__tok->p, "u8_t"))
-		to_keyword(__tok, _k_u8_t);
-	else if (!ffly_str_cmp(__tok->p, "i8_t"))
-		to_keyword(__tok, _k_i8_t);
-    else if (!ffly_str_cmp(__tok->p, "fn"))
-        to_keyword(__tok, _k_fn);
-    else if (!ffly_str_cmp(__tok->p, "extern"))
-        to_keyword(__tok, _k_extern);
-    else if (!ffly_str_cmp(__tok->p, "struct"))
-        to_keyword(__tok, _k_struct);
-    else if (!ffly_str_cmp(__tok->p, "void"))
-        to_keyword(__tok, _k_void);
-    else if (!ffly_str_cmp(__tok->p, "var"))
-        to_keyword(__tok, _k_var);
-    else if (!ffly_str_cmp(__tok->p, "exit"))
-        to_keyword(__tok, _k_exit);
-    else if (!ffly_str_cmp(__tok->p, "while"))
-        to_keyword(__tok, _k_while);
-    else if (!ffly_str_cmp(__tok->p, "match"))
-        to_keyword(__tok, _k_match);
-    else if (!ffly_str_cmp(__tok->p, "else"))
-        to_keyword(__tok, _k_else);
-    else if (!ffly_str_cmp(__tok->p, "float"))
-        to_keyword(__tok, _k_float);
-    else if (!ffly_str_cmp(__tok->p, "typedef"))
-        to_keyword(__tok, _k_typedef);
-    else if (!ffly_str_cmp(__tok->p, "ret"))
-        to_keyword(__tok, _k_ret);
-    else if (!ffly_str_cmp(__tok->p, "brk"))
-        to_keyword(__tok, _k_brk);
-    else {
-		return 0;
-	}
-	return 1;
-}
-
-ffly_err_t ffscript_init(ffscriptp __script, mdl_uint_t __stack_size) {
-    __script->stack = (ffly_byte_t*)__ffly_mem_alloc(__stack_size);
-    __script->fresh = __script->stack;
-    retok;
+ffly_err_t ffly_script_ld(struct ffly_script *__script, char const *__file) {
+	ffly_compiler_ld(&__script->c_ctx, __file);
 }
 
 ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
-    ffly_err_t err;
-    __script->file = (struct ffly_script_file*)__ffly_mem_alloc(12*sizeof(struct ffly_script_file));
-	if (_err(err = ffly_buff_init(&__script->sbuf, 100, 1))) {
-        errmsg("failed to init buffer.");
-        return err;
-    }
-
-    ffly_vec_set_flags(&__script->to_free, VEC_AUTO_RESIZE);
-    if (_err(err = ffly_vec_init(&__script->to_free, sizeof(void*)))) {
-        errmsg("failed to init vec.");
-        return err;
-    }
-
-    ffly_vec_set_flags(&__script->vecs, VEC_AUTO_RESIZE);
-	if (_err(err = ffly_vec_init(&__script->vecs, sizeof(struct ffly_vec)))) {
-        errmsg("failed to init vec.");
-        return err;
-    }
-
-    ffly_vec_set_flags(&__script->vecs, VEC_AUTO_RESIZE);
-	if (_err(err = ffly_vec_init(&__script->maps, sizeof(struct ffly_map)))) {
-        errmsg("failed to init vec.");
-        return err;
-    }
-
-    ffly_vec_set_flags(&__script->nodes, VEC_AUTO_RESIZE);
-    if (_err(err = ffly_vec_init(&__script->nodes, sizeof(struct node*)))) {
-        errmsg("failed to init vec.");
-        return err;
-    }
-
-	if (_err(err = ffly_buff_init(&__script->iject_buff, 100, sizeof(struct token*)))) {
-        errmsg("failed to init buffer.");
-        return err;
-    }
-
-    if (_err(err = ffly_map_init(&__script->env, _ffly_map_127))) {
-        errmsg("failed to init map.");
-        return err;
-    }
-
-    if (_err(err = ffly_map_init(&__script->typedefs, _ffly_map_127))) {
-        errmsg("failed to init map.");
-        return err;
-    }
-    __script->brkp = __script->brk;
-	__script->file->off = 0;
-    __script->file->line = 0;
-    __script->file->lo = 0;
-    __script->local = NULL;
-	__script->file->p = NULL;
-	__script->file->path = NULL;
-	if (_err(err = ffly_map_init(&__script->macros, _ffly_map_127))) {
-        errmsg("failed to init map.");
-        return err;
-    }
-	__script->ret_type = NULL;
-    return FFLY_SUCCESS;
+	ffly_compiler_prepare(&__script->c_ctx);
+	ldkeywds(__script);
 }
 
-ffly_err_t ffly_script_finalize(struct ffly_script *__script) {
-
+void* ffscript_call(ffscriptp __script, void *__func) {
+	ffly_pair *func = *(ffly_pair**)__func;
+	ffscript_exec(__script, NULL, NULL, *(struct obj**)func->p0, *(struct obj**)func->p1);
+	retnull;
 }
 
-ffly_err_t ffly_script_build(struct ffly_script *__script, void ** __top, ffly_byte_t **__stack) {
-    ffly_err_t err;
-    if (_err(err = ffly_parse(__script))) {
-        errmsg("failed to parse.");
-        return err;
-    }
+ffly_err_t ffscript_free(ffscriptp __script) {
+	struct obj *_obj = (struct obj*)__script->top, *prev = NULL;
+	while(!null(_obj)) {
+		if (!null(prev))
+			__ffly_mem_free(prev);
+		prev = _obj;
+		_obj = _obj->next;
+	}
 
-    if (_err(err = ffly_gen(__script, __top, __stack))) {
-        errmsg("failed to generate.");
-        return err;
-    }
-    ffly_script_finalize(__script);
-    ffly_fprintf(ffly_out, "build successful.\n");
-    return FFLY_SUCCESS;
+	if (!null(prev))
+		__ffly_mem_free(prev);
+	__ffly_mem_free(__script->stack);
+	retok;
 }
 
-ffly_bool_t is_eof(struct ffly_script *__script) {
-	return (__script->file->p+__script->file->off) >= __script->file->end;
+ffly_err_t ffscript_init(ffscriptp __script, mdl_uint_t __stack_size) {
+	__script->stack = (ffly_byte_t*)__ffly_mem_alloc(__stack_size);
+	__script->fresh = __script->stack;
+	retok;
+}
+			
+ffly_err_t ffly_script_build(struct ffly_script *__script, void **__top, ffly_byte_t **__stack) {
+	ffly_compiler_build(&__script->c_ctx, __top, __stack);
 }
 
-mdl_uint_t curl(struct ffly_script *__script) {
-    return __script->file->line;
+ffly_err_t ffly_script_free(struct ffly_script *__script) {
+	ffly_compiler_free(&__script->c_ctx);
 }
 
-void skip_token(struct ffly_script *__script) {
-    next_token(__script);
-}
-
-ffly_err_t ffly_script_save_bin(struct ffly_script *__script, char *__file) {
 /*
-    ffly_err_t err;
-    FF_FILE *f = ffly_fopen(__file, FF_O_WRONLY|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err);
-    ffly_fseek(f, sizeof(mdl_u32_t), FF_SEEK_SET);
-    mdl_u32_t top = ffly_fseek(f, 0, FF_SEEK_CUR);
-    mdl_u32_t off = top;
+ffly_err_t ffly_script_save_bin(struct ffly_compiler *__compiler, char *__file) {
 
-    mdl_u32_t prev;
-    struct obj *_obj = (struct obj*)__script->top;
-    struct obj o;
-    while(_obj != NULL) {
-        ffly_printf("\n");
-        pr_obj(_obj);
-        _obj->off = off;
-        o = *_obj;
-        off+= sizeof(struct obj);
-        ffly_fseek(f, off, FF_SEEK_SET);
-        if (_obj->_type != NULL) {            
-            o._type = (void*)off;
-            ffly_fwrite(f, _obj->_type, sizeof(struct type));
-            off+= sizeof(struct type);
+	ffly_err_t err;
+	FF_FILE *f = ffly_fopen(__file, FF_O_WRONLY|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err);
+	ffly_fseek(f, sizeof(mdl_u32_t), FF_SEEK_SET);
+	mdl_u32_t top = ffly_fseek(f, 0, FF_SEEK_CUR);
+	mdl_u32_t off = top;
 
-            if (_obj->p != NULL) {
-                o.p = (void*)off;
-                ffly_fwrite(f, _obj->p, _obj->_type->size);
-                ffly_printf("data: %u\n", *(mdl_u16_t*)_obj->p);
-                off+= _obj->_type->size;
-            }
+	mdl_u32_t prev;
+	struct obj *_obj = (struct obj*)__compiler->top;
+	struct obj o;
+	while(_obj != NULL) {
+		ffly_printf("\n");
+		pr_obj(_obj);
+		_obj->off = off;
+		o = *_obj;
+		off+= sizeof(struct obj);
+		ffly_fseek(f, off, FF_SEEK_SET);
+		if (_obj->_type != NULL) {			  
+			o._type = (void*)off;
+			ffly_fwrite(f, _obj->_type, sizeof(struct type));
+			off+= sizeof(struct type);
 
-            ffly_printf("types, off: %u\n", (mdl_u32_t)o._type);
-        }
+			if (_obj->p != NULL) {
+				o.p = (void*)off;
+				ffly_fwrite(f, _obj->p, _obj->_type->size);
+				ffly_printf("data: %u\n", *(mdl_u16_t*)_obj->p);
+				off+= _obj->_type->size;
+			}
 
-        if (_obj->to != NULL) {
-            ffly_printf("--to-- %u\n", _obj->to->off);
-            o.to = (void*)_obj->to->off;
-        }
-        if (_obj->from != NULL) {
-            ffly_printf("--from-- %u\n", _obj->from->off);
-            o.from = (void*)_obj->from->off;
-        }
-        if (_obj->val != NULL) {
-            ffly_printf("--val-- %u\n", _obj->val->off);
-            o.val = (void*)_obj->val->off;
-        }
-        if (_obj->l != NULL) {
-            o.l = (void*)_obj->l->off;
-        }
-        if (_obj->r != NULL) {
-            o.r = (void*)_obj->r->off;
-        }
-        if (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump) { 
-            o.jmp = !*_obj->jmp?NULL:(void**)(*_obj->jmp)->off;
-        }
+			ffly_printf("types, off: %u\n", (mdl_u32_t)o._type);
+		}
 
-        if (_obj->flags != NULL) {
-            o.flags = (void*)_obj->flags->off;
-        }
+		if (_obj->to != NULL) {
+			ffly_printf("--to-- %u\n", _obj->to->off);
+			o.to = (void*)_obj->to->off;
+		}
+		if (_obj->from != NULL) {
+			ffly_printf("--from-- %u\n", _obj->from->off);
+			o.from = (void*)_obj->from->off;
+		}
+		if (_obj->val != NULL) {
+			ffly_printf("--val-- %u\n", _obj->val->off);
+			o.val = (void*)_obj->val->off;
+		}
+		if (_obj->l != NULL) {
+			o.l = (void*)_obj->l->off;
+		}
+		if (_obj->r != NULL) {
+			o.r = (void*)_obj->r->off;
+		}
+		if (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump) { 
+			o.jmp = !*_obj->jmp?NULL:(void**)(*_obj->jmp)->off;
+		}
 
-        if ((void*)_obj != __script->top) {
-            void *off = (void*)_obj->off;
-            ffly_fseek(f, prev, FF_SEEK_SET);
-            ffly_fwrite(f, &off, sizeof(void*));
-        }
+		if (_obj->flags != NULL) {
+			o.flags = (void*)_obj->flags->off;
+		}
 
-        ffly_printf("obj, off: %u\n", _obj->off);
-        ffly_fseek(f, _obj->off, FF_SEEK_SET); 
-        ffly_fwrite(f, &o, sizeof(struct obj));
-        prev = _obj->off+offsetof(struct obj, next);
-        _obj = _obj->next;
-    }
+		if ((void*)_obj != __compiler->top) {
+			void *off = (void*)_obj->off;
+			ffly_fseek(f, prev, FF_SEEK_SET);
+			ffly_fwrite(f, &off, sizeof(void*));
+		}
 
-    ffly_fseek(f, 0, FF_SEEK_SET);
-    ffly_fwrite(f, &top, sizeof(mdl_u32_t));
-    ffly_fclose(f);
-*/
-    return FFLY_SUCCESS;
+		ffly_printf("obj, off: %u\n", _obj->off);
+		ffly_fseek(f, _obj->off, FF_SEEK_SET); 
+		ffly_fwrite(f, &o, sizeof(struct obj));
+		prev = _obj->off+offsetof(struct obj, next);
+		_obj = _obj->next;
+	}
+
+	ffly_fseek(f, 0, FF_SEEK_SET);
+	ffly_fwrite(f, &top, sizeof(mdl_u32_t));
+	ffly_fclose(f);
+
+	return FFLY_SUCCESS;
 }
 
 # include "system/bin_tree.h"
-ffly_err_t ffly_script_ld_bin(struct ffly_script *__script, char *__file) {
-/*
-    ffly_err_t err;
-    FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
-    struct ffly_bin_tree objs;
+ffly_err_t ffly_script_ld_bin(struct ffly_compiler *__compiler, char *__file) {
 
-    ffly_bin_tree_init(&objs);
+	ffly_err_t err;
+	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
+	struct ffly_bin_tree objs;
 
-    mdl_u32_t off;
-    ffly_fread(f, &off, sizeof(mdl_u32_t));
-    struct obj *_obj, *prev = NULL;
-    struct obj *top = NULL;
+	ffly_bin_tree_init(&objs);
 
-    _next:
-    ffly_printf("\n");
-    _obj = (struct obj*)__ffly_mem_alloc(sizeof(struct obj));
-    if (!top)
-        top = _obj;
-    ffly_fseek(f, off, FF_SEEK_SET);
-    ffly_fread(f, _obj, sizeof(struct obj));
-    ffly_bin_tree_insert(&objs, off, _obj);
-    if (_obj->_type != NULL) {
-        ffly_fseek(f, (mdl_u32_t)_obj->_type, FF_SEEK_SET);
-        _obj->_type = (struct obj*)__ffly_mem_alloc(sizeof(struct type));
-        ffly_fread(f, _obj->_type, sizeof(struct type));
-    
-        ffly_printf("---> size: %u\n", _obj->_type->size);
-        if (_obj->p != NULL) {
-            ffly_fseek(f, (mdl_u32_t)_obj->p, FF_SEEK_SET);
-            if (_obj->_type->size < 100) { // in case 
-                _obj->p = __ffly_mem_alloc(_obj->_type->size);
-                ffly_fread(f, _obj->p, _obj->_type->size);
-            }
-            ffly_printf("data: %u\n", *(mdl_u16_t*)_obj->p);
-        }
-    }
+	mdl_u32_t off;
+	ffly_fread(f, &off, sizeof(mdl_u32_t));
+	struct obj *_obj, *prev = NULL;
+	struct obj *top = NULL;
 
-    if (_obj->to != NULL)
-        ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->to, (void**)&_obj->to);
-    if (_obj->from != NULL)
-        ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->from, (void**)&_obj->from);
-    if (_obj->val != NULL)
-        ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->val, (void**)&_obj->val); 
-    if (_obj->l != NULL)
-        ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->l, (void**)&_obj->l);
-    if (_obj->r != NULL)
-        ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->r, (void**)&_obj->r);
-    
-    if (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump) {
-        struct obj **p = (struct obj**)__ffly_mem_alloc(sizeof(struct obj*));
-        if (_obj->jmp != NULL) {
-            ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->jmp, (void**)p);
-        } else
-            *p = NULL;
-        _obj->jmp = p;
-    }
+	_next:
+	ffly_printf("\n");
+	_obj = (struct obj*)__ffly_mem_alloc(sizeof(struct obj));
+	if (!top)
+		top = _obj;
+	ffly_fseek(f, off, FF_SEEK_SET);
+	ffly_fread(f, _obj, sizeof(struct obj));
+	ffly_bin_tree_insert(&objs, off, _obj);
+	if (_obj->_type != NULL) {
+		ffly_fseek(f, (mdl_u32_t)_obj->_type, FF_SEEK_SET);
+		_obj->_type = (struct obj*)__ffly_mem_alloc(sizeof(struct type));
+		ffly_fread(f, _obj->_type, sizeof(struct type));
+	
+		ffly_printf("---> size: %u\n", _obj->_type->size);
+		if (_obj->p != NULL) {
+			ffly_fseek(f, (mdl_u32_t)_obj->p, FF_SEEK_SET);
+			if (_obj->_type->size < 100) { // in case 
+				_obj->p = __ffly_mem_alloc(_obj->_type->size);
+				ffly_fread(f, _obj->p, _obj->_type->size);
+			}
+			ffly_printf("data: %u\n", *(mdl_u16_t*)_obj->p);
+		}
+	}
 
-    if (_obj->flags != NULL)
-        ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->flags, (void**)&_obj->flags);
+	if (_obj->to != NULL)
+		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->to, (void**)&_obj->to);
+	if (_obj->from != NULL)
+		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->from, (void**)&_obj->from);
+	if (_obj->val != NULL)
+		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->val, (void**)&_obj->val); 
+	if (_obj->l != NULL)
+		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->l, (void**)&_obj->l);
+	if (_obj->r != NULL)
+		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->r, (void**)&_obj->r);
+	
+	if (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump) {
+		struct obj **p = (struct obj**)__ffly_mem_alloc(sizeof(struct obj*));
+		if (_obj->jmp != NULL) {
+			ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->jmp, (void**)p);
+		} else
+			*p = NULL;
+		_obj->jmp = p;
+	}
 
-    pr_obj(_obj);
-    if (prev != NULL)
-        prev->next = _obj;
-    prev = _obj;
+	if (_obj->flags != NULL)
+		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->flags, (void**)&_obj->flags);
 
-    if (_obj->next != NULL) {
-        off = (mdl_u32_t)_obj->next;
-        goto _next;
-    }
-    _obj->next = NULL;
+	pr_obj(_obj);
+	if (prev != NULL)
+		prev->next = _obj;
+	prev = _obj;
 
-    __script->top = (void*)top;
-    ffly_fclose(f);
-    ffly_bin_tree_de_init(&objs);
-*/
-    return FFLY_SUCCESS;
+	if (_obj->next != NULL) {
+		off = (mdl_u32_t)_obj->next;
+		goto _next;
+	}
+	_obj->next = NULL;
+
+	__compiler->top = (void*)top;
+	ffly_fclose(f);
+	ffly_bin_tree_de_init(&objs);
+
+	return FFLY_SUCCESS;
 }
 //# define LOAD
-# define DEBUG
-
-# ifdef DEBUG
-void* me(mdl_u8_t __id, void *__arg_p, void **__p) {
-    ffly_printf("HI, id{%u}\n", __id);
-/*
-    while(*__p != NULL) {
-        printf("...\n");
-        __p++;
-    }
 */
-  //  printf("HI, id{%u}\n", *(mdl_u8_t*)*__p);
-
-    ffscript_call((ffscriptp)__arg_p, *__p);
-    return NULL;
-}
 
 void pr();
 void pf();
 
 ffly_err_t ffmain(int __argc, char const **__argv) {
+	char const *file;
+	if (__argc < 2) {
+		ffly_printf("you can provide a file you know?\n");
+		file = "../scripts/main.ff";
+	} else
+		file = __argv[1];
+
 	struct ffly_script script;
-    ffscript ff;
-    ffscript_init(&ff, 1000);
+	ffscript ff;
+	ffscript_init(&ff, 1000);
 	ffly_printf("loading script.\n");
 	if (_err(ffly_script_prepare(&script))) {
-        ffly_printf("failed to prepare.\n");
-        return -1;
-    }
+		ffly_printf("failed to prepare.\n");
+		return -1;
+	}
 
-//# ifndef LOAD
-	ffly_script_ld(&script, "../scripts/main.ff");
+	ffly_script_ld(&script, file);
 	ffly_printf("building script.\n");
 
 	if (_err(ffly_script_build(&script, &ff.top, &ff.fresh))) {
-        ffly_printf("failed to build.\n");
-        return -1;
-    }
+		ffly_printf("failed to build.\n");
+		return -1;
+	}
 
 	ffly_script_free(&script);
 
 	ffly_printf("executing script.\n");
-	ffscript_exec(&ff, &me, &ff, NULL, NULL);
-    ffly_printf("stack used: %lu\n", ff.fresh-ff.stack);
-/*
-# else
-    ffly_script_ld_bin(&script, "test.bin");
-    ffscript_exec(&ff, &me, NULL, NULL, NULL);
-# endif
-*/
+	ffscript_exec(&ff, NULL, NULL, NULL, NULL);
+	ffly_printf("stack used: %lu\n", ff.fresh-ff.stack);
+
 	ffscript_free(&ff);
+
 	pr();
 	pf();
 }
 
-# endif
