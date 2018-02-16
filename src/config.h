@@ -7,73 +7,73 @@
 # include "system/map.h"
 # include <mdlint.h>
 # define ffly_conf_is_str(__p) \
-    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_str)
+	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_str)
 # define ffly_conf_is_chr(__p) \
-    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_chr)
+	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_chr)
 # define ffly_conf_is_64l_u(__p) \
-    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_64l_u)
+	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_64l_u)
 # define ffly_conf_is_32l_u(__p) \
-    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_32l_u)
+	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_32l_u)
 # define ffly_conf_is_16l_u(__p) \
-    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_16l_u)
+	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_16l_u)
 # define ffly_conf_is_8l_u(__p) \
-    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_8l_u)
+	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_8l_u)
 # define ffly_conf_is_64l_s(__p) \
-    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_64l_s)
+	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_64l_s)
 # define ffly_conf_is_32l_s(__p) \
-    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_32l_s)
+	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_32l_s)
 # define ffly_conf_is_16l_s(__p) \
-    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_16l_s)
+	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_16l_s)
 # define ffly_conf_is_8l_s(__p) \
-    (((struct ffly_conf_val*)__p)->kind == _ffly_conf_8l_s)
+	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_8l_s)
 struct ffly_conf_val {
-    mdl_u8_t kind;
-    ffly_byte_t *p;
+	mdl_u8_t kind;
+	ffly_byte_t *p;
 };
 
 struct ffly_conf_var {
-    struct ffly_conf_val val;
-    char *name;
+	struct ffly_conf_val val;
+	char *name;
 };
 
 struct ffly_conf_arr {
-    struct ffly_vec data;
-    char *name;
+	struct ffly_vec data;
+	char *name;
 };
 
 // config bare
 typedef struct {
-    struct ffly_vec arrs;
-    struct ffly_vec free;
-    struct ffly_map env;
+	struct ffly_vec arrs;
+	struct ffly_vec free;
+	struct ffly_map env;
 } ffconf;
 
 typedef ffconf* ffconfp;
 struct ffly_conf {
-    struct ffly_buff sbuf;
-    ffly_byte_t *p, *end;
-    ffly_off_t off;
-    struct ffly_vec toks;
-    struct ffly_buff iject_buff;
+	struct ffly_buff sbuf;
+	ffly_byte_t *p, *end;
+	ffly_off_t off;
+	struct ffly_vec toks;
+	struct ffly_buff iject_buff;
 
-    struct ffly_vec arrs;
-    struct ffly_vec free;
-    struct ffly_map env;
+	struct ffly_vec arrs;
+	struct ffly_vec free;
+	struct ffly_map env;
 };
 
 enum {
-    _ffly_conf_str,
-    _ffly_conf_chr,
+	_ffly_conf_str,
+	_ffly_conf_chr,
 // signed int
-    _ffly_conf_64l_s,
-    _ffly_conf_32l_s,
-    _ffly_conf_16l_s,
-    _ffly_conf_8l_s,
+	_ffly_conf_64l_s,
+	_ffly_conf_32l_s,
+	_ffly_conf_16l_s,
+	_ffly_conf_8l_s,
 // unsigned int
-    _ffly_conf_64l_u,
-    _ffly_conf_32l_u,
-    _ffly_conf_16l_u,
-    _ffly_conf_8l_u
+	_ffly_conf_64l_u,
+	_ffly_conf_32l_u,
+	_ffly_conf_16l_u,
+	_ffly_conf_8l_u
 };
 
 void const* ffly_conf_get(ffconfp, char*);
