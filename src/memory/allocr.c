@@ -390,7 +390,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
         mdl_uint_t page_c;
         if ((page_c = ((top<<PAGE_SHIFT)+((top-((top<<PAGE_SHIFT)*PAGE_SIZE))>0))) >= __pot->page_c) {
             if (brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
-				ffly_errmsg("error: brk.");
+				ffly_errmsg("error: brk.\n");
 			}
         }
     } else {
@@ -461,7 +461,7 @@ _ffly_free(potp __pot, void *__p) {
     lock_pot(__pot);
     blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);
 	if (is_free(blk)) {
-		ffly_errmsg("error: block has already been freed.");
+		ffly_errmsg("error: block has already been freed.\n");
 		unlock_pot(__pot);
 		return;
 	}
@@ -524,7 +524,7 @@ _ffly_free(potp __pot, void *__p) {
             mdl_uint_t page_c;
             if ((page_c = ((__pot->off<<PAGE_SHIFT)+((__pot->off-((__pot->off<<PAGE_SHIFT)*PAGE_SIZE))>0))) < __pot->page_c) {
             	if (brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
-					ffly_errmsg("error: brk.");
+					ffly_errmsg("error: brk.\n");
 				}
             }
         }
@@ -546,7 +546,7 @@ _ffly_free(potp __pot, void *__p) {
 void
 ffly_free(void *__p) {
 	if (!__p) {
-		ffly_errmsg("error: got null ptr.");
+		ffly_errmsg("error: got null ptr.\n");
 		return;
 	}
 	blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);
@@ -560,7 +560,7 @@ ffly_free(void *__p) {
         p = p->fd;
     }
 	if (!p) {
-		ffly_errmsg("error: could not find pot associated with pointer.");
+		ffly_errmsg("error: could not find pot associated with pointer.\n");
 		return;
 	}
     _ffly_free(p, __p);
@@ -576,7 +576,7 @@ ffly_free(void *__p) {
 void*
 ffly_realloc(void *__p, mdl_uint_t __bc) {
 	if (!__p) {
-		ffly_errmsg("error: got null ptr.");
+		ffly_errmsg("error: got null ptr.\n");
 		return NULL;
 	}
 	blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);

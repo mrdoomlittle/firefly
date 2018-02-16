@@ -19,7 +19,8 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	}
 
 	file = __argv[1];
-	int fd;
+	mdl_s32_t fd;
+	mdl_u8_t *base;
 	if ((fd = open(file, O_RDONLY, 0)) == -1) {
 		fprintf(stderr, "failed to open file.\n");
 		return -1;
@@ -31,21 +32,24 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		goto _fault;	
 	}
 
-	if ((p = (mdl_u8_t*)malloc(st.st_size)) == NULL) {
+	if ((p = (mdl_u8_t*)malloc(200)) == NULL) {
 		fprintf(stderr, "failed to allocate memory.\n");
 		goto _fault;
-	}
-	
+	}	
+
+	base = p;
 	read(fd, p, st.st_size);
+	
 	eof = p+st.st_size;
-	bucketp p = NULL;
-	parse(&p);
+	bucketp top = NULL;
+	printf("filesize: %u\n", st.st_size);
+	parse(&top);
 
 	lexer_cleanup();
 
 	_fault:
 	close(fd);
-	if (p != NULL)
-		free(p);
+	if (base != NULL)
+		free(base);
 	return 0;
 }

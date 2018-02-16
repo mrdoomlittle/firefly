@@ -58,6 +58,7 @@ struct stat { //needs testing
 	mdl_u64_t st_ctime_nsec;
 	unsigned long __unused4;
 	unsigned long __unused5;
+	mdl_u8_t pad[24];
 };
 
 mdl_s32_t stat(char const*, struct stat*);

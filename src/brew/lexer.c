@@ -13,7 +13,7 @@ mdl_u8_t static is_space(char __c) {
 }
 
 void static sk_white_space() {
-	while(is_space(nextc())) incrp;	
+	while(is_space(nextc()) && !at_eof()) incrp;	
 }
 
 # define BUFSIZE 20
@@ -23,12 +23,6 @@ bucketp static* end = buf;
 
 mdl_u8_t tokbuf_size() {
 	return end-buf;
-}
-
-bucketp peek_token() {
-	bucketp p;
-	ulex(p = lex());
-	return p;
 }
 
 void ulex(bucketp __p) {
@@ -41,8 +35,13 @@ void ulex(bucketp __p) {
 }
 
 mdl_u8_t expect_token(mdl_u8_t __sort, mdl_u8_t __val) {
-	bucketp tok = lex();
-	return (tok->sort == __sort && tok->val == __val);
+	bucketp tok = nexttok();
+	mdl_u8_t res = (tok->sort == __sort && tok->val == __val);
+	if (!res) {
+		fprintf(stdout, "got %u expected: %u, sort: %u\n", tok->val, __val, tok->sort);
+	}
+
+	return res;
 }
 
 char* read_ident(mdl_u16_t *__len) {
@@ -63,7 +62,7 @@ char* read_ident(mdl_u16_t *__len) {
 /*
 	tokens will be freed from head down if overflow	
 */
-# define BACK 6
+# define BACK 100
 bucketp static head = NULL;
 bucketp static next = NULL;
 mdl_uint_t static len = 0;
@@ -78,15 +77,18 @@ bucketp lex() {
 		free(bk);
 	}
 
+	if (at_eof()) return NULL;
+
 	bucketp ret;
 	if ((ret = (bucketp)malloc(sizeof(struct bucket))) == NULL) {
 		// err
 	}
 
 	ret->next = NULL;
+	ret->fd = NULL;
+	sk_white_space();
 	if (!head)
 		head = ret;
-	sk_white_space();
 
 	char c = nextc();
 	if (is_no(c)) {
