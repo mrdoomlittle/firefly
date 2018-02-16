@@ -49,6 +49,7 @@ struct stat { //needs testing
 	unsigned long st_rdev;
 	long st_size;
 	int long st_blksize;	
+	int __pad1;
 	long st_blocks;
 	__linux_time_t st_atime;
 	mdl_u64_t st_atime_nsec;
@@ -58,7 +59,6 @@ struct stat { //needs testing
 	mdl_u64_t st_ctime_nsec;
 	unsigned long __unused4;
 	unsigned long __unused5;
-	mdl_u8_t pad[24];
 };
 
 mdl_s32_t stat(char const*, struct stat*);
