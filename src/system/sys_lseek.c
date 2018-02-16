@@ -5,6 +5,6 @@ mdl_s32_t lseek(mdl_u32_t __fd, mdl_u64_t __off, mdl_u32_t __whence) {
 			"mov %2, %%rsi\n\t"
 			"mov %3, %%edx\n\t"
 			"call _lseek\n\t"
-			"mov %%eax, %0" : "=r"(ret) : "r"(__fd), "r"(__off), "r"(__whence));
+			"mov %%eax, %0" : "=m"(ret) : "m"(__fd), "m"(__off), "m"(__whence));
 	return ret;
 }

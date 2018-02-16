@@ -8,6 +8,6 @@ void* mmap(void *__addr, mdl_u64_t __len, mdl_u64_t __prot, mdl_u64_t __flags, m
 			"mov %5, %%r8\n\t"
 			"mov %6, %%r9\n\t"
 			"call _mmap\n\t"
-			"mov %%rax, %0" : "=r"(ret) : "r"(__addr), "r"(__len), "r"(__prot), "r"(__flags), "r"(__fd), "r"(__off));	
+			"mov %%rax, %0" : "=m"(ret) : "m"(__addr), "m"(__len), "m"(__prot), "m"(__flags), "m"(__fd), "m"(__off));	
 	return ret;
 }

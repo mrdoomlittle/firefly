@@ -4,6 +4,6 @@ mdl_s32_t access(char const *__file, mdl_u32_t __mode) {
 	__asm__("mov %1, %%rdi\n\t"
 			"mov %2, %%esi\n\t" 
 			"call _access\n\t"
-			"mov %%eax, %0" : "=r"(ret) : "r"(__file), "r"(__mode));
+			"mov %%eax, %0" : "=m"(ret) : "m"(__file), "m"(__mode));
 	return ret;
 }

@@ -96,6 +96,9 @@ $ffly_cc $cc_flags -c -o $dst_dir/sys_getcwd.o.1 $root_dir/sys_getcwd.c
 nasm -f elf64 -I$root_dir/asm/ -o $dst_dir/sys_clone.o.0 $root_dir/asm/sys_clone.asm
 $ffly_cc $cc_flags -c -o $dst_dir/sys_clone.o.1 $root_dir/sys_clone.c
 
+nasm -f elf64 -I$root_dir/asm/ -o $dst_dir/sys_fstat.o.0 $root_dir/asm/sys_fstat.asm
+$ffly_cc $cc_flags -c -o $dst_dir/sys_fstat.o.1 $root_dir/sys_fstat.c
+
 $ffly_cc -c $cc_flags -D__ffly_debug -o $dst_dir/printf.o $root_dir/printf.c
 $ffly_cc -c $cc_flags -o $dst_dir/string.o $root_dir/string.c
 $ffly_cc -c $cc_flags -o $dst_dir/file.o $root_dir/file.c
@@ -131,4 +134,5 @@ $dst_dir/sys_shmget.o.0 $dst_dir/sys_shmget.o.1
 $dst_dir/sys_shmat.o.0 $dst_dir/sys_shmat.o.1 \
 $dst_dir/sys_shmdt.o.0 $dst_dir/sys_shmdt.o.1 \
 $dst_dir/sys_getcwd.o.0 $dst_dir/sys_getcwd.o.1
-$dst_dir/sys_clone.o.0 $dst_dir/sys_clone.o.1"
+$dst_dir/sys_clone.o.0 $dst_dir/sys_clone.o.1 \
+$dst_dir/sys_fstat.o.0 $dst_dir/sys_fstat.o.1"

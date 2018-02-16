@@ -1,8 +1,8 @@
 DEFINES=-I../eint_t/inc -D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
 nasm_flags="-I${PWD}/system/asm/"
-ffly_cc=gcc
 dst_dir=${PWD}
-ffly_objs=$(shell export ffly_cc=$(ffly_cc);export dst_dir=$(dst_dir);export root_dir=${PWD};. ./compile.sh;echo $$ffly_objs)
+cc_flags=-D__ffly_no_task_pool -D__ffly_use_allocr
+ffly_objs=$(shell export dst_dir=$(dst_dir);export root_dir=${PWD};. ./compile.sh;echo $$ffly_objs)
 pkg: clean
 	gcc -c extract.c
 	gcc -c build.c
@@ -100,15 +100,19 @@ config: clean
 	gcc -c system/util/hash.c
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o system/asm/sys_nanosleep.asm
 	gcc  -o main config.c str_cpy.o bin_tree.o hash.o map.o $(ffly_objs) sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o
+brew: clean
+	gcc $(cc_flags) -c brew/parser.c
+	gcc $(cc_flags) -c brew/lexer.c
+	gcc $(cc_flags) -Wall -o main brew/main.c $(ffly_objs) parser.o lexer.o -nostdlib
 script: clean
-	gcc -c system/lat.c
-	gcc -c parser.c
-	gcc -c lexer.c
-	gcc -c gen.c
-	gcc -c execute.c
-	gcc -c data/mem_swp.c
-	gcc -c compiler.c
-	gcc  -Wall -o main script.c compiler.o $(ffly_objs) lat.o mem_swp.o execute.o parser.o gen.o lexer.o -nostdlib
+	gcc $(cc_flags) -c system/lat.c
+	gcc $(cc_flags) -c parser.c
+	gcc $(cc_flags) -c lexer.c
+	gcc $(cc_flags) -c gen.c
+	gcc $(cc_flags) -c execute.c
+	gcc $(cc_flags) -c data/mem_swp.c
+	gcc $(cc_flags) -c compiler.c
+	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) lat.o mem_swp.o execute.o parser.o gen.o lexer.o -nostdlib
 clean:
 	rm -f main
 	cd ../ && make clean && cd src

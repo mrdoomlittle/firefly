@@ -51,8 +51,8 @@ ffly_err_t ffly_fstat(char const *__path, struct ffly_stat *__stat) {
 }
 
 ffly_off_t ffly_fseek(struct ffly_file *__f, ffly_off_t __off, int __whence) {
-	off_t off = lseek(__f->fd, __off, __whence);
-	if (off == (off_t)-1) {
+	__linux_off_t off = lseek(__f->fd, __off, __whence);
+	if (off == (__linux_off_t)-1) {
 		ffly_fprintf(ffly_err, "fseek failed.\n");
 		return 0;
 	}

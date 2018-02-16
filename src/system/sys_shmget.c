@@ -6,6 +6,6 @@ mdl_s32_t shmget(__linux_key_t __key, __linux_size_t __size, mdl_s32_t __flags) 
 			"mov %2, %%rsi\n\t"
 			"mov %3, %%edx\n\t"
 			"call _shmget\n\t"
-			"mov %%eax, %0" : "=r"(ret) : "r"(__key), "r"(__size), "r"(__flags));
+			"mov %%eax, %0" : "=m"(ret) : "m"(__key), "m"(__size), "m"(__flags));
 	return ret;
 }

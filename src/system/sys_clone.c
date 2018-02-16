@@ -7,6 +7,6 @@ mdl_s64_t clone(mdl_u64_t __flags, mdl_u64_t __newsp, void *__parent, void *__ch
 			"mov %4, %%r10\n\t"
 			"mov %5, %%r8\n\t"
 			"call _clone\n\t"
-			"mov %%rax, %0" : "=r"(ret) : "r"(__flags), "r"(__newsp), "r"(__parent), "r"(__child), "r"(__tls));
+			"mov %%rax, %0" : "=m"(ret) : "m"(__flags), "m"(__newsp), "m"(__parent), "m"(__child), "m"(__tls));
 	return ret;
 }

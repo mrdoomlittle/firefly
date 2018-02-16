@@ -1,12 +1,12 @@
 # ifndef __ffly__io__h
 # define __ffly__io__h
 # include <mdlint.h>
-# include <stdio.h>
 # include "../types/err_t.h"
 # include "../types/fd_t.h"
 # include "../types/size_t.h"
 # include "file.h"
 # include "printf.h"
+# include "../ffly_def.h"
 # ifdef __cplusplus
 extern "C" {
 # endif

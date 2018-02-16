@@ -1,6 +1,6 @@
 #!/bin/sh
 ffly_cc=gcc
-cc_flags=-D__ffly_no_task_pool
+cc_flags="-D__ffly_no_task_pool -D__ffly_use_allocr"
 ffly_objs=$(
 	dst_dir=$PWD/data
 	root_dir=data;

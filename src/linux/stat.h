@@ -61,4 +61,5 @@ struct stat { //needs testing
 };
 
 mdl_s32_t stat(char const*, struct stat*);
+mdl_s32_t fstat(mdl_s32_t, struct stat*);
 # endif /*__ffly__linux__stat__h*/

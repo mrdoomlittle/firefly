@@ -6,6 +6,6 @@ mdl_s32_t shmctl(mdl_s32_t __id, mdl_s32_t __cmd, struct shmid_ds *__buf) {
 			"mov %2, %%esi\n\t"
 			"mov %3, %%rdx\n\t"
 			"call _shmctl\n\t"
-			"mov %%eax, %0" : "=r"(ret) : "r"(__id), "r"(__cmd), "r"(__buf));
+			"mov %%eax, %0" : "=m"(ret) : "m"(__id), "m"(__cmd), "m"(__buf));
 	return ret;
 }
