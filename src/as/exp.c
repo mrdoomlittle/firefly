@@ -44,8 +44,8 @@ symbolp eval(char *__s) {
 				if (isno(*p)) _no: {
 					mdl_uint_t len;
 					mdl_u8_t sign;
-					cur->p = _alloca(sizeof(mdl_uint_t));
-					*(mdl_uint_t*)cur->p = read_no(p, &len, &sign);
+					cur->p = _alloca(sizeof(mdl_u64_t));
+					*(mdl_u64_t*)cur->p = read_no(p, &len, &sign);
 					p+= len;
 					cur->sort = SY_INT;
 					if (sign)

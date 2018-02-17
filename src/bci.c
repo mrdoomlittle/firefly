@@ -126,7 +126,7 @@ ffly_err_t ffly_bci_exec(ffly_bcip __bci, ffly_err_t *__exit_code) {
 		get(__bci, (mdl_u8_t*)&val, l, &err);
 		stack_put(__bci, (mdl_u8_t*)&val, l, to);
 	}
-	next;
+	fi;
 
 	__asm__("_jmp:\n\t");
 	{

@@ -31,6 +31,7 @@ struct ffly_bci ctx = {
 	.set_ip = set_ip
 };
 
+# include "../malloc.h"
 # include "../system/err.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	if (__argc < 2) {
@@ -42,6 +43,9 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	struct stat st;
 	fstat(fd, &st);
 
+	bin = (mdl_u8_t*)malloc(st.st_size);
+	read(fd, bin, st.st_size);
+	close(fd);
 	ffly_bci_init(&ctx);
 
 	ffly_err_t exit_code = 0;
@@ -49,6 +53,6 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	printf("exit code: %u\n", exit_code);
 
 	ffly_bci_de_init(&ctx);
-	close(fd);
+	free(bin);
 	retok;
 }

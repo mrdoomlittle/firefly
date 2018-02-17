@@ -54,7 +54,7 @@ symbolp parse(char *__s) {
 /*
 	cur = sy;
 	while(cur != NULL) {
-		printf("%s\n", cur->p);
+		printf("%u\n", *(mdl_u8_t*)cur->p);
 		cur = cur->next;
 	}
 */		

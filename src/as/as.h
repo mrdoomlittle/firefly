@@ -71,7 +71,7 @@ void oust_16l(mdl_u16_t);
 void oust_32l(mdl_u32_t);
 void oust_64l(mdl_u64_t);
 symbolp parse(char*);
-mdl_uint_t read_no(char*, mdl_uint_t*, mdl_u8_t*);
+mdl_u64_t read_no(char*, mdl_uint_t*, mdl_u8_t*);
 void hash_init(struct hash*);
 void hash_put(struct hash*, mdl_u8_t const*, mdl_uint_t, void*);
 void* hash_get(struct hash*, mdl_u8_t const*, mdl_uint_t);

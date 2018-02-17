@@ -31,19 +31,27 @@ char* read_str(char *__p, mdl_uint_t *__len) {
 	return memdup(buf, (bufp-buf)+1);
 }
 
-mdl_uint_t read_no(char *__p, mdl_uint_t *__len, mdl_u8_t *__sign) {
+mdl_u64_t read_no(char *__p, mdl_uint_t *__len, mdl_u8_t *__sign) {
 	char *p = __p;
 	char buf[128];
-	char *bufp = buf; 
+	char *bufp = buf;
 	if ((*__sign = (*p == '-')))
 		p++;
+	mdl_u8_t hex = 0;
 	while(*p >= '0' && *p <= '9') {
+		if (*p == 'x') {
+			bufp = buf;
+			p++;
+			hex = 1;
+		}
 		*(bufp++) = *(p++);
 	}
 
 	*bufp = '\0';
 	*__len = bufp-buf;
 
+	if (hex) 
+		return ffly_htint(buf);
 	if (*__sign)
 		return -ffly_stno(buf);
 	return ffly_stno(buf);
@@ -90,7 +98,7 @@ assemble(char *__p, char *__end) {
 				insp ins;
 				if ((ins = (insp)hash_get(&globl, sy->p, sy->len))) {		
 					ins->l = sy->next;
-					if (ins->next != NULL)
+					if (sy->next != NULL)
 						ins->r = sy->next->next;
 					ins->post(ins);
 					printf("got: %s\n", ins->name);
