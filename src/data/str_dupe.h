@@ -3,13 +3,13 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-char* ffly_str_dupe(char*);
+char* ffly_str_dupe(char const*);
 # ifdef __cplusplus
 }
 namespace mdl {
 namespace firefly {
 namespace data {
-static char*(*str_dupe)(char*) = &ffly_str_dupe;
+static char*(*str_dupe)(char const*) = &ffly_str_dupe;
 }
 }
 }

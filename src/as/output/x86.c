@@ -1,6 +1,6 @@
 # include "../as.h"
 # include "../../ffly_def.h"
-# include <stdio.h>
+# include "../stdio.h"
 void emit_mov(insp __ins) {
 	oustbyte(*__ins->opcode);
 
@@ -35,7 +35,7 @@ void emit_add(insp __ins) {
 }
 
 struct ins *x86[] = {
-	&(struct ins){"mov", NULL, emit_mov, {0x88, 0x89}},
+	&(struct ins){"mov", NULL, emit_mov, NULL, NULL, {0x88, 0x89}},
 	&(struct ins){"movb", NULL, emit_movb},
 	&(struct ins){"nop", NULL, emit_nop},
 	&(struct ins){"call", NULL, emit_call},

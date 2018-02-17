@@ -1,1 +1,1 @@
-sh compile.sh && ./as -i main.asm -o a.out
+sh compile.sh && ./as -i test.asm -o a.out && xxd a.out

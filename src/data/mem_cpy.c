@@ -10,7 +10,7 @@
 #   include "../system/atomic.h"
 #   include "../system/nanosleep.h"
 # endif
-void _ffly_mem_cpy(void *__dst, void *__src, mdl_uint_t __bc) {
+void _ffly_mem_cpy(void *__dst, void const *__src, mdl_uint_t __bc) {
 	if (__bc == sizeof(mdl_u8_t)) {
 		*(mdl_u8_t*)__dst = *(mdl_u8_t*)__src;
 		return;
@@ -46,7 +46,7 @@ void _ffly_mem_cpy(void *__dst, void *__src, mdl_uint_t __bc) {
 
 # ifndef __ffly_no_task_pool
 typedef struct {
-	void *dst, *src;
+	void *dst, const *src;
 	mdl_uint_t bc;
     ffly_atomic_uint_t *done;
 } arg;
@@ -61,7 +61,7 @@ mdl_i8_t static proxy(void *__arg_p) {
 # define MIN_SLICE_C 2
 # define SLICE_SHIFT 13
 # endif
-ffly_err_t ffly_mem_cpy(void *__dst, void *__src, mdl_uint_t __bc) {
+ffly_err_t ffly_mem_cpy(void *__dst, void const *__src, mdl_uint_t __bc) {
 # ifndef __ffly_no_task_pool
 	if ((__bc>>SLICE_SHIFT) >= MIN_SLICE_C) {
 		mdl_uint_t slice_c = __bc>>SLICE_SHIFT;

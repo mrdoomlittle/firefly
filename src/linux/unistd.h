@@ -2,6 +2,10 @@
 # define __ffly__linux__unistd__h
 # include "types.h"
 
+# define SEEK_SET 0
+# define SEEK_CUR 1
+# define SEEK_END 2
+
 # define R_OK 4
 # define W_OK 2
 # define X_OK 1
@@ -17,7 +21,7 @@ mdl_s32_t access(char const*, mdl_u32_t);
 
 mdl_s32_t fsync(mdl_s32_t);
 mdl_s32_t lseek(mdl_u32_t, mdl_u64_t, mdl_u32_t);
-void exit(mdl_s32_t);
+mdl_s32_t exit(mdl_s32_t);
 mdl_s32_t getcwd(char*, mdl_u64_t);
 void* brk(void*);
 # endif /*__ffly__linux__unistd__h*/

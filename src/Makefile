@@ -100,6 +100,9 @@ config: clean
 	gcc -c system/util/hash.c
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o system/asm/sys_nanosleep.asm
 	gcc  -o main config.c str_cpy.o bin_tree.o hash.o map.o $(ffly_objs) sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o
+bci: clean
+	gcc $(cc_flags) -Wall -c bci.c
+	gcc $(cc_flags) -Wall -o main bci/main.c bci.o $(ffly_objs) -nostdlib
 brew: clean
 	gcc $(cc_flags) -c brew/brew.c
 	gcc $(cc_flags) -c brew/exec.c

@@ -1,5 +1,5 @@
 # include "as.h"
-# include <malloc.h>
+# include "../malloc.h"
 typedef struct hdr {
 	struct hdr *next;
 } *hdrp;

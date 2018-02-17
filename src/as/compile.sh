@@ -1,16 +1,15 @@
-ffly_objs="output.o x86.o string.o as.o hash.o str_cmp.o str_len.o mem_cmp.o bzero.o hash.0 alloca.o parser.o exp.o"
 rm -f *.o
-gcc -c output/x86.c
-gcc -c ../system/string.c
-gcc -c ../data/str_cmp.c 
-gcc -c ../data/str_len.c
-gcc -c ../data/mem_cmp.c
-gcc -c ../data/bzero.c
-gcc -c ../system/util/hash.c
-gcc -c alloca.c
-gcc -c parser.c
-gcc -c exp.c
-gcc -c as.c
-gcc -c hash.c -o hash.0
-gcc -c -o output.o output.c
-gcc -o as main.c $ffly_objs
+root_dir=$(realpath ../)
+cc_flags="-fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr"
+dst_dir=$root_dir
+cd ../ && . ./compile.sh && cd as
+ffly_objs="$ffly_objs output.o bc.o x86.o as.o hash.o alloca.o parser.o exp.o"
+gcc $cc_flags -c output/x86.c
+gcc $cc_flags -c output/bc.c
+gcc $cc_flags -c alloca.c
+gcc $cc_flags -c parser.c
+gcc $cc_flags -c exp.c
+gcc $cc_flags -c as.c
+gcc $cc_flags -c hash.c
+gcc $cc_flags -c -o output.o output.c
+gcc $cc_flags -o as main.c $ffly_objs -nostdlib

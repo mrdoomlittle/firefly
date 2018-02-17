@@ -76,25 +76,25 @@ enum {
 	_ffly_conf_8l_u
 };
 
-void const* ffly_conf_get(ffconfp, char*);
-void* ffly_conf_get_arr_elem(void*, mdl_uint_t);
+void const* ffly_conf_get(ffconfp, char const*);
+void const* ffly_conf_get_arr_elem(void const*, mdl_uint_t);
 ffly_err_t ffly_conf_init(struct ffly_conf*);
 ffly_err_t ffly_conf_read(struct ffly_conf*);
-ffly_err_t ffly_conf_ld(struct ffly_conf*, char*);
+ffly_err_t ffly_conf_ld(struct ffly_conf*, char const*);
 ffly_err_t ffly_conf_free(struct ffly_conf*);
 ffly_err_t ffconf_free(ffconfp);
 void ffly_conf_depos(struct ffly_conf*, ffconfp);
-char* ffly_conf_str(void*);
-char ffly_conf_chr(void*);
-mdl_u64_t ffly_conf_64l_u(void*);
-mdl_u32_t ffly_conf_32l_u(void*);
-mdl_u16_t ffly_conf_16l_u(void*);
-mdl_u8_t ffly_conf_8l_u(void*);
-mdl_u64_t ffly_conf_int_u(void*);
+char const* ffly_conf_str(void const*);
+char ffly_conf_chr(void const*);
+mdl_u64_t ffly_conf_64l_u(void const*);
+mdl_u32_t ffly_conf_32l_u(void const*);
+mdl_u16_t ffly_conf_16l_u(void const*);
+mdl_u8_t ffly_conf_8l_u(void const*);
+mdl_u64_t ffly_conf_int_u(void const*);
 
-mdl_i64_t ffly_conf_64l_s(void*);
-mdl_i32_t ffly_conf_32l_s(void*);
-mdl_i16_t ffly_conf_16l_s(void*);
-mdl_i8_t ffly_conf_8l_s(void*);
-mdl_i64_t ffly_conf_int_s(void*);
+mdl_i64_t ffly_conf_64l_s(void const*);
+mdl_i32_t ffly_conf_32l_s(void const*);
+mdl_i16_t ffly_conf_16l_s(void const*);
+mdl_i8_t ffly_conf_8l_s(void const*);
+mdl_i64_t ffly_conf_int_s(void const*);
 # endif /*__ffly__config__h*/

@@ -9,7 +9,7 @@ symbolp getsymbol(char *__s) {
 	return (symbolp)hash_get(&symbols, __s, ffly_str_len(__s));
 }
 
-# define isno(__c) (__c >= '0' && __c <= '9')
+# define isno(__c) ((__c >= '0' && __c <= '9') || __c == '-')
 
 # define is_next(__p, __c) \
 	(*(__p+1) == __c)

@@ -177,7 +177,7 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	*(void**)(thr->sp+DSS-8) = (void*)&ffly_thr_proxy;
     __linux_pid_t pid;
 //  if ((pid = ffly_clone(&ffly_thr_proxy, thr->sp+DSS, CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD, (void*)thr)) == -1) {
-	if ((pid = clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS, thr->sp+DSS-8, NULL, NULL, 0))) {
+	if ((pid = clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS, (mdl_u64_t)(thr->sp+DSS-8), NULL, NULL, 0))) {
 		ffly_fprintf(ffly_err, "thread: failed.\n");
 		return FFLY_FAILURE;
 	}

@@ -4,7 +4,7 @@
 # include "../system/io.h"
 # include "../system/errno.h"
 # include "../system/err.h"
-ffly_err_t ffly_mem_dupe(void **__dst, void *__src, mdl_uint_t __bc) {
+ffly_err_t ffly_mem_dupe(void **__dst, void const *__src, mdl_uint_t __bc) {
 	if ((*__dst = __ffly_mem_alloc(__bc)) == NULL) {
 		ffly_fprintf(ffly_err, "mem_dupe: failed to alloc memory, ffly_errno: %d.\n", ffly_errno);
 		return FFLY_FAILURE;

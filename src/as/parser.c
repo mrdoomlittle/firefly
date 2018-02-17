@@ -1,5 +1,5 @@
 # include "as.h"
-# include <stdio.h>
+# include "../stdio.h"
 # include "../data/str_cmp.h"
 symbolp parse(char *__s) {
 	char *p = __s;

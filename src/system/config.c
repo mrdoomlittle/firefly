@@ -28,19 +28,19 @@ ffly_err_t ffly_ld_sysconf(char const *__path) {
 
     ffconf cf;
     ffly_conf_depos(&conf, &cf);
-    void *version = ffly_conf_get(&cf, "version");
+    void const *version = ffly_conf_get(&cf, "version");
     if (!ffly_conf_is_str(version)) {
         ffly_fprintf(ffly_err, "can't read version as type does not match.\n");
         err = FFLY_FAILURE;
         goto _failure;
     }
 
-	void *root_dir = ffly_conf_get(&cf, "root_dir");
+	void const *root_dir = ffly_conf_get(&cf, "root_dir");
 	if (!ffly_conf_is_str(root_dir)) {
 
 	}
 
-    void *max_threads = ffly_conf_get(&cf, "max_threads");
+    void const *max_threads = ffly_conf_get(&cf, "max_threads");
     if (!max_threads)
         __ffly_sysconf__.max_threads = ffly_conf_int_u(max_threads);
     else

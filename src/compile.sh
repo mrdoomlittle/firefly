@@ -1,6 +1,6 @@
 #!/bin/sh
 ffly_cc=gcc
-cc_flags="-D__ffly_no_task_pool -D__ffly_use_allocr"
+cc_flags="-fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr"
 ffly_objs=$(
 	dst_dir=$PWD/data
 	root_dir=data;
@@ -34,4 +34,6 @@ root_dir=.
 $ffly_cc $cc_flags -c -o $dst_dir/config.o $root_dir/config.c
 $ffly_cc $cc_flags -c -o $dst_dir/ffly_system.o $root_dir/ffly_system.c
 $ffly_cc $cc_flags -c -o $dst_dir/firefly.o $root_dir/firefly.c
-export ffly_objs="$ffly_objs $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o"
+$ffly_cc $cc_flags -c -o $dst_dir/put_bit.o $root_dir/put_bit.c
+$ffly_cc $cc_flags -c -o $dst_dir/get_bit.o $root_dir/get_bit.c
+export ffly_objs="$ffly_objs $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  $dst_dir/get_bit.o"

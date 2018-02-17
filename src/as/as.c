@@ -3,7 +3,7 @@
 # include "../ffly_def.h"
 # include "../system/string.h"
 # include "../elf.h"
-# include <stdio.h>
+# include "../stdio.h"
 # include "../data/str_cmp.h"
 struct hash symbols;
 struct hash globl;
@@ -49,7 +49,7 @@ mdl_uint_t read_no(char *__p, mdl_uint_t *__len, mdl_u8_t *__sign) {
 	return ffly_stno(buf);
 }
 
-# include <unistd.h>
+# include "../linux/unistd.h"
 char*
 copyln(char *__dst, char *__src, char *__end, mdl_uint_t *__len) {
 	char *p = __src;
@@ -106,9 +106,26 @@ assemble(char *__p, char *__end) {
 	}
 }
 
+void oust(mdl_u8_t *__p, mdl_u8_t __n) {
+	lseek(out, offset, SEEK_SET);
+	write(out, __p, __n);
+	offset+=__n;
+}
+
 void oustbyte(mdl_u8_t __byte) {
-	lseek(out, offset++, SEEK_SET);
-	write(out, &__byte, 1);
+	oust(&__byte, 1);
+}
+
+void oust_16l(mdl_u16_t __data) {
+	oust((mdl_u8_t*)&__data, 2);
+}
+
+void oust_32l(mdl_u32_t __data) {
+	oust((mdl_u8_t*)&__data, 4);
+}
+
+void oust_64l(mdl_u64_t __data) {
+	oust((mdl_u8_t*)&__data, 8);
 }
 
 void load(insp* __list) {

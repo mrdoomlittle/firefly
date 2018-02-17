@@ -26,43 +26,43 @@ ffly_bool_t static is_space(char __c) {
 	return (__c == ' ' || __c == '\n' || __c == '\t');
 }
 
-char* ffly_conf_str(void *__p) {
+char const* ffly_conf_str(void const *__p) {
 	return (char*)((struct ffly_conf_val*)__p)->p;
 }
 
-char ffly_conf_chr(void *__p) {
+char ffly_conf_chr(void const *__p) {
 	return *(char*)((struct ffly_conf_val*)__p)->p;
 }
 
-mdl_u64_t ffly_conf_64l_u(void *__p) {
+mdl_u64_t ffly_conf_64l_u(void const *__p) {
 	return *(mdl_u64_t*)((struct ffly_conf_val*)__p)->p;
 }
 
-mdl_u32_t ffly_conf_32l_u(void *__p) {
+mdl_u32_t ffly_conf_32l_u(void const *__p) {
 	return *(mdl_u32_t*)((struct ffly_conf_val*)__p)->p;
 }
 
-mdl_u16_t ffly_conf_16l_u(void *__p) {
+mdl_u16_t ffly_conf_16l_u(void const *__p) {
 	return *(mdl_u16_t*)((struct ffly_conf_val*)__p)->p;
 }
 
-mdl_u8_t ffly_conf_8l_u(void *__p) {
+mdl_u8_t ffly_conf_8l_u(void const *__p) {
 	return *(mdl_u8_t*)((struct ffly_conf_val*)__p)->p;
 }
 
-mdl_i64_t ffly_conf_64l_s(void *__p) {
+mdl_i64_t ffly_conf_64l_s(void const *__p) {
 	return *(mdl_i64_t*)((struct ffly_conf_val*)__p)->p;
 }
 
-mdl_i32_t ffly_conf_32l_s(void *__p) {
+mdl_i32_t ffly_conf_32l_s(void const *__p) {
 	return *(mdl_i32_t*)((struct ffly_conf_val*)__p)->p;
 }
 
-mdl_i16_t ffly_conf_16l_s(void *__p) {
+mdl_i16_t ffly_conf_16l_s(void const *__p) {
 	return *(mdl_i16_t*)((struct ffly_conf_val*)__p)->p;
 }
 
-mdl_i8_t ffly_conf_8l_s(void *__p) {
+mdl_i8_t ffly_conf_8l_s(void const *__p) {
 	return *(mdl_i8_t*)((struct ffly_conf_val*)__p)->p;
 }
 
@@ -72,12 +72,12 @@ void ffly_conf_depos(struct ffly_conf *__conf, ffconfp __d) {
 	__d->env = __conf->env;
 }
 
-void const* ffly_conf_get(ffconfp __conf, char *__name) {
+void const* ffly_conf_get(ffconfp __conf, char const *__name) {
 	ffly_err_t err;
-	return ffly_map_get(&__conf->env, (mdl_u8_t*)__name, ffly_str_len(__name), &err);
+	return ffly_map_get(&__conf->env, (mdl_u8_t const*)__name, ffly_str_len(__name), &err);
 }
 
-void* ffly_conf_get_arr_elem(void *__p, mdl_uint_t __no) {
+void const* ffly_conf_get_arr_elem(void const *__p, mdl_uint_t __no) {
 	return *(void**)ffly_vec_at(&((struct ffly_conf_arr*)__p)->data, __no);
 }
 
@@ -535,7 +535,7 @@ ffly_err_t ffly_conf_read(struct ffly_conf *__conf) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_conf_ld(struct ffly_conf *__conf, char *__file) {
+ffly_err_t ffly_conf_ld(struct ffly_conf *__conf, char const *__file) {
 	ffly_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
 	struct ffly_stat st;
@@ -616,7 +616,7 @@ ffly_err_t ffly_conf_free(struct ffly_conf *__conf) {
 	return FFLY_SUCCESS;
 }
 
-mdl_u64_t ffly_conf_int_u(void *__val) {
+mdl_u64_t ffly_conf_int_u(void const *__val) {
 	struct ffly_conf_val *val = (struct ffly_conf_val*)__val;
 	switch(val->kind) {
 		case _ffly_conf_64l_u:
@@ -631,7 +631,7 @@ mdl_u64_t ffly_conf_int_u(void *__val) {
 	return 0;
 }
 
-mdl_i64_t ffly_conf_int_s(void *__val) {
+mdl_i64_t ffly_conf_int_s(void const *__val) {
 	struct ffly_conf_val *val = (struct ffly_conf_val*)__val;
 	switch(val->kind) {
 		case _ffly_conf_64l_s:
