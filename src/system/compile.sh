@@ -15,6 +15,8 @@ $ffly_cc -c $cc_flags -o $dst_dir/vec.o $root_dir/vec.c
 $ffly_cc -c $cc_flags -o $dst_dir/map.o $root_dir/map.c
 $ffly_cc -c $cc_flags -o $dst_dir/flags.o $root_dir/flags.c
 $ffly_cc -c $cc_flags -o $dst_dir/hash.o $root_dir/util/hash.c
+$ffly_cc -c $cc_flags -o $dst_dir/lat.o $root_dir/lat.c
+$ffly_cc -c $cc_flags -o $dst_dir/dict.o $root_dir/dict.c
 
 nasm -f elf64 -I$root_dir/asm/ -o $dst_dir/atomic_op.o.0 $root_dir/asm/atomic_op.asm
 $ffly_cc -c $cc_flags -o $dst_dir/atomic_op.o.1 $root_dir/atomic_op.c
@@ -135,4 +137,5 @@ $dst_dir/sys_shmat.o.0 $dst_dir/sys_shmat.o.1 \
 $dst_dir/sys_shmdt.o.0 $dst_dir/sys_shmdt.o.1 \
 $dst_dir/sys_getcwd.o.0 $dst_dir/sys_getcwd.o.1
 $dst_dir/sys_clone.o.0 $dst_dir/sys_clone.o.1 \
-$dst_dir/sys_fstat.o.0 $dst_dir/sys_fstat.o.1"
+$dst_dir/sys_fstat.o.0 $dst_dir/sys_fstat.o.1 \
+$dst_dir/lat.o $dst_dir/dict.o"
