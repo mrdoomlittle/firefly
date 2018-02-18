@@ -1,3 +1,4 @@
+# define __ffly_dict_internal
 # include "dict.h"
 # include "../ffly_def.h"
 # include "../memory/mem_alloc.h"
@@ -7,12 +8,6 @@
 # include "../data/str_cmp.h"
 
 /* not tested */
-
-typedef struct entry {
-	struct entry *next;
-	char const *key;
-	void const *p;
-} *entryp;
 		
 mdl_u64_t static
 sum(char const *__key, mdl_u8_t __len) {
@@ -28,6 +23,19 @@ sum(char const *__key, mdl_u8_t __len) {
 
 ffly_err_t ffly_dict_init(ffly_dictp __dict) {
 	ffly_lat_prepare(&__dict->lat);
+	__dict->head = NULL;
+}
+
+void* ffly_dict_head(ffly_dictp __dict) {
+	return (void*)__dict->head;
+}
+
+void ffly_dict_fd(void **__p) {
+	*__p = (void*)((entryp)*__p)->fd;
+}
+
+void const* ffly_dict_getp(void *__p) {
+	return ((entryp)__p)->p;
 }
 
 ffly_err_t ffly_dict_put(ffly_dictp __dict, char const *__key, void const *__p) {
@@ -38,9 +46,11 @@ ffly_err_t ffly_dict_put(ffly_dictp __dict, char const *__key, void const *__p) 
 	p = (entryp)__ffly_mem_alloc(sizeof(struct entry));
 	p->next = (entryp)ffly_lat_get(&__dict->lat, val);
 
-
 	p->key = (char const*)ffly_str_dupe(__key);
 	p->p = __p;
+
+	p->fd = __dict->head;
+	__dict->head = p;
 	ffly_lat_put(&__dict->lat, val, p);
 }
 

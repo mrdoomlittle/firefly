@@ -36,6 +36,12 @@ void ffly_delarc(ffly_arcp);
 void ffly_arc_recw(ffly_arc_recp, void*, mdl_uint_t, mdl_uint_t);
 void ffly_arc_recr(ffly_arc_recp, void*, mdl_uint_t, mdl_uint_t);
 
+
+mdl_u64_t* ffly_arcs_alias(char const*);
+
+void ffly_arcs_init();
+void ffly_arcs_de_init();
+
 extern struct ffly_arc __ffly_arcroot__;
 ffly_arcp extern __ffly_arccur__;
 # endif /*__ffly__arcs__h*/

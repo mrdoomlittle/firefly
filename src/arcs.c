@@ -2,8 +2,35 @@
 # include "ffly_def.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
+# include "system/dict.h"
+# include "types/err_t.h"
 struct ffly_arc __ffly_arcroot__;
 ffly_arcp __ffly_arccur__ = &__ffly_arcroot__;
+
+struct ffly_dict static dict;
+
+void ffly_arcs_init() {
+	ffly_dict_init(&dict);
+}
+
+void ffly_arcs_de_init() {
+	void *p = ffly_dict_head(&dict);
+	while(p != NULL) {
+		__ffly_mem_free((void*)ffly_dict_getp(p));	
+		ffly_dict_fd(&p);
+	}
+
+	ffly_dict_de_init(&dict);
+}
+
+mdl_u64_t* ffly_arcs_alias(char const *__name) {
+	ffly_err_t err;
+	mdl_u64_t *p;
+	if (!(p = (mdl_u64_t*)ffly_dict_get(&dict, __name, &err)))
+		// remove __ffly_mem_alloc for somthing else
+		ffly_dict_put(&dict, __name, p = __ffly_mem_alloc(sizeof(mdl_u64_t)));
+	return p;
+}
 
 ffly_arc_recp ffly_arc_lookup(ffly_arcp __arc, mdl_u64_t __no) {
 	ffly_arc_recp cur = *(__arc->rr+(__no&0xff));
@@ -99,6 +126,7 @@ void ffly_arc_recr(ffly_arc_recp __rec, void *__buf,
 {
 	ffly_mem_cpy(__buf, (mdl_u8_t*)__rec->p+__offset, __n);
 }
+
 # include "stdio.h"
 void tree(ffly_arcp __root) {
     ffly_arc_recp *p = __root->rr;
@@ -121,15 +149,23 @@ void tree(ffly_arcp __root) {
     }
 }
 
+void pr();
+# include "stdio.h"
 # include "types/err_t.h"
 ffly_err_t ffmain(int __argc, char const *__argv) {
+	ffly_arcs_init();
 	ffly_arc_prepare(__ffly_arccur__);
-	ffly_arcp arc = ffly_creatarc(__ffly_arccur__, 0);
+	ffly_arcp arc = ffly_creatarc(__ffly_arccur__, (*ffly_arcs_alias("arc") = 101987));
 
-	ffly_arc_recp r0 = ffly_arc_creatrec(arc, 0, NULL, _ffly_rec_def, 0);
+	ffly_arc_creatrec(arc, (*ffly_arcs_alias("rec") = 21299), NULL, _ffly_rec_def, 0);
 	tree(&__ffly_arcroot__);	
 
-	ffly_arc_delrec(arc, r0);
+
+	printf("record no. %u\n", *ffly_arcs_alias("rec"));
+	printf("arc rec no. %u\n", *ffly_arcs_alias("arc"));
+	ffly_arc_delrec(arc, ffly_arc_lookup(arc, *ffly_arcs_alias("rec")));
 	ffly_arc_free(__ffly_arccur__);
+	ffly_arcs_de_init();
+	//pr();
 }
 
