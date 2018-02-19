@@ -166,7 +166,7 @@ void ffly_arstat() {
 	mdl_uint_t no = 0;
 	potp cur = &main_pot;
 	while(cur != NULL) {
-		ffly_printf("potno: %u, off{%u}, no mans land{%u}, pagec{%u}.\n", no++, cur->off, 0, cur->page_c);
+		ffly_printf("potno: %u, off{%u}, no mans land{from: %x, to: %x}, pagec{%u}.\n", no++, cur->off, cur->off, cur->top-cur->end, cur->page_c);
 		cur = cur->next;
 	}
 }
@@ -535,10 +535,8 @@ _ffly_free(potp __pot, void *__p) {
         if (is_flag(__pot->flags, USE_BRK)) { 
             mdl_uint_t page_c;
             if ((page_c = ((__pot->off>>PAGE_SHIFT)+((__pot->off-((__pot->off>>PAGE_SHIFT)*PAGE_SIZE))>0))) < __pot->page_c) {
-				if (page_c>0) {
-            		if (brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
-						ffly_errmsg("error: brk.\n");
-					}
+            	if (brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
+					ffly_errmsg("error: brk.\n");
 				}
             }
         }
