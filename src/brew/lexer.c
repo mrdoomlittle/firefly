@@ -54,15 +54,16 @@ char* read_ident(mdl_u16_t *__len) {
 	*bufp = '\0';
 	mdl_u16_t len;
 	char *p = (char*)malloc((len = (bufp-buf))+1);
+	to_free(p);
 	memcpy(p, buf, len+1);		
 	*__len = len;
 	return p;
 }
 
 /*
-	tokens will be freed from head down if overflow	
+	tokens will be freed from head down if no. of is grater then	
 */
-# define BACK 100
+# define BACK 10
 bucketp static head = NULL;
 bucketp static next = NULL;
 mdl_uint_t static len = 0;

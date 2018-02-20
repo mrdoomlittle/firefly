@@ -1,2 +1,2 @@
 all:
-cp dst src
+exit

@@ -24,4 +24,6 @@ void
 maybe_keyword(bucketp __tok) {
 	if (!ffly_str_cmp((char*)__tok->p, "cp"))
 		to_keyword(__tok, _keywd_cp);
+	else if (!ffly_str_cmp((char*)__tok->p, "exit"))
+		to_keyword(__tok, _keywd_exit);
 }

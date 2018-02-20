@@ -309,10 +309,20 @@ void prr(struct r *__r) {
 void copy(void *__dst, void *__src, mdl_uint_t __bc);
 # include "../linux/stat.h"
 # include "../rand.h"
+# include "../linux/unistd.h"
+# include "../linux/mman.h"
 void _start() {
+	void *p = mmap(NULL, 0, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 	ffly_ar_init();
 	ffly_io_init();
-	mdl_uint_t const n = 100;
+/*
+	void *p = ffly_alloc(0xffff);
+	ffly_str_cpy(p, "abdbybdybfdybfdbyfndnfdun");
+
+	ffly_free(p);
+	*/
+	/*
+	mdl_uint_t const n = 1000;
 	void *list[n];
 
 	void **cur, **end = (void*)((mdl_u8_t*)list+(n*sizeof(void*)));
@@ -353,8 +363,9 @@ void _start() {
 
 	pr();
 	pf();
-
-
+*/ 
+	ffly_printf("%p, %s\n", p, strerror(errno));
+	ffly_arstat();
 	ffly_io_closeup();
 	ffly_ar_cleanup();
 	exit(0);

@@ -38,7 +38,8 @@ void _start(void) {
 	ffly_thread_cleanup();
 	*/
 	ffmain(argc, argv);
-    ffly_io_closeup();
+	ffly_arstat();
+	ffly_io_closeup();
     ffly_ar_cleanup();
 	exit(0);
 }

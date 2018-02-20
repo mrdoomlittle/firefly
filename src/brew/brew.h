@@ -6,19 +6,35 @@ extern mdl_u8_t *p;
 # define decrp p--
 typedef struct bucket {
 	struct bucket *next, *fd;
+
+	void *src, *dst;
 	mdl_u8_t sort:4;
 	mdl_u8_t val;
 	void *p;
 	mdl_u16_t len;
 } *bucketp;
 
+enum {
+	_op_cp,
+	_op_exit
+};
+
 typedef struct obj {
 	struct obj *next;
+	mdl_u8_t opcode;
+	void *src, *dst;
 } *objp;
 
 enum {
 	_colon,
-	_keywd_cp
+	_keywd_cp,
+	_keywd_exit
+};
+
+enum {
+	_label,
+	_cp,
+	_exit
 };
 
 enum {
@@ -39,5 +55,7 @@ void parse(bucketp*);
 mdl_u8_t at_eof();
 void lexer_cleanup();
 void exec();
-void oust(bucketp);
+void gen(bucketp);
+void oust(bucketp, mdl_u8_t);
+void to_free(void*);
 # endif /*__brew__h*/

@@ -11,6 +11,14 @@ mdl_u8_t static *eof;
 mdl_u8_t at_eof() {
 	return (p >= eof || *p == '\0');
 }
+
+// to free list
+void *tf[100];
+void **fresh = tf;
+void to_free(void *__p) {
+	*(fresh++) = __p;
+}
+
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	char const *file;
 	if (__argc < 2) {
@@ -32,7 +40,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		goto _fault;	
 	}
 
-	if ((p = (mdl_u8_t*)malloc(200)) == NULL) {
+	if ((p = (mdl_u8_t*)malloc(st.st_size)) == NULL) {
 		fprintf(stderr, "failed to allocate memory.\n");
 		goto _fault;
 	}	
@@ -44,7 +52,12 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	bucketp top = NULL;
 	printf("filesize: %u\n", st.st_size);
 	parse(&top);
+	gen(top);
+	exec();
 
+	void **cur = tf;
+	while(cur != fresh)
+		free(*(cur++));
 	lexer_cleanup();
 
 	_fault:

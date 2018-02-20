@@ -4,6 +4,8 @@
 # include "../ffly_def.h"
 # include "../types.h"
 # include "../system/err.h"
+# define alloc_node (bucketp)malloc(sizeof(struct bucket))
+
 ffly_err_t parser_label(bucketp *__node) {
 	bucketp name = nexttok();
 	if (!expect_token(_chr, _colon)) {
@@ -12,6 +14,9 @@ ffly_err_t parser_label(bucketp *__node) {
 	}
 
 	printf("label: %s\n", (char*)name->p);	
+	bucketp p = (*__node = alloc_node);
+	p->sort = _label;
+	p->p = name->p;
 	retok;
 }
 
@@ -25,6 +30,22 @@ ffly_err_t parser_cp(bucketp *__node) {
 	dst = nexttok();
 	src = nexttok();
 	printf("cp %s %s\n", (char*)dst->p, (char*)src->p);
+	bucketp p = (*__node = alloc_node);
+	p->sort = _cp;
+	p->src = src->p;
+	p->dst = dst->p;
+	retok;
+}
+
+ffly_err_t parser_exit(bucketp *__node) {
+	if (!expect_token(_keywd, _keywd_exit)) {
+		fprintf(stderr, "expect error.\n");
+		reterr;
+	}
+
+	printf("exit.\n");
+	bucketp p = (*__node = alloc_node);
+	p->sort = _exit;
 	retok;
 }
 
@@ -39,6 +60,9 @@ void parse(bucketp *__p) {
 				case _keywd_cp:
 					if (_err(parser_cp(&p))) return;
 				break;
+				case _keywd_exit:
+					if (_err(parser_exit(&p))) return;
+				break;
 			}
 		} else if (tok->sort == _ident) {
 			bucketp brief = peektok();
@@ -52,6 +76,7 @@ void parse(bucketp *__p) {
 		}
 
 		if (p != NULL) {
+			to_free(p);
 			if (!*__p)
 				*__p = p;
 			if (end != NULL)
@@ -59,4 +84,5 @@ void parse(bucketp *__p) {
 			end = p;
 		}
 	}
+	end->fd = NULL;
 }
