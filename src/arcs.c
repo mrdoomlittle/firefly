@@ -9,7 +9,24 @@ ffly_arcp __ffly_arccur__ = &__ffly_arcroot__;
 
 struct ffly_dict static dict;
 
+mdl_u64_t static deadno[200];
+mdl_u64_t static out = 0;
+
+mdl_u64_t static* fresh = deadno;
+
+mdl_u64_t ffly_arcs_alno() {
+	if (fresh > deadno)
+		return *(--fresh);	
+	return out++;	
+}
+
+void ffly_arcs_frno(mdl_u64_t __no) {
+	if (out-1 == __no) out--;
+	*(fresh++) = __no;
+}
+
 void ffly_arcs_init() {
+	ffly_arc_prepare(&__ffly_arcroot__);
 	ffly_dict_init(&dict);
 }
 
@@ -21,6 +38,7 @@ void ffly_arcs_de_init() {
 	}
 
 	ffly_dict_de_init(&dict);
+	ffly_arc_free(&__ffly_arcroot__);
 }
 
 mdl_u64_t* ffly_arcs_alias(char const *__name) {
@@ -154,7 +172,18 @@ void pr();
 # include "types/err_t.h"
 ffly_err_t ffmain(int __argc, char const *__argv) {
 	ffly_arcs_init();
-	ffly_arc_prepare(__ffly_arccur__);
+	ffly_arcs_creatarc("gr0");
+	ffly_arcs_creatarc("gr1");
+	ffly_arcs_tun("gr0");
+	ffly_arcs_creatrec("mrdoomlittle", NULL, _ffly_rec_def, 0);
+	ffly_arcs_bk();
+
+	ffly_arcs_tun("gr1");
+	ffly_arcs_creatrec("test", NULL, _ffly_rec_def, 0);
+
+
+	tree(&__ffly_arcroot__);
+	/*
 	ffly_arcp arc = ffly_creatarc(__ffly_arccur__, (*ffly_arcs_alias("arc") = 101987));
 
 	ffly_arc_creatrec(arc, (*ffly_arcs_alias("rec") = 21299), NULL, _ffly_rec_def, 0);
@@ -164,8 +193,7 @@ ffly_err_t ffmain(int __argc, char const *__argv) {
 	printf("record no. %u\n", *ffly_arcs_alias("rec"));
 	printf("arc rec no. %u\n", *ffly_arcs_alias("arc"));
 	ffly_arc_delrec(arc, ffly_arc_lookup(arc, *ffly_arcs_alias("rec")));
-	ffly_arc_free(__ffly_arccur__);
+	*/
 	ffly_arcs_de_init();
-	//pr();
 }
 
