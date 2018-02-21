@@ -1,4 +1,4 @@
-nasm_flags=-I../system/asm/
+nasm_flags=-I../system/asm/ -I../linux/asm/
 objs=ffly_system.o allocr.o flags.o vec.o checksum.o sys_fcntl.o.0 sys_fcntl.o.1 \
 sys_open.o.0 sys_open.o.1 sys_close.o.0 sys_close.o.1 printf.o sys_brk.o.0 sys_brk.o.1 string.o str_cpy.o \
 errno.o mem_dupe.o mem_cpy.o mem_set.o mem_free.o mem_alloc.o mem_realloc.o file.o io.o str_len.o \
@@ -10,7 +10,7 @@ sys_access.o.0 sys_access.o.1 sys_fsync.o.0 sys_fsync.o.1 \
 sys_read.o.0 sys_read.o.1 sys_stat.o.0 sys_stat.o.1 \
 sys_lseek.o.0 sys_lseek.o.1 sys_creat.o.0 sys_creat.o.1 \
 sys_exit.o.0 sys_exit.o.1 rand.o
-ccflags=
+ccflags=-D__ffly_use_allocr -fno-builtin
 all: clean
 	nasm $(nasm_flags) -f elf64 ../system/asm/sys_exit.asm -o sys_exit.o.0
 	gcc $(ccflags) -c ../system/sys_exit.c -o sys_exit.o.1
@@ -91,7 +91,7 @@ all: clean
 #	gcc -D__ffly_no_sysconf -D__ffly_use_allocr -c ../system/thread.c
 	gcc $(ccflags) -c ../system/buff.c
 	#gcc $(objs) -o libmain.so
-	gcc -o main main.c -nostdlib $(objs)
+	gcc $(ccflags) -o main main.c $(objs) -nostdlib
 ts0: cl
 	gcc -o ts0 ts0.c $(objs)
 ts1: cl

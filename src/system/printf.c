@@ -65,6 +65,7 @@ mdl_uint_t static gen(char *__buf, ffly_size_t __n, char const *__format, va_lis
 				mdl_u64_t v = is_long? va_arg(__args, mdl_u64_t):va_arg(__args, mdl_u32_t);
 				bufp+= ffly_noths((mdl_u64_t)v, bufp);
 			}
+
 			p++;
 		} else
 			*(bufp++) = *(p-1);

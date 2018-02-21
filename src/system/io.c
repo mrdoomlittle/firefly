@@ -4,15 +4,23 @@
 # include "mutex.h"
 # include "errno.h"
 # include "../linux/unistd.h"
-/*
-# include <sys/stat.h>
-# include <fcntl.h>
-*/
+
 # include "../types/size_t.h"
 FF_FILE *ffly_out = NULL;
 FF_FILE *ffly_log = NULL;
 FF_FILE *ffly_err = NULL;
 FF_FILE *ffly_in = NULL;
+void putchar(char __c) {
+	write(ffly_fileno(ffly_out), &__c, 1);
+}
+
+/*
+	shoud print in chunks and not single bytes.
+*/
+void ppad(char __c, mdl_uint_t __n) {
+	while(__n-->0) putchar(__c);
+}
+
 mdl_uint_t ffly_rdline(void *__buf, mdl_uint_t __size, FF_FILE *__file) {
     mdl_u8_t *p = (mdl_u8_t*)__buf;
     while((p-(mdl_u8_t*)__buf)<__size) {

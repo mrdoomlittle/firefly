@@ -3,40 +3,40 @@
 # include <mdlint.h>
 # include "time.h"
 # ifndef S_IRWXU
-# define S_IRWXU 00700
+# define S_IRWXU 00700 // user: r/w/x
 # endif
 # ifndef S_IRUSR
-# define S_IRUSR 00400
+# define S_IRUSR 00400 // user: r
 # endif
 # ifndef S_IWUSR
-# define S_IWUSR 00200
+# define S_IWUSR 00200 // user: w
 # endif
 # ifndef S_IXUSR
-# define S_IXUSR 00100
+# define S_IXUSR 00100 // user: x
 # endif
 # ifndef S_IRWXG
-# define S_IRWXG 00070
+# define S_IRWXG 00070 // group: r/w/x
 # endif 
 # ifndef S_IRGRP
-# define S_IRGRP 00040
+# define S_IRGRP 00040 // group: r
 # endif
 # ifndef S_IWGRP
-# define S_IWGRP 00020
+# define S_IWGRP 00020 // group: w
 # endif
 # ifndef S_IXGRP
-# define S_IXGRP 00010
+# define S_IXGRP 00010 // group: x
 # endif
 # ifndef S_IRWXO
-# define S_IRWXO 00007
+# define S_IRWXO 00007 // others: r/w/x
 # endif
 # ifndef S_IROTH
-# define S_IROTH 00004
+# define S_IROTH 00004 // others: r
 # endif
 # ifndef S_IWOTH
-# define S_IWOTH 00002
+# define S_IWOTH 00002 // others: w
 # endif
 # ifndef S_IXOTH
-# define S_IXOTH 00001
+# define S_IXOTH 00001 // others: x
 # endif
 struct stat { //needs testing
 	unsigned long st_dev;

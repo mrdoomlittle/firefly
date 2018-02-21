@@ -49,7 +49,6 @@ mdl_u64_t* ffly_arcs_alias(char const *__name) {
 	ffly_err_t err;
 	char const *s;
 	void *frame = NULL;
-
 	if (&__ffly_arcroot__ != __ffly_arccur__) {
 		frame = ffly_frame();
 		char *buf = (char*)ffly_alloca(128, NULL);
@@ -59,7 +58,6 @@ mdl_u64_t* ffly_arcs_alias(char const *__name) {
 	} else
 		s = __name;
 
-	printf("--> %s\n", s);
 	mdl_u64_t *p;
 	if (!(p = (mdl_u64_t*)ffly_dict_get(&dict, s, &err)))
 		// remove __ffly_mem_alloc for somthing else
@@ -169,15 +167,25 @@ void tree(ffly_arcp __root) {
     ffly_arc_recp *p = __root->rr;
     ffly_arc_recp *end = p+0xff;
     ffly_arc_recp rec;
+	mdl_uint_t static pad = 0;
     while(p != end) {
         if (*p != NULL) {
             rec = *p;
-            while(rec != NULL) { 
+            while(rec != NULL) {
+				mdl_u8_t i = 0;
+				while(i != pad) {
+					ppad('~', pad<<1);
+					putchar('+');
+					i++;
+				}
+
                 if (rec->sort == _ffly_rec_arc) {
-                    printf("--> arc: recno{%u}\n", rec->no);
+                    printf(" %u\n", rec->no);
+					pad++;
                     tree((ffly_arcp)rec->p);
+					pad--;
                 } else {
-                    printf("--> recno{%u}\n", rec->no);
+                    printf(" %u\n", rec->no);
                 }
                 rec = rec->fd;
             }
@@ -185,21 +193,22 @@ void tree(ffly_arcp __root) {
         p++;
     }
 }
-
+//# define __ffly_debug
+# ifdef __ffly_debug
 void pr();
 # include "stdio.h"
 # include "types/err_t.h"
 ffly_err_t ffmain(int __argc, char const *__argv) {
-	char const *desc;
+	char const *by;
 
 	ffly_arcs_tun("info");
-	ffly_arcs_recr("desc", &desc, 0, sizeof(char const*));
-
+	ffly_arcs_recr("created-by", &by, 0, sizeof(char const*));
 	ffly_arcs_bk();
 	
 
-	printf("info/desc: '%s'\n", desc);
+	printf("info/created-by: '%s'\n", by);
 
 	tree(&__ffly_arcroot__);
+	return 0;
 }
-
+# endif

@@ -16,6 +16,8 @@ extern FF_FILE *ffly_log;
 extern  FF_FILE *ffly_err;
 ffly_err_t ffly_io_init();
 void ffly_io_closeup();
+void putchar(char);
+void ppad(char, mdl_uint_t);
 mdl_uint_t ffly_rdline(void*, mdl_uint_t, FF_FILE*);
 /*
 ffly_size_t ffly_write(ffly_fd_t, void*, ffly_size_t, ffly_err_t*);

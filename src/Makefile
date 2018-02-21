@@ -10,11 +10,9 @@ pkg: clean
 crypto: clean
 	gcc -Wall -o main crypto.c $(ffly_objs)
 hatch: clean
-	gcc -c firefly.c
-	gcc -Wall -o hatch hatch.c $(ffly_objs) firefly.o
+	gcc $(cc_flags) -Wall -o hatch hatch.c $(ffly_objs) -nostdlib
 terminal: clean
-	gcc -c firefly.c
-	gcc -Wall -o terminal terminal.c $(ffly_objs) firefly.o
+	gcc $(cc_flags) -Wall -o terminal terminal.c $(ffly_objs) -nostdlib
 db: clean
 	gcc -Wall -c network/sock.c
 	gcc -c network/input.c
@@ -101,7 +99,7 @@ config: clean
 	nasm -f elf64 $(nasm_flags) -o sys_nanosleep.o system/asm/sys_nanosleep.asm
 	gcc  -o main config.c str_cpy.o bin_tree.o hash.o map.o $(ffly_objs) sys_nanosleep.o mem_cmp.o str_dupe.o buff.o str_cmp.o mem_set.o errno.o mem_dupe.o str_len.o flags.o io.o mutex.o.0 mutex.o.1 mem_swp.o mem_cpy.o vec.o
 arcs: clean
-	gcc $(cc_flags) -Wall -o main arcs.c $(ffly_objs) -nostdlib
+	gcc $(cc_flags) -Wall -o main $(ffly_objs) -nostdlib
 bci: clean
 	gcc $(cc_flags) -Wall -c bci.c
 	gcc $(cc_flags) -Wall -o main bci/main.c bci.o $(ffly_objs) -nostdlib

@@ -5,29 +5,40 @@
 # include "system/flags.h"
 # define REC_FLG_TOFREE 0x1
 
+/*
+	write to record
+	read to record
+*/
 # define ffly_arcs_recw(__name, ...) \
 	ffly_arc_recw(ffly_arc_lookup(__ffly_arccur__, *ffly_arcs_alias(__name)), no, __VA_ARGS__)
 # define ffly_arcs_recr(__name, ...) \
 	ffly_arc_recr(ffly_arc_lookup(__ffly_arccur__, *ffly_arcs_alias(__name)), __VA_ARGS__)
 
+// create record
 # define ffly_arcs_creatrec(__name, ...) \
 	ffly_arc_creatrec(__ffly_arccur__, (*ffly_arcs_alias(__name) = ffly_arcs_alno()), __VA_ARGS__)
 
+// delete record
 # define ffly_arcs_delrec(__name) \
 	mdl_u64_t no = *ffly_arcs_alias(__name); \
 	ffly_arc_delrec(__ffly_arccur__, ffly_arc_lookup(__ffly_arccur__, no)); \
 	ffly_arcs_frno(no)
 
+// create archive
 # define ffly_arcs_creatarc(__name) \
 	ffly_creatarc(__ffly_arccur__, (*ffly_arcs_alias(__name) = ffly_arcs_alno()))
 
+// delete archive
 # define ffly_arcs_delarc(__name) \
 	mdl_u64_t no = *ffly_arcs_alias(__name); \
 	ffly_delarc((ffly_arcp)ffly_arc_lookup(__ffly_arccur__, no))->p; \
 	ffly_arcs_frno(no)
 
+// tunnel into archive
 # define ffly_arcs_tun(__name) \
 	__ffly_arccur__ = (ffly_arcp)ffly_arc_lookup(__ffly_arccur__, *ffly_arcs_alias(__name))->p
+
+// go back - undo tunnel
 # define ffly_arcs_bk(__name) \
 	__ffly_arccur__ = __ffly_arccur__->bk;
 

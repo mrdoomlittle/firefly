@@ -22,7 +22,8 @@ void _cleanup() {
 		cur = cur->next;
 	}
 
-	free(top);
+	if (top != NULL)
+		free(top);
 }
 
 void* _alloca(mdl_uint_t __size) {

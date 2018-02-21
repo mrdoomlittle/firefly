@@ -1,9 +1,8 @@
 # include "types/err_t.h"
 # include "system/err.h"
 # include "system/pipe.h"
-# include <sys/types.h>
-# include <unistd.h>
-# include <stdlib.h>
+# include "linux/types.h"
+# include "linux/unistd.h"
 # include "data/str_cpy.h"
 # include "system/io.h"
 # include "hatch.h"

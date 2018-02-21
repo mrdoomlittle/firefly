@@ -312,7 +312,7 @@ void copy(void *__dst, void *__src, mdl_uint_t __bc);
 # include "../linux/unistd.h"
 # include "../linux/mman.h"
 void _start() {
-	void *p = mmap(NULL, 0, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+	//void *p = mmap(NULL, 0, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 	ffly_ar_init();
 	ffly_io_init();
 /*
@@ -363,8 +363,12 @@ void _start() {
 
 	pr();
 	pf();
-*/ 
-	ffly_printf("%p, %s\n", p, strerror(errno));
+*/
+	void *p = ffly_alloc(200);
+	ffly_free(p);
+	//if (p == -1) {
+	//	ffly_printf("%p, %s\n", p, strerror(errno));
+	//}
 	ffly_arstat();
 	ffly_io_closeup();
 	ffly_ar_cleanup();
