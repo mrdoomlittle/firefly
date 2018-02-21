@@ -6,6 +6,8 @@
 objp extern top;
 objp extern end;
 
+
+objp back = NULL;
 struct ffly_map label;
 
 objp nextobj() {

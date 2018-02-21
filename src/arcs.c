@@ -41,12 +41,31 @@ void ffly_arcs_de_init() {
 	ffly_arc_free(&__ffly_arcroot__);
 }
 
+# include "memory/alloca.h"
+# include "stdio.h"
+# include "data/str_cpy.h"
+# include "system/util/base64.h"
 mdl_u64_t* ffly_arcs_alias(char const *__name) {
 	ffly_err_t err;
+	char const *s;
+	void *frame = NULL;
+
+	if (&__ffly_arcroot__ != __ffly_arccur__) {
+		frame = ffly_frame();
+		char *buf = (char*)ffly_alloca(128, NULL);
+		ffly_b64_encode(buf, &__ffly_arccur__->p->no, sizeof(mdl_u64_t));	
+		ffly_str_cpy(buf+ffly_b64_enc_len(sizeof(mdl_u64_t)), __name);
+		s = buf;
+	} else
+		s = __name;
+
+	printf("--> %s\n", s);
 	mdl_u64_t *p;
-	if (!(p = (mdl_u64_t*)ffly_dict_get(&dict, __name, &err)))
+	if (!(p = (mdl_u64_t*)ffly_dict_get(&dict, s, &err)))
 		// remove __ffly_mem_alloc for somthing else
-		ffly_dict_put(&dict, __name, p = __ffly_mem_alloc(sizeof(mdl_u64_t)));
+		ffly_dict_put(&dict, s, p = __ffly_mem_alloc(sizeof(mdl_u64_t)));
+	if (frame != NULL)
+		ffly_collapse(frame);
 	return p;
 }
 
@@ -171,29 +190,16 @@ void pr();
 # include "stdio.h"
 # include "types/err_t.h"
 ffly_err_t ffmain(int __argc, char const *__argv) {
-	ffly_arcs_init();
-	ffly_arcs_creatarc("gr0");
-	ffly_arcs_creatarc("gr1");
-	ffly_arcs_tun("gr0");
-	ffly_arcs_creatrec("mrdoomlittle", NULL, _ffly_rec_def, 0);
+	char const *desc;
+
+	ffly_arcs_tun("info");
+	ffly_arcs_recr("desc", &desc, 0, sizeof(char const*));
+
 	ffly_arcs_bk();
+	
 
-	ffly_arcs_tun("gr1");
-	ffly_arcs_creatrec("test", NULL, _ffly_rec_def, 0);
-
+	printf("info/desc: '%s'\n", desc);
 
 	tree(&__ffly_arcroot__);
-	/*
-	ffly_arcp arc = ffly_creatarc(__ffly_arccur__, (*ffly_arcs_alias("arc") = 101987));
-
-	ffly_arc_creatrec(arc, (*ffly_arcs_alias("rec") = 21299), NULL, _ffly_rec_def, 0);
-	tree(&__ffly_arcroot__);	
-
-
-	printf("record no. %u\n", *ffly_arcs_alias("rec"));
-	printf("arc rec no. %u\n", *ffly_arcs_alias("arc"));
-	ffly_arc_delrec(arc, ffly_arc_lookup(arc, *ffly_arcs_alias("rec")));
-	*/
-	ffly_arcs_de_init();
 }
 

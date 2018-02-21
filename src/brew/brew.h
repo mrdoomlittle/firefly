@@ -27,14 +27,21 @@ typedef struct obj {
 
 enum {
 	_colon,
+	_comma,
+	_circumflex,
+	_semicolon,
 	_keywd_cp,
-	_keywd_exit
+	_keywd_exit,
+	_keywd_end
 };
 
 enum {
 	_label,
 	_cp,
-	_exit
+	_exit,
+	_end,
+	_jump,
+	_shell
 };
 
 enum {
@@ -44,6 +51,7 @@ enum {
 	_keywd
 };
 
+mdl_u8_t is_keywd(bucketp, mdl_u8_t);
 bucketp nexttok();
 void maybe_keyword(bucketp);
 mdl_u8_t tokbuf_size();

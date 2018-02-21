@@ -1,6 +1,11 @@
 # include "brew.h"
 # include "../data/str_cmp.h"
 # include "../ffly_def.h"
+mdl_u8_t 
+is_keywd(bucketp __tok, mdl_u8_t __val) {
+	return (__tok->sort == _keywd, __tok->val == __val);
+}
+
 void static
 to_keyword(bucketp __tok, mdl_u8_t __val) {
 	__tok->sort = _keywd;
@@ -26,4 +31,6 @@ maybe_keyword(bucketp __tok) {
 		to_keyword(__tok, _keywd_cp);
 	else if (!ffly_str_cmp((char*)__tok->p, "exit"))
 		to_keyword(__tok, _keywd_exit);
+	else if (!ffly_str_cmp((char*)__tok->p, "end"))
+		to_keyword(__tok, _keywd_end);
 }

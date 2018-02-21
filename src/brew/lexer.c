@@ -101,8 +101,23 @@ bucketp lex() {
 	} else {
 		switch(c) {
 			case ':':
-				ret->sort = _chr;
+				ret->sort = _keywd;
 				ret->val = _colon;
+				incrp;
+			break;
+			case ',':
+				ret->sort = _keywd;
+				ret->val = _comma;
+				incrp;
+			break;
+			case '^':
+				ret->sort = _keywd;
+				ret->val = _circumflex;
+				incrp;
+			break;
+			case ';':
+				ret->sort = _keywd;
+				ret->val = semicolon;
 				incrp;
 			break;
 			default:

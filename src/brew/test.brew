@@ -1,2 +1,2 @@
-all:
-exit
+all,,
+	exit

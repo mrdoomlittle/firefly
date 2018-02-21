@@ -3,4 +3,5 @@ $ffly_cc $cc_flags -c -D__ffly_debug_enabled -o $dst_dir/mem_alloc.o $root_dir/m
 $ffly_cc $cc_flags -c -D__ffly_debug_enabled -o $dst_dir/mem_free.o $root_dir/mem_free.c
 $ffly_cc $cc_flags -c -D__ffly_debug_enabled -o $dst_dir/mem_realloc.o $root_dir/mem_realloc.c
 $ffly_cc $cc_flags -c -o $dst_dir/allocr.o $root_dir/allocr.c
-export ffly_objs="$dst_dir/mem_alloc.o $dst_dir/mem_free.o $dst_dir/mem_realloc.o $dst_dir/allocr.o"
+$ffly_cc $cc_flags -c -o $dst_dir/alloca.o $root_dir/alloca.c
+export ffly_objs="$dst_dir/mem_alloc.o $dst_dir/mem_free.o $dst_dir/mem_realloc.o $dst_dir/allocr.o $dst_dir/alloca.o"

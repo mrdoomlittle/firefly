@@ -6,9 +6,9 @@
 # define REC_FLG_TOFREE 0x1
 
 # define ffly_arcs_recw(__name, ...) \
-	ffly_arc_recw(__ffly_arccur__, *ffly_arcs_alias(__name), __VA_ARGS__)
+	ffly_arc_recw(ffly_arc_lookup(__ffly_arccur__, *ffly_arcs_alias(__name)), no, __VA_ARGS__)
 # define ffly_arcs_recr(__name, ...) \
-	ffly_arc_recr(__ffly_arccur__, *ffly_arcs_alias(__name), __VA_ARGS__)
+	ffly_arc_recr(ffly_arc_lookup(__ffly_arccur__, *ffly_arcs_alias(__name)), __VA_ARGS__)
 
 # define ffly_arcs_creatrec(__name, ...) \
 	ffly_arc_creatrec(__ffly_arccur__, (*ffly_arcs_alias(__name) = ffly_arcs_alno()), __VA_ARGS__)
