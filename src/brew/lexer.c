@@ -117,7 +117,7 @@ bucketp lex() {
 			break;
 			case ';':
 				ret->sort = _keywd;
-				ret->val = semicolon;
+				ret->val = _semicolon;
 				incrp;
 			break;
 			default:

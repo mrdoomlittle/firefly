@@ -1,13 +1,12 @@
 %include "syscall.mac"
 %include "err.mac"
 extern set_errno
-global _mmap
+global __mmap
 section .text
-_mmap:
+__mmap:
 	mov rax, sys_mmap
 	syscall
-	mov rbx, rax
-	cmp rbx, -MAX_ERRNO
+	cmp rax, -MAX_ERRNO
 	jae _fault
 
 	ret

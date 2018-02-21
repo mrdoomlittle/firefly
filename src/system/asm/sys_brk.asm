@@ -1,13 +1,12 @@
 %include "syscall.mac"
 %include "err.mac"
 extern set_errno
-global _brk
+global __brk
 section .text
-_brk:
+__brk:
 	mov rax, sys_brk
 	syscall
-	mov rbx, rax
-	cmp rbx, -MAX_ERRNO
+	cmp rax, -MAX_ERRNO
 	jae _fault
 
 	ret

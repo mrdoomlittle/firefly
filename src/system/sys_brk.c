@@ -1,5 +1,8 @@
 # include <mdlint.h>
 void* brk(void *__p) {
-    __asm__("mov %0, %%rdi\n\t"
-        "call _brk" : : "m"(__p));
+	void *ret;
+    __asm__("mov %1, %%rdi\n\t"
+        "call __brk\n\t"
+		"mov %%rax, %0": "=m"(ret) : "m"(__p));
+	return ret;
 }

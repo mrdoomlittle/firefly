@@ -10,7 +10,15 @@
 #   include "../system/atomic.h"
 #   include "../system/nanosleep.h"
 # endif
+
 void _ffly_mem_cpy(void *__dst, void const *__src, mdl_uint_t __bc) {
+/*
+	__asm__("mov %0, %%rdi\n\t"
+			"mov %1, %%rsi\n\t"
+			"mov %2, %%rdx\n\t"
+			"call __ffly_mem_cpy" : : "m"(__dst), "m"(__src), "m"(__bc));
+	return;
+*/
 	if (__bc == sizeof(mdl_u8_t)) {
 		*(mdl_u8_t*)__dst = *(mdl_u8_t*)__src;
 		return;

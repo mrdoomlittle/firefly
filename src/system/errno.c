@@ -85,11 +85,12 @@ char const static *s[] = {
 };
 
 char const* strerror(int __no) {
-	int unsigned no = (__no^~0)+1;
-	if (no >= (sizeof(s)/sizeof(char const*))) return "unknown";
+	int unsigned no;
+	if ((no = (__no^~0)+1) >= (sizeof(s)/sizeof(char const*)))
+		return "unknown";
 	return s[no];
 }
 
-void set_errno() {
+void set_errno(void) {
 	__asm__("mov %%eax, %0" : "=m"(errno) :);
 }

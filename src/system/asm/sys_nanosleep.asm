@@ -1,5 +1,6 @@
-section .text
+%include "syscall.mac"
 global _ffly_nanosleep
+section .text
 _ffly_nanosleep:
 	push rbp
 	mov rbp, rsp
@@ -8,7 +9,7 @@ _ffly_nanosleep:
 	mov [rbp-16], rdi
 	mov [rbp-8], rsi
 
-	mov rax, 35
+	mov rax, sys_nanosleep
 	mov rdi, rbp
 	sub rdi, 16
 	xor rsi, rsi
