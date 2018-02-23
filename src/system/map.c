@@ -20,9 +20,10 @@ typedef struct {
 
 ffly_err_t ffly_map_init(ffly_mapp __map, mdl_uint_t __size) {
     __map->size = __size;
-	__map->table = (struct ffly_vec**)__ffly_mem_alloc(map_mask(__map)*sizeof(struct ffly_vec*));
+	__map->table = (struct ffly_vec**)__ffly_mem_alloc((map_mask(__map)+1)*sizeof(struct ffly_vec*));
 	struct ffly_vec **itr = __map->table;
-	while(itr != __map->table+map_mask(__map)) *(itr++) = NULL;
+	while(itr != __map->table+map_mask(__map)+1)
+		*(itr++) = NULL;
     __map->begin = NULL;
     __map->end = NULL;
     __map->parent = NULL;
