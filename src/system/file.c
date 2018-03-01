@@ -2,11 +2,11 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "io.h"
-# include "../data/mem_set.h"
+# include "../dep/mem_set.h"
 # include "errno.h"
 # include "../types/off_t.h"
-# include "../data/str_len.h"
-# include "../data/mem_dupe.h"
+# include "../dep/str_len.h"
+# include "../dep/mem_dup.h"
 # include "err.h"
 
 # include "../linux/unistd.h"
@@ -21,7 +21,7 @@ ffly_fopen(char const *__path, int __flags, mdl_u32_t __mode, ffly_err_t *__err)
 		return NULL;
 	}
 
-	if (_err(ffly_mem_dupe((void**)&file->path, __path, ffly_str_len(__path)+1))) { // <- remove +1
+	if (_err(ffly_mem_dupe((void**)&file->path, __path, ffly_str_len(__path)))) {
 		ffly_fprintf(ffly_err, "failed to dupe file path.\n");
 		*__err = FFLY_FAILURE;
 		return NULL;

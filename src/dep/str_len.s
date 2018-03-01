@@ -9,11 +9,11 @@ __ffly_str_len:
 	movq %rdi, %rbx
 
 	_again:
-	incq %rdi
+	inc %rdi
 	cmpb $0x0, -1(%rdi)
 	jne _again
-	decq %rdi
+	dec %rdi
 
-	subq %rbx, %rdi
+	sub %rbx, %rdi
 	movq %rdi, %rax
 	ret

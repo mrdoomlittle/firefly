@@ -1,4 +1,5 @@
 dirs=(
+	dep
 	audio
 	graphics
 	networking
