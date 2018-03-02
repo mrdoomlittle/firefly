@@ -1,5 +1,5 @@
 # include "brew.h"
-# include "../data/str_cmp.h"
+# include "../dep/str_cmp.h"
 # include "../ffly_def.h"
 mdl_u8_t 
 is_keywd(bucketp __tok, mdl_u8_t __val) {
@@ -14,8 +14,9 @@ to_keyword(bucketp __tok, mdl_u8_t __val) {
 // next token
 bucketp nexttok() {
 	bucketp tok;
-	if (!(tok = lex())) return NULL;
-	maybe_keyword(tok);
+	if (!(tok = lex()) && !at_eof()) return NULL;
+	if (tok->sort == _ident)
+		maybe_keyword(tok);
 	return tok;
 }
 

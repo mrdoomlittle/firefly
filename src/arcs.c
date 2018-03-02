@@ -43,7 +43,7 @@ void ffly_arcs_de_init() {
 
 # include "memory/alloca.h"
 # include "stdio.h"
-# include "data/str_cpy.h"
+# include "dep/str_cpy.h"
 # include "system/util/base64.h"
 mdl_u64_t* ffly_arcs_alias(char const *__name) {
 	ffly_err_t err;
@@ -149,7 +149,7 @@ void ffly_delarc(ffly_arcp __arc) {
 	ffly_arc_delrec(__arc->bk, __arc->p);
 }
 
-# include "data/mem_cpy.h"
+# include "dep/mem_cpy.h"
 void ffly_arc_recw(ffly_arc_recp __rec, void *__buf,
 	mdl_uint_t __offset, mdl_uint_t __n)
 {
@@ -198,7 +198,18 @@ void tree(ffly_arcp __root) {
 void pr();
 # include "stdio.h"
 # include "types/err_t.h"
+# include "dep/mem_dup.h"
+# include "dep/str_len.h"
+# include "dep/str_cmp.h"
+# include "dep/mem_cpy.h"
+# include "dep/str_dup.h"
 ffly_err_t ffmain(int __argc, char const *__argv) {
+	char *p;
+	p = ffly_str_dup("uhsgugsdoijdsfkjkhsdflojh389ye3rou9hy8ihy8");
+	printf("%s\n", p);
+	ffly_printf("...\n");
+	//__asm__("call __ffly_mal");
+	return 0;
 	char const *by;
 
 	ffly_arcs_tun("info");

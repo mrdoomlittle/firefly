@@ -1,7 +1,7 @@
 # ifndef __ffly__system__config__h
 # define __ffly__system__config__h
 # include "../types/err_t.h"
-# include "../data/str_dupe.h"
+# include "../dep/str_dup.h"
 struct ffly_sysconf {
     char const *version;
     mdl_uint_t max_threads;

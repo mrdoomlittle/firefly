@@ -52,12 +52,14 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	bucketp top = NULL;
 	printf("filesize: %u\n", st.st_size);
 	parse(&top);
-	gen(top);
-	exec();
+//	gen(top);
+//	exec();
 
 	void **cur = tf;
-	while(cur != fresh)
+	while(cur != fresh) {
 		free(*(cur++));
+		printf("%p\n", *(cur-1));
+	}
 	lexer_cleanup();
 
 	_fault:

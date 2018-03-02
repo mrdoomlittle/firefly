@@ -85,12 +85,14 @@ bucketp lex() {
 		// err
 	}
 
-	ret->next = NULL;
+	ret->next = next;
 	ret->fd = NULL;
 	sk_white_space();
 	if (!head)
 		head = ret;
 
+
+	next = ret;
 	char c = nextc();
 	if (is_no(c)) {
 		// number
@@ -125,13 +127,6 @@ bucketp lex() {
 				fprintf(stderr, "unknown token, got: '%c'\n", c);
 				incrp;	
 		}
-	}
-
-	if (!next)
-		next = ret;
-	else {
-		next->next = ret;
-		next = ret;
 	}
 
 	len++;

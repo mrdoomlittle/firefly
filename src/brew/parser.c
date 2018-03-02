@@ -91,7 +91,6 @@ void parse(bucketp *__p) {
 			if (tok->val == _circumflex) {
 				p = alloc_node;
 				p->sort = _shell;
-
 			} else {
 				switch(tok->val) {
 					case _keywd_cp:
@@ -120,12 +119,13 @@ void parse(bucketp *__p) {
 
 		if (p != NULL) {
 			to_free(p);
+			p->fd = NULL;
 			if (!*__p)
 				*__p = p;
 			if (end != NULL)
 				end->fd = p;
 			end = p;
+			p = NULL;
 		}
 	}
-	end->fd = NULL;
 }

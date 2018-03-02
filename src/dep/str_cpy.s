@@ -14,6 +14,8 @@ __ffly_str_cpy:
 	pop %rsi
 	pop %rdi
 
+	push %rax
+
 	movq %rdi, %rcx
 	add %rax, %rcx
 	inc %rbx
@@ -21,4 +23,5 @@ __ffly_str_cpy:
 
 	movq %rax, %rbx
 	call __ffly_mem_cpy
+	pop %rax
 	ret

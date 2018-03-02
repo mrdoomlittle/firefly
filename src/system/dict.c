@@ -3,9 +3,9 @@
 # include "../ffly_def.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
-# include "../data/str_len.h"
-# include "../data/str_dupe.h"
-# include "../data/str_cmp.h"
+# include "../dep/str_len.h"
+# include "../dep/str_dup.h"
+# include "../dep/str_cmp.h"
 
 /* not tested */
 		
