@@ -309,6 +309,8 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 	if (not_null(__blk->prev)) {
 		if (is_free(rr) || (is_used(rr) && rr->size <= 0xf)) {
 			*off+=dif;
+			if (*off+dif == __pot->end_blk)
+				__pot->end_blk = *off;
 			rr->next = *off;
 			if (not_null(__blk->next))
 				ft->prev = *off;
@@ -330,11 +332,34 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 
 void static*
 grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
+	blkdp rr = prev_blk(__pot, __blk); //rear
+	blkdp ft = next_blk(__pot, __blk); //front
+	struct blkd blk;
+
 	ar_uint_t dif = __size-(__blk->size-__blk->pad);
+	ar_off_t *off = &__blk->off;
 
 	if (__blk->pad >= dif) {
 		__blk->pad-=dif;
 		goto _r;
+	}
+
+	if (not_null(__blk->prev)) {
+		if (is_free(rr) && rr->size > dif<<1) {
+			*off-=dif;
+			if (*off+dif == __pot->end_blk)
+				__pot->end_blk = *off;
+			rr->next = *off;
+			if (not_null(__blk->next))
+				ft->prev = *off;
+			__blk->size+=dif;
+			rr->size-=dif;
+			rr->end-=dif;
+			copy(&blk, __blk, blkd_size);
+			__blk = (blkdp)((mdl_u8_t*)__blk-dif);
+			copy(__blk, &blk, blkd_size);
+			goto _r;
+		}
 	}
 
 	return NULL;
