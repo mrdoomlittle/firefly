@@ -1,15 +1,21 @@
 nasm_flags=-I../system/asm/ -I../linux/asm/
 objs=ffly_system.o allocr.o flags.o vec.o checksum.o sys_fcntl.o.0 sys_fcntl.o.1 \
-sys_open.o.0 sys_open.o.1 sys_close.o.0 sys_close.o.1 printf.o sys_brk.o.0 sys_brk.o.1 string.o str_cpy.o \
-errno.o mem_dupe.o mem_cpy.o mem_set.o mem_free.o mem_alloc.o mem_realloc.o file.o io.o str_len.o \
+sys_open.o.0 sys_open.o.1 sys_close.o.0 sys_close.o.1 printf.o sys_brk.o.0 sys_brk.o.1 string.o \
+errno.o mem_free.o mem_alloc.o.1 mem_alloc.o.0 mem_realloc.o file.o io.o \
 sys_write.o.0 sys_write.o.1 mutex.o.0 mutex.o.1 atomic_op.o.0 atomic_op.o.1 cond_lock.o \
-sys_nanosleep.o.0 sys_nanosleep.o.1 bzero.o buff.o err.o \
+sys_nanosleep.o.0 sys_nanosleep.o.1 buff.o err.o \
 sys_mmap.o.0 sys_mmap.o.1 sys_munmap.o.0 sys_munmap.o.1 \
 sys_getpid.o.0 sys_getpid.o.1 sys_kill.o.0 sys_kill.o.1 \
 sys_access.o.0 sys_access.o.1 sys_fsync.o.0 sys_fsync.o.1 \
 sys_read.o.0 sys_read.o.1 sys_stat.o.0 sys_stat.o.1 \
 sys_lseek.o.0 sys_lseek.o.1 sys_creat.o.0 sys_creat.o.1 \
-sys_exit.o.0 sys_exit.o.1 rand.o
+sys_exit.o.0 sys_exit.o.1 rand.o \
+mem_dup.o.1 mem_dup.o.0 \
+str_len.o.1 str_len.o.0 \
+str_cpy.o.1 str_cpy.o.0 \
+bzero.o.1 bzero.o.0 \
+mem_cpy.o.1 mem_cpy.o.0 \
+mem_set.o.1 mem_set.o.0
 ccflags=-D__ffly_use_allocr -fno-builtin
 all: clean
 	nasm $(nasm_flags) -f elf64 ../system/asm/sys_exit.asm -o sys_exit.o.0
@@ -67,24 +73,39 @@ all: clean
 	gcc $(ccflags) -c ../system/sys_brk.c -o sys_brk.o.1
 	gcc $(ccflags) -c ../system/sys_write.c -o sys_write.o.1
 	gcc $(ccflags) -c ../system/sys_nanosleep.c -o sys_nanosleep.o.1
-	gcc $(ccflags) -c ../data/str_len.c
 	gcc $(ccflags) -c ../system/io.c 
 	gcc $(ccflags) -c ../system/file.c
 	gcc $(ccflags) -c ../system/errno.c
 	gcc $(ccflags) -c ../system/string.c
-	gcc $(ccflags) -D__ffly_use_allocr -c ../memory/mem_alloc.c
+	gcc $(ccflags) -D__ffly_use_allocr -c -o mem_alloc.o.1 ../memory/mem_alloc.c
 	gcc $(ccflags) -D__ffly_use_allocr -c ../memory/mem_free.c
 	gcc $(ccflags) -D__ffly_use_allocr -c ../memory/mem_realloc.c
-	gcc $(ccflags) -c ../data/str_cpy.c
-	gcc $(ccflags) -D__ffly_no_task_pool -c ../data/mem_set.c
-	gcc $(ccflags) -D__ffly_no_task_pool -c ../data/mem_cpy.c
-	gcc $(ccflags) -c ../data/mem_dupe.c
+	gcc $(ccflags) -c -o mem_dup.o.1 ../dep/mem_dup.c
+	as -o mem_dup.o.0 ../dep/mem_dup.s
+
+	gcc $(ccflags) -c -o str_len.o.1 ../dep/str_len.c
+	as -o str_len.o.0 ../dep/str_len.s
+
+	gcc $(ccflags) -c -o str_cpy.o.1 ../dep/str_cpy.c
+	as -o str_cpy.o.0 ../dep/str_cpy.s
+
+	gcc $(ccflags) -c -o bzero.o.1 ../dep/bzero.c
+	as -o bzero.o.0 ../dep/bzero.s
+
+	gcc $(ccflags) -c -o mem_cpy.o.1 ../dep/mem_cpy.c
+	as -o mem_cpy.o.0 ../dep/mem_cpy.s
+
+	gcc $(ccflags) -c -o mem_set.o.1 ../dep/mem_set.c
+	as -o mem_set.o.0 ../dep/mem_set.s
+
+	cpp -o mem_alloc.s mem_alloc.S
+	as -o mem_alloc.o.0 mem_alloc.s
+
 	gcc $(ccflags) -D__ffly_debug -c ../system/printf.c
 	gcc $(ccflags) -c -std=gnu99 allocr.c
 	gcc $(ccflags) -c ../system/util/checksum.c
 	gcc $(ccflags) -c ../system/vec.c
 	gcc $(ccflags) -c ../system/flags.c
-	gcc $(ccflags) -c ../data/bzero.c
 	gcc $(ccflags) -c ../system/err.c
 	gcc $(ccflags) -c ../rand.c
 	gcc $(ccflags) -D__ffly_no_sysconf -D__ffly_no_task_pool -D__ffly_no_thread -c ../ffly_system.c

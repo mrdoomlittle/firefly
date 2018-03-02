@@ -7,38 +7,38 @@ void pr();
 void pf();
 
 void t0() {
-    void *p0, *p1, *p2, *p3;
-    p0 = ffly_alloc(10);
-    p1 = ffly_alloc(20);
-    p2 = ffly_alloc(30);
-    p3 = ffly_alloc(40);
-    ffly_free(p0);
-    ffly_free(p1);
-    ffly_free(p2);
-    ffly_free(p3);
+	void *p0, *p1, *p2, *p3;
+	p0 = ffly_alloc(10);
+	p1 = ffly_alloc(20);
+	p2 = ffly_alloc(30);
+	p3 = ffly_alloc(40);
+	ffly_free(p0);
+	ffly_free(p1);
+	ffly_free(p2);
+	ffly_free(p3);
 
 
 
-    p0 = ffly_alloc(200);
-    p1 = ffly_alloc(200);
+	p0 = ffly_alloc(200);
+	p1 = ffly_alloc(200);
 }
 
 void ts1() {
-    void *list[20];
-    mdl_u8_t i = 0;
-    void *p;
-    while(i != 20) {
-        p = ffly_alloc((i+1)*10);
-        list[i] = ffly_alloc(8);
-        ffly_free(p);
-        i++;
-    }
+	void *list[20];
+	mdl_u8_t i = 0;
+	void *p;
+	while(i != 20) {
+		p = ffly_alloc((i+1)*10);
+		list[i] = ffly_alloc(8);
+		ffly_free(p);
+		i++;
+	}
 
-    i = 0;
-    while(i != 20) {
-        ffly_free(list[i]);
-        i++;
-    }
+	i = 0;
+	while(i != 20) {
+		ffly_free(list[i]);
+		i++;
+	}
 }
 
 # include "../system/vec.h"
@@ -55,14 +55,14 @@ void ts2() {
 	ffly_alloc(1);
 	ffly_free(pp);
 	struct ffly_vec vec;
-    ffly_vec_set_flags(&vec, VEC_AUTO_RESIZE);
-    ffly_vec_init(&vec, sizeof(struct tsstruct));
-    mdl_u16_t i = 0, n = 2000;
+	ffly_vec_set_flags(&vec, VEC_AUTO_RESIZE);
+	ffly_vec_init(&vec, sizeof(struct tsstruct));
+	mdl_u16_t i = 0, n = 2000;
 	void *t;
-    struct tsstruct *p;
-    while(i != n) {
-        ffly_vec_push_back(&vec, (void**)&p);
-        p->i = i;
+	struct tsstruct *p;
+	while(i != n) {
+		ffly_vec_push_back(&vec, (void**)&p);
+		p->i = i;
 		p->a = i>>1;
 		p->b = i>>2;
 		p->c = i>>3;
@@ -70,19 +70,19 @@ void ts2() {
 		p->p = ffly_alloc(100);
 		ffly_free(t);
 		ffly_mem_set(p->p, '@', 100);
-        i++;
-    }
+		i++;
+	}
 
-    struct tsstruct ts;
-    i = 0;
-    while(i != n) {
-        ffly_vec_pop_back(&vec, &ts);
-        ffly_printf("%u{%s}, %u-%u-%u\n", ts.i, ts.i==((n-1)-i)?"ok":"error", ts.a==(((n-1)-i)>>1), ts.b==(((n-1)-i)>>2), ts.c==(((n-1)-i)>>3));
+	struct tsstruct ts;
+	i = 0;
+	while(i != n) {
+		ffly_vec_pop_back(&vec, &ts);
+		ffly_printf("%u{%s}, %u-%u-%u\n", ts.i, ts.i==((n-1)-i)?"ok":"error", ts.a==(((n-1)-i)>>1), ts.b==(((n-1)-i)>>2), ts.c==(((n-1)-i)>>3));
 		ffly_free(ts.p);
 		i++;
-    }
-    
-    ffly_vec_de_init(&vec);
+	}
+	
+	ffly_vec_de_init(&vec);
 }
 
 void ts3() {
@@ -272,16 +272,16 @@ void ts12() {
 # include "../system/nanosleep.h"
 mdl_uint_t *p;
 void* thr0(void *__arg_p) {
-    *p = 0xFFF;
-    mdl_u8_t i = 0;
-    void *p0;
-    while(i != 0xFF) {
-        p0 = ffly_alloc(12);
-        ffly_free(p0);
-        ffly_nanosleep(0, 1000);
-        i++;
-    }
-    ffly_printf("Hello\n");
+	*p = 0xFFF;
+	mdl_u8_t i = 0;
+	void *p0;
+	while(i != 0xFF) {
+		p0 = ffly_alloc(12);
+		ffly_free(p0);
+		ffly_nanosleep(0, 1000);
+		i++;
+	}
+	ffly_printf("Hello\n");
 }
 
 # include "../data/str_cpy.h"
@@ -295,11 +295,11 @@ void* thr0(void *__arg_p) {
 # include <unistd.h>
 */
 struct r {
-    mdl_u64_t a,b,c,d,e,f;
+	mdl_u64_t a,b,c,d,e,f;
 };
 
 void prr(struct r *__r) {
-    ffly_printf("%lu, %lu, %lu, %lu, %lu, %lu\n", __r->a, __r->b, __r->c, __r->d, __r->e, __r->f);
+	ffly_printf("%lu, %lu, %lu, %lu, %lu, %lu\n", __r->a, __r->b, __r->c, __r->d, __r->e, __r->f);
 }
 
 # include "../ffly_system.h"
@@ -312,15 +312,15 @@ void copy(void *__dst, void *__src, mdl_uint_t __bc);
 # include "../linux/unistd.h"
 # include "../linux/mman.h"
 void _start() {
-	void *p = mmap(NULL, 0, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 	ffly_ar_init();
 	ffly_io_init();
-/*
-	void *p = ffly_alloc(0xffff);
-	ffly_str_cpy(p, "abdbybdybfdybfdbyfndnfdun");
+	void *p0, *p1;
 
-	ffly_free(p);
-	*/
+	p1 = ffly_alloc(5);
+	p0 = ffly_alloc(200);
+
+	p0 = ffly_realloc(p0, 100);
+	p1 = ffly_realloc(p1, 100);
 	/*
 	mdl_uint_t const n = 1000;
 	void *list[n];
@@ -360,15 +360,9 @@ void _start() {
 			ffly_free(list[i]);
 		i++;
 	}
-
+*/
 	pr();
 	pf();
-*/
-	//void *p = ffly_alloc(200);
-	//ffly_free(p);
-	if (p == -1) {
-		ffly_printf("%p, %s\n", p, strerror(errno));
-	}
 	ffly_arstat();
 	ffly_io_closeup();
 	ffly_ar_cleanup();
@@ -380,62 +374,62 @@ int main(int __argc, char **__argv) {
 	ffly_io_init();
 /*
 	ffly_set_ppid(getpid());
-    void *p0;
-    p0 = ffly_alloc(1020);
-    ffly_alloc(1);
+	void *p0;
+	p0 = ffly_alloc(1020);
+	ffly_alloc(1);
 
-    ffly_free(p0);
+	ffly_free(p0);
 
-    struct timespec begin, end;
-    clock_gettime(CLOCK_MONOTONIC, &begin);
+	struct timespec begin, end;
+	clock_gettime(CLOCK_MONOTONIC, &begin);
 
-    p0 = ffly_alloc(1000); 
+	p0 = ffly_alloc(1000); 
 
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    mdl_u64_t nsec = (end.tv_nsec-begin.tv_nsec)+((end.tv_sec-begin.tv_sec)*1000000000.0);
-    ffly_printf("%luns\n", nsec);
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	mdl_u64_t nsec = (end.tv_nsec-begin.tv_nsec)+((end.tv_sec-begin.tv_sec)*1000000000.0);
+	ffly_printf("%luns\n", nsec);
 */
 /*
-    p = (mdl_uint_t*)ffly_alloc(sizeof(mdl_uint_t));
-    ffly_tid_t tid;
-    ffly_thread_create(&tid, thr0, NULL);
-    void *p0;
-    mdl_u8_t i = 0;
-    while(i != 0xFF) {
-        p0 = ffly_alloc(12);
-        ffly_free(p0);
-        ffly_nanosleep(0, 10000);
-        i++;
-    }
-        
-    ffly_thread_wait(tid);
+	p = (mdl_uint_t*)ffly_alloc(sizeof(mdl_uint_t));
+	ffly_tid_t tid;
+	ffly_thread_create(&tid, thr0, NULL);
+	void *p0;
+	mdl_u8_t i = 0;
+	while(i != 0xFF) {
+		p0 = ffly_alloc(12);
+		ffly_free(p0);
+		ffly_nanosleep(0, 10000);
+		i++;
+	}
+		
+	ffly_thread_wait(tid);
 
 
-    ffly_thread_cleanup();
-    ffly_free(p);
+	ffly_thread_cleanup();
+	ffly_free(p);
 */
 /*
-    struct r *rr = (struct r*)ffly_alloc(sizeof(struct r));
-    rr->a = 0xf;
-    rr->b = 0xff;
-    rr->c = 0xfff;
-    rr->d = 0xffff;
-    rr->e = 0xfffff;
-    rr->f = 0xffffff;
+	struct r *rr = (struct r*)ffly_alloc(sizeof(struct r));
+	rr->a = 0xf;
+	rr->b = 0xff;
+	rr->c = 0xfff;
+	rr->d = 0xffff;
+	rr->e = 0xfffff;
+	rr->f = 0xffffff;
 
-    prr(rr);
+	prr(rr);
 
-    mdl_u8_t *pp = (mdl_u8_t*)ffly_alloc(200);
-    ffly_mem_set(pp, 0xFF, 200);
-    ffly_free(pp);
+	mdl_u8_t *pp = (mdl_u8_t*)ffly_alloc(200);
+	ffly_mem_set(pp, 0xFF, 200);
+	ffly_free(pp);
 
-    rr = (struct r*)ffly_realloc(rr, 2*sizeof(struct r));
-    prr(rr);
+	rr = (struct r*)ffly_realloc(rr, 2*sizeof(struct r));
+	prr(rr);
 
 */
 //	ts12();
-    pr();
-    pf();
+	pr();
+	pf();
 	ffly_io_closeup();
 	ffly_ar_cleanup();
 }
