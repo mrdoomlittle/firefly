@@ -316,13 +316,14 @@ void _start() {
 	ffly_io_init();
 	void *p0, *p1;
 
-	p0 = ffly_alloc(10);
-	p1 = ffly_alloc(200);
-
-	p1 = ffly_arsh(p1, 198);
-	//p0 = ffly_alloc(1);
+	p0 = ffly_alloc(20000);
+	ffly_bzero(p0, 20000);
 	ffly_free(p0);
-	ffly_free(p1);
+//	p1 = ffly_arsh(p1, 198);
+	//p0 = ffly_alloc(1);
+//fly_free(p0);
+//fly_free(p1);
+//0 = ffly_alloc(20);
 	/*
 	mdl_uint_t const n = 1000;
 	void *list[n];

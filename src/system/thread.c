@@ -13,7 +13,7 @@
 # define MAX_THREADS 20
 # define PAGE_SIZE 4
 # define UU_PAGE_SIZE 26
-# define DSS 0xFFF
+# define DSS 0xffff
 # include "../ffly_system.h"
 # ifndef __ffly_no_sysconf
 #   include "config.h"
@@ -37,6 +37,7 @@ ffly_atomic_uint_t active_threads = 0;
 # include "../linux/signal.h"
 # include "../linux/types.h"
 # include "../linux/sched.h"
+# include "../linux/unistd.h"
 
 struct {
 	ffly_tid_t *p;
@@ -93,8 +94,13 @@ ffly_bool_t ffly_thread_dead(ffly_tid_t __tid) {
 	return !get_thr(__tid)->alive;
 }
 
-int static ffly_thr_proxy(void *__arg_p) {
-	struct ffly_thread *thr = (struct ffly_thread*)__arg_p;
+# include "../tools/printbin.c"
+void static
+ffly_thr_proxy() {
+	void *arg_p;
+	__asm__("movq -8(%%rbp), %%rdi\n\t"
+			"movq %%rdi, %0": "=m"(arg_p) : : "rdi");
+	struct ffly_thread *thr = (struct ffly_thread*)arg_p;
     ff_setpid();
 	thr->pid = ff_getpid();
     id = thr->tid;
@@ -109,7 +115,7 @@ int static ffly_thr_proxy(void *__arg_p) {
 
 	ffly_atomic_decr(&active_threads);
 	thr->alive = 0;
-	return 0;
+	exit(SIGKILL);
 }
 
 ffly_err_t ffly_thread_kill(ffly_tid_t __tid) {
@@ -174,10 +180,11 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 		};
 	}
 
-	*(void**)(thr->sp+DSS-8) = (void*)&ffly_thr_proxy;
+	*(void**)(thr->sp+(DSS-8)) = (void*)ffly_thr_proxy;
+	*(void**)(thr->sp+(DSS-16)) = (void*)thr;
     __linux_pid_t pid;
 //  if ((pid = ffly_clone(&ffly_thr_proxy, thr->sp+DSS, CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD, (void*)thr)) == -1) {
-	if ((pid = clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS, (mdl_u64_t)(thr->sp+DSS-8), NULL, NULL, 0))) {
+	if ((pid = clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD, (mdl_u64_t)(thr->sp+(DSS-8)), NULL, NULL, 0)) == (__linux_pid_t)-1) {
 		ffly_fprintf(ffly_err, "thread: failed.\n");
 		return FFLY_FAILURE;
 	}

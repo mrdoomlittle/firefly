@@ -49,6 +49,10 @@ typedef mdl_s32_t ar_int_t;
 	ffly_mutex_lock(&(__pot)->lock)
 # define unlock_pot(__pot) \
 	ffly_mutex_unlock(&(__pot)->lock)
+# define lkpot(__pot) \
+	ffly_mutex_lock(&(__pot)->lock)
+# define ulpot(__pot) \
+	ffly_mutex_unlock(&(__pot)->lock)
 
 # define no_bins 81
 # define bin_no(__bc) \
@@ -295,7 +299,7 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 	if (__blk->size <= __size) {
 		return NULL;
 	}
-
+	lkpot(__pot);
 	blkdp rr = prev_blk(__pot, __blk); //rear
 	blkdp ft = next_blk(__pot, __blk); //front
 	blkdp fwd = get_blk(__pot, __blk->fd);
@@ -325,13 +329,16 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 		}
 	}
 
+	ulpot(__pot);
 	return NULL;
 	_r:
+	ulpot(__pot);
 	return (void*)((mdl_u8_t*)__blk+blkd_size);
 }
 
 void static*
 grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
+	lkpot(__pot);
 	blkdp rr = prev_blk(__pot, __blk); //rear
 	blkdp ft = next_blk(__pot, __blk); //front
 	struct blkd blk;
@@ -362,26 +369,40 @@ grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 		}
 	}
 
+	ulpot(__pot);
 	return NULL;
 	_r:
+	ulpot(__pot);
 	return (void*)((mdl_u8_t*)__blk+blkd_size);
 }
 
 void*
 ffly_arsh(void *__p, mdl_uint_t __to) {
 	blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);
-	potp p = arena;
-	while(!(__p >= p->end && __p < p->top))
+	potp p = arena, bk;
+	lkpot(p);
+	while(!(__p >= p->end && __p < p->top)) {
+		bk = p;
 		p = p->fd;
+		ulpot(bk);
+		lkpot(p);
+	}
+	ulpot(p);
 	return shrink_blk(p, blk, __to);
 }
 
 void*
 ffly_argr(void *__p, mdl_uint_t __to) {
 	blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);
-	potp p = arena;
-	while(!(__p >= p->end && __p < p->top))
+	potp p = arena, bk;
+	lkpot(p);
+	while(!(__p >= p->end && __p < p->top)) {
+		bk = p;
 		p = p->fd;
+		ulpot(bk);
+		lkpot(p);
+	}
+	ulpot(p);
 	return grow_blk(p, blk, __to);
 }
 
@@ -488,7 +509,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 void*
 ffly_alloc(mdl_uint_t __bc) {
 	if (__bc+blkd_size >= POT_SIZE) {
-		void *p = mmap(NULL, blkd_size+__bc, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+		void *p = mmap(NULL, blkd_size+__bc, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
 		blkdp blk = (blkdp)p;
 		blk->size = __bc;
 		blk->flags = MMAPED;
@@ -497,25 +518,37 @@ ffly_alloc(mdl_uint_t __bc) {
 
 	if (!arena) {
 		arena = alloc_pot(POT_SIZE);
+		lkpot(&main_pot);
 		if (main_pot.next != NULL)
 			arena->next = main_pot.next;
 		main_pot.next = arena;
+		ulpot(&main_pot);
 	}
 
-	potp p = arena;
+	potp p = arena, t;
 	void *ret;
 	_again:
 	if (!(ret = _ffly_alloc(p, __bc))) {
+		lkpot(p);
 		if (p->fd != NULL){
-			p = p->fd;
+			t = p->fd;
+			ulpot(p);
+			p = t;
 			goto _again;
 		}
+		ulpot(p);
 	}
 
 	if (!ret) {
-		p->fd = alloc_pot(POT_SIZE);
+		t = alloc_pot(POT_SIZE);
+		lkpot(p);
+		p->fd = t;
+		lkpot(p->fd);
 		p->fd->bk = p;
-		p = p->fd;
+		ulpot(p->fd);
+		t = p->fd;
+		ulpot(p);
+		p = t;
 		goto _again;  
 	}
 	return ret;
@@ -524,11 +557,11 @@ ffly_alloc(mdl_uint_t __bc) {
 void
 _ffly_free(potp __pot, void *__p) {
 	lock_pot(__pot);
+	{
 	blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);
 	if (is_free(blk)) {
 		ffly_errmsg("error: block has already been freed.\n");
-		unlock_pot(__pot);
-		return;
+		goto _end;
 	}
 
 	decouple(__pot, blk);
@@ -593,8 +626,7 @@ _ffly_free(potp __pot, void *__p) {
 				}
 			}
 		}
-		unlock_pot(__pot);
-		return;
+		goto _end;
 	}
 
 	recouple(__pot, blk);
@@ -605,6 +637,8 @@ _ffly_free(potp __pot, void *__p) {
 		blk->fd = bin;
 	}
 	*(__pot->bins+bin_no(blk->size)) = blk->off;
+	}
+	_end:
 	unlock_pot(__pot);
 }
 
@@ -619,22 +653,37 @@ ffly_free(void *__p) {
 		munmap((void*)blk, blkd_size+blk->size);
 		return;
 	}
-	potp p = arena;
+	potp p = arena, bk;
 	// look for pot associated with pointer
-	while(!(__p >= p->end && __p < p->top))
+	lkpot(p);
+	while(!(__p >= p->end && __p < p->top)) {
+		bk = p;
 		p = p->fd;
+		ulpot(bk);
+		lkpot(p);
+	}
+	ulpot(p);
 	if (!p) {
 		ffly_errmsg("error: could not find pot associated with pointer.\n");
 		return;
 	}
 	_ffly_free(p, __p);
 	// free pot as we don't need it
+	lkpot(p);
 	if (!p->off && p != arena) {
+		lkpot(p->bk);
 		p->bk->fd = p->fd;
-		if (p->fd != NULL)
+		ulpot(p->bk);
+		if (p->fd != NULL) {
+			lkpot(p->fd);
 			p->fd->bk = p->bk;
-		free_pot(p);		
+			ulpot(p->fd);
+		}
+		ulpot(p);
+		free_pot(p);
+		return;
 	}
+	ulpot(p);
 }
 
 void*
@@ -651,10 +700,12 @@ ffly_realloc(void *__p, mdl_uint_t __bc) {
 		ffly_printf("shrink.\n");
 		if ((p = ffly_arsh(__p, __bc)) != NULL)
 			return p;
+		ffly_printf("can't shrink block.\n");
 	} else if (dif<0) {
 		ffly_printf("grow.\n");
 		if ((p = ffly_argr(__p, __bc)) != NULL)
 			return p;
+		ffly_printf("can't grow block.\n");
 	}
 
 	p = ffly_alloc(__bc);

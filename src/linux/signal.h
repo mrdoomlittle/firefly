@@ -3,7 +3,6 @@
 # include <mdlint.h>
 # include "types.h"
 mdl_s32_t kill(__linux_pid_t, mdl_s32_t);
-# ifndef SIGKILL
 # define SIGKILL 9
-# endif
+# define SIGCHLD 18
 # endif /*__ffly__linux__signal__h*/
