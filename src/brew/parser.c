@@ -126,10 +126,12 @@ void parse(bucketp *__p) {
 						p = alloc_node;
 						p->sort = _jump;
 						p->p = nexttok()->p;
+						p->fd = NULL;
 						if (*__p != NULL)
 							p->fd = *__p;
 						*__p = p;
 						printf("entry point: %s\n", p->p);
+						end = p;
 						p = NULL;
 					break;
 				}
