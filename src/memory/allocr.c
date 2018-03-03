@@ -649,12 +649,12 @@ ffly_realloc(void *__p, mdl_uint_t __bc) {
 	void *p;
 	if (dif>0) {
 		ffly_printf("shrink.\n");
-//		if ((p = ffly_arsh(__p, __bc)) != NULL)
-//			return p;
+		if ((p = ffly_arsh(__p, __bc)) != NULL)
+			return p;
 	} else if (dif<0) {
 		ffly_printf("grow.\n");
-//		if ((p = ffly_argr(__p, __bc)) != NULL)
-//			return p;
+		if ((p = ffly_argr(__p, __bc)) != NULL)
+			return p;
 	}
 
 	p = ffly_alloc(__bc);

@@ -12,45 +12,45 @@ symbolp parse(char *__s) {
 	char *s = NULL;
 
 	symbolp sy = _alloca(sizeof(struct symbol)), cur;
+	cur = sy;
 	if (*p == '.') {
 		dir = 1;
 		p++;
-		while(*p >= 'a' && *p <= 'z') {
-			*(bufp++) = *(p++); 
-		}
+		while(*p >= 'a' && *p <= 'z')
+			*(bufp++) = *(p++);
 		*bufp = '\0';
 
-		sy->sort = SY_DIR;
-		sy->p = memdup(buf, (sy->len = (bufp-buf)+1));
-		sy->next = _alloca(sizeof(struct symbol));
-		sy = sy->next;
+		cur->sort = SY_DIR;
+		cur->p = memdup(buf, (cur->len = (bufp-buf))+1);
+		cur->next = _alloca(sizeof(struct symbol));
+		cur = cur->next;
 	} else if (*p == '%') {
 		p++;
-		sy->sort = SY_MAC;
+		cur->sort = SY_MAC;
 	}
 
 	if (dir) {
 		p++; //space
 		s = read_str(p, &len);
 		p+=len;
-		sy->sort = SY_DIR;
-		sy->p = s;
-		sy->len = len;
+		cur->sort = SY_DIR;
+		cur->p = s;
+		cur->len = len;
 		return sy;
 	}
 
-	sy->p = read_str(p, &len);
+	cur->p = read_str(p, &len);
 	p+= len;
-	sy->len = len;
+	cur->len = len;
 
 	if (*p == ':') {
 		// label
-		sy->sort = SY_LABEL;
+		cur->sort = SY_LABEL;
 		goto _ret;
 	} else
-		sy->sort = SY_STR;	
+		cur->sort = SY_STR;	
 
-	sy->next = eval(p);
+	cur->next = eval(p);
 /*
 	cur = sy;
 	while(cur != NULL) {

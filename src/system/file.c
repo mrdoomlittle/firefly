@@ -21,7 +21,7 @@ ffly_fopen(char const *__path, int __flags, mdl_u32_t __mode, ffly_err_t *__err)
 		return NULL;
 	}
 
-	if (_err(ffly_mem_dupe((void**)&file->path, __path, ffly_str_len(__path)))) {
+	if (_err(ffly_mem_dupe((void**)&file->path, __path, ffly_str_len(__path)+1))) {
 		ffly_fprintf(ffly_err, "failed to dupe file path.\n");
 		*__err = FFLY_FAILURE;
 		return NULL;

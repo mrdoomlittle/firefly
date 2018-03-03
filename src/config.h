@@ -42,6 +42,7 @@ struct ffly_conf_arr {
 };
 
 // config bare
+// all in one
 typedef struct {
 	struct ffly_vec arrs;
 	struct ffly_vec free;
@@ -49,6 +50,7 @@ typedef struct {
 } ffconf;
 
 typedef ffconf* ffconfp;
+
 struct ffly_conf {
 	struct ffly_buff sbuf;
 	ffly_byte_t *p, *end;

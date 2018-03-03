@@ -1,10 +1,11 @@
 # include "as.h"
-# include "../data/str_len.h"
+# include "../dep/str_len.h"
 # include "../ffly_def.h"
 # include "../system/string.h"
 # include "../elf.h"
 # include "../stdio.h"
-# include "../data/str_cmp.h"
+# include "../string.h"
+# include "../dep/str_cmp.h"
 struct hash symbols;
 struct hash globl;
 mdl_u64_t offset = 0;
@@ -69,11 +70,13 @@ copyln(char *__dst, char *__src, char *__end, mdl_uint_t *__len) {
 	return p;
 }
 
+mdl_i8_t static epdeg = -1;
 void
 assemble(char *__p, char *__end) {
 	char buf[256];
 	char *p = __p;
 	mdl_uint_t len;
+	char const *entry = NULL;
 	while(p < __end) {
 		while ((*p == ' ' | *p == '\t' | *p == '\n') && p < __end) p++;
 		if (*p == '\0') break;
@@ -93,7 +96,11 @@ assemble(char *__p, char *__end) {
 				hash_put(&globl, sy->p, sy->len, la);
 				printf("label\n");
 			} else if (is_sydir(sy)) {
-				printf("directive\n");	
+				printf("directive, %s\n", sy->p);
+				if (!strcmp(sy->p, "entry") && epdeg<0) {
+					epdeg = 0;
+					entry = sy->next->p;
+				}
 			} else {
 				insp ins;
 				if ((ins = (insp)hash_get(&globl, sy->p, sy->len))) {		
@@ -108,7 +115,9 @@ assemble(char *__p, char *__end) {
 		}
 	}
 
-	char const *entry = "_start";
+	if (!entry)
+		entry = "_start";
+	printf("entry point: %s\n", entry);
 	if (!hash_get(&globl, entry, ffly_str_len(entry))) {
 		printf("entry point not found.\n");
 	}
