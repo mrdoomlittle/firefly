@@ -15,6 +15,11 @@ hatch: clean
 	gcc $(cc_flags) -Wall -o hatch hatch.c $(ffly_objs) -nostdlib
 terminal: clean
 	gcc $(cc_flags) -Wall -o terminal terminal.c $(ffly_objs) -nostdlib
+mul: clean
+	gcc $(cc_flags) -c mul/hash.c
+	gcc $(cc_flags) -c mul/lexer.c
+	gcc $(cc_flags) -c mul/mul.c
+	gcc $(cc_flags) -Wall -o main mul/main.c mul.o hash.o lexer.o $(ffly_objs) -nostdlib
 db: clean
 	gcc -Wall -c network/sock.c
 	gcc -c network/input.c
