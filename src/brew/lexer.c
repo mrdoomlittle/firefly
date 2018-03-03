@@ -3,7 +3,7 @@
 # include "../malloc.h"
 # include "../string.h"
 # define is_no(__c) (__c >= '0' && __c <= '9')
-# define is_ident(__c) (__c >= 'a' && __c <= 'z')
+# define is_ident(__c) ((__c >= 'a' && __c <= 'z') || __c == '_')
 char static nextc() {
 	return *p;
 }
@@ -47,7 +47,7 @@ mdl_u8_t expect_token(mdl_u8_t __sort, mdl_u8_t __val) {
 char* read_ident(mdl_u16_t *__len) {
 	char buf[1024];
 	char *bufp = buf;
-	while(nextc() >= 'a' && nextc() <= 'z') {
+	while((nextc() >= 'a' && nextc() <= 'z') || nextc() == '_') {
 		*(bufp++) = *p;
 		incrp;
 	}
@@ -98,7 +98,7 @@ char* read_str(mdl_u16_t *__len) {
 /*
 	tokens will be freed from head down if no. of is grater then	
 */
-# define BACK 15
+# define BACK 10
 bucketp static head = NULL;
 bucketp static next = NULL;
 mdl_uint_t static len = 0;
@@ -133,11 +133,12 @@ bucketp lex() {
 	}
 
 	ret->p = NULL;
-	ret->next = next;
+	ret->next = NULL;
 	ret->fd = NULL;
 	if (!head)
 		head = ret;
-
+	if (next != NULL)
+		next->next = ret;
 	next = ret;
 	char c = nextc();
 	if (is_no(c)) {
