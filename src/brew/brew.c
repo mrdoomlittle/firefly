@@ -41,4 +41,6 @@ maybe_keyword(bucketp __tok) {
 		to_keyword(__tok, _keywd_end);
 	else if (!ffly_str_cmp((char*)__tok->p, "entry"))
 		to_keyword(__tok, _keywd_entry);
+	else if (!ffly_str_cmp((char*)__tok->p, "echo"))
+		to_keyword(__tok, _keywd_echo);
 }

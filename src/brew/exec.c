@@ -10,20 +10,36 @@ void op_jump(objp *__p) {
 	*__p = (*__p)->to;
 }
 
+void op_echo(objp *__p) {
+	objp p = *__p;
+	printf("%s", (char*)p->p);
+}
+
+void op_end(objp *__p) {
+	objp p = *__p;
+	*__p = p->to;
+}
+
 void(*op[])(objp*) = {
 	op_cp,
 	NULL,
-	op_jump
+	op_jump,
+	op_echo,
+	op_end
 };
 
 void exec() {
-	objp cur = top;
+	printf("exec.\n");
+	objp cur = top, bk;
 	while(cur != NULL) {
 		if (cur->opcode == _op_exit) {
 			printf("goodbye.\n");
 			break;
 		}
+		bk = cur;
 		op[cur->opcode](&cur);
+		if (bk != cur)
+			continue;
 		cur = cur->next;
 	}
 }

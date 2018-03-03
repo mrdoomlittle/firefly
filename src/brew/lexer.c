@@ -60,6 +60,41 @@ char* read_ident(mdl_u16_t *__len) {
 	return p;
 }
 
+void escape_chr(char *__c) {
+	switch(*p) {
+		case 'n':
+			*__c = '\n';
+			incrp;
+		break;
+		case 't':
+			*__c = '\t';
+			incrp;
+		break;
+	}
+}
+
+char* read_str(mdl_u16_t *__len) {
+	char buf[1024];
+	char *bufp = buf;
+	while(nextc() != '"') {
+		if (*p == 0x5c) {
+			incrp;
+			escape_chr(bufp++);
+		} else {
+			*(bufp++) = *p;
+			incrp;
+		}
+	}
+	*bufp = '\0';
+	mdl_u16_t len;
+	char *p = (char*)malloc((len = (bufp-buf))+1);
+	to_free(p);
+	memcpy(p, buf, len+1);
+	*__len = len;
+	return p;
+}
+
+
 /*
 	tokens will be freed from head down if no. of is grater then	
 */
@@ -79,7 +114,17 @@ bucketp lex() {
 	}
 	
 	sk_white_space();
+	_bk:
 	if (at_eof()) return NULL;
+	if (*p == '#') {
+		while(*p != '\n') {
+			if (at_eof())
+				return NULL;
+			incrp;
+		}
+		incrp;
+		goto _bk;
+	}
 
 	bucketp ret;
 	if ((ret = (bucketp)malloc(sizeof(struct bucket))) == NULL) {
@@ -104,6 +149,12 @@ bucketp lex() {
 		//printf("~~~\n");
 	} else {
 		switch(c) {
+			case '"':
+				incrp;
+				ret->sort = _str;
+				ret->p = read_str(&ret->len);
+				incrp;
+			break;
 			case '.':
 				ret->sort = _keywd;
 				ret->val = _period;

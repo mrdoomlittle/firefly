@@ -14,6 +14,7 @@ ffly_err_t parser_jump(bucketp *__node) {
 	}
 
 	bucketp p = (*__node = alloc_node);
+	p->sort = _jump;
 	p->p = label->p;
 	retok;
 }
@@ -33,10 +34,12 @@ ffly_err_t parser_label(bucketp *__node) {
 	bucketp tok;
 	while(!is_keywd(tok = nexttok(), _comma)) {
 		if (tok->sort != _ident) break;
-		bucketp bk = *__node;
-		parser_jump(__node);
-		(*__node)->fd = bk;
+		ulex(tok);
+		bucketp bk = p;
+		parser_jump(&p);
+		bk->fd = p;
 	}
+	p->fd = NULL;
 	retok;
 }
 
@@ -58,12 +61,11 @@ ffly_err_t parser_cp(bucketp *__node) {
 }
 
 ffly_err_t parser_end(bucketp *__node) {
-	if (!expect_token(_keywd, _keywd_exit)) {
+	if (!expect_token(_keywd, _keywd_end)) {
 		fprintf(stderr, "expect error.\n");
 		reterr;
 	}
 
-	printf("end.\n");
 	bucketp p = (*__node = alloc_node);
 	p->sort = _end;
 	retok;
@@ -75,15 +77,30 @@ ffly_err_t parser_exit(bucketp *__node) {
 		reterr;
 	}
 
-	printf("exit.\n");
 	bucketp p = (*__node = alloc_node);
 	p->sort = _exit;
 	retok;
 }
 
+ffly_err_t parser_echo(bucketp *__node) {
+	if (!expect_token(_keywd, _keywd_echo)) {
+		fprintf(stderr, "expect error.\n");
+		reterr;
+	}
+
+	char *format = (char*)nexttok()->p;
+	bucketp p = (*__node = alloc_node);
+	p->sort = _echo;
+	p->p = format;
+	retok;
+}
+
+// entry point designation
+mdl_i8_t static epdeg = -1;
 void parse(bucketp *__p) {
-	bucketp end = NULL, p = NULL;
+	bucketp end = NULL, p;
 	while(!at_eof() && !tokbuf_size()) {
+		p = NULL;
 		bucketp tok = nexttok();
 		if (!tok) return;
 
@@ -100,16 +117,23 @@ void parse(bucketp *__p) {
 
 				switch(dir->val) {
 					case _keywd_entry:
+						if (!epdeg) {
+							printf("entry point has already been designated.\n");
+							nexttok(); // sk
+							break;
+						} else
+							epdeg = 0;
 						p = alloc_node;
 						p->sort = _jump;
 						p->p = nexttok()->p;
 					break;
 				}
-				printf("%s\n", p->p);
-				while(1);
 			} else {
 				ulex(tok);
 				switch(tok->val) {
+					case _keywd_echo:
+						if (_err(parser_echo(&p))) return;
+					break;
 					case _keywd_cp:
 						if (_err(parser_cp(&p))) return;
 					break;
@@ -127,6 +151,15 @@ void parse(bucketp *__p) {
 
 			if (brief->sort == _keywd && brief->val == _comma) {
 				if (_err(parser_label(&p))) return;
+				if (!*__p)
+					*__p = p;
+				if (end != NULL)
+					end->fd = p;
+				to_free(p);
+				while(p->fd != NULL)
+					to_free(p = p->fd);
+				end = p;
+				continue;
 			} else {
 				if (_err(parser_jump(&p))) return;
 			}
@@ -142,7 +175,6 @@ void parse(bucketp *__p) {
 			if (end != NULL)
 				end->fd = p;
 			end = p;
-			p = NULL;
 		}
 	}
 }

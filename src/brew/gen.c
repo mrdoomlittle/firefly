@@ -8,6 +8,7 @@ objp extern top;
 objp extern end;
 
 
+objp *retto;
 objp back = NULL;
 struct ffly_map label;
 struct ffly_vec jmpto;
@@ -50,7 +51,9 @@ void emit_label(bucketp __p) {
 }
 
 void emit_end(bucketp __p) {
-
+	objp o = nextobj();
+	o->opcode = _op_end;
+	o->to = *retto;
 }
 
 void emit_jump(bucketp __p) {
@@ -60,6 +63,13 @@ void emit_jump(bucketp __p) {
 	ffly_vec_push_back(&jmpto, (void**)&p);
 	p->label = (char const*)__p->p;
 	p->to = &o->to;
+	retto = &end->next;
+}
+
+void emit_echo(bucketp __p) {
+	objp o = nextobj();
+	o->opcode = _op_echo;
+	o->p = __p->p;
 }
 
 void(*emit[])(bucketp) = {
@@ -67,13 +77,16 @@ void(*emit[])(bucketp) = {
 	emit_cp,
 	emit_exit,
 	emit_end,
-	emit_jump
+	emit_jump,
+	NULL,
+	emit_echo
 };
 
 void oust(bucketp __p, mdl_u8_t __no) {
 	emit[__no](__p);
 }
 
+# include "../system/err.h"
 void gen(bucketp __p) {
 	ffly_map_init(&label, _ffly_map_127);
 	ffly_vec_set_flags(&jmpto, VEC_AUTO_RESIZE);
@@ -88,13 +101,18 @@ void gen(bucketp __p) {
 		end->next = NULL;
 
 	ffly_err_t err;
-	jmpdp jmp;
+	jmpdp jmp, end;
 	___ffly_vec_nonempty(&jmpto) {
 		jmp = (jmpdp)ffly_vec_begin(&jmpto);
-		while(jmp != NULL) {
-			printf("-- jmp.\n");
-			*jmp->to = *(objp*)ffly_map_get(&label, jmp->label, ffly_str_len((char const*)jmp->label), &err);
-			ffly_vec_fd(&jmpto, (void**)&jmp);
+		end = (jmpdp)ffly_vec_end(&jmpto);
+		while(vec_at_deadstop(jmp, end)) {
+			objp *p = (objp*)ffly_map_get(&label, jmp->label, ffly_str_len((char const*)jmp->label), &err);
+			if (_err(err) || !p) {
+				printf("label does not exist.\n");
+				break;
+			}
+			*jmp->to = *p;
+			jmp++;
 		}
 	}
 

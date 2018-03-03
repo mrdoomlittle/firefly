@@ -1,1 +1,8 @@
-.entry lol
+# set entry point
+.entry all
+all,routine,
+	echo "--\t <entry point> seqno. 0\n"
+	exit
+routine,,
+	echo "--\t <sub routine> seqno. 1\n"
+	end # acts like c return

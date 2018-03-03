@@ -17,7 +17,6 @@ void *tf[100];
 void **fresh = tf;
 void to_free(void *__p) {
 	*(fresh++) = __p;
-	printf("...\n");
 }
 
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
@@ -57,10 +56,8 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	exec();
 
 	void **cur = tf;
-	while(cur != fresh) {
+	while(cur != fresh)
 		free(*(cur++));
-		printf("%p\n", *(cur-1));
-	}
 	lexer_cleanup();
 
 	_fault:

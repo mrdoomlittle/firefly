@@ -16,13 +16,15 @@ typedef struct bucket {
 enum {
 	_op_cp,
 	_op_exit,
-	_op_jump
+	_op_jump,
+	_op_echo,
+	_op_end
 };
 
 typedef struct obj {
 	struct obj *next;
 	mdl_u8_t opcode;
-	void *src, *dst;
+	void *src, *dst, *p;
 	struct obj *to;
 } *objp;
 
@@ -35,7 +37,8 @@ enum {
 	_keywd_entry,
 	_keywd_cp,
 	_keywd_exit,
-	_keywd_end
+	_keywd_end,
+	_keywd_echo
 };
 
 enum {
@@ -44,14 +47,16 @@ enum {
 	_exit,
 	_end,
 	_jump,
-	_shell
+	_shell,
+	_echo
 };
 
 enum {
 	_unknown,
 	_ident,
 	_chr,
-	_keywd
+	_keywd,
+	_str
 };
 
 mdl_u8_t is_keywd(bucketp, mdl_u8_t);
