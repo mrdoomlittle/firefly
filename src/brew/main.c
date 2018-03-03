@@ -9,7 +9,7 @@
 mdl_u8_t *p = NULL;
 mdl_u8_t static *eof;
 mdl_u8_t at_eof() {
-	return (p >= eof || *p == '\0');
+	return p >= eof;
 }
 
 // to free list
@@ -17,6 +17,7 @@ void *tf[100];
 void **fresh = tf;
 void to_free(void *__p) {
 	*(fresh++) = __p;
+	printf("...\n");
 }
 
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
@@ -52,8 +53,8 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	bucketp top = NULL;
 	printf("filesize: %u\n", st.st_size);
 	parse(&top);
-//	gen(top);
-//	exec();
+	gen(top);
+	exec();
 
 	void **cur = tf;
 	while(cur != fresh) {

@@ -10,7 +10,6 @@ __ffly_mem_cmp:
 	movq %rsp, %rbp
 	sub $2, %rsp
 	movw $0, -2(%rbp)
-
 	_again:
 	movb (%rdi), %al
 	cmpb %al, (%rsi)

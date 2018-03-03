@@ -11,6 +11,7 @@ __ffly_mem_dup:
 	push %rbp
 	movq %rsp, %rbp
 	sub $8, %rsp
+	push %rax
 	movq %rbx, -8(%rbp)
 	push %rdi
 	push %rsi
@@ -22,6 +23,7 @@ __ffly_mem_dup:
 	movq %rax, (%rdi)
 	movq %rax, %rdi
 	call __ffly_mem_cpy
+	pop %rax
 	movq %rbp, %rsp
 	pop %rbp
 	ret

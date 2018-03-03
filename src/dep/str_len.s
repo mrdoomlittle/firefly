@@ -6,6 +6,7 @@
 */
 __ffly_str_len:
 	xorq %rax, %rax
+	push %rbx
 	movq %rdi, %rbx
 
 	_again:
@@ -16,4 +17,5 @@ __ffly_str_len:
 
 	sub %rbx, %rdi
 	movq %rdi, %rax
+	pop %rbx
 	ret

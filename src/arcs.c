@@ -193,7 +193,7 @@ void tree(ffly_arcp __root) {
         p++;
     }
 }
-//# define __ffly_debug
+//#define __ffly_debug
 # ifdef __ffly_debug
 void pr();
 # include "stdio.h"
@@ -204,11 +204,10 @@ void pr();
 # include "dep/mem_cpy.h"
 # include "dep/str_dup.h"
 ffly_err_t ffmain(int __argc, char const *__argv) {
-	char *p;
-	p = ffly_str_dup("uhsgugsdoijdsfkjkhsdflojh389ye3rou9hy8ihy8");
-	printf("%s\n", p);
-	ffly_printf("...\n");
-	//__asm__("call __ffly_mal");
+	char buf[200];
+	ffly_mem_cpy(buf, "Hello", 6);
+
+	printf("%s\n", buf);
 	return 0;
 	char const *by;
 

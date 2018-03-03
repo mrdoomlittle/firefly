@@ -86,12 +86,29 @@ void parse(bucketp *__p) {
 	while(!at_eof() && !tokbuf_size()) {
 		bucketp tok = nexttok();
 		if (!tok) return;
+
 		if (tok->sort == _keywd) {
-			ulex(tok);
 			if (tok->val == _circumflex) {
 				p = alloc_node;
 				p->sort = _shell;
+			} else if (tok->val == _period) {
+				bucketp dir;
+				if ((dir = nexttok())->sort != _keywd) {
+					// err
+					printf("expected keyword.\n");
+				}
+
+				switch(dir->val) {
+					case _keywd_entry:
+						p = alloc_node;
+						p->sort = _jump;
+						p->p = nexttok()->p;
+					break;
+				}
+				printf("%s\n", p->p);
+				while(1);
 			} else {
+				ulex(tok);
 				switch(tok->val) {
 					case _keywd_cp:
 						if (_err(parser_cp(&p))) return;

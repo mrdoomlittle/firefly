@@ -9,7 +9,7 @@ char static nextc() {
 }
 
 mdl_u8_t static is_space(char __c) {
-	return (__c == ' ' | __c == '\t' | __c == '\n');
+	return (__c == ' ' || __c == '\t' || __c == '\n');
 }
 
 void static sk_white_space() {
@@ -63,7 +63,7 @@ char* read_ident(mdl_u16_t *__len) {
 /*
 	tokens will be freed from head down if no. of is grater then	
 */
-# define BACK 10
+# define BACK 15
 bucketp static head = NULL;
 bucketp static next = NULL;
 mdl_uint_t static len = 0;
@@ -77,20 +77,21 @@ bucketp lex() {
 		head = head->next;
 		free(bk);
 	}
-
+	
+	sk_white_space();
 	if (at_eof()) return NULL;
 
 	bucketp ret;
 	if ((ret = (bucketp)malloc(sizeof(struct bucket))) == NULL) {
 		// err
+		printf("failed to allocate.\n");
 	}
 
+	ret->p = NULL;
 	ret->next = next;
 	ret->fd = NULL;
-	sk_white_space();
 	if (!head)
 		head = ret;
-
 
 	next = ret;
 	char c = nextc();
@@ -100,8 +101,14 @@ bucketp lex() {
 	} else if (is_ident(c)) {
 		ret->sort = _ident;
 		ret->p = read_ident(&ret->len);
+		//printf("~~~\n");
 	} else {
 		switch(c) {
+			case '.':
+				ret->sort = _keywd;
+				ret->val = _period;
+				incrp;
+			break;
 			case ':':
 				ret->sort = _keywd;
 				ret->val = _colon;

@@ -2,13 +2,18 @@
 # include "../stdio.h"
 # include "../ffly_def.h"
 objp top = NULL, end = NULL;
-void op_cp(objp __p) {
+void op_cp(objp *__p) {
 
 }
 
-void(*op[])(objp) = {
+void op_jump(objp *__p) {
+	*__p = (*__p)->to;
+}
+
+void(*op[])(objp*) = {
 	op_cp,
-	NULL
+	NULL,
+	op_jump
 };
 
 void exec() {
@@ -18,7 +23,7 @@ void exec() {
 			printf("goodbye.\n");
 			break;
 		}
-		op[cur->opcode](cur);
+		op[cur->opcode](&cur);
 		cur = cur->next;
 	}
 }

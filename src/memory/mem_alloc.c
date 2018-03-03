@@ -78,6 +78,7 @@ void* ffly_mal() {
 # ifdef __ffly_mal_track
 	, "=m"(bypass)
 # endif
+	: : "rax", "bl"
 );
 	return ffly_mem_alloc(bc
 # ifdef __ffly_mal_track

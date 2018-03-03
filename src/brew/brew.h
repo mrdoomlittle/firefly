@@ -6,7 +6,6 @@ extern mdl_u8_t *p;
 # define decrp p--
 typedef struct bucket {
 	struct bucket *next, *fd;
-
 	void *src, *dst;
 	mdl_u8_t sort:4;
 	mdl_u8_t val;
@@ -16,13 +15,15 @@ typedef struct bucket {
 
 enum {
 	_op_cp,
-	_op_exit
+	_op_exit,
+	_op_jump
 };
 
 typedef struct obj {
 	struct obj *next;
 	mdl_u8_t opcode;
 	void *src, *dst;
+	struct obj *to;
 } *objp;
 
 enum {
@@ -30,6 +31,8 @@ enum {
 	_comma,
 	_circumflex,
 	_semicolon,
+	_period,
+	_keywd_entry,
 	_keywd_cp,
 	_keywd_exit,
 	_keywd_end

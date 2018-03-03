@@ -13,8 +13,6 @@ __ffly_mal:
 	sub $4, %rsp
 	movl %eax, (%rsp)
 #else
-	_t:
-	jmp _t
 #ifdef __arc64
 	sub $8, %rsp
 	movq %rax, (%rsp)
