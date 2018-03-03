@@ -16,6 +16,9 @@ mdl_u8_t at_eof() {
 void *tf[100];
 void **fresh = tf;
 void to_free(void *__p) {
+	if (fresh-tf >= 100) {
+		printf("error overflow.\n");
+	}
 	*(fresh++) = __p;
 }
 

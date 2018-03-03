@@ -1,8 +1,11 @@
 # set entry point
 .entry all
-all,routine,
+all,routine_a routine_b,
 	echo "--\t <entry point> seqno. 0\n"
 	exit
-routine,,
+routine_a,,
 	echo "--\t <sub routine> seqno. 1\n"
 	end # acts like c return
+routine_b,,
+	echo "--\t <sub routine> seqno. 2\n"
+	end

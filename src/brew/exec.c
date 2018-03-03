@@ -2,11 +2,13 @@
 # include "../stdio.h"
 # include "../ffly_def.h"
 objp top = NULL, end = NULL;
+objp retto;
 void op_cp(objp *__p) {
 
 }
 
 void op_jump(objp *__p) {
+	retto = (*__p)->next;
 	*__p = (*__p)->to;
 }
 
@@ -17,7 +19,7 @@ void op_echo(objp *__p) {
 
 void op_end(objp *__p) {
 	objp p = *__p;
-	*__p = p->to;
+	*__p = retto;
 }
 
 void(*op[])(objp*) = {
