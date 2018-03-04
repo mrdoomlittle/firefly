@@ -8,8 +8,8 @@ void* thr(void *__arg_p) {
 }
 
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
-	printf(".....\n");
-	ffly_tid_t t0;
-	ffly_thread_create(&t0, thr, NULL);
+//	printf(".....\n");
+//	ffly_tid_t t0;
+//	ffly_thread_create(&t0, thr, NULL);
 
 }

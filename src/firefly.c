@@ -9,6 +9,7 @@
 # include "memory/alloca.h"
 # include "dep/str_cmp.h"
 # include "dep/mem_dup.h"
+# include "dep/mem_cpy.h"
 /*
 extern void*(*ffly_allocp)(mdl_uint_t);
 extern void(*ffly_freep)(void*);
@@ -59,8 +60,15 @@ void evalopts(char const *__s) {
 	end->next = NULL;
 }
 
+/*
+	alloca will use this until config is loaded.
+*/
+# define TMP_ALSSIZE 300
+
+# include "mode.h"
+# include "system/config.h"
 ffly_err_t ffmain(int, char const**);
-char const static *by = "mrdoomlittle";
+char const static *by = "mrdoomlittle"; 
 # include "data/str_cpy.h"
 void _start(void) {
 	int long argc;
@@ -72,15 +80,22 @@ void _start(void) {
 	char const **argp = argv;
 	char const **end = argp+argc;
 	void *frame;
+	void *tmp;
 	ffly_ar_init();
+	ffly_io_init(); // don't move
+
+	tmp = __ffly_mem_alloc(TMP_ALSSIZE);
+	ffly_alss(tmp, TMP_ALSSIZE);
+
 	frame = ffly_frame();
 	void **p = ffly_alloca(sizeof(void*), NULL);
- 	ffly_io_init();
+
 	char const **argl = ffly_alloca(argc*sizeof(char const*), NULL);
 	char const **arg = argl;
 	*(arg++) = *(argp++); 
 
 	mdl_i8_t conf = -1;
+
 	if (argc > 1) {
 		if (!ffly_str_cmp(*argp, "-proc")) {
 			evalopts(*(++argp));
@@ -97,15 +112,26 @@ void _start(void) {
 				}
 				ffly_ld_sysconf(cur->val);
 				ffly_printf("loaded sysconfig.\n");
-				ffly_printf("max-threads: %u\n", __ffly_sysconf__.max_threads);
 				conf = 0;
-			}
+			} else if (!ffly_str_cmp(cur->name, "-mode"))
+				if (!ffly_str_cmp(cur->val, "debug"))
+					ffset_mode(_ff_mod_debug);	
 			cur = cur->next;
 		}
 		//ffly_printf("please provide sysconf.\n");
 		//goto _end;
 	}
 
+	if (conf<0)
+		// load default builtin config
+		ffly_ld_sysconf_def();
+	ffly_alad((void**)&p);
+	ffly_alad((void**)&argl);
+	ffly_alad((void**)&arg);
+	ffly_alad(&frame);
+	ffly_alrr();
+
+	__ffly_mem_free(tmp);
 	while(argp != end)
 		*(arg++) = *(argp++);
 
@@ -115,6 +141,7 @@ void _start(void) {
 	ffly_arcs_creatarc("info");
 	ffly_arcs_tun("info");
 	ffly_arcs_creatrec("created-by", p, _ffly_rec_def, 0);
+		
 	ffly_arcs_bk();
 
 	ffmain(arg-argl, argl);
@@ -135,7 +162,9 @@ void _start(void) {
 		}
 	}
 
-	ffly_arstat();
+	__ffmod_debug
+		ffly_arstat();
+
 	ffly_arcs_de_init();
 	ffly_io_closeup();
 	ffly_collapse(frame);

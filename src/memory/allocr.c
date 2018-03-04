@@ -4,6 +4,7 @@
 # include "../system/util/checksum.h"
 # include "../system/thread.h"
 # include "../system/mutex.h"
+# include "../mode.h"
 ffly_err_t ffly_printf(char*, ...);
 # define ALIGN 1
 # define align_to(__no, __to)(((__no)+((__to)-1))&((~(__to))+1))
@@ -431,9 +432,6 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 	if (not_null((bin = get_bin(__pot, __bc)))) {
 		while(not_null(bin)) {
 			blkdp blk = get_blk(__pot, bin);
-# ifdef DEBUG
-			ffly_printf("-----> %u, %u, %u, %u\n", blk->size, __bc, blk->fd, blk->off);
-# endif
 			if (blk->size >= __bc) {
 				unlink(__pot, blk);
 				blk->pad = blk->size-__bc;
@@ -565,21 +563,22 @@ _ffly_free(potp __pot, void *__p) {
 	}
 
 	decouple(__pot, blk);
-# ifdef DEBUG
-	ffly_printf("to free: %u\n", blk->size);
-# endif
+	__ffmod_debug
+		ffly_printf("to free: %u\n", blk->size);
+
 	blkdp prev, next, top = NULL, end = NULL;
 	if (not_null(blk->prev)) {
 		prev = prev_blk(__pot, blk);
 		while(is_free(prev)) {
-# ifdef DEBUG
-			ffly_printf("found free space above, %u\n", prev->size);
-# endif
+			__ffmod_debug
+				ffly_printf("found free space above, %u\n", prev->size);
+
 			unlink(__pot, prev);
 			decouple(__pot, prev);
-# ifdef DEBUG
-			ffly_printf("total freed: %u\n", prev->end-prev->off); 
-# endif
+
+			__ffmod_debug
+				ffly_printf("total freed: %u\n", prev->end-prev->off); 
+
 			top = prev;
 			if (is_null(prev->prev)) break;
 			prev = prev_blk(__pot, prev);
@@ -589,14 +588,15 @@ _ffly_free(potp __pot, void *__p) {
 	if (not_null(blk->next)) {
 		next = next_blk(__pot, blk);
 		while(is_free(next)) {
-# ifdef DEBUG
-			ffly_printf("found free space below, %u\n", next->size);
-# endif
+			__ffmod_debug
+				ffly_printf("found free space below, %u\n", next->size);
+
 			unlink(__pot, next);
 			decouple(__pot, next);
-# ifdef DEBUG
-			ffly_printf("total freed: %u\n", next->end-next->off);
-# endif
+
+			__ffmod_debug
+				ffly_printf("total freed: %u\n", next->end-next->off);
+
 			end = next;
 			if (is_null(next->next)) break;
 			next = next_blk(__pot, next);
@@ -613,9 +613,10 @@ _ffly_free(potp __pot, void *__p) {
 		blk->size = ((blk->end = end->end)-blk->off)-blkd_size;
 		blk->next = end->next;
 	}
-# ifdef DEBUG
-	ffly_printf("freed: %u, %u\n", blk->size, blk->off);
-# endif
+
+	__ffmod_debug
+		ffly_printf("freed: %u, %u\n", blk->size, blk->off);
+
 	if (blk->end == __pot->off) {
 		__pot->off = blk->off;
 		if (is_flag(__pot->flags, USE_BRK)) { 
