@@ -91,19 +91,33 @@ get(ffly_bcip __bci, mdl_u8_t *__dst, mdl_u8_t __n, ffly_err_t *__err) {
 	}
 }
 
+void*
+ffly_bci_resolv_adr(ffly_bcip __bci, ffly_addr_t __addr) {
+	return (void*)(__bci->stack+__addr);
+}
+
 void _exit();
 void _as();
 void _jmp();
+void _st();
+void _ld();
+void _out();
+void _mov();
 static void(*op[])() = {
 	_exit,
 	_as,
-	_jmp
+	_jmp,
+	_st,
+	_ld,
+	_out,
+	_mov
 };
 
+# define NOOP 7
 # define get_addr(__bci, __err) \
 	get_16l(__bci, __err)
 
-# define fi __asm__("jmp _fi");
+# define fi __asm__("jmp _fi"); // finished
 # define next __asm__("jmp _next")
 # define end __asm__("jmp _end")
 # define jmpto(__p) __asm__("jmp *%0" : : "r"(__p))
@@ -115,7 +129,12 @@ ffly_err_t ffly_bci_exec(ffly_bcip __bci, ffly_err_t *__exit_code) {
 	__asm__("_next:\n\t");
 	{
 	__bci->ip_off = 0;
-	mdl_u8_t opcode = get_8l(__bci, &err);
+	mdl_u8_t opcode;
+	
+	if ((opcode = get_8l(__bci, &err)) >= NOOP) {
+		ffly_errmsg("opcode invalid, got: %u\n", opcode);
+		reterr;
+	}
 	jmpto(op[opcode]);
 
 	__asm__("_as:\n\t");
@@ -133,8 +152,49 @@ ffly_err_t ffly_bci_exec(ffly_bcip __bci, ffly_err_t *__exit_code) {
 		ffly_addr_t addr = get_addr(__bci, &err);
 		ffly_addr_t dst;
 		stack_get(__bci, (mdl_u8_t*)&dst, sizeof(ffly_addr_t), addr);
-		ffly_printf("... %u\n", addr);
 		__bci->set_ip(dst);
+		__bci->ip_off = 0;
+	}
+	next;
+
+	__asm__("_ld:\n\t");
+	{
+		mdl_u8_t l = get_8l(__bci, &err);
+		ffly_addr_t dst = get_addr(__bci, &err);
+		ffly_addr_t src = get_addr(__bci, &err);
+		void *p = ffly_bci_resolv_adr(__bci, dst);
+		stack_get(__bci, (mdl_u8_t*)p, l, src);
+	}
+	fi;
+
+	__asm__("_st:\n\t");
+	{
+		mdl_u8_t l = get_8l(__bci, &err);
+		ffly_addr_t src = get_addr(__bci, &err);
+		ffly_addr_t dst = get_addr(__bci, &err);
+		void *p = ffly_bci_resolv_adr(__bci, src);
+		stack_put(__bci, (mdl_u8_t*)p, l, dst);
+	}
+	fi;
+
+	__asm__("_mov:\n\t");
+	{
+		mdl_u8_t l = get_8l(__bci, &err);
+		ffly_addr_t src = get_addr(__bci, &err);
+		ffly_addr_t dst = get_addr(__bci, &err);
+		mdl_u8_t tmp[8];
+		stack_get(__bci, tmp, l, src);
+		stack_put(__bci, tmp, l, dst);
+	}
+	fi;
+
+	__asm__("_out:\n\t");
+	{
+		mdl_u8_t l = get_8l(__bci, &err);
+		ffly_addr_t addr = get_addr(__bci, &err);
+		mdl_u64_t val = 0;
+		stack_get(__bci, (mdl_u8_t*)&val, l, addr);
+		ffly_printf("%u\n", val);
 	}
 	fi;
 

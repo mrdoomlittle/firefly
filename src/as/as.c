@@ -9,6 +9,7 @@
 struct hash symbols;
 struct hash globl;
 mdl_u64_t offset = 0;
+
 void* memdup(void *__p, mdl_uint_t __bc) {
 	void *ret = _alloca(__bc);
 	mdl_u8_t *p = (mdl_u8_t*)ret;
@@ -70,6 +71,18 @@ copyln(char *__dst, char *__src, char *__end, mdl_uint_t *__len) {
 	return p;
 }
 
+ffly_addr_t rgadr(char const*);
+// if register turn it into one
+void turnrgif(symbolp __sy) {
+	if (!__sy) return;
+	if (is_syreg(__sy)) {
+		ffly_addr_t *ra = (ffly_addr_t*)_alloca(sizeof(ffly_addr_t));
+		*ra = rgadr((char const*)__sy->p);
+		__sy->p = ra;
+	}
+}
+
+
 mdl_i8_t static epdeg = -1;
 void
 assemble(char *__p, char *__end) {
@@ -103,10 +116,13 @@ assemble(char *__p, char *__end) {
 				}
 			} else {
 				insp ins;
-				if ((ins = (insp)hash_get(&globl, sy->p, sy->len))) {		
+				if ((ins = (insp)hash_get(&globl, sy->p, sy->len))) {
+					turnrgif(sy->next);	
 					ins->l = sy->next;
-					if (sy->next != NULL)
+					if (sy->next != NULL) {
+						turnrgif(sy->next->next);
 						ins->r = sy->next->next;
+					}
 					ins->post(ins);
 					printf("got: %s\n", ins->name);
 				} else

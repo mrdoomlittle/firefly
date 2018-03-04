@@ -13,7 +13,7 @@ struct ins extern* x86[];
 struct ins extern* bc[];
 mdl_u64_t extern offset;
 
-
+extern void prepstack(void);
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	char const *infile = NULL;
 	char const *outfile = NULL;
@@ -21,7 +21,6 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 
 	char const **arg = __argv;
 	char const **last = arg+__argc;
-	arg++;
 
 	while(arg != last) {
 		if (!ffly_str_cmp(*arg, "-o"))
@@ -37,6 +36,8 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		fprintf(stderr, "missing -o or -i\n");
 		return -1;
 	}
+
+	printf("dest: %s, src: %s\n", outfile, infile);
 
 	if ((in = open(infile, O_RDONLY, 0)) == -1) {
 		return -1;
@@ -60,6 +61,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	char *p = file;
 	char *end = p+st.st_size;
 	read(in, p, st.st_size);
+	prepstack();
 	assemble(p, end);
 
 	free(file);

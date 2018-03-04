@@ -69,16 +69,24 @@ void _start(void) {
 			"mov %%rbp, %%rax\n\t"
 			"add $16, %%rax\n\t"
 			"mov %%rax, %1" : "=r"(argc), "=r"(argv) : : "rax");
+	char const **argp = argv;
+	char const **end = argp+argc;
 	void *frame;
 	ffly_ar_init();
 	frame = ffly_frame();
 	void **p = ffly_alloca(sizeof(void*), NULL);
  	ffly_io_init();
+	char const **argl = ffly_alloca(argc*sizeof(char const*), NULL);
+	char const **arg = argl;
+	*(arg++) = *(argp++); 
 
 	mdl_i8_t conf = -1;
 	if (argc > 1) {
-		if (!ffly_str_cmp(*(++argv), "-proc"))
-			evalopts(*(++argv));
+		if (!ffly_str_cmp(*argp, "-proc")) {
+			evalopts(*(++argp));
+			argp++;
+			ffly_trim(2*sizeof(char const*)); // alloca stack trim
+		}
 
 		ffoptp cur = optbed;
 		while(cur != NULL) {
@@ -98,6 +106,9 @@ void _start(void) {
 		//goto _end;
 	}
 
+	while(argp != end)
+		*(arg++) = *(argp++);
+
 	ffly_arcs_init();
 
 	*p = (void*)by;
@@ -106,7 +117,7 @@ void _start(void) {
 	ffly_arcs_creatrec("created-by", p, _ffly_rec_def, 0);
 	ffly_arcs_bk();
 
-	ffmain(argc, ++argv);
+	ffmain(arg-argl, argl);
 	ffly_printf("\n\n");
 
 	if (!conf)

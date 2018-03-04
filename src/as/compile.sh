@@ -1,6 +1,6 @@
 rm -f *.o
 root_dir=$(realpath ../)
-cc_flags="-fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr"
+cc_flags="-std=c99 -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr"
 dst_dir=$root_dir
 cd ../ && . ./compile.sh && cd as
 ffly_objs="$ffly_objs output.o bc.o x86.o as.o hash.o alloca.o parser.o exp.o"

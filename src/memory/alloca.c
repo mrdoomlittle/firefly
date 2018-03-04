@@ -20,6 +20,10 @@ void* ffly_alloca(mdl_uint_t __size, ffly_err_t *__err) {
 	return ret;
 }
 
+void ffly_trim(mdl_uint_t __n) {
+	fresh-=__n;
+}
+
 void *ffly_frame() {
 	return fresh;
 }

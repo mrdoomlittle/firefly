@@ -2,6 +2,7 @@
 # define __ffly__as__h
 int extern out;
 int extern in;
+# include "../bci.h"
 # include <mdlint.h>
 # define inssize struct(ins)
 # define is_flag(__flags, __flag) \
@@ -12,6 +13,9 @@ int extern in;
 # define SY_INT 0x4
 # define SY_LABEL 0x5
 # define SY_DIR 0x6
+# define SY_REG 0x7
+# define is_syreg(__st) \
+	((__sy)->sort==SY_REG)
 # define is_symac(__sy) \
 	((__sy)->sort==SY_MAC)
 # define is_systr(__sy) \
