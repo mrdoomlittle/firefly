@@ -143,7 +143,7 @@ recouple(potp __pot, blkdp __blk) {
 	if (not_null(*top))
 		if (off < get_blk(__pot, *top)->off)
 			*top = off;
-	else if (*end == (void*)__blk)
+	else if (__pot->end == (void*)__blk)
 		*top = off;
 
 	if (not_null(*end))
