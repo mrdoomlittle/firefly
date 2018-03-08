@@ -129,13 +129,12 @@ ffly_err_t ffly_bci_exec(ffly_bcip __bci, ffly_err_t *__exit_code) {
 	__asm__("_next:\n\t");
 	{
 	__bci->ip_off = 0;
-	mdl_u8_t opcode;
-	
-	if ((opcode = get_8l(__bci, &err)) >= NOOP) {
-		ffly_errmsg("opcode invalid, got: %u\n", opcode);
+	mdl_u8_t opno;	
+	if ((opno = get_8l(__bci, &err)) >= NOOP) {
+		ffly_errmsg("opno invalid, got: %u\n", opno);
 		reterr;
 	}
-	jmpto(op[opcode]);
+	jmpto(op[opno]);
 
 	__asm__("_as:\n\t");
 	{

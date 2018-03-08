@@ -66,7 +66,7 @@ struct ffly_script {
 /* clean this up */
 struct obj {
 	mdl_u32_t off;
-	mdl_u8_t opcode, cond;
+	mdl_u8_t opno, cond;
 	void *p;
 	mdl_uint_t size;
 	mdl_u8_t _type;

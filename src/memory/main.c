@@ -305,7 +305,7 @@ void prr(struct r *__r) {
 # include "../ffly_system.h"
 # include "../system/nanosleep.h"
 # include "../linux/unistd.h"
-# include "../data/str_cpy.h"
+# include "../dep/str_cpy.h"
 void copy(void *__dst, void *__src, mdl_uint_t __bc);
 # include "../linux/stat.h"
 # include "../rand.h"
@@ -315,9 +315,10 @@ void copy(void *__dst, void *__src, mdl_uint_t __bc);
 void _start() {
 	ffly_ar_init();
 	ffly_io_init();
+
 	ffset_mode(_ff_mod_debug);
-/*
-	mdl_uint_t const n = 1000;
+
+	mdl_uint_t const n = 60;
 	void *list[n];
 
 	void **cur, **end = (void*)((mdl_u8_t*)list+(n*sizeof(void*)));
@@ -327,25 +328,26 @@ void _start() {
 
 	i = 0;
 	while(i != n) {
-		ffly_printf("%u, %u\n", i, n);
+//		ffly_printf("%u, %u\n", i, n);
 		cur = list;
 		while(cur != end) {
 			if (!*cur) {
-				*cur = ffly_alloc(size = (ffly_rand()%0xff));
-				ffly_printf("%u\n", size);
+				*cur = ffly_alloc(size = ((ffly_rand()%3000)+1));
+//				ffly_printf("%u\n", size);
+				ffly_bzero(*cur, size);	
 				i++;
 			}
-
-
+/*
 			if (ffly_rand()%0x1) {
-				void **p = (void*)((mdl_u8_t*)list+((ffly_rand()%n)*sizeof(void*)));
+				void **p = (void*)((mdl_u8_t*)list+((ffly_rand()%(n-1))*sizeof(void*)));
 				if (*p != NULL) {
 					ffly_free(*p);
 					*p = NULL;
 					i--;
 				}
 			}
-			cur++;
+*/
+		cur++;
 		}
 	}
 
@@ -355,14 +357,18 @@ void _start() {
 			ffly_free(list[i]);
 		i++;
 	}
-*/
+
+/*
 	void *p0, *p1, *p2, *p;
-	p = ffly_alloc(10);
-	p0 = ffly_alloc(100);
-	p1 = ffly_alloc(100);
-	p2 = ffly_alloc(10);
+	p = ffly_alloc(1);
+	p0 = ffly_alloc(2000);
+	p1 = ffly_alloc(1500);
+	p2 = ffly_alloc(1);
+	
 	ffly_free(p1);
 	ffly_free(p0);
+	p0 = ffly_alloc(2500);
+*/
 	pr();
 	pf();
 	ffly_arstat();

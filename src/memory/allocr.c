@@ -28,7 +28,7 @@ typedef mdl_s32_t ar_int_t;
 # define TRIM_MIN 0xf
 
 # define is_flag(__flags, __flag) \
-	((__flags&__flag)==__flag)
+	(((__flags)&(__flag))==(__flag))
 
 # define is_free(__blk) \
 	is_flag((__blk)->flags, BLK_FREE)
@@ -63,7 +63,7 @@ typedef mdl_s32_t ar_int_t;
 	(((mdl_u32_t)(__bc))>>19)):(((mdl_u32_t)(__bc))>>15)):(((mdl_u32_t)(__bc))>>11)):(((mdl_u32_t)(__bc))>>7)):(((mdl_u32_t)(__bc))>>3))
 
 # define get_bin(__pot, __bc) \
-	*((__pot)->bins+bin_no(__bc))
+	(*((__pot)->bins+bin_no(__bc)))
 # define bin_at(__pot, __bc) \
 	((__pot)->bins+bin_no(__bc))
 # include "../system/err.h"
@@ -119,10 +119,19 @@ unlink(potp __pot, blkdp __blk) {
 	ar_off_t *bin = bin_at(__pot, __blk->size);
 	ar_off_t fwd = __blk->fd;
 	ar_off_t bck = __blk->bk;
-	if (__blk->off == *bin)
+
+	if (is_null(*bin)) {
+		ffly_errmsg("theres somthing wong.\n");
+	}
+
+	if (__blk->off == *bin) {
+		if (not_null(bck)) {
+			ffly_errmsg("theres somthing wong.\n");
+		}
+
 		if (not_null(*bin = fwd))
 			get_blk(__pot, fwd)->bk = AR_NULL; 
-	else {
+	} else {
 		if (not_null(fwd))
 			get_blk(__pot, fwd)->bk = bck;
 		if (not_null(bck))
@@ -263,6 +272,11 @@ void pot_pf(potp __pot) {
 	_next:
 	bk = NULL;
 	if (is_null(*bin)) goto _sk;
+	if (*bin >= p->off) {
+		ffly_errmsg("bin is messed up, at: %u, off: %u\n", bin-p->bins, *bin);
+		goto _sk;
+	}
+
 	blk = get_blk(p, *bin);
 	_fwd:
 	if (bk != NULL) {
@@ -456,7 +470,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 				blk->flags = (blk->flags&~BLK_FREE)|BLK_USED;
 
 				/*
-				* if block exceeds size then trim it down and split block into two parts.
+				* if block exceeds size then trim it down and split the block into two parts.
 				*/
 				ar_uint_t junk;
 				if ((junk = (blk->size-__bc)) > blkd_size+TRIM_MIN) {
@@ -466,7 +480,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 						.prev = blk->off, .next = blk->next,
 						.size = junk-blkd_size, .off = off, .end = blk->end,
 						.fd = AR_NULL, .bk = AR_NULL,
-						.flags = BLK_FREE,
+						.flags = BLK_USED,
 						.pad = 0
 					};
 
@@ -494,7 +508,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 	ar_off_t top = __pot->off+size;
 	if (is_flag(__pot->flags, USE_BRK)) {
 		ar_uint_t page_c;
-		if ((page_c = ((top>>PAGE_SHIFT)+((top-((top>>PAGE_SHIFT)*PAGE_SIZE))>0))) >= __pot->page_c) {
+		if ((page_c = ((top>>PAGE_SHIFT)+((top-((top>>PAGE_SHIFT)*PAGE_SIZE))>0))) > __pot->page_c) {
 			if (brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
 				ffly_errmsg("error: brk.\n");
 			}
@@ -642,8 +656,15 @@ _ffly_free(potp __pot, void *__p) {
 		blk->next = end->next;
 	}
 
+	// only used when used
+	blk->pad = 0;
+
 	__ffmod_debug
 		ffly_printf("freed: %u, %u\n", blk->size, blk->off);
+
+	if (blk->off>=__pot->off) {
+		ffly_errmsg("somthing is wong.\n");
+	}
 
 	if (blk->end == __pot->off) {
 		__pot->off = blk->off;
@@ -661,7 +682,7 @@ _ffly_free(potp __pot, void *__p) {
 	recouple(__pot, blk);
 	blk->flags = (blk->flags&~BLK_USED)|BLK_FREE;
 	ar_off_t bin;
-	if (not_null((bin = get_bin(__pot, blk->size)))) {
+	if (not_null(bin = get_bin(__pot, blk->size))) {
 		get_blk(__pot, bin)->bk = blk->off;
 		blk->fd = bin;
 	}

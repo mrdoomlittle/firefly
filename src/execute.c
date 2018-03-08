@@ -369,18 +369,18 @@ ffly_err_t ffscript_exec(ffscriptp __script, void*(*__call)(mdl_u8_t, void*, voi
     __script->arg_p = __arg_p;
 	struct obj *_obj = (struct obj*)(!__entry?__script->top:__entry);
 	while(_obj != (struct obj*)__end) {
-        ffly_fprintf(ffly_log, "op: %s\n", opstr(_obj->opcode));
-        if (_obj->opcode == _op_exit_) {
+        ffly_fprintf(ffly_log, "op: %s\n", opstr(_obj->opno));
+        if (_obj->opno == _op_exit_) {
 			ffly_printf("goodbye.\n");
 			break;
 		}
-		if (_obj->opcode >= _op_fresh_ && _obj->opcode <= _op_div_) {
-            mdl_u8_t isjmp = (_obj->opcode == _op_jump_ || _obj->opcode == _op_cond_jump_);
+		if (_obj->opno >= _op_fresh_ && _obj->opno <= _op_div_) {
+            mdl_u8_t isjmp = (_obj->opno == _op_jump_ || _obj->opno == _op_cond_jump_);
             if (!isjmp)
-			    op[_obj->opcode](__script, _obj);
+			    op[_obj->opno](__script, _obj);
             else {
                 struct obj *p = _obj;
-                op[_obj->opcode](__script, (struct obj*)&p);
+                op[_obj->opno](__script, (struct obj*)&p);
                 if (p != _obj) {
                     _obj = p;
                     continue;

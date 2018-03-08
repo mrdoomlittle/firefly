@@ -237,6 +237,7 @@ is_stmt(struct token *__tok) {
 ffly_err_t static
 conv(struct ffly_compiler *__compiler, struct node **__node, struct node *__operand, struct type *__to) {
 	ast_conv(__compiler, __node, __to, __operand);
+	retok;
 }
 
 ffly_err_t static parser_func_call(struct ffly_compiler*, struct node**, struct node*);

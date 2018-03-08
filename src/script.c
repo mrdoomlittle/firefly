@@ -45,8 +45,9 @@ ffly_err_t ffly_script_ld(struct ffly_script *__script, char const *__file) {
 }
 
 ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
-	ffly_compiler_prepare(&__script->c_ctx);
+	ffly_err_t ret = ffly_compiler_prepare(&__script->c_ctx);
 	ldkeywds(__script);
+	return ret;
 }
 
 void* ffscript_call(ffscriptp __script, void *__func) {

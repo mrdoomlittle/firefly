@@ -78,7 +78,7 @@ convtk(mdl_u8_t __kind) {
 }
 
 struct obj obj_tmpl = {
-	.off = 0, .opcode = 0, .cond = 0,
+	.off = 0, .opno = 0, .cond = 0,
 	.p = NULL, .to = NULL, .from = NULL,
 	.l = NULL, .r = NULL, .val = NULL, .jmp = NULL,
 	.flags = NULL, .next = NULL
@@ -87,7 +87,7 @@ struct obj obj_tmpl = {
 struct obj static
 mk_op_copy(mdl_uint_t __size, struct obj **__to, struct obj **__from) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_copy_;
+	_obj.opno = _op_copy_;
 	_obj.size = __size;
 	_obj.to = __to;
 	_obj.from = __from;
@@ -97,7 +97,7 @@ mk_op_copy(mdl_uint_t __size, struct obj **__to, struct obj **__from) {
 struct obj static
 mk_op_fresh(mdl_uint_t __size) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_fresh_;
+	_obj.opno = _op_fresh_;
 	_obj.size = __size;
 	return _obj;
 }
@@ -105,7 +105,7 @@ mk_op_fresh(mdl_uint_t __size) {
 struct obj static
 mk_op_free(mdl_uint_t __size) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_free_;
+	_obj.opno = _op_free_;
 	_obj.size = __size;
 	return _obj;
 }
@@ -113,14 +113,14 @@ mk_op_free(mdl_uint_t __size) {
 struct obj static
 mk_exit() {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_exit_;
+	_obj.opno = _op_exit_;
 	return _obj;
 }
 
 struct obj static
 mk_op_assign(void *__p, mdl_uint_t __size, struct obj **__to) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_assign_;
+	_obj.opno = _op_assign_;
 	_obj.p = __p;
 	_obj.size = __size;
 	_obj.to = __to;
@@ -130,7 +130,7 @@ mk_op_assign(void *__p, mdl_uint_t __size, struct obj **__to) {
 struct obj static
 mk_op_compare(struct obj *__flags, struct obj **__l, struct obj **__r) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_compare_;
+	_obj.opno = _op_compare_;
 	_obj.l = __l;
 	_obj.r = __r;
 	_obj.flags = __flags;
@@ -140,7 +140,7 @@ mk_op_compare(struct obj *__flags, struct obj **__l, struct obj **__r) {
 struct obj static
 mk_op_cond_jump(struct obj *__flags, mdl_u8_t __cond) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_cond_jump_;
+	_obj.opno = _op_cond_jump_;
 	_obj.flags = __flags;
 	_obj.cond = __cond;
 	return _obj;
@@ -149,7 +149,7 @@ mk_op_cond_jump(struct obj *__flags, mdl_u8_t __cond) {
 struct obj static
 mk_op_conv(struct obj **__dst, struct obj **__src) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_conv_;
+	_obj.opno = _op_conv_;
 	_obj.dst = __dst;
 	_obj.src = __src;
 	return _obj;
@@ -158,7 +158,7 @@ mk_op_conv(struct obj **__dst, struct obj **__src) {
 struct obj static
 mk_op_zero(struct obj **__dst) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_zero_;
+	_obj.opno = _op_zero_;
 	_obj.dst = __dst;
 	return _obj;
 }
@@ -166,28 +166,28 @@ mk_op_zero(struct obj **__dst) {
 struct obj static
 mk_op_jump() {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_jump_;
+	_obj.opno = _op_jump_;
 	return _obj;
 }
 
 struct obj static
 mk_op_push(struct obj *__obj) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_push_;
+	_obj.opno = _op_push_;
 	_obj._obj = __obj;
 	return _obj;
 }
 
 struct obj static mk_op_pop() {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_pop_;
+	_obj.opno = _op_pop_;
 	return _obj;
 }
 
 struct obj static 
 mk_incr(struct obj **__obj) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_incr_;
+	_obj.opno = _op_incr_;
 	_obj.val = __obj;
 	return _obj;
 }
@@ -195,7 +195,7 @@ mk_incr(struct obj **__obj) {
 struct obj static
 mk_decr(struct obj **__obj) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_decr_;
+	_obj.opno = _op_decr_;
 	_obj.val = __obj;
 	return _obj;
 }
@@ -203,14 +203,14 @@ mk_decr(struct obj **__obj) {
 struct obj static 
 mk_op_frame() {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_frame_;
+	_obj.opno = _op_frame_;
 	return _obj;
 }
 
 struct obj static 
 mk_op_call(struct obj **__no) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_call_;
+	_obj.opno = _op_call_;
 	_obj.no = __no;
 	return _obj;
 }
@@ -218,7 +218,7 @@ mk_op_call(struct obj **__no) {
 struct obj static
 mk_op_free_frame(struct obj *__frame) {
 	struct obj _obj = obj_tmpl;
-	_obj.opcode = _op_free_frame_;
+	_obj.opno = _op_free_frame_;
 	_obj.frame = __frame;
 	return _obj;
 }
@@ -346,7 +346,7 @@ emit_print_call(struct ffly_compiler *__compiler, struct node *__node) {
 	struct obj **arg;
 	emit(__compiler, __node->arg);
 	pop(__compiler, &arg);
-	next_obj(__compiler, (struct obj){.opcode=_op_print_, .p=NULL, ._type=convtk(__node->arg->_type->kind), .to=NULL, .from=NULL, .val=arg});
+	next_obj(__compiler, (struct obj){.opno=_op_print_, .p=NULL, ._type=convtk(__node->arg->_type->kind), .to=NULL, .from=NULL, .val=arg});
 }
 
 void static
