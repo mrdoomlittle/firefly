@@ -1,1 +1,4 @@
-sh compile.sh && ./as -proc "-mode: debug" -i test.asm -o test.o && ../main test.o
+cd ../bcd && sh compile.sh && cd ../as
+sh compile.sh && ./as -i test.asm -o test.o
+../bcd/bcd test.o
+

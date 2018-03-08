@@ -7,8 +7,33 @@
 # include "../string.h"
 # include "../dep/str_cmp.h"
 struct hash symbols;
+struct hash defines;
+// rename to just env, not the best name
 struct hash globl;
 mdl_u64_t offset = 0;
+
+# define OBSIZE 20
+
+struct {
+	mdl_uint_t off, dst;
+	mdl_u8_t p[OBSIZE], *end;
+} outbuf;
+
+void ffas_ldsrc(void) {
+
+}
+
+void ffas_init(void) {
+	hash_init(&symbols);
+	hash_init(&globl);
+	outbuf.end = outbuf.p+OBSIZE;
+	outbuf.off = 0;
+	outbuf.dst = offset;
+}
+
+void ffas_de_init(void) {
+	
+}
 
 void* memdup(void *__p, mdl_uint_t __bc) {
 	void *ret = _alloca(__bc);
@@ -84,12 +109,15 @@ void turnrgif(symbolp __sy) {
 
 
 mdl_i8_t static epdeg = -1;
+char const static *ep = NULL;
 void
 assemble(char *__p, char *__end) {
-	char buf[256];
+	/*
+		we parse line by line
+	*/
+	char buf[256]; // line buffer
 	char *p = __p;
 	mdl_uint_t len;
-	char const *entry = NULL;
 	while(p < __end) {
 		while ((*p == ' ' | *p == '\t' | *p == '\n') && p < __end) p++;
 		if (*p == '\0') break;
@@ -102,6 +130,7 @@ assemble(char *__p, char *__end) {
 			if (is_symac(sy)) {
 				if (!ffly_str_cmp(sy->p, "define")) {
 					printf("got: macro\n");
+					
 				}
 			} else if (is_sylabel(sy)) {
 				labelp la = (labelp)_alloca(sizeof(struct label));
@@ -112,7 +141,7 @@ assemble(char *__p, char *__end) {
 				printf("directive, %s\n", sy->p);
 				if (!strcmp(sy->p, "entry") && epdeg<0) {
 					epdeg = 0;
-					entry = sy->next->p;
+					ep = sy->next->p;
 				}
 			} else {
 				insp ins;
@@ -130,19 +159,47 @@ assemble(char *__p, char *__end) {
 			}
 		}
 	}
+}
 
-	if (!entry)
-		entry = "_start";
-	printf("entry point: %s\n", entry);
-	if (!hash_get(&globl, entry, ffly_str_len(entry))) {
+void finalize(void) {
+	if (!ep)
+		ep = "_start";
+	printf("entry point: %s\n", ep);
+	if (!hash_get(&globl, ep, ffly_str_len(ep)))
 		printf("entry point not found.\n");
+	if (outbuf.off>0) {
+		lseek(out, outbuf.dst, SEEK_SET);
+		write(out, outbuf.p, outbuf.off);
 	}
 }
 
 void oust(mdl_u8_t *__p, mdl_u8_t __n) {
-	lseek(out, offset, SEEK_SET);
-	write(out, __p, __n);
+	if (__n > OBSIZE) {
+		printf("error: cant oust anything larger then %u\n", OBSIZE);
+		return;
+	}
+
+	mdl_int_t overflow;
+	if ((overflow = (mdl_int_t)(outbuf.off+__n)-(mdl_int_t)((outbuf.end-outbuf.p)-1))>0)
+		__n-=overflow;
+
+	ffly_mem_cpy(outbuf.p+outbuf.off, __p, __n);
 	offset+=__n;
+	outbuf.off+=__n;
+
+	if (outbuf.p+outbuf.off == outbuf.end-1) {
+		lseek(out, outbuf.dst, SEEK_SET);
+		write(out, outbuf.p, outbuf.off);
+		outbuf.off = 0;
+		outbuf.dst = offset;
+	}
+
+	if (overflow>0) {
+		mdl_u8_t *p = __p+__n;
+		mdl_u8_t *end = p+overflow;
+		while(p != end)
+			oust(p++, 1);
+	}
 }
 
 void oustbyte(mdl_u8_t __byte) {

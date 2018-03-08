@@ -21,6 +21,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 
 	char const **arg = __argv;
 	char const **last = arg+__argc;
+	arg++;
 
 	while(arg != last) {
 		if (!ffly_str_cmp(*arg, "-o"))
@@ -43,8 +44,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		return -1;
 	}
 
-	hash_init(&symbols);
-	hash_init(&globl);
+	ffas_init();
 
 	if ((out = open(outfile, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU)) == -1) {
 		return -1;
@@ -63,6 +63,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	read(in, p, st.st_size);
 	prepstack();
 	assemble(p, end);
+	finalize();
 
 	free(file);
 	close(in);

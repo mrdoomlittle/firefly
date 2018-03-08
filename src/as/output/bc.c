@@ -1,6 +1,6 @@
 # include "../as.h"
 # include "../../ffly_def.h"
-# include "../stdio.h"
+# include "../../stdio.h"
 
 mdl_uint_t static bed = 0;
 
@@ -73,6 +73,7 @@ getreg(char const *__name) {
 		p++;
 	}
 
+	printf("reg: %u\n", no);
 	switch(no) {
 		case 24: return reg+rax_rg;
 		case 17: return reg+eax_rg;

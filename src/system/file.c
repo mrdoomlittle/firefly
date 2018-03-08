@@ -12,6 +12,11 @@
 # include "../linux/unistd.h"
 # include "../linux/fcntl.h"
 # include "../linux/stat.h"
+/*
+	TODO:
+	add buffer to read and write
+
+*/
 
 struct ffly_file*
 ffly_fopen(char const *__path, int __flags, mdl_u32_t __mode, ffly_err_t *__err) {
