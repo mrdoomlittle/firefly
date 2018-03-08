@@ -44,8 +44,8 @@ typedef mdl_s32_t ar_int_t;
 	get_blk(__pot, (__blk)->prev)
 
 # define AR_NULL ((ar_off_t)~0)
-# define is_null(__p) (__p==AR_NULL) 
-# define not_null(__p) (__p!=AR_NULL)
+# define is_null(__p) ((__p)==AR_NULL) 
+# define not_null(__p) ((__p)!=AR_NULL)
 # define POT_SIZE 0xfff
 
 # define lock_pot(__pot) \
@@ -586,7 +586,7 @@ _ffly_free(potp __pot, void *__p) {
 	{
 	blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);
 	if (is_free(blk)) {
-		ffly_errmsg("error: block has already been freed.\n");
+		ffly_errmsg("error: block has already been freed, at: %p\n", __p);
 		goto _end;
 	}
 
