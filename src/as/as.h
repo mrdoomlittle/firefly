@@ -29,6 +29,11 @@ int extern in;
 # define is_sydir(__sy) \
 	((__sy)->sort==SY_DIR)
 # define SIGNED 0x1
+# define _of_null 0xff
+enum {
+	_of_bc
+};
+
 typedef struct symbol {
 	void *p;
 	mdl_u8_t len:6; // max 64

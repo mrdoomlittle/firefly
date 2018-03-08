@@ -5,10 +5,10 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/io.h"
-# include "data/mem_cpy.h"
-# include "data/mem_set.h"
+# include "dep/mem_cpy.h"
+# include "dep/mem_set.h"
 # include "system/nanosleep.h"
-# include "data/bcopy.h"
+# include "dep/bcopy.h"
 
 // move to dir named script
 char const static* 
@@ -370,7 +370,10 @@ ffly_err_t ffscript_exec(ffscriptp __script, void*(*__call)(mdl_u8_t, void*, voi
 	struct obj *_obj = (struct obj*)(!__entry?__script->top:__entry);
 	while(_obj != (struct obj*)__end) {
         ffly_fprintf(ffly_log, "op: %s\n", opstr(_obj->opcode));
-        if (_obj->opcode == _op_exit_) break;
+        if (_obj->opcode == _op_exit_) {
+			ffly_printf("goodbye.\n");
+			break;
+		}
 		if (_obj->opcode >= _op_fresh_ && _obj->opcode <= _op_div_) {
             mdl_u8_t isjmp = (_obj->opcode == _op_jump_ || _obj->opcode == _op_cond_jump_);
             if (!isjmp)

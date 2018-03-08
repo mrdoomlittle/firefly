@@ -15,7 +15,8 @@ str_len.o.1 str_len.o.0 \
 str_cpy.o.1 str_cpy.o.0 \
 bzero.o.1 bzero.o.0 \
 mem_cpy.o.1 mem_cpy.o.0 \
-mem_set.o.1 mem_set.o.0
+mem_set.o.1 mem_set.o.0 \
+mode.o
 ccflags=-D__ffly_use_allocr -fno-builtin
 all: clean
 	nasm $(nasm_flags) -f elf64 ../system/asm/sys_exit.asm -o sys_exit.o.0
@@ -108,6 +109,7 @@ all: clean
 	gcc $(ccflags) -c ../system/flags.c
 	gcc $(ccflags) -c ../system/err.c
 	gcc $(ccflags) -c ../rand.c
+	gcc $(ccflags) -c ../mode.c
 	gcc $(ccflags) -D__ffly_no_sysconf -D__ffly_no_task_pool -D__ffly_no_thread -c ../ffly_system.c
 #	gcc -D__ffly_no_sysconf -D__ffly_use_allocr -c ../system/thread.c
 	gcc $(ccflags) -c ../system/buff.c

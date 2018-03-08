@@ -311,20 +311,12 @@ void copy(void *__dst, void *__src, mdl_uint_t __bc);
 # include "../rand.h"
 # include "../linux/unistd.h"
 # include "../linux/mman.h"
+# include "../mode.h"
 void _start() {
 	ffly_ar_init();
 	ffly_io_init();
-	void *p0, *p1;
-
-	p0 = ffly_alloc(20000);
-	ffly_bzero(p0, 20000);
-	ffly_free(p0);
-//	p1 = ffly_arsh(p1, 198);
-	//p0 = ffly_alloc(1);
-//fly_free(p0);
-//fly_free(p1);
-//0 = ffly_alloc(20);
-	/*
+	ffset_mode(_ff_mod_debug);
+/*
 	mdl_uint_t const n = 1000;
 	void *list[n];
 
@@ -364,9 +356,17 @@ void _start() {
 		i++;
 	}
 */
+	void *p0, *p1, *p2, *p;
+	p = ffly_alloc(10);
+	p0 = ffly_alloc(100);
+	p1 = ffly_alloc(100);
+	p2 = ffly_alloc(10);
+	ffly_free(p1);
+	ffly_free(p0);
 	pr();
 	pf();
 	ffly_arstat();
+
 	ffly_io_closeup();
 	ffly_ar_cleanup();
 	exit(0);

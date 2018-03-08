@@ -7,18 +7,19 @@
 # include "../stdio.h"
 # include "../linux/stat.h"
 # include "../malloc.h"
+# include "../ffef.h"
+# include "../exec.h"
 int out, in;
 
 struct ins extern* x86[];
 struct ins extern* bc[];
 mdl_u64_t extern offset;
+extern mdl_u8_t format;
 
 extern void prepstack(void);
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	char const *infile = NULL;
 	char const *outfile = NULL;
-	char const *format = NULL;
-
 	char const **arg = __argv;
 	char const **last = arg+__argc;
 	arg++;
@@ -28,8 +29,13 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 			outfile = *(++arg);
 		else if (!ffly_str_cmp(*arg, "-i"))
 			infile = *(++arg);
-		else if (!ffly_str_cmp(*arg, "-f"))
-			format = *(++arg);
+		else if (!ffly_str_cmp(*arg, "-f")) {
+			char const *s = *(++arg);
+			if (!ffly_str_cmp(s, "bc")) {
+				format = _of_bc;
+				printf("format bc.\n");
+			}
+		}
 		arg++;
 	}
 
@@ -44,13 +50,20 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		return -1;
 	}
 
-	ffas_init();
-
 	if ((out = open(outfile, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU)) == -1) {
 		return -1;
 	}
 
-	
+	if (format == _of_bc) {
+		struct ffef_hdr hdr = {
+			.format = _ffexec_bc
+		};
+		write(out, &hdr, ffef_hdr_size);
+		offset+=ffef_hdr_size;
+	}
+
+	ffas_init();
+
 	load(bc);
 
 	struct stat st;
@@ -61,6 +74,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	char *p = file;
 	char *end = p+st.st_size;
 	read(in, p, st.st_size);
+
 	prepstack();
 	assemble(p, end);
 	finalize();

@@ -37,6 +37,8 @@ $ffly_cc $cc_flags -c -o $dst_dir/ffly_system.o $root_dir/ffly_system.c
 $ffly_cc $cc_flags -c -o $dst_dir/firefly.o $root_dir/firefly.c
 $ffly_cc $cc_flags -c -o $dst_dir/put_bit.o $root_dir/put_bit.c
 $ffly_cc $cc_flags -c -o $dst_dir/get_bit.o $root_dir/get_bit.c
-
+$ffly_cc $cc_flags -c -o $dst_dir/exec.o $root_dir/exec.c
+$ffly_cc $cc_flags -c -o $dst_dir/bci/exec.o $root_dir/bci/exec.c
 $ffly_cc $cc_flags -c -o $dst_dir/arcs.o $root_dir/arcs.c
-export ffly_objs="$ffly_objs $dst_dir/mode.o $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  $dst_dir/get_bit.o $dst_dir/arcs.o"
+$ffly_cc $cc_flags -c -o $dst_dir/bci.o $root_dir/bci.c
+export ffly_objs="$ffly_objs $dst_dir/bci.o $dst_dir/exec.o $dst_dir/bci/exec.o $dst_dir/mode.o $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  $dst_dir/get_bit.o $dst_dir/arcs.o"

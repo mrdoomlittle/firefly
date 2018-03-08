@@ -6,7 +6,7 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/buff.h"
-# include "data/mem_cpy.h"
+# include "dep/mem_cpy.h"
 struct obj static *rg_8l_u, *rg_16l_u, *rg_32l_u, *rg_64l_u;
 void static
 build_obj(struct obj **__obj, struct obj *__tmpl) {

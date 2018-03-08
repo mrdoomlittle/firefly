@@ -245,9 +245,6 @@ ffly_err_t ffly_script_ld_bin(struct ffly_compiler *__compiler, char *__file) {
 //# define LOAD
 */
 
-void pr();
-void pf();
-
 ffly_err_t ffmain(int __argc, char const **__argv) {
 	char const *file;
 	if (__argc < 2) {
@@ -280,8 +277,5 @@ ffly_err_t ffmain(int __argc, char const **__argv) {
 	ffly_printf("stack used: %lu\n", ff.fresh-ff.stack);
 
 	ffscript_free(&ff);
-
-	pr();
-	pf();
 }
 

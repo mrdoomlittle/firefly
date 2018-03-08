@@ -14,6 +14,9 @@ __ffly_str_dup:
 	movq %rsp, %rbp
 	sub $8, %rsp
 
+	push %rsi
+	push %rbx
+
 	movq %rdi, %rsi
 	movq %rax, %rbx
 	movq %rbp, %rdi
@@ -25,6 +28,8 @@ __ffly_str_dup:
 	pop %rbx
 
 	movq -8(%rbp), %rax
+	pop %rsi
+	pop %rbx
 	movq %rbp, %rsp
 	pop %rbp
 	ret

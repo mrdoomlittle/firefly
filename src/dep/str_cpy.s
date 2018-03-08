@@ -7,9 +7,12 @@
 *	rsi - src
 */
 __ffly_str_cpy:
+	push %rbx
 	push %rcx
+
 	push %rdi
 	push %rsi
+
 	movq %rsi, %rdi
 	call __ffly_str_len
 	pop %rsi
@@ -26,4 +29,5 @@ __ffly_str_cpy:
 	call __ffly_mem_cpy
 	pop %rax
 	pop %rcx
+	pop %rbx
 	ret

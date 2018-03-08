@@ -4,11 +4,13 @@
 # include "../string.h"
 # define is_no(__c) (__c >= '0' && __c <= '9')
 # define is_ident(__c) ((__c >= 'a' && __c <= 'z') || __c == '_')
-char static nextc() {
+char static
+nextc() {
 	return *p;
 }
 
-mdl_u8_t static is_space(char __c) {
+mdl_u8_t static
+is_space(char __c) {
 	return (__c == ' ' || __c == '\t' || __c == '\n');
 }
 

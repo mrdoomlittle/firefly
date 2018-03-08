@@ -1,10 +1,10 @@
 .entry all
 all,routine_a routine_b,
-	echo "--\t <entry point>\n"
+	echo "--- entry point\n"
 	exit
-routine_a, routine_b,
-	echo "--\t <sub routine> seqc. a\n"
-	end # acts like c return
+routine_a,,
+	echo "--- <routine_a>\n"
+	end
 routine_b,,
-	echo "--\t <sub routine> seqc. b\n"
+	echo "--- <routine_b>\n"
 	end

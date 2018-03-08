@@ -1,38 +1,12 @@
-# include "../bci.h"
-# include "../stdio.h"
-# include <mdlint.h>
+# include "../types/err_t.h"
+# include "../system/err.h"
+# include "../malloc.h"
 # include "../linux/unistd.h"
 # include "../linux/stat.h"
-mdl_u8_t *bin = NULL;
-ffly_addr_t static ip = 0;
-mdl_u8_t fetch_byte(ffly_off_t __off) {
-	return *(bin+ip+__off);
-}
-
-void
-ip_incr(mdl_uint_t __by) {
-	ip+=__by;
-}
-
-
-ffly_addr_t get_ip() {
-	return ip;
-}
-
-void set_ip(ffly_addr_t __to) {
-	ip = __to;
-}
-
-struct ffly_bci ctx = {
-	.stack_size = 200,
-	.fetch_byte = fetch_byte,
-	.ip_incr = ip_incr,
-	.get_ip = get_ip,
-	.set_ip = set_ip
-};
-
-# include "../malloc.h"
-# include "../system/err.h"
+# include <mdlint.h>
+# include "../stdio.h"
+# include "../exec.h"
+# include "../ffef.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	if (__argc < 2) {
 		ffly_printf("please provide binary file.\n");
@@ -42,17 +16,14 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	int fd = open(__argv[1], O_RDONLY, 0);
 	struct stat st;
 	fstat(fd, &st);
-
-	bin = (mdl_u8_t*)malloc(st.st_size);
+	
+	mdl_u8_t *bin = (mdl_u8_t*)malloc(st.st_size);
 	read(fd, bin, st.st_size);
 	close(fd);
-	ffly_bci_init(&ctx);
 
-	ffly_err_t exit_code = 0;
-	ffly_bci_exec(&ctx, &exit_code);		
-	printf("exit code: %u\n", exit_code);
+	ffef_hdrp hdr = (ffef_hdrp)bin;
+	ffexec(bin+ffef_hdr_size, hdr->format);
 
-	ffly_bci_de_init(&ctx);
 	free(bin);
 	retok;
 }

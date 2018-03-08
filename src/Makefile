@@ -108,24 +108,29 @@ config: clean
 arcs: clean
 	gcc $(cc_flags) -Wall -o main $(ffly_objs) -nostdlib
 bci: clean
-	gcc $(cc_flags) -Wall -c bci.c
-	gcc $(cc_flags) -Wall -o main bci/main.c bci.o $(ffly_objs) -nostdlib
+	gcc $(cc_flags) -Wall -o main bci/main.c $(ffly_objs) -nostdlib
 brew: clean
-	gcc $(cc_flags) -c brew/brew.c
-	gcc $(cc_flags) -c brew/exec.c
-	gcc $(cc_flags) -c brew/gen.c
-	gcc $(cc_flags) -c brew/parser.c
-	gcc $(cc_flags) -c brew/lexer.c
-	gcc $(cc_flags) -Wall -o main brew/main.c $(ffly_objs) parser.o gen.o exec.o brew.o lexer.o -nostdlib
+	gcc $(cc_flags) -o brew/brew.o -c brew/brew.c
+	gcc $(cc_flags) -o brew/exec.o -c brew/exec.c
+	gcc $(cc_flags) -o brew/gen.o -c brew/gen.c
+	gcc $(cc_flags) -o brew/parser.o -c brew/parser.c
+	gcc $(cc_flags) -o brew/lexer.o -c brew/lexer.c
+	gcc $(cc_flags) -Wall -o main brew/main.c $(ffly_objs) brew/parser.o brew/gen.o brew/exec.o brew/brew.o brew/lexer.o -nostdlib
+cc:
+	gcc $(cc_flags) -c parser.c
+	gcc $(cc_flags) -c lexer.c
+	gcc $(cc_flags) -c gen.c
+	gcc $(cc_flags) -c data/mem_swp.c
+	gcc $(cc_flags) -c compiler.c
+	gcc $(cc_flags) -Wall -o cc c-lang.c compiler.o $(ffly_objs) mem_swp.o parser.o gen.o lexer.o -nostdlib
 script: clean
-	gcc $(cc_flags) -c system/lat.c
 	gcc $(cc_flags) -c parser.c
 	gcc $(cc_flags) -c lexer.c
 	gcc $(cc_flags) -c gen.c
 	gcc $(cc_flags) -c execute.c
 	gcc $(cc_flags) -c data/mem_swp.c
 	gcc $(cc_flags) -c compiler.c
-	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) lat.o mem_swp.o execute.o parser.o gen.o lexer.o -nostdlib
+	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) mem_swp.o execute.o parser.o gen.o lexer.o -nostdlib
 clean:
 	rm -f main
 	cd ../ && make clean && cd src

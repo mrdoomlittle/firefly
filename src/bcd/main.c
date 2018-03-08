@@ -79,6 +79,7 @@ void(*out[])(mdl_u8_t**) = {
 	op_mov
 };
 
+# include "../ffef.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	if (__argc<2) {
 		printf("please provide binfile.\n");
@@ -97,11 +98,12 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	stat(bin, &st);
 
 	mdl_u8_t *bed = (mdl_u8_t*)malloc(st.st_size);
-	read(fd, bed, st.st_size);
+	lseek(fd, ffef_hdr_size, SEEK_SET);
+	read(fd, bed, st.st_size-ffef_hdr_size);
 	close(fd);
 
 	mdl_u8_t *p = bed;
-	mdl_u8_t *end = p+st.st_size;
+	mdl_u8_t *end = p+(st.st_size-ffef_hdr_size);
 	while(p != end) {
 		mdl_u8_t op;	
 		if ((op = *(p++)) > MAX-1) {

@@ -2,7 +2,8 @@
 # include <linux/limits.h>
 # include "../linux/unistd.h"
 # include "../memory/mem_alloc.h"
-# include "../data/str_cpy.h"
+# include "../dep/str_cpy.h"
+# include "../stdio.h"
 char *ffly_realpath(char const *__path) {
 	char *buf, *end;
 	buf = (char*)__ffly_mem_alloc(PATH_MAX);
@@ -29,6 +30,7 @@ char *ffly_realpath(char const *__path) {
 			goto _again;
 		}
 	}
+
 	ffly_str_cpy(end, p);
 	return buf;
 }

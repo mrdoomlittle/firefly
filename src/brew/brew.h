@@ -70,8 +70,8 @@ void ulex(bucketp);
 void parse(bucketp*);
 mdl_u8_t at_eof();
 void lexer_cleanup();
-void exec();
-void gen(bucketp);
+void brew_exec(objp);
+void gen(bucketp, objp*);
 void oust(bucketp, mdl_u8_t);
 void to_free(void*);
 # endif /*__brew__h*/

@@ -13,6 +13,7 @@
 struct ffly_file {
 	char const *path;
 	mdl_int_t fd;
+//	mdl_u8_t wbuf[], rbuf[];
 };
 
 # define FF_O_TRUNC O_TRUNC

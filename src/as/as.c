@@ -12,6 +12,8 @@ struct hash defines;
 struct hash globl;
 mdl_u64_t offset = 0;
 
+mdl_u8_t format = _of_null;
+
 # define OBSIZE 20
 
 struct {
@@ -106,7 +108,6 @@ void turnrgif(symbolp __sy) {
 		__sy->p = ra;
 	}
 }
-
 
 mdl_i8_t static epdeg = -1;
 char const static *ep = NULL;

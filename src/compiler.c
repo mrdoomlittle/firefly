@@ -4,16 +4,32 @@
 # include "memory/mem_free.h"
 # include "system/io.h"
 # include "system/file.h"
-# include "data/str_cmp.h"
-# include "data/mem_cpy.h"
-# include "data/mem_set.h"
-# include "data/str_len.h"
+# include "dep/str_cmp.h"
+# include "dep/mem_cpy.h"
+# include "dep/mem_set.h"
+# include "dep/str_len.h"
 # include "system/errno.h"
-# include "data/bcopy.h"
+# include "dep/bcopy.h"
 # include "system/nanosleep.h"
-# include "data/str_cpy.h"
+# include "dep/str_cpy.h"
 # include "system/realpath.h"
-ffly_err_t ffly_compiler_ld(struct ffly_compiler *__compiler, char const *__file) {
+void static
+ld_clang(ffly_compilerp __compiler) {
+
+}
+
+void static
+ld_script(ffly_compilerp __compiler) {
+
+}
+
+void
+ffc_ldsyntax(ffly_compilerp __compiler, mdl_u8_t __no) {
+	
+}
+
+ffly_err_t
+ffly_compiler_ld(struct ffly_compiler *__compiler, char const *__file) {
 	ffly_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
 	__compiler->file->path = ffly_realpath(__file);
@@ -27,7 +43,6 @@ ffly_err_t ffly_compiler_ld(struct ffly_compiler *__compiler, char const *__file
 	ffly_fclose(f);
 	return FFLY_SUCCESS;
 }
-
 /*
 void set_call(struct ffly_compiler *__compiler, void *__p, mdl_u8_t __no) {
 	__compiler->call[__no] = __p;	
@@ -37,8 +52,8 @@ void __parser_func_call();
 void __parser_decl_spec();
 
 void static *jmp[] = {
-	&__parser_func_call,
-	&__parser_decl_spec
+	(void*)__parser_func_call,
+	(void*)__parser_decl_spec
 };
 
 mdl_u64_t _ringup(struct ffly_compiler *__compiler, mdl_u8_t __no, ...) {
@@ -55,54 +70,6 @@ mdl_u64_t _ringup(struct ffly_compiler *__compiler, mdl_u8_t __no, ...) {
 		p2 = va_arg(args, struct node*);
 		va_end(args);
 
-		__asm__("push %%rbp\n\t"
-			"mov %%rsp, %%rbp\n\t"
-			"sub $24, %%rsp\n\t"
-			"mov %0, %%rax\n\t"
-			"mov %%rax, -8(%%rbp)\n\t"
-			"mov %1, %%rax\n\t"
-			"mov %%rax, -16(%%rbp)\n\t"
-			"mov %2, %%rax\n\t"
-			"mov %%rax, -24(%%rbp)\n\t"
-			"call *%3\n\t"
-			"mov %%rbp, %%rsp\n\t"
-			"pop %%rbp\n\t"
-			"mov %%rbp, %%rsp\n\t"
-			"pop %%rbp\n\t"
-			"ret" : : "m"(p0), "m"(p1), "m"(p2), "r"(__compiler->call[_parser_func_call]));
-	}
-
-	__asm__("__parser_decl_spec:\n\t");
-	{
-		struct ffly_compiler *p0;
-		struct token *p1;
-		struct type **p2;	
-		va_list args;
-		va_start(args, __no);
-		p0 = va_arg(args, struct ffly_compiler*);
-		p1 = va_arg(args, struct token*);
-		p2 = va_arg(args, struct type**);
-		va_end(args);
-		__asm__("push %%rbp\n\t"
-			"mov %%rsp, %%rbp\n\t"
-			"sub $24, %%rsp\n\t"
-			"mov %0, %%rax\n\t"
-			"mov %%rax, -8(%%rbp)\n\t"
-			"mov %1, %%rax\n\t"
-			"mov %%rax, -16(%%rbp)\n\t"
-			"mov %2, %%rax\n\t"
-			"mov %%rax, -24(%%rbp)\n\t"
-			"call *%3\n\t"
-			"mov %%rbp, %%rsp\n\t"
-			"pop %%rbp\n\t"
-			"mov %%rbp, %%rsp\n\t"
-			"pop %%rbp\n\t"
-			"ret": : "m"(p0), "m"(p1), "m"(p2), "r"(__compiler->call[_parser_decl_spec]));
-	}
-
-	__asm__("__parser_struct_decl:\n\t");
-	{
-		
 	}
 }
 */
@@ -705,6 +672,6 @@ mdl_uint_t curl(struct ffly_compiler *__compiler) {
 	return __compiler->file->line;
 }
 
-void skip_token(struct ffly_compiler *__compiler) {
+void sktok(ffly_compilerp __compiler) {
 	next_token(__compiler);
 }

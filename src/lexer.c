@@ -4,11 +4,12 @@
 # include "types/bool_t.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
-# include "data/str_dupe.h"
-# include "data/str_len.h"
+# include "dep/str_dup.h"
+# include "dep/str_len.h"
 # include "system/string.h"
 char static
 fetchc(struct ffly_compiler *__compiler) {
+	if (at_eof(__compiler)) return '\0';
 	return *(__compiler->file->p+__compiler->file->off);
 }
 
@@ -29,24 +30,35 @@ is_prev(struct ffly_compiler *__compiler, char __c) {
 
 ffly_bool_t static
 is_space(struct ffly_compiler *__compiler) {
-    char c = fetchc(__compiler);
-    mdl_u8_t static comment = 0;
-    if (comment) {
-        if (c == '/' && is_prev(__compiler, '*')) {
-            comment = 0;
-        }
+    char c;
+	if ((c = fetchc(__compiler)) == '\0') {
+		// something may have gone terribly wong
+	}
+
+    mdl_i8_t static comment = 0;
+    if (comment>0) {
+		if (c == '/' && is_prev(__compiler, '*'))
+			comment = 0;
         return 1;
-    }
+    } else if (comment<0) {
+		if (c == '\n')
+			comment = 0;
+		return 1;
+	}
 
     if (c == '/' && is_next(__compiler, '*')) {
         comment = 1;
         return 1;
-    }
+    } else if (c == '/' && is_next(__compiler, '/')) {
+		comment = -1;
+		return 1;
+	}
     
     return (c == ' ' || c == '\t');
 }
 
-ffly_bool_t static is_newline(struct ffly_compiler *__compiler) {
+ffly_bool_t static
+at_nl(struct ffly_compiler *__compiler) {
     return (fetchc(__compiler) == '\n');
 }
 
@@ -108,7 +120,7 @@ read_str(struct ffly_compiler *__compiler) {
 }
 
 void static
-make_keyword(struct token *__tok, mdl_u8_t __id) {
+mk_keywd(struct token *__tok, mdl_u8_t __id) {
 	__tok->kind = TOK_KEYWORD;
 	__tok->id = __id;
 }
@@ -125,18 +137,23 @@ read_chr(struct ffly_compiler *__compiler) {
 # define incr_off __compiler->file->off++
 struct token static*
 read_token(struct ffly_compiler *__compiler) {
-	struct token *tok = (struct token*)__ffly_mem_alloc(sizeof(struct token));
+	struct token *tok;
+	if (!(tok = (struct token*)__ffly_mem_alloc(sizeof(struct token)))) {
+		// memory allocation failure
+	}
+
 	tok->p = NULL;
-    if (is_newline(__compiler)) {
+    if (at_nl(__compiler)) {
         register_line(__compiler);
         incr_off;
         tok->kind = TOK_NEWLINE;  
         return tok;
     }
 
-	switch(fetchc(__compiler)) {
+	char c;
+	switch(c = fetchc(__compiler)) {
         case '&':
-            make_keyword(tok, _ampersand);
+            mk_keywd(tok, _ampersand);
             incr_off;
         break;
         case '\x27':
@@ -148,15 +165,15 @@ read_token(struct ffly_compiler *__compiler) {
             incr_off;
         break;
         case '*':
-            make_keyword(tok, _astrisk);
+            mk_keywd(tok, _astrisk);
             incr_off;
         break;
         case '+':
             if (is_next(__compiler, '+')) {
-                make_keyword(tok, _incr);
+                mk_keywd(tok, _incr);
                 incr_off;
             } else
-                make_keyword(tok, _plus);
+                mk_keywd(tok, _plus);
             incr_off;
         break;
         case '"':
@@ -168,94 +185,94 @@ read_token(struct ffly_compiler *__compiler) {
             incr_off;
         break;
         case '%':
-            make_keyword(tok, _percent);
+            mk_keywd(tok, _percent);
             incr_off;
         break;
         case ':':
-            make_keyword(tok, _colon);
+            mk_keywd(tok, _colon);
             incr_off;
         break;
         case '.':
             if (is_next(__compiler, '.')) {
                 incr_off;
                 if (is_next(__compiler, '.')) {
-                    make_keyword(tok, _ellipsis);
+                    mk_keywd(tok, _ellipsis);
                     incr_off;
                 }
             } else
-                make_keyword(tok, _period);
+                mk_keywd(tok, _period);
             incr_off;
         break;
         case '-':
             if (nextc(__compiler) >= '0' && nextc(__compiler) <= '9') goto _no;
             if (is_next(__compiler, '-')) {
-                make_keyword(tok, _decr);
+                mk_keywd(tok, _decr);
                 incr_off;
             } else if (is_next(__compiler, '>')) {
-                make_keyword(tok, _r_arrow);
+                mk_keywd(tok, _r_arrow);
                 incr_off;
             } else
-                make_keyword(tok, _minus);
+                mk_keywd(tok, _minus);
             incr_off;
         break;
         case ',':
-            make_keyword(tok, _comma);
+            mk_keywd(tok, _comma);
             incr_off;
         break;
         case '<':
             if (is_next(__compiler, '-')) {
-                make_keyword(tok, _l_arrow);
+                mk_keywd(tok, _l_arrow);
                 incr_off;
             } else
-                make_keyword(tok, _lt);
+                mk_keywd(tok, _lt);
             incr_off;
         break;
         case '>':
-            make_keyword(tok, _gt);
+            mk_keywd(tok, _gt);
             incr_off;
         break;
         case '!':
             if (is_next(__compiler, '=')) {
-                make_keyword(tok, _neq);
+                mk_keywd(tok, _neq);
                 incr_off;
             }
             incr_off;
         break;
 		case ';':
-			make_keyword(tok, _semicolon);
+			mk_keywd(tok, _semicolon);
 			incr_off;
 		break;
 		case '=':
             if (is_next(__compiler, '=')) {
-                make_keyword(tok, _eqeq);
+                mk_keywd(tok, _eqeq);
                 incr_off;
             } else
-			    make_keyword(tok, _eq);
+			    mk_keywd(tok, _eq);
 			incr_off;
 		break;
 		case '(':
-			make_keyword(tok, _l_paren);
+			mk_keywd(tok, _l_paren);
 			incr_off;
 		break;
 		case ')':
-			make_keyword(tok, _r_paren);
+			mk_keywd(tok, _r_paren);
 			incr_off;
 		break;
         case '{':
-            make_keyword(tok, _l_brace);
+            mk_keywd(tok, _l_brace);
             incr_off;
         break;
         case '}':
-            make_keyword(tok, _r_brace);
+            mk_keywd(tok, _r_brace);
             incr_off;
         break;
 		default:
-		if ((fetchc(__compiler) >= 'a' && fetchc(__compiler) <= 'z') || (fetchc(__compiler) >= 'A' && fetchc(__compiler) <= 'Z') || fetchc(__compiler) == '_') {
+		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
 			*tok = (struct token) {
 				.kind = TOK_IDENT,
 				.p = (void*)read_ident(__compiler)
 			};
-		} else if (fetchc(__compiler) >= '0' && fetchc(__compiler) <= '9') goto _no;
+		} else if (c >= '0' && c <= '9') goto _no;
 		else {
 		    incr_off;
 		    tok->kind = TOK_NULL;
@@ -296,7 +313,7 @@ ffly_lex(struct ffly_compiler *__compiler, ffly_err_t *__err) {
 	}
 
 	while(is_space(__compiler) && !at_eof(__compiler)) {
-        if (is_newline(__compiler)) {
+        if (at_nl(__compiler)) {
             register_line(__compiler); 
         }
         incr_off;

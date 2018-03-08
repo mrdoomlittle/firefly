@@ -9,6 +9,16 @@
 # include "types/bool_t.h"
 # include "system/lat.h"
 
+enum {
+	_ffc_clang,
+	_ffc_script
+};
+
+/*
+	start renaming to ffc_
+	for firefly compiler _ ...
+
+*/
 typedef struct ffly_compiler_file {
 	ffly_byte_t *p, *end;
 	ffly_off_t off;
@@ -219,7 +229,7 @@ struct type {
 char const* tokk_str(mdl_u8_t);
 char const* tokid_str(mdl_u8_t);
 mdl_uint_t tokcol(struct token*);
-void skip_token(struct ffly_compiler*);
+void sktok(ffly_compilerp);
 ffly_off_t toklo(struct token*);
 ffly_off_t curlo(struct ffly_compiler*);
 mdl_uint_t tokl(struct token*);
@@ -249,4 +259,6 @@ mdl_u8_t ffly_compiler_kwno(char const*);
 void ffly_compiler_ldkeywd(struct ffly_compiler*, mdl_u8_t);
 ffly_err_t ffly_parse(struct ffly_compiler*);
 ffly_err_t ffly_gen(struct ffly_compiler*, void**, ffly_byte_t**);
+
+void ffc_ldsyntax(ffly_compilerp, mdl_u8_t);
 # endif /*__ffly__compiler__h*/

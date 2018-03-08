@@ -31,7 +31,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 
 	file = __argv[1];
 	mdl_s32_t fd;
-	mdl_u8_t *base;
+	mdl_u8_t *bed;
 	if ((fd = open(file, O_RDONLY, 0)) == -1) {
 		fprintf(stderr, "failed to open file.\n");
 		return -1;
@@ -48,15 +48,16 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		goto _fault;
 	}	
 
-	base = p;
+	bed = p;
 	read(fd, p, st.st_size);
 	
 	eof = p+st.st_size;
 	bucketp top = NULL;
 	printf("filesize: %u\n", st.st_size);
 	parse(&top);
-	gen(top);
-	exec();
+	objp ep;
+	gen(top, &ep);
+	brew_exec(ep);
 
 	void **cur = tf;
 	while(cur != fresh)
@@ -65,7 +66,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 
 	_fault:
 	close(fd);
-	if (base != NULL)
-		free(base);
+	if (bed != NULL)
+		free(bed);
 	return 0;
 }
