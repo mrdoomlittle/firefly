@@ -181,7 +181,8 @@ mdl_uint_t tokcol(struct token *__tok) {
 void print_line(struct ffly_compiler *__compiler, mdl_uint_t __off) {
 	char *p = (char*)__compiler->file->p+__off;
 	while(*p != '\n' && *p != '\0') {
-		ffly_printf("%c", *p);
+		if (*p != '\t')
+			ffly_printf("%c", *p);
 		p++;
 	}
 	ffly_printf("\n");

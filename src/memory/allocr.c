@@ -332,19 +332,33 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 	if (__blk->size <= __size) {
 		return NULL;
 	}
+
+	ar_uint_t size;
+	void *p;
+	if (!(p = ffly_alloc(size = (__blk->size-__blk->pad)))) {
+		//error
+	}
+
 	lkpot(__pot);
 	blkdp rr = prev_blk(__pot, __blk); //rear
 	blkdp ft = next_blk(__pot, __blk); //front
-	blkdp fwd = get_blk(__pot, __blk->fd);
-	blkdp bck = get_blk(__pot, __blk->bk);
+//	blkdp fwd = get_blk(__pot, __blk->fd);
+//	blkdp bck = get_blk(__pot, __blk->bk);
 	struct blkd blk;
+
+	void *ret = NULL;
 
 	// how much to shrink
 	ar_uint_t dif = (__blk->size-__blk->pad)-__size;
 	ar_off_t *off = &__blk->off;
+	mdl_u8_t inuse;
 
 	if (not_null(__blk->prev)) {
-		if (is_free(rr) || (is_used(rr) && rr->size <= 0xf)) {
+		if (is_free(rr) || ((inuse = is_used(rr)) && rr->size <= 0xf)) {
+			if (inuse)
+				unlink(__pot, rr);
+
+			copy(p, (mdl_u8_t*)__blk+blkd_size, size);
 			*off+=dif;
 			if (*off+dif == __pot->end_blk)
 				__pot->end_blk = *off;
@@ -352,29 +366,48 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 			if (not_null(__blk->next))
 				ft->prev = *off;
 			__blk->size-=dif;
-			rr->pad+=dif;
+			if (inuse)
+				rr->pad+=dif;
+
 			rr->size+=dif;
 			rr->end+=dif;
 			copy(&blk, __blk, blkd_size);
 			__blk = (blkdp)((mdl_u8_t*)__blk+dif);
 			copy(__blk, &blk, blkd_size);
+			ret = (void*)((mdl_u8_t*)__blk+blkd_size);
+			copy(ret, p, size-dif);
+			if (inuse) {
+				ar_off_t *bin;
+				if (not_null(rr->fd = *(bin = bin_at(__pot, rr->size)))) {
+					get_blk(__pot, *bin)->bk = rr->off;		
+				}
+
+				*bin = rr->off;
+			}
 			goto _r;
 		}
 	}
 
-	ulpot(__pot);
-	return NULL;
 	_r:
 	ulpot(__pot);
-	return (void*)((mdl_u8_t*)__blk+blkd_size);
+	ffly_free(p);
+	return ret;
 }
 
 void static*
 grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
+	ar_uint_t size;
+	void *p;
+	if (!(p = ffly_alloc(size = (__blk->size-__blk->pad)))) {
+		//error
+	}
+
 	lkpot(__pot);
 	blkdp rr = prev_blk(__pot, __blk); //rear
 	blkdp ft = next_blk(__pot, __blk); //front
 	struct blkd blk;
+
+	void *ret = NULL;
 
 	ar_uint_t dif = __size-(__blk->size-__blk->pad);
 	ar_off_t *off = &__blk->off;
@@ -386,6 +419,8 @@ grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 
 	if (not_null(__blk->prev)) {
 		if (is_free(rr) && rr->size > dif<<1) {
+			unlink(__pot, rr);
+			copy(p, (mdl_u8_t*)__blk+blkd_size, size);
 			*off-=dif;
 			if (*off+dif == __pot->end_blk)
 				__pot->end_blk = *off;
@@ -398,15 +433,22 @@ grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 			copy(&blk, __blk, blkd_size);
 			__blk = (blkdp)((mdl_u8_t*)__blk-dif);
 			copy(__blk, &blk, blkd_size);
+			ret = (void*)((mdl_u8_t*)__blk+blkd_size);
+			copy(ret, p, size);
+			ar_off_t *bin;
+			if (not_null(rr->fd = *(bin = bin_at(__pot, rr->size)))) {
+				get_blk(__pot, *bin)->bk = rr->off;
+			}
+
+			*bin = rr->off;
 			goto _r;
 		}
 	}
 
-	ulpot(__pot);
-	return NULL;
 	_r:
 	ulpot(__pot);
-	return (void*)((mdl_u8_t*)__blk+blkd_size);
+	ffly_free(p);
+	return ret;
 }
 
 void*
@@ -418,8 +460,14 @@ ffly_arsh(void *__p, mdl_uint_t __to) {
 		bk = p;
 		p = p->fd;
 		ulpot(bk);
+		if (!p) {
+			ffly_errmsg("not found.\n");
+			return NULL;
+		}
+
 		lkpot(p);
 	}
+
 	ulpot(p);
 	return shrink_blk(p, blk, __to);
 }
@@ -433,8 +481,14 @@ ffly_argr(void *__p, mdl_uint_t __to) {
 		bk = p;
 		p = p->fd;
 		ulpot(bk);
+	
+		if (!p) {
+			ffly_errmsg("not found.\n");
+			return NULL;
+		}
 		lkpot(p);
 	}
+
 	ulpot(p);
 	return grow_blk(p, blk, __to);
 }
@@ -710,13 +764,15 @@ ffly_free(void *__p) {
 		bk = p;
 		p = p->fd;
 		ulpot(bk);
+		if (!p) {
+			ffly_errmsg("error: could not find pot associated with pointer.\n");
+			return;
+		}
+
 		lkpot(p);
 	}
 	ulpot(p);
-	if (!p) {
-		ffly_errmsg("error: could not find pot associated with pointer.\n");
-		return;
-	}
+
 	_ffly_free(p, __p);
 	// free pot as we don't need it
 	lkpot(p);
@@ -748,15 +804,19 @@ ffly_realloc(void *__p, mdl_uint_t __bc) {
 	ar_int_t dif = (ar_int_t)size-(ar_int_t)__bc;
 	void *p;
 	if (dif>0) {
-		ffly_printf("shrink.\n");
-		if ((p = ffly_arsh(__p, __bc)) != NULL)
-			return p;
-		ffly_printf("can't shrink block.\n");
+		__ffmod_debug
+			ffly_printf("shrink.\n");
+//		if ((p = ffly_arsh(__p, __bc)) != NULL)
+//			return p;
+		__ffmod_debug
+			ffly_printf("can't shrink block.\n");
 	} else if (dif<0) {
-		ffly_printf("grow.\n");
-		if ((p = ffly_argr(__p, __bc)) != NULL)
-			return p;
-		ffly_printf("can't grow block.\n");
+		__ffmod_debug
+			ffly_printf("grow.\n");
+//		if ((p = ffly_argr(__p, __bc)) != NULL)
+//			return p;
+		__ffmod_debug
+			ffly_printf("can't grow block.\n");
 	}
 
 	if (!(p = ffly_alloc(__bc))) {

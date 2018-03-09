@@ -317,7 +317,7 @@ void _start() {
 	ffly_io_init();
 
 	ffset_mode(_ff_mod_debug);
-
+/*
 	mdl_uint_t const n = 60;
 	void *list[n];
 
@@ -337,7 +337,7 @@ void _start() {
 				ffly_bzero(*cur, size);	
 				i++;
 			}
-/*
+
 			if (ffly_rand()%0x1) {
 				void **p = (void*)((mdl_u8_t*)list+((ffly_rand()%(n-1))*sizeof(void*)));
 				if (*p != NULL) {
@@ -346,7 +346,7 @@ void _start() {
 					i--;
 				}
 			}
-*/
+
 		cur++;
 		}
 	}
@@ -357,9 +357,21 @@ void _start() {
 			ffly_free(list[i]);
 		i++;
 	}
+*/
 
-/*
 	void *p0, *p1, *p2, *p;
+	p0 = ffly_alloc(22);
+	p1 = ffly_alloc(24);
+	*(mdl_uint_t*)p1 = 21299;
+	p2 = ffly_alloc(26);
+	ffly_free(p0);
+	p1 = ffly_realloc(p1, 30);
+	p1 = ffly_realloc(p1, 4);
+	ffly_printf("%u\n", *(mdl_uint_t*)p1);
+
+//	p0 = ffly_alloc(36);
+	//ffly_printf("%u\n", *(mdl_uint_t*)p1);
+/*
 	p = ffly_alloc(1);
 	p0 = ffly_alloc(2000);
 	p1 = ffly_alloc(1500);
