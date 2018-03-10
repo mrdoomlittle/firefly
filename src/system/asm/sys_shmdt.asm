@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _shmdt
-_shmdt:
+global __shmdt
+__shmdt:
     mov rax, sys_shmdt
     syscall
     ret

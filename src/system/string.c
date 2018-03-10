@@ -18,7 +18,8 @@ mdl_u64_t static powof10[] = {
 	100000000000000,
 	1000000000000000,
 	10000000000000000,
-	100000000000000000
+	100000000000000000,
+	1000000000000000000
 };
 
 mdl_uint_t ffly_nots(mdl_u64_t __no, char *__buf) {
@@ -56,6 +57,9 @@ mdl_uint_t ffly_nots(mdl_u64_t __no, char *__buf) {
 }
 
 mdl_u64_t ffly_stno(char *__s) {
+	if(*__s == '0' && *(__s+1) == '\0')
+		return 0;
+
 	mdl_u8_t sign;
 	if (sign = (*__s == '-')) __s++;
 

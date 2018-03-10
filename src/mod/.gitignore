@@ -1,6 +1,5 @@
 *.swp
 *.o
-*.o.*
 *.exec
 *.fuse_hidden*
 log

@@ -2,7 +2,12 @@
 # include "../linux/ipc/shm.h"
 # include "../linux/stat.h"
 # include "../linux/unistd.h"
+# ifndef __ffly_module
 # include "io.h"
+# else
+# include "../uapi/mod/io.h"
+# endif
+# include "../ffly_def.h"
 
 // needs testing
 # define BASE 21299

@@ -2,10 +2,12 @@
 # include <mdlint.h>
 mdl_s32_t shmget(__linux_key_t __key, __linux_size_t __size, mdl_s32_t __flags) {
 	mdl_s32_t ret;
-	__asm__("mov %1, %%edi\n\t"
+	__asm__("xorq %%rdi, %%rdi\n\t"
+			"mov %1, %%edi\n\t"
 			"mov %2, %%rsi\n\t"
+			"xorq %%rdx, %%rdx\n\t"
 			"mov %3, %%edx\n\t"
-			"call _shmget\n\t"
-			"mov %%eax, %0" : "=m"(ret) : "m"(__key), "m"(__size), "m"(__flags) : "edi", "rsi", "edx", "rax");
+			"call __shmget\n\t"
+			"mov %%eax, %0" : "=m"(ret) : "m"(__key), "m"(__size), "m"(__flags) : "rdi", "rsi", "rdx", "rax");
 	return ret;
 }

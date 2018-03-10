@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _shmat
-_shmat:
+global __shmat
+__shmat:
 	mov rax, sys_shmat
 	syscall
 	ret

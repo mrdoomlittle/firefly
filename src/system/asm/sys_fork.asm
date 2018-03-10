@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _fork
-_fork:
+global __fork
+__fork:
 	mov rax, sys_fork
 	syscall
 	ret

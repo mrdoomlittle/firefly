@@ -6,6 +6,7 @@
 *	rbx - no
 */
 __ffly_bcopy:
+	push %rax
 	_again:
 	movb (%rsi), %al
 	movb %al, (%rdi)
@@ -14,4 +15,5 @@ __ffly_bcopy:
 	dec %rbx
 	cmpq $0, %rbx
 	ja _again
+	pop %rax
 	ret

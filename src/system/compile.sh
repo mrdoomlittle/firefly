@@ -34,8 +34,17 @@ $ffly_cc -c $cc_flags -o $dst_dir/sys_nanosleep.o.1 $root_dir/sys_nanosleep.c
 nasm -f elf64 $as_inc -o $dst_dir/mutex.o.0 $root_dir/asm/mutex.asm
 $ffly_cc -c $cc_flags -o $dst_dir/mutex.o.1 $root_dir/mutex.c
 
+nasm -f elf64 $as_inc -o $dst_dir/sys_execve.o.0 $root_dir/asm/sys_execve.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_execve.o.1 $root_dir/sys_execve.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_fork.o.0 $root_dir/asm/sys_fork.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_fork.o.1 $root_dir/sys_fork.c
+
 nasm -f elf64 $as_inc -o $dst_dir/sys_fcntl.o.0 $root_dir/asm/sys_fcntl.asm
 $ffly_cc -c $cc_flags -o $dst_dir/sys_fcntl.o.1 $root_dir/sys_fcntl.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_wait4.o.0 $root_dir/asm/sys_wait4.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_wait4.o.1 $root_dir/sys_wait4.c
 
 nasm -f elf64 $as_inc -o $dst_dir/sys_open.o.0 $root_dir/asm/sys_open.asm
 $ffly_cc -c $cc_flags -o $dst_dir/sys_open.o.1 $root_dir/sys_open.c
@@ -140,4 +149,7 @@ $dst_dir/sys_shmdt.o.0 $dst_dir/sys_shmdt.o.1 \
 $dst_dir/sys_getcwd.o.0 $dst_dir/sys_getcwd.o.1
 $dst_dir/sys_clone.o.0 $dst_dir/sys_clone.o.1 \
 $dst_dir/sys_fstat.o.0 $dst_dir/sys_fstat.o.1 \
-$dst_dir/lat.o $dst_dir/dict.o $dst_dir/util/base64.o"
+$dst_dir/lat.o $dst_dir/dict.o $dst_dir/util/base64.o \
+$dst_dir/sys_execve.o.0 $dst_dir/sys_execve.o.1 \
+$dst_dir/sys_wait4.o.0 $dst_dir/sys_wait4.o.1 \
+$dst_dir/sys_fork.o.0 $dst_dir/sys_fork.o.1"

@@ -1,6 +1,7 @@
 # ifndef __ffly__linux__sched__h
 # define __ffly__linux__sched__h
 # include <mdlint.h>
+# include "types.h"
 # define CSIGNAL 0x000000ff
 # define CLONE_VM 0x00000100
 # define CLONE_FS 0x00000200
@@ -27,4 +28,5 @@
 # define CLONE_IO 0x80000000
 
 mdl_s64_t clone(mdl_u64_t, mdl_u64_t, void*, void*, mdl_u64_t);
+__linux_pid_t fork();
 # endif /*__ffly__linux__sched__h*/

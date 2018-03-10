@@ -1,7 +1,7 @@
 %include "syscall.mac"
 section .text
-global _shmget
-_shmget:
+global __shmget
+__shmget:
 	mov rax, sys_shmget
 	syscall
 	ret

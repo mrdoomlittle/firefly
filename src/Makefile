@@ -5,6 +5,12 @@ cc_flags=-O0 -Wall -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr
 ffly_objs=$(shell export dst_dir=$(dst_dir);export root_dir=${PWD};. ./compile.sh;echo $$ffly_objs)
 test: clean
 	gcc $(cc_flags) -Wall -o main test.c $(ffly_objs) -nostdlib
+mod: clean
+	gcc $(cc_flags) -c -Wall mod/pipe.c -o mod_pipe.o
+#	gcc $(cc_flags) -c -Wall -o uapi/mod/printf.o uapi/mod/printf.c
+#	gcc $(cc_flags) -c -Wall -o uapi/mod/malloc.o uapi/mod/malloc.c
+	gcc $(cc_flags) -c -Wall call.c
+	gcc $(cc_flags) -Wall -o main mod.c mod_pipe.o call.o $(ffly_objs) -nostdlib
 pkg: clean
 	gcc -c extract.c
 	gcc -c build.c

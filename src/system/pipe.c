@@ -3,7 +3,12 @@
 # include "../data/bcopy.h"
 # include "../linux/ipc.h"
 # include "../linux/stat.h"
+# ifndef __ffly_module
 # include "io.h"
+# else
+# include "../uapi/mod/io.h"
+# endif
+
 // needs testing
 /*
     NOTE: cleanup
@@ -106,6 +111,7 @@ void ffly_pipe_write(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
         set_bit(pi->bits, DUMP);
         ffly_printf("waiting for peer.\n");
         while(is_bit(pi->bits, DUMP));
+		ffly_printf("okay.\n");
     }
 
     set_bit(pi->bits, STOP);
@@ -123,16 +129,16 @@ void ffly_pipe_read(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
 
     mdl_u8_t *p = (mdl_u8_t*)__buf;
     mdl_u8_t *end = p+__size;
-
-    while(!is_bit(pi->bits, STOP) && p < end) {
+    while(!is_bit(pi->bits, STOP) && p <= end) {
         if (is_bit(pi->bits, DUMP)) {
             mdl_uint_t size = pi->h->size;
             ffly_printf("size: %u\n", size);
             ffly_bcopy(p, pi->buf, size);  
             p+=size;
             clr_bit(pi->bits, DUMP); 
-        }
+		}
     }
+
     ffly_printf("got end bit.\n");
     clr_bit(pi->bits, STOP);
     set_bit(pi->bits, OK);
