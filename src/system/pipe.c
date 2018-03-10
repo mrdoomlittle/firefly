@@ -97,9 +97,9 @@ void ffly_pipe_connect(mdl_uint_t __id) {
 
 void ffly_pipe_write(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
 	struct pipe *pi = get_pipe(__id);
-	__ffmod_debug {
+	__ffmod_debug
 		ffly_printf("write. %u\n", *pi->bits);
-	}
+
 	set_bit(pi->bits, STRT);
 	while(is_bit(pi->bits, STRT));
 
@@ -111,17 +111,16 @@ void ffly_pipe_write(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
 		ffly_bcopy(pi->buf, p, size);
 		p+=size;
 		pi->h->size = size;
-		__ffmod_debug {
+		__ffmod_debug
 			ffly_printf("size: %u\n", pi->h->size);
-		}
+
 		set_bit(pi->bits, DUMP);
-		__ffmod_debug {
+		__ffmod_debug
 			ffly_printf("waiting for peer.\n");
-		}
+
 		while(is_bit(pi->bits, DUMP));
-		__ffmod_debug {
+		__ffmod_debug
 			ffly_printf("okay.\n");
-		}
 	}
 
 	set_bit(pi->bits, STOP);
@@ -131,15 +130,14 @@ void ffly_pipe_write(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
 
 void ffly_pipe_read(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
 	struct pipe *pi = get_pipe(__id);
-	ffly_printf("read. %u\n", *pi->bits);
 	while(is_bit(pi->bits, OK));
-	__ffmod_debug {
+	__ffmod_debug
 		ffly_printf("read. %u\n", *pi->bits);
-	}
+
 	while(!is_bit(pi->bits, STRT));
-	__ffmod_debug {
+	__ffmod_debug
 		ffly_printf("got start bit.\n");
-	}
+
 	clr_bit(pi->bits, STRT);
 
 	mdl_u8_t *p = (mdl_u8_t*)__buf;
@@ -147,18 +145,18 @@ void ffly_pipe_read(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
 	while(!is_bit(pi->bits, STOP)) {
 		if (is_bit(pi->bits, DUMP) && p < end) {
 			mdl_uint_t size = pi->h->size;
-			__ffmod_debug {
+			__ffmod_debug
 				ffly_printf("size: %u\n", size);
-			}
+
 			ffly_bcopy(p, pi->buf, size);  
 			p+=size;
 			clr_bit(pi->bits, DUMP); 
 		}
 	}
 
-	__ffmod_debug {
+	__ffmod_debug
 		ffly_printf("got end bit.\n");
-	}
+
 	clr_bit(pi->bits, STOP);
 	set_bit(pi->bits, OK);
 	while(is_bit(pi->bits, OK));
@@ -170,7 +168,6 @@ void ffly_pipe_close(mdl_uint_t __id) {
 	if (is_flag(pi->flags, FF_PIPE_CREAT)) 
 		ffly_shm_free(pi->shm_id);
 	ffly_shm_cleanup(pi->shm_id);
-	__ffmod_debug {
+	__ffmod_debug
 		ffly_printf("id: %u\n", pi->shm_id);
-	}
 }

@@ -15,6 +15,7 @@
 # include "system/string.h"
 # include "mod/pipe.h"
 # include "system/pipe.h"
+# include "mode.h"
 # define DSS 500000 // i dont know how big the stack is all i know is its quite large
 void static
 execmod() {
@@ -60,10 +61,13 @@ ffmod_malloc() {
 	mdl_uint_t bc;
 	void *ret;
 	ffly_pipe_read(&bc, sizeof(mdl_uint_t), ffmod_pipeno());
-	ffly_printf("inbound, bc: %u\n", bc);
+	__ffmod_debug
+		ffly_printf("inbound, bc: %u\n", bc);
+
 	ret = __ffly_mem_alloc(bc);
 	ffly_pipe_wr64l((mdl_u64_t)ret, ffmod_pipeno());
-	ffly_printf("outbound: %p\n", ret);
+	__ffmod_debug
+		ffly_printf("outbound: %p\n", ret);
 }
 
 void static
@@ -71,8 +75,9 @@ ffmod_free() {
 	ffly_printf("free.\n");
 	void *p;
 	p = (void*)ffly_pipe_rd64l(ffmod_pipeno());
-	ffly_printf("inbound, p: %p\n", p);
-//	__ffly_mem_free(p);
+	__ffmod_debug
+		ffly_printf("inbound, p: %p\n", p);
+	__ffly_mem_free(p);
 }
 
 void static
