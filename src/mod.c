@@ -15,13 +15,13 @@
 # include "system/string.h"
 # include "mod/pipe.h"
 # include "system/pipe.h"
-# define DSS 80213 // i dont know how big the stack is all i know is its quite large
+# define DSS 500000 // i dont know how big the stack is all i know is its quite large
 void static
 execmod() {
 	/*
 		50/50 chance might get stuck
 	*/
-	ffly_nanosleep(1, 0); // replace this 
+	ffly_nanosleep(2, 0); // replace this 
 	char const *file;
 	__asm__("movq -8(%%rbp), %%rdi\n\t"
 		"movq %%rdi, %0": "=m"(file) : : "rdi");
@@ -45,6 +45,7 @@ ffmod_printf() {
 	p = (ffpap*)ffly_pipe_rd64l(ffmod_pipeno());
 
 	ffcall(_ffcal_printf, NULL, &p);
+
 	while(p != NULL) {
 		__ffly_mem_free(p->p);
 		bk = p;
@@ -71,7 +72,7 @@ ffmod_free() {
 	void *p;
 	p = (void*)ffly_pipe_rd64l(ffmod_pipeno());
 	ffly_printf("inbound, p: %p\n", p);
-	__ffly_mem_free(p);
+//	__ffly_mem_free(p);
 }
 
 void static
@@ -128,14 +129,17 @@ void ffmodld(char const *__file) {
 	if ((no = ffly_pipe_rd8l(ffmod_pipeno())) != 0xff) {
 		if (no <= _ffcal_mod_scp) {
 			process[no]();
+			goto _again;
+		} else {
+			ffly_printf("somthing broke.\n");	
 		}
-		goto _again;
 	}
 
 	if (no == 0xff) {
 		ffly_printf("got terminator.\n");
 	}
-	
+
+	ffly_printf("waiting for prossess to finish.\n");
 	wait4(pid, NULL, __WALL|__WCLONE, NULL);
 	__ffly_mem_free(stack);	
 	ffmod_pipe_close();

@@ -12,7 +12,8 @@ enum {
 };
 
 enum {
-	_ffpa_seg
+	_ffpa_seg,
+	_ffpa_u
 };
 
 typedef struct ffpa {

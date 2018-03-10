@@ -1,4 +1,5 @@
 # include "call.h"
+# include "system/string.h"
 # include "system/io.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
@@ -13,7 +14,8 @@ ffcall_printf(void *__ret, void *__params) {
 			mdl_u8_t *p = (mdl_u8_t*)arg->p;
 			while(p != arg->end)
 				*(bufp++) = *(p++);
-		}
+		} else if (arg->type == _ffpa_u)
+			bufp+= ffly_nots(*(mdl_u32_t*)arg->p, bufp);
 		arg = arg->next;
 	}
 	*bufp = '\0';

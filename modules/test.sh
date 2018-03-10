@@ -1,1 +1,1 @@
-rm -f *.o *.o.* && sh cmod.sh test.c
+rm -f *.o *.o.* a.out && sh cmod.sh test.c

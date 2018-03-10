@@ -7,7 +7,7 @@
 */
 
 mdl_u8_t static opt = FF_MAL_O_LOC;
-mdl_u8_t static heep[400];
+mdl_u8_t static heep[2048];
 mdl_u8_t static *fresh = heep;
 
 typedef struct hdr {
@@ -46,6 +46,7 @@ void* malloc(mdl_uint_t __bc) {
 
 					return (void*)((mdl_u8_t*)cur+hdr_size);
 				}
+				cur = cur->fd;
 			}
 		}
 
@@ -53,6 +54,8 @@ void* malloc(mdl_uint_t __bc) {
 		fresh+=hdr_size+__bc;
 
 		hdrp h = (hdrp)p;
+		h->fd = NULL;
+		h->bk = NULL;
 		h->inuse = 1;
 		h->next = top;
 		if (top != NULL)
@@ -91,6 +94,7 @@ void free(void *__p) {
 		if (bin != NULL)
 			bin->bk = h;
 		h->bk = NULL;
+		bin = h;
 		return;
 	}
 

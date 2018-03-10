@@ -39,6 +39,9 @@ out(char const *__format, va_list __args) {
 		if (bk != NULL) {
 			bk->next = dup;
 			scopy(rr, bk, sizeof(struct ffpa));
+			setmalopt(FF_MAL_O_LOC);
+			free(bk);
+			setmalopt(FF_MAL_O_OSD);
 		}
 
 		mdl_uint_t l = cur->end-cur->p;
@@ -58,13 +61,7 @@ out(char const *__format, va_list __args) {
 	if (bk != NULL) {
 		bk->next = NULL;
 		scopy(rr, bk, sizeof(struct ffpa));
-	}
-
-	setmalopt(FF_MAL_O_LOC);
-	cur = head;
-	while(cur != NULL) {
-		bk = cur;
-		cur = cur->next;
+		setmalopt(FF_MAL_O_LOC);
 		free(bk);
 	}
 
@@ -92,11 +89,20 @@ gen(char *__buf, char const *__format, va_list __args) {
 			head = cur;
 
 		if (*p == '%') {
-			p++;	
+			p++;
+			if (*p == 'u') {
+				*(mdl_u32_t*)bufp = va_arg(__args, mdl_u32_t);
+				cur->p = bufp;
+				bufp+=sizeof(mdl_u32_t);
+				cur->end = bufp;
+				cur->type = _ffpa_u;
+			}
+			p++;
 		} else {
-			cur->p = p;	
-			while(*p != '%' && *p != '\0') p++;
-			cur->end = p;
+			cur->p = bufp;	
+			while(*p != '%' && *p != '\0')
+				*(bufp++) = *(p++);
+			cur->end = bufp;
 			cur->type = _ffpa_seg;
 		}
 	}

@@ -2,6 +2,7 @@
 # include "../src/system/string.h"
 # include "../src/mod/pipe.h"
 # include "../src/system/pipe.h"
+# include "../src/mod/malloc.h"
 void main(void);
 void _start(void) {
 	int long argc;
@@ -14,6 +15,7 @@ void _start(void) {
 	ffmod_pipe_open(shm_id);
 	ffly_pipe_connect(ffmod_pipeno());
 	main();
+	setmalopt(FF_MAL_O_LOC);
 	ffly_pipe_wr8l(0xff, ffmod_pipeno());
 	ffmod_pipe_close();
 	__asm__("xorq %rdi, %rdi\n\t"
