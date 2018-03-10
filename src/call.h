@@ -6,7 +6,9 @@ enum {
     _ffcal_fprintf,
 	_ffcal_malloc,
 	_ffcal_free,
-	_ffcal_realloc
+	_ffcal_realloc,
+	_ffcal_mod_dcp,
+	_ffcal_mod_scp
 };
 
 enum {

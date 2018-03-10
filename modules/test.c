@@ -1,7 +1,6 @@
 # include "../src/mod/printf.h"
 # include "../src/mod/malloc.h"
+# include "../src/mod/copy.h"
 void main(void) {
-	setmalopt(FF_MAL_O_OSD);
-	void *p = malloc(20);
-	free(p);
+	printf("no game no life.\n");
 }

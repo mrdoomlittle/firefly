@@ -5,7 +5,7 @@
 # ifndef __ffly_module
 # include "io.h"
 # else
-# include "../uapi/mod/io.h"
+# include "../mod/io.h"
 # endif
 # include "../ffly_def.h"
 

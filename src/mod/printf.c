@@ -1,13 +1,17 @@
 # include "printf.h"
 # include "../call.h"
-# include "../mod.h"
+# include "ring.h"
 # include "malloc.h"
 # include "../ffly_def.h"
+# include "copy.h"
 void static out(char const*, va_list);
 ffpap static gen(char*, char const*, va_list);
 
 void ffly_printf(char const *__format, ...) {
-	return;
+
+}
+
+void printf(char const *__format, ...) {
 	va_list args;
 	va_start(args, __format);
 
@@ -27,19 +31,50 @@ out(char const *__format, va_list __args) {
 	if (!(head = gen(buf, __format, __args))) {
 		// error
 	}
+	
+	setmalopt(FF_MAL_O_OSD);
+	ffpap cur = head, bk = NULL, dup, rr, top = NULL;
+	while(cur != NULL) {
+		dup = (ffpap)malloc(sizeof(struct ffpa));
+		if (bk != NULL) {
+			bk->next = dup;
+			scopy(rr, bk, sizeof(struct ffpa));
+		}
 
-	ffmod_ring(_ffcal_printf, NULL, &head);
-	ffpap cur = head, bk;
+		mdl_uint_t l = cur->end-cur->p;
+		void *pre = cur->p;
+		cur->p = (ffpap)malloc(l);
+		cur->end = cur->p+l;
+		scopy(cur->p, pre, l);
+
+		if (!top)
+			top = dup;
+
+		bk = cur;
+		cur = cur->next;		
+		rr = dup;
+	}
+
+	if (bk != NULL) {
+		bk->next = NULL;
+		scopy(rr, bk, sizeof(struct ffpa));
+	}
+
+	setmalopt(FF_MAL_O_LOC);
+	cur = head;
 	while(cur != NULL) {
 		bk = cur;
 		cur = cur->next;
 		free(bk);
 	}
+
+	ffmod_ring(_ffcal_printf, NULL, &top);
 }
 
 
 ffpap
 gen(char *__buf, char const *__format, va_list __args) {
+	setmalopt(FF_MAL_O_LOC);
 	char const *p = __format;
 	char *bufp = __buf;
 

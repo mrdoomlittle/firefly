@@ -15,7 +15,7 @@
 # include "system/string.h"
 # include "mod/pipe.h"
 # include "system/pipe.h"
-# define DSS 100000 // i dont know how big the stack is all i know is its quite large
+# define DSS 80213 // i dont know how big the stack is all i know is its quite large
 void static
 execmod() {
 	/*
@@ -38,6 +38,74 @@ execmod() {
 	exit(0);
 }
 
+void static
+ffmod_printf() {
+	ffly_printf("printf.\n");
+	ffpap p, bk;
+	p = (ffpap*)ffly_pipe_rd64l(ffmod_pipeno());
+
+	ffcall(_ffcal_printf, NULL, &p);
+	while(p != NULL) {
+		__ffly_mem_free(p->p);
+		bk = p;
+		p = p->next;
+		__ffly_mem_free(bk);
+	}
+}
+
+void static
+ffmod_malloc() {
+	ffly_printf("malloc.\n");
+	mdl_uint_t bc;
+	void *ret;
+	ffly_pipe_read(&bc, sizeof(mdl_uint_t), ffmod_pipeno());
+	ffly_printf("inbound, bc: %u\n", bc);
+	ret = __ffly_mem_alloc(bc);
+	ffly_pipe_wr64l((mdl_u64_t)ret, ffmod_pipeno());
+	ffly_printf("outbound: %p\n", ret);
+}
+
+void static
+ffmod_free() {
+	ffly_printf("free.\n");
+	void *p;
+	p = (void*)ffly_pipe_rd64l(ffmod_pipeno());
+	ffly_printf("inbound, p: %p\n", p);
+	__ffly_mem_free(p);
+}
+
+void static
+ffmod_dcp() {
+	ffly_printf("dcp.\n");
+	void *src;
+	mdl_uint_t n;
+
+	src = (void*)ffly_pipe_rd64l(ffmod_pipeno());
+	ffly_pipe_read(&n, sizeof(mdl_uint_t), ffmod_pipeno());
+	ffly_pipe_write(src, n, ffmod_pipeno());
+}
+
+void static
+ffmod_scp() {
+	ffly_printf("scp.\n");
+	void *dst;
+	mdl_uint_t n;
+
+	dst = (void*)ffly_pipe_rd64l(ffmod_pipeno());
+	ffly_pipe_read(&n, sizeof(mdl_uint_t), ffmod_pipeno());
+	ffly_pipe_read(dst, n, ffmod_pipeno());	
+}
+
+static void(*process[])() = {
+	ffmod_printf,
+	NULL,
+	ffmod_malloc,
+	ffmod_free,
+	NULL,
+	ffmod_dcp,
+	ffmod_scp
+};
+
 void ffmodld(char const *__file) {
 	ffmod_pipe();
 	ffly_printf("shm: %lu\n", ffmod_pipe_shmid());
@@ -58,35 +126,14 @@ void ffmodld(char const *__file) {
 	mdl_u8_t no;
 	_again:
 	if ((no = ffly_pipe_rd8l(ffmod_pipeno())) != 0xff) {
-		switch(no) {
-			case _ffcal_malloc: {
-				ffly_printf("malloc.\n");
-				mdl_uint_t bc;
-				void *ret;
-				ffly_pipe_read(&bc, sizeof(mdl_uint_t), ffmod_pipeno());
-				ffly_printf("got, bc: %u\n", bc);
-				ret = __ffly_mem_alloc(bc);
-				ffly_pipe_wr64l((mdl_u64_t)ret, ffmod_pipeno());
-
-				ffly_printf("sent: %p\n", ret);
-				break;
-			}
-
-			case _ffcal_free: {
-				ffly_printf("free.\n");
-				void *p;
-				p = (void*)ffly_pipe_rd64l(ffmod_pipeno());
-				ffly_printf("got, p: %p\n", p);
-				break;
-			}
+		if (no <= _ffcal_mod_scp) {
+			process[no]();
 		}
-
-		ffly_printf("...\n");
 		goto _again;
 	}
 
 	if (no == 0xff) {
-		ffly_printf("got end.\n");
+		ffly_printf("got terminator.\n");
 	}
 	
 	wait4(pid, NULL, __WALL|__WCLONE, NULL);
