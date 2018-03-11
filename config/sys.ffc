@@ -1,5 +1,11 @@
 version:"0.001",
+# max no. of threads
 max_threads:20~_64l_u,
+# alloca stack size
 alssize:400~_64l_u,
-# Hello
+# list of modules to execute
+modl:["a.out"],
+# directory from root dir
+moddir:"modules",
+# where are we installed
 root_dir:"/home/daniel-robson/mount/firefly",

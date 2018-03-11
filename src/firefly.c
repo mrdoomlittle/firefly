@@ -69,8 +69,39 @@ void evalopts(char const *__s) {
 # include "system/config.h"
 ffly_err_t ffmain(int, char const**);
 char const static *by = "mrdoomlittle"; 
-# include "data/str_cpy.h"
+# include "dep/str_cpy.h"
+# include "mod.h"
+
+void static
+init() {
+	ffly_ar_init();
+	ffly_io_init();
+	ffly_arcs_init();
+}
+
+void static
+prep() {
+	void **p = ffly_alloca(sizeof(void*), NULL);
+	*p = (void*)by;
+	ffly_arcs_creatarc("info");
+	ffly_arcs_tun("info");
+	ffly_arcs_creatrec("created-by", p, _ffly_rec_def, 0);
+
+	ffly_arcs_bk();
+	ffly_modld();
+}
+
+void static
+fini() {
+	ffly_arcs_de_init();
+	ffly_alloca_cleanup();
+	ffly_io_closeup();
+	ffly_ar_cleanup();
+}
+
 void _start(void) {
+	init();
+
 	int long argc;
 	char const **argv;
 	__asm__("mov 8(%%rbp), %0\t\n"
@@ -81,15 +112,12 @@ void _start(void) {
 	char const **end = argp+argc;
 	void *frame;
 	void *tmp;
-	ffly_ar_init();
-	ffly_io_init(); // don't move
+
 
 	tmp = __ffly_mem_alloc(TMP_ALSSIZE);
 	ffly_alss(tmp, TMP_ALSSIZE);
 
 	frame = ffly_frame();
-	void **p = ffly_alloca(sizeof(void*), NULL);
-
 	char const **argl = ffly_alloca(argc*sizeof(char const*), NULL);
 	char const **arg = argl;
 	*(arg++) = *(argp++); 
@@ -125,24 +153,21 @@ void _start(void) {
 	if (conf<0)
 		// load default builtin config
 		ffly_ld_sysconf_def();
-	ffly_alad((void**)&p);
+	/*
+		alloca is giving pointer from the temp stack,
+		so add them to the amend list for later.
+	*/
 	ffly_alad((void**)&argl);
 	ffly_alad((void**)&arg);
 	ffly_alad(&frame);
+	// reload
 	ffly_alrr();
 
 	__ffly_mem_free(tmp);
 	while(argp != end)
 		*(arg++) = *(argp++);
 
-	ffly_arcs_init();
-
-	*p = (void*)by;
-	ffly_arcs_creatarc("info");
-	ffly_arcs_tun("info");
-	ffly_arcs_creatrec("created-by", p, _ffly_rec_def, 0);
-		
-	ffly_arcs_bk();
+	prep();
 
 	ffmain(arg-argl, argl);
 	ffly_printf("\n\n");
@@ -165,10 +190,7 @@ void _start(void) {
 	__ffmod_debug
 		ffly_arstat();
 
-	ffly_arcs_de_init();
-	ffly_io_closeup();
 	ffly_collapse(frame);
-	ffly_alloca_cleanup();
-    ffly_ar_cleanup();
+	fini();
 	exit(0);
 }

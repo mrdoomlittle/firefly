@@ -8,7 +8,8 @@
 # define DEF_MAX_THREADS 20
 # define ALLOCA_SSIZE 400
 struct ffly_sysconf __ffly_sysconf__ = {
-	.version = NULL, .root_dir = NULL
+	.version = NULL, .root_dir = NULL,
+	.moddir = NULL, .modl[0] = NULL
 };
 
 void static
@@ -46,6 +47,29 @@ ld_alssize(ffconf *__cf) {
 	ffly_fprintf(ffly_log, "alloca ssize: %u\n", __ffly_sysconf__.alssize);
 }
 
+void static
+ld_moddir(ffconf *__cf) {
+	void const *p;
+	if ((p = ffly_conf_get(__cf, "moddir")) != NULL) {
+		__ffly_sysconf__.moddir = (char const*)ffly_str_dupe(ffly_conf_str(p));	
+	}
+}
+
+void static
+ld_modl(ffconf *__cf) {
+	void const *p;
+	if ((p = ffly_conf_get(__cf, "modl")) != NULL) {
+		ffly_printf("module list len: %u\n", ffly_conf_arr_len(p));
+		mdl_u8_t i = 0, l = ffly_conf_arr_len(p);
+		while(i != l) {
+			__ffly_sysconf__.modl[i] = (char const*)ffly_str_dupe(ffly_conf_str(ffly_conf_arr_elem(p, i)));
+			ffly_printf("module: %s\n", ffly_conf_str(ffly_conf_arr_elem(p, i)));
+			i++;
+		}
+		__ffly_sysconf__.modl[i] = NULL;
+	}
+}
+
 ffly_err_t ffly_ld_sysconf(char const *__path) {
 	struct ffly_conf conf;
 	ffly_err_t err = FFLY_SUCCESS;
@@ -80,6 +104,8 @@ ffly_err_t ffly_ld_sysconf(char const *__path) {
 	
 	ld_max_threads(&cf);
 	ld_alssize(&cf);
+	ld_moddir(&cf);
+	ld_modl(&cf);
 
 	__ffly_sysconf__.version = (char const*)ffly_str_dupe(ffly_conf_str(version));
 	__ffly_sysconf__.root_dir = (char const*)ffly_str_dupe(ffly_conf_str(root_dir));
@@ -102,4 +128,11 @@ ffly_err_t ffly_ld_sysconf(char const *__path) {
 void ffly_free_sysconf() {
 	__ffly_finn(__ffly_sysconf__.version);
 	__ffly_finn(__ffly_sysconf__.root_dir);
+	__ffly_finn(__ffly_sysconf__.moddir);
+	char const **mod = __ffly_sysconf__.modl;
+	while(*mod != NULL) {
+		__ffly_mem_free(*mod);
+		mod++;
+	}
+
 }

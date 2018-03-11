@@ -26,7 +26,8 @@
 # define vec_deadstop(__p, __vec) ((void*)__p > ffly_vec_end(__vec))
 /*
     needs testing - 'VEC_NONCONTINUOUS'
-
+	TODO:
+	rename begin to just 'beg' e.g. ffly_vec_beg();
 */
 struct ffly_vec_blkd {
 	ffly_flag_t flags;

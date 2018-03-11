@@ -39,6 +39,7 @@ struct ffly_conf_var {
 struct ffly_conf_arr {
 	struct ffly_vec data;
 	char *name;
+	mdl_uint_t l;
 };
 
 // config bare
@@ -79,7 +80,8 @@ enum {
 };
 
 void const* ffly_conf_get(ffconfp, char const*);
-void const* ffly_conf_get_arr_elem(void const*, mdl_uint_t);
+mdl_uint_t ffly_conf_arr_len(void const*);
+void const* ffly_conf_arr_elem(void const*, mdl_uint_t);
 ffly_err_t ffly_conf_init(struct ffly_conf*);
 ffly_err_t ffly_conf_read(struct ffly_conf*);
 ffly_err_t ffly_conf_ld(struct ffly_conf*, char const*);

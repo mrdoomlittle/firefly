@@ -16,7 +16,25 @@
 # include "mod/pipe.h"
 # include "system/pipe.h"
 # include "mode.h"
+# include "system/config.h"
+# include "dep/str_cpy.h"
 # define DSS 500000 // i dont know how big the stack is all i know is its quite large
+void ffly_modld() {
+	char buf[1024];
+	char *bufp = buf;
+	bufp+=ffly_str_cpy(bufp, __ffly_sysconf__.root_dir);
+	*(bufp++) = '/';
+	bufp+=ffly_str_cpy(bufp, __ffly_sysconf__.moddir);
+	*(bufp++) = '/';
+	char const **mod = __ffly_sysconf__.modl;
+	while(*mod != NULL) {		
+		ffly_str_cpy(bufp, *mod);	
+		ffmodld(buf);
+		ffly_printf("module path: %s\n", buf);
+		mod++;
+	}
+}
+
 void static
 execmod() {
 	/*
@@ -150,9 +168,20 @@ void ffmodld(char const *__file) {
 	ffmod_pipe_close();
 }
 
+void ffmodldl(char const **__file) {
+	char const **file = __file;
+	while(*file != NULL) {
+		ffmodld(*file);
+		file++;
+	}
+}
+//#define DEBUG
+# ifdef DEBUG
+
 # include "system/realpath.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	char *file;
 	ffmodld(file = ffly_realpath("../modules/a.out"));
 	__ffly_mem_free(file);
 }
+# endif

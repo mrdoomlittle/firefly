@@ -64,8 +64,12 @@ void const* ffly_conf_get(ffconfp __conf, char const *__name) {
 	return ffly_map_get(&__conf->env, (mdl_u8_t const*)__name, ffly_str_len(__name), &err);
 }
 
-void const* ffly_conf_get_arr_elem(void const *__p, mdl_uint_t __no) {
+void const* ffly_conf_arr_elem(void const *__p, mdl_uint_t __no) {
 	return *(void**)ffly_vec_at(&((struct ffly_conf_arr*)__p)->data, __no);
+}
+
+mdl_uint_t ffly_conf_arr_len(void const *__p) {
+	return ((struct ffly_conf_arr*)__p)->l;
 }
 
 struct token {
@@ -380,40 +384,58 @@ read_val(struct ffly_conf *__conf, struct ffly_conf_val *__val) {
 }
 
 ffly_err_t static
-read_arr(struct ffly_conf *__conf, struct ffly_vec *__data) {
+read_arr(struct ffly_conf *__conf, struct ffly_vec *__data, mdl_uint_t *__l) {
 	ffly_err_t err;
+	if (next_token_is(__conf, _tok_keyword, _r_bracket, &err)) {
+		return FFLY_SUCCESS;
+	}
+
 	ffly_vec_set_flags(__data, VEC_AUTO_RESIZE);
 	ffly_vec_init(__data, sizeof(void*));
 	_again:
+	(*__l)++;
 	if (next_token_is(__conf, _tok_keyword, _l_bracket, &err)) {
 		struct ffly_conf_arr **arr;
 		ffly_vec_push_back(__data, (void**)&arr);
 
 		*arr = (struct ffly_conf_arr*)__ffly_mem_alloc(sizeof(struct ffly_conf_arr));
-		read_arr(__conf, &(*arr)->data);
+		if (_err(err = read_arr(__conf, &(*arr)->data, &(*arr)->l))) {
+			ffly_errmsg("failed to process sub array.\n");
+			return err;
+		}
 		push_arr(__conf, *arr);
 		goto _again;
 	}
 
-	struct token *tok = peek_token(__conf, &err);
-	struct ffly_conf_val **val;
-	ffly_vec_push_back(__data, (void**)&val);
-	*val = (struct ffly_conf_val*)__ffly_mem_alloc(sizeof(struct ffly_conf_val));
-	push_free(__conf, *val);
-	if (_err(err = read_val(__conf, *val))) {
-		ffly_fprintf(ffly_out, "failed to read value.\n");
+	{
+		struct token *tok = peek_token(__conf, &err);
+		struct ffly_conf_val **val;
+		ffly_vec_push_back(__data, (void**)&val);
+		*val = (struct ffly_conf_val*)__ffly_mem_alloc(sizeof(struct ffly_conf_val));
+		push_free(__conf, *val);
+		if (_err(err = read_val(__conf, *val))) {
+			ffly_fprintf(ffly_out, "failed to read value.\n");
+			return err;
+		}
 	}
 
-	if (next_token_is(__conf, _tok_keyword, _comma, &err)) {
+	if (next_token_is(__conf, _tok_keyword, _comma, &err)) {	
 		goto _again;
 	}
 
 	if (!next_token_is(__conf, _tok_keyword, _r_bracket, &err)) {
+		ffly_errmsg("missing right hand bracket on array.\n");
 		return FFLY_FAILURE;
 	}
-
+/*
 	if (!expect_token(__conf, _tok_keyword, _comma, &err)) {
+		ffly_errmsg("expect error.\n");
 		return FFLY_FAILURE;
+	}
+*/
+	if (_err(err)) {
+		ffly_errmsg("error has occurred while processing array.\n");
+		return err;
 	}
 	return FFLY_SUCCESS;
 }
@@ -424,14 +446,16 @@ read_decl(struct ffly_conf *__conf) {
 	struct token *name = read_token(__conf, &err);
 	if (_err(err)) return FFLY_FAILURE;
 	if (!expect_token(__conf, _tok_keyword, _colon, &err)) {
-		if (_err(err)) return err;
+		if (_err(err))
+			return err;
+		ffly_errmsg("missing colon separator.\n");
 		return FFLY_FAILURE;
 	}
 
 	void *p;	
 	if (next_token_is(__conf, _tok_keyword, _l_bracket, &err)) {
 		struct ffly_conf_arr *arr = (struct ffly_conf_arr*)__ffly_mem_alloc(sizeof(struct ffly_conf_arr));
-		if (_err(err = read_arr(__conf, &arr->data))) {
+		if (_err(err = read_arr(__conf, &arr->data, &arr->l))) {
 			ffly_fprintf(ffly_err, "failed to read array.\n");
 			__ffly_mem_free(arr);
 			return err;
@@ -459,6 +483,7 @@ read_decl(struct ffly_conf *__conf) {
 
 	ffly_map_put(&__conf->env, (mdl_u8_t*)name->p, ffly_str_len((char*)name->p), p);
 	if (!expect_token(__conf, _tok_keyword, _comma, &err)) {
+		ffly_errmsg("expect error.\n");
 		return FFLY_FAILURE;
 	}
 	return FFLY_SUCCESS;
@@ -510,6 +535,8 @@ peek_token(struct ffly_conf *__conf, ffly_err_t *__err) {
 	return tok;
 }
 
+
+// rename to ffly_conf_prossess
 ffly_err_t
 ffly_conf_read(struct ffly_conf *__conf) {
 	ffly_err_t err;
@@ -529,7 +556,7 @@ ffly_conf_read(struct ffly_conf *__conf) {
 		} else
 			break;
 		if (_err(err))
-			return FFLY_FAILURE;
+			return err;
 	}
 	return FFLY_SUCCESS;
 }

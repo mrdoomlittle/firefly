@@ -6,6 +6,8 @@ struct ffly_sysconf {
     char const *version;
     mdl_uint_t max_threads;
 	char const *root_dir;
+	char const *moddir;
+	char const *modl[12];
 	mdl_uint_t alssize;
 };
 
