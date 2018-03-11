@@ -131,7 +131,7 @@ void ffly_free_sysconf() {
 	__ffly_finn(__ffly_sysconf__.moddir);
 	char const **mod = __ffly_sysconf__.modl;
 	while(*mod != NULL) {
-		__ffly_mem_free(*mod);
+		__ffly_mem_free((void*)*mod);
 		mod++;
 	}
 

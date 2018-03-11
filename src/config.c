@@ -150,7 +150,7 @@ read_ident(struct ffly_conf *__conf, char **__end) {
 
 	char end = '\0';
 	ffly_buff_put(&__conf->sbuf, &end);
-	char *s = ffly_str_dupe((char*)ffly_buff_begin(&__conf->sbuf));
+	char *s = (char*)ffly_str_dupe((char*)ffly_buff_begin(&__conf->sbuf));
 	mdl_uint_t l = ffly_buff_off(&__conf->sbuf);
 	*__end = s+l;
 	__conf->off+= l;
@@ -170,7 +170,7 @@ read_no(struct ffly_conf *__conf, char **__end) {
 
 	char end = '\0';
 	ffly_buff_put(&__conf->sbuf, &end);
-	char *s = ffly_str_dupe((char*)ffly_buff_begin(&__conf->sbuf));
+	char *s = (char*)ffly_str_dupe((char*)ffly_buff_begin(&__conf->sbuf));
 	mdl_uint_t l = ffly_buff_off(&__conf->sbuf);
 	*__end = s+l;
 	__conf->off+= l;
@@ -188,7 +188,7 @@ read_str(struct ffly_conf *__conf, char **__end) {
 
 	char end = '\0';
 	ffly_buff_put(&__conf->sbuf, &end);
-	char *s = ffly_str_dupe((char*)ffly_buff_begin(&__conf->sbuf));
+	char *s = (char*)ffly_str_dupe((char*)ffly_buff_begin(&__conf->sbuf));
 	mdl_uint_t l = ffly_buff_off(&__conf->sbuf);
 	*__end = s+l; 
 	__conf->off+= l;

@@ -1,3 +1,4 @@
+# include "mod.h"
 # include "types/err_t.h"
 # include "call.h"
 # include "system/io.h"
@@ -20,6 +21,9 @@
 # include "dep/str_cpy.h"
 # define DSS 500000 // i dont know how big the stack is all i know is its quite large
 void ffly_modld() {
+	if (!__ffly_sysconf__.root_dir &&
+		!__ffly_sysconf__.moddir &&
+		!*__ffly_sysconf__.modl) return;
 	char buf[1024];
 	char *bufp = buf;
 	bufp+=ffly_str_cpy(bufp, __ffly_sysconf__.root_dir);
@@ -29,7 +33,7 @@ void ffly_modld() {
 	char const **mod = __ffly_sysconf__.modl;
 	while(*mod != NULL) {		
 		ffly_str_cpy(bufp, *mod);	
-		ffmodld(buf);
+		ffmodld((char const*)buf);
 		ffly_printf("module path: %s\n", buf);
 		mod++;
 	}
@@ -48,8 +52,8 @@ execmod() {
 	char buf[128];
 	ffly_nots((mdl_u64_t)ffmod_pipe_shmid(), buf);
 	ffly_printf("pipeno: %s\n", buf);
-	char *argv[] = {buf, NULL};
-	mdl_s32_t res = execve(file, argv, NULL);
+	char *argv[] = {(char*)buf, NULL};
+	mdl_s32_t res = execve(file, (char*const)argv, NULL);
 	if (res < 0) {
 		ffly_printf("error, %s\n", strerror(errno));
 	}
@@ -61,7 +65,7 @@ void static
 ffmod_printf() {
 	ffly_printf("printf.\n");
 	ffpap p, bk;
-	p = (ffpap*)ffly_pipe_rd64l(ffmod_pipeno());
+	p = (ffpap)ffly_pipe_rd64l(ffmod_pipeno());
 
 	ffcall(_ffcal_printf, NULL, &p);
 

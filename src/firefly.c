@@ -180,9 +180,9 @@ void _start(void) {
 		while(cur != NULL) {
 			bk = cur;
 			cur = cur->next;
-			__ffly_mem_free(bk->name);
+			__ffly_mem_free((void*)bk->name);
 			if (bk->val != NULL)
-				__ffly_mem_free(bk->val);
+				__ffly_mem_free((void*)bk->val);
 			__ffly_mem_free(bk);
 		}
 	}
