@@ -77,16 +77,16 @@ ffly_arc_recp ffly_arc_lookup(ffly_arcp __arc, mdl_u64_t __no) {
 }
 
 void ffly_arc_prepare(ffly_arcp __arc) {
-	__arc->rr = (ffly_arc_recp*)__ffly_mem_alloc(0xff*sizeof(ffly_arc_recp));
+	__arc->rr = (ffly_arc_recp*)__ffly_mem_alloc(0x100*sizeof(ffly_arc_recp));
 	ffly_arc_recp *p = __arc->rr;
-	ffly_arc_recp *end = p+0xff;
+	ffly_arc_recp *end = p+0x100;
 	while(p != end)
 		*(p++) = NULL;
 }
 
 void ffly_arc_free(ffly_arcp __arc) {
 	ffly_arc_recp *p = __arc->rr;
-	ffly_arc_recp *end = p+0xff;
+	ffly_arc_recp *end = p+0x100;
 	ffly_arc_recp rec, tmp;
 	while(p != end) {
 		if (*p != NULL) {
@@ -165,7 +165,7 @@ void ffly_arc_recr(ffly_arc_recp __rec, void *__buf,
 # include "stdio.h"
 void tree(ffly_arcp __root) {
     ffly_arc_recp *p = __root->rr;
-    ffly_arc_recp *end = p+0xff;
+    ffly_arc_recp *end = p+0x100;
     ffly_arc_recp rec;
 	mdl_uint_t static pad = 0;
     while(p != end) {
