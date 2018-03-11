@@ -1,12 +1,11 @@
 # include "as.h"
 # include "../system/util/hash.h"
 # include "../data/mem_cmp.h"
-# define SIZE 0xff
 # include "../ffly_def.h"
 void hash_init(struct hash *__table) {
-	__table->table = (hash_entryp*)_alloca(SIZE*sizeof(struct hash_entry*));
+	__table->table = (hash_entryp*)_alloca(0x100*sizeof(struct hash_entry*));
 	struct hash_entry **p = __table->table;
-	struct hash_entry **bot = p+SIZE;
+	struct hash_entry **bot = p+0x100;
 	while(p != bot) *(p++) = NULL;
 }
 
