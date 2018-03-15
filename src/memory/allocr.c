@@ -6,6 +6,10 @@
 # include "../system/mutex.h"
 # include "../mode.h"
 ffly_err_t ffly_printf(char*, ...);
+/*
+	not using this until finished
+	as it may hide issues.
+*/
 # define ALIGN 1
 # define align_to(__no, __to)(((__no)+((__to)-1))&((~(__to))+1))
 # define is_aligned_to(__no, __align)(((__no&__align) == __align)||!(__no&__align))
@@ -99,18 +103,26 @@ typedef struct pot {
 struct pot main_pot;
 
 __thread potp arena = NULL;
+/*
+	dont use pointers when we can use offsets to where the block is located 
+	as it will take of less space in the header.
+*/
 
+// keep packed as we want the header to be as small as possible
 typedef struct blkd {
 	ar_off_t prev, next, fd, bk;
 	ar_size_t size; // total size, without blkd
 	/*
 		junk part of block that wont be used.
 		but can be used.
+
+		zeroed when freed.
 	*/
 	ar_uint_t pad;
 	ar_off_t off, end;
 	mdl_u8_t flags;
 } __attribute__((packed)) *blkdp;
+
 
 # define pot_size sizeof(struct pot)
 # define blkd_size sizeof(struct blkd)
@@ -250,7 +262,9 @@ void pot_pr(potp __pot) {
 	}
 	_next:
 	ffly_printf("/-----------------------\\\n");
-	ffly_printf("| size: %u\t\t| 0x%x, pad: %u\n", blk->size, blk->off, blk->pad);
+	ffly_printf("| size: %u, off: %x, pad: %u, inuse: %s\n", blk->size, blk->off, blk->pad, is_used(blk)?"yes":"no");
+	ffly_printf("| prev: %x{%s}, next: %x{%s}, fd: %x{%s}, bk: %x{%s}\n", is_null(blk->prev)?0:blk->prev, is_null(blk->prev)?"dead":"alive", is_null(blk->next)?0:blk->next, is_null(blk->next)?"dead":"alive",
+		is_null(blk->fd)?0:blk->fd, is_null(blk->fd)?"dead":"alive", is_null(blk->bk)?0:blk->bk, is_null(blk->bk)?"dead":"alive");
 	ffly_printf("\\----------------------/\n");
 	if (not_null(blk->next)) {
 		blk = get_blk(p, blk->next);
@@ -329,7 +343,8 @@ void pf() {
 
 void static*
 shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
-	if (__blk->size <= __size) {
+	if (__blk->size <= __size || is_free(__blk)) {
+		ffly_printf("forbidden alteration.\n");
 		return NULL;
 	}
 
@@ -351,16 +366,22 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 	// how much to shrink
 	ar_uint_t dif = (__blk->size-__blk->pad)-__size;
 	ar_off_t *off = &__blk->off;
-	mdl_u8_t inuse;
+	mdl_u8_t freed, inuse;
+
+	if (dif <= 0x4 && __blk->pad < 0x4) {
+		__blk->pad+=dif;
+		ret = (void*)((mdl_u8_t*)__blk+blkd_size);
+		goto _r;
+	}
 
 	if (not_null(__blk->prev)) {
-		if (is_free(rr) || ((inuse = is_used(rr)) && rr->size <= 0xf)) {
-			if (inuse)
+		if ((freed = is_free(rr)) || ((inuse = is_used(rr)) && rr->size <= 0xf)) {
+			if (freed)
 				unlink(__pot, rr);
 
 			copy(p, (mdl_u8_t*)__blk+blkd_size, size);
 			*off+=dif;
-			if (*off+dif == __pot->end_blk)
+			if (*off-dif == __pot->end_blk)
 				__pot->end_blk = *off;
 			rr->next = *off;
 			if (not_null(__blk->next))
@@ -376,7 +397,7 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 			copy(__blk, &blk, blkd_size);
 			ret = (void*)((mdl_u8_t*)__blk+blkd_size);
 			copy(ret, p, size-dif);
-			if (inuse) {
+			if (freed) {
 				ar_off_t *bin;
 				if (not_null(rr->fd = *(bin = bin_at(__pot, rr->size)))) {
 					get_blk(__pot, *bin)->bk = rr->off;		
@@ -396,6 +417,11 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 
 void static*
 grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
+	if (__blk->size-__blk->pad >= __size || is_free(__blk)) {
+		ffly_printf("forbidden alteration.\n");
+		return NULL;
+	}
+
 	ar_uint_t size;
 	void *p;
 	if (!(p = ffly_alloc(size = (__blk->size-__blk->pad)))) {
@@ -414,6 +440,7 @@ grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 
 	if (__blk->pad >= dif) {
 		__blk->pad-=dif;
+		ret = (void*)((mdl_u8_t*)__blk+blkd_size);
 		goto _r;
 	}
 
@@ -483,7 +510,7 @@ ffly_argr(void *__p, mdl_uint_t __to) {
 		ulpot(bk);
 	
 		if (!p) {
-			ffly_errmsg("not found.\n");
+			ffly_errmsg("not found, %p\n", __p);
 			return NULL;
 		}
 		lkpot(p);
@@ -553,7 +580,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 				} else
 					unlock_pot(__pot);
 				return (void*)((mdl_u8_t*)blk+blkd_size);
-			}			 
+			}
 			bin = blk->fd;
 		}
 	}
@@ -803,20 +830,22 @@ ffly_realloc(void *__p, mdl_uint_t __bc) {
 	ar_uint_t size = blk->size-blk->pad;
 	ar_int_t dif = (ar_int_t)size-(ar_int_t)__bc;
 	void *p;
-	if (dif>0) {
-		__ffmod_debug
-			ffly_printf("shrink.\n");
-//		if ((p = ffly_arsh(__p, __bc)) != NULL)
-//			return p;
-		__ffmod_debug
-			ffly_printf("can't shrink block.\n");
-	} else if (dif<0) {
-		__ffmod_debug
-			ffly_printf("grow.\n");
-//		if ((p = ffly_argr(__p, __bc)) != NULL)
-//			return p;
-		__ffmod_debug
-			ffly_printf("can't grow block.\n");
+	if (!is_flag(blk->flags, MMAPED)) {
+		if (dif>0) {
+			__ffmod_debug
+				ffly_printf("shrink.\n");
+			if ((p = ffly_arsh(__p, __bc)) != NULL)
+				return p;
+			__ffmod_debug
+				ffly_printf("can't shrink block.\n");
+		} else if (dif<0) {
+			__ffmod_debug
+				ffly_printf("grow.\n");
+			if ((p = ffly_argr(__p, __bc)) != NULL)
+				return p;
+			__ffmod_debug
+				ffly_printf("can't grow block.\n");
+		}
 	}
 
 	if (!(p = ffly_alloc(__bc))) {

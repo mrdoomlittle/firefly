@@ -1,6 +1,7 @@
 	.globl __ffly_mal
 	.globl ffly_mal
 	.text
+// used by mem_dup
 __ffly_mal:
 	push %rbp
 	movq %rsp, %rbp

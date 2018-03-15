@@ -312,11 +312,37 @@ void copy(void *__dst, void *__src, mdl_uint_t __bc);
 # include "../linux/unistd.h"
 # include "../linux/mman.h"
 # include "../mode.h"
+# include "../stdio.h"
 void _start() {
 	ffly_ar_init();
 	ffly_io_init();
 
 	ffset_mode(_ff_mod_debug);
+
+	struct ffly_vec vec;
+	ffly_vec_set_flags(&vec, VEC_AUTO_RESIZE);
+	ffly_vec_init(&vec, 8);
+
+	mdl_uint_t i;
+	mdl_uint_t const n = 210;
+	i = 0;
+	while(i != n) {
+		mdl_uint_t *p;
+		ffly_vec_push_back(&vec, (void**)&p);
+		*p = i++;
+	}
+
+
+	i  = 0;
+	while(i != n) {
+		mdl_uint_t p;
+		ffly_vec_pop_back(&vec, (void*)&p);
+		ffly_printf(">>> %u\n", p);
+		i++;
+	}
+
+	ffly_vec_de_init(&vec);
+//	ffly_free(p2);
 /*
 	mdl_uint_t const n = 60;
 	void *list[n];
@@ -358,7 +384,7 @@ void _start() {
 		i++;
 	}
 */
-
+/*
 	void *p0, *p1, *p2, *p;
 	p0 = ffly_alloc(22);
 	p1 = ffly_alloc(24);
@@ -368,7 +394,7 @@ void _start() {
 	p1 = ffly_realloc(p1, 30);
 	p1 = ffly_realloc(p1, 4);
 	ffly_printf("%u\n", *(mdl_uint_t*)p1);
-
+*/
 //	p0 = ffly_alloc(36);
 	//ffly_printf("%u\n", *(mdl_uint_t*)p1);
 /*

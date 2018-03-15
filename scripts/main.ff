@@ -1,4 +1,3 @@
-/*
 %include "../scripts/fflib.ff"
 
 u8_t i = 0;
@@ -6,5 +5,5 @@ while(i != 5) {
 	print(21299);
 	i++;
 }
-*/
+
 exit;
