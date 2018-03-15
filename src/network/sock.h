@@ -3,10 +3,11 @@
 # include "../types/fd_t.h"
 # include "../types/err_t.h"
 # include "../types/size_t.h"
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <netinet/in.h>
-# include <arpa/inet.h>
+# include "../linux/types.h"
+# include "../linux/socket.h"
+# include "../linux/in.h"
+# include "../in.h"
+# include "../linux/net.h"
 # define FF_SOCKET struct ffly_socket
 # define ffly_sockfd(__sock) (__sock->fd)
 struct ffly_socket {

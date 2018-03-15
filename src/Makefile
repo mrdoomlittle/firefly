@@ -26,19 +26,26 @@ mul: clean
 	gcc $(cc_flags) -c mul/lexer.c
 	gcc $(cc_flags) -c mul/mul.c
 	gcc $(cc_flags) -Wall -o main mul/main.c mul.o hash.o lexer.o $(ffly_objs) -nostdlib
+#db: clean
+#	gcc -Wall -c network/sock.c
+#	gcc -c network/input.c
+#	gcc -c network/output.c
+#	gcc -Wall -c net.c
+#	gcc -c db.c
+#	gcc -c crypto.c
+##	gcc -Wall -o main db.c $(ffly_objs) input.o output.o sock.o net.o
+#	gcc -Wall -c db/user.c
+#	gcc -Wall -c db/key.c
+#	gcc -Wall -o connect crypto.o db/connect.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
+#	gcc -Wall -o daemon crypto.o db/daemon.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
+##	gcc -Wall -o main db/key.c $(ffly_objs)
+
 db: clean
-	gcc -Wall -c network/sock.c
-	gcc -c network/input.c
-	gcc -c network/output.c
-	gcc -Wall -c net.c
-	gcc -c db.c
-	gcc -c crypto.c
-#	gcc -Wall -o main db.c $(ffly_objs) input.o output.o sock.o net.o
-	gcc -Wall -c db/user.c
-	gcc -Wall -c db/key.c
-	gcc -Wall -o connect crypto.o db/connect.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
-	gcc -Wall -o daemon crypto.o db/daemon.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
-#	gcc -Wall -o main db/key.c $(ffly_objs)
+	gcc $(cc_flags) -c db.c
+	gcc $(cc_flags) -c db/user.c
+	gcc $(cc_flags) -c db/key.c
+	gcc $(cc_flags) -o connect db/connect.c $(ffly_objs) db.o user.o key.o -nostdlib
+	gcc $(cc_flags) -o daemon db/daemon.c $(ffly_objs) db.o user.o key.o -nostdlib
 net: clean
 	gcc -Wall -c network/sock.c
 	gcc -Wall -c network/input.c

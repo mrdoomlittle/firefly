@@ -1,6 +1,7 @@
 # include "allocr.h"
-# include "../linux/unistd.h"
 # include "../linux/mman.h"
+# include "../linux/unistd.h"
+
 # include "../system/util/checksum.h"
 # include "../system/thread.h"
 # include "../system/mutex.h"
@@ -127,7 +128,7 @@ typedef struct blkd {
 # define pot_size sizeof(struct pot)
 # define blkd_size sizeof(struct blkd)
 void static
-unlink(potp __pot, blkdp __blk) {
+detatch(potp __pot, blkdp __blk) {
 	ar_off_t *bin = bin_at(__pot, __blk->size);
 	ar_off_t fwd = __blk->fd;
 	ar_off_t bck = __blk->bk;
@@ -377,7 +378,7 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 	if (not_null(__blk->prev)) {
 		if ((freed = is_free(rr)) || ((inuse = is_used(rr)) && rr->size <= 0xf)) {
 			if (freed)
-				unlink(__pot, rr);
+				detatch(__pot, rr);
 
 			copy(p, (mdl_u8_t*)__blk+blkd_size, size);
 			*off+=dif;
@@ -446,7 +447,7 @@ grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 
 	if (not_null(__blk->prev)) {
 		if (is_free(rr) && rr->size > dif<<1) {
-			unlink(__pot, rr);
+			detatch(__pot, rr);
 			copy(p, (mdl_u8_t*)__blk+blkd_size, size);
 			*off-=dif;
 			if (*off+dif == __pot->end_blk)
@@ -546,7 +547,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 		while(not_null(bin)) {
 			blkdp blk;
 			if ((blk = get_blk(__pot, bin))->size >= __bc) {
-				unlink(__pot, blk);
+				detatch(__pot, blk);
 				blk->pad = blk->size-__bc;
 				blk->flags = (blk->flags&~BLK_FREE)|BLK_USED;
 
@@ -696,7 +697,7 @@ _ffly_free(potp __pot, void *__p) {
 			__ffmod_debug
 				ffly_printf("found free space above, %u\n", prev->size);
 
-			unlink(__pot, prev);
+			detatch(__pot, prev);
 			decouple(__pot, prev);
 
 			__ffmod_debug
@@ -714,7 +715,7 @@ _ffly_free(potp __pot, void *__p) {
 			__ffmod_debug
 				ffly_printf("found free space below, %u\n", next->size);
 
-			unlink(__pot, next);
+			detatch(__pot, next);
 			decouple(__pot, next);
 
 			__ffmod_debug

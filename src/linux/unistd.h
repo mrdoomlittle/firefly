@@ -26,4 +26,7 @@ mdl_s32_t getcwd(char*, mdl_u64_t);
 void* brk(void*);
 
 mdl_s32_t execve(const char*, char *const, char *const);
+mdl_s32_t rmdir(char const*);
+mdl_s32_t unlink(char const*);
+mdl_s32_t ftruncate(mdl_u32_t, mdl_u32_t);
 # endif /*__ffly__linux__unistd__h*/

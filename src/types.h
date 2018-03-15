@@ -4,4 +4,7 @@
 # include "types/err_t.h"
 # include "types/byte_t.h"
 # include "types/off_t.h"
+# include <mdlint.h>
+typedef mdl_u32_t size_t;
+typedef mdl_s32_t ssize_t;
 # endif /*__ffly__types__h*/

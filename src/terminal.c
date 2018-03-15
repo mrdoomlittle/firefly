@@ -2,8 +2,8 @@
 # include "system/err.h"
 # include "system/pipe.h"
 # include "system/io.h"
-# include "data/str_cmp.h"
-# include "data/str_dupe.h"
+# include "dep/str_cmp.h"
+# include "dep/str_dup.h"
 # include "memory/mem_free.h"
 # include "system/file.h"
 # include "hatch.h"
@@ -43,7 +43,6 @@ void static lsvec(mdl_uint_t __pipe) {
     }
     ffly_pipe_read(&l, sizeof(mdl_uint_t), __pipe); 
     ffly_printf("buffer size: %u\n", l);
-    if (l > 4000) return;
     char *s = (char*)__ffly_mem_alloc(l);
     _next:
     ffly_pipe_read(s, l, __pipe);

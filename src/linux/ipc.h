@@ -2,12 +2,12 @@
 # define __ffly__linux__ipc__h
 # include "types.h"
 
-# define IPC_CREAT 00001000
+#define IPC_CREAT 00001000
 
-# define IPC_RMID 0
-# define IPC_SET 1
-# define IPC_STAT 2
-# define IPC_INFO 3
+#define IPC_RMID	0
+#define IPC_SET		1
+#define IPC_STAT	2
+#define IPC_INFO	3
 
 struct ipc_perm {
 	__linux_key_t key;

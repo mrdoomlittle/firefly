@@ -3,7 +3,8 @@
 # include "linux/stat.h"
 # include "linux/unistd.h"
 # include "linux/fcntl.h"
-/*
+# include "system/io.h"
+
 mdl_s32_t ff_mktemp(char *__tmpl) {
 	char *p = __tmpl;
 	while(*p++ != '.');
@@ -15,4 +16,4 @@ mdl_s32_t ff_mktemp(char *__tmpl) {
 	}
 
 	return open(__tmpl, O_RDWR|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
-}*/
+}

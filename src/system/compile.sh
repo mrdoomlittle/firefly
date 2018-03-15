@@ -34,8 +34,47 @@ $ffly_cc -c $cc_flags -o $dst_dir/sys_nanosleep.o.1 $root_dir/sys_nanosleep.c
 nasm -f elf64 $as_inc -o $dst_dir/mutex.o.0 $root_dir/asm/mutex.asm
 $ffly_cc -c $cc_flags -o $dst_dir/mutex.o.1 $root_dir/mutex.c
 
+nasm -f elf64 $as_inc -o $dst_dir/sys_unlink.o.0 $root_dir/asm/sys_unlink.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_unlink.o.1 $root_dir/sys_unlink.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_shutdown.o.0 $root_dir/asm/sys_shutdown.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_shutdown.o.1 $root_dir/sys_shutdown.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_connect.o.0 $root_dir/asm/sys_connect.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_connect.o.1 $root_dir/sys_connect.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_bind.o.0 $root_dir/asm/sys_bind.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_bind.o.1 $root_dir/sys_bind.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_accept.o.0 $root_dir/asm/sys_accept.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_accept.o.1 $root_dir/sys_accept.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_listen.o.0 $root_dir/asm/sys_listen.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_listen.o.1 $root_dir/sys_listen.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_socket.o.0 $root_dir/asm/sys_socket.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_socket.o.1 $root_dir/sys_socket.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_sendto.o.0 $root_dir/asm/sys_sendto.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_sendto.o.1 $root_dir/sys_sendto.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_recvfrom.o.0 $root_dir/asm/sys_recvfrom.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_recvfrom.o.1 $root_dir/sys_recvfrom.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_setsockopt.o.0 $root_dir/asm/sys_setsockopt.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_setsockopt.o.1 $root_dir/sys_setsockopt.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_getsockopt.o.0 $root_dir/asm/sys_getsockopt.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_getsockopt.o.1 $root_dir/sys_getsockopt.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_ftruncate.o.0 $root_dir/asm/sys_ftruncate.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_ftruncate.o.1 $root_dir/sys_ftruncate.c
+
 nasm -f elf64 $as_inc -o $dst_dir/sys_execve.o.0 $root_dir/asm/sys_execve.asm
 $ffly_cc -c $cc_flags -o $dst_dir/sys_execve.o.1 $root_dir/sys_execve.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_rmdir.o.0 $root_dir/asm/sys_rmdir.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_rmdir.o.1 $root_dir/sys_rmdir.c
 
 nasm -f elf64 $as_inc -o $dst_dir/sys_fork.o.0 $root_dir/asm/sys_fork.asm
 $ffly_cc -c $cc_flags -o $dst_dir/sys_fork.o.1 $root_dir/sys_fork.c
@@ -112,6 +151,9 @@ $ffly_cc $cc_flags -c -o $dst_dir/sys_clone.o.1 $root_dir/sys_clone.c
 nasm -f elf64 $as_inc -o $dst_dir/sys_fstat.o.0 $root_dir/asm/sys_fstat.asm
 $ffly_cc $cc_flags -c -o $dst_dir/sys_fstat.o.1 $root_dir/sys_fstat.c
 
+$ffly_cc -c $cc_flags -o $dst_dir/send.o $root_dir/send.c
+$ffly_cc -c $cc_flags -o $dst_dir/recv.o $root_dir/recv.c
+
 $ffly_cc -c $cc_flags -D__ffly_debug -o $dst_dir/printf.o $root_dir/printf.c
 $ffly_cc -c $cc_flags -o $dst_dir/string.o $root_dir/string.c
 $ffly_cc -c $cc_flags -o $dst_dir/file.o $root_dir/file.c
@@ -152,4 +194,18 @@ $dst_dir/sys_fstat.o.0 $dst_dir/sys_fstat.o.1 \
 $dst_dir/lat.o $dst_dir/dict.o $dst_dir/util/base64.o \
 $dst_dir/sys_execve.o.0 $dst_dir/sys_execve.o.1 \
 $dst_dir/sys_wait4.o.0 $dst_dir/sys_wait4.o.1 \
-$dst_dir/sys_fork.o.0 $dst_dir/sys_fork.o.1"
+$dst_dir/sys_fork.o.0 $dst_dir/sys_fork.o.1 \
+$dst_dir/sys_rmdir.o.0 $dst_dir/sys_rmdir.o.1 \
+$dst_dir/sys_unlink.o.0 $dst_dir/sys_unlink.o.1 \
+$dst_dir/sys_shutdown.o.0 $dst_dir/sys_shutdown.o.1 \
+$dst_dir/sys_connect.o.0 $dst_dir/sys_connect.o.1 \
+$dst_dir/sys_bind.o.0 $dst_dir/sys_bind.o.1 \
+$dst_dir/sys_accept.o.0 $dst_dir/sys_accept.o.1 \
+$dst_dir/sys_listen.o.0 $dst_dir/sys_listen.o.1 \
+$dst_dir/sys_socket.o.0 $dst_dir/sys_socket.o.1 \
+$dst_dir/sys_sendto.o.0 $dst_dir/sys_sendto.o.1 \
+$dst_dir/sys_recvfrom.o.0 $dst_dir/sys_recvfrom.o.1 \
+$dst_dir/send.o $dst_dir/recv.o \
+$dst_dir/sys_setsockopt.o.0 $dst_dir/sys_setsockopt.o.1 \
+$dst_dir/sys_getsockopt.o.0 $dst_dir/sys_getsockopt.o.1 \
+$dst_dir/sys_ftruncate.o.0  $dst_dir/sys_ftruncate.o.1"

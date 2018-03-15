@@ -1,6 +1,6 @@
-# include "data/str_cpy.h"
-# include "data/str_len.h"
-# include "data/mem_set.h"
+# include "dep/str_cpy.h"
+# include "dep/str_len.h"
+# include "dep/mem_set.h"
 # include "system/io.h"
 void print_bin(mdl_u8_t);
 

@@ -19,4 +19,5 @@ typedef mdl_u64_t __linux_size_t;
 typedef mdl_s64_t __linux_ssize_t;
 
 typedef mdl_s64_t __linux_suseconds_t;
+typedef mdl_u16_t __linux_sa_family_t;
 # endif /*__ffly__linux__type__h*/

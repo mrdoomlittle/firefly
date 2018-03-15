@@ -7,6 +7,7 @@
 # include "stat.h"
 # include "../linux/stat.h"
 # include "../linux/fcntl.h"
+# include "../linux/unistd.h"
 # define ffly_fileno(__file) \
     (__file)->fd
 

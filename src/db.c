@@ -1,12 +1,12 @@
 # include "db.h"
 # include "system/io.h"
-# include "data/str_len.h"
+# include "dep/str_len.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "memory/mem_realloc.h"
 # include "system/err.h"
 # include "crypto.h"
-# include "data/mem_cpy.h"
+# include "dep/mem_cpy.h"
 # define msgsize sizeof(struct ff_db_msg)
 # define blkd_size sizeof(struct ffdb_blkd)
 # define PAGE_SHIFT 6
@@ -398,7 +398,7 @@ void ffdb_unlink(ffdb_blkdp __blk) {
 	__ffly_mem_free(__blk);
 }
 
-# include <unistd.h>
+# include "linux/unistd.h"
 void ffdb_free(ffdbp __db, mdl_uint_t __p) {
 	if (__p == FFDB_NULL) return;
 	struct ffdb_blkd blk;

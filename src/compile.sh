@@ -9,28 +9,41 @@ ffly_objs=$(
 )
 
 ffly_objs="$ffly_objs $(
+	dst_dir=$PWD/network
+	root_dir=network
+	. ./network/compile.sh
+	echo "$ffly_objs"
+)"
+
+ffly_objs="$ffly_objs $(
 	dst_dir=$PWD/system
-	root_dir=system;
-	. ./system/compile.sh;
+	root_dir=system
+	. ./system/compile.sh
 	echo "$ffly_objs"
 )"
 
 ffly_objs="$ffly_objs $(
 	dst_dir=$PWD/maths
-	root_dir=maths;
-	. ./maths/compile.sh;
+	root_dir=maths
+	. ./maths/compile.sh
 	echo "$ffly_objs"
 )"
 
 ffly_objs="$ffly_objs $(
 	dst_dir=$PWD/memory
-	root_dir=memory;
-	. ./memory/compile.sh;
+	root_dir=memory
+	. ./memory/compile.sh
 	echo "$ffly_objs"
 )"
 
 dst_dir=$PWD
 root_dir=.
+$ffly_cc $cc_flags -c -o $dst_dir/inet_addr.o $root_dir/inet_addr.c
+$ffly_cc $cc_flags -c -o $dst_dir/in.o $root_dir/in.c
+$ffly_cc $cc_flags -c -o $dst_dir/crypto.o $root_dir/crypto.c
+$ffly_cc $cc_flags -c -o $dst_dir/net.o $root_dir/net.c
+$ffly_cc $cc_flags -c -o $dst_dir/rand.o $root_dir/rand.c
+$ffly_cc $cc_flags -c -o $dst_dir/lib.o $root_dir/lib.c
 $ffly_cc $cc_flags -c -o $dst_dir/mode.o $root_dir/mode.c
 $ffly_cc $cc_flags -c -o $dst_dir/config.o $root_dir/config.c
 $ffly_cc $cc_flags -c -o $dst_dir/ffly_system.o $root_dir/ffly_system.c
@@ -46,4 +59,5 @@ $ffly_cc $cc_flags -c -o $dst_dir/call.o $root_dir/call.c
 $ffly_cc $cc_flags -c -o $dst_dir/mod.o $root_dir/mod.c
 export ffly_objs="$ffly_objs $dst_dir/bci.o $dst_dir/exec.o $dst_dir/bci/exec.o $dst_dir/mode.o \
 $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  $dst_dir/get_bit.o \
-$dst_dir/arcs.o $dst_dir/call.o $dst_dir/mod.o $dst_dir/mod/pipe.o"
+$dst_dir/arcs.o $dst_dir/call.o $dst_dir/rand.o $dst_dir/lib.o $dst_dir/mod.o $dst_dir/mod/pipe.o \
+$dst_dir/net.o $dst_dir/crypto.o $dst_dir/in.o $dst_dir/inet_addr.o"

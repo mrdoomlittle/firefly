@@ -9,7 +9,7 @@
 # include <mdlint.h>
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
-void write(int, void*, mdl_uint_t);
+# include "../linux/unistd.h"
 ffly_err_t ffly_printf(char const *__format, ...) {
 	va_list args;
 	va_start(args, __format);

@@ -1,7 +1,7 @@
 # include "../net.h"
 # include "../system/io.h"
 # include "../system/err.h"
-# include "../data/mem_cpy.h"
+# include "../dep/mem_cpy.h"
 ffly_size_t ff_net_recvfrom(FF_SOCKET *__sock, struct sockaddr *__addr, socklen_t *__len, void *__buf, mdl_uint_t __size, ffly_err_t *__err) {
     FF_NET_HDR *hdr;
     mdl_u8_t seg[FF_MTU];

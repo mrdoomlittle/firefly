@@ -10,6 +10,10 @@ void print_bin(mdl_u64_t __val) {
 	printf("\n");
 }
 */
+
+/*
+	for now
+*/
 mdl_u64_t static no = 0x81886ed4;
 mdl_u8_t ffgen_rand8l() {
 	no = no>>60|no<<4;

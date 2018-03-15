@@ -12,6 +12,7 @@
 # include "system/vec.h"
 # include "system/map.h"
 # include "system/flags.h"
+# include "lib.h"
 char const tmpl[] = "/tmp/hatch.XXXXXX";
 mdl_u8_t rcvop(mdl_uint_t __pipe) {
     mdl_u8_t op = 0;
@@ -78,7 +79,7 @@ ffly_err_t ffly_hatch_run() {
     char file[sizeof(tmpl)];
     ffly_str_cpy(file, tmpl);
     int fd;
-    if ((fd = mkstemp(file)) == -1) {
+    if ((fd = ff_mktemp(file)) == -1) {
         reterr;
     }
 
