@@ -37,7 +37,7 @@ void ffas_de_init(void) {
 	
 }
 
-void* memdup(void *__p, mdl_uint_t __bc) {
+void* _memdup(void *__p, mdl_uint_t __bc) {
 	void *ret = _alloca(__bc);
 	mdl_u8_t *p = (mdl_u8_t*)ret;
 	mdl_u8_t *end = p+__bc;
@@ -57,7 +57,7 @@ char* read_str(char *__p, mdl_uint_t *__len) {
 	}
 	*bufp = '\0';
 	*__len = bufp-buf;
-	return memdup(buf, (bufp-buf)+1);
+	return _memdup(buf, (bufp-buf)+1);
 }
 
 mdl_u64_t read_no(char *__p, mdl_uint_t *__len, mdl_u8_t *__sign) {

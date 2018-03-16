@@ -64,7 +64,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffas_init();
 
-	load(x86);
+	load(bc);
 
 	struct stat st;
 	stat(infile, &st);

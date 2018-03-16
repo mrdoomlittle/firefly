@@ -4,6 +4,7 @@
 	.text
 /*
 *	rdi - src
+*	rax - ret
 */
 __ffly_str_dup:
 	push %rdi

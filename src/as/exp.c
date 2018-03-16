@@ -1,6 +1,6 @@
 # include "as.h"
 # include "../ffly_def.h"
-# include "../data/str_len.h"
+# include "../dep/str_len.h"
 void putsymbol(symbolp __sy) {
 	hash_put(&symbols, __sy->p, __sy->len, __sy);
 }

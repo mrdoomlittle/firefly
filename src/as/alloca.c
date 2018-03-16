@@ -5,7 +5,8 @@ typedef struct hdr {
 } *hdrp;
 
 
-hdrp top = NULL, last = NULL;
+hdrp static top = NULL;
+hdrp static last = NULL;
 
 # define hdrsize sizeof(struct hdr)
 

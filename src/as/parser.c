@@ -1,6 +1,6 @@
 # include "as.h"
 # include "../stdio.h"
-# include "../data/str_cmp.h"
+# include "../dep/str_cmp.h"
 symbolp parse(char *__s) {
 	char *p = __s;
 
@@ -21,7 +21,7 @@ symbolp parse(char *__s) {
 		*bufp = '\0';
 
 		cur->sort = SY_DIR;
-		cur->p = memdup(buf, (cur->len = (bufp-buf))+1);
+		cur->p = _memdup(buf, (cur->len = (bufp-buf))+1);
 		cur->next = _alloca(sizeof(struct symbol));
 		cur = cur->next;
 	} else if (*p == '%') {

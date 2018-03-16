@@ -1,6 +1,6 @@
 # include "as.h"
 # include "../system/util/hash.h"
-# include "../data/mem_cmp.h"
+# include "../dep/mem_cmp.h"
 # include "../ffly_def.h"
 void hash_init(struct hash *__table) {
 	__table->table = (hash_entryp*)_alloca(0x100*sizeof(struct hash_entry*));
@@ -28,7 +28,7 @@ void hash_put(struct hash *__table, mdl_u8_t const *__key, mdl_uint_t __len, voi
 	entry->next = *table;
 	*table = entry;
 
-	entry->key = memdup((void*)__key, __len);
+	entry->key = _memdup((void*)__key, __len);
 	entry->p = __p;
 	entry->len = __len;
 }

@@ -69,7 +69,7 @@ struct hash {
 void assemble(char*, char*);
 char* read_str(char*, mdl_uint_t*);
 symbolp eval(char*);
-void* memdup(void*, mdl_uint_t);
+void* _memdup(void*, mdl_uint_t);
 struct hash extern symbols;
 struct hash extern globl;
 void _cleanup();
