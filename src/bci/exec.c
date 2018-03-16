@@ -5,7 +5,7 @@
 # include "../linux/stat.h"
 # include "../ffef.h"
 mdl_u8_t static *bin = NULL;
-ffly_addr_t static ip = 0;
+ffly_addr_t static ip;
 mdl_u8_t static
 fetch_byte(ffly_off_t __off) {
 	return *(bin+ip+__off);
@@ -15,7 +15,6 @@ void static
 ip_incr(mdl_uint_t __by) {
 	ip+=__by;
 }
-
 
 ffly_addr_t static
 get_ip() {
@@ -35,12 +34,13 @@ static struct ffly_bci ctx = {
 	.set_ip = set_ip
 };
 
-
 void ffbci_exec(void *__bin) {
 	bin = (mdl_u8_t*)__bin;
+	ip = 0;
 	ffly_bci_init(&ctx);
 	
 	ffly_err_t exit_code;
 	ffly_bci_exec(&ctx, &exit_code);
 	printf("exit code: %u\n", exit_code);
+	ffly_bci_de_init(&ctx);
 }

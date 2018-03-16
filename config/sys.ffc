@@ -6,7 +6,7 @@ alssize:400~_64l_u,
 # list of modules to execute
 modl:[],
 # list of scripts for init
-inil:["mod"],
+inil:["a", "b", "c"],
 # directory from root dir
 moddir:"modules",
 inidir:"init",

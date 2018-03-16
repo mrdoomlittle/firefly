@@ -79,6 +79,8 @@ init() {
 	ffly_arcs_init();
 }
 
+void ffly_init();
+
 void static
 prep() {
 	void **p = ffly_alloca(sizeof(void*), NULL);
@@ -89,6 +91,7 @@ prep() {
 
 	ffly_arcs_bk();
 	ffly_modld();
+	ffly_init();
 }
 
 void static
