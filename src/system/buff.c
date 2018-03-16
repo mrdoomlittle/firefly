@@ -2,7 +2,7 @@
 # include "io.h"
 # include "err.h"
 # include "errno.h"
-# include "../data/mem_cpy.h"
+# include "../dep/mem_cpy.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../memory/mem_realloc.h"

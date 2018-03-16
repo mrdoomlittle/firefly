@@ -317,8 +317,10 @@ void _start() {
 	ffly_ar_init();
 	ffly_io_init();
 
-	ffset_mode(_ff_mod_debug);
 
+	ffly_arbl(ffly_alloc(22));
+	ffset_mode(_ff_mod_debug);
+/*
 	struct ffly_vec vec;
 	ffly_vec_set_flags(&vec, VEC_AUTO_RESIZE);
 	ffly_vec_init(&vec, 8);
@@ -342,6 +344,7 @@ void _start() {
 	}
 
 	ffly_vec_de_init(&vec);
+*/
 //	ffly_free(p2);
 /*
 	mdl_uint_t const n = 60;

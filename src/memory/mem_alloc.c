@@ -51,10 +51,12 @@ void* ffly_mem_alloc(mdl_uint_t __bc) {
 }
 
 void* ffly_mal() {
+	__asm__("push %r8\n\t"
+			"push %r9");
 # ifdef __ffly_mal_track
-	mdl_u8_t bypass;
+	register mdl_u8_t bypass __asm__("r8");
 # endif
-	mdl_uint_t bc = 0;
+	register mdl_uint_t bc __asm__("r9") = 0;
 	__asm__(
 # if (!defined(__arc32) && !defined(__arc64)) || defined(__arc32)
 		"movl 16(%%rbp), %%eax\n\t"
@@ -74,15 +76,19 @@ void* ffly_mal() {
 # ifdef __ffly_mal_track
 		"movb %%bl, %1\n\t"
 # endif
-	: "=m"(bc)
+	: "=r"(bc)
 # ifdef __ffly_mal_track
-	, "=m"(bypass)
+	, "=r"(bypass)
 # endif
 	: : "rax", "bl"
 );
-	return ffly_mem_alloc(bc
+	register void *ret __asm__("rax");
+	ret = ffly_mem_alloc(bc
 # ifdef __ffly_mal_track
 	, bypass
 # endif
 );
+	__asm__("pop %r8\n\t"
+			"pop %r9");
+	return ret;
 }

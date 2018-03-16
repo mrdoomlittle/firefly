@@ -21,9 +21,12 @@
 # include "dep/str_cpy.h"
 # define DSS 500000 // i dont know how big the stack is all i know is its quite large
 void ffly_modld() {
-	if (!__ffly_sysconf__.root_dir &&
-		!__ffly_sysconf__.moddir &&
-		!*__ffly_sysconf__.modl) return;
+	if (!__ffly_sysconf__.root_dir ||
+		!__ffly_sysconf__.moddir ||
+		!__ffly_sysconf__.modl) return;
+
+	if (!*__ffly_sysconf__.modl) return;
+
 	char buf[1024];
 	char *bufp = buf;
 	bufp+=ffly_str_cpy(bufp, __ffly_sysconf__.root_dir);

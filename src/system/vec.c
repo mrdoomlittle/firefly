@@ -3,7 +3,7 @@
 # include "../memory/mem_free.h"
 # include "../memory/mem_realloc.h"
 # include "io.h"
-# include "../data/mem_cpy.h"
+# include "../dep/mem_cpy.h"
 # include "errno.h"
 # include <mdlint.h>
 # define VEC_NULL ((ffly_off_t)~0)

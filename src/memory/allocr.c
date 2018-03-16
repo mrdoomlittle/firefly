@@ -315,6 +315,10 @@ void pot_pf(potp __pot) {
 	}
 }
 
+void ffly_arbl(void *__p) {
+	blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);
+	ffly_printf("block: off: %u, size: %u, pad: %u\n", blk->off, blk->size, blk->pad);
+}
 
 void pr() {
 	ffly_printf("\n**** all ****\n");
@@ -835,15 +839,15 @@ ffly_realloc(void *__p, mdl_uint_t __bc) {
 		if (dif>0) {
 			__ffmod_debug
 				ffly_printf("shrink.\n");
-			if ((p = ffly_arsh(__p, __bc)) != NULL)
-				return p;
+//			if ((p = ffly_arsh(__p, __bc)) != NULL)
+//				return p;
 			__ffmod_debug
 				ffly_printf("can't shrink block.\n");
 		} else if (dif<0) {
 			__ffmod_debug
 				ffly_printf("grow.\n");
-			if ((p = ffly_argr(__p, __bc)) != NULL)
-				return p;
+//			if ((p = ffly_argr(__p, __bc)) != NULL)
+//				return p;
 			__ffmod_debug
 				ffly_printf("can't grow block.\n");
 		}

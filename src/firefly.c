@@ -63,7 +63,7 @@ void evalopts(char const *__s) {
 /*
 	alloca will use this until config is loaded.
 */
-# define TMP_ALSSIZE 300
+# define TMP_ALSSIZE 500
 
 # include "mode.h"
 # include "system/config.h"
@@ -112,7 +112,6 @@ void _start(void) {
 	char const **end = argp+argc;
 	void *frame;
 	void *tmp;
-
 
 	tmp = __ffly_mem_alloc(TMP_ALSSIZE);
 	ffly_alss(tmp, TMP_ALSSIZE);

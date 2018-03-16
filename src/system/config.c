@@ -3,13 +3,15 @@
 # include "errno.h"
 # include "err.h"
 # include "io.h"
+# include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../mode.h"
 # define DEF_MAX_THREADS 20
 # define ALLOCA_SSIZE 400
 struct ffly_sysconf __ffly_sysconf__ = {
 	.version = NULL, .root_dir = NULL,
-	.moddir = NULL, .modl[0] = NULL
+	.moddir = NULL, .inidir = NULL,
+	.modl = NULL, .inil = NULL
 };
 
 void static
@@ -50,9 +52,15 @@ ld_alssize(ffconf *__cf) {
 void static
 ld_moddir(ffconf *__cf) {
 	void const *p;
-	if ((p = ffly_conf_get(__cf, "moddir")) != NULL) {
+	if ((p = ffly_conf_get(__cf, "moddir")) != NULL)
 		__ffly_sysconf__.moddir = (char const*)ffly_str_dupe(ffly_conf_str(p));	
-	}
+}
+
+void static
+ld_inidir(ffconf *__cf) {
+	void const *p;
+	if ((p = ffly_conf_get(__cf, "inidir")) != NULL)
+		__ffly_sysconf__.inidir = (char const*)ffly_str_dupe(ffly_conf_str(p));		
 }
 
 void static
@@ -61,12 +69,34 @@ ld_modl(ffconf *__cf) {
 	if ((p = ffly_conf_get(__cf, "modl")) != NULL) {
 		ffly_printf("module list len: %u\n", ffly_conf_arr_len(p));
 		mdl_u8_t i = 0, l = ffly_conf_arr_len(p);
+		__ffly_sysconf__.modl = (char const**)__ffly_mem_alloc((l+1)*sizeof(char const*));
+
 		while(i != l) {
 			__ffly_sysconf__.modl[i] = (char const*)ffly_str_dupe(ffly_conf_str(ffly_conf_arr_elem(p, i)));
 			ffly_printf("module: %s\n", ffly_conf_str(ffly_conf_arr_elem(p, i)));
 			i++;
 		}
 		__ffly_sysconf__.modl[i] = NULL;
+	}
+}
+
+void static
+ld_inil(ffconf *__cf) {
+	void const *p;
+	if ((p = ffly_conf_get(__cf, "inil")) != NULL) {
+		ffly_printf("init list len: %u\n", ffly_conf_arr_len(p));
+		mdl_u8_t i = 0, l = ffly_conf_arr_len(p);
+		if (!(__ffly_sysconf__.inil = (char const**)__ffly_mem_alloc((l+1)*sizeof(char const*)))) {
+			ffly_printf("error.\n");
+			return;
+		}
+
+		while(i != l) {
+			__ffly_sysconf__.inil[i] = (char const*)ffly_str_dupe(ffly_conf_str(ffly_conf_arr_elem(p, i)));
+			ffly_printf("init: %s\n", ffly_conf_str(ffly_conf_arr_elem(p, i)));
+			i++;
+		}
+		__ffly_sysconf__.inil[i] = NULL;
 	}
 }
 
@@ -90,6 +120,7 @@ ffly_err_t ffly_ld_sysconf(char const *__path) {
 
 	ffconf cf;
 	ffly_conf_depos(&conf, &cf);
+
 	void const *version = ffly_conf_get(&cf, "version");
 	if (!ffly_conf_is_str(version)) {
 		ffly_fprintf(ffly_err, "can't read version as type does not match.\n");
@@ -105,7 +136,9 @@ ffly_err_t ffly_ld_sysconf(char const *__path) {
 	ld_max_threads(&cf);
 	ld_alssize(&cf);
 	ld_moddir(&cf);
+	ld_inidir(&cf);
 	ld_modl(&cf);
+	ld_inil(&cf);
 
 	__ffly_sysconf__.version = (char const*)ffly_str_dupe(ffly_conf_str(version));
 	__ffly_sysconf__.root_dir = (char const*)ffly_str_dupe(ffly_conf_str(root_dir));
@@ -129,10 +162,23 @@ void ffly_free_sysconf() {
 	__ffly_finn(__ffly_sysconf__.version);
 	__ffly_finn(__ffly_sysconf__.root_dir);
 	__ffly_finn(__ffly_sysconf__.moddir);
-	char const **mod = __ffly_sysconf__.modl;
-	while(*mod != NULL) {
-		__ffly_mem_free((void*)*mod);
-		mod++;
+	__ffly_finn(__ffly_sysconf__.inidir);
+
+	char const **mod;
+	if ((mod = __ffly_sysconf__.modl) != NULL) {
+		while(*mod != NULL) {
+			__ffly_mem_free((void*)*mod);
+			mod++;
+		}
+		__ffly_mem_free(__ffly_sysconf__.modl);
 	}
 
+	char const **ini;	
+	if ((ini = __ffly_sysconf__.inil) != NULL) {
+		while(*ini != NULL) {
+			__ffly_mem_free((void*)*ini);
+			ini++;
+		}
+		__ffly_mem_free(__ffly_sysconf__.inil);
+	}
 }
