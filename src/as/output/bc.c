@@ -245,6 +245,12 @@ emit_jmp(insp __ins) {
 	oust_addr(getreg(rgname)->addr);
 }
 
+void static
+emit_rin(insp __ins) {
+	oustbyte(*__ins->opcode);
+	oust_addr(*(ffly_addr_t*)__ins->l->p);
+}
+
 struct ins *bc[] = {
 	&(struct ins){"exit", NULL, emit_exit, NULL, NULL, {_op_exit}},
 	&(struct ins){"asb", NULL, emit_asb, NULL, NULL, {_op_as}},
@@ -255,5 +261,6 @@ struct ins *bc[] = {
 	&(struct ins){"stb", NULL, emit_stb, NULL, NULL, {_op_st}},
 	&(struct ins){"outb", NULL, emit_outb, NULL, NULL, {_op_out}},
 	&(struct ins){"jmp", NULL, emit_jmp, NULL, NULL, {_op_jmp}},
+	&(struct ins){"rin", NULL, emit_rin, NULL, NULL, {_op_rin}},
 	NULL
 };

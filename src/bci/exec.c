@@ -26,12 +26,17 @@ set_ip(ffly_addr_t __to) {
 	ip = __to;
 }
 
+void* ring(mdl_u8_t __no, void *__argp) {
+	printf("ring ring hello?\n");
+}
+
 static struct ffly_bci ctx = {
 	.stack_size = 200,
 	.fetch_byte = fetch_byte,
 	.ip_incr = ip_incr,
 	.get_ip = get_ip,
-	.set_ip = set_ip
+	.set_ip = set_ip,
+	.rin = ring
 };
 
 void ffbci_exec(void *__bin) {

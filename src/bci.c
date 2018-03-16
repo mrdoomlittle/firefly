@@ -103,6 +103,7 @@ void _st();
 void _ld();
 void _out();
 void _mov();
+void _rin();
 static void(*op[])() = {
 	_exit,
 	_as,
@@ -110,10 +111,11 @@ static void(*op[])() = {
 	_st,
 	_ld,
 	_out,
-	_mov
+	_mov,
+	_rin
 };
 
-# define NOOP 7
+# define NOOP 8
 # define get_addr(__bci, __err) \
 	get_16l(__bci, __err)
 
@@ -184,6 +186,13 @@ ffly_err_t ffly_bci_exec(ffly_bcip __bci, ffly_err_t *__exit_code) {
 		mdl_u8_t tmp[8];
 		stack_get(__bci, tmp, l, src);
 		stack_put(__bci, tmp, l, dst);
+	}
+	fi;
+	
+	__asm__("_rin:\n\t");
+	{
+		mdl_u8_t no = get_8l(__bci, &err);
+		__bci->rin(no, NULL);
 	}
 	fi;
 

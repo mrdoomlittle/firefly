@@ -7,7 +7,7 @@
 # include "../bci.h"
 # include <mdlint.h>
 
-# define MAX 7
+# define MAX 8
 void static
 op_exit(mdl_u8_t **__p) {
 	printf("exit,\t\t");
@@ -69,6 +69,13 @@ op_mov(mdl_u8_t **__p) {
 	(*__p)+=sizeof(ffly_addr_t);
 }
 
+void static
+op_rin(mdl_u8_t **__p) {
+	printf("rin,\t\t");
+	printf("adr{%x}\n", *(ffly_addr_t*)*__p);
+	(*__p)+=sizeof(ffly_addr_t);
+}
+
 void(*out[])(mdl_u8_t**) = {
 	op_exit,
 	op_as,
@@ -76,7 +83,8 @@ void(*out[])(mdl_u8_t**) = {
 	op_st,
 	op_ld,
 	op_out,
-	op_mov
+	op_mov,
+	op_rin
 };
 
 # include "../ffef.h"

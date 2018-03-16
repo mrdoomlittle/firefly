@@ -13,6 +13,7 @@
 # define _op_ld 0x4
 # define _op_out 0x5 //debug
 # define _op_mov 0x6
+# define _op_rin 0x7
 typedef mdl_u16_t ffly_addr_t;
 typedef struct ffly_bci {
 	struct ffly_getbit bit;
@@ -23,6 +24,7 @@ typedef struct ffly_bci {
 	ffly_addr_t(*get_ip)();
 	void(*set_ip)(ffly_addr_t);
 	ffly_off_t ip_off;
+	void*(*rin)(mdl_u8_t, void*);
 } *ffly_bcip;
 
 ffly_err_t ffly_bci_init(ffly_bcip);

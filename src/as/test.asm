@@ -1,3 +1,4 @@
-asb %al, 0
+asb %al, 21
 outb %al
+rin %al
 exit 0x0
