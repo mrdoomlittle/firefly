@@ -7,6 +7,6 @@ enum {
 	_ffexec_script
 };
 
-void ffexec(void*, mdl_u8_t);
+void ffexec(void*, mdl_u8_t, void(*)(void*, void*), void*);
 void ffexecf(char const*);
 # endif /*__ffly__exec__h*/

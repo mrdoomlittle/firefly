@@ -5,8 +5,8 @@ max_threads:20~_64l_u,
 alssize:400~_64l_u,
 # list of modules to execute
 modl:[],
-# list of scripts for init
-inil:["a", "b", "c"],
+# list of scripts for init - not finished
+inil:[],
 # directory from root dir
 moddir:"modules",
 inidir:"init",

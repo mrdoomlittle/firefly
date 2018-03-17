@@ -1,7 +1,8 @@
 # include "bci.h"
 # include "system/io.h"
 # include "system/err.h"
-# include "data/mem_set.h"
+# include "dep/mem_set.h"
+# include "dep/mem_cpy.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 ffly_err_t static
@@ -37,6 +38,14 @@ stack_get(ffly_bcip __bci, mdl_u8_t *__dst, mdl_uint_t __bc, ffly_addr_t __addr)
 		*(p++) = *(__bci->stack+src);	
 	}
 	retok;
+}
+
+void ffly_bci_sst(ffly_bcip __bci, void *__p, ffly_addr_t __adr, mdl_uint_t __n) {
+	ffly_mem_cpy(__bci->stack+__adr, __p, __n);
+}
+
+void ffly_bci_sld(ffly_bcip __bci, ffly_addr_t __adr, void *__p, mdl_uint_t __n) {
+	ffly_mem_cpy(__p, __bci->stack+__adr, __n);
 }
 
 mdl_u8_t static

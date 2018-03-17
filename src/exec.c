@@ -1,11 +1,15 @@
 # include "exec.h"
-void ffexec(void *__p, mdl_u8_t __format) {
+void ffexec(void *__p, mdl_u8_t __format, void(*__prep)(void*, void*), void *__hdr) {
 	switch(__format) {
 		case _ffexec_bc:
-			ffbci_exec(__p);	
+			ffbci_exec(__p, __prep, __hdr);	
 		break;
 	}
 }
+
+/*
+	not finished
+*/
 
 # include "linux/unistd.h"
 # include "linux/stat.h"
@@ -13,17 +17,66 @@ void ffexec(void *__p, mdl_u8_t __format) {
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "ffef.h"
+# include "system/io.h"
+# include "bci.h"
+int static fd;
+void static
+prep(void *__hdr, void *__ctx) {
+	ffef_hdrp hdr = (ffef_hdrp)__hdr;
+	ffly_bcip ctx = (ffly_bcip)__ctx;
+
+	struct ffef_seg_hdr sgh;
+	lseek(fd, hdr->sg, SEEK_SET);
+	read(fd, &sgh, ffef_seg_hdrsz);
+
+	mdl_u8_t *seg = (mdl_u8_t*)__ffly_mem_alloc(sgh.memsz);
+	lseek(fd, sgh.offset, SEEK_SET);
+	read(fd, seg, sgh.memsz);
+
+	ffly_bci_sst(ctx, seg, sgh.adr, sgh.memsz);	
+
+	__ffly_mem_free(seg);
+}
+
 void ffexecf(char const *__file) {
-	int fd = open(__file, O_RDONLY, 0);
+	fd = open(__file, O_RDONLY, 0);
 
 	struct stat st;
 	fstat(fd, &st);
-	mdl_u8_t *p = (mdl_u8_t*)__ffly_mem_alloc(st.st_size);
 
-	read(fd, p, st.st_size);
+	struct ffef_hdr hdr;
 
-	ffef_hdrp hdr = (ffef_hdrp)p;	
-	ffexec(p+ffef_hdr_size, hdr->format);
-	__ffly_mem_free(p);
+	read(fd, &hdr, ffef_hdr_size);
+	if (*hdr.ident != FF_EF_MAG0) {
+		ffly_printf("ffexec, mag0 corrupted\n");
+		goto _corrupt;
+	}
+
+	if (hdr.ident[1] != FF_EF_MAG1) {
+		ffly_printf("ffexec, mag1 corrupted\n");
+		goto _corrupt;
+	}
+
+	if (hdr.ident[2] != FF_EF_MAG2) {
+		ffly_printf("ffexec, mag2 corrupted\n");
+		goto _corrupt;
+	}
+
+	if (hdr.ident[3] != FF_EF_MAG3) {
+		ffly_printf("ffexec, mag3 corrupted\n");
+		goto _corrupt;
+	}
+
+	mdl_u8_t *bin;
+	if (!(bin = (mdl_u8_t*)__ffly_mem_alloc(hdr.end-hdr.routine))) {
+		// error
+	}
+
+	lseek(fd, hdr.routine, SEEK_SET);
+	read(fd, bin, hdr.end-hdr.routine);
+
+	ffexec(bin, hdr.format, prep, &hdr);
+	__ffly_mem_free(bin);
+	_corrupt:
 	close(fd);
 }

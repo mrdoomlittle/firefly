@@ -14,7 +14,6 @@ int out, in;
 struct ins extern* x86[];
 struct ins extern* bc[];
 mdl_u64_t extern offset;
-extern mdl_u8_t format;
 
 extern void prepstack(void);
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
@@ -29,13 +28,6 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 			outfile = *(++arg);
 		else if (!ffly_str_cmp(*arg, "-i"))
 			infile = *(++arg);
-		else if (!ffly_str_cmp(*arg, "-f")) {
-			char const *s = *(++arg);
-			if (!ffly_str_cmp(s, "bc")) {
-				format = _of_bc;
-				printf("format bc.\n");
-			}
-		}
 		arg++;
 	}
 
@@ -52,14 +44,6 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 
 	if ((out = open(outfile, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU)) == -1) {
 		return -1;
-	}
-
-	if (format == _of_bc) {
-		struct ffef_hdr hdr = {
-			.format = _ffexec_bc
-		};
-		write(out, &hdr, ffef_hdr_size);
-		offset+=ffef_hdr_size;
 	}
 
 	ffas_init();

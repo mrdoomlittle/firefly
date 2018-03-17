@@ -27,6 +27,8 @@ typedef struct ffly_bci {
 	void*(*rin)(mdl_u8_t, void*);
 } *ffly_bcip;
 
+void ffly_bci_sst(ffly_bcip, void*, ffly_addr_t, mdl_uint_t);
+void ffly_bci_sld(ffly_bcip, ffly_addr_t, void*, mdl_uint_t);
 ffly_err_t ffly_bci_init(ffly_bcip);
 ffly_err_t ffly_bci_de_init(ffly_bcip);
 ffly_err_t ffly_bci_exec(ffly_bcip, ffly_err_t*);

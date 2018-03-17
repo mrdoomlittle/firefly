@@ -39,11 +39,11 @@ static struct ffly_bci ctx = {
 	.rin = ring
 };
 
-void ffbci_exec(void *__bin) {
+void ffbci_exec(void *__bin, void(*__prep)(void*, void*), void *__hdr) {
 	bin = (mdl_u8_t*)__bin;
 	ip = 0;
 	ffly_bci_init(&ctx);
-	
+	__prep(__hdr, (void*)&ctx);
 	ffly_err_t exit_code;
 	ffly_bci_exec(&ctx, &exit_code);
 	printf("exit code: %u\n", exit_code);
