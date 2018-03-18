@@ -1,0 +1,7 @@
+anything with ffly_ will be put in the inc directory
+but if not it will be put in a directory named firefly
+inc dir:
+	ffly_test.h
+
+	firefly dir:
+		test.h

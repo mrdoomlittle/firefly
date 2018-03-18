@@ -1,3 +1,4 @@
+_start:
 asb %al, 21
 outb %al
 rin %al

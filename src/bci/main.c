@@ -6,7 +6,9 @@
 # include <mdlint.h>
 # include "../stdio.h"
 # include "../exec.h"
-# include "../ffef.h"
+/*
+	execute raw byte code, no headers or anything just raw code
+*/
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	if (__argc < 2) {
 		ffly_printf("please provide binary file.\n");
@@ -21,9 +23,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	read(fd, bin, st.st_size);
 	close(fd);
 
-	ffef_hdrp hdr = (ffef_hdrp)bin;
-	ffexec(bin+ffef_hdr_size, hdr->format);
-
+	ffexec(bin, bin+st.st_size, _ffexec_bc, NULL, NULL);
 	free(bin);
 	retok;
 }

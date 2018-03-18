@@ -19,7 +19,9 @@
 # define ffef_seg_hdrsz sizeof(struct ffef_seg_hdr)
 
 typedef struct ffef_sym_hdr {
-
+	mdl_u64_t name;
+	mdl_uint_t l;
+	mdl_u64_t loc;
 } *ffef_sym_hdrp;
 
 typedef struct ffef_reg_hdr {
@@ -39,6 +41,7 @@ typedef struct ffef_hdr {
 	char ident[FF_EF_IL];
 	mdl_u8_t format;
 	mdl_u64_t routine, end;
+	mdl_uint_t nsy;
 	mdl_u64_t sg, rg, sy;
 } *ffef_hdrp;
 

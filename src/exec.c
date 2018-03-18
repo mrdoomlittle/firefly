@@ -1,8 +1,8 @@
 # include "exec.h"
-void ffexec(void *__p, mdl_u8_t __format, void(*__prep)(void*, void*), void *__hdr) {
+void ffexec(void *__p, void *__end, mdl_u8_t __format, void(*__prep)(void*, void*), void *__hdr) {
 	switch(__format) {
 		case _ffexec_bc:
-			ffbci_exec(__p, __prep, __hdr);	
+			ffbci_exec(__p, __end, __prep, __hdr);	
 		break;
 	}
 }
@@ -22,6 +22,7 @@ void ffexec(void *__p, mdl_u8_t __format, void(*__prep)(void*, void*), void *__h
 int static fd;
 void static
 prep(void *__hdr, void *__ctx) {
+	return; // ignore for now
 	ffef_hdrp hdr = (ffef_hdrp)__hdr;
 	ffly_bcip ctx = (ffly_bcip)__ctx;
 
@@ -45,8 +46,8 @@ void ffexecf(char const *__file) {
 	fstat(fd, &st);
 
 	struct ffef_hdr hdr;
-
 	read(fd, &hdr, ffef_hdr_size);
+
 	if (*hdr.ident != FF_EF_MAG0) {
 		ffly_printf("ffexec, mag0 corrupted\n");
 		goto _corrupt;
@@ -67,15 +68,17 @@ void ffexecf(char const *__file) {
 		goto _corrupt;
 	}
 
-	mdl_u8_t *bin;
+	mdl_u8_t *bin, *end;
 	if (!(bin = (mdl_u8_t*)__ffly_mem_alloc(hdr.end-hdr.routine))) {
 		// error
 	}
 
+	end = bin+(hdr.end-hdr.routine);
+
 	lseek(fd, hdr.routine, SEEK_SET);
 	read(fd, bin, hdr.end-hdr.routine);
 
-	ffexec(bin, hdr.format, prep, &hdr);
+	ffexec(bin, end, hdr.format, prep, &hdr);
 	__ffly_mem_free(bin);
 	_corrupt:
 	close(fd);

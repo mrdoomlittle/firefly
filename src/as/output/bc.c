@@ -238,7 +238,7 @@ void emit_outb(insp __ins) {
 
 void static
 emit_jmp(insp __ins) {
-	labelp la = (labelp)hash_get(&globl, __ins->l->p, __ins->l->len);
+	labelp la = (labelp)hash_get(&env, __ins->l->p, __ins->l->len);
 	char const *rgname = rbl(sizeof(ffly_addr_t));
 	rgasw(rgname, la->offset);
 	oustbyte(*__ins->opcode);

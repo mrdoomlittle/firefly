@@ -135,7 +135,7 @@ void _start(void) {
 
 		ffoptp cur = optbed;
 		while(cur != NULL) {
-			ffly_printf("name: %s, val: %s\n", cur->name, !cur->val?"null":cur->val);
+			ffly_printf("name: '%s', val: '%s'\n", cur->name, !cur->val?"null":cur->val);
 			if (!ffly_str_cmp(cur->name, "-sysconf")) {
 				if (!cur->val) {
 					ffly_printf("error.\n");

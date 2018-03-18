@@ -2,13 +2,14 @@
 # include "../linux/fcntl.h"
 # include "as.h"
 # include "../elf.h"
-# include "../data/bzero.h"
-# include "../data/str_cmp.h"
+# include "../dep/bzero.h"
+# include "../string.h"
 # include "../stdio.h"
 # include "../linux/stat.h"
 # include "../malloc.h"
 # include "../ffef.h"
 # include "../exec.h"
+# include "../opt.h"
 int out, in;
 
 struct ins extern* x86[];
@@ -17,26 +18,31 @@ mdl_u64_t extern offset;
 
 extern void prepstack(void);
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
+	ffoe_prep();
 	char const *infile = NULL;
 	char const *outfile = NULL;
-	char const **arg = __argv;
-	char const **last = arg+__argc;
-	arg++;
+	char const *format = NULL;
+	struct ffpcll pcl;
+	pcl.cur = __argv+1;
+	pcl.end = __argv+__argc;
+	ffoe(ffoe_pcll, (void*)&pcl);
 
-	while(arg != last) {
-		if (!ffly_str_cmp(*arg, "-o"))
-			outfile = *(++arg);
-		else if (!ffly_str_cmp(*arg, "-i"))
-			infile = *(++arg);
-		arg++;
-	}
+	infile = ffoptval(ffoe_get("i"));
+	outfile = ffoptval(ffoe_get("o"));
+	format = ffoptval(ffoe_get("f"));
+	ffoe_end();
 
-	if (!infile || !outfile) {
-		fprintf(stderr, "missing -o or -i\n");
+	if (!infile || !outfile || !format) {
+		fprintf(stderr, "missing -o -i, or -f\n");
 		return -1;
 	}
 
-	printf("dest: %s, src: %s\n", outfile, infile);
+	printf("dest: %s, src: %s, format: %s\n", outfile, infile, format);
+
+	if (!strcmp(format, "ffef")) {
+		of = _of_ffef;
+		offset+=ffef_hdr_size;
+	}
 
 	if ((in = open(infile, O_RDONLY, 0)) == -1) {
 		return -1;
@@ -67,4 +73,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	close(in);
 	close(out);
 	_cleanup();
+	free(infile);
+	free(outfile);
+	free(format);
 }

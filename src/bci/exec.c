@@ -4,10 +4,11 @@
 # include "../linux/unistd.h"
 # include "../linux/stat.h"
 # include "../ffef.h"
-mdl_u8_t static *bin = NULL;
+mdl_u8_t static *bin = NULL, *end = NULL;
 ffly_addr_t static ip;
 mdl_u8_t static
 fetch_byte(ffly_off_t __off) {
+	if (bin+ip+__off >= end) return 0x0;
 	return *(bin+ip+__off);
 }
 
@@ -39,11 +40,13 @@ static struct ffly_bci ctx = {
 	.rin = ring
 };
 
-void ffbci_exec(void *__bin, void(*__prep)(void*, void*), void *__hdr) {
+void ffbci_exec(void *__bin, void *__end, void(*__prep)(void*, void*), void *__hdr) {
 	bin = (mdl_u8_t*)__bin;
+	end = (mdl_u8_t*)__end;
 	ip = 0;
 	ffly_bci_init(&ctx);
-	__prep(__hdr, (void*)&ctx);
+	if (__prep != NULL)
+		__prep(__hdr, (void*)&ctx);
 	ffly_err_t exit_code;
 	ffly_bci_exec(&ctx, &exit_code);
 	printf("exit code: %u\n", exit_code);

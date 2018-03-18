@@ -1,5 +1,7 @@
+# include "bond.h"
 # include "../types/err_t.h"
 # include "../stdio.h"
+# include "../malloc.h"
 # include "../system/err.h"
 # include "../opt.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
@@ -18,17 +20,17 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	ffoe_end();
 
 	if (!s || !d) {
-		ffly_printf("please provide source and dest.\n");
+		printf("please provide source and dest.\n");
 		reterr;
 	}
 
-	ffly_printf("src: %s, dst: %s\n", s, d);
+	printf("src: %s, dst: %s\n", s, d);
 
 		
 
 
 	// for now
-	__ffly_mem_free(s);
-	__ffly_mem_free(d);
+	free(s);
+	free(d);
 	retok;
 }

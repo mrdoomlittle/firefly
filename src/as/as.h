@@ -31,8 +31,10 @@ int extern in;
 # define SIGNED 0x1
 # define _of_null 0xff
 enum {
-	_of_bc
+	_of_ffef
 };
+
+mdl_u8_t extern of;
 
 typedef struct symbol {
 	void *p;
@@ -71,7 +73,7 @@ char* read_str(char*, mdl_uint_t*);
 symbolp eval(char*);
 void* _memdup(void*, mdl_uint_t);
 struct hash extern symbols;
-struct hash extern globl;
+struct hash extern env;
 void _cleanup();
 void* _alloca(mdl_uint_t);
 void oust(mdl_u8_t*, mdl_u8_t);
@@ -88,4 +90,5 @@ void hash_init(struct hash*);
 void hash_put(struct hash*, mdl_u8_t const*, mdl_uint_t, void*);
 void* hash_get(struct hash*, mdl_u8_t const*, mdl_uint_t);
 void load(insp*);
+//void ffef(symbolp);
 # endif /*__ffly__as__h*/

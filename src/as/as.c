@@ -5,16 +5,19 @@
 # include "../elf.h"
 # include "../stdio.h"
 # include "../string.h"
+# include "../malloc.h"
 # include "../dep/str_cmp.h"
 struct hash symbols;
 struct hash defines;
-// rename to just env, not the best name
-struct hash globl;
+
+char **globl;
+
+struct hash env;
 mdl_u64_t offset = 0;
 
-mdl_u8_t format = _of_null;
+mdl_u8_t of = _of_null;
 
-# define OBSIZE 20
+# define OBSIZE 60
 
 struct {
 	mdl_uint_t off, dst;
@@ -27,14 +30,17 @@ void ffas_ldsrc(void) {
 
 void ffas_init(void) {
 	hash_init(&symbols);
-	hash_init(&globl);
+	hash_init(&env);
 	outbuf.end = outbuf.p+OBSIZE;
 	outbuf.off = 0;
 	outbuf.dst = offset;
+	globl = (char**)malloc(20*sizeof(char*));
+	*(globl++) = NULL;
 }
 
 void ffas_de_init(void) {
-	
+	while(*(--globl) != NULL);
+	free(globl);
 }
 
 void* _memdup(void *__p, mdl_uint_t __bc) {
@@ -136,17 +142,18 @@ assemble(char *__p, char *__end) {
 			} else if (is_sylabel(sy)) {
 				labelp la = (labelp)_alloca(sizeof(struct label));
 				la->offset = offset;
-				hash_put(&globl, sy->p, sy->len, la);
+				hash_put(&env, sy->p, sy->len, la);
 				printf("label\n");
 			} else if (is_sydir(sy)) {
 				printf("directive, %s\n", sy->p);
 				if (!strcmp(sy->p, "entry") && epdeg<0) {
 					epdeg = 0;
 					ep = sy->next->p;
-				}
+				} else if (!strcmp(sy->p, "globl"))
+					*(globl++) = sy->next->p;
 			} else {
 				insp ins;
-				if ((ins = (insp)hash_get(&globl, sy->p, sy->len))) {
+				if ((ins = (insp)hash_get(&env, sy->p, sy->len))) {
 					turnrgif(sy->next);	
 					ins->l = sy->next;
 					if (sy->next != NULL) {
@@ -162,12 +169,46 @@ assemble(char *__p, char *__end) {
 	}
 }
 
+# include "../ffef.h"
+# include "../exec.h"
 void finalize(void) {
 	if (!ep)
 		ep = "_start";
 	printf("entry point: %s\n", ep);
-	if (!hash_get(&globl, ep, ffly_str_len(ep)))
+	labelp entry;
+	if (!(entry = (labelp)hash_get(&env, ep, ffly_str_len(ep))))
 		printf("entry point not found.\n");
+	if (of == _of_ffef && entry != NULL) {
+		struct ffef_hdr hdr;
+		*hdr.ident = FF_EF_MAG0;
+		hdr.ident[1] = FF_EF_MAG1;
+		hdr.ident[2] = FF_EF_MAG2;
+		hdr.ident[3] = FF_EF_MAG3;
+		hdr.routine = entry->offset;
+		hdr.end = offset;
+		hdr.format = _ffexec_bc;
+		hdr.nsy = 0;
+		hdr.sy = FF_EF_NULL;
+		char **cur = globl;
+		struct ffef_sym_hdr sy;
+		while(*(--cur) != NULL) {
+			struct ffef_sym_hdr sy;
+			mdl_uint_t l;
+			sy.name = offset;
+			labelp la = (labelp)hash_get(&env, *cur, l = ffly_str_len(*cur));
+			sy.l = l+1;
+			sy.loc = offset;
+			oust(*cur, l+1);
+			oust((mdl_u8_t*)&sy, ffef_sym_hdrsz);
+			hdr.nsy++;
+		}
+	
+		hdr.sy = offset-ffef_sym_hdrsz;				
+
+		lseek(out, 0, SEEK_SET);
+		write(out, &hdr, ffef_hdr_size);
+	}
+
 	if (outbuf.off>0) {
 		lseek(out, outbuf.dst, SEEK_SET);
 		write(out, outbuf.p, outbuf.off);
@@ -224,7 +265,7 @@ void load(insp* __list) {
 	char *name;
 	while(*p != NULL) {
 		name = (*p)->name;
-		hash_put(&globl, name, ffly_str_len(name), *p);
+		hash_put(&env, name, ffly_str_len(name), *p);
 		p++;
 	}
 }
