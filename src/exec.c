@@ -22,21 +22,23 @@ void ffexec(void *__p, void *__end, mdl_u8_t __format, void(*__prep)(void*, void
 int static fd;
 void static
 prep(void *__hdr, void *__ctx) {
-	return; // ignore for now
 	ffef_hdrp hdr = (ffef_hdrp)__hdr;
 	ffly_bcip ctx = (ffly_bcip)__ctx;
+
+	if (hdr->sg == FF_EF_NULL) return;
 
 	struct ffef_seg_hdr sgh;
 	lseek(fd, hdr->sg, SEEK_SET);
 	read(fd, &sgh, ffef_seg_hdrsz);
 
-	mdl_u8_t *seg = (mdl_u8_t*)__ffly_mem_alloc(sgh.memsz);
+	mdl_u8_t *seg = (mdl_u8_t*)__ffly_mem_alloc(sgh.sz);
 	lseek(fd, sgh.offset, SEEK_SET);
-	read(fd, seg, sgh.memsz);
+	read(fd, seg, sgh.sz);
 
-	ffly_bci_sst(ctx, seg, sgh.adr, sgh.memsz);	
+	ffly_bci_sst(ctx, seg, sgh.adr, sgh.sz);	
 
 	__ffly_mem_free(seg);
+
 }
 
 void ffexecf(char const *__file) {

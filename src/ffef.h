@@ -31,17 +31,16 @@ typedef struct ffef_reg_hdr {
 
 typedef struct ffef_seg_hdr {
 	mdl_u8_t type;
-	mdl_u64_t fd;
 	mdl_u64_t offset;
 	mdl_u64_t adr;
-	mdl_uint_t memsz;
+	mdl_uint_t sz;
 } *ffef_seg_hdrp;
 
 typedef struct ffef_hdr {
 	char ident[FF_EF_IL];
 	mdl_u8_t format;
 	mdl_u64_t routine, end;
-	mdl_uint_t nsy;
+	mdl_uint_t nsy, nsg;
 	mdl_u64_t sg, rg, sy;
 } *ffef_hdrp;
 

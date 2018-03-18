@@ -25,6 +25,10 @@ void prsy(ffef_sym_hdrp __sy) {
 	free(name);
 }
 
+void prseg(ffef_seg_hdrp __seg) {
+	printf("segment, adr: %u, offset: %u, size: %u\n", __seg->adr, __seg->offset, __seg->sz);
+}
+
 int main(int __argc, char const *__argv[]) {
 	fd = open(__argv[1], O_RDONLY);
 
@@ -42,6 +46,19 @@ int main(int __argc, char const *__argv[]) {
 			read(fd, &sy, ffef_sym_hdrsz);
 			prsy(&sy);				
 			offset-=ffef_sym_hdrsz+sy.l;
+			i++;
+		}
+	}
+
+	struct ffef_seg_hdr seg;
+	if (hdr.sg != FF_EF_NULL) {
+		mdl_uint_t i = 0;
+		mdl_u64_t offset = hdr.sg;
+		while(i != hdr.nsg) {
+			lseek(fd, offset, SEEK_SET);
+			read(fd, &seg, ffef_seg_hdrsz);
+			prseg(&seg);
+			offset-=ffef_seg_hdrsz;
 			i++;
 		}
 	}

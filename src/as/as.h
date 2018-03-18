@@ -54,8 +54,18 @@ typedef struct ins {
 } *insp;
 
 typedef struct label {
-	mdl_uint_t offset;	
+	mdl_uint_t offset, adr;
 } *labelp;
+
+typedef struct seg {
+	char const *name;
+	struct seg *next;
+	mdl_u64_t offset;
+	mdl_u64_t addr;
+	mdl_uint_t size;
+} *segp;
+
+segp extern curseg;
 
 typedef struct hash_entry {
 	struct hash_entry *next;
@@ -90,5 +100,7 @@ void hash_init(struct hash*);
 void hash_put(struct hash*, mdl_u8_t const*, mdl_uint_t, void*);
 void* hash_get(struct hash*, mdl_u8_t const*, mdl_uint_t);
 void load(insp*);
+mdl_uint_t stackadr();
+void isa(mdl_uint_t);
 //void ffef(symbolp);
 # endif /*__ffly__as__h*/

@@ -1,5 +1,11 @@
+
+.segment bss
+test:
+.b 21
 _start:
+asq %rlx, $test
 asb %al, 21
-outb %al
+movb %al, %rlx
+outq %al
 rin %al
 exit 0x0

@@ -29,15 +29,17 @@ symbolp eval(char *__s) {
 				mdl_uint_t l;
 				cur->p = read_str(p, &l);
 				cur->sort = SY_REG;
-				p+= l;
+				cur->len = l;
+				p+=l;
 				break;
 			}
 			case '$':
 				p++;
-				if (!isno(nextc(p))) {
-					// grama error
+				if (*p >= 'a' && *p <= 'z') {
+					goto _str;
+				} else if (isno(nextc(p))) {
+					goto _no;
 				}
-				goto _no;
 			break;
 			case ',': {
 				p++;
@@ -54,7 +56,7 @@ symbolp eval(char *__s) {
 					mdl_u8_t sign;
 					cur->p = _alloca(sizeof(mdl_u64_t));
 					*(mdl_u64_t*)cur->p = read_no(p, &l, &sign);
-					p+= l;
+					p+=l;
 					cur->sort = SY_INT;
 					if (sign)
 						cur->flags |= SIGNED;
@@ -65,7 +67,7 @@ symbolp eval(char *__s) {
 					cur->sort = SY_STR;
 					cur->len = l;
 					putsymbol(cur);
-					p+= l;
+					p+=l;
 				}
 		}
 	}

@@ -12,6 +12,8 @@ struct hash defines;
 
 char **globl;
 
+segp curseg = NULL;
+
 struct hash env;
 mdl_u64_t offset = 0;
 
@@ -142,19 +144,41 @@ assemble(char *__p, char *__end) {
 			} else if (is_sylabel(sy)) {
 				labelp la = (labelp)_alloca(sizeof(struct label));
 				la->offset = offset;
+				la->adr = stackadr();
 				hash_put(&env, sy->p, sy->len, la);
 				printf("label\n");
 			} else if (is_sydir(sy)) {
 				printf("directive, %s\n", sy->p);
-				if (!strcmp(sy->p, "entry") && epdeg<0) {
+				if (*(char*)sy->p == 'b') {
+					if (curseg->offset != offset) {
+						// err
+					}
+					oustbyte(sy->next->p);
+					isa(1);
+					curseg->size++;
+				} else if (!strcmp(sy->p, "entry") && epdeg<0) {
 					epdeg = 0;
 					ep = sy->next->p;
 				} else if (!strcmp(sy->p, "globl"))
 					*(globl++) = sy->next->p;
+				else if (!strcmp(sy->p, "segment")) {
+					segp sg = (segp)_alloca(sizeof(struct seg));
+					sg->name = sy->next->p;
+					sg->next = curseg;
+					sg->size = 0;
+					sg->addr = stackadr();
+					sg->offset = offset;
+					curseg = sg;
+				}
 			} else {
 				insp ins;
 				if ((ins = (insp)hash_get(&env, sy->p, sy->len))) {
-					turnrgif(sy->next);	
+					if (is_systr(sy->next)) {
+						sy->next->sort = SY_INT;
+						labelp la = (labelp)hash_get(&env, sy->next->p, ffly_str_len(sy->next->p));
+						*(mdl_u64_t*)(sy->next->p = _alloca(sizeof(mdl_u64_t))) = la->adr;
+					} else
+						turnrgif(sy->next);	
 					ins->l = sy->next;
 					if (sy->next != NULL) {
 						turnrgif(sy->next->next);
@@ -184,15 +208,17 @@ void finalize(void) {
 		hdr.ident[1] = FF_EF_MAG1;
 		hdr.ident[2] = FF_EF_MAG2;
 		hdr.ident[3] = FF_EF_MAG3;
+		hdr.ident[4] = '\0';
 		hdr.routine = entry->offset;
 		hdr.end = offset;
 		hdr.format = _ffexec_bc;
 		hdr.nsy = 0;
+		hdr.nsg = 0;
 		hdr.sy = FF_EF_NULL;
+		hdr.sg = FF_EF_NULL;
 		char **cur = globl;
 		struct ffef_sym_hdr sy;
 		while(*(--cur) != NULL) {
-			struct ffef_sym_hdr sy;
 			mdl_uint_t l;
 			sy.name = offset;
 			labelp la = (labelp)hash_get(&env, *cur, l = ffly_str_len(*cur));
@@ -203,7 +229,21 @@ void finalize(void) {
 			hdr.nsy++;
 		}
 	
-		hdr.sy = offset-ffef_sym_hdrsz;				
+		if (*(globl-1) != NULL)
+			hdr.sy = offset-ffef_sym_hdrsz;				
+		
+		segp sg = curseg;
+		while(sg != NULL) {
+			struct ffef_seg_hdr seg;
+			seg.adr = sg->addr;
+			seg.offset = sg->offset;
+			seg.sz = sg->size;
+			oust((mdl_u8_t*)&seg, ffef_seg_hdrsz);
+			hdr.nsg++;
+			sg = sg->next;
+		}
+		if (curseg != NULL)
+			hdr.sg = offset-ffef_seg_hdrsz;
 
 		lseek(out, 0, SEEK_SET);
 		write(out, &hdr, ffef_hdr_size);

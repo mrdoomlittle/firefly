@@ -15,13 +15,19 @@ typedef struct {
 # define ax_rg 0x2
 # define al_rg 0x3
 
+# define rlx_rg 0x4
+# define elx_rg 0x5
+# define lx_rg 0x6
+# define ll_rg 0x7
+
 void oust_addr(ffly_addr_t __addr) {
 	oust((mdl_u8_t*)&__addr, sizeof(ffly_addr_t));
 }
 
 
 reginfo reg[] = {
-	{"rax", 8, 0}, {"eax", 4, 0}, {"ax", 2, 0}, {"al", 1, 0}
+	{"rax", 8, 0}, {"eax", 4, 0}, {"ax", 2, 0}, {"al", 1, 0},
+	{"rlx", 8, 8}, {"elx", 4, 8}, {"lx", 2, 8}, {"ll", 1, 8}
 };
 
 /*
@@ -34,6 +40,10 @@ reginfo reg[] = {
 	eax	=	10001	= 17
 	ax	=	10011	= 25
 	al	=	10110	= 13
+	rlx	=			= 10	
+	elx	=			= 3
+	lx	=			= 11
+	ll	=			= 31
 */
 
 mdl_u8_t c[] = {
@@ -79,6 +89,10 @@ getreg(char const *__name) {
 		case 17: return reg+eax_rg;
 		case 25: return reg+ax_rg;
 		case 13: return reg+al_rg;
+		case 10: return reg+rlx_rg;
+		case 3: return reg+elx_rg;
+		case 11: return reg+lx_rg;
+		case 31: return reg+ll_rg;
 	}
 	return NULL;
 }
@@ -87,9 +101,17 @@ ffly_addr_t rgadr(char const *__reg) {
 	return getreg(__reg)->addr;
 }
 
-# define POSTST 8
+# define POSTST 16
 void prepstack(void) {
 	bed+=POSTST;		
+}
+
+mdl_uint_t stackadr() {
+	return bed;
+}
+
+void isa(mdl_uint_t __by) {
+	bed+=__by;
 }
 
 void op_exit(mdl_u8_t __opcode, ffly_addr_t __exit) {
