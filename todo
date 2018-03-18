@@ -26,3 +26,6 @@
 -. work on terminal,hatch to make debugging easer. this will allow a live view on infomation from within engine
 	e.g. memory, opened files, threads etc.
 -. remove useless submodules
+-. make somthing to parse args from argv main to reduce copy and past
+-. clean up const* shit as alot i havent updated and its all lose
+-. c++ side might not work as its outofdate and need updating

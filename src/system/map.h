@@ -39,16 +39,19 @@ void ffly_map_free(ffly_mapp);
 void ffly_map_destroy(ffly_mapp);
 void ffly_map_parent(ffly_mapp, ffly_mapp);
 ffly_err_t ffly_map_init(ffly_mapp, mdl_uint_t);
-void ffly_map_del(ffly_mapp, void*);
-ffly_err_t ffly_map_put(ffly_mapp, mdl_u8_t const*, mdl_uint_t, void const*);
-void const* ffly_map_get(ffly_mapp, mdl_u8_t const*, mdl_uint_t, ffly_err_t*);
+void ffly_map_del(ffly_mapp, void const*);
+ffly_err_t ffly_map_put(ffly_mapp, mdl_u8_t const*, mdl_uint_t, void *const);
+void *const ffly_map_get(ffly_mapp, mdl_u8_t const*, mdl_uint_t, ffly_err_t*);
 ffly_err_t ffly_map_de_init(ffly_mapp);
-void* ffly_map_begin(ffly_mapp);
-void* ffly_map_end(ffly_mapp);
-void ffly_map_itr(ffly_mapp, void**, mdl_u8_t);
+void const* ffly_map_begin(ffly_mapp);
+void const* ffly_map_beg(ffly_mapp);
+void const* ffly_map_end(ffly_mapp);
+void ffly_map_fd(ffly_mapp, void const**);
+void ffly_map_bk(ffly_mapp, void const**);
+void ffly_map_itr(ffly_mapp, void const**, mdl_u8_t);
 // fetch entry
-void* ffly_map_fetch(ffly_mapp, mdl_u8_t const*, mdl_uint_t);
-void const* ffly_map_getp(void*);
+void const* ffly_map_fetch(ffly_mapp, mdl_u8_t const*, mdl_uint_t);
+void *const ffly_map_getp(void const*);
 # ifdef __cplusplus
 }
 # include "../memory/mem_alloc.h"
@@ -87,7 +90,7 @@ struct map {
 	types::err_t de_init() {
         void *itr = ffly_map_begin(&this->raw);
         while(itr != nullptr) {
-            void const *p = ffly_map_getp(itr);
+            void *const p = ffly_map_getp(itr);
             if (p != nullptr)
              	memory::mem_free((void*)p);
             ffly_map_itr(&this->raw, &itr, MAP_ITR_FD);
