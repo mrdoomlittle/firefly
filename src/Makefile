@@ -140,10 +140,10 @@ script: clean
 	gcc $(cc_flags) -c parser.c
 	gcc $(cc_flags) -c lexer.c
 	gcc $(cc_flags) -c gen.c
-	gcc $(cc_flags) -c execute.c
+	gcc $(cc_flags) -o script/exec.o -c script/exec.c
 	gcc $(cc_flags) -c data/mem_swp.c
 	gcc $(cc_flags) -c compiler.c
-	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) mem_swp.o execute.o parser.o gen.o lexer.o -nostdlib
+	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) mem_swp.o script/exec.o parser.o gen.o lexer.o -nostdlib
 clean:
 	rm -f main
 	cd ../ && make clean && cd src

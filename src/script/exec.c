@@ -1,16 +1,15 @@
 # define __ffly_compiler_internal
 # define __ffly_script_internal
-# include "script.h"
-# include "compiler.h"
-# include "memory/mem_alloc.h"
-# include "memory/mem_free.h"
-# include "system/io.h"
-# include "dep/mem_cpy.h"
-# include "dep/mem_set.h"
-# include "system/nanosleep.h"
-# include "dep/bcopy.h"
+# include "../script.h"
+# include "../compiler.h"
+# include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
+# include "../system/io.h"
+# include "../dep/mem_cpy.h"
+# include "../dep/mem_set.h"
+# include "../system/nanosleep.h"
+# include "../dep/bcopy.h"
 
-// move to dir named script
 char const static* 
 opstr(mdl_u8_t __op) {
 	switch(__op) {
