@@ -5,6 +5,7 @@
 # include "dep/str_dup.h"
 # include "system/io.h"
 # include "memory/mem_free.h"
+# include "depart.h"
 static struct ffly_map opt;
 void ffoe_prep() {
 	ffly_map_init(&opt, _ffly_map_127);
@@ -16,6 +17,7 @@ void ffoe_end() {
 	while(cur != end) {
 		ffoptp p = (ffoptp)ffly_map_getp(cur);
 //		__ffly_mem_free((void*)p->val);
+		ffly_depart((void*)p->val);
 		__ffly_mem_free(p);
 		ffly_map_fd(&opt, &cur);
 	}

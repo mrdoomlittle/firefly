@@ -10,6 +10,7 @@
 # include "../ffef.h"
 # include "../exec.h"
 # include "../opt.h"
+# include "../depart.h"
 int out, in;
 
 struct ins extern* x86[];
@@ -73,7 +74,5 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	close(in);
 	close(out);
 	_cleanup();
-	free(infile);
-	free(outfile);
-	free(format);
+	ffly_depart(NULL);
 }

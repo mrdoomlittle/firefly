@@ -35,6 +35,7 @@ enum {
 };
 
 mdl_u8_t extern of;
+mdl_u64_t extern offset;
 
 typedef struct symbol {
 	void *p;
@@ -57,15 +58,28 @@ typedef struct label {
 	mdl_uint_t offset, adr;
 } *labelp;
 
-typedef struct seg {
+typedef struct segment {
 	char const *name;
-	struct seg *next;
+	struct segment *next;
 	mdl_u64_t offset;
 	mdl_u64_t addr;
 	mdl_uint_t size;
-} *segp;
+} *segmentp;
 
-segp extern curseg;
+typedef struct region {
+	char const *name;
+	struct region *next;
+	mdl_u64_t beg, end;
+} *regionp;
+
+typedef struct relocate {
+	struct relocate *next;
+	mdl_u64_t offset;
+	mdl_u8_t l;
+} *relocatep;
+
+segmentp extern curseg;
+regionp extern curreg;
 
 typedef struct hash_entry {
 	struct hash_entry *next;
@@ -91,6 +105,7 @@ void oustbyte(mdl_u8_t);
 void oust_16l(mdl_u16_t);
 void oust_32l(mdl_u32_t);
 void oust_64l(mdl_u64_t);
+void reloc(mdl_u64_t, mdl_u8_t);
 void finalize(void);
 void ffas_init(void);
 void ffas_de_init(void);

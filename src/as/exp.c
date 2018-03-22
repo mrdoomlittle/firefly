@@ -36,7 +36,11 @@ symbolp eval(char *__s) {
 			case '$':
 				p++;
 				if (*p >= 'a' && *p <= 'z') {
-					goto _str;
+					mdl_uint_t l;
+					cur->p = read_str(p, &l);
+					cur->sort = SY_LABEL;
+					cur->len = l;
+					p+=l;
 				} else if (isno(nextc(p))) {
 					goto _no;
 				}

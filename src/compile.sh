@@ -38,6 +38,7 @@ ffly_objs="$ffly_objs $(
 
 dst_dir=$PWD
 root_dir=.
+$ffly_cc $cc_flags -c -o $dst_dir/depart.o $root_dir/depart.c
 $ffly_cc $cc_flags -c -o $dst_dir/opt.o $root_dir/opt.c
 $ffly_cc $cc_flags -c -o $dst_dir/init.o $root_dir/init.c
 $ffly_cc $cc_flags -c -o $dst_dir/inet_addr.o $root_dir/inet_addr.c
@@ -62,4 +63,4 @@ $ffly_cc $cc_flags -c -o $dst_dir/mod.o $root_dir/mod.c
 export ffly_objs="$ffly_objs $dst_dir/bci.o $dst_dir/exec.o $dst_dir/bci/exec.o $dst_dir/mode.o \
 $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  $dst_dir/get_bit.o \
 $dst_dir/arcs.o $dst_dir/call.o $dst_dir/rand.o $dst_dir/lib.o $dst_dir/mod.o $dst_dir/mod/pipe.o \
-$dst_dir/net.o $dst_dir/crypto.o $dst_dir/in.o $dst_dir/inet_addr.o $dst_dir/init.o $dst_dir/opt.o"
+$dst_dir/net.o $dst_dir/crypto.o $dst_dir/in.o $dst_dir/inet_addr.o $dst_dir/init.o $dst_dir/opt.o $dst_dir/depart.o"

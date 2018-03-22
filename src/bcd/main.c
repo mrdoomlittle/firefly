@@ -118,8 +118,11 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 
 	struct stat st;
 	stat(bin, &st);
-	if (!size)
+	if (!size) {
 		size = st.st_size;
+		if (beg>0)
+			size-=beg;
+	}
 
 	mdl_u8_t *bed = (mdl_u8_t*)malloc(size);
 	if (beg>0)

@@ -2,6 +2,7 @@
 # include "../../ffly_def.h"
 # include "../../stdio.h"
 
+// bed of stack
 mdl_uint_t static bed = 0;
 
 typedef struct {
@@ -101,7 +102,7 @@ ffly_addr_t rgadr(char const *__reg) {
 	return getreg(__reg)->addr;
 }
 
-# define POSTST 16
+# define POSTST 16//registers
 void prepstack(void) {
 	bed+=POSTST;		
 }
@@ -260,9 +261,9 @@ void emit_outb(insp __ins) {
 
 void static
 emit_jmp(insp __ins) {
-	labelp la = (labelp)hash_get(&env, __ins->l->p, __ins->l->len);
 	char const *rgname = rbl(sizeof(ffly_addr_t));
-	rgasw(rgname, la->offset);
+	rgasw(rgname, *(mdl_u64_t*)__ins->l->p);
+	reloc(offset-4, 4);
 	oustbyte(*__ins->opcode);
 	oust_addr(getreg(rgname)->addr);
 }

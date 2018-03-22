@@ -4,6 +4,7 @@
 # include "../malloc.h"
 # include "../system/err.h"
 # include "../opt.h"
+# include "../depart.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	ffoe_prep();
 	char const *s = NULL;
@@ -25,12 +26,8 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	}
 
 	printf("src: %s, dst: %s\n", s, d);
+	bond(s, d);
 
-		
-
-
-	// for now
-	free(s);
-	free(d);
+	ffly_depart(NULL);
 	retok;
 }

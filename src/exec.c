@@ -38,7 +38,6 @@ prep(void *__hdr, void *__ctx) {
 	ffly_bci_sst(ctx, seg, sgh.adr, sgh.sz);	
 
 	__ffly_mem_free(seg);
-
 }
 
 void ffexecf(char const *__file) {
@@ -70,18 +69,40 @@ void ffexecf(char const *__file) {
 		goto _corrupt;
 	}
 
+	struct ffef_reg_hdr reg;
+	if (hdr.rg != FF_EF_NULL) {
+		mdl_uint_t i = 0;
+		mdl_u64_t offset = hdr.rg;
+		_again:
+		lseek(fd, offset, SEEK_SET);
+		read(fd, &reg, ffef_reg_hdrsz);
+		if (i >= hdr.nrg) {
+			ffly_printf("missing .text region.\n");
+			close(fd);
+			return;
+		}
+
+		if (reg.type != FF_RG_PROG) {
+			offset-=ffef_reg_hdrsz+reg.l;
+			i++;
+			goto _again;
+		}
+	}
+
+
 	mdl_u8_t *bin, *end;
-	if (!(bin = (mdl_u8_t*)__ffly_mem_alloc(hdr.end-hdr.routine))) {
+	if (!(bin = (mdl_u8_t*)__ffly_mem_alloc(reg.end-reg.beg))) {
 		// error
 	}
 
-	end = bin+(hdr.end-hdr.routine);
+	end = bin+(reg.end-reg.beg);
 
 	lseek(fd, hdr.routine, SEEK_SET);
-	read(fd, bin, hdr.end-hdr.routine);
+	read(fd, bin, reg.end-reg.beg);
 
 	ffexec(bin, end, hdr.format, prep, &hdr);
 	__ffly_mem_free(bin);
 	_corrupt:
 	close(fd);
+
 }
