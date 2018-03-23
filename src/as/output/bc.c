@@ -262,8 +262,27 @@ void emit_outb(insp __ins) {
 void static
 emit_jmp(insp __ins) {
 	char const *rgname = rbl(sizeof(ffly_addr_t));
-	rgasw(rgname, *(mdl_u64_t*)__ins->l->p);
-	reloc(offset-4, 4);
+	symbolp l = __ins->l;
+	mdl_uint_t adr;
+	mdl_u8_t ground = RELOCATE;
+	labelp la;
+	if (is_sylabel(l)) {
+		la = (labelp)l->p;
+		adr = la->adr;
+		if (is_flag(la->flags, LA_LOOSE))
+			ground = HOOK;
+	} else if (is_syint(l))
+		adr = *(mdl_u64_t*)l->p;
+	else 
+		printf("error.\n");
+	// assign register 
+	rgasw(rgname, adr);
+
+	mdl_uint_t offset = offset-sizeof(ffly_addr_t);
+	if (ground == RELOCATE)
+		reloc(offset, 2);
+	else if (ground == HOOK)
+		hook(offset, 2, la);
 	oustbyte(*__ins->opcode);
 	oust_addr(getreg(rgname)->addr);
 }

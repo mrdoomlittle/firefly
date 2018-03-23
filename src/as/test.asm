@@ -1,6 +1,8 @@
+.globl testa
+.globl testb
+testa:
+testb
 .region text
 _start:
-asb %al, 21
-outb %al
-exit %al
+exit 0x0
 .axe

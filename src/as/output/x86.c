@@ -1,6 +1,6 @@
 # include "../as.h"
 # include "../../ffly_def.h"
-# include "../stdio.h"
+# include "../../stdio.h"
 void emit_mov(insp __ins) {
 	oustbyte(*__ins->opcode);
 

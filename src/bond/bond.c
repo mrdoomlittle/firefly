@@ -7,6 +7,8 @@
 int static s;
 int static d;
 
+struct hash symbols;
+
 char const *extsrcfl(char const **__p) {
 	char static buf[128];
 	char *bufp = buf;
@@ -73,8 +75,20 @@ typedef struct region {
 	struct ffef_reg_hdr hdr;
 } *regionp;
 
+typedef struct relocate {
+
+} *relocatep;
+
+typedef struct symbol {
+	struct symbol *next;
+	struct ffef_sym_hdr hdr;
+	char const *name;
+} *symbolp;
+
 segmentp sg = NULL;
 regionp rg = NULL;
+
+symbolp sy = NULL;
 
 void oust(void *__p, mdl_uint_t __size) {
 	lseek(d, offset, SEEK_SET);
@@ -83,9 +97,12 @@ void oust(void *__p, mdl_uint_t __size) {
 }
 
 void bond(char const *__s, char const *__dst) {
+	hash_init(&symbols);
 	char const *p = __s;
 
-	d = open(__dst, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU);
+	if ((d = open(__dst, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU)) == -1) {
+
+	}
 
 	struct ffef_hdr dhdr;
 	ffly_bzero(&dhdr, ffef_hdr_size);
@@ -168,6 +185,30 @@ void bond(char const *__s, char const *__dst) {
 				read(s, exch, size);
 				oust(exch, size);
 				free(exch);
+				printf("region, name: %s\n", reg->name);
+				i++;
+			}
+		}
+
+		symbolp sym;
+		if (hdr.sy != FF_EF_NULL) {
+			mdl_uint_t i = 0;
+			mdl_u64_t offset = hdr.sy;
+			while(i != hdr.nsy) {
+				(sym = (symbolp)malloc(sizeof(struct symbol)))->next = sy;
+				sy = sym;
+
+				lseek(s, offset, SEEK_SET);
+				read(s, &sym->hdr, ffef_sym_hdrsz);
+
+				sym->name = (char const*)malloc(sym->hdr.l);
+				lseek(s, sym->hdr.name, SEEK_SET);
+				read(s, sym->name, sym->hdr.l);
+
+
+				hash_put(&symbols, sym->name, sym->hdr.l-1, sym);
+				printf("symbol, name: %s\n", sym->name);
+				offset-=ffef_sym_hdrsz+sym->hdr.l;
 				i++;
 			}
 		}
@@ -205,4 +246,5 @@ void bond(char const *__s, char const *__dst) {
 	lseek(d, 0, SEEK_SET);
 	write(d, &dhdr, ffef_hdr_size);
 	close(d);
+	hash_destroy(&symbols);
 }

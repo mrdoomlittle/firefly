@@ -27,5 +27,39 @@
 	e.g. memory, opened files, threads etc.
 -. remove useless submodules
 -. make somthing to parse args from argv main to reduce copy and past
--. clean up const* shit as alot i havent updated and its all lose
+-. clean up const* shit as alot i havent updated and its all loose
 -. c++ side might not work as its outofdate and need updating
+-. huge improvments need to be made
+-. reduce number of syscalls
+-. for system/file add out and input buffers to reduce the amount of times write and read are called
+-. revise code as lots of shit isent the best way of doing things
+-. allocr needs to be improved at the moment i dont care if its using large amount of memory but needs fixing
+-. get clock working
+-. the compiler needs working on and cleaning up.
+-. allow diffrent syntax formats for compiler also get started c-lang and use bci for testing
+-. allocr and multithreading needs testing
+-. start making headers for uapi 
+example:
+
+header.h
+{
+	make it so when using uapi 
+	it descards structures
+	and diffrent ones will be put in there place
+	struct test {
+		mdl_uint_t size;
+	};
+
+	struct test{
+		mdl_uint_t tst_size;
+	};
+
+	# define __uapi
+	# include "../header.h"
+}
+-. everthing is a total mess and lots of work is needed but dont have the necessary time to do so.
+-. testing things like object shit might be a problem as we cant use cuda or x11 xcb as it relies on libc
+so we will use the terminal until we can get it up and working.
+-. work on module malloc
+-. db needs testing and improvements need to be made
+-. as and bond are a total mess and it needs to be fixed.

@@ -1,5 +1,10 @@
 # include "as.h"
 # include "../malloc.h"
+/*
+	for this later, make it so 
+	after x blocks it starts to free the overflow
+*/
+
 typedef struct hdr {
 	struct hdr *next;
 } *hdrp;

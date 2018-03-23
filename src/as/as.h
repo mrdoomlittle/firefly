@@ -1,5 +1,6 @@
 # ifndef __ffly__as__h
 # define __ffly__as__h
+# include "symbol.h"
 int extern out;
 int extern in;
 # include "../bci.h"
@@ -7,27 +8,9 @@ int extern in;
 # define inssize struct(ins)
 # define is_flag(__flags, __flag) \
 	((__flags&__flag)==__flag)
-# define SY_STR 0x1
-# define SY_MAC 0x2
-# define SY_CHR 0x3
-# define SY_INT 0x4
-# define SY_LABEL 0x5
-# define SY_DIR 0x6
-# define SY_REG 0x7
-# define is_syreg(__st) \
-	((__sy)->sort==SY_REG)
-# define is_symac(__sy) \
-	((__sy)->sort==SY_MAC)
-# define is_systr(__sy) \
-	((__sy)->sort==SY_STR)
-# define is_sychr(__sy) \
-	((__sy)->sort==SY_CHR)
-# define is_syint(__sy) \
-	((__sy)->sort==SY_INT)
-# define is_sylabel(__sy) \
-	((__sy)->sort==SY_LABEL)
-# define is_sydir(__sy) \
-	((__sy)->sort==SY_DIR)
+
+# define HOOK 0x1
+# define RELOCATE 0x2
 # define SIGNED 0x1
 # define _of_null 0xff
 enum {
@@ -37,14 +20,7 @@ enum {
 mdl_u8_t extern of;
 mdl_u64_t extern offset;
 
-typedef struct symbol {
-	void *p;
-	mdl_u8_t len:6; // max 64
-	mdl_u8_t flags:4; // max 16
-	mdl_u8_t sign:1; 
-	mdl_u8_t sort:4; // max 16
-	struct symbol *next;
-} *symbolp;
+typedef struct label *labelp;
 
 typedef struct ins {
 	char *name;
@@ -54,8 +30,11 @@ typedef struct ins {
 	mdl_u8_t opcode[8];
 } *insp;
 
+# define LA_LOOSE 0x1
 typedef struct label {
 	mdl_uint_t offset, adr;
+	mdl_u8_t flags;
+	char const *s;
 } *labelp;
 
 typedef struct segment {
@@ -78,6 +57,14 @@ typedef struct relocate {
 	mdl_u8_t l;
 } *relocatep;
 
+typedef struct hook {
+	struct hook *next;
+	mdl_u64_t offset;
+	mdl_u8_t l;
+	mdl_u64_t to;
+} *hookp;
+
+
 segmentp extern curseg;
 regionp extern curreg;
 
@@ -96,7 +83,6 @@ void assemble(char*, char*);
 char* read_str(char*, mdl_uint_t*);
 symbolp eval(char*);
 void* _memdup(void*, mdl_uint_t);
-struct hash extern symbols;
 struct hash extern env;
 void _cleanup();
 void* _alloca(mdl_uint_t);
@@ -105,7 +91,14 @@ void oustbyte(mdl_u8_t);
 void oust_16l(mdl_u16_t);
 void oust_32l(mdl_u32_t);
 void oust_64l(mdl_u64_t);
+
+
+// stt.c
+mdl_uint_t stt(char const*, mdl_uint_t);
+mdl_u64_t stt_drop();
+
 void reloc(mdl_u64_t, mdl_u8_t);
+void hook(mdl_u64_t, mdl_u8_t, labelp);
 void finalize(void);
 void ffas_init(void);
 void ffas_de_init(void);

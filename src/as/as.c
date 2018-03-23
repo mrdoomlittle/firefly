@@ -9,13 +9,15 @@
 # include "../dep/str_cmp.h"
 struct hash symbols;
 struct hash defines;
+struct hash env;
 
-char **globl;
+char const **globl;
+char const **extrn;
 
 segmentp curseg = NULL;
 regionp curreg = NULL;
 relocatep rel = NULL;
-struct hash env;
+hookp hok = NULL;
 mdl_u64_t offset = 0;
 
 mdl_u8_t of = _of_null;
@@ -37,13 +39,18 @@ void ffas_init(void) {
 	outbuf.end = outbuf.p+OBSIZE;
 	outbuf.off = 0;
 	outbuf.dst = offset;
-	globl = (char**)malloc(20*sizeof(char*));
+	globl = (char const**)malloc(20*sizeof(char const*));
 	*(globl++) = NULL;
+	extrn = (char const**)malloc(20*sizeof(char const*));
+	*(extrn++) = NULL;
 }
 
 void ffas_de_init(void) {
 	while(*(--globl) != NULL);
 	free(globl);
+
+	while(*(--extrn) != NULL);
+	free(extrn);
 }
 
 void* _memdup(void *__p, mdl_uint_t __bc) {
@@ -154,7 +161,7 @@ assemble(char *__p, char *__end) {
 					if (curseg->offset != offset) {
 						// err
 					}
-					oustbyte(sy->next->p);
+					oustbyte((mdl_u8_t*)sy->next->p);
 					isa(1);
 					curseg->size++;
 				} else if (!strcmp(sy->p, "entry") && epdeg<0) {
@@ -178,14 +185,19 @@ assemble(char *__p, char *__end) {
 					curreg = rg;
 				} else if (!strcmp(sy->p, "axe")) {
 					curreg->end = offset;
+				} else if (!strcmp(sy->p, "extern")) {
+					labelp la = (labelp)_alloca(sizeof(struct label));
+					la->flags = LA_LOOSE;
+					//la->s = (char const*)_memdup(sy->next->p, sy->next->len);
+					hash_put(&env, sy->next->p, sy->next->len, la);
+					printf("extern %s\n", sy->next->p);
+					*(extrn++) = sy->next->p;
 				}
 			} else {
 				insp ins;
 				if ((ins = (insp)hash_get(&env, sy->p, sy->len))) {
 					if (is_sylabel(sy->next)) {
-						sy->next->sort = SY_INT;
-						labelp la = (labelp)hash_get(&env, sy->next->p, ffly_str_len(sy->next->p));
-						*(mdl_u64_t*)(sy->next->p = _alloca(sizeof(mdl_u64_t))) = la->adr;
+						sy->next->p = hash_get(&env, sy->next->p, ffly_str_len(sy->next->p));
 					} else
 						adaptreg(sy->next);	
 					ins->l = sy->next;
@@ -204,15 +216,28 @@ assemble(char *__p, char *__end) {
 
 void reloc(mdl_u64_t __offset, mdl_u8_t __l) {
 	relocatep rl = (relocatep)_alloca(sizeof(struct relocate));
-	rl->next = rel;
-	rl->l = __l;
 	rl->offset = __offset;
+	rl->l = __l;
+	rl->next = rel;
 	rel = rl;
+}
+
+void hook(mdl_u64_t __offset, mdl_u8_t __l, labelp __la) {
+/*
+	hookp hk = (hookp)_alloca(sizeof(struct hook));
+
+	hk->offset = __offset;
+	hk->l = __l;
+	hk->la = __la;
+	hk->next = hok;
+	hok = hk;
+*/
 }
 
 # include "../ffef.h"
 # include "../exec.h"
 void finalize(void) {
+
 	if (!ep)
 		ep = "_start";
 	printf("entry point: %s\n", ep);
@@ -230,28 +255,18 @@ void finalize(void) {
 		hdr.format = _ffexec_bc;
 		hdr.nsg = 0;
 		hdr.nrg = 0;
-		hdr.nsy = 0;
 		hdr.nrl = 0;
 		hdr.sg = FF_EF_NULL;
 		hdr.rg = FF_EF_NULL;
-		hdr.sy = FF_EF_NULL;
 		hdr.rl = FF_EF_NULL;
-		char **cur = globl;
-		struct ffef_sym_hdr sy;
+		char const **cur = globl;
 		while(*(--cur) != NULL) {
-			mdl_uint_t l;
-			sy.name = offset;
-			labelp la = (labelp)hash_get(&env, *cur, l = ffly_str_len(*cur));
-			sy.l = l+1;
-			sy.loc = offset;
-			oust(*cur, l+1);
-			oust((mdl_u8_t*)&sy, ffef_sym_hdrsz);
-			hdr.nsy++;
+			printf("symbol: %s\n", *cur);
+			syt(*cur);
 		}
-	
-		if (*(globl-1) != NULL)
-			hdr.sy = offset-ffef_sym_hdrsz;				
-		
+
+		syt_drop();
+
 		segmentp sg = curseg;
 		while(sg != NULL) {
 			struct ffef_seg_hdr seg;
@@ -277,6 +292,8 @@ void finalize(void) {
 
 			if (!strcmp(rg->name, "text"))
 				reg.type = FF_RG_PROG;
+			else if (!strcmp(rg->name, "syt"))
+				reg.type = FF_RG_SYT;
 			else
 				reg.type = FF_RG_NULL;
 
@@ -288,19 +305,8 @@ void finalize(void) {
 		if (curreg != NULL)
 			hdr.rg = offset-ffef_reg_hdrsz;
 
-		relocatep rl = rel;
-		while(rl != NULL) {
-			struct ffef_rel rel;
-			rel.offset = rl->offset;
-			rel.l = rl->l;
-			oust(&rel, ffef_relsz);
-			hdr.nrl++;
-			rl = rl->next;
-		}
-
-		if (rel != NULL)
-			hdr.rl = offset-ffef_relsz;
-
+		// string table region
+		hdr.sttr = stt_drop();
 		lseek(out, 0, SEEK_SET);
 		write(out, &hdr, ffef_hdr_size);
 	}
