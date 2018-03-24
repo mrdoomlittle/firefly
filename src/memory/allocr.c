@@ -51,6 +51,8 @@ typedef mdl_s32_t ar_int_t;
 # define AR_NULL ((ar_off_t)~0)
 # define is_null(__p) ((__p)==AR_NULL) 
 # define not_null(__p) ((__p)!=AR_NULL)
+
+// aligned to page size
 # define POT_SIZE 0xfff
 
 # define lock_pot(__pot) \
@@ -91,13 +93,16 @@ copy(void *__dst, void *__src, mdl_uint_t __bc) {
 }
 
 typedef struct pot {
-	ar_uint_t page_c;
+	ar_uint_t page_c, blk_c;
+
 	ar_off_t off, top_blk, end_blk;
 	void *top, *end;
 	mdl_u8_t flags;
 	ar_off_t bins[no_bins];
 	struct pot *next, *fd, *bk;
-	ar_uint_t used, total;
+
+	struct pot *previous;
+	ar_uint_t buried, total;
 	ffly_mutex_t lock;
 } *potp;
 
@@ -211,11 +216,30 @@ decouple(potp __pot, blkdp __blk) {
 		prev_blk(__pot, __blk)->next = ft;
 }
 
+/* dead memory */
+mdl_u64_t static
+ffly_ardead(potp __pot) {
+	return __pot->top-(__pot->end+__pot->off);
+}
+
+/* does not include block header */
+/* used memory */
+mdl_u64_t static
+ffly_arused(potp __pot) {
+	return __pot->off-((__pot->blk_c*blkd_size)+__pot->buried);
+}
+
+/* buried memory */
+mdl_u64_t static
+ffly_arburied(potp __pot) {
+	return __pot->buried;
+}
+
 void ffly_arstat() {
 	mdl_uint_t no = 0;
 	potp cur = &main_pot;
 	while(cur != NULL) {
-		ffly_printf("potno: %u, off{%u}, no mans land{from: %x, to: %x}, pagec{%u}.\n", no++, cur->off, cur->off, cur->top-cur->end, cur->page_c);
+		ffly_printf("potno: %u, off{%u}, no mans land{from: 0x%x, to: 0x%x}, pages{%u}, blocks{%u}, used{%u}, buried{%u}, dead{%u}\n", no++, cur->off, cur->off, cur->top-cur->end, cur->page_c, cur->blk_c, ffly_arused(cur), ffly_arburied(cur), ffly_ardead(cur));
 		cur = cur->next;
 	}
 }
@@ -225,11 +249,14 @@ ffly_err_t init_pot(potp __pot) {
 	__pot->end_blk = AR_NULL;
 	__pot->off = 0;
 	__pot->page_c = 0;
+	__pot->blk_c = 0;
 	__pot->flags = 0;
 	__pot->next = NULL;
+	__pot->previous = NULL;
 	__pot->flags = 0x0;
 	__pot->fd = NULL;
 	__pot->bk = NULL;
+	__pot->buried = 0;
 	__pot->lock = FFLY_MUTEX_INIT;
 	ar_off_t *bin = __pot->bins;
 	while(bin != __pot->bins+no_bins)
@@ -244,6 +271,8 @@ ffly_err_t ffly_ar_init() {
 }
 
 ffly_err_t _ffly_ar_cleanup(potp __pot) {
+	// need to track mmaps
+
 	brk(__pot->end);
 }
 
@@ -324,8 +353,9 @@ void pr() {
 	ffly_printf("\n**** all ****\n");
 	potp p = &main_pot;
 	mdl_uint_t no = 0;
+	ffly_printf("~: main pot, no{0}\n");
 	_next:
-	ffly_printf("\npot, %u, used: %u, free: %u, off: %u, page_c: %u\n", no++, p->used, p->total-p->used, p->off, p->page_c);
+	ffly_printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u, pages: %u, blocks: %u\n", no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off, p->page_c, p->blk_c);
 	pot_pr(p);
 	if (p->next != NULL) {
 		p = p->next;
@@ -338,12 +368,43 @@ void pf() {
 	potp p = &main_pot;
 	mdl_uint_t no = 0;
 	_next:
-	ffly_printf("\npot, %u, used: %u, free: %u, off: %u\n", no++, p->used, p->total-p->used, p->off);
+	ffly_printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u\n", no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off);
 	pot_pf(p);
 	if (p->next != NULL) {
 		p = p->next;
 		goto _next;
 	}
+}
+
+
+void free_pot(potp);
+void ffly_araxe() {
+	potp p;
+	if (!(p = arena))
+		return;
+	potp rr = p->previous;
+	potp ft = p->next;
+
+	if (ft != NULL) {
+		lkpot(ft);
+		ft->previous = rr;
+	}
+	if (rr != NULL) {
+		lkpot(rr);
+		rr->next = ft;
+	}	
+
+	if (ft != NULL)
+		ulpot(ft);
+	if (rr != NULL)
+		ulpot(rr);
+
+	while(p != NULL) {
+		potp bk = p;
+		p = p->fd;
+		free_pot(bk);
+	}
+	arena = NULL;
 }
 
 void static*
@@ -381,8 +442,10 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 
 	if (not_null(__blk->prev)) {
 		if ((freed = is_free(rr)) || ((inuse = is_used(rr)) && rr->size <= 0xf)) {
-			if (freed)
+			if (freed) {
+				__pot->buried+=dif;
 				detatch(__pot, rr);
+			}
 
 			copy(p, (mdl_u8_t*)__blk+blkd_size, size);
 			*off+=dif;
@@ -451,6 +514,7 @@ grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 
 	if (not_null(__blk->prev)) {
 		if (is_free(rr) && rr->size > dif<<1) {
+			__pot->buried-=dif;
 			detatch(__pot, rr);
 			copy(p, (mdl_u8_t*)__blk+blkd_size, size);
 			*off-=dif;
@@ -531,10 +595,12 @@ void static _ffly_free(potp, void*);
 potp alloc_pot(mdl_uint_t __size) {
 	potp p = (potp)_ffly_alloc(&main_pot, pot_size);
 	init_pot(p);
-	p->end = _ffly_alloc(&main_pot, __size);
-	p->top = (void*)((mdl_u8_t*)p->end+__size);
+	p->page_c = (__size>>PAGE_SHIFT)+((__size-((__size>>PAGE_SHIFT)*PAGE_SIZE))>0);
+
+	mdl_uint_t size = p->page_c*PAGE_SIZE;
+	p->end = _ffly_alloc(&main_pot, size);
+	p->top = (void*)((mdl_u8_t*)p->end+size);
 	p->total = p->top-p->end;
-	p->used = 0;
 	return p;
 }
 
@@ -554,12 +620,16 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 				detatch(__pot, blk);
 				blk->pad = blk->size-__bc;
 				blk->flags = (blk->flags&~BLK_FREE)|BLK_USED;
+				__pot->buried-=blk->size;
 
 				/*
 				* if block exceeds size then trim it down and split the block into two parts.
 				*/
 				ar_uint_t junk;
 				if ((junk = (blk->size-__bc)) > blkd_size+TRIM_MIN) {
+					__pot->buried-=blkd_size;
+					__pot->blk_c++;
+
 					ar_off_t off = blk->off+blkd_size+__bc;
 					blkdp p; 
 					*(p = (blkdp)((mdl_u8_t*)__pot->end+off)) = (struct blkd){
@@ -622,6 +692,8 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 		get_blk(__pot, __pot->end_blk)->next = __pot->off;
 	__pot->end_blk = __pot->off;
 	__pot->off = top;
+
+	__pot->blk_c++;
 	unlock_pot(__pot);
 	return (void*)((mdl_u8_t*)blk+blkd_size);
 }
@@ -642,8 +714,10 @@ ffly_alloc(mdl_uint_t __bc) {
 	if (!arena) {
 		arena = alloc_pot(POT_SIZE);
 		lkpot(&main_pot);
+		arena->next = main_pot.next;
 		if (main_pot.next != NULL)
-			arena->next = main_pot.next;
+			main_pot.previous = arena;
+		arena->previous = &main_pot;
 		main_pot.next = arena;
 		ulpot(&main_pot);
 	}
@@ -698,6 +772,7 @@ _ffly_free(potp __pot, void *__p) {
 	if (not_null(blk->prev)) {
 		prev = prev_blk(__pot, blk);
 		while(is_free(prev)) {
+			__pot->blk_c--;
 			__ffmod_debug
 				ffly_printf("found free space above, %u\n", prev->size);
 
@@ -716,6 +791,7 @@ _ffly_free(potp __pot, void *__p) {
 	if (not_null(blk->next)) {
 		next = next_blk(__pot, blk);
 		while(is_free(next)) {
+			__pot->blk_c--;
 			__ffmod_debug
 				ffly_printf("found free space below, %u\n", next->size);
 
@@ -753,6 +829,7 @@ _ffly_free(potp __pot, void *__p) {
 	}
 
 	if (blk->end == __pot->off) {
+		__pot->blk_c--;
 		__pot->off = blk->off;
 		if (is_flag(__pot->flags, USE_BRK)) { 
 			mdl_uint_t page_c;
@@ -764,6 +841,8 @@ _ffly_free(potp __pot, void *__p) {
 		}
 		goto _end;
 	}
+
+	__pot->buried+=blk->size;
 
 	recouple(__pot, blk);
 	blk->flags = (blk->flags&~BLK_USED)|BLK_FREE;
@@ -839,15 +918,15 @@ ffly_realloc(void *__p, mdl_uint_t __bc) {
 		if (dif>0) {
 			__ffmod_debug
 				ffly_printf("shrink.\n");
-//			if ((p = ffly_arsh(__p, __bc)) != NULL)
-//				return p;
+			if ((p = ffly_arsh(__p, __bc)) != NULL)
+				return p;
 			__ffmod_debug
 				ffly_printf("can't shrink block.\n");
 		} else if (dif<0) {
 			__ffmod_debug
 				ffly_printf("grow.\n");
-//			if ((p = ffly_argr(__p, __bc)) != NULL)
-//				return p;
+			if ((p = ffly_argr(__p, __bc)) != NULL)
+				return p;
 			__ffmod_debug
 				ffly_printf("can't grow block.\n");
 		}

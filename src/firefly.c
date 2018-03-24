@@ -96,6 +96,7 @@ prep() {
 
 void static
 fini() {
+	ffly_thread_cleanup();
 	ffly_arcs_de_init();
 	ffly_alloca_cleanup();
 	ffly_io_closeup();

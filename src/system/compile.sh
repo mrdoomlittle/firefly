@@ -2,7 +2,10 @@
 as_inc="-I$root_dir/asm/ -I$(realpath $root_dir/../)/linux/asm/"
 $ffly_cc -c $cc_flags -o $dst_dir/realpath.o $root_dir/realpath.c
 $ffly_cc -c $cc_flags -o $dst_dir/err.o $root_dir/err.c
-nasm -f elf64 $as_inc -o $dst_dir/cond_lock.o $root_dir/asm/cond_lock.asm
+
+nasm -f elf64 $as_inc -o $dst_dir/cond_lock.o.0 $root_dir/asm/cond_lock.asm
+$ffly_cc -c $cc_flags -o $dst_dir/cond_lock.o.1 $root_dir/cond_lock.c
+
 $ffly_cc -c $cc_flags -o $dst_dir/config.o $root_dir/config.c
 $ffly_cc -c $cc_flags -o $dst_dir/thread.o $root_dir/thread.c
 $ffly_cc -c $cc_flags -o $dst_dir/util/base64.o $root_dir/util/base64.c
@@ -172,7 +175,8 @@ $dst_dir/vec.o $dst_dir/map.o $dst_dir/flags.o $dst_dir/hash.o \
 $dst_dir/buff.o $dst_dir/bin_tree.o \
 $dst_dir/sys_nanosleep.o.0 $dst_dir/sys_nanosleep.o.1 \
 $dst_dir/thread.o $dst_dir/config.o \
-$dst_dir/cond_lock.o $dst_dir/err.o $dst_dir/realpath.o \
+$dst_dir/cond_lock.o.0 $dst_dir/cond_lock.o.1 \
+$dst_dir/err.o $dst_dir/realpath.o \
 $dst_dir/sys_exit.o.0 $dst_dir/sys_exit.o.1 \
 $dst_dir/sys_stat.o.0 $dst_dir/sys_stat.o.1 \
 $dst_dir/sys_lseek.o.0 $dst_dir/sys_lseek.o.1 \

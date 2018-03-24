@@ -78,9 +78,9 @@ all: clean
 	gcc $(ccflags) -c ../system/file.c
 	gcc $(ccflags) -c ../system/errno.c
 	gcc $(ccflags) -c ../system/string.c
-	gcc $(ccflags) -D__ffly_use_allocr -c -o mem_alloc.o.1 ../memory/mem_alloc.c
-	gcc $(ccflags) -D__ffly_use_allocr -c ../memory/mem_free.c
-	gcc $(ccflags) -D__ffly_use_allocr -c ../memory/mem_realloc.c
+	gcc $(ccflags) -D__ffly_use_allocr -D__ffly_debug_enabled -c -o mem_alloc.o.1 ../memory/mem_alloc.c
+	gcc $(ccflags) -D__ffly_use_allocr -D__ffly_debug_enabled -c ../memory/mem_free.c
+	gcc $(ccflags) -D__ffly_use_allocr -D__ffly_debug_enabled -c ../memory/mem_realloc.c
 	gcc $(ccflags) -c -o mem_dup.o.1 ../dep/mem_dup.c
 	as -o mem_dup.o.0 ../dep/mem_dup.s
 

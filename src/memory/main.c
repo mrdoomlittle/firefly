@@ -1,3 +1,4 @@
+# define __ffly_debug_enabled
 # include "allocr.h"
 # include "../system/io.h"
 # include "../memory/mem_alloc.h"
@@ -316,9 +317,6 @@ void copy(void *__dst, void *__src, mdl_uint_t __bc);
 void _start() {
 	ffly_ar_init();
 	ffly_io_init();
-
-
-	ffly_arbl(ffly_alloc(22));
 	ffset_mode(_ff_mod_debug);
 /*
 	struct ffly_vec vec;
@@ -361,7 +359,7 @@ void _start() {
 		cur = list;
 		while(cur != end) {
 			if (!*cur) {
-				*cur = ffly_alloc(size = ((ffly_rand()%3000)+1));
+				*cur = ffly_alloc(size = ((ffly_rand()%20)+1));
 //				ffly_printf("%u\n", size);
 				ffly_bzero(*cur, size);	
 				i++;
@@ -379,7 +377,8 @@ void _start() {
 		cur++;
 		}
 	}
-
+*/
+/*
 	i = 0;
 	while(i != n) {
 		if (list[i] != NULL)
@@ -410,10 +409,17 @@ void _start() {
 	ffly_free(p0);
 	p0 = ffly_alloc(2500);
 */
-	pr();
-	pf();
+
+
+//	pr();
+//	pf();
+
+	
+	ffly_printf("mem-usage: %u\n", ffly_mem_alloc_bc-ffly_mem_free_bc);
 	ffly_arstat();
 
+	pr();
+	pf();
 	ffly_io_closeup();
 	ffly_ar_cleanup();
 	exit(0);
@@ -478,8 +484,9 @@ int main(int __argc, char **__argv) {
 
 */
 //	ts12();
-	pr();
-	pf();
+	//pr();
+	//pf();
+	ffly_arstat();
 	ffly_io_closeup();
 	ffly_ar_cleanup();
 }
