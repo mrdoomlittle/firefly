@@ -418,6 +418,7 @@ void _start() {
 	ffly_printf("mem-usage: %u\n", ffly_mem_alloc_bc-ffly_mem_free_bc);
 	ffly_arstat();
 
+	ffly_printf("end.\n");
 	pr();
 	pf();
 	ffly_io_closeup();

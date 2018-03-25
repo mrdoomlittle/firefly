@@ -1,7 +1,7 @@
 # include "allocr.h"
 # include "../linux/mman.h"
 # include "../linux/unistd.h"
-
+# include "../linux/signal.h"
 # include "../system/util/checksum.h"
 # include "../system/thread.h"
 # include "../system/mutex.h"
@@ -64,6 +64,11 @@ typedef mdl_s32_t ar_int_t;
 # define ulpot(__pot) \
 	ffly_mutex_unlock(&(__pot)->lock)
 
+# define lkrod(__rod) \
+	ffly_mutex_lock(&(__rod)->lock)
+# define ulrod(__rod) \
+	ffly_mutex_unlock(&(__rod)->lock)
+
 # define no_bins 81
 # define bin_no(__bc) \
 	(((mdl_u32_t)(__bc))>>3 > 16?16+(((mdl_u32_t)(__bc))>>7 > 16?16+(((mdl_u32_t)(__bc))>>11 > 16?16+(((mdl_u32_t)(__bc))>>15 > 16?16+(((mdl_u32_t)(__bc))>>19 > 16?16: \
@@ -92,7 +97,9 @@ copy(void *__dst, void *__src, mdl_uint_t __bc) {
 	}
 }
 
+typedef struct rod *rodp;
 typedef struct pot {
+	rodp r;
 	ar_uint_t page_c, blk_c;
 
 	ar_off_t off, top_blk, end_blk;
@@ -106,9 +113,31 @@ typedef struct pot {
 	ffly_mutex_t lock;
 } *potp;
 
-struct pot main_pot;
+typedef struct rod {
+	struct rod *next;
+	ffly_mutex_t lock;
+    potp p;
+} *rodp;
 
-__thread potp arena = NULL;
+# define rodno(__p) \
+	(((((mdl_u64_t)(__p))&0xff)^(((mdl_u64_t)(__p))>>8&0xff)^(((mdl_u64_t)(__p))>>16&0xff)^(((mdl_u64_t)(__p))>>24&0xff)^\
+	(((mdl_u64_t)(__p))>>32&0xff)^(((mdl_u64_t)(__p))>>40&0xff)^(((mdl_u64_t)(__p))>>48&0xff)^(((mdl_u64_t)(__p))>>56&0xff))&0x3f)
+# define rod_at(__p) \
+	(rods+rodno(__p))
+rodp rods[64] = {
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+};
+
+static struct pot main_pot;
+
+static __thread potp arena = NULL;
 /*
 	dont use pointers when we can use offsets to where the block is located 
 	as it will take of less space in the header.
@@ -129,9 +158,63 @@ typedef struct blkd {
 	mdl_u8_t flags;
 } __attribute__((packed)) *blkdp;
 
-
 # define pot_size sizeof(struct pot)
 # define blkd_size sizeof(struct blkd)
+void static* _ffly_alloc(potp, mdl_uint_t);
+void static _ffly_free(potp, void*);
+
+void static
+abort() {
+	exit(SIGKILL);
+}
+
+void static
+atr(potp __pot, rodp __rod) {
+	lkrod(__rod);
+	__pot->r = __rod;
+	__pot->next = __rod->p;
+	if (__rod->p != NULL) {
+		lkpot(__rod->p);
+		__rod->p->previous = __pot;
+		ulpot(__rod->p);
+	}
+	__rod->p = __pot;
+	ulrod(__rod);
+}
+
+void static
+rfr(potp __pot) {
+	rodp r = __pot->r;
+
+	potp ft = __pot->next;
+	potp rr = __pot->previous;
+	lkrod(r);
+	if (__pot == r->p) {
+		if ((r->p = __pot->next) != NULL) {
+			lkpot(r->p);
+			r->p->previous = NULL;
+			ulpot(r->p);
+		}
+	} else {
+		if (ft != NULL) {
+			lkpot(ft);
+			ft->previous = rr;
+		}
+		if (rr != NULL) {
+			lkpot(rr);
+			rr->next = ft;
+		}
+
+
+		if (ft != NULL)
+			ulpot(ft);
+		if (rr != NULL)
+			ulpot(rr);
+	}
+
+	ulrod(r);
+}
+
 void static
 detatch(potp __pot, blkdp __blk) {
 	ar_off_t *bin = bin_at(__pot, __blk->size);
@@ -235,12 +318,28 @@ ffly_arburied(potp __pot) {
 	return __pot->buried;
 }
 
+# include "../system/nanosleep.h"
 void ffly_arstat() {
 	mdl_uint_t no = 0;
+	rodp r = *rods;
 	potp cur = &main_pot;
-	while(cur != NULL) {
-		ffly_printf("potno: %u, off{%u}, no mans land{from: 0x%x, to: 0x%x}, pages{%u}, blocks{%u}, used{%u}, buried{%u}, dead{%u}\n", no++, cur->off, cur->off, cur->top-cur->end, cur->page_c, cur->blk_c, ffly_arused(cur), ffly_arburied(cur), ffly_ardead(cur));
-		cur = cur->next;
+	_next:
+	if (cur != NULL) {
+		ffly_printf("potno: %u, off{%u}, no mans land{from: 0x%x, to: 0x%x}, pages{%u}, blocks{%u}, used{%u}, buried{%u}, dead{%u}\n",
+			no++, cur->off, cur->off, cur->top-cur->end, cur->page_c, cur->blk_c, ffly_arused(cur), ffly_arburied(cur), ffly_ardead(cur));
+
+		if ((cur = cur->next) != NULL);	
+			goto _next;
+	}
+
+	if (cur == &main_pot) {
+		cur = r->p;
+		goto _next;
+	}
+
+	if ((r = r->next) != *rods) {
+		cur = r->p;
+		goto _next;
 	}
 }
 
@@ -248,6 +347,7 @@ ffly_err_t init_pot(potp __pot) {
 	__pot->top_blk = AR_NULL;
 	__pot->end_blk = AR_NULL;
 	__pot->off = 0;
+	__pot->r = NULL;
 	__pot->page_c = 0;
 	__pot->blk_c = 0;
 	__pot->flags = 0;
@@ -268,6 +368,16 @@ ffly_err_t ffly_ar_init() {
 	main_pot.end = brk((void*)0);
 	main_pot.top = main_pot.end;
 	main_pot.flags |= USE_BRK;
+
+	rodp *p = rods;
+	while(p != rods+64) {
+		*(*(p++) = (rodp)_ffly_alloc(&main_pot, sizeof(struct rod))) =
+			(struct rod){.lock=FFLY_MUTEX_INIT,.p=NULL};
+	}
+
+	while(p != rods+1)
+		(*--p)->next = *(p-1);
+	(*rods)->next = *(rods+63);
 }
 
 ffly_err_t _ffly_ar_cleanup(potp __pot) {
@@ -351,27 +461,51 @@ void ffly_arbl(void *__p) {
 
 void pr() {
 	ffly_printf("\n**** all ****\n");
+	rodp r = *rods;
 	potp p = &main_pot;
 	mdl_uint_t no = 0;
-	ffly_printf("~: main pot, no{0}\n");
 	_next:
-	ffly_printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u, pages: %u, blocks: %u\n", no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off, p->page_c, p->blk_c);
-	pot_pr(p);
-	if (p->next != NULL) {
-		p = p->next;
+	if (p != NULL) {
+		if (p == &main_pot)
+			ffly_printf("~: main pot, no{%u}\n", no);
+		ffly_printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u, pages: %u, blocks: %u\n", no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off, p->page_c, p->blk_c);
+		pot_pr(p);
+		if ((p = p->next) != NULL)
+			goto _next;
+	}
+
+	if (p == &main_pot) {
+		p = r->p;
+		goto _next;
+	}
+
+	if ((r = r->next) != *rods) {
+		p = r->p;
 		goto _next;
 	}
 }
 
 void pf() {
 	ffly_printf("\n**** free ****\n");
+	rodp r = *rods;
 	potp p = &main_pot;
 	mdl_uint_t no = 0;
 	_next:
-	ffly_printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u\n", no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off);
-	pot_pf(p);
-	if (p->next != NULL) {
-		p = p->next;
+	if (p != NULL) {
+		ffly_printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u\n", no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off);
+		pot_pf(p);
+
+		if ((p = p->next) != NULL)
+			goto _next;
+	}
+
+	if (p == &main_pot) {
+		p = r->p;		
+		goto _next;
+	}
+
+	if ((r = r->next) != *rods) {
+		p = r->p;
 		goto _next;
 	}
 }
@@ -382,26 +516,11 @@ void ffly_araxe() {
 	potp p;
 	if (!(p = arena))
 		return;
-	potp rr = p->previous;
-	potp ft = p->next;
-
-	if (ft != NULL) {
-		lkpot(ft);
-		ft->previous = rr;
-	}
-	if (rr != NULL) {
-		lkpot(rr);
-		rr->next = ft;
-	}	
-
-	if (ft != NULL)
-		ulpot(ft);
-	if (rr != NULL)
-		ulpot(rr);
-
+	rfr(p);
 	while(p != NULL) {
 		potp bk = p;
 		p = p->fd;
+		rfr(bk);
 		free_pot(bk);
 	}
 	arena = NULL;
@@ -589,9 +708,6 @@ ffly_argr(void *__p, mdl_uint_t __to) {
 	return grow_blk(p, blk, __to);
 }
 
-void static* _ffly_alloc(potp, mdl_uint_t);
-void static _ffly_free(potp, void*);
-
 potp alloc_pot(mdl_uint_t __size) {
 	potp p = (potp)_ffly_alloc(&main_pot, pot_size);
 	init_pot(p);
@@ -713,13 +829,7 @@ ffly_alloc(mdl_uint_t __bc) {
 
 	if (!arena) {
 		arena = alloc_pot(POT_SIZE);
-		lkpot(&main_pot);
-		arena->next = main_pot.next;
-		if (main_pot.next != NULL)
-			main_pot.previous = arena;
-		arena->previous = &main_pot;
-		main_pot.next = arena;
-		ulpot(&main_pot);
+		atr(arena, *rod_at(arena->end));
 	}
 
 	potp p = arena, t;
@@ -741,6 +851,8 @@ ffly_alloc(mdl_uint_t __bc) {
 			// failure
 		}
 
+		atr(t, *rod_at(t->end));
+
 		lkpot(p);
 		p->fd = t;
 		lkpot(p->fd);
@@ -750,7 +862,8 @@ ffly_alloc(mdl_uint_t __bc) {
 		ulpot(p);
 		p = t;
 		goto _again;  
-	}
+	}	
+
 	return ret;
 }
 
@@ -869,15 +982,30 @@ ffly_free(void *__p) {
 		return;
 	}
 	potp p = arena, bk;
+	rodp r = NULL, beg;
+	if (!p) {
+		r = *rod_at(__p);
+		beg = r;
+		while(!r->p)
+			r = r->next;
+		if (!(p = r->p)) {
+			ffly_errmsg("error.\n");
+			abort();
+		}
+	}
+
 	// look for pot associated with pointer
 	lkpot(p);
 	while(!(__p >= p->end && __p < p->top)) {
 		bk = p;
-		p = p->fd;
+		p = !r?p->fd:p->next;
 		ulpot(bk);
 		if (!p) {
-			ffly_errmsg("error: could not find pot associated with pointer.\n");
-			return;
+			while(!(p = (r = r->next)->p) && r != beg);	
+			if (!p || r == beg) {	
+				ffly_errmsg("error: could not find pot associated with pointer.\n");
+				return;
+			}
 		}
 
 		lkpot(p);
@@ -887,7 +1015,7 @@ ffly_free(void *__p) {
 	_ffly_free(p, __p);
 	// free pot as we don't need it
 	lkpot(p);
-	if (!p->off && p != arena) {
+	if (!p->off && p != arena && !r) {
 		lkpot(p->bk);
 		p->bk->fd = p->fd;
 		ulpot(p->bk);
@@ -897,6 +1025,8 @@ ffly_free(void *__p) {
 			ulpot(p->fd);
 		}
 		ulpot(p);
+
+		rfr(p);
 		free_pot(p);
 		return;
 	}
