@@ -121,7 +121,7 @@ typedef struct rod {
 
 # define rodno(__p) \
 	(((((mdl_u64_t)(__p))&0xff)^(((mdl_u64_t)(__p))>>8&0xff)^(((mdl_u64_t)(__p))>>16&0xff)^(((mdl_u64_t)(__p))>>24&0xff)^\
-	(((mdl_u64_t)(__p))>>32&0xff)^(((mdl_u64_t)(__p))>>40&0xff)^(((mdl_u64_t)(__p))>>48&0xff)^(((mdl_u64_t)(__p))>>56&0xff))&0x3f)
+	(((mdl_u64_t)(__p))>>32&0xff)^(((mdl_u64_t)(__p))>>40&0xff)^(((mdl_u64_t)(__p))>>48&0xff)^(((mdl_u64_t)(__p))>>56&0xff))>>4&0x3f)
 # define rod_at(__p) \
 	(rods+rodno(__p))
 rodp rods[64] = {
@@ -988,12 +988,25 @@ ffly_free(void *__p) {
 	if (!p) {
 		r = *rod_at(__p);
 		beg = r;
-		while(!r->p)
-			r = r->next;
+		lkrod(r);
+		rodp bk;
+		while(!r->p) {
+			bk = r;
+			if ((r = r->next) == beg) {
+				ffly_errmsg("error.\n");
+				ulrod(bk);
+				abort();
+			}
+			ulrod(bk);
+			lkrod(r);
+		}
+	
 		if (!(p = r->p)) {
 			ffly_errmsg("error.\n");
+			ulrod(r);
 			abort();
 		}
+		ulrod(r);
 	}
 
 	// look for pot associated with pointer
@@ -1003,8 +1016,21 @@ ffly_free(void *__p) {
 		p = !r?p->fd:p->next;
 		ulpot(bk);
 		if (!p) {
-			while(!(p = (r = r->next)->p) && r != beg);	
-			if (!p || r == beg) {	
+			if (r != NULL) {
+				rodp bk;
+				lkrod(r);
+				while(!(p = (r = (bk = r)->next)->p) && r != beg) {
+					ulrod(bk);
+					lkrod(r);
+				}
+				ulrod(bk);
+
+				if (r == beg) {
+					ffly_errmsg("error.\n");
+					abort();
+				}
+			}
+			if (!p) {	
 				ffly_errmsg("error: could not find pot associated with pointer.\n");
 				return;
 			}
