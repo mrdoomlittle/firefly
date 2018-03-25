@@ -117,6 +117,7 @@ typedef struct rod {
 	struct rod *next;
 	ffly_mutex_t lock;
     potp p;
+	mdl_u8_t no;
 } *rodp;
 
 # define rodno(__p) \
@@ -143,8 +144,11 @@ static __thread potp arena = NULL;
 	as it will take of less space in the header.
 */
 
+
+# define PAD 8
 // keep packed as we want the header to be as small as possible
 typedef struct blkd {
+	mdl_u8_t __pad0[PAD];
 	ar_off_t prev, next, fd, bk;
 	ar_size_t size; // total size, without blkd
 	/*
@@ -156,6 +160,7 @@ typedef struct blkd {
 	ar_uint_t pad;
 	ar_off_t off, end;
 	mdl_u8_t flags;
+	mdl_u8_t __pad1[PAD];
 } __attribute__((packed)) *blkdp;
 
 # define pot_size sizeof(struct pot)
@@ -325,8 +330,8 @@ void ffly_arstat() {
 	potp cur = &main_pot;
 	_next:
 	if (cur != NULL) {
-		ffly_printf("potno: %u, off{%u}, no mans land{from: 0x%x, to: 0x%x}, pages{%u}, blocks{%u}, used{%u}, buried{%u}, dead{%u}\n",
-			no++, cur->off, cur->off, cur->top-cur->end, cur->page_c, cur->blk_c, ffly_arused(cur), ffly_arburied(cur), ffly_ardead(cur));
+		ffly_printf("potno: %u, rodno: %u - %s, off{%u}, no mans land{from: 0x%x, to: 0x%x}, pages{%u}, blocks{%u}, used{%u}, buried{%u}, dead{%u}\n",
+			no++, !cur->r?0:cur->r->no, !cur->r?"bad":"ok", cur->off, cur->off, cur->top-cur->end, cur->page_c, cur->blk_c, ffly_arused(cur), ffly_arburied(cur), ffly_ardead(cur));
 
 		if ((cur = cur->next) != NULL);	
 			goto _next;
@@ -372,7 +377,7 @@ ffly_err_t ffly_ar_init() {
 	rodp *p = rods;
 	while(p != rods+64) {
 		*(*(p++) = (rodp)_ffly_alloc(&main_pot, sizeof(struct rod))) =
-			(struct rod){.lock=FFLY_MUTEX_INIT,.p=NULL};
+			(struct rod){.lock=FFLY_MUTEX_INIT,.p=NULL,.no=((p-1)==rods)?0:((*(p-1))->no+1)};
 	}
 
 	while(p != rods+1)
@@ -743,7 +748,6 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 				*/
 				ar_uint_t junk;
 				if ((junk = (blk->size-__bc)) > blkd_size+TRIM_MIN) {
-					__pot->buried-=blkd_size;
 					__pot->blk_c++;
 
 					ar_off_t off = blk->off+blkd_size+__bc;
@@ -816,6 +820,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 # include "../data/bzero.h"
 void*
 ffly_alloc(mdl_uint_t __bc) {
+	if (!__bc) return NULL;
 	if (__bc+blkd_size >= POT_SIZE) {
 		void *p;
 		if ((p = mmap(NULL, blkd_size+__bc, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0)) == (void*)-1) {
@@ -1076,15 +1081,15 @@ ffly_realloc(void *__p, mdl_uint_t __bc) {
 		if (dif>0) {
 			__ffmod_debug
 				ffly_printf("shrink.\n");
-			if ((p = ffly_arsh(__p, __bc)) != NULL)
-				return p;
+//			if ((p = ffly_arsh(__p, __bc)) != NULL)
+//				return p;
 			__ffmod_debug
 				ffly_printf("can't shrink block.\n");
 		} else if (dif<0) {
 			__ffmod_debug
 				ffly_printf("grow.\n");
-			if ((p = ffly_argr(__p, __bc)) != NULL)
-				return p;
+//			if ((p = ffly_argr(__p, __bc)) != NULL)
+//				return p;
 			__ffmod_debug
 				ffly_printf("can't grow block.\n");
 		}
