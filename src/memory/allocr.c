@@ -886,6 +886,7 @@ _ffly_free(potp __pot, void *__p) {
 		prev = prev_blk(__pot, blk);
 		while(is_free(prev)) {
 			__pot->blk_c--;
+			__pot->buried-=prev->size;
 			__ffmod_debug
 				ffly_printf("found free space above, %u\n", prev->size);
 
@@ -905,6 +906,7 @@ _ffly_free(potp __pot, void *__p) {
 		next = next_blk(__pot, blk);
 		while(is_free(next)) {
 			__pot->blk_c--;
+			__pot->buried-=next->size;
 			__ffmod_debug
 				ffly_printf("found free space below, %u\n", next->size);
 
