@@ -4,12 +4,12 @@ max_threads:20~_64l_u,
 # alloca stack size
 alssize:400~_64l_u,
 # list of modules to execute
-#modl:[],
+modl:["a.out"],
 # list of scripts for init - not finished
-#inil:[],
+inil:[],
 # directory from root dir
-#moddir:"modules",
-#inidir:"init",
+moddir:"modules",
+inidir:"init",
 aa:"xxxxxx",
 bb:"xxxxxxxxxxxx",
 cc:"xxxxxx",

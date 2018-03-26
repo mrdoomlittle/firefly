@@ -4,7 +4,6 @@
 # define ff_lat struct ffly_lat
 # ifdef __ffly_lat_internal
 typedef struct record {
-	char ident[3];
 	struct record *next, *fd;
 	mdl_u64_t key;
 	void *p;

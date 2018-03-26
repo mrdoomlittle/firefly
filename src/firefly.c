@@ -83,18 +83,15 @@ void ffly_init();
 
 void static
 prep() {
-	ffly_arcs_creatarc("i");
-return;
-/*
 	void **p = ffly_alloca(sizeof(void*), NULL);
 	*p = (void*)by;
 	ffly_arcs_creatarc("info");
 	ffly_arcs_tun("info");
 	ffly_arcs_creatrec("created-by", NULL, _ffly_rec_def, 0);
 	ffly_arcs_bk();
-*/
-//	ffly_modld();
-//	ffly_init();
+
+	ffly_modld();
+	ffly_init();
 }
 
 void static
@@ -129,11 +126,6 @@ void _start(void) {
 	*(arg++) = *(argp++); 
 
 	mdl_i8_t conf = -1;
-
-	void *dump = __ffly_mem_alloc(2052);
-	ffly_mem_set(dump, 21, 2052);
-	__ffly_mem_free(dump);
-
 	if (argc > 1) {
 		if (!ffly_str_cmp(*argp, "-proc")) {
 			evalopts(*(++argp));
@@ -160,7 +152,7 @@ void _start(void) {
 		//goto _end;
 	}
 
-//	if (conf<0)
+	if (conf<0)
 		// load default builtin config
 		ffly_ld_sysconf_def();
 	/*

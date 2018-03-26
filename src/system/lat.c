@@ -87,10 +87,6 @@ void ffly_lat_put(ffly_latp __lat, mdl_u64_t __key, void *__p) {
 		return;
 	}
 
-	rec->ident[0] = 'r';
-	rec->ident[1] = 'e';
-	rec->ident[2] = 'c';
-
 	rec->next = (recordp)(*p)->p;
 	(*p)->p = (void*)rec;
 	rec->key = __key;
@@ -135,30 +131,24 @@ void static
 free_pod(podp __pod) {
 	mdl_u8_t static depth = 0;
 	if (depth <= 3) {
-		ffly_printf("depth: %u\n", depth);
 		depth++;
-		ffly_printf("%p\n", __pod);
 		podp *p = (podp*)__pod->p;
 		while(p != (podp*)__pod->p+0x100) {
 			if (*p != NULL) {
 				free_pod(*p);
-//				__ffly_mem_free(*p);
+				__ffly_mem_free(*p);
 			}
 			p++;
 		}
 		depth--;
-//		if (__pod->p != NULL)
-//			__ffly_mem_free(__pod->p);
+		if (__pod->p != NULL)
+			__ffly_mem_free(__pod->p);
 	} else {
-	return;
-		ffly_printf("freeing records.\n");
 		recordp rec = (recordp)__pod->p, bk;
 		while(rec != NULL) {
-			ffly_printf("'%c', '%c', '%c'\n", rec->ident[0], rec->ident[1], rec->ident[2]);
-
 			bk = rec;	
 			rec = rec->next;
-			//__ffly_mem_free(bk);
+			__ffly_mem_free(bk);
 		}
 	}
 }
