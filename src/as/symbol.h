@@ -39,6 +39,6 @@ typedef struct symbol {
 struct hash extern symbols;
 void putsymbol(symbolp);
 symbolp getsymbol(char const*);
-symbolp syt(char const*);
+symbolp syt(char const*, mdl_u16_t*);
 void syt_drop();
 # endif /*__ffly__as__symbol__h*/

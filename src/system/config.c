@@ -112,15 +112,16 @@ ffly_err_t ffly_ld_sysconf(char const *__path) {
 		ffly_fprintf(ffly_err, "failed to load config.\n");
 		return err;
 	}
-
+	
+/*
 	if (_err(err = ffly_conf_read(&conf))) {
 		ffly_fprintf(ffly_err, "failed to read config.\n");
 		return err;
 	}
-
+*/
 	ffconf cf;
 	ffly_conf_depos(&conf, &cf);
-
+/*
 	void const *version = ffly_conf_get(&cf, "version");
 	if (!ffly_conf_is_str(version)) {
 		ffly_fprintf(ffly_err, "can't read version as type does not match.\n");
@@ -135,14 +136,14 @@ ffly_err_t ffly_ld_sysconf(char const *__path) {
 	
 	ld_max_threads(&cf);
 	ld_alssize(&cf);
-	ld_moddir(&cf);
-	ld_inidir(&cf);
-	ld_modl(&cf);
-	ld_inil(&cf);
+//	ld_moddir(&cf);
+//	ld_inidir(&cf);
+//	ld_modl(&cf);
+//	ld_inil(&cf);
 
 	__ffly_sysconf__.version = (char const*)ffly_str_dupe(ffly_conf_str(version));
 	__ffly_sysconf__.root_dir = (char const*)ffly_str_dupe(ffly_conf_str(root_dir));
-
+*/
 	_failure:
 	if (_err(err = ffly_conf_free(&conf))) {
 		ffly_fprintf(ffly_err, "failed to free config:0.\n");

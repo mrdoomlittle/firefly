@@ -49,6 +49,10 @@ void prreg(ffef_reg_hdrp __reg, mdl_uint_t __no) {
 	printf("%u: region, name: %s, beg: %u, end: %u, type: %s\n", __no, name, __reg->beg, __reg->end, regtype_s(__reg->type));
 }
 
+void prhok(ffef_hokp __hok, mdl_uint_t __no) {
+	printf("%u: hook, offset: %u\n", __hok->offset);
+}
+
 void prrel(ffef_relp __rel, mdl_uint_t __no) {
 	printf("%u: relocate, offset: %u, length: %u\n", __no, __rel->offset, __rel->l);
 }
@@ -67,9 +71,24 @@ int main(int __argc, char const *__argv[]) {
 
 	prhdr(&hdr);
 
+	struct ffef_hok hok;
+	if (hdr.hk != FF_EF_NULL) {
+		printf("hook, entries: %u\n", hdr.nsg);
+		mdl_uint_t i = 0;
+		mdl_u64_t offset = hdr.hk;
+		while(i != hdr.nhk) {
+			lseek(fd, offset, SEEK_SET);
+			read(fd, &hok, ffef_hoksz);
+			prhok(&hok, i);
+			offset-=ffef_hoksz;
+			i++;
+		}
+	} else
+		printf("no hook/s present.\n");
+
 	struct ffef_seg_hdr seg;
 	if (hdr.sg != FF_EF_NULL) {
-		printf("segments, entries: %u\n", hdr.nsg);
+		printf("segment, entries: %u\n", hdr.nsg);
 		mdl_uint_t i = 0;
 		mdl_u64_t offset = hdr.sg;
 		while(i != hdr.nsg) {
@@ -80,16 +99,17 @@ int main(int __argc, char const *__argv[]) {
 			i++;
 		}
 	} else
-		printf("no segments present.\n");
+		printf("no segment/s present.\n");
 
 	struct ffef_reg_hdr reg;
 	if (hdr.rg != FF_EF_NULL) {
-		printf("regions, entries: %u\n", hdr.nrg);
+		printf("region, entries: %u\n", hdr.nrg);
 		mdl_uint_t i = 0;
 		mdl_u64_t offset = hdr.rg;
 		while(i != hdr.nrg) {
 			lseek(fd, offset, SEEK_SET);
 			read(fd, &reg, ffef_reg_hdrsz);
+			prreg(&reg, i);
 			if (reg.type == FF_RG_SYT) {
 				mdl_uint_t size;
 				ffef_syp bed;
@@ -108,12 +128,11 @@ int main(int __argc, char const *__argv[]) {
 				free(bed);
 			}
 
-			prreg(&reg, i);
 			offset-=ffef_reg_hdrsz+reg.l;
 			i++;
 		}
 	} else
-		printf("no regions present.\n");
+		printf("no region/s present.\n");
 
 	struct ffef_rel rel;
 	if (hdr.rl != FF_EF_NULL) {

@@ -9,13 +9,17 @@ void putsymbol(symbolp __sy) {
 	hash_put(&symbols, __sy->p, __sy->len, __sy);
 }
 
-symbolp syt(char const *__name) {
+mdl_u16_t static off = 0;
+symbolp syt(char const *__name, mdl_u16_t *__off) {
 	symbolp sy = (symbolp)malloc(sizeof(struct symbol));
 	sy->len = strlen(__name);
 
 	memdup((void**)&sy->p, __name, sy->len+1);
 	sy->next = head;
 	head = sy;
+	if (__off != NULL)
+		*__off = off;
+	off+=ffef_sysz;
 	return sy;
 }
 

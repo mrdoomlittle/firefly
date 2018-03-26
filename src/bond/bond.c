@@ -81,7 +81,7 @@ typedef struct relocate {
 
 typedef struct symbol {
 	struct symbol *next;
-	struct ffef_sym_hdr hdr;
+	struct ffef_sy sy;
 	char const *name;
 } *symbolp;
 
@@ -113,13 +113,13 @@ void bond(char const *__s, char const *__dst) {
 	dhdr.ident[3] = FF_EF_MAG3;
 
 
+	regionp sttr = NULL;
+
 	dhdr.nsg = 0;
 	dhdr.nrg = 0;
-	dhdr.nsy = 0;
 	dhdr.nrl = 0;
 	dhdr.sg = FF_EF_NULL;
 	dhdr.rg = FF_EF_NULL;
-	dhdr.sy = FF_EF_NULL;
 	dhdr.rl = FF_EF_NULL;
 
 	mdl_i8_t epdeg = -1;
@@ -149,102 +149,10 @@ void bond(char const *__s, char const *__dst) {
 			dhdr.routine = (offset-ffef_hdr_size)+hdr.routine;
 		}
 
-		segmentp seg;
-		if (hdr.sg != FF_EF_NULL) {
-			mdl_uint_t i = 0;
-			mdl_u64_t offset = hdr.sg;
-			while(i != hdr.nsg) {
-				(seg = (segmentp)malloc(sizeof(struct segment)))->next = sg;
-				sg = seg;
-				seg->hdr.offset+=get_offset()-ffef_hdr_size;
-				i++;
-			}	
-		}
-
-		regionp reg;
-		if (hdr.rg != FF_EF_NULL) {
-			mdl_uint_t i = 0;
-			mdl_u64_t offset = hdr.rg;
-			while(i != hdr.nrg) {
-				(reg = (regionp)malloc(sizeof(struct region)))->next = rg;
-				rg = reg;
-
-				lseek(s, offset, SEEK_SET);
-				read(s, &reg->hdr, ffef_reg_hdrsz);
-
-				reg->hdr.beg+=get_offset()-ffef_hdr_size;
-				reg->hdr.end+=get_offset()-ffef_hdr_size;
-
-				reg->name = (char const*)malloc(reg->hdr.l);
-				lseek(s, reg->hdr.name, SEEK_SET);
-				read(s, reg->name, reg->hdr.l);
-
-				mdl_uint_t size;
-				void *exch = malloc(size = (reg->hdr.end-reg->hdr.beg));
-				lseek(s, reg->hdr.beg, SEEK_SET);
-				read(s, exch, size);
-				oust(exch, size);
-				free(exch);
-				printf("region, name: %s\n", reg->name);
-				i++;
-			}
-		}
-
-		symbolp sym;
-		if (hdr.sy != FF_EF_NULL) {
-			mdl_uint_t i = 0;
-			mdl_u64_t offset = hdr.sy;
-			while(i != hdr.nsy) {
-				(sym = (symbolp)malloc(sizeof(struct symbol)))->next = sy;
-				sy = sym;
-
-				lseek(s, offset, SEEK_SET);
-				read(s, &sym->hdr, ffef_sym_hdrsz);
-
-				sym->name = (char const*)malloc(sym->hdr.l);
-				lseek(s, sym->hdr.name, SEEK_SET);
-				read(s, sym->name, sym->hdr.l);
-
-
-				hash_put(&symbols, sym->name, sym->hdr.l-1, sym);
-				printf("symbol, name: %s\n", sym->name);
-				offset-=ffef_sym_hdrsz+sym->hdr.l;
-				i++;
-			}
-		}
-
 		_no:
 		close(s);
 	}
 
-	segmentp seg = sg;
-	while(seg != NULL) {
-		segmentp bk = seg;
-		oust(&seg->hdr, ffef_seg_hdrsz);
-		seg = seg->next;
-		free(bk);
-		dhdr.nsg++;
-	}
-
-	if (sg != NULL)
-		dhdr.sg = offset-ffef_seg_hdrsz;
-	regionp reg = rg;
-	while(reg != NULL) {
-		regionp bk = reg;
-		reg->hdr.name = offset;
-		oust(reg->name, reg->hdr.l);
-		free(reg->name);
-		oust(&reg->hdr, ffef_reg_hdrsz);
-		reg = reg->next;
-		free(bk);
-		dhdr.nrg++;
-	}
-
-	if (rg != NULL)
-		dhdr.rg = offset-ffef_reg_hdrsz;
-
-	lseek(d, 0, SEEK_SET);
-	write(d, &dhdr, ffef_hdr_size);
 	close(d);
 	hash_destroy(&symbols);
 }

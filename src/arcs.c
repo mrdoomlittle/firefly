@@ -58,12 +58,16 @@ mdl_u64_t* ffly_arcs_alias(char const *__name) {
 	} else
 		s = __name;
 
-	mdl_u64_t *p;
+	mdl_u64_t *p = NULL;
 	if (!(p = (mdl_u64_t*)ffly_dict_get(&dict, s, &err)))
 		// remove __ffly_mem_alloc for somthing else
-		ffly_dict_put(&dict, s, p = __ffly_mem_alloc(sizeof(mdl_u64_t)));
+		ffly_dict_put(&dict, s, p = (mdl_u64_t*)__ffly_mem_alloc(sizeof(mdl_u64_t)));
 	if (frame != NULL)
 		ffly_collapse(frame);
+	if (!p) {
+		ffly_printf("error.\n");
+	}
+
 	return p;
 }
 
@@ -82,6 +86,8 @@ void ffly_arc_prepare(ffly_arcp __arc) {
 	ffly_arc_recp *end = p+0x100;
 	while(p != end)
 		*(p++) = NULL;
+	__arc->bk = NULL;
+	__arc->p = NULL;
 }
 
 void ffly_arc_free(ffly_arcp __arc) {
@@ -141,7 +147,7 @@ ffly_arcp ffly_creatarc(ffly_arcp __arc, mdl_u64_t __no) {
 	ffly_arc_prepare(arc);
 	arc->bk = __arc;
 	arc->p = rec;
-	return arc;
+	return NULL;
 }
 
 void ffly_delarc(ffly_arcp __arc) {

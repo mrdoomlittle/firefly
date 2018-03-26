@@ -13,4 +13,6 @@ struct timeval {
 
 # define CLOCK_REALTIME 0
 # define CLOCK_MONOTONIC 1
+
+mdl_s32_t clock_gettime(__linux_clockid_t, struct timespec*);
 # endif /*__ffly__linux__time__h*/

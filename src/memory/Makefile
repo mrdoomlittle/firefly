@@ -16,9 +16,12 @@ str_cpy.o.1 str_cpy.o.0 \
 bzero.o.1 bzero.o.0 \
 mem_cpy.o.1 mem_cpy.o.0 \
 mem_set.o.1 mem_set.o.0 \
-mode.o
+mode.o sys_clock_gettime.o.0 sys_clock_gettime.o.1
 ccflags=-D__ffly_use_allocr -fno-builtin
 all: clean
+	nasm $(nasm_flags) -f elf64 ../system/asm/sys_clock_gettime.asm -o sys_clock_gettime.o.0
+	gcc $(ccflags) -c ../system/sys_clock_gettime.c -o sys_clock_gettime.o.1
+
 	nasm $(nasm_flags) -f elf64 ../system/asm/sys_exit.asm -o sys_exit.o.0
 	gcc $(ccflags) -c ../system/sys_exit.c -o sys_exit.o.1
 

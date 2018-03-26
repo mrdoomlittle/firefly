@@ -34,6 +34,9 @@ $ffly_cc -c $cc_flags -o $dst_dir/io.o $root_dir/io.c
 nasm -f elf64 $as_inc -o $dst_dir/sys_nanosleep.o.0 $root_dir/asm/sys_nanosleep.asm
 $ffly_cc -c $cc_flags -o $dst_dir/sys_nanosleep.o.1 $root_dir/sys_nanosleep.c
 
+nasm -f elf64 $as_inc -o $dst_dir/sys_clock_gettime.o.0 $root_dir/asm/sys_clock_gettime.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_clock_gettime.o.1 $root_dir/sys_clock_gettime.c
+
 nasm -f elf64 $as_inc -o $dst_dir/mutex.o.0 $root_dir/asm/mutex.asm
 $ffly_cc -c $cc_flags -o $dst_dir/mutex.o.1 $root_dir/mutex.c
 
@@ -212,4 +215,5 @@ $dst_dir/sys_recvfrom.o.0 $dst_dir/sys_recvfrom.o.1 \
 $dst_dir/send.o $dst_dir/recv.o \
 $dst_dir/sys_setsockopt.o.0 $dst_dir/sys_setsockopt.o.1 \
 $dst_dir/sys_getsockopt.o.0 $dst_dir/sys_getsockopt.o.1 \
-$dst_dir/sys_ftruncate.o.0  $dst_dir/sys_ftruncate.o.1"
+$dst_dir/sys_ftruncate.o.0  $dst_dir/sys_ftruncate.o.1 \
+$dst_dir/sys_clock_gettime.o.0 $dst_dir/sys_clock_gettime.o.1"

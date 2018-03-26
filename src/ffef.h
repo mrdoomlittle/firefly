@@ -18,7 +18,7 @@
 # define ffef_reg_hdrsz sizeof(struct ffef_reg_hdr)
 # define ffef_seg_hdrsz sizeof(struct ffef_seg_hdr)
 # define ffef_relsz sizeof(struct ffef_rel)
-# define ffef_hoksz sizeof(struct ffef_hook)
+# define ffef_hoksz sizeof(struct ffef_hok)
 # define FF_RG_NULL 0x0
 # define FF_RG_PROG 0x1
 # define FF_RG_STT 0x2
@@ -27,7 +27,6 @@ typedef struct ffef_sy {
 	mdl_u16_t name;
 	mdl_uint_t l;
 	mdl_u64_t loc;
-	mdl_u64_t hooks;
 } *ffef_syp;
 
 typedef struct ffef_reg_hdr {
@@ -53,6 +52,7 @@ typedef struct ffef_rel {
 typedef struct ffef_hok {
 	mdl_u64_t offset;
 	mdl_uint_t l;
+	mdl_u16_t to;
 } *ffef_hokp;
 
 typedef struct ffef_hdr {
@@ -61,8 +61,8 @@ typedef struct ffef_hdr {
 	mdl_u64_t routine;
 	mdl_u64_t sttr;
 
-	mdl_uint_t nsg, nrg, nrl;
-	mdl_u64_t sg, rg, rl;
+	mdl_uint_t nsg, nrg, nrl, nhk;
+	mdl_u64_t sg, rg, rl, hk;
 } *ffef_hdrp;
 
 # endif /*__ffly__ffef__h*/

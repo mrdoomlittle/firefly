@@ -8,7 +8,7 @@
 #	define FF_ZERO 0
 # endif
 # ifndef NULL
-#	define NULL (void*)0
+#	define NULL ((void*)0)
 # endif
 
 # ifndef ffly_null_id

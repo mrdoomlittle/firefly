@@ -10,7 +10,7 @@
 /* not tested */
 		
 mdl_u64_t static
-sum(char const *__key, mdl_u8_t __len) {
+sum(char const *__key, mdl_uint_t __len) {
 	mdl_u64_t ret = 0xffffffffffffffff;
 	char const *p = __key;
 	char const *end = p+__len;

@@ -2,8 +2,9 @@
 # define __ffly__lat__h
 # include <mdlint.h>
 # define ff_lat struct ffly_lat
-# ifndef __ffly_lat_internal
+# ifdef __ffly_lat_internal
 typedef struct record {
+	char ident[3];
 	struct record *next, *fd;
 	mdl_u64_t key;
 	void *p;
@@ -15,7 +16,7 @@ typedef struct pod {
 
 # endif
 typedef struct ffly_lat {
-# ifndef __ffly_lat_internal
+# ifdef __ffly_lat_internal
 	podp p;
 	recordp head;
 # else

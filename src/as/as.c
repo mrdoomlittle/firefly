@@ -7,6 +7,10 @@
 # include "../string.h"
 # include "../malloc.h"
 # include "../dep/str_cmp.h"
+/*
+	cleanup needed
+*/
+
 struct hash symbols;
 struct hash defines;
 struct hash env;
@@ -153,6 +157,7 @@ assemble(char *__p, char *__end) {
 				labelp la = (labelp)_alloca(sizeof(struct label));
 				la->offset = offset;
 				la->adr = stackadr();
+				la->s = sy->p;
 				hash_put(&env, sy->p, sy->len, la);
 				printf("label\n");
 			} else if (is_sydir(sy)) {
@@ -188,7 +193,7 @@ assemble(char *__p, char *__end) {
 				} else if (!strcmp(sy->p, "extern")) {
 					labelp la = (labelp)_alloca(sizeof(struct label));
 					la->flags = LA_LOOSE;
-					//la->s = (char const*)_memdup(sy->next->p, sy->next->len);
+					la->s = (char const*)_memdup(sy->next->p, sy->next->len);
 					hash_put(&env, sy->next->p, sy->next->len, la);
 					printf("extern %s\n", sy->next->p);
 					*(extrn++) = sy->next->p;
@@ -223,15 +228,13 @@ void reloc(mdl_u64_t __offset, mdl_u8_t __l) {
 }
 
 void hook(mdl_u64_t __offset, mdl_u8_t __l, labelp __la) {
-/*
 	hookp hk = (hookp)_alloca(sizeof(struct hook));
 
 	hk->offset = __offset;
 	hk->l = __l;
-	hk->la = __la;
+	hk->to = __la;
 	hk->next = hok;
 	hok = hk;
-*/
 }
 
 # include "../ffef.h"
@@ -256,14 +259,40 @@ void finalize(void) {
 		hdr.nsg = 0;
 		hdr.nrg = 0;
 		hdr.nrl = 0;
+		hdr.nhk = 0;
 		hdr.sg = FF_EF_NULL;
 		hdr.rg = FF_EF_NULL;
 		hdr.rl = FF_EF_NULL;
+		hdr.hk = FF_EF_NULL;
 		char const **cur = globl;
 		while(*(--cur) != NULL) {
 			printf("symbol: %s\n", *cur);
-			syt(*cur);
+			syt(*cur, NULL);
 		}
+
+		cur = extrn;
+		while(*(--cur) != NULL) {
+			printf("extern: %s\n", *cur);
+			mdl_u16_t off;
+			syt(*cur, &off);
+			hookp hk = hok;
+
+			while(hk != NULL) {
+				printf("label: %p\n", hk->to);
+				if (!strcmp(hk->to->s, *cur)) {
+					struct ffef_hok hok;
+					hok.offset = hk->offset;
+					hok.l = hk->l;
+					hok.to = off;
+					oust((mdl_u8_t*)&hok, ffef_hoksz);
+				}
+				hk = hk->next;
+				hdr.nhk++;
+			}
+
+			if (hok != NULL)
+				hdr.hk = offset-ffef_hoksz;
+		}	
 
 		syt_drop();
 

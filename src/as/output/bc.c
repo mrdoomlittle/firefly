@@ -274,15 +274,18 @@ emit_jmp(insp __ins) {
 	} else if (is_syint(l))
 		adr = *(mdl_u64_t*)l->p;
 	else 
-		printf("error.\n");
+		printf("-----> error.\n");
 	// assign register 
 	rgasw(rgname, adr);
 
 	mdl_uint_t offset = offset-sizeof(ffly_addr_t);
-	if (ground == RELOCATE)
+	if (ground == RELOCATE) {
 		reloc(offset, 2);
-	else if (ground == HOOK)
+		printf("reloc.\n");
+	} else if (ground == HOOK) {
 		hook(offset, 2, la);
+		printf("hook.\n");
+	}
 	oustbyte(*__ins->opcode);
 	oust_addr(getreg(rgname)->addr);
 }

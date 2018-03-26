@@ -61,7 +61,7 @@ typedef struct hook {
 	struct hook *next;
 	mdl_u64_t offset;
 	mdl_u8_t l;
-	mdl_u64_t to;
+	labelp to;
 } *hookp;
 
 

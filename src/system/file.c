@@ -21,8 +21,8 @@
 struct ffly_file*
 ffly_fopen(char const *__path, int __flags, mdl_u32_t __mode, ffly_err_t *__err) {
 	struct ffly_file *file = (struct ffly_file*)__ffly_mem_alloc(sizeof(struct ffly_file));
-	if ((file->fd = open(__path, __flags, __mode)) < 0) {
-//		ffly_fprintf(ffly_err, "file, failed to open file, error: %d, %s\n", errno, strerror(errno));
+	if ((file->fd = open(__path, __flags, __mode)) == -1) {
+		ffly_fprintf(ffly_err, "file, failed to open file, error: %d, %s\n", errno, strerror(errno));
 		return NULL;
 	}
 
@@ -44,8 +44,8 @@ ffly_bool_t static valid_fd(int __fd) {
 ffly_err_t ffly_fstat(char const *__path, struct ffly_stat *__stat) {
 	struct stat st;
 	ffly_mem_set(&st, 0, sizeof(struct stat));
-	if (stat(__path, &st) < 0) {
-//		ffly_fprintf(ffly_err, "file, failed to stat file, errno: %d, %s\n", errno, strerror(errno));
+	if (stat(__path, &st) == -1) {
+		ffly_fprintf(ffly_err, "file, failed to stat file, errno: %d, %s\n", errno, strerror(errno));
 		return FFLY_FAILURE;
 	}
 

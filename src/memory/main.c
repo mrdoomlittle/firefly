@@ -314,11 +314,12 @@ void copy(void *__dst, void *__src, mdl_uint_t __bc);
 # include "../linux/mman.h"
 # include "../mode.h"
 # include "../stdio.h"
+# include "../linux/time.h"
 void _start() {
 	ffly_ar_init();
 	ffly_io_init();
-	ffset_mode(_ff_mod_debug);
-/*
+//	ffset_mode(_ff_mod_debug);
+
 	struct ffly_vec vec;
 	ffly_vec_set_flags(&vec, VEC_AUTO_RESIZE);
 	ffly_vec_init(&vec, 8);
@@ -328,6 +329,7 @@ void _start() {
 	i = 0;
 	while(i != n) {
 		mdl_uint_t *p;
+		*((mdl_u8_t*)ffly_alloc(1)) = 212;
 		ffly_vec_push_back(&vec, (void**)&p);
 		*p = i++;
 	}
@@ -337,15 +339,16 @@ void _start() {
 	while(i != n) {
 		mdl_uint_t p;
 		ffly_vec_pop_back(&vec, (void*)&p);
-		ffly_printf(">>> %u\n", p);
+		if (p != (n-1)-i)
+			ffly_printf(">>> %u\n", p);
 		i++;
 	}
 
 	ffly_vec_de_init(&vec);
-*/
+
 //	ffly_free(p2);
 /*
-	mdl_uint_t const n = 60;
+	mdl_uint_t const n = 6000;
 	void *list[n];
 
 	void **cur, **end = (void*)((mdl_u8_t*)list+(n*sizeof(void*)));
@@ -353,16 +356,24 @@ void _start() {
 	cur = list;
 	while(cur != end) *(cur++) = NULL;
 
+	struct timespec begt, endt;
+
+	mdl_u64_t nsec = 0, c = 0;
+
 	i = 0;
 	while(i != n) {
 //		ffly_printf("%u, %u\n", i, n);
 		cur = list;
 		while(cur != end) {
 			if (!*cur) {
-				*cur = ffly_alloc(size = ((ffly_rand()%20)+1));
-//				ffly_printf("%u\n", size);
+				size = ((ffly_rand()%200)+1);
+				clock_gettime(CLOCK_MONOTONIC, &begt);
+				*cur = ffly_alloc(size);
+				clock_gettime(CLOCK_MONOTONIC, &endt);
+				nsec += (endt.tv_nsec-begt.tv_nsec)+((endt.tv_sec-begt.tv_sec)*1000000000);
 				ffly_bzero(*cur, size);	
 				i++;
+				c++;
 			}
 
 			if (ffly_rand()%0x1) {
@@ -377,8 +388,10 @@ void _start() {
 		cur++;
 		}
 	}
-*/
-/*
+
+	ffly_arstat();
+	ffly_printf("%luns\n", nsec/c);
+	ts3();
 	i = 0;
 	while(i != n) {
 		if (list[i] != NULL)
@@ -413,14 +426,24 @@ void _start() {
 
 //	pr();
 //	pf();
+/*
+	void *p = ffly_alloc(20);
+	struct timespec beg, end;
+	clock_gettime(CLOCK_MONOTONIC, &beg);
 
+	ffly_free(p);
+	clock_gettime(CLOCK_MONOTONIC, &end);
 	
+	mdl_u64_t nsec = (end.tv_nsec-beg.tv_nsec)+((end.tv_sec-beg.tv_sec)*1000000000.0);
+	ffly_printf("%luns\n", nsec);
+
 	ffly_printf("mem-usage: %u\n", ffly_mem_alloc_bc-ffly_mem_free_bc);
+*/
 	ffly_arstat();
 
-	ffly_printf("end.\n");
-	pr();
-	pf();
+//	ffly_printf("end.\n");
+//	pr();
+//	pf();
 	ffly_io_closeup();
 	ffly_ar_cleanup();
 	exit(0);

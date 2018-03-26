@@ -375,6 +375,7 @@ read_val(struct ffly_conf *__conf, struct ffly_conf_val *__val) {
 	ffly_err_t err = FFLY_SUCCESS;
 	__val->p = read_literal(__conf, &__val->kind, &err);
 	if (!__val->p) {
+		ffly_fprintf(ffly_err, "got null.\n");
 		return FFLY_FAILURE;
 	}
 
@@ -492,7 +493,7 @@ read_decl(struct ffly_conf *__conf) {
 ffly_err_t
 ffly_conf_init(struct ffly_conf *__conf) {
 	ffly_err_t err;
-	if (_err(err = ffly_buff_init(&__conf->sbuf, 100, 1))) {
+	if (_err(err = ffly_buff_init(&__conf->sbuf, 56, 1))) {
 		ffly_fprintf(ffly_err, "failed to init buff.\n");
 		return err;
 	}
@@ -561,6 +562,7 @@ ffly_conf_read(struct ffly_conf *__conf) {
 	return FFLY_SUCCESS;
 }
 
+# include "dep/mem_set.h"
 ffly_err_t
 ffly_conf_ld(struct ffly_conf *__conf, char const *__file) {
 	ffly_err_t err;
@@ -625,7 +627,7 @@ ffly_conf_free(struct ffly_conf *__conf) {
 		while(itr <= (struct token**)ffly_vec_end(&__conf->toks)) {
 			tok = *(itr++);
 			if (tok->p != NULL) {
-				if ((mdl_u8_t*)tok->p >= __conf->end || (mdl_u8_t*)tok->p < __conf->p)
+				if ((mdl_u8_t*)tok->p > __conf->end || (mdl_u8_t*)tok->p < __conf->p)
 					__ffly_mem_free(tok->p);
 			}
 			__ffly_mem_free(tok);
@@ -641,7 +643,9 @@ ffly_conf_free(struct ffly_conf *__conf) {
 		ffly_fprintf(ffly_err, "failed to de-init buff.\n");
 		return err;
 	}
-	__ffly_mem_free(__conf->p);
+
+	if (__conf->p != NULL)
+		__ffly_mem_free(__conf->p);
 	return FFLY_SUCCESS;
 }
 
