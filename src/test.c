@@ -45,7 +45,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 //	ffly_thread_wait(tr1);
 
 //	ffly_printf("%u\n", test);
-	ffly_printf("main.\n");
+//	ffly_printf("main.\n");
 
-	ffly_arstat();
+//	ffly_arstat();
 }

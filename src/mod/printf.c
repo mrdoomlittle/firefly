@@ -66,6 +66,7 @@ out(char const *__format, va_list __args) {
 	}
 
 	ffmod_ring(_ffcal_printf, NULL, &top);
+	setmalopt(FF_MAL_O_LOC);
 }
 
 

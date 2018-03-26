@@ -7,8 +7,8 @@
 */
 
 mdl_u8_t static opt = FF_MAL_O_LOC;
-mdl_u8_t static heep[2048];
-mdl_u8_t static *fresh = heep;
+mdl_u8_t static heap[8048];
+mdl_u8_t static *fresh = heap;
 
 typedef struct hdr {
 	struct hdr *prev, *next, *fd, *bk;
@@ -27,21 +27,93 @@ void setmalopt(mdl_u8_t __opt) {
 	opt = __opt;
 }
 
+# include "printf.h"
+void pr() {
+	printf("---* all *---\n");
+	struct hdr buf[128];
+	hdrp bufp = buf;
+
+	hdrp cur = top;
+	while(cur != NULL) {
+		*(bufp++) = *cur;
+		cur = cur->next;
+	}
+
+	cur = buf;
+	while(cur != bufp) {
+		printf("size: %u, inuse: %u\n", cur->size, cur->inuse);
+		cur++;
+	}
+}
+
+void pf() {
+	printf("---* free *---\n");
+	struct hdr buf[128];
+	hdrp bufp = buf;
+
+	hdrp cur = bin;
+	while(cur != NULL) {	
+		*(bufp++) = *cur;
+		cur = cur->fd;
+	}
+
+	cur = buf;
+	while(cur != bufp) {
+		printf("size: %u, inuse: %u\n", cur->size, cur->inuse);
+		cur++;
+	}
+}
+
+void detach(hdrp __slab) {
+	if (__slab == top) {
+		if ((top = top->next) != NULL)
+			top->prev = NULL;
+	} else {
+		if (__slab->prev != NULL)
+ 			__slab->prev->next = __slab->next;
+		if (__slab->next != NULL)
+			__slab->next->prev = __slab->prev;
+	}
+}
+
+void unlink(hdrp __slab) {
+	if (__slab == bin) {
+		if ((bin = bin->fd) != NULL)
+			bin->bk = NULL;
+	} else {
+		if (__slab->fd != NULL)
+			__slab->fd->bk = __slab->bk;
+		if (__slab->bk != NULL)
+			__slab->bk->fd = __slab->fd;
+	}
+	__slab->fd = NULL;
+	__slab->bk = NULL;
+}
+
+
 void* malloc(mdl_uint_t __bc) {
 	if (is_opt(FF_MAL_O_LOC)) {
 		if (bin != NULL) {
 			hdrp cur = bin;
 			while(cur != NULL) {
-				if (cur->size >= __bc && !cur->inuse) {
+				if (cur->size >= __bc) {
 					cur->inuse = 1;
-					if (cur == bin) {
-						if ((bin = bin->fd) != NULL)
-							bin->bk = NULL;
-					} else {
-						if (cur->fd != NULL)
-							cur->fd->bk = cur->bk;
-						if (cur->bk != NULL)
-							cur->bk->fd = cur->fd;
+					unlink(cur);
+					if (cur->size>__bc+hdr_size) {
+						hdrp h = (hdrp)((mdl_u8_t*)cur+(__bc+hdr_size));
+						*h = (struct hdr) {
+							.prev=cur, .next=cur->next,
+							.fd=NULL, .bk=NULL, .size=cur->size-(hdr_size+__bc),
+							.inuse=1,.end=cur->end
+						};
+
+						cur->next = h;
+						cur->size = __bc;
+						cur->end = (mdl_u8_t*)h;
+						if (h->next != NULL)
+							h->next->prev = h;
+
+						free((mdl_u8_t*)h+hdr_size);
 					}
 
 					return (void*)((mdl_u8_t*)cur+hdr_size);
@@ -75,16 +147,30 @@ void* malloc(mdl_uint_t __bc) {
 void free(void *__p) {
 	if (is_opt(FF_MAL_O_LOC)) {
 		hdrp h = (hdrp)((mdl_u8_t*)__p-hdr_size);
-		if (fresh == h->end) {
-			if (h == top) {
-				if ((top = top->next) != NULL)
-					top->prev = NULL;
-			} else {
-				if (h->prev != NULL)
-					h->prev->next = h->next;
-				if (h->next != NULL)
-					h->next->prev = h->prev;
+
+		hdrp prev = h->prev, next;
+		if (prev != NULL) {
+			if (!prev->inuse) {
+				detach(h);
+				unlink(prev);
+				prev->size+=hdr_size+h->size;
+				prev->end = h->end;
+				h = prev;
 			}
+		}
+
+		next = h->next;
+		if (next != NULL) {
+			if (!next->inuse) {
+				detach(next);
+				unlink(next);
+				h->end = next->end;
+				h->size+=hdr_size+next->size;
+			}
+		}
+
+		if (fresh == h->end) {
+			detach(h);
 			fresh = (mdl_u8_t*)h;
 			return;
 		}
