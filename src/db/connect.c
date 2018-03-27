@@ -138,7 +138,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	addr.sin_addr.s_addr = inet_addr(ip);
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(ffly_stno(port));
-	ff_net_connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr));
+	ff_net_connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
 	mdl_u8_t key[KEY_SIZE];
 
 	char const *uname = "root";

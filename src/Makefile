@@ -21,6 +21,14 @@ hatch: clean
 	gcc $(cc_flags) -Wall -o hatch hatch.c $(ffly_objs) -nostdlib
 terminal: clean
 	gcc $(cc_flags) -Wall -o terminal terminal.c $(ffly_objs) -nostdlib
+mat: clean
+	gcc $(cc_flags) -c mat.c
+	gcc $(cc_flags) -c mtp.c
+	gcc $(cc_flags) -c mat/daemon.c
+	gcc $(cc_flags) -c mat/client.c
+	gcc $(cc_flags) -Wall -o daemon mat.o mtp.o daemon.o $(ffly_objs) -nostdlib
+	gcc $(cc_flags) -Wall -o client mat.o mtp.o client.o $(ffly_objs) -nostdlib
+#	gcc $(cc_flags) -Wall -o main mat.o mat/main.c $(ffly_objs) -nostdlib
 mul: clean
 	gcc $(cc_flags) -c mul/hash.c
 	gcc $(cc_flags) -c mul/lexer.c

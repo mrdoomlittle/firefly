@@ -8,6 +8,9 @@
 # include "dep/mem_dup.h"
 # include "dep/mem_cmp.h"
 # include "dep/str_cpy.h"
+# include "dep/mem_set.h"
+# define memset(__dst, __val, __n) \
+	ffly_mem_set(__dst, __val, __n)
 # define memcpy(__dst, __src, __n) \
 	ffly_mem_cpy(__dst, __src, __n)
 # define strlen(__s) \

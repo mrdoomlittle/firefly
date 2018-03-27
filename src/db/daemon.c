@@ -170,7 +170,7 @@ void ff_db_daemon(mdl_u16_t __port) {
 		return;
 	}
 
-	socklen_t len;
+	socklen_t len = sizeof(struct sockaddr_in);
 	mdl_i8_t alive;
 	ff_db_errno ern;
 	mdl_u8_t key[KEY_SIZE];

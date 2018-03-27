@@ -32,6 +32,7 @@ ffly_err_t ffly_vfprintf(FF_FILE *__file, char const *__format, va_list __args) 
 mdl_uint_t static
 gen(char *__buf, ffly_size_t __n, char const *__format, va_list __args) {
 	char const *p = __format;
+	char *end = __buf+__n;
 	char *bufp = __buf;
 	while(p != __format+__n) {
 		if (*(p++) == '%') {

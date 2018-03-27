@@ -9,7 +9,7 @@ mdl_s32_t setsockopt(mdl_u32_t __fd, mdl_u32_t __level, mdl_u32_t __name, void *
 			"mov %3, %%edx\n\t"
 			"mov %4, %%r10\n\t"
 			"xorq %%r8, %%r8\n\t"
-			"mov %5, %%r8\n\t"
+			"mov %5, %%r8d\n\t"
 			"call __setsockopt\n\t"
 			"mov %%eax, %0" : "=m"(ret) : "m"(__fd), "m"(__level), "m"(__name), "m"(__val), "m"(__len)
 				: "rdi", "rsi", "rdx", "r10", "r8", "rax");

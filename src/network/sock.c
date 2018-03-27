@@ -27,7 +27,7 @@ mdl_int_t ffly_sock_accept(struct ffly_socket *__sock, struct sockaddr *__addr, 
 }
 
 ffly_err_t ffly_sock_listen(struct ffly_socket *__sock) {
-    if (listen(__sock->fd, 2) == -1) {
+    if (listen(__sock->fd, 24) == -1) {
 		ffly_fprintf(ffly_err, "failed to listen, %s\n", strerror(errno));
 		return FFLY_FAILURE;
     }
