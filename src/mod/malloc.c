@@ -64,30 +64,30 @@ void pf() {
 	}
 }
 
-void detach(hdrp __slab) {
-	if (__slab == top) {
+void detach(hdrp __block) {
+	if (__block == top) {
 		if ((top = top->next) != NULL)
 			top->prev = NULL;
 	} else {
-		if (__slab->prev != NULL)
- 			__slab->prev->next = __slab->next;
-		if (__slab->next != NULL)
-			__slab->next->prev = __slab->prev;
+		if (__block->prev != NULL)
+ 			__block->prev->next = __block->next;
+		if (__block->next != NULL)
+			__block->next->prev = __block->prev;
 	}
 }
 
-void unlink(hdrp __slab) {
-	if (__slab == bin) {
+void unlink(hdrp __block) {
+	if (__block == bin) {
 		if ((bin = bin->fd) != NULL)
 			bin->bk = NULL;
 	} else {
-		if (__slab->fd != NULL)
-			__slab->fd->bk = __slab->bk;
-		if (__slab->bk != NULL)
-			__slab->bk->fd = __slab->fd;
+		if (__block->fd != NULL)
+			__block->fd->bk = __block->bk;
+		if (__block->bk != NULL)
+			__block->bk->fd = __block->fd;
 	}
-	__slab->fd = NULL;
-	__slab->bk = NULL;
+	__block->fd = NULL;
+	__block->bk = NULL;
 }
 
 
