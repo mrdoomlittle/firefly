@@ -3,6 +3,16 @@
 # include "string.h"
 # include "malloc.h"
 # include "stdio.h"
+void static *tf[100];
+void static **fresh = tf;
+void static
+to_free(void *__p) {
+	if (fresh-tf >= 100) {
+		printf("error overflow.\n");
+	}
+	*(fresh++) = __p;
+}
+
 char static fetchc(ffly_matp __mat){return *__mat->p;}
 
 mdl_u8_t static 
@@ -75,7 +85,9 @@ read_ident(ffly_matp __mat, mdl_uint_t *__l) {
 	}
 	*bufp = '\0';
 	*__l = bufp-buf;
-	return (char const*)strdup(buf);
+	char const *ret = strdup(buf);
+	to_free(ret);
+	return ret;
 }
 
 char const static*
@@ -89,7 +101,9 @@ read_no(ffly_matp __mat, mdl_uint_t *__l) {
 	}
 	*bufp = '\0';
 	*__l = bufp-buf;
-	return (char const*)strdup(buf);
+	char const *ret = strdup(buf);
+	to_free(ret);
+	return ret;
 }
 
 bucketp static tokbuf[8];
@@ -344,6 +358,12 @@ act(ffly_matp __mat, pillp __pill) {
 	}
 }
 
+void static
+cleanup() {
+	if (bk != NULL)
+		free(bk);
+}
+
 void ffly_matact(ffly_matp __mat) {
 	bkbuf = (char**)malloc(12*sizeof(char*));
 	*(bkbuf++) = NULL;
@@ -374,6 +394,7 @@ void ffly_matact(ffly_matp __mat) {
 	goto _again;
 	_end:
 	free(bkbuf-1);
+	cleanup();
 }
 
 
