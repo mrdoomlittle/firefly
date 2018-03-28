@@ -13,6 +13,12 @@ struct hash_entry {
 typedef struct hash {
 	struct hash_entry **table;
 } *hashp;
+
+struct ffly_bond {
+
+
+};
+
 void hash_init(hashp);
 void hash_destroy(hashp);
 void hash_put(hashp, mdl_u8_t const*, mdl_uint_t, void*);

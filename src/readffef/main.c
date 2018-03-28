@@ -29,10 +29,10 @@ void prhdr(ffef_hdrp __hdr) {
 
 void prsy(ffef_reg_hdrp __sttr, ffef_syp __sy, mdl_uint_t __no) {
 	char *name = (char*)malloc(__sy->l);
-	lseek(fd, __sttr->beg+__sy->name, SEEK_SET);
+	lseek(fd, __sttr->end-__sy->name, SEEK_SET);
 	read(fd, name, __sy->l);
 
-	printf("%u: symbol, name: %s, loc: %u\n", __no, name, __sy->loc);
+	printf("%u: symbol, name: %s:%u, loc: %u\n", __no, name, __sy->name, __sy->loc);
 
 	free(name);
 }
@@ -58,6 +58,16 @@ void prrel(ffef_relp __rel, mdl_uint_t __no) {
 }
 
 int main(int __argc, char const *__argv[]) {
+	if (__argc<2) {
+		printf("please provide file.\n");
+		return -1;
+	}
+
+	if (access(__argv[1], F_OK) == -1) {
+		printf("file doesen't exist.\n");
+		return -1;
+	}
+
 	fd = open(__argv[1], O_RDONLY);
 
 	struct ffef_reg_hdr sttr;

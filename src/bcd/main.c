@@ -1,96 +1,13 @@
-# include "../types/err_t.h"
-# include "../stdio.h"
-# include "../system/err.h"
-# include "../linux/unistd.h"
-# include "../linux/stat.h"
-# include "../malloc.h"
-# include "../bci.h"
-# include <mdlint.h>
-
-# define MAX 8
-void static
-op_exit(mdl_u8_t **__p) {
-	printf("exit,\t\t");
-	printf("adr{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t);
-}
-
-void static
-op_as(mdl_u8_t **__p) {
-	printf("as,\t\t");
-	mdl_u8_t l;
-	printf("l{%u},\t\t", l = *(mdl_u8_t*)((*__p)++));
-	printf("to{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t)+l;
-}
-
-void static
-op_jmp(mdl_u8_t **__p) {
-	printf("jmp,\t\t");
-	printf("adr{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t);
-}
-
-void static
-op_st(mdl_u8_t **__p) {
-	printf("st,\t\t");
-	printf("l{%u},\t\t", *(mdl_u8_t*)((*__p)++));
-	printf("src{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t);
-	printf("dst{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t);
-}
-
-void static
-op_ld(mdl_u8_t **__p) {
-	printf("ld,\t\t");
-	printf("l{%u},\t\t", *(mdl_u8_t*)((*__p)++));
-	printf("dst{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t);
-	printf("src{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t);
-}
-
-void static
-op_out(mdl_u8_t **__p) {
-	printf("out,\t\t");
-	printf("l{%u},\t\t", *(mdl_u8_t*)((*__p)++));
-	printf("adr{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t);
-}
-
-void static
-op_mov(mdl_u8_t **__p) {
-	printf("mov,\t\t");
-	printf("l{%u},\t\t", *(mdl_u8_t*)((*__p)++));
-	printf("src{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t);
-	printf("dst{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t);
-}
-
-void static
-op_rin(mdl_u8_t **__p) {
-	printf("rin,\t\t");
-	printf("adr{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t);
-}
-
-void(*out[])(mdl_u8_t**) = {
-	op_exit,
-	op_as,
-	op_jmp,
-	op_st,
-	op_ld,
-	op_out,
-	op_mov,
-	op_rin
-};
-
-# include "../ffef.h"
 # include "../opt.h"
 # include "../system/string.h"
 # include "../ffly_def.h"
+# include "../bcd.h"
+# include "../linux/unistd.h"
+# include "../linux/fcntl.h"
+# include "../linux/stat.h"
+# include "../system/err.h"
+# include "../malloc.h"
+# include "../stdio.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	if (__argc<2) {
 		printf("please provide binfile.\n");
@@ -124,25 +41,14 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 			size-=beg;
 	}
 
-	mdl_u8_t *bed = (mdl_u8_t*)malloc(size);
+	mdl_u8_t *p = (mdl_u8_t*)malloc(size);
 	if (beg>0)
 		lseek(fd, beg, SEEK_SET);
-	read(fd, bed, size);
+	read(fd, p, size);
 	close(fd);
 
 	printf("beg, %u, size, %u\n", beg, size);
-	mdl_u8_t *p = bed;
-	mdl_u8_t *end = p+size;
-	while(p != end) {
-		mdl_u8_t op;	
-		if ((op = *(p++)) > MAX-1) {
-			printf("error malformed opno, got{%u}\n", op);
-			break;
-		}
-
-		out[op](&p);
-	}
-
-	free(bed);
+	ffly_bcd(p, p+size);
+	free(p);
 	retok;
 }

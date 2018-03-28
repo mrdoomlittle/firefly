@@ -11,7 +11,6 @@ typedef struct st {
 stp static head = NULL;
 mdl_uint_t static off = 0;
 mdl_uint_t stt(char const *__str, mdl_uint_t __l) {
-	mdl_uint_t ret = off;
 	mdl_uint_t l = (__l>0?__l:strlen(__str))+1;
 	off+=l;
 	
@@ -21,7 +20,7 @@ mdl_uint_t stt(char const *__str, mdl_uint_t __l) {
 
 	p->next = head;
 	head = p;
-	return ret;
+	return off;
 }
 
 mdl_u64_t stt_drop() {

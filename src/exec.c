@@ -41,7 +41,9 @@ prep(void *__hdr, void *__ctx) {
 }
 
 void ffexecf(char const *__file) {
-	fd = open(__file, O_RDONLY, 0);
+	if ((fd = open(__file, O_RDONLY, 0)) == -1) {
+		return;
+	}
 
 	struct stat st;
 	fstat(fd, &st);

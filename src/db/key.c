@@ -14,13 +14,11 @@ struct node {
 	struct node *next;
 };
 
-mdl_uint_t static rand = 0;
-
 void
 ff_db_keygen(mdl_u8_t *__key) {
 	mdl_u8_t *p = __key;
 	while(p != __key+KEY_SIZE)
-		*(p++) = rand++;//ffgen_rand8l();
+		*(p++) = ffgen_rand8l();
 }
 
 mdl_uint_t static

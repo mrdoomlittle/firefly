@@ -339,7 +339,7 @@ void finalize(void) {
 		lseek(out, 0, SEEK_SET);
 		write(out, &hdr, ffef_hdr_size);
 	}
-
+	
 	if (outbuf.off>0) {
 		lseek(out, outbuf.dst, SEEK_SET);
 		write(out, outbuf.p, outbuf.off);

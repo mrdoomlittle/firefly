@@ -4,7 +4,7 @@
 # include "../system/util/hash.h"
 void
 hash_init(hashp __hash) {
-	__hash->table = (struct hash_entry**)malloc(0x100*sizeof(struct hash_entry));
+	__hash->table = (struct hash_entry**)malloc(0x100*sizeof(struct hash_entry*));
 	struct hash_entry **p = __hash->table;
 	struct hash_entry **end = p+0x100;
 	while(p != end)
@@ -13,9 +13,9 @@ hash_init(hashp __hash) {
 
 void static
 free_chain(struct hash_entry *__top) {
-	struct hash_entry *cur = __top;
+	struct hash_entry *cur = __top, *bk;
 	while(cur != NULL) {
-		struct hash_entry *bk = cur;
+		bk = cur;
 		cur = cur->next;
 		free((void*)bk->key);
 		free(bk);
