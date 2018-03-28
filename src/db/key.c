@@ -4,6 +4,7 @@
 # include "../memory/mem_free.h"
 # include "../dep/mem_cpy.h"
 # include "../dep/mem_cmp.h"
+# include "../rand.h"
 // needs testing
 /*
 	connected users will need a key inorder to do anything.
@@ -13,17 +14,17 @@ struct node {
 	struct node *next;
 };
 
-mdl_u8_t static rand = 0;
-/*
-	TODO: make random gen.
-*/
-void ff_db_keygen(mdl_u8_t *__key) {
+mdl_uint_t static rand = 0;
+
+void
+ff_db_keygen(mdl_u8_t *__key) {
 	mdl_u8_t *p = __key;
 	while(p != __key+KEY_SIZE)
-		*(p++) = rand++;
+		*(p++) = rand++;//ffgen_rand8l();
 }
 
-mdl_uint_t static keysum(mdl_u8_t *__key) {
+mdl_uint_t static
+keysum(mdl_u8_t *__key) {
 	mdl_u8_t *p = __key;
 	mdl_uint_t ret = 0;
 	while(p != __key+KEY_SIZE) ret+= *(p++);
@@ -31,7 +32,8 @@ mdl_uint_t static keysum(mdl_u8_t *__key) {
 }
 
 typedef struct node* nodep;
-void ff_db_add_key(ff_dbdp __d, mdl_u8_t *__key) {
+void
+ff_db_add_key(ff_dbdp __d, mdl_u8_t *__key) {
 	nodep n = (nodep)__ffly_mem_alloc(sizeof(struct node));
 	n->key = (mdl_u8_t*)__ffly_mem_alloc(KEY_SIZE);
 	ffly_mem_cpy(n->key, __key, KEY_SIZE);
@@ -48,7 +50,8 @@ void ff_db_add_key(ff_dbdp __d, mdl_u8_t *__key) {
 	}	   
 }
 
-void ff_db_rm_key(ff_dbdp __d, mdl_u8_t *__key) { 
+void
+ff_db_rm_key(ff_dbdp __d, mdl_u8_t *__key) { 
 	mdl_uint_t sum = keysum(__key);
 	nodep beg = (nodep)*(__d->list+(sum&0xff));
 	nodep p = beg;
@@ -69,7 +72,8 @@ void ff_db_rm_key(ff_dbdp __d, mdl_u8_t *__key) {
 	}  
 }
 
-mdl_u8_t ff_db_valid_key(ff_dbdp __d, mdl_u8_t *__key) {
+mdl_u8_t
+ff_db_valid_key(ff_dbdp __d, mdl_u8_t *__key) {
 	nodep p = *(__d->list+(keysum(__key)&0xff));
 	while(p != NULL) {
 		if (!ffly_mem_cmp(__key, p->key, KEY_SIZE))

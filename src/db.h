@@ -36,7 +36,7 @@ enum {
 	_ff_err_prd
 };
 
-typedef mdl_u8_t ff_db_errno;
+typedef mdl_u8_t ff_db_err;
 # define MAX_PILES 20
 struct ffdb_blkd {
 	mdl_uint_t size, end, off;
@@ -47,6 +47,10 @@ struct ffdb_blkd {
 
 struct ff_db_msg {
 	mdl_u8_t kind;	 
+};
+
+struct ff_db_rep {
+	mdl_u8_t type;
 };
 
 struct ffdb_pile;
@@ -103,12 +107,12 @@ void ff_db_del_user(ff_dbdp, mdl_u8_t const*, mdl_uint_t, mdl_u32_t);
 ffly_err_t ff_db_snd_key(FF_SOCKET*, mdl_u8_t*, mdl_u64_t);
 ffly_err_t ff_db_rcv_key(FF_SOCKET*, mdl_u8_t*, mdl_u64_t);
 
-char const* ff_db_errno_str(ff_db_errno);
+char const* ff_db_err_str(ff_db_err);
 ffly_err_t ff_db_snd_err(FF_SOCKET*, ffly_err_t);
 ffly_err_t ff_db_rcv_err(FF_SOCKET*, ffly_err_t*);
 
-ffly_err_t ff_db_snd_errno(FF_SOCKET*, ff_db_errno);
-ffly_err_t ff_db_rcv_errno(FF_SOCKET*, ff_db_errno*);
+ffly_err_t ff_db_snd_errno(FF_SOCKET*, ff_db_err);
+ffly_err_t ff_db_rcv_errno(FF_SOCKET*, ff_db_err*);
 ffly_err_t ff_db_sndmsg(FF_SOCKET*, ff_db_msgp);
 ffly_err_t ff_db_rcvmsg(FF_SOCKET*, ff_db_msgp);
 ffdb_recordp ffdb_creat_record(ffdbp, ffdb_pilep, mdl_uint_t);

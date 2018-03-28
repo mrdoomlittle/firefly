@@ -7,9 +7,10 @@
 # include "../system/util/hash.h"
 # include "../dep/bzero.h"
 # include "../inet.h"
-ff_db_errno static get_errno(FF_SOCKET*, ffly_err_t*);
+ff_db_err static get_errno(FF_SOCKET*, ffly_err_t*);
 
-void ff_db_shutdown(FF_SOCKET *__sock) {
+ffly_err_t
+ff_db_shutdown(FF_SOCKET *__sock) {
 	struct ff_db_msg msg = {
 		.kind = _ff_db_msg_shutdown
 	};
@@ -21,12 +22,14 @@ void ff_db_shutdown(FF_SOCKET *__sock) {
 
 	ff_db_rcv_err(__sock, &err);
 	if (_err(err)) {
-		ffly_printf("errstr: %s\n", ff_db_errno_str(get_errno(__sock, &err)));
-		return;
+		ffly_printf("errstr: %s\n", ff_db_errst(get_errno(__sock, &err)));
+		reterr;
 	}
+	retok;
 }
 
-ff_db_errno get_errno(FF_SOCKET *__sock, ffly_err_t *__err) {
+ff_db_err
+get_errno(FF_SOCKET *__sock, ffly_err_t *__err) {
 	struct ff_db_msg msg = {
 		.kind = _ff_db_msg_req_errno
 	};
@@ -41,12 +44,13 @@ ff_db_errno get_errno(FF_SOCKET *__sock, ffly_err_t *__err) {
 
 	}
 
-	ff_db_errno ern;
+	ff_db_err ern;
 	ff_db_rcv_errno(__sock, &ern);
 	return ern;
 }
 
-ffly_err_t ff_db_login(FF_SOCKET *__sock, mdl_u8_t const *__id, mdl_uint_t __il, mdl_u32_t __passkey, mdl_u8_t *__key, mdl_u64_t __enckey) {
+ffly_err_t
+ff_db_login(FF_SOCKET *__sock, mdl_u8_t const *__id, mdl_uint_t __il, mdl_u32_t __passkey, mdl_u8_t *__key, mdl_u64_t __enckey) {
 	struct ff_db_msg msg = {
 		.kind = _ff_db_msg_login
 	};
@@ -58,7 +62,7 @@ ffly_err_t ff_db_login(FF_SOCKET *__sock, mdl_u8_t const *__id, mdl_uint_t __il,
 
 	ff_db_rcv_err(__sock, &err);
 	if (_err(err)) {
-		ffly_printf("errstr: %s\n", ff_db_errno_str(get_errno(__sock, &err)));
+		ffly_printf("errstr: %s\n", ff_db_errst(get_errno(__sock, &err)));
 		return err;
 	}
 
@@ -73,7 +77,7 @@ ffly_err_t ff_db_login(FF_SOCKET *__sock, mdl_u8_t const *__id, mdl_uint_t __il,
 
 	ff_db_rcv_err(__sock, &err);
 	if (_err(err)) {
-		ffly_printf("errstr: %s\n", ff_db_errno_str(get_errno(__sock, &err)));
+		ffly_printf("errstr: %s\n", ff_db_errst(get_errno(__sock, &err)));
 		return err;
 	}
 
@@ -81,28 +85,35 @@ ffly_err_t ff_db_login(FF_SOCKET *__sock, mdl_u8_t const *__id, mdl_uint_t __il,
 	retok;
 }
 
-ffly_err_t ff_db_logout(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey) {
+ffly_err_t
+ff_db_logout(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey) {
 	struct ff_db_msg msg = {
 		.kind = _ff_db_msg_logout
 	};
 
 	ffly_err_t err;
 	if (_err(err = ff_db_sndmsg(__sock, &msg))) {
-
+		ffly_printf("failed to send message.\n");
 	} 
 
-	ff_db_rcv_err(__sock, &err);
-	if (_err(err)) {
-		ffly_printf("errstr: %s\n", ff_db_errno_str(get_errno(__sock, &err)));
+	ffly_err_t fault;
+	if (_err(err = ff_db_rcv_err(__sock, &fault))) {
+		ffly_printf("failed to recv error.\n");
+	}
+
+	if (_err(fault)) {
+		ffly_printf("errstr: %s\n", ff_db_errst(get_errno(__sock, &err)));
 		return err;
 	}
 
-	ff_db_snd_key(__sock, __key, __enckey);
+	if (_err(err = ff_db_snd_key(__sock, __key, __enckey))) {
+		ffly_printf("failed to send key.\n");
+	}
 
 	ff_db_rcv_err(__sock, &err);
 	if (_err(err)) {
-		ff_db_errno ern = get_errno(__sock, &err);
-		ffly_printf("errstr: %s\n", ff_db_errno_str(ern));
+		ff_db_err ern = get_errno(__sock, &err);
+		ffly_printf("errstr: %s\n", ff_db_errst(ern));
 		return err;
 	}
 }
@@ -142,11 +153,17 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	mdl_u8_t key[KEY_SIZE];
 
 	char const *uname = "root";
-	ff_db_login(sock, uname, ffly_str_len(uname), ffly_hash("21299", 5), key, 9331413);
+	if (_err(ff_db_login(sock, uname, ffly_str_len(uname), ffly_hash("21299", 5), key, 9331413))) {
+		ffly_printf("failed to login.\n");
+	}
 
+	if (_err(ff_db_logout(sock, key, 9331413))) {
+		ffly_printf("failed to logout.\n");
+	}
 
-	ff_db_logout(sock, key, 9331413);
-	ff_db_shutdown(sock);
+	if (_err(ff_db_shutdown(sock))) {
+		ffly_printf("failed to shutdown.\n");
+	}
 	
 	ff_net_close(sock);
 	return 0;  

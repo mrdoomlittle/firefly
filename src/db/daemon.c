@@ -15,7 +15,8 @@ void static **next = ptrs;
 void static *vacant[20];
 void static **end = vacant;
 
-ffly_err_t static ff_db_login(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp *__user, ff_db_errno *__err, mdl_u8_t *__key) {
+ffly_err_t static
+ff_db_login(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp *__user, ff_db_err *__err, mdl_u8_t *__key) {
 	ffly_printf("logging in.\n");
 	ffly_err_t err;
 	char id[40];
@@ -75,11 +76,15 @@ ffly_err_t static ff_db_login(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp *__use
 	retok; 
 }
 
-ffly_err_t static ff_db_logout(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_errno *__err, mdl_u8_t *__key) {
+ffly_err_t static
+ff_db_logout(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
 	ffly_printf("logging out.\n");
 	ffly_err_t err;
 	mdl_u8_t key[KEY_SIZE];
-	ff_db_rcv_key(__sock, key, __user->enckey);
+	if (_err(err = ff_db_rcv_key(__sock, key, __user->enckey))) {
+		ffly_printf("failed to recv key.\n");
+		_ret;
+	}
 	if (!ffly_mem_cmp(key, __key, KEY_SIZE)) {
 		ff_db_rm_key(__d, __key); 
 		__user->loggedin = 0;
@@ -92,6 +97,7 @@ ffly_err_t static ff_db_logout(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __use
 	_succ:
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
 	*__err = _ff_err_null;
+	ffly_printf("logged out.\n");
 	retok;
 }
 
@@ -105,7 +111,8 @@ mdl_u8_t cmdauth[] = {
 	_ff_db_auth_null  //req_errno
 };
 
-mdl_u8_t has_auth(ff_db_userp __user, mdl_u8_t __cmd) {
+mdl_u8_t static
+has_auth(ff_db_userp __user, mdl_u8_t __cmd) {
 	if (!__user)
 		return (cmdauth[__cmd] == _ff_db_auth_null);
 	ffly_printf("root access: %s\n", __user->auth_level == _ff_db_auth_root?"yes":"no");
@@ -140,11 +147,22 @@ char const *msgstr(mdl_u8_t __kind) {
 	return "unknown";
 }
 
+void static
+cleanup(ff_dbdp __daemon) {
+	void const *cur = ffly_map_beg(&__daemon->users);
+	while(cur != NULL) {
+		ff_db_userp usr = (ff_db_userp)ffly_map_getp(cur);
+		__ffly_mem_free(usr->id);
+		ffly_map_fd(&__daemon->users, &cur);
+	}
+}
+
 # define jmpto(__p) __asm__("jmp *%0" : : "r"(__p))
 # define jmpend __asm__("jmp _ff_end")
 # define jmpexit __asm__("jmp _ff_exit");
 # include "../linux/types.h"
-void ff_db_daemon(mdl_u16_t __port) {
+void
+ff_dbd_start(mdl_u16_t __port) {
 	struct ff_dbd daemon;
 	daemon.list = (void**)__ffly_mem_alloc((KEY_SIZE*0x100)*sizeof(void*));
 	ffly_map_init(&daemon.users, _ffly_map_127);
@@ -172,7 +190,7 @@ void ff_db_daemon(mdl_u16_t __port) {
 
 	socklen_t len = sizeof(struct sockaddr_in);
 	mdl_i8_t alive;
-	ff_db_errno ern;
+	ff_db_err ern;
 	mdl_u8_t key[KEY_SIZE];
 	ff_db_userp user = NULL;
 	struct ff_db_msg msg;
@@ -189,6 +207,7 @@ void ff_db_daemon(mdl_u16_t __port) {
 
 	while(alive != -1) {
 		if (_err(err = ff_db_rcvmsg(peer, &msg))) {
+			ffly_printf("failed to recv message.\n");
 			jmpexit;
 		} 
 
@@ -213,19 +232,24 @@ void ff_db_daemon(mdl_u16_t __port) {
 			ff_net_close(peer);    
 			jmpexit;
 		}
-		__asm__("_ff_pulse:\nnop"); {
 
+		__asm__("_ff_pulse:\nnop"); {
+			// echo
 			jmpend; 
 		}
 		__asm__("_ff_login:\nnop"); {
-			ff_db_login(&daemon, peer, &user, &ern, key);
+			if (_err(ff_db_login(&daemon, peer, &user, &ern, key)))
+				ffly_printf("failed to login.\n");
 			jmpend;
 		}
+
 		__asm__("_ff_logout:\nnop"); {
-			ff_db_logout(&daemon, peer, &user, &ern, key);
+			if (_err(ff_db_logout(&daemon, peer, user, &ern, key)))
+				ffly_printf("failed to logout.\n");
 			user = NULL;
 			jmpend;
 		}
+
 		__asm__("_ff_disconnect:\nnop"); {
 			ff_net_close(peer);
 			__asm__("jmp _ff_bk");
@@ -241,6 +265,7 @@ void ff_db_daemon(mdl_u16_t __port) {
 	ffly_printf("somthing went wrong.\n");
 	__asm__("_ff_exit:\nnop");
 	ff_net_close(sock);
+	cleanup(&daemon);
 	ffly_map_de_init(&daemon.users);
 	__ffly_mem_free(daemon.list);
 }
@@ -252,6 +277,6 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	}
 
 	char const *port = __argv[1];
-	ff_db_daemon(ffly_stno(port));	  
+	ff_dbd_start(ffly_stno(port));	  
 	return 0;
 }

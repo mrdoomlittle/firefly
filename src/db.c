@@ -11,7 +11,7 @@
 # define blkd_size sizeof(struct ffdb_blkd)
 # define PAGE_SHIFT 6
 # define PAGE_SIZE (1<<PAGE_SHIFT)
-char const* ff_db_errno_str(ff_db_errno __errno) {
+char const* ff_db_errst(ff_db_err __errno) {
 	switch(__errno) {
 		case _ff_err_null: return "no error";
 		case _ff_err_lci: return "login credentials incorrect";
@@ -62,15 +62,15 @@ ffly_err_t ff_db_rcv_err(FF_SOCKET *__sock, ffly_err_t *__err) {
 	return err;
 }
 
-ffly_err_t ff_db_snd_errno(FF_SOCKET *__sock, ff_db_errno __err) {
+ffly_err_t ff_db_snd_errno(FF_SOCKET *__sock, ff_db_err __err) {
 	ffly_err_t err;
-	ff_net_send(__sock, &__err, sizeof(ff_db_errno), &err);
+	ff_net_send(__sock, &__err, sizeof(ff_db_err), &err);
 	return err;
 }
 
-ffly_err_t ff_db_rcv_errno(FF_SOCKET *__sock, ff_db_errno *__err) {
+ffly_err_t ff_db_rcv_errno(FF_SOCKET *__sock, ff_db_err *__err) {
 	ffly_err_t err;
-	ff_net_recv(__sock, __err, sizeof(ff_db_errno), &err);
+	ff_net_recv(__sock, __err, sizeof(ff_db_err), &err);
 	return err;
 }
 
