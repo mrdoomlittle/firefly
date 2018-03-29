@@ -49,7 +49,7 @@ mul: clean
 ##	gcc -Wall -o main db/key.c $(ffly_objs)
 
 db: clean
-	gcc $(cc_flags) -c db.c
+	gcc $(cc_flags) -c db.c #$(ffly_objs) -nostdlib
 	gcc $(cc_flags) -c db/user.c
 	gcc $(cc_flags) -c db/key.c
 	gcc $(cc_flags) -o connect db/connect.c $(ffly_objs) db.o user.o key.o -nostdlib

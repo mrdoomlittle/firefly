@@ -26,12 +26,27 @@ ffly_err_t ffdb_init(ffdbp __db) {
 	__db->off = 0;
 	__db->top = NULL;
 	__db->next = __db->free;
-	ffly_map_init(&__db->map, _ffly_map_127);
+
+	ffly_err_t err;
+	if (_err(err = ffly_map_init(&__db->map, _ffly_map_127))) { 
+		ffly_printf("failed to init map.\n");
+		_ret;
+	}
+	retok;
 }
 
 ffly_err_t ffdb_open(ffdbp __db, char const *__file) {
 	ffly_err_t err;
+	if (!access(__file, F_OK)) {
+		ffly_printf("database file exists.\n");
+	}
+
 	__db->file = ffly_fopen(__file, FF_O_RDWR|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err);
+	if (_err(err)) {
+		ffly_printf("failed to open database file.\b");
+		_ret;
+	}
+	retok;
 }
 
 ffly_err_t ff_db_snd_key(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey) {
@@ -134,7 +149,7 @@ void free_pile(ffdbp __db, ffdb_pilep __p) {
 
 ffly_err_t ffdb_cleanup(ffdbp __db) {
 	ffly_map_de_init(&__db->map);
-	ffdb_pilep cur = __db->top, prev;
+	ffdb_pilep cur = __db->top, prev = NULL;
 	ffdb_pilep *p;
 	if (!cur)
 		goto _sk;
@@ -145,7 +160,8 @@ ffly_err_t ffdb_cleanup(ffdbp __db) {
 		prev = cur;
 		cur = cur->next;
 	}
-	free_pile(__db, prev);
+	if (prev != NULL)
+		free_pile(__db, prev);
 	__db->top = NULL;
 
 	_sk:
@@ -187,8 +203,7 @@ ffdb_recordp ffdb_fetch_record(ffdbp __db, char const *__pile, char const *__nam
 
 void ffdb_del_record(ffdbp __db, ffdb_pilep __pile, ffdb_recordp __rec) {
 	if (__pile->top == __rec) {
-		__pile->top = __rec->next;
-		if (__pile->top != NULL)
+		if ((__pile->top = __rec->next) != NULL)
 			__pile->top->prev = NULL;
 	} else {
 		if (__rec->prev != NULL)
@@ -258,8 +273,7 @@ ffdb_pilep ffdb_fetch_pile(ffdbp __db, char const *__name) {
 
 void ffdb_del_pile(ffdbp __db, ffdb_pilep __pile) {
 	if (__pile == __db->top) {
-		__db->top = __pile->next;
-		if (__db->top != NULL)
+		if ((__db->top = __pile->next) != NULL)
 			__db->top->prev = NULL;
 		goto _sk;
 	}
@@ -359,8 +373,7 @@ void ffdb_reattach(ffdbp __db, struct ffdb_blkd *__blk) {
 void ffdb_detatch(ffdbp __db, struct ffdb_blkd *__blk) {
 	struct ffdb_blkd prev, next;
 	if (__blk->off == top) {
-		top = __blk->prev;
-		if (top != FFDB_NULL) {
+		if ((top = __blk->prev) != FFDB_NULL) {
 			struct ffdb_blkd blk;
 			read_blkd(__db, &blk, top);
 			blk.next = FFDB_NULL;
@@ -551,7 +564,6 @@ void _pr(ffdbp __db) {
 	}
 }
 
-
 void ts4(ffdbp __db) {
 	ffdb_recordp rec = ffdb_fetch_record(__db, "users", "mrdoomlittle");
 	ffdb_pilep p = ffdb_fetch_pile(__db, "users");
@@ -569,28 +581,18 @@ void ts4(ffdbp __db) {
 	ffly_printf("passwd: %s\n", passwd);
 }
 /*
-int main() {
-	ffly_io_init();
+ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	struct ffdb db;
-	char const *passwd = "21299";
-	mdl_uint_t l = ffly_str_len(passwd);
 	ffdb_init(&db);
 	ffdb_open(&db, "test.db");
 
-	ffdb_pilep p = ffdb_creat_pile(&db);
-	ffdb_pile_alias(&db, "users", p); 
-	ffdb_recordp rec = ffdb_creat_record(&db, p, l+1);
-	ffdb_write(&db, p, rec, 0, passwd, l+1);
-	ffdb_record_alias(&db, p, "mrdoomlittle", rec);
-//	  ts1(&db, "example-pile");
-	ts4(&db);
-	
-	ffdb_del_pile(&db, p);
+	ffdb_pilep pile = ffdb_creat_pile(&db);
+	ffdb_recordp rec = ffdb_creat_record(&db, pile, 20);
 
-//	  ts2(&db);
-	_pf();
+	//ffdb_del_record(&db, pile, rec);
+
 	_pr(&db);
-	ffdb_close(&db);
+	_pf();
 	ffdb_cleanup(&db);
-	ffly_io_closeup();
+	ffdb_close(&db);
 }*/

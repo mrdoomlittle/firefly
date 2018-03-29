@@ -21,14 +21,17 @@
 #	include "config.h"
 # endif
 # define MAX_THREADS 20
+# include "../mal.h"
 typedef struct ffly_thread {
 	ffly_cond_lock_t lock;
 	__linux_pid_t pid;
 	ffly_tid_t tid;
 	ffly_bool_t alive;
+	mdl_i8_t exit;
 	ffly_byte_t *sp, *tls;
 	void*(*routine)(void*);
 	void *arg_p;
+	ffly_potp pot;
 } *ffly_threadp;
 
 static struct ffly_thread **threads = NULL;
@@ -125,18 +128,19 @@ prox() {
 	ff_setpid();
 	thr->pid = ff_getpid();
 	id = thr->tid;
+	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&thr->pot);
 	ffly_fprintf(ffly_out, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
 	ffly_atomic_incr(&active_threads);
-	thr->alive = 1;
-
 	ffly_cond_lock_signal(&thr->lock);
-
+	thr->alive = 1;
 	thr->routine(thr->arg_p);
 	thr->alive = 0;
-	ffly_thread_del(thr->tid);
-
 	ffly_atomic_decr(&active_threads);
-	ffly_araxe();
+
+	ffly_mal_axe;
+
+	thr->exit = 0;
+	ffly_thread_del(thr->tid);
 	exit(SIGKILL);
 }
 
@@ -146,12 +150,10 @@ ffly_err_t ffly_thread_kill(ffly_tid_t __tid) {
 		ffly_fprintf(ffly_err, "thread, failed to kill..\n");
 		return FFLY_FAILURE;
 	}
-
 	return FFLY_SUCCESS;
 }
 
 void ffly_thread_wait(ffly_tid_t __tid) {
-//	  while(get_thr(__tid)->alive);
 	wait4(get_thr(__tid)->pid, NULL, __WALL|__WCLONE, NULL);
 }
 
@@ -193,6 +195,7 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 
 	ffly_threadp thr = get_thr(*__tid);
 	thr->alive = 0;
+	thr->exit = -1;
 	thr->lock = FFLY_COND_LOCK_INIT;
 	if (reused_id) {
 		//if (thr->sp == NULL)
@@ -261,18 +264,24 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 
 ffly_err_t ffly_thread_cleanup() {
 	while(active_threads != 0);
-	ffly_threadp *itr = threads;
+	ffly_threadp *itr = threads, cur;
 	ffly_threadp *end = threads+off;
 	ffly_printf("thread shutdown, stage 0.\n");
 	while(itr != end) {
-//		if ((*itr)->alive)
-//			ffly_thread_kill((*itr)->tid);
-		ffly_thread_wait((*itr)->tid);
-# ifdef __ffly_use_allocr
-		if ((*itr)->sp != NULL)
-			__ffly_mem_free((*itr)->sp);
-# endif
-		__ffly_mem_free(*(itr++));
+		cur = *(itr++);
+		if (cur->alive)
+			ffly_thread_kill(cur->tid);
+		ffly_thread_wait(cur->tid);
+		if (cur->sp != NULL)
+			__ffly_mem_free(cur->sp);
+		if (cur->tls != NULL)
+			__ffly_mem_free(cur->tls);
+		if (cur->exit == -1) { // if exit was a not a success and has been forced to stop
+			ffly_ctl(ffly_malc, _ar_setpot, (mdl_u64_t)cur->pot);
+			ffly_araxe();	
+			ffly_ctl(ffly_malc, _ar_unset, 0);
+		}
+		__ffly_mem_free(cur);
 	}
 
 	ffly_printf("thread shutdown, stage 1.\n");

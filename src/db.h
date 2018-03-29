@@ -27,7 +27,10 @@ enum {
 	_ff_db_msg_del_record
 };
 
-
+/*
+	put this within define so only db.c and files that define somthing may be allowed to access,
+	so with err value dont mix
+*/
 enum {
 	_ff_err_null,
 	_ff_err_lci,
@@ -35,6 +38,8 @@ enum {
 	_ff_err_ali,
 	_ff_err_prd
 };
+
+typedef mdl_u8_t ffdb_key[KEY_SIZE];
 
 typedef mdl_u8_t ff_db_err;
 # define MAX_PILES 20
@@ -45,6 +50,7 @@ struct ffdb_blkd {
 	mdl_u8_t inuse;
 };
 
+// rethink this 'msg/kind'
 struct ff_db_msg {
 	mdl_u8_t kind;	 
 };
@@ -107,7 +113,7 @@ void ff_db_del_user(ff_dbdp, mdl_u8_t const*, mdl_uint_t, mdl_u32_t);
 ffly_err_t ff_db_snd_key(FF_SOCKET*, mdl_u8_t*, mdl_u64_t);
 ffly_err_t ff_db_rcv_key(FF_SOCKET*, mdl_u8_t*, mdl_u64_t);
 
-char const* ff_db_err_str(ff_db_err);
+char const* ff_db_errst(ff_db_err);
 ffly_err_t ff_db_snd_err(FF_SOCKET*, ffly_err_t);
 ffly_err_t ff_db_rcv_err(FF_SOCKET*, ffly_err_t*);
 

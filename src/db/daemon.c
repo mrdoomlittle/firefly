@@ -9,11 +9,42 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../dep/str_len.h"
-void static *ptrs[20];
-void static **next = ptrs;
 
-void static *vacant[20];
-void static **end = vacant;
+# define NO_SLOTS 20
+
+void static *slot[NO_SLOTS];
+void static **fresh = slot;
+
+mdl_uint_t static vacant[NO_SLOTS];
+mdl_uint_t static *next = vacant;
+
+mdl_uint_t acquire_slot() {
+	if (next>vacant)
+		return *(--next);
+	return (fresh++)-slot;
+}
+
+void scrap_slot(mdl_uint_t __no) {
+	if (__no>=NO_SLOTS)
+		return;
+	void **p = slot+__no;
+	if (p+1 == fresh)
+		fresh--;
+	else
+		*(next++) = __no;
+}
+
+void *slotget(mdl_uint_t __no) {
+	if (__no>=NO_SLOTS)
+		return NULL;
+	return *(slot+__no);
+}
+
+void slotput(mdl_uint_t __no, void *__p) {
+	if (__no>=NO_SLOTS)
+		return;
+	*(slot+__no) = __p;
+}
 
 ffly_err_t static
 ff_db_login(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp *__user, ff_db_err *__err, mdl_u8_t *__key) {
@@ -85,6 +116,7 @@ ff_db_logout(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__er
 		ffly_printf("failed to recv key.\n");
 		_ret;
 	}
+
 	if (!ffly_mem_cmp(key, __key, KEY_SIZE)) {
 		ff_db_rm_key(__d, __key); 
 		__user->loggedin = 0;
@@ -101,6 +133,79 @@ ff_db_logout(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__er
 	retok;
 }
 
+ffly_err_t static
+ff_db_creat_pile(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+	ffly_err_t err;
+	ffdb_key key;
+	if (_err(err = ff_db_rcv_key(__sock, key, __user->enckey))) {
+		ffly_printf("failed to recv key.\n");
+		_ret;
+	}
+
+	if (ffly_mem_cmp(key, __key, KEY_SIZE) == -1) {
+		ffly_printf("key mismatch.\n");
+		goto _fail;
+	}
+
+	ff_db_snd_err(__sock, FFLY_SUCCESS);
+
+	mdl_uint_t slotno = acquire_slot();
+
+	slotput(slotno, ffdb_creat_pile(&__d->db));
+	ffly_printf("create pile at slotno: %u\n", slotno);
+
+	ff_net_send(__sock, &slotno, sizeof(mdl_uint_t), &err);	
+	if (_err(err)) {
+		ffly_printf("failed to send slotno.\n");
+	}
+
+	retok;
+	_fail:
+	ff_db_snd_err(__sock, FFLY_FAILURE);
+	reterr;
+}
+
+ffly_err_t static
+ff_db_del_pile(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+	ffly_err_t err;
+	ffdb_key key;
+	if (_err(err = ff_db_rcv_key(__sock, key, __user->enckey))) {
+		ffly_printf("failed to recv key.\n");
+		_ret;
+	}
+
+	if (ffly_mem_cmp(key, __key, KEY_SIZE) == -1) {
+		ffly_printf("key mismatch.\n");
+		goto _fail;
+	}
+
+	ff_db_snd_err(__sock, FFLY_SUCCESS);
+
+	mdl_uint_t slotno;
+	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	if (_err(err)) {
+		ffly_printf("failed to recv slotno.\n");
+	}
+
+	ffly_printf("delete pile at slotno: %u\n", slotno);
+	ffdb_del_pile(&__d->db, slotget(slotno));
+	scrap_slot(slotno);
+	retok;
+	_fail:
+	ff_db_snd_err(__sock, FFLY_FAILURE);
+	reterr;
+}
+/*
+ffly_err_t static
+ff_db_creat_record(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+	retok;
+}
+
+ffly_err_t static
+ff_db_del_record(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+	retok;
+}*/
+
 # include "../system/util/hash.h"
 mdl_u8_t cmdauth[] = {
 	_ff_db_auth_null, //login
@@ -108,7 +213,9 @@ mdl_u8_t cmdauth[] = {
 	_ff_db_auth_null, //pulse
 	_ff_db_auth_null, //shutdown
 	_ff_db_auth_null, //disconnect
-	_ff_db_auth_null  //req_errno
+	_ff_db_auth_null, //req_errno
+	_ff_db_auth_null, //creat_pile
+	_ff_db_auth_null  //del_pile
 };
 
 mdl_u8_t static
@@ -125,14 +232,18 @@ void _ff_pulse();
 void _ff_shutdown();
 void _ff_disconnect();
 void _ff_req_errno();
+void _ff_creat_pile();
+void _ff_del_pile();
 
 void *jmp[] = {
-	&_ff_login,
-	&_ff_logout,
-	&_ff_pulse,
-	&_ff_shutdown,
-	&_ff_disconnect,
-	&_ff_req_errno
+	_ff_login,
+	_ff_logout,
+	_ff_pulse,
+	_ff_shutdown,
+	_ff_disconnect,
+	_ff_req_errno,
+	_ff_creat_pile,
+	_ff_del_pile
 };
 
 char const *msgstr(mdl_u8_t __kind) {
@@ -164,6 +275,8 @@ cleanup(ff_dbdp __daemon) {
 void
 ff_dbd_start(mdl_u16_t __port) {
 	struct ff_dbd daemon;
+	ffdb_init(&daemon.db);
+	ffdb_open(&daemon.db, "test.db");
 	daemon.list = (void**)__ffly_mem_alloc((KEY_SIZE*0x100)*sizeof(void*));
 	ffly_map_init(&daemon.users, _ffly_map_127);
 
@@ -222,52 +335,75 @@ ff_dbd_start(mdl_u16_t __port) {
 			jmpexit;
 		}
 
-		if (msg.kind > _ff_db_msg_req_errno) {
+		if (msg.kind > _ff_db_msg_del_pile) {
 			jmpexit;
-		} 
+		}
+
 		jmpto(jmp[msg.kind]);
 
-		__asm__("_ff_shutdown:\nnop"); {
+		__asm__("_ff_creat_pile:\n\t"); {
+			ff_db_creat_pile(&daemon, peer, user, &ern, key);
+		}
+		jmpend;
+
+		__asm__("_ff_del_pile:\n\t"); {
+			ff_db_del_pile(&daemon, peer, user, &ern, key);
+		}
+		jmpend;
+
+		__asm__("_ff_creat_record:\n\t"); {
+		}
+		jmpend;
+
+		__asm__("_ff_del_record:\n\t"); {
+		}
+		jmpend;
+
+		__asm__("_ff_shutdown:\n\t"); {
 			ffly_printf("goodbye.\n");
 			ff_net_close(peer);    
-			jmpexit;
 		}
+		jmpexit;
 
-		__asm__("_ff_pulse:\nnop"); {
+		__asm__("_ff_pulse:\n\t"); {
 			// echo
-			jmpend; 
 		}
-		__asm__("_ff_login:\nnop"); {
+		jmpend; 
+	
+		__asm__("_ff_login:\n\t"); {
 			if (_err(ff_db_login(&daemon, peer, &user, &ern, key)))
 				ffly_printf("failed to login.\n");
-			jmpend;
 		}
+		jmpend;
 
-		__asm__("_ff_logout:\nnop"); {
+		__asm__("_ff_logout:\n\t"); {
 			if (_err(ff_db_logout(&daemon, peer, user, &ern, key)))
 				ffly_printf("failed to logout.\n");
 			user = NULL;
-			jmpend;
 		}
+		jmpend;
 
-		__asm__("_ff_disconnect:\nnop"); {
+		__asm__("_ff_disconnect:\n\t"); {
 			ff_net_close(peer);
-			__asm__("jmp _ff_bk");
 		}
-		__asm__("_ff_req_errno:\nnop"); {
+		__asm__("jmp _ff_bk");
+	
+		__asm__("_ff_req_errno:\n\t"); {
 			ff_db_snd_errno(peer, ern);
-			jmpend;
 		}
-		__asm__("_ff_end:\nnop");
+		jmpend;
+		__asm__("_ff_end:\n\t");
 		// do somthing
 	}
 
 	ffly_printf("somthing went wrong.\n");
-	__asm__("_ff_exit:\nnop");
+	__asm__("_ff_exit:\n\t");
 	ff_net_close(sock);
 	cleanup(&daemon);
 	ffly_map_de_init(&daemon.users);
 	__ffly_mem_free(daemon.list);
+	ffdb_cleanup(&daemon.db);
+	ffdb_close(&daemon.db);
 }
 
 ffly_err_t ffmain(int __argc, char const *__argv[]) {

@@ -171,6 +171,7 @@ void static _ffly_free(potp, void*);
 
 void static
 abort() {
+	ffly_printf("ar, abort.\n");
 	exit(SIGKILL);
 }
 

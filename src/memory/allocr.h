@@ -3,7 +3,7 @@
 # include <mdlint.h>
 # include "../types/err_t.h"
 
-typedef void* ffly_potp;
+typedef void const* ffly_potp;
 
 enum {
 	_ar_unset,

@@ -9,6 +9,13 @@
 # include "../types/thread.h"
 # include "../types/bool_t.h"
 # include "../linux/types.h"
+/*
+	no thread shall create its own.
+	memory that is allocated resides with the main process
+	so using thread create within thread will only cause issues.
+	TODO:
+		if not main thread switch mal pot.
+*/
 # define FFLY_TID_NULL ((ffly_tid_t)~0)
 # ifdef __cplusplus
 extern "C" {

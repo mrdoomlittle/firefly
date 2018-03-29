@@ -156,6 +156,7 @@ void ffmodld(char const *__file) {
 		(mdl_u64_t)(stack+(DSS-8)), NULL, NULL, 0)) == (__linux_pid_t)-1)
 	{
 		ffly_printf("error.\n");
+		goto _end;
 	}
 
 	ffly_pipe_listen(ffmod_pipeno());
@@ -166,7 +167,10 @@ void ffmodld(char const *__file) {
 			process[no]();
 			goto _again;
 		} else {
-			ffly_printf("somthing broke.\n");	
+			ffly_printf("somthing broke.\n");
+			if (kill(pid, SIGKILL) == -1)
+				ffly_printf("could not kill.\n");
+			goto _end;
 		}
 	}
 
@@ -176,6 +180,7 @@ void ffmodld(char const *__file) {
 
 	ffly_printf("waiting for prossess to finish.\n");
 	wait4(pid, NULL, __WALL|__WCLONE, NULL);
+	_end:
 	__ffly_mem_free(stack);	
 	ffmod_pipe_close();
 }
