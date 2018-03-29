@@ -537,7 +537,7 @@ peek_token(struct ffly_conf *__conf, ffly_err_t *__err) {
 }
 
 
-// rename to ffly_conf_prossess
+// rename to ffly_conf_process
 ffly_err_t
 ffly_conf_read(struct ffly_conf *__conf) {
 	ffly_err_t err;

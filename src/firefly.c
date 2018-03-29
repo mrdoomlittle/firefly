@@ -77,6 +77,7 @@ init() {
 	ffly_ar_init();
 	ffly_io_init();
 	ffly_arcs_init();
+	ffly_thread_init();
 }
 
 void ffly_init();

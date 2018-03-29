@@ -4,6 +4,7 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_realloc.h"
 # include "../memory/mem_free.h"
+# include "../ctl.h"
 # include "../types/off_t.h"
 # include "mutex.h"
 # include "atomic.h"
@@ -34,6 +35,7 @@ static struct ffly_thread **threads = NULL;
 mdl_uint_t static page_c = 0;
 ffly_off_t static off = 0;
 ffly_atomic_uint_t active_threads = 0;
+static ffly_potp pot = NULL;
 
 # include "../linux/signal.h"
 # include "../linux/types.h"
@@ -62,21 +64,36 @@ __linux_pid_t ffly_thread_getpid(ffly_tid_t __tid) {
 	return get_thr(__tid)->pid;
 }
 
+void ffly_thread_init() {
+	/* get current pot for this process
+	*/
+	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&pot);
+}
+
 ffly_err_t static ffly_thread_del(ffly_tid_t __tid) {
 	ffly_mutex_lock(&mutex);
 	if (uu_ids.off >= uu_ids.page_c*UU_PAGE_SIZE) {
+		ffly_ctl(ffly_malc, _ar_setpot, (mdl_u64_t)pot);
 		if (!uu_ids.p) {
 			if ((uu_ids.p = (ffly_tid_t*)__ffly_mem_alloc(((++uu_ids.page_c)*UU_PAGE_SIZE)*sizeof(ffly_tid_t))) == NULL) {
 				ffly_fprintf(ffly_err, "thread: failed to allocate memory for unused thread ids to be stored.\n");
-				return FFLY_FAILURE;
+				goto _fail;
 			}
 		} else {
 			if ((uu_ids.p = (ffly_tid_t*)__ffly_mem_realloc(uu_ids.p, ((++uu_ids.page_c)*UU_PAGE_SIZE)*sizeof(ffly_id_t))) == NULL) {
 				ffly_fprintf(ffly_err, "thread: failed to realloc memory for unused thread ids.\n");
-				return FFLY_FAILURE;
+				goto _fail;
 			}
 		}
+
+		ffly_ctl(ffly_malc, _ar_unset, 0);
+		goto _sk;
+		_fail:
+		ffly_ctl(ffly_malc, _ar_unset, 0);
+		ffly_mutex_unlock(&mutex);
+		return FFLY_FAILURE;
 	}
+	_sk:
 
 	*(uu_ids.p+(uu_ids.off++)) = __tid;
 	ffly_mutex_unlock(&mutex);
@@ -99,7 +116,7 @@ ffly_bool_t ffly_thread_dead(ffly_tid_t __tid) {
 
 # include "../tools/printbin.c"
 void static
-ffly_thr_proxy() {
+prox() {
 	void *arg_p;
 	__asm__("movq -8(%%rbp), %%rdi\n\t"
 			"movq %%rdi, %0": "=m"(arg_p) : : "rdi");
@@ -115,10 +132,10 @@ ffly_thr_proxy() {
 	ffly_cond_lock_signal(&thr->lock);
 
 	thr->routine(thr->arg_p);
-	//ffly_thread_del(thr->tid);
+	thr->alive = 0;
+	ffly_thread_del(thr->tid);
 
 	ffly_atomic_decr(&active_threads);
-	thr->alive = 0;
 	ffly_araxe();
 	exit(SIGKILL);
 }
@@ -192,7 +209,7 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 		};
 	}
 
-	*(void**)(thr->sp+(DSS-8)) = (void*)ffly_thr_proxy;
+	*(void**)(thr->sp+(DSS-8)) = (void*)prox;
 	*(void**)(thr->sp+(DSS-16)) = (void*)thr;
 
 	__linux_pid_t pid;
@@ -248,8 +265,8 @@ ffly_err_t ffly_thread_cleanup() {
 	ffly_threadp *end = threads+off;
 	ffly_printf("thread shutdown, stage 0.\n");
 	while(itr != end) {
-		if ((*itr)->alive)
-			ffly_thread_kill((*itr)->tid);
+//		if ((*itr)->alive)
+//			ffly_thread_kill((*itr)->tid);
 		ffly_thread_wait((*itr)->tid);
 # ifdef __ffly_use_allocr
 		if ((*itr)->sp != NULL)

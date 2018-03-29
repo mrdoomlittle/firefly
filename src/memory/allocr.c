@@ -139,6 +139,7 @@ rodp rods[64] = {
 static struct pot main_pot;
 
 static __thread potp arena = NULL;
+static __thread potp sup = NULL;
 /*
 	dont use pointers when we can use offsets to where the block is located 
 	as it will take of less space in the header.
@@ -171,6 +172,20 @@ void static _ffly_free(potp, void*);
 void static
 abort() {
 	exit(SIGKILL);
+}
+
+void ffly_arctl(mdl_u8_t __req, mdl_u64_t __val) {
+	switch(__req) {
+		case _ar_unset:
+			sup = NULL;
+		break;
+		case _ar_setpot:
+			sup = (potp)__val;			
+		break;
+		case _ar_getpot:
+			*(potp*)__val = arena;
+		break;
+	}
 }
 
 void static
@@ -777,8 +792,10 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 						get_blk(__pot, p->next)->prev = p->off;
 					unlock_pot(__pot);
 					_ffly_free(__pot, (void*)((mdl_u8_t*)p+blkd_size));
-				} else
-					unlock_pot(__pot);
+					goto _sk;
+				}
+				unlock_pot(__pot);
+				_sk:
 				return (void*)((mdl_u8_t*)blk+blkd_size);
 			}
 			bin = blk->fd;
@@ -843,7 +860,7 @@ ffly_alloc(mdl_uint_t __bc) {
 		atr(arena, *rod_at(arena->end));
 	}
 
-	potp p = arena, t;
+	potp p = !sup?arena:sup, t;
 	void *ret;
 	_again:
 	if (!(ret = _ffly_alloc(p, __bc))) {
@@ -995,7 +1012,7 @@ ffly_free(void *__p) {
 		munmap((void*)blk, blkd_size+blk->size);
 		return;
 	}
-	potp p = arena, bk;
+	potp p = !sup?arena:sup, bk;
 	rodp r = NULL, beg;
 	if (!p) {
 		r = *rod_at(__p);

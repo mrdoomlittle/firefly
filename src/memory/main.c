@@ -442,8 +442,8 @@ void _start() {
 	ffly_arstat();
 
 //	ffly_printf("end.\n");
-//	pr();
-//	pf();
+	pr();
+	pf();
 	ffly_io_closeup();
 	ffly_ar_cleanup();
 	exit(0);

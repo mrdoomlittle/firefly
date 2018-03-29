@@ -14,6 +14,7 @@
 extern "C" {
 # endif
 ffly_tid_t ffly_gettid();
+void ffly_thread_init();
 ffly_err_t ffly_thread_create(ffly_tid_t*, void*(*)(void*), void*);
 ffly_err_t ffly_thread_kill(ffly_tid_t);
 ffly_bool_t ffly_thread_alive(ffly_tid_t);

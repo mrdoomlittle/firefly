@@ -644,7 +644,7 @@ ffly_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 ffly_err_t ffly_compiler_finalize(struct ffly_compiler *__compiler, void **__top, ffly_byte_t **__stack) {
 	ffly_err_t err;
 	if (_err(err = ffly_gen(__compiler, __top, __stack))) {
-		errmsg("an error has occurred in the generative prossess.\n");
+		errmsg("an error has occurred in the generative process.\n");
 		_ret;
 	}
 	retok;
@@ -653,7 +653,7 @@ ffly_err_t ffly_compiler_finalize(struct ffly_compiler *__compiler, void **__top
 ffly_err_t ffly_compiler_build(struct ffly_compiler *__compiler, void ** __top, ffly_byte_t **__stack) {
 	ffly_err_t err;
 	if (_err(err = ffly_parse(__compiler))) {
-		errmsg("an error has occurred in the parsing prossess.\n");
+		errmsg("an error has occurred in the parsing process.\n");
 		_ret;
 	}
 

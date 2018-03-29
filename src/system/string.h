@@ -1,6 +1,10 @@
 # ifndef __ffly__system__string__h
 # define __ffly__system__string__h
 # include <mdlint.h>
+# define islrc(__c) \
+	((__c)>='a'&&(__c)<='z')
+# define ishrc(__c) \
+	((__c)>='A'&&(__c)<='Z')
 # ifdef __cplusplus
 extern "C" {
 # endif
