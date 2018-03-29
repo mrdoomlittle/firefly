@@ -168,7 +168,6 @@ ff_db_del_pile(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey, mdl_uint_
 	}
 
 	if (_err(err = ff_db_snd_key(__sock, __key, __enckey))) {
-		ffly_printf("failed to send key.\n");
 	}
 
 	ff_db_rcv_err(__sock, &err);
@@ -182,6 +181,58 @@ ff_db_del_pile(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey, mdl_uint_
 	if (_err(err)) {
 		ffly_printf("failed to send slotno.\n");
 	}
+}
+
+ffly_err_t
+ff_db_creat_record(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey,
+	mdl_uint_t __pile, mdl_uint_t *__slotno, mdl_uint_t __size)
+{
+	struct ff_db_msg msg = {
+		.kind = _ff_db_msg_creat_record
+	};
+
+	ffly_err_t err;
+	if (_err(err = ff_db_sndmsg(__sock, &msg))) {
+		ffly_printf("failed to send message.\n");
+	}
+
+	ffly_err_t fault;
+	if (_err(err = ff_db_rcv_err(__sock, &fault))) {
+	}
+
+	if (_err(err = ff_db_snd_key(__sock, __key, __enckey))) {
+	}
+	ff_db_rcv_err(__sock, &err);
+
+	ff_net_send(__sock, &__pile, sizeof(mdl_uint_t), &err);
+	ff_net_send(__sock, &__size, sizeof(mdl_uint_t), &err);
+	ff_net_recv(__sock, __slotno, sizeof(mdl_uint_t), &err);
+}
+
+ffly_err_t
+ff_db_del_record(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey,
+	mdl_uint_t __pile, mdl_uint_t __slotno)
+{
+	struct ff_db_msg msg = {
+		.kind = _ff_db_msg_del_record
+	};
+
+	ffly_err_t err;
+	if (_err(err = ff_db_sndmsg(__sock, &msg))) {
+		ffly_printf("failed to send message.\n");
+	}
+
+	ffly_err_t fault;
+	if (_err(err = ff_db_rcv_err(__sock, &fault))) {
+	}
+
+	if (_err(err = ff_db_snd_key(__sock, __key, __enckey))) {
+	}
+
+	ff_db_rcv_err(__sock, &err);
+
+	ff_net_send(__sock, &__pile, sizeof(mdl_uint_t), &err);
+	ff_net_send(__sock, &__slotno, sizeof(mdl_uint_t), &err);
 }
 
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
@@ -218,23 +269,27 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_net_connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
 	mdl_u8_t key[KEY_SIZE];
 
+	mdl_u64_t enckey = 9331413;
+
 	char const *uname = "root";
-	if (_err(ff_db_login(sock, uname, ffly_str_len(uname), ffly_hash("21299", 5), key, 9331413))) {
+	if (_err(ff_db_login(sock, uname, ffly_str_len(uname), ffly_hash("21299", 5), key, enckey))) {
 		ffly_printf("failed to login.\n");
 	}
 
-	mdl_uint_t slotno;
-	if (_err(ff_db_creat_pile(sock, key, 9331413, &slotno))) {
+	mdl_uint_t pile, rec;
+	if (_err(ff_db_creat_pile(sock, key, enckey, &pile))) {
 		ffly_printf("failed to create pile.\n");
 	}
 
-	ffly_printf("got slotno: %u\n", slotno);
+	ffly_printf("pile, slotno: %u\n", pile);
+	ff_db_creat_record(sock, key, enckey, pile, &rec, 20);	
+	ffly_printf("record, slotno: %u\n", rec);
 
-	if (_err(ff_db_del_pile(sock, key, 9331413, slotno))) {
+	if (_err(ff_db_del_pile(sock, key, enckey, pile))) {
 		ffly_printf("failed to delete pile.\n");
 	}
 
-	if (_err(ff_db_logout(sock, key, 9331413))) {
+	if (_err(ff_db_logout(sock, key, enckey))) {
 		ffly_printf("failed to logout.\n");
 	}
 
