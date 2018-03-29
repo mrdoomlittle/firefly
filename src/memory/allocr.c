@@ -210,13 +210,11 @@ rfr(potp __pot) {
 			rr->next = ft;
 		}
 
-
 		if (ft != NULL)
 			ulpot(ft);
 		if (rr != NULL)
 			ulpot(rr);
 	}
-
 	ulrod(r);
 }
 
@@ -226,15 +224,12 @@ detatch(potp __pot, blkdp __blk) {
 	ar_off_t fwd = __blk->fd;
 	ar_off_t bck = __blk->bk;
 
-	if (is_null(*bin)) {
-		ffly_errmsg("theres somthing wong.\n");
-	}
+	if (is_null(*bin))
+		ffly_errmsg("bin at this location is dead.\n");
 
 	if (__blk->off == *bin) {
-		if (not_null(bck)) {
-			ffly_errmsg("theres somthing wong.\n");
-		}
-
+		if (not_null(bck))
+			ffly_errmsg("block seems to have a back link.\n");
 		if (not_null(*bin = fwd))
 			get_blk(__pot, fwd)->bk = AR_NULL; 
 	} else {
@@ -254,7 +249,6 @@ recouple(potp __pot, blkdp __blk) {
 	ar_off_t *top = &__pot->top_blk;
 	ar_off_t *end = &__pot->end_blk;
 	ar_off_t off = __blk->off;
-
 	if (not_null(*top))
 		if (off < get_blk(__pot, *top)->off)
 			*top = off;
@@ -283,17 +277,15 @@ decouple(potp __pot, blkdp __blk) {
 	ar_off_t ft = __blk->next;
 
 	if (off == *top) {
-		*top = ft;
-		if (not_null(*top))
+		if (not_null(*top = ft))
 			get_blk(__pot, *top)->prev = AR_NULL;
-		else
+		else //make sure
 			*end = AR_NULL;
 		return;
 	}
 
 	if (off == *end) {
-		*end = rr;
-		if (not_null(*end))
+		if (not_null(*end = rr))
 			get_blk(__pot, *end)->next = AR_NULL;
 		return;
 	}
@@ -305,6 +297,9 @@ decouple(potp __pot, blkdp __blk) {
 }
 
 /* dead memory */
+/*
+	memory that hasent been touched yet
+*/
 mdl_u64_t static
 ffly_ardead(potp __pot) {
 	return __pot->top-(__pot->end+__pot->off);
@@ -318,6 +313,9 @@ ffly_arused(potp __pot) {
 }
 
 /* buried memory */
+/*
+	memory that is occupied but not being used at this moment
+*/
 mdl_u64_t static
 ffly_arburied(potp __pot) {
 	return __pot->buried;
@@ -531,6 +529,11 @@ void ffly_araxe() {
 	arena = NULL;
 }
 
+/*
+	has not been finished
+	TODO:
+*/
+
 void static*
 shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 	if (__blk->size <= __size || is_free(__blk)) {
@@ -671,6 +674,8 @@ grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 	return ret;
 }
 
+
+// user level
 void*
 ffly_arsh(void *__p, mdl_uint_t __to) {
 	blkdp blk = (blkdp)((mdl_u8_t*)__p-blkd_size);
@@ -681,13 +686,11 @@ ffly_arsh(void *__p, mdl_uint_t __to) {
 		p = p->fd;
 		ulpot(bk);
 		if (!p) {
-			ffly_errmsg("not found.\n");
+			ffly_errmsg("ar, address '%p' can't be found.\n", __p);
 			return NULL;
 		}
-
 		lkpot(p);
 	}
-
 	ulpot(p);
 	return shrink_blk(p, blk, __to);
 }
@@ -700,23 +703,25 @@ ffly_argr(void *__p, mdl_uint_t __to) {
 	while(!(__p >= p->end && __p < p->top)) {
 		bk = p;
 		p = p->fd;
-		ulpot(bk);
-	
+		ulpot(bk);	
 		if (!p) {
-			ffly_errmsg("not found, %p\n", __p);
+			ffly_errmsg("ar, address '%p' can't be found.\n", __p);
 			return NULL;
 		}
 		lkpot(p);
 	}
-
 	ulpot(p);
 	return grow_blk(p, blk, __to);
 }
 
 potp alloc_pot(mdl_uint_t __size) {
-	potp p = (potp)_ffly_alloc(&main_pot, pot_size);
+	potp p;
+	if (!(p = (potp)_ffly_alloc(&main_pot, pot_size))) {
+		// err
+	}
+
 	init_pot(p);
-	p->page_c = (__size>>PAGE_SHIFT)+((__size-((__size>>PAGE_SHIFT)*PAGE_SIZE))>0);
+	p->page_c = (__size>>PAGE_SHIFT)+((__size&((~(mdl_u64_t)0)>>(64-PAGE_SHIFT)))>0);
 
 	mdl_uint_t size = p->page_c*PAGE_SIZE;
 	p->end = _ffly_alloc(&main_pot, size);
@@ -784,7 +789,8 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 	ar_off_t top = __pot->off+size;
 	if (is_flag(__pot->flags, USE_BRK)) {
 		ar_uint_t page_c;
-		if ((page_c = ((top>>PAGE_SHIFT)+((top-((top>>PAGE_SHIFT)*PAGE_SIZE))>0))) > __pot->page_c) {
+		if ((page_c = ((top>>PAGE_SHIFT)+((top&((~(mdl_u64_t)0)>>(64-PAGE_SHIFT)))>0))) > __pot->page_c) {
+		//if ((page_c = ((top>>PAGE_SHIFT)+((top-((top>>PAGE_SHIFT)*PAGE_SIZE))>0))) > __pot->page_c) {
 			if (brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
 				ffly_errmsg("error: brk.\n");
 			}
@@ -953,7 +959,8 @@ _ffly_free(potp __pot, void *__p) {
 		__pot->off = blk->off;
 		if (is_flag(__pot->flags, USE_BRK)) { 
 			mdl_uint_t page_c;
-			if ((page_c = ((__pot->off>>PAGE_SHIFT)+((__pot->off-((__pot->off>>PAGE_SHIFT)*PAGE_SIZE))>0))) < __pot->page_c) {
+			if ((page_c = ((__pot->off>>PAGE_SHIFT)+((__pot->off&((~(mdl_u64_t)0)>>(64-PAGE_SHIFT)))>0))) < __pot->page_c) {
+//			if ((page_c = ((__pot->off>>PAGE_SHIFT)+((__pot->off-((__pot->off>>PAGE_SHIFT)*PAGE_SIZE))>0))) < __pot->page_c) {
 				if (brk(__pot->top = (void*)((mdl_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
 					ffly_errmsg("error: brk.\n");
 				}
