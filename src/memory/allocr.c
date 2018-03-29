@@ -139,7 +139,7 @@ rodp rods[64] = {
 static struct pot main_pot;
 
 static __thread potp arena = NULL;
-static __thread potp sup = NULL;
+static __thread potp temp = NULL;
 /*
 	dont use pointers when we can use offsets to where the block is located 
 	as it will take of less space in the header.
@@ -177,10 +177,11 @@ abort() {
 void ffly_arctl(mdl_u8_t __req, mdl_u64_t __val) {
 	switch(__req) {
 		case _ar_unset:
-			sup = NULL;
+			arena = temp;
 		break;
 		case _ar_setpot:
-			sup = (potp)__val;			
+			temp = arena;
+			arena = (potp)__val;			
 		break;
 		case _ar_getpot:
 			*(potp*)__val = arena;
@@ -532,8 +533,10 @@ void pf() {
 void free_pot(potp);
 void ffly_araxe() {
 	potp p;
-	if (!(p = arena))
+	if (!(p = arena)) {
+		ffly_printf("ar, pot has already been axed.\n");
 		return;
+	}
 	rfr(p);
 	while(p != NULL) {
 		potp bk = p;
@@ -860,7 +863,7 @@ ffly_alloc(mdl_uint_t __bc) {
 		atr(arena, *rod_at(arena->end));
 	}
 
-	potp p = !sup?arena:sup, t;
+	potp p = arena, t;
 	void *ret;
 	_again:
 	if (!(ret = _ffly_alloc(p, __bc))) {
@@ -1012,7 +1015,7 @@ ffly_free(void *__p) {
 		munmap((void*)blk, blkd_size+blk->size);
 		return;
 	}
-	potp p = !sup?arena:sup, bk;
+	potp p = arena, bk;
 	rodp r = NULL, beg;
 	if (!p) {
 		r = *rod_at(__p);
