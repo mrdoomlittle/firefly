@@ -73,7 +73,8 @@ void ffly_thread_init() {
 	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&pot);
 }
 
-ffly_err_t static ffly_thread_del(ffly_tid_t __tid) {
+ffly_err_t static
+ffly_thread_del(ffly_tid_t __tid) {
 	ffly_mutex_lock(&mutex);
 	if (uu_ids.off >= uu_ids.page_c*UU_PAGE_SIZE) {
 		ffly_ctl(ffly_malc, _ar_setpot, (mdl_u64_t)pot);
@@ -96,8 +97,8 @@ ffly_err_t static ffly_thread_del(ffly_tid_t __tid) {
 		ffly_mutex_unlock(&mutex);
 		return FFLY_FAILURE;
 	}
-	_sk:
 
+	_sk:
 	*(uu_ids.p+(uu_ids.off++)) = __tid;
 	ffly_mutex_unlock(&mutex);
 	return FFLY_SUCCESS;
@@ -270,7 +271,7 @@ ffly_err_t ffly_thread_cleanup() {
 	while(itr != end) {
 		cur = *(itr++);
 		if (cur->alive)
-			ffly_thread_kill(cur->tid);
+			ffly_thread_kill(cur->tid); // bad - rethink
 		ffly_thread_wait(cur->tid);
 		if (cur->sp != NULL)
 			__ffly_mem_free(cur->sp);

@@ -535,7 +535,7 @@ void free_pot(potp);
 void ffly_araxe() {
 	potp p;
 	if (!(p = arena)) {
-		ffly_printf("ar, pot has already been axed.\n");
+		ffly_printf("ar, pot has already been axed, or has been like this from the start.\n");
 		return;
 	}
 	rfr(p);
@@ -1018,13 +1018,13 @@ ffly_free(void *__p) {
 	}
 	potp p = arena, bk;
 	rodp r = NULL, beg;
+	_bk:
 	if (!p) {
 		r = *rod_at(__p);
 		beg = r;
 		lkrod(r);
 		rodp bk;
-		while(!r->p) {
-			bk = r;
+		while(!(bk = r)->p) {
 			if ((r = r->next) == beg) {
 				ffly_errmsg("error.\n");
 				ulrod(bk);
@@ -1039,6 +1039,7 @@ ffly_free(void *__p) {
 			ulrod(r);
 			abort();
 		}
+
 		ulrod(r);
 	}
 
@@ -1059,13 +1060,17 @@ ffly_free(void *__p) {
 				ulrod(bk);
 
 				if (r == beg) {
-					ffly_errmsg("error.\n");
+					ffly_errmsg("error: could not find pot associated with pointer.\n");
 					abort();
 				}
 			}
-			if (!p) {	
-				ffly_errmsg("error: could not find pot associated with pointer.\n");
-				return;
+			if (!p) {
+				if (!r)
+					goto _bk;
+				else {
+					ffly_errmsg("error.\n");
+					return;
+				}
 			}
 		}
 

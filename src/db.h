@@ -6,6 +6,7 @@
 # include "types/off_t.h"
 # include "system/map.h"
 # include "system/file.h"
+# include "system/mutex.h"
 # define KEY_SIZE 2 // bytes
 // needs testing
 enum {
@@ -65,7 +66,7 @@ struct ffdb_record;
 struct ffdb {
 	FF_FILE *file;
 	ffly_off_t off;
-	
+	ffly_mutex_t lock;
 	struct ffdb_pile *top, *free[20], **next;
 	struct ffly_map map;
 };
@@ -84,20 +85,20 @@ typedef struct ff_dbd {
 	struct ffdb db;
 } *ff_dbdp;
 
-struct ffdb_pile {
+typedef struct ffdb_pile {
 	struct ffly_map map; 
 	struct ffdb_record *top;
 	struct ffdb_pile *prev, *next;
-};
+	ffly_mutex_t lock;
+} *ffdb_pilep;
 
-struct ffdb_record {
+typedef struct ffdb_record {
 	mdl_uint_t p;
 	struct ffdb_record *prev, *next;
-};
+} *ffdb_recordp;
 
 typedef struct ffdb_blkd* ffdb_blkdp;
-typedef struct ffdb_record* ffdb_recordp;
-typedef struct ffdb_pile* ffdb_pilep;
+
 typedef struct ffdb* ffdbp;
 typedef struct ff_db_msg* ff_db_msgp;
 

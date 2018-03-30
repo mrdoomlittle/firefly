@@ -11,6 +11,11 @@
 # define blkd_size sizeof(struct ffdb_blkd)
 # define PAGE_SHIFT 6
 # define PAGE_SIZE (1<<PAGE_SHIFT)
+/*
+	TODO:
+	 make thread safe
+*/
+
 char const* ff_db_errst(ff_db_err __errno) {
 	switch(__errno) {
 		case _ff_err_null: return "no error";

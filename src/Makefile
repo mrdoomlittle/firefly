@@ -52,8 +52,9 @@ db: clean
 	gcc $(cc_flags) -c db.c #$(ffly_objs) -nostdlib
 	gcc $(cc_flags) -c db/user.c
 	gcc $(cc_flags) -c db/key.c
+	gcc $(cc_flags) -c db/slot.c
 	gcc $(cc_flags) -o connect db/connect.c $(ffly_objs) db.o user.o key.o -nostdlib
-	gcc $(cc_flags) -o daemon db/daemon.c $(ffly_objs) db.o user.o key.o -nostdlib
+	gcc $(cc_flags) -o daemon db/daemon.c $(ffly_objs) db.o user.o key.o slot.o -nostdlib
 net: clean
 	gcc -Wall -c network/sock.c
 	gcc -Wall -c network/input.c

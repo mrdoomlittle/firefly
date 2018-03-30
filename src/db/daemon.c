@@ -9,46 +9,11 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../dep/str_len.h"
-
-# define NO_SLOTS 20
-
-void static *slot[NO_SLOTS];
-void static **fresh = slot;
-
-mdl_uint_t static vacant[NO_SLOTS];
-mdl_uint_t static *next = vacant;
-
-mdl_uint_t acquire_slot() {
-	if (next>vacant)
-		return *(--next);
-	if (fresh>=slot+NO_SLOTS) {
-		// err
-		return 0;
-	}
-	return (fresh++)-slot;
-}
-
-void scrap_slot(mdl_uint_t __no) {
-	if (__no>=NO_SLOTS)
-		return;
-	void **p = slot+__no;
-	if (p+1 == fresh)
-		fresh--;
-	else
-		*(next++) = __no;
-}
-
-void *slotget(mdl_uint_t __no) {
-	if (__no>=NO_SLOTS)
-		return NULL;
-	return *(slot+__no);
-}
-
-void slotput(mdl_uint_t __no, void *__p) {
-	if (__no>=NO_SLOTS)
-		return;
-	*(slot+__no) = __p;
-}
+# include "../system/thread.h"
+mdl_uint_t acquire_slot();
+void scrap_slot(mdl_uint_t);
+void *slotget(mdl_uint_t);
+void slotput(mdl_uint_t, void*);
 
 mdl_i8_t
 permit(FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__errn, ffly_err_t *__err, mdl_u8_t *__key) {
@@ -269,16 +234,16 @@ ff_db_del_record(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *
 
 # include "../system/util/hash.h"
 mdl_u8_t cmdauth[] = {
-	_ff_db_auth_null, //login
-	_ff_db_auth_user, //logout
-	_ff_db_auth_null, //pulse
-	_ff_db_auth_null, //shutdown
-	_ff_db_auth_null, //disconnect
-	_ff_db_auth_null, //req_errno
-	_ff_db_auth_null, //creat_pile
-	_ff_db_auth_null,  //del_pile
-	_ff_db_auth_null, //creat_record
-	_ff_db_auth_null //del_record
+	_ff_db_auth_null,	//login
+	_ff_db_auth_null,	//logout
+	_ff_db_auth_null,	//pulse
+	_ff_db_auth_null,	//shutdown <- should be root only access
+	_ff_db_auth_null,	//disconnect
+	_ff_db_auth_null,	//req_errno
+	_ff_db_auth_root,	//creat_pile
+	_ff_db_auth_root,	//del_pile
+	_ff_db_auth_root,	//creat_record
+	_ff_db_auth_root	//del_record
 };
 
 mdl_u8_t static
@@ -343,36 +308,15 @@ cleanup(ff_dbdp __daemon) {
 # define jmpend __asm__("jmp _ff_end")
 # define jmpexit __asm__("jmp _ff_exit");
 # include "../linux/types.h"
-void
-ff_dbd_start(mdl_u16_t __port) {
-	struct ff_dbd daemon;
-	ffdb_init(&daemon.db);
-	ffdb_open(&daemon.db, "test.db");
-	daemon.list = (void**)__ffly_mem_alloc((KEY_SIZE*0x100)*sizeof(void*));
-	ffly_map_init(&daemon.users, _ffly_map_127);
+# include "../pellet.h"
+# include "../ctl.h"
+ffly_potp static main_pot;
 
-	char const *rootid = "root";
-	ff_db_userp root = ff_db_add_user(&daemon, rootid, ffly_str_len(rootid), ffly_hash("21299", 5));
-	root->auth_level = _ff_db_auth_root; 
-	root->enckey = 9331413;
-
+void*
+serve(void *__arg_p) {
+	ffly_pelletp pel = (ffly_pelletp)__arg_p;
 	ffly_err_t err;
-	struct sockaddr_in addr, cl;
-	ffly_bzero(&addr, sizeof(struct sockaddr_in));
-	ffly_bzero(&cl, sizeof(struct sockaddr_in));
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = htons(INADDR_ANY);
-	addr.sin_port = htons(__port);
-	FF_SOCKET *sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
-	int val = 1;
-	setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int));
-	
-	if (_err(ff_net_bind(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in)))) {
-		ff_net_close(sock);
-		return;
-	}
-
-	socklen_t len = sizeof(struct sockaddr_in);
+	ff_dbdp daemon;
 	mdl_i8_t alive;
 	ff_db_err ern;
 	mdl_u8_t key[KEY_SIZE];
@@ -380,16 +324,13 @@ ff_dbd_start(mdl_u16_t __port) {
 	struct ff_db_msg msg;
 	FF_SOCKET *peer;
 
-	__asm__("_ff_bk:\nnop");
-	ff_net_listen(sock);
-	peer = ff_net_accept(sock, (struct sockaddr*)&cl, &len, &err);
-	if (_err(err)) {
-		ff_net_close(sock);
-		return;
-	}
-	alive = 0;
+	ffly_pellet_getd(pel, (void**)&daemon, sizeof(ff_dbdp));
+	ffly_pellet_getd(pel, (void**)&peer, sizeof(FF_SOCKET*));
+	ffly_pellet_free(pel);
 
-	while(alive != -1) {
+	alive = 0;
+	ffly_ctl(ffly_malc, _ar_setpot, (mdl_u64_t)main_pot);	
+	while(!alive) {
 		if (_err(err = ff_db_rcvmsg(peer, &msg))) {
 			ffly_printf("failed to recv message.\n");
 			jmpexit;
@@ -413,30 +354,31 @@ ff_dbd_start(mdl_u16_t __port) {
 		jmpto(jmp[msg.kind]);
 
 		__asm__("_ff_creat_pile:\n\t"); {
-			ff_db_creat_pile(&daemon, peer, user, &ern, key);
+			ff_db_creat_pile(daemon, peer, user, &ern, key);
 		}
 		jmpend;
 
 		__asm__("_ff_del_pile:\n\t"); {
-			_pr(&daemon.db);
+			_pr(&daemon->db);
 			_pf();
-			ff_db_del_pile(&daemon, peer, user, &ern, key);
+			ff_db_del_pile(daemon, peer, user, &ern, key);
 		}
 		jmpend;
 
 		__asm__("_ff_creat_record:\n\t"); {
-			ff_db_creat_record(&daemon, peer, user, &ern, key);
+			ff_db_creat_record(daemon, peer, user, &ern, key);
 		}
 		jmpend;
 
 		__asm__("_ff_del_record:\n\t"); {
-			ff_db_del_record(&daemon, peer, user, &ern, key);
+			ff_db_del_record(daemon, peer, user, &ern, key);
 		}
 		jmpend;
 
 		__asm__("_ff_shutdown:\n\t"); {
 			ffly_printf("goodbye.\n");
-			ff_net_close(peer);    
+			ff_net_close(peer);
+			// should shutdown daemon
 		}
 		jmpexit;
 
@@ -446,13 +388,13 @@ ff_dbd_start(mdl_u16_t __port) {
 		jmpend; 
 	
 		__asm__("_ff_login:\n\t"); {
-			if (_err(ff_db_login(&daemon, peer, &user, &ern, key)))
+			if (_err(ff_db_login(daemon, peer, &user, &ern, key)))
 				ffly_printf("failed to login.\n");
 		}
 		jmpend;
 
 		__asm__("_ff_logout:\n\t"); {
-			if (_err(ff_db_logout(&daemon, peer, user, &ern, key)))
+			if (_err(ff_db_logout(daemon, peer, user, &ern, key)))
 				ffly_printf("failed to logout.\n");
 			user = NULL;
 		}
@@ -461,7 +403,7 @@ ff_dbd_start(mdl_u16_t __port) {
 		__asm__("_ff_disconnect:\n\t"); {
 			ff_net_close(peer);
 		}
-		__asm__("jmp _ff_bk");
+		jmpexit;
 	
 		__asm__("_ff_req_errno:\n\t"); {
 			ff_db_snd_errno(peer, ern);
@@ -470,9 +412,59 @@ ff_dbd_start(mdl_u16_t __port) {
 		__asm__("_ff_end:\n\t");
 		// do somthing
 	}
-
-	ffly_printf("somthing went wrong.\n");
 	__asm__("_ff_exit:\n\t");
+	ffly_ctl(ffly_malc, _ar_unset, 0);
+	return NULL;
+}
+
+void
+ff_dbd_start(mdl_u16_t __port) {
+	struct ff_dbd daemon;
+	ffdb_init(&daemon.db);
+	ffdb_open(&daemon.db, "test.db");
+	daemon.list = (void**)__ffly_mem_alloc((KEY_SIZE*0x100)*sizeof(void*));
+	ffly_map_init(&daemon.users, _ffly_map_127);
+
+	char const *rootid = "root";
+	ff_db_userp root = ff_db_add_user(&daemon, rootid, ffly_str_len(rootid), ffly_hash("21299", 5));
+	root->auth_level = _ff_db_auth_root;
+	root->enckey = 9331413;
+
+	ffly_err_t err;
+	struct sockaddr_in addr, cl;
+	ffly_bzero(&addr, sizeof(struct sockaddr_in));
+	ffly_bzero(&cl, sizeof(struct sockaddr_in));
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htons(INADDR_ANY);
+	addr.sin_port = htons(__port);
+	FF_SOCKET *sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
+	int val = 1;
+	setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int));
+
+	if (_err(ff_net_bind(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in)))) {
+		ff_net_close(sock);
+		return;
+	}
+
+	socklen_t len = sizeof(struct sockaddr_in);
+	FF_SOCKET *peer;
+	ff_net_listen(sock);
+	peer = ff_net_accept(sock, (struct sockaddr*)&cl, &len, &err);
+	if (_err(err))
+		goto _end;
+
+	ffly_pelletp pel;
+	pel = ffly_pellet_mk(sizeof(FF_SOCKET*)+sizeof(ff_dbdp));
+	ffly_pellet_puti(pel, (void**)&peer, sizeof(FF_SOCKET*));
+	void *p = &daemon;
+	ffly_pellet_puti(pel, (void**)&p, sizeof(ff_dbdp));
+	ffly_printf("-----> %p\n", peer);
+
+	ffly_tid_t id;
+	ffly_thread_create(&id, serve, pel);
+	ffly_thread_wait(id);
+
+	_end:
 	ff_net_close(sock);
 	cleanup(&daemon);
 	ffly_map_de_init(&daemon.users);
@@ -487,6 +479,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		return -1;
 	}
 
+	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&main_pot);
 	char const *port = __argv[1];
 	ff_dbd_start(ffly_stno(port));	  
 	return 0;

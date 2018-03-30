@@ -5,10 +5,13 @@
 # include "../dep/mem_cpy.h"
 # include "../dep/mem_cmp.h"
 # include "../rand.h"
+# include "../system/mutex.h"
 // needs testing
 /*
 	connected users will need a key inorder to do anything.
 */
+
+ffly_mutex_t static lock = FFLY_MUTEX_INIT;
 struct node {
 	mdl_u8_t *key;
 	struct node *next;
@@ -32,6 +35,7 @@ keysum(mdl_u8_t *__key) {
 typedef struct node* nodep;
 void
 ff_db_add_key(ff_dbdp __d, mdl_u8_t *__key) {
+	ffly_mutex_lock(&lock);
 	nodep n = (nodep)__ffly_mem_alloc(sizeof(struct node));
 	n->key = (mdl_u8_t*)__ffly_mem_alloc(KEY_SIZE);
 	ffly_mem_cpy(n->key, __key, KEY_SIZE);
@@ -45,11 +49,13 @@ ff_db_add_key(ff_dbdp __d, mdl_u8_t *__key) {
 		while(end->next != NULL)
 			end = end->next;
 		end->next = n;
-	}	   
+	}
+	ffly_mutex_unlock(&lock);
 }
 
 void
 ff_db_rm_key(ff_dbdp __d, mdl_u8_t *__key) { 
+	ffly_mutex_lock(&lock);
 	mdl_uint_t sum = keysum(__key);
 	nodep beg = (nodep)*(__d->list+(sum&0xff));
 	nodep p = beg;
@@ -67,18 +73,26 @@ ff_db_rm_key(ff_dbdp __d, mdl_u8_t *__key) {
 		}
 		prev = p;
 		p = p->next;
-	}  
+	} 
+	ffly_mutex_unlock(&lock);
 }
 
 mdl_u8_t
 ff_db_valid_key(ff_dbdp __d, mdl_u8_t *__key) {
+	ffly_mutex_lock(&lock);
+	mdl_u8_t ret;
 	nodep p = *(__d->list+(keysum(__key)&0xff));
 	while(p != NULL) {
-		if (!ffly_mem_cmp(__key, p->key, KEY_SIZE))
-			return 0;
+		if (!ffly_mem_cmp(__key, p->key, KEY_SIZE)) {
+			ret = 0;
+			goto _end;
+		}
 		p = p->next;
 	}
-	return 1;
+	ret = 1;
+	_end:
+	ffly_mutex_unlock(&lock);
+	return ret;
 }
 
 /*

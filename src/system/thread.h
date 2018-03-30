@@ -15,6 +15,20 @@
 	so using thread create within thread will only cause issues.
 	TODO:
 		if not main thread switch mal pot.
+
+	sidenote:
+		when a thread is killed its memory goes aswell,
+		so memory allocated in the thread will be unusable
+		as it will no longer be valid.
+	fix:
+		// get the pot of the current process
+		ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&main_pot);
+
+		// set the pot
+		ffly_ctl(ffly_malc, _ar_setpot, (mdl_u64_t)main_pot);
+
+		// go back to the original
+		ffly_ctl(ffly_malc, _ar_unset, 0);
 */
 # define FFLY_TID_NULL ((ffly_tid_t)~0)
 # ifdef __cplusplus
