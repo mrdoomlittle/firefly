@@ -6,4 +6,5 @@ cd ../ && . ./compile.sh && cd bond
 ffly_objs="$ffly_objs"
 gcc $cc_flags -c hash.c
 gcc $cc_flags -c bond.c
-gcc $cc_flags -o bond main.c hash.o bond.o $ffly_objs -nostdlib
+gcc $cc_flags -c output.c
+gcc $cc_flags -o bond main.c output.o hash.o bond.o $ffly_objs -nostdlib

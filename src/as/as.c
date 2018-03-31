@@ -166,7 +166,8 @@ assemble(char *__p, char *__end) {
 					if (curseg->offset != offset) {
 						// err
 					}
-					oustbyte((mdl_u8_t*)sy->next->p);
+					//oustbyte((mdl_u8_t*)sy->next->p);
+					*(curseg->fresh++) = *(mdl_u8_t*)sy->next->p;
 					isa(1);
 					curseg->size++;
 				} else if (!strcmp(sy->p, "entry") && epdeg<0) {
@@ -180,7 +181,8 @@ assemble(char *__p, char *__end) {
 					sg->next = curseg;
 					sg->size = 0;
 					sg->addr = stackadr();
-					sg->offset = offset;
+					sg->offset = 0;
+					sg->fresh = sg->buf;
 					curseg = sg;
 				} else if (!strcmp(sy->p, "region")) {
 					regionp rg = (regionp)_alloca(sizeof(struct region));
@@ -237,9 +239,19 @@ void hook(mdl_u64_t __offset, mdl_u8_t __l, labelp __la) {
 	hok = hk;
 }
 
+void outsegs() {
+	segmentp cur = curseg;
+	while(cur != NULL) {
+		cur->offset = offset;
+		oust(cur->buf, cur->fresh-cur->buf);
+		cur = cur->next;
+	}
+}
+
 # include "../ffef.h"
 # include "../exec.h"
 void finalize(void) {
+	outsegs();
 
 	if (!ep)
 		ep = "_start";
@@ -267,7 +279,7 @@ void finalize(void) {
 		char const **cur = globl;
 		while(*(--cur) != NULL) {
 			printf("symbol: %s\n", *cur);
-			syt(*cur, NULL);
+			syt(*cur, NULL)->sort = SY_LABEL;
 		}
 
 		cur = extrn;

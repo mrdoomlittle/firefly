@@ -19,25 +19,39 @@ void ffexec(void *__p, void *__end, mdl_u8_t __format, void(*__prep)(void*, void
 # include "ffef.h"
 # include "system/io.h"
 # include "bci.h"
+# include "bcd.h"
+# include "system/nanosleep.h"
 int static fd;
+typedef struct segment {
+	struct segment *next;
+	struct ffef_seg_hdr hdr;
+} *segmentp;
+
+static segmentp ss = NULL;
+
 void static
 prep(void *__hdr, void *__ctx) {
 	ffef_hdrp hdr = (ffef_hdrp)__hdr;
 	ffly_bcip ctx = (ffly_bcip)__ctx;
 
-	if (hdr->sg == FF_EF_NULL) return;
+	ffly_printf("loading stack segment/s.\n");
+	segmentp cur = ss, bk;
+	while(cur != NULL) {
+		ffly_printf("...\n");
+		mdl_u8_t *seg;	
+		if (!(seg = (mdl_u8_t*)__ffly_mem_alloc(cur->hdr.sz))) {
 
-	struct ffef_seg_hdr sgh;
-	lseek(fd, hdr->sg, SEEK_SET);
-	read(fd, &sgh, ffef_seg_hdrsz);
+		}
 
-	mdl_u8_t *seg = (mdl_u8_t*)__ffly_mem_alloc(sgh.sz);
-	lseek(fd, sgh.offset, SEEK_SET);
-	read(fd, seg, sgh.sz);
+		lseek(fd, cur->hdr.offset, SEEK_SET);
+		read(fd, seg, cur->hdr.sz);
 
-	ffly_bci_sst(ctx, seg, sgh.adr, sgh.sz);	
-
-	__ffly_mem_free(seg);
+		ffly_bci_sst(ctx, seg, cur->hdr.adr, cur->hdr.sz);	
+		__ffly_mem_free(seg);
+		bk = cur;
+		cur = cur->next;
+		__ffly_mem_free(bk);
+	}
 }
 
 void ffexecf(char const *__file) {
@@ -71,37 +85,61 @@ void ffexecf(char const *__file) {
 		goto _corrupt;
 	}
 
-	struct ffef_reg_hdr reg;
-	if (hdr.rg != FF_EF_NULL) {
+	segmentp ps = NULL;
+	mdl_uint_t size = 0;
+
+	segmentp seg;
+	if (hdr.sg != FF_EF_NULL) {
 		mdl_uint_t i = 0;
-		mdl_u64_t offset = hdr.rg;
+		mdl_u64_t offset = hdr.sg;
 		_again:
+		
+		seg = (segmentp)__ffly_mem_alloc(sizeof(struct segment));
 		lseek(fd, offset, SEEK_SET);
-		read(fd, &reg, ffef_reg_hdrsz);
-		if (i >= hdr.nrg) {
-			ffly_printf("missing .text region.\n");
-			close(fd);
-			return;
+		read(fd, &seg->hdr, ffef_seg_hdrsz);
+		if (seg->hdr.type == FF_SG_STACK) {
+			seg->next = ss;	
+			ss = seg;
+			ffly_printf("stack segment.\n");
+		} else if (seg->hdr.type == FF_SG_PROG) {
+			seg->next = ps;
+			ps = seg;
+			size+=seg->hdr.sz;
+			ffly_printf("program segment.\n");
+		} else {
+			ffly_printf("unknown segment.\n");
+			__ffly_mem_free(seg);
 		}
 
-		if (reg.type != FF_RG_PROG) {
-			offset-=ffef_reg_hdrsz+reg.l;
-			i++;
+		if (++i != hdr.nsg) {
+			offset-=ffef_seg_hdrsz;
 			goto _again;
-		}
+		}	
 	}
 
-
 	mdl_u8_t *bin, *end;
-	if (!(bin = (mdl_u8_t*)__ffly_mem_alloc(reg.end-reg.beg))) {
+	if (!(bin = (mdl_u8_t*)__ffly_mem_alloc(size))) {
 		// error
 	}
 
-	end = bin+(reg.end-reg.beg);
+	segmentp cur = ps, bk;
+	while(cur != NULL) {
+		lseek(fd, cur->hdr.offset, SEEK_SET);
+		read(fd, bin+cur->hdr.adr, cur->hdr.sz);
+		bk = cur;
+		cur = cur->next;
+		__ffly_mem_free(bk);
+	}
 
-	lseek(fd, hdr.routine, SEEK_SET);
-	read(fd, bin, reg.end-reg.beg);
+	end = bin+size;
 
+	ffly_bcd(bin, end);
+	ffly_printf("exec, in 3\n");
+	ffly_nanosleep(1, 0);
+	ffly_printf("2\n");
+	ffly_nanosleep(1, 0);
+	ffly_printf("1\n");
+	ffly_nanosleep(1, 0);
 	ffexec(bin, end, hdr.format, prep, &hdr);
 	__ffly_mem_free(bin);
 	_corrupt:

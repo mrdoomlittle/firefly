@@ -138,6 +138,7 @@ ffly_err_t ffly_bci_exec(ffly_bcip __bci, ffly_err_t *__exit_code) {
 	ffly_err_t err;
 
 	__asm__("_next:\n\t");
+	ffly_printf("next op.\n");
 	{
 	__bci->ip_off = 0;
 	mdl_u8_t opno;	

@@ -43,6 +43,8 @@ typedef struct segment {
 	mdl_u64_t offset;
 	mdl_u64_t addr;
 	mdl_uint_t size;
+	mdl_u8_t buf[200];
+	mdl_u8_t *fresh;
 } *segmentp;
 
 typedef struct region {

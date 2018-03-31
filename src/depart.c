@@ -1,6 +1,6 @@
 # include "memory/mem_free.h"
-static void*list[200] = {NULL};
-void **next = list;
+void static *list[200] = {NULL};
+void static **next = list;
 
 void ffly_depart(void *__p) {
 	if (!__p) {

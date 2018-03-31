@@ -34,14 +34,13 @@ void syt_drop() {
 	while(cur != NULL) {
 		struct ffef_sy sy;
 		sy.name = stt(cur->p, cur->len);
-		/*
 		if (is_sylabel(cur)) {
 			labelp la = (labelp)hash_get(&env, cur->p, cur->len);
 
 
 			sy.loc = la->offset;
 		}
-*/
+
 		sy.l = cur->len+1;
 		oust((mdl_u8_t*)&sy, ffef_sysz);
 		symbolp bk = cur;

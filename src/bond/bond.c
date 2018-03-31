@@ -5,7 +5,7 @@
 # include "../stdio.h"
 # include "../ffly_def.h"
 int static s;
-int static d;
+int d;
 
 struct hash symbols;
 
@@ -62,38 +62,14 @@ void incr_offset(mdl_uint_t __by) {
 }
 
 # include "../string.h"
-typedef struct segment {
-	struct segment *next;
-} *segmentp;
 
-typedef struct region {
-	struct region *next;
-} *regionp;
+regionp syt;
 
-typedef struct relocate {
-
-} *relocatep;
-
-typedef struct hook {
-	struct hook *next;	
-	mdl_uint_t offset;
-} *hookp;
-
-typedef struct symbol {
-	struct symbol *next;
-} *symbolp;
-
-typedef struct bin {
-	struct bin *next;
-	mdl_u8_t *p, *end;
-	mdl_uint_t offset;
-} *binp;
-
-binp curbin = NULL;
-
+regionp curbin = NULL;
+segmentp curseg = NULL;
 hookp curhok = NULL;
 symbolp cursy = NULL;
-
+regionp curreg = NULL;
 void oust(void *__p, mdl_uint_t __size) {
 	lseek(d, offset, SEEK_SET);
 	write(d, __p, __size);
@@ -107,10 +83,18 @@ void absorb_symbol(ffef_syp __sy) {
 	memcpy(name, stte-__sy->name, __sy->l);
 	printf("symbol: %s\n", name);
 
-	symbolp p = (symbolp)malloc(sizeof(struct symbol));
+	symbolp p;
+	if ((p = (symbolp)hash_get(&symbols, name, __sy->l-1)) != NULL) {
+		printf("symbol already exists in table.\n");
+		goto _sk;
+	}
+
+	p = (symbolp)malloc(sizeof(struct symbol));
 	p->next = cursy;
 	cursy = p;
 	hash_put(&symbols, name, __sy->l-1, p);
+	_sk:
+	p->loc = __sy->loc;
 }
 
 void absorb_hook(ffef_hokp __hook) {
@@ -119,40 +103,47 @@ void absorb_hook(ffef_hokp __hook) {
 	curhok = p;
 
 	p->offset = __hook->offset+curbin->offset;
+	ffef_syp sy = (ffef_syp)(syt->beg+__hook->to);
 
+	char name[128];
+	memcpy(name, stte-sy->name, sy->l);
+	p->to = hash_get(&symbols, name, sy->l-1);	
 }
 
-void absorb_segment() {
+void absorb_segment(ffef_seg_hdrp __seg) {
+	segmentp seg = (segmentp)malloc(sizeof(struct segment));	
+	seg->next = curseg;
+	curseg = seg;
 
+	seg->p = (mdl_u8_t*)malloc(seg->size = __seg->sz);
+	seg->addr = __seg->adr;
+	lseek(d, __seg->offset, SEEK_SET);
+	read(d, seg->p, __seg->sz);
 }
 
 void absorb_region(ffef_reg_hdrp __reg) {
+	regionp reg = (regionp)malloc(sizeof(struct region));
 	if (__reg->type == FF_RG_PROG) {
-		binp p = (binp)malloc(sizeof(struct bin));
-		p->next = curbin;
+		reg->next = curbin;
+		curbin = reg;
+	} else {
+		reg->next = curreg;
+		curreg = reg;
+	}
 
-		mdl_uint_t size;
-		p->p = (mdl_u8_t*)malloc(size = (__reg->end-__reg->beg));
-		p->end = p->p+size;
-		p->offset = offset;
-		offset+=size;
+	mdl_uint_t size;
+	reg->beg = (mdl_u8_t*)malloc(size = (__reg->end-__reg->beg));
+	reg->end = reg->beg+size;
+	reg->offset = __reg->beg;
 
-		lseek(s, __reg->beg, SEEK_SET);
-		read(s, p->p, size);
-	} else if (__reg->type == FF_RG_SYT) {
-		mdl_uint_t size;
-		ffef_syp bed;
-		ffef_syp sy = (ffef_syp)malloc(size = (__reg->end-__reg->beg));
-		bed = sy;
+	lseek(s, __reg->beg, SEEK_SET);
+	read(s, reg->beg, size);
 
-		lseek(s, __reg->beg, SEEK_SET);
-		read(s, bed, size);
-
-		ffef_syp end = (ffef_syp)((mdl_u8_t*)sy+size);
-		mdl_uint_t i = 0;
-		while(sy != end)
+	if (__reg->type == FF_RG_SYT) {
+		syt = reg;
+		ffef_syp sy = (ffef_syp)reg->beg;
+		while(sy != (ffef_syp)reg->end)
 			absorb_symbol(sy++);
-		free(bed);
 	}
 }
 
@@ -169,7 +160,6 @@ void ldstt(ffef_hdrp __hdr) {
 }
 
 mdl_i8_t static epdeg = -1;
-
 void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 	if ((s = open(__file, O_RDONLY, 0)) == -1) {
 		printf("failed to open source file.\n");
@@ -195,33 +185,47 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 
 	struct ffef_reg_hdr reg;
 	if (hdr.rg != FF_EF_NULL) {
-		mdl_uint_t i = 0;
+		mdl_uint_t i;
 		mdl_u64_t offset = hdr.rg;
-		while(i != hdr.nrg) {
+		for(i = 0;i != hdr.nrg;i++,offset-=ffef_reg_hdrsz+reg.l) {
 			lseek(s, offset, SEEK_SET);
 			read(s, &reg, ffef_reg_hdrsz);
 			absorb_region(&reg);	
-			offset-=ffef_reg_hdrsz+reg.l;
-			i++;
+		}
+	}
+/*
+	struct ffef_seg_hdr seg;
+	if (hdr.sg != FF_EF_NULL) {
+		mdl_uint_t i;
+		mdl_u64_t offset = hdr.sg;
+		for(i = 0;i != hdr.nsg;i++,offset-=ffef_seg_hdrsz) {
+			lseek(s, offset, SEEK_SET);
+			read(s, &seg, ffef_reg_hdrsz);
+			absorb_segment(&seg);
 		}
 	}
 
-/*
 	struct ffef_hok hok;
 	if (hdr.hk != FF_EF_NULL) {
-		mdl_uint_t i = 0;
+		mdl_uint_t i;
 		mdl_u64_t offset = hdr.hk;
-		while(i != hdr.nhk) {
+		for(i = 0;i != hdr.nhk;i++,offset-=ffef_hoksz) {
 			lseek(s, offset, SEEK_SET);
 			read(s, &hok, ffef_hoksz);
 			absorb_hook(&hok);
-			offset-=ffef_hoksz;
-			i++;
 		}
 	}
 */
 	free(stt);
 	close(s);
+}
+
+void latch_hooks() {
+	hookp cur = curhok;
+	while(cur != NULL) {
+			
+		cur = cur->next;
+	}
 }
 
 void bond(char const *__s, char const *__dst) {
@@ -243,9 +247,13 @@ void bond(char const *__s, char const *__dst) {
 	dhdr.nsg = 0;
 	dhdr.nrg = 0;
 	dhdr.nrl = 0;
+	dhdr.nhk = 0;
 	dhdr.sg = FF_EF_NULL;
 	dhdr.rg = FF_EF_NULL;
 	dhdr.rl = FF_EF_NULL;
+	dhdr.hk = FF_EF_NULL;
+
+	dhdr.sttr = FF_EF_NULL;
 
 	mdl_i8_t epdeg = -1;
 	while(*p != '\0') {
@@ -255,16 +263,7 @@ void bond(char const *__s, char const *__dst) {
 		process_srcfl(file, &dhdr);
 	}
 
-	binp cur = curbin, bk;
-	while(cur != NULL) {
-		bk = cur;
-		cur = cur->next;
-		ffly_printf("%u\n", bk->offset);
-		lseek(d, bk->offset, SEEK_SET);
-		write(d, bk->p, (bk->end-bk->p));
-		free(bk->p);
-		free(bk);
-	}
+	output(&dhdr);
 
 	close(d);
 	hash_destroy(&symbols);

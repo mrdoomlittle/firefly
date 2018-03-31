@@ -8,12 +8,20 @@ int fd;
 
 char const* regtype_s(mdl_u8_t __type) {
 	switch(__type) {
-		case FF_RG_NULL: return "null";
-		case FF_RG_PROG: return "program";
-		case FF_RG_STT: return "string table";
-		case FF_RG_SYT: return "symbol table";
+		case FF_RG_NULL:	return "null";
+		case FF_RG_PROG:	return "program";
+		case FF_RG_STT:		return "string table";
+		case FF_RG_SYT:		return "symbol table";
 	}
 
+	return "unknown";
+}
+
+char const* segtype_s(mdl_u8_t __type) {
+	switch(__type) {
+		case FF_SG_STACK:	return "stack segment";
+		case FF_SG_PROG:	return "program segment";
+	}
 	return "unknown";
 }
 
@@ -38,7 +46,7 @@ void prsy(ffef_reg_hdrp __sttr, ffef_syp __sy, mdl_uint_t __no) {
 }
 
 void prseg(ffef_seg_hdrp __seg, mdl_uint_t __no) {
-	printf("%u: segment, adr: %u, offset: %u, size: %u\n", __no, __seg->adr, __seg->offset, __seg->sz);
+	printf("%u: segment, type: %s, adr: %u, offset: %u, size: %u\n", __no, segtype_s(__seg->type), __seg->adr, __seg->offset, __seg->sz);
 }
 
 void prreg(ffef_reg_hdrp __reg, mdl_uint_t __no) {
@@ -74,24 +82,25 @@ int main(int __argc, char const *__argv[]) {
 
 	struct ffef_hdr hdr;
 	read(fd, &hdr, ffef_hdr_size);
-	lseek(fd, hdr.sttr, SEEK_SET);
 
-	read(fd, &sttr, ffef_reg_hdrsz);
-	prreg(&sttr, 0);
-
+	if (hdr.sttr == FF_EF_NULL) {
+		printf("no string table pressent\n");
+	} else {
+		lseek(fd, hdr.sttr, SEEK_SET);
+		read(fd, &sttr, ffef_reg_hdrsz);
+		prreg(&sttr, 0);
+	}
 	prhdr(&hdr);
 
 	struct ffef_hok hok;
 	if (hdr.hk != FF_EF_NULL) {
 		printf("hook, entries: %u\n", hdr.nsg);
-		mdl_uint_t i = 0;
+		mdl_uint_t i;
 		mdl_u64_t offset = hdr.hk;
-		while(i != hdr.nhk) {
+		for(i = 0;i != hdr.nhk;i++,offset-=ffef_hoksz) {
 			lseek(fd, offset, SEEK_SET);
 			read(fd, &hok, ffef_hoksz);
 			prhok(&hok, i);
-			offset-=ffef_hoksz;
-			i++;
 		}
 	} else
 		printf("no hook/s present.\n");
@@ -99,14 +108,12 @@ int main(int __argc, char const *__argv[]) {
 	struct ffef_seg_hdr seg;
 	if (hdr.sg != FF_EF_NULL) {
 		printf("segment, entries: %u\n", hdr.nsg);
-		mdl_uint_t i = 0;
+		mdl_uint_t i;
 		mdl_u64_t offset = hdr.sg;
-		while(i != hdr.nsg) {
+		for(i = 0;i != hdr.nsg;i++,offset-=ffef_seg_hdrsz) {
 			lseek(fd, offset, SEEK_SET);
 			read(fd, &seg, ffef_seg_hdrsz);
 			prseg(&seg, i);
-			offset-=ffef_seg_hdrsz;
-			i++;
 		}
 	} else
 		printf("no segment/s present.\n");
@@ -114,9 +121,9 @@ int main(int __argc, char const *__argv[]) {
 	struct ffef_reg_hdr reg;
 	if (hdr.rg != FF_EF_NULL) {
 		printf("region, entries: %u\n", hdr.nrg);
-		mdl_uint_t i = 0;
+		mdl_uint_t i;
 		mdl_u64_t offset = hdr.rg;
-		while(i != hdr.nrg) {
+		for(i = 0;i != hdr.nrg;i++,offset-=ffef_reg_hdrsz+reg.l) {
 			lseek(fd, offset, SEEK_SET);
 			read(fd, &reg, ffef_reg_hdrsz);
 			prreg(&reg, i);
@@ -137,23 +144,18 @@ int main(int __argc, char const *__argv[]) {
 				}
 				free(bed);
 			}
-
-			offset-=ffef_reg_hdrsz+reg.l;
-			i++;
 		}
 	} else
 		printf("no region/s present.\n");
 
 	struct ffef_rel rel;
 	if (hdr.rl != FF_EF_NULL) {
-		mdl_uint_t i = 0;
+		mdl_uint_t i;
 		mdl_u64_t offset = hdr.rl;
-		while(i != hdr.nrl) {
+		for(i = 0;i != hdr.nrl;i++,offset-=ffef_relsz) {
 			lseek(fd, offset, SEEK_SET);
 			read(fd, &rel, ffef_relsz);
 			prrel(&rel, i);
-			offset-=ffef_relsz;
-			i++;
 		}
 	} else
 		printf("no rel present.\n");
