@@ -73,7 +73,7 @@ op_rin(mdl_u8_t **__p) {
 	(*__p)+=sizeof(ffly_addr_t);
 }
 
-void(*out[])(mdl_u8_t**) = {
+void static(*out[])(mdl_u8_t**) = {
 	op_exit,
 	op_as,
 	op_jmp,
