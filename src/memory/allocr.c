@@ -120,9 +120,13 @@ typedef struct rod {
 	mdl_u8_t no;
 } *rodp;
 
+/*
+	
+*/
+
 # define rodno(__p) \
 	(((((mdl_u64_t)(__p))&0xff)^(((mdl_u64_t)(__p))>>8&0xff)^(((mdl_u64_t)(__p))>>16&0xff)^(((mdl_u64_t)(__p))>>24&0xff)^\
-	(((mdl_u64_t)(__p))>>32&0xff)^(((mdl_u64_t)(__p))>>40&0xff)^(((mdl_u64_t)(__p))>>48&0xff)^(((mdl_u64_t)(__p))>>56&0xff))>>4&0x3f)
+	(((mdl_u64_t)(__p))>>32&0xff)^(((mdl_u64_t)(__p))>>40&0xff)^(((mdl_u64_t)(__p))>>48&0xff)^(((mdl_u64_t)(__p))>>56&0xff))>>1&0x3f)
 # define rod_at(__p) \
 	(rods+rodno(__p))
 rodp rods[64] = {
@@ -343,7 +347,7 @@ void ffly_arstat() {
 	mdl_uint_t no = 0;
 	rodp r = *rods;
 	potp cur = &main_pot;
-	_next:
+_next:
 	if (cur != NULL) {
 		ffly_printf("potno: %u, rodno: %u - %s, off{%u}, no mans land{from: 0x%x, to: 0x%x}, pages{%u}, blocks{%u}, used{%u}, buried{%u}, dead{%u}\n",
 			no++, !cur->r?0:cur->r->no, !cur->r?"bad":"ok", cur->off, cur->off, cur->top-cur->end, cur->page_c, cur->blk_c, ffly_arused(cur), ffly_arburied(cur), ffly_ardead(cur));
@@ -420,7 +424,7 @@ void pot_pr(potp __pot) {
 		pot_pr(p->fd);
 		ffly_printf("**end\n");
 	}
-	_next:
+_next:
 	ffly_printf("/-----------------------\\\n");
 	ffly_printf("| size: %u, off: %x, pad: %u, inuse: %s\n", blk->size, blk->off, blk->pad, is_used(blk)?"yes":"no");
 	ffly_printf("| prev: %x{%s}, next: %x{%s}, fd: %x{%s}, bk: %x{%s}\n", is_null(blk->prev)?0:blk->prev, is_null(blk->prev)?"dead":"alive", is_null(blk->next)?0:blk->next, is_null(blk->next)?"dead":"alive",
@@ -443,7 +447,7 @@ void pot_pf(potp __pot) {
 		ffly_printf("**end\n");
 	}
 
-	_next:
+_next:
 	bk = NULL;
 	if (is_null(*bin)) goto _sk;
 	if (*bin >= p->off) {
@@ -452,7 +456,7 @@ void pot_pf(potp __pot) {
 	}
 
 	blk = get_blk(p, *bin);
-	_fwd:
+_fwd:
 	if (bk != NULL) {
 		ffly_printf("\\\n");
 		ffly_printf(" > %u-bytes\n", ffly_abs((mdl_int_t)bk->off-(mdl_int_t)blk->off));
@@ -467,7 +471,7 @@ void pot_pf(potp __pot) {
 		goto _fwd;
 	}
 
-	_sk:
+_sk:
 	if (bin != p->bins+(no_bins-1)) {
 		bin++;
 		goto _next;
@@ -484,7 +488,7 @@ void pr() {
 	rodp r = *rods;
 	potp p = &main_pot;
 	mdl_uint_t no = 0;
-	_next:
+_next:
 	if (p != NULL) {
 		if (p == &main_pot)
 			ffly_printf("~: main pot, no{%u}\n", no);
@@ -510,7 +514,7 @@ void pf() {
 	rodp r = *rods;
 	potp p = &main_pot;
 	mdl_uint_t no = 0;
-	_next:
+_next:
 	if (p != NULL) {
 		ffly_printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u\n", no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off);
 		pot_pf(p);
@@ -623,7 +627,7 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 		}
 	}
 
-	_r:
+_r:
 	ulpot(__pot);
 	ffly_free(p);
 	return ret;
@@ -687,7 +691,7 @@ grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 		}
 	}
 
-	_r:
+_r:
 	ulpot(__pot);
 	ffly_free(p);
 	return ret;
@@ -799,7 +803,7 @@ _ffly_alloc(potp __pot, mdl_uint_t __bc) {
 					goto _sk;
 				}
 				unlock_pot(__pot);
-				_sk:
+			_sk:
 				return (void*)((mdl_u8_t*)blk+blkd_size);
 			}
 			bin = blk->fd;
@@ -866,7 +870,7 @@ ffly_alloc(mdl_uint_t __bc) {
 
 	potp p = arena, t;
 	void *ret;
-	_again:
+_again:
 	if (!(ret = _ffly_alloc(p, __bc))) {
 		lkpot(p);
 		if (p->fd != NULL){
@@ -1001,7 +1005,7 @@ _ffly_free(potp __pot, void *__p) {
 	}
 	*(__pot->bins+bin_no(blk->size)) = blk->off;
 	}
-	_end:
+_end:
 	unlock_pot(__pot);
 }
 
@@ -1018,7 +1022,7 @@ ffly_free(void *__p) {
 	}
 	potp p = arena, bk;
 	rodp r = NULL, beg;
-	_bk:
+_bk:
 	if (!p) {
 		r = *rod_at(__p);
 		beg = r;
