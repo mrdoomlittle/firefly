@@ -76,9 +76,9 @@ regionp curreg = NULL;
 # define PAGE_SIZE (1<<PAGE_SHIFT)
 void **map = NULL;
 
-void *tf[100];
-void **fresh = tf;
-void to_free(void *__p) {
+void static *tf[100];
+void static **fresh = tf;
+void static to_free(void *__p) {
 	if (fresh-tf >= 100) {
 		printf("error overflow.\n");
 	}
@@ -86,6 +86,7 @@ void to_free(void *__p) {
 }
 
 mdl_u64_t bot = 0;
+mdl_u64_t rise = 0;
 
 void bond_write(mdl_u64_t __offset, void *__buf, mdl_uint_t __size) {
 	mdl_u8_t *p = (mdl_u8_t*)__buf;
@@ -96,27 +97,22 @@ void bond_write(mdl_u64_t __offset, void *__buf, mdl_uint_t __size) {
 
 		mdl_uint_t page = offset>>PAGE_SHIFT;
 		mdl_uint_t pg_off = offset-(page*PAGE_SIZE);
+		mdl_uint_t left = end-p;
 
-		mdl_uint_t lh = PAGE_SIZE-pg_off;
-		if (lh>__size)
-			lh = __size;
+		mdl_uint_t bit = PAGE_SIZE-pg_off;
+		if (bit>left)
+			bit = left;
 
-		mdl_int_t rh = (mdl_int_t)__size-(mdl_int_t)lh;
-		if (lh>0) {
-			memcpy(map[page]+pg_off, p, lh);
-			p+=lh;
-		}
-		if (rh>0) {
-			memcpy(map[page+1], p, rh);
-			p+=rh;
-		}
+		memcpy(map[page]+pg_off, p, bit);
+		p+=bit;
 	}
 }
 
 void bond_mapout(mdl_u64_t __offset, mdl_uint_t __size) {
 	mdl_uint_t page = __offset>>PAGE_SHIFT;
 	mdl_uint_t pg_off = __offset-(page*PAGE_SIZE);
-	mdl_uint_t pg_c = page+1;
+	mdl_u64_t end_off = __size+__offset;
+	mdl_uint_t pg_c = ((end_off>>PAGE_SHIFT)+((end_off-((end_off>>PAGE_SHIFT)*PAGE_SIZE))>0));
 
 	mdl_uint_t static crest = 0;
 	if (!map) {
@@ -129,9 +125,8 @@ void bond_mapout(mdl_u64_t __offset, mdl_uint_t __size) {
 		}
 	}
 
-	mdl_u64_t end_off = __size+__offset;
-	mdl_uint_t end = ((end_off>>PAGE_SHIFT)+((end_off-((end_off>>PAGE_SHIFT)*PAGE_SIZE))>0));
-	while(page != end) {
+	printf("pg_c: %u\n", pg_c);
+	while(page != pg_c) {
 		printf("page, alloc, %u\n", page);
 		to_free(map[page++] = malloc(PAGE_SIZE));
 	}
@@ -145,22 +140,15 @@ void bond_read(mdl_u64_t __offset, void *__buf, mdl_uint_t __size) {
 	while(p != end) {
 		offset = __offset+(p-(mdl_u8_t*)__buf);
 
-		mdl_uint_t page = __offset>>PAGE_SHIFT;
-		mdl_uint_t pg_off = __offset-(page*PAGE_SIZE);
+		mdl_uint_t page = offset>>PAGE_SHIFT;
+		mdl_uint_t pg_off = offset-(page*PAGE_SIZE);
+		mdl_uint_t left = end-p;
 
-		mdl_uint_t lh = PAGE_SIZE-pg_off;
-		if (lh>__size)
-			lh = __size;
-
-		mdl_int_t rh = (mdl_int_t)__size-(mdl_int_t)lh;
-		if (lh>0) {
-			memcpy(p, map[page]+pg_off, lh);
-			p+=lh;
-		}
-		if (rh>0) {
-			memcpy(p, map[page+1], rh);
-			p+=rh;
-		}	
+		mdl_uint_t bit = PAGE_SIZE-pg_off;
+		if (bit>left)
+			bit = left;
+		memcpy(p, map[page]+pg_off, bit);
+		p+=bit;
 	}
 }
 
@@ -189,7 +177,8 @@ void absorb_symbol(ffef_syp __sy) {
 	hash_put(&symbols, name, __sy->l-1, p);
 	p->name = strdup(name);
 _sk:
-	p->loc = __sy->loc;
+	p->loc = bot+__sy->loc;
+	p->type = __sy->type;
 }
 
 void absorb_hook(ffef_hokp __hook) {
@@ -197,13 +186,16 @@ void absorb_hook(ffef_hokp __hook) {
 	p->next = curhok;
 	curhok = p;
 
-	p->offset = bot-(bot-__hook->offset);
-	ffef_syp sy = (ffef_syp)(syt->beg+__hook->to);
+	p->offset = bot+__hook->offset;
+	struct ffef_sy sy;
+	bond_read(syt->beg+__hook->to, &sy, ffef_sysz);
 
 	char name[128];
-	memcpy(name, stte-sy->name, sy->l);
-	p->to = hash_get(&symbols, name, sy->l-1);	
+	memcpy(name, stte-sy.name, sy.l);
+	printf("to, %s\n", name);
+	p->to = hash_get(&symbols, name, sy.l-1);	
 	p->l = __hook->l;
+
 }
 
 void absorb_segment(ffef_seg_hdrp __seg) {
@@ -223,27 +215,30 @@ void absorb_region(ffef_reg_hdrp __reg) {
 	read(s, name, __reg->l);
 	printf("region, %s\n", name);
 
-
 	regionp reg = (regionp)malloc(sizeof(struct region));
+	reg->beg = __reg->beg;
+	reg->end = __reg->end;
+
 	if (__reg->type == FF_RG_PROG) {
 		reg->next = curbin;
 		curbin = reg;
-		bot+=__reg->end-__reg->beg;
+		reg->beg+=bot;
+		reg->end+=bot;
+		rise+=__reg->end-__reg->beg;
+		printf("region placed at: %u\n", reg->beg);
 	} else {
 		reg->next = curreg;
 		curreg = reg;
 	}
 
 	mdl_uint_t size;
-	reg->beg = __reg->beg;
-	reg->end = __reg->end;
 	mdl_u8_t *buf = (mdl_u8_t*)malloc(size = (__reg->end-__reg->beg));
 
 	lseek(s, __reg->beg, SEEK_SET);
 	read(s, buf, size);
 
-	bond_mapout(__reg->beg, size);
-	bond_write(__reg->beg, buf, size);
+	bond_mapout(reg->beg, size);
+	bond_write(reg->beg, buf, size);
 
 	if (__reg->type == FF_RG_SYT) {
 		syt = reg;
@@ -300,7 +295,7 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 			absorb_region(&reg);	
 		}
 	}
-
+/*
 	struct ffef_seg_hdr seg;
 	if (hdr.sg != FF_EF_NULL) {
 		mdl_uint_t i;
@@ -311,7 +306,7 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 			absorb_segment(&seg);
 		}
 	}
-
+*/
 	struct ffef_hok hok;
 	if (hdr.hk != FF_EF_NULL) {
 		mdl_uint_t i;
@@ -323,16 +318,28 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 		}
 	}
 
+
+	bot+=rise;
+	rise=0;
 	free(stt);
 	close(s);
 }
 
 void latch_hooks() {
-	mdl_uint_t i = 0;
+	return;
 	hookp cur = curhok;
 	while(cur != NULL) {
 		// dont include header
-		bond_write(cur->offset-ffef_hdr_size, &cur->to->loc, cur->l);	
+		if (!cur->to)
+			printf("cant hook onto a symbol that doesen't exist.\n");
+		else {
+		//	printf("%u\n", cur->to->loc);
+			/*
+			if (cur->to->type == FF_SY_GBL)
+				bond_write(cur->offset, &cur->to->loc, cur->l);	
+			else
+				printf("symbol hasen't been defined.\n");
+		*/}
 		cur = cur->next;
 	}
 }
@@ -342,24 +349,25 @@ cleanup() {
 	void **cur = tf;
 	while(cur != fresh)
 		free(*(cur++));
-	if (map != NULL)
-		free(map);
+//	if (map != NULL)
+//		free(map);
 }
 
 void bond(char const *__s, char const *__dst) {
-/*
+
 	printf("pagesize: %u\n", PAGE_SIZE);
 	char const *text = "1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20";
 	mdl_uint_t l = strlen(text)+1;
-	bond_mapout(PAGE_SIZE, l);
+	bond_mapout(0, l);
 
-	bond_write(PAGE_SIZE, text, l);
+	bond_write(0, text, l);
 
 	char buf[100];
-	bond_read(PAGE_SIZE, buf, l);
+	bond_read(0, buf, l);
 	printf("out: %s\n", buf);
+	cleanup();
 return;
-*/
+
 	hash_init(&symbols);
 	char const *p = __s;
 
@@ -395,9 +403,9 @@ return;
 	}
 
 	latch_hooks();
-
-	output(&dhdr);
-
+	offset=bot;
+	//output(&dhdr);
+	cleanup();
 	close(d);
 	hash_destroy(&symbols);
 }
