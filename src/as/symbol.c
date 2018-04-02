@@ -16,6 +16,7 @@ symbolp syt(char const *__name, mdl_u16_t *__off) {
 
 	memdup((void**)&sy->p, __name, sy->len+1);
 	sy->next = head;
+	sy->type = FF_SY_NULL;
 	head = sy;
 	if (__off != NULL)
 		*__off = off;
@@ -27,17 +28,35 @@ symbolp getsymbol(char const *__s) {
 	return (symbolp)hash_get(&symbols, __s, strlen(__s));
 }
 
+struct ffef_reg_hdr static reg;
+mdl_u64_t static dst;
+void syt_store() {
+	reg.name = dst;
+	reg.l = 4;
+	reg.type = FF_RG_SYT;
+	lseek(out, dst, SEEK_SET);
+	write(out,"syt", 4);
+	write(out, &reg, ffef_reg_hdrsz);
+}
+
 void syt_drop() {
-	regionp reg = (regionp)_alloca(sizeof(struct region));
-	reg->beg = offset;
+	dst = offset;
+	offset+=4+ffef_reg_hdrsz;
+}
+
+void syt_gut() {
+	reg.beg = offset;
 	symbolp cur = head;
 	while(cur != NULL) {
 		struct ffef_sy sy;
 		sy.name = stt(cur->p, cur->len);
+		sy.type = cur->type;
+		sy.reg = 0;
+		sy.loc = 0;
 		if (is_sylabel(cur)) {
 			labelp la = (labelp)hash_get(&env, cur->p, cur->len);
 
-
+			sy.reg = la->reg->no;  
 			sy.loc = la->offset;
 		}
 
@@ -49,9 +68,5 @@ void syt_drop() {
 		free(bk->p);
 		free(bk);
 	}
-
-	reg->end = offset;
-	strcpy(reg->name = _alloca(4), "syt");
-	reg->next = curreg;
-	curreg = reg;
+	reg.end = offset;
 }

@@ -27,10 +27,16 @@
 # define FF_RG_SS 0x2
 # define FF_RG_STT 0x3
 # define FF_RG_SYT 0x4
+
+# define FF_SY_NULL 0x0
+# define FF_SY_IND 0x1
+# define FF_SY_GBL 0x2
 typedef struct ffef_sy {
 	mdl_u16_t name;
+	mdl_u8_t type;
 	mdl_u8_t l;
 	mdl_u64_t loc;
+	mdl_u16_t reg;
 } *ffef_syp;
 
 typedef struct ffef_reg_hdr {

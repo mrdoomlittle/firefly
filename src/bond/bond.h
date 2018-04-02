@@ -2,7 +2,9 @@
 # define __ffly__bond__h
 # include <mdlint.h>
 # include "../ffef.h"
-
+/*
+	segments will be freed on output
+*/
 struct hash_entry {
 	struct hash_entry *next;
 	mdl_u8_t const *key;
@@ -23,11 +25,11 @@ typedef struct segment {
 	mdl_u8_t type;
 } *segmentp;
 
+typedef struct hook* hookp;
 typedef struct region {
 	struct region *next;
 	mdl_u8_t type;
-	mdl_u8_t *beg, *end;
-	mdl_uint_t offset;
+	mdl_u64_t beg, end;
 } *regionp;
 
 typedef struct relocate {
@@ -36,6 +38,7 @@ typedef struct relocate {
 
 typedef struct symbol {
 	struct symbol *next;
+	char const *name;
 	mdl_uint_t loc;
 } *symbolp;
 
@@ -43,6 +46,7 @@ typedef struct hook {
 	struct hook *next;
 	mdl_uint_t offset;
 	symbolp to;
+	mdl_uint_t l;
 } *hookp;
 
 struct ffly_bond {
@@ -63,4 +67,8 @@ void hash_put(hashp, mdl_u8_t const*, mdl_uint_t, void*);
 void* const hash_get(hashp, mdl_u8_t const*, mdl_uint_t);
 void bond(char const*, char const*);
 void output(ffef_hdrp);
+void bond_write(mdl_u64_t, void*, mdl_uint_t);
+void bond_mapout(mdl_u64_t, mdl_uint_t);
+void bond_read(mdl_u64_t, void*, mdl_uint_t);
+
 # endif /*__ffly__bond__h*/

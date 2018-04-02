@@ -1,7 +1,5 @@
-.globl print
 .region text
-print:
+_start:
 asb %al, 21
-outb %al
 exit %al
 .axe

@@ -24,7 +24,8 @@ void output(ffef_hdrp __hdr) {
 		seg->type = FF_SG_PROG;
 		seg->addr = 0;
 		seg->size = (cur->end-cur->beg);
-		seg->p = cur->beg;
+		seg->p = (mdl_u8_t*)malloc(seg->size);
+		bond_read(cur->beg, seg->p, seg->size);
 		cur = cur->next;
 	}
 
@@ -33,6 +34,7 @@ void output(ffef_hdrp __hdr) {
 		while(cur != NULL) {
 			cur->offset = offset;
 			oust(cur->p, cur->size);
+			free(cur->p);
 			cur = cur->next;
 		}
 

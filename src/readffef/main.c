@@ -19,8 +19,18 @@ char const* regtype_s(mdl_u8_t __type) {
 
 char const* segtype_s(mdl_u8_t __type) {
 	switch(__type) {
+		case FF_SG_NULL: return "null";
 		case FF_SG_STACK:	return "stack segment";
 		case FF_SG_PROG:	return "program segment";
+	}
+	return "unknown";
+}
+
+char const* sytype_s(mdl_u8_t __type) {
+	switch(__type) {
+		case FF_SY_NULL: return "null";
+		case FF_SY_IND: return "ind";
+		case FF_SY_GBL: return "global";
 	}
 	return "unknown";
 }
@@ -40,13 +50,15 @@ void prsy(ffef_reg_hdrp __sttr, ffef_syp __sy, mdl_uint_t __no) {
 	lseek(fd, __sttr->end-__sy->name, SEEK_SET);
 	read(fd, name, __sy->l);
 
-	printf("%u: symbol, name: %s:%u, loc: %u\n", __no, name, __sy->name, __sy->loc);
+	printf("%u: symbol, type: %s, name: %s:%u, loc: %u, reg: %u\n", __no, sytype_s(__sy->type),
+		name, __sy->name, __sy->loc, __sy->reg);
 
 	free(name);
 }
 
 void prseg(ffef_seg_hdrp __seg, mdl_uint_t __no) {
-	printf("%u: segment, type: %s, adr: %u, offset: %u, size: %u\n", __no, segtype_s(__seg->type), __seg->adr, __seg->offset, __seg->sz);
+	printf("%u: segment, type: %s, adr: %u, offset: %u, size: %u\n", __no, segtype_s(__seg->type),
+		__seg->adr, __seg->offset, __seg->sz);
 }
 
 void prreg(ffef_reg_hdrp __reg, mdl_uint_t __no) {
@@ -54,11 +66,12 @@ void prreg(ffef_reg_hdrp __reg, mdl_uint_t __no) {
 	lseek(fd, __reg->name, SEEK_SET);
 	read(fd, name, __reg->l);
 
-	printf("%u: region, name: %s, beg: %u, end: %u, type: %s\n", __no, name, __reg->beg, __reg->end, regtype_s(__reg->type));
+	printf("%u: region, name: %s, beg: %u, end: %u, type: %s, %s\n", __no, name, __reg->beg,
+		__reg->end, regtype_s(__reg->type), __reg->beg==__reg->end?"empty":"not empty");
 }
 
 void prhok(ffef_hokp __hok, mdl_uint_t __no) {
-	printf("%u: hook, offset: %u\n", __hok->offset);
+	printf("%u: hook, offset: %u\n", __no, __hok->offset);
 }
 
 void prrel(ffef_relp __rel, mdl_uint_t __no) {
@@ -94,7 +107,7 @@ int main(int __argc, char const *__argv[]) {
 
 	struct ffef_hok hok;
 	if (hdr.hk != FF_EF_NULL) {
-		printf("hook, entries: %u\n", hdr.nsg);
+		printf("hook, entries: %u\n", hdr.nhk);
 		mdl_uint_t i;
 		mdl_u64_t offset = hdr.hk;
 		for(i = 0;i != hdr.nhk;i++,offset-=ffef_hoksz) {

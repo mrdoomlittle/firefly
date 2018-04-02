@@ -158,6 +158,7 @@ assemble(char *__p, char *__end) {
 				la->offset = offset;
 				la->adr = stackadr();
 				la->s = sy->p;
+				la->reg = curreg;
 				hash_put(&env, sy->p, sy->len, la);
 				printf("label\n");
 			} else if (is_sydir(sy)) {
@@ -189,6 +190,10 @@ assemble(char *__p, char *__end) {
 					rg->name = sy->next->p;
 					rg->next = curreg;
 					rg->beg = offset;
+					if (!curreg)
+						rg->no = 1;
+					else
+						rg->no = curreg->no+1;
 					curreg = rg;
 				} else if (!strcmp(sy->p, "axe")) {
 					curreg->end = offset;
@@ -251,22 +256,20 @@ void outsegs() {
 # include "../ffef.h"
 # include "../exec.h"
 void finalize(void) {
-	outsegs();
-
 	if (!ep)
 		ep = "_start";
 	printf("entry point: %s\n", ep);
 	labelp entry;
 	if (!(entry = (labelp)hash_get(&env, ep, ffly_str_len(ep))))
 		printf("entry point not found.\n");
-	if (of == _of_ffef && entry != NULL) {
+	if (of == _of_ffef) {
 		struct ffef_hdr hdr;
 		*hdr.ident = FF_EF_MAG0;
 		hdr.ident[1] = FF_EF_MAG1;
 		hdr.ident[2] = FF_EF_MAG2;
 		hdr.ident[3] = FF_EF_MAG3;
 		hdr.ident[4] = '\0';
-		hdr.routine = entry->offset;
+		hdr.routine = entry != NULL?entry->offset:FF_EF_NULL;
 		hdr.format = _ffexec_bc;
 		hdr.nsg = 0;
 		hdr.nrg = 0;
@@ -276,17 +279,22 @@ void finalize(void) {
 		hdr.rg = FF_EF_NULL;
 		hdr.rl = FF_EF_NULL;
 		hdr.hk = FF_EF_NULL;
+		outsegs();
 		char const **cur = globl;
 		while(*(--cur) != NULL) {
 			printf("symbol: %s\n", *cur);
-			syt(*cur, NULL)->sort = SY_LABEL;
+			symbolp sy = syt(*cur, NULL);
+			sy->sort = SY_LABEL;
+			sy->type = FF_SY_GBL;
 		}
 
 		cur = extrn;
 		while(*(--cur) != NULL) {
 			printf("extern: %s\n", *cur);
 			mdl_u16_t off;
-			syt(*cur, &off);
+			symbolp sy = syt(*cur, &off);
+			sy->type = FF_SY_IND;
+			sy->sort = 0;
 			hookp hk = hok;
 
 			while(hk != NULL) {
@@ -305,8 +313,6 @@ void finalize(void) {
 			if (hok != NULL)
 				hdr.hk = offset-ffef_hoksz;
 		}	
-
-		syt_drop();
 
 		segmentp sg = curseg;
 		while(sg != NULL) {
@@ -333,8 +339,6 @@ void finalize(void) {
 
 			if (!strcmp(rg->name, "text"))
 				reg.type = FF_RG_PROG;
-			else if (!strcmp(rg->name, "syt"))
-				reg.type = FF_RG_SYT;
 			else
 				reg.type = FF_RG_NULL;
 
@@ -342,9 +346,18 @@ void finalize(void) {
 			hdr.nrg++;
 			rg = rg->next;
 		}
+	
+		// drop the region header hear
+		syt_drop();
 
 		if (curreg != NULL)
 			hdr.rg = offset-ffef_reg_hdrsz;
+		hdr.nrg++;
+
+		// put contents
+		syt_gut();
+		// store header - save
+		syt_store();
 
 		// string table region
 		hdr.sttr = stt_drop();
@@ -358,11 +371,23 @@ void finalize(void) {
 	}
 }
 
+void static drain() {
+	lseek(out, outbuf.dst, SEEK_SET);
+	write(out, outbuf.p, outbuf.off);
+	outbuf.off = 0;
+	outbuf.dst = offset;
+}
+
 void oust(mdl_u8_t *__p, mdl_u8_t __n) {
-	if (__n > OBSIZE) {
+	if (__n > OBSIZE) { //shoud remove
 		printf("error: cant oust anything larger then %u\n", OBSIZE);
 		return;
 	}
+
+	/* if offset has been changed by an alternative means drain it
+	*/
+	if (outbuf.dst+outbuf.off != offset)
+		drain();
 
 	mdl_int_t overflow;
 	if ((overflow = (mdl_int_t)(outbuf.off+__n)-(mdl_int_t)((outbuf.end-outbuf.p)-1))>0)
@@ -372,12 +397,8 @@ void oust(mdl_u8_t *__p, mdl_u8_t __n) {
 	offset+=__n;
 	outbuf.off+=__n;
 
-	if (outbuf.p+outbuf.off == outbuf.end-1) {
-		lseek(out, outbuf.dst, SEEK_SET);
-		write(out, outbuf.p, outbuf.off);
-		outbuf.off = 0;
-		outbuf.dst = offset;
-	}
+	if (outbuf.p+outbuf.off == outbuf.end-1)
+		drain();
 
 	if (overflow>0) {
 		mdl_u8_t *p = __p+__n;

@@ -32,6 +32,8 @@ typedef struct symbol {
 	mdl_u8_t sign:1;
 	mdl_u8_t sort:4;
 
+	mdl_u8_t type;
+
 	struct symbol *next;
 } *symbolp;
 
@@ -40,5 +42,7 @@ struct hash extern symbols;
 void putsymbol(symbolp);
 symbolp getsymbol(char const*);
 symbolp syt(char const*, mdl_u16_t*);
+void syt_store();
 void syt_drop();
+void syt_gut();
 # endif /*__ffly__as__symbol__h*/

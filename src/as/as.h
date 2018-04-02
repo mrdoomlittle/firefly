@@ -31,10 +31,12 @@ typedef struct ins {
 } *insp;
 
 # define LA_LOOSE 0x1
+typedef struct region* regionp;
 typedef struct label {
 	mdl_uint_t offset, adr;
 	mdl_u8_t flags;
 	char const *s;
+	regionp reg;
 } *labelp;
 
 typedef struct segment {
@@ -51,6 +53,7 @@ typedef struct region {
 	char const *name;
 	struct region *next;
 	mdl_u64_t beg, end;
+	mdl_u16_t no;
 } *regionp;
 
 typedef struct relocate {
@@ -65,7 +68,6 @@ typedef struct hook {
 	mdl_u8_t l;
 	labelp to;
 } *hookp;
-
 
 segmentp extern curseg;
 regionp extern curreg;
@@ -112,5 +114,6 @@ void* hash_get(struct hash*, mdl_u8_t const*, mdl_uint_t);
 void load(insp*);
 mdl_uint_t stackadr();
 void isa(mdl_uint_t);
+
 //void ffef(symbolp);
 # endif /*__ffly__as__h*/
