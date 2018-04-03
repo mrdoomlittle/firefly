@@ -20,7 +20,7 @@ symbolp syt(char const *__name, mdl_u16_t *__off) {
 	head = sy;
 	if (__off != NULL)
 		*__off = off;
-	off+=ffef_sysz;
+	off++;
 	return sy;
 }
 
@@ -57,7 +57,7 @@ void syt_gut() {
 			labelp la = (labelp)hash_get(&env, cur->p, cur->len);
 
 			sy.reg = la->reg->no;  
-			sy.loc = la->offset;
+			sy.loc = la->adr;
 		}
 
 		sy.l = cur->len+1;

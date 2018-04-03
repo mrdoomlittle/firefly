@@ -7,6 +7,12 @@
 int static s;
 int d;
 
+mdl_u32_t adr = 0;
+void iadr(mdl_uint_t __by) {
+	adr+=__by;
+}
+
+mdl_u32_t curadr() {return adr;}
 struct hash symbols;
 
 char const *extsrcfl(char const **__p) {
@@ -63,7 +69,7 @@ void incr_offset(mdl_uint_t __by) {
 
 # include "../string.h"
 
-regionp syt;
+symbolp *syt;
 
 regionp curbin = NULL;
 segmentp curseg = NULL;
@@ -71,7 +77,9 @@ hookp curhok = NULL;
 symbolp cursy = NULL;
 regionp curreg = NULL;
 
+relocatep currel = NULL;
 
+regionp *rindx;
 # define PAGE_SHIFT 2
 # define PAGE_SIZE (1<<PAGE_SHIFT)
 void **map = NULL;
@@ -99,12 +107,12 @@ void bond_write(mdl_u64_t __offset, void *__buf, mdl_uint_t __size) {
 		mdl_uint_t pg_off = offset-(page*PAGE_SIZE);
 		mdl_uint_t left = end-p;
 
-		mdl_uint_t bit = PAGE_SIZE-pg_off;
-		if (bit>left)
-			bit = left;
+		mdl_uint_t shred = PAGE_SIZE-pg_off;
+		if (shred>left)
+			shred = left;
 
-		memcpy(map[page]+pg_off, p, bit);
-		p+=bit;
+		memcpy(map[page]+pg_off, p, shred);
+		p+=shred;
 	}
 }
 
@@ -144,11 +152,11 @@ void bond_read(mdl_u64_t __offset, void *__buf, mdl_uint_t __size) {
 		mdl_uint_t pg_off = offset-(page*PAGE_SIZE);
 		mdl_uint_t left = end-p;
 
-		mdl_uint_t bit = PAGE_SIZE-pg_off;
-		if (bit>left)
-			bit = left;
-		memcpy(p, map[page]+pg_off, bit);
-		p+=bit;
+		mdl_uint_t shred = PAGE_SIZE-pg_off;
+		if (shred>left)
+			shred = left;
+		memcpy(p, map[page]+pg_off, shred);
+		p+=shred;
 	}
 }
 
@@ -160,7 +168,7 @@ void oust(void *__p, mdl_uint_t __size) {
 
 char const *stt, *stte;
 
-void absorb_symbol(ffef_syp __sy) {
+void absorb_symbol(ffef_syp __sy, symbolp *__stp) {
 	char name[128];
 	memcpy(name, stte-__sy->name, __sy->l);
 	printf("symbol: %s\n", name);
@@ -177,8 +185,10 @@ void absorb_symbol(ffef_syp __sy) {
 	hash_put(&symbols, name, __sy->l-1, p);
 	p->name = strdup(name);
 _sk:
-	p->loc = bot+__sy->loc;
+	p->loc = curadr()+__sy->loc;
 	p->type = __sy->type;
+	p->reg = rindx+__sy->reg;
+	*__stp = p;
 }
 
 void absorb_hook(ffef_hokp __hook) {
@@ -187,15 +197,8 @@ void absorb_hook(ffef_hokp __hook) {
 	curhok = p;
 
 	p->offset = bot+__hook->offset;
-	struct ffef_sy sy;
-	bond_read(syt->beg+__hook->to, &sy, ffef_sysz);
-
-	char name[128];
-	memcpy(name, stte-sy.name, sy.l);
-	printf("to, %s\n", name);
-	p->to = hash_get(&symbols, name, sy.l-1);	
+	p->to = *(syt-__hook->to);	
 	p->l = __hook->l;
-
 }
 
 void absorb_segment(ffef_seg_hdrp __seg) {
@@ -215,10 +218,28 @@ void absorb_region(ffef_reg_hdrp __reg) {
 	read(s, name, __reg->l);
 	printf("region, %s\n", name);
 
+	mdl_uint_t size;
+	mdl_u8_t *buf = (mdl_u8_t*)malloc(size = (__reg->end-__reg->beg));
+
+	lseek(s, __reg->beg, SEEK_SET);
+	read(s, buf, size);
+
+	if (__reg->type == FF_RG_SYT) {
+		mdl_uint_t l;
+		syt = (symbolp*)malloc((l = (size/sizeof(struct ffef_sy)))*sizeof(symbolp));
+		to_free(syt);
+		symbolp *p = syt;
+		syt+=(l-1);
+		ffef_syp sy = (ffef_syp)buf;
+		while(sy != (ffef_syp)(buf+size))
+			absorb_symbol(sy++, p++);
+		free(buf);
+		return;
+	}
+
 	regionp reg = (regionp)malloc(sizeof(struct region));
 	reg->beg = __reg->beg;
 	reg->end = __reg->end;
-
 	if (__reg->type == FF_RG_PROG) {
 		reg->next = curbin;
 		curbin = reg;
@@ -226,28 +247,29 @@ void absorb_region(ffef_reg_hdrp __reg) {
 		reg->end+=bot;
 		rise+=__reg->end-__reg->beg;
 		printf("region placed at: %u\n", reg->beg);
+		reg->adr = curadr();
 	} else {
 		reg->next = curreg;
 		curreg = reg;
 	}
 
-	mdl_uint_t size;
-	mdl_u8_t *buf = (mdl_u8_t*)malloc(size = (__reg->end-__reg->beg));
 
-	lseek(s, __reg->beg, SEEK_SET);
-	read(s, buf, size);
-
-	bond_mapout(reg->beg, size);
-	bond_write(reg->beg, buf, size);
-
-	if (__reg->type == FF_RG_SYT) {
-		syt = reg;
-		ffef_syp sy = (ffef_syp)buf;
-		while(sy != (ffef_syp)(buf+size))
-			absorb_symbol(sy++);
+	if (__reg->type == FF_RG_PROG) {
+		bond_mapout(reg->beg, size);
+		bond_write(reg->beg, buf, size);
 	}
 
 	free(buf);
+}
+
+void absorb_relocate(ffef_relp __rel) {
+	relocatep rel = (relocatep)malloc(sizeof(struct relocate));
+	rel->next = currel;
+	currel = rel;
+	rel->offset = __rel->offset;
+	rel->l = __rel->l;
+	rel->sy = *(syt-__rel->sy);
+	printf("reloc: symbol, %s\n", rel->sy->name);
 }
 
 void ldstt(ffef_hdrp __hdr) {
@@ -281,7 +303,7 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 			printf("entry point already designated, skipping.\n");
 			return;
 		}
-		__dhdr->routine = (offset-ffef_hdr_size)+hdr.routine;
+		__dhdr->routine = curadr()+hdr.routine;
 	}
 
 	ldstt(&hdr);
@@ -289,12 +311,15 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 	if (hdr.rg != FF_EF_NULL) {
 		mdl_uint_t i;
 		mdl_u64_t offset = hdr.rg;
+//		to_free(rindx = (regionp*)malloc(hdr.nrg*sizeof(regionp)));
 		for(i = 0;i != hdr.nrg;i++,offset-=ffef_reg_hdrsz+reg.l) {
 			lseek(s, offset, SEEK_SET);
 			read(s, &reg, ffef_reg_hdrsz);
-			absorb_region(&reg);	
+			absorb_region(&reg);
+//			rindx[i] = curreg;
 		}
 	}
+
 /*
 	struct ffef_seg_hdr seg;
 	if (hdr.sg != FF_EF_NULL) {
@@ -307,6 +332,18 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 		}
 	}
 */
+
+	struct ffef_rel rel;
+	if (hdr.rl != FF_EF_NULL) {
+		mdl_uint_t i = 0;
+		mdl_u64_t offset = hdr.rl;
+		for(i = 0;i != hdr.nrl;i++,offset-=ffef_relsz) {
+			lseek(s, offset, SEEK_SET);
+			read(s, &rel, ffef_relsz);
+			absorb_relocate(&rel);
+		}
+	}
+
 	struct ffef_hok hok;
 	if (hdr.hk != FF_EF_NULL) {
 		mdl_uint_t i;
@@ -318,43 +355,49 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 		}
 	}
 
-
 	bot+=rise;
 	rise=0;
+	iadr(hdr.adr);
 	free(stt);
 	close(s);
 }
 
 void latch_hooks() {
-	return;
 	hookp cur = curhok;
 	while(cur != NULL) {
-		// dont include header
 		if (!cur->to)
 			printf("cant hook onto a symbol that doesen't exist.\n");
-		else {
-		//	printf("%u\n", cur->to->loc);
-			/*
-			if (cur->to->type == FF_SY_GBL)
+		else {		
+			if (cur->to->type == FF_SY_GBL) {
 				bond_write(cur->offset, &cur->to->loc, cur->l);	
-			else
+				printf("hooking at: %u\n", cur->offset);
+			} else
 				printf("symbol hasen't been defined.\n");
-		*/}
+		}
 		cur = cur->next;
 	}
 }
+
+void reloc() {
+	relocatep cur = currel;
+	while(cur != NULL) {
+		bond_write(cur->offset, &cur->sy->loc, cur->l);	
+		cur = cur->next;
+	}
+}
+
 
 void static 
 cleanup() {
 	void **cur = tf;
 	while(cur != fresh)
 		free(*(cur++));
-//	if (map != NULL)
-//		free(map);
+	if (map != NULL)
+		free(map);
 }
 
 void bond(char const *__s, char const *__dst) {
-
+/*
 	printf("pagesize: %u\n", PAGE_SIZE);
 	char const *text = "1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20";
 	mdl_uint_t l = strlen(text)+1;
@@ -367,7 +410,7 @@ void bond(char const *__s, char const *__dst) {
 	printf("out: %s\n", buf);
 	cleanup();
 return;
-
+*/
 	hash_init(&symbols);
 	char const *p = __s;
 
@@ -403,8 +446,9 @@ return;
 	}
 
 	latch_hooks();
-	offset=bot;
-	//output(&dhdr);
+	reloc();
+	offset+=bot;
+	output(&dhdr);
 	cleanup();
 	close(d);
 	hash_destroy(&symbols);

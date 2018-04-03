@@ -1,6 +1,6 @@
 .globl test
 .region text
 test:
-outb %al
-exit 0x0
+asb %al, 21
+exit %al
 .axe

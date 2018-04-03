@@ -7,6 +7,7 @@
 # include "../string.h"
 # include "../malloc.h"
 # include "../dep/str_cmp.h"
+# include "../ffef.h"
 /*
 	cleanup needed
 */
@@ -23,6 +24,7 @@ regionp curreg = NULL;
 relocatep rel = NULL;
 hookp hok = NULL;
 mdl_u64_t offset = 0;
+mdl_u32_t adr = 0;
 
 mdl_u8_t of = _of_null;
 
@@ -36,6 +38,12 @@ struct {
 void ffas_ldsrc(void) {
 
 }
+
+void iadr(mdl_uint_t __by) {
+	adr+=__by;
+}
+
+mdl_u32_t curadr() {return adr;}
 
 void ffas_init(void) {
 	hash_init(&symbols);
@@ -156,10 +164,16 @@ assemble(char *__p, char *__end) {
 			} else if (is_sylabel(sy)) {
 				labelp la = (labelp)_alloca(sizeof(struct label));
 				la->offset = offset;
-				la->adr = stackadr();
+				la->s_adr = stackadr();
+				la->adr = curadr();
 				la->s = sy->p;
 				la->reg = curreg;
 				hash_put(&env, sy->p, sy->len, la);
+
+				symbolp s = syt(sy->p, NULL);
+				putsymbol(s);
+				s->sort = SY_LABEL;
+				s->type = FF_SY_LCA;
 				printf("label\n");
 			} else if (is_sydir(sy)) {
 				printf("directive, %s\n", sy->p);
@@ -217,7 +231,11 @@ assemble(char *__p, char *__end) {
 						adaptreg(sy->next->next);
 						ins->r = sy->next->next;
 					}
+
+					mdl_u64_t beg = offset;
 					ins->post(ins);
+					mdl_u64_t end = offset;
+					iadr(end-beg);
 					printf("got: %s\n", ins->name);
 				} else
 					printf("unknown.\n");
@@ -226,10 +244,11 @@ assemble(char *__p, char *__end) {
 	}
 }
 
-void reloc(mdl_u64_t __offset, mdl_u8_t __l) {
+void reloc(mdl_u64_t __offset, mdl_u8_t __l, labelp __la) {
 	relocatep rl = (relocatep)_alloca(sizeof(struct relocate));
 	rl->offset = __offset;
 	rl->l = __l;
+	rl->la = __la;
 	rl->next = rel;
 	rel = rl;
 }
@@ -253,7 +272,6 @@ void outsegs() {
 	}
 }
 
-# include "../ffef.h"
 # include "../exec.h"
 void finalize(void) {
 	if (!ep)
@@ -269,7 +287,7 @@ void finalize(void) {
 		hdr.ident[2] = FF_EF_MAG2;
 		hdr.ident[3] = FF_EF_MAG3;
 		hdr.ident[4] = '\0';
-		hdr.routine = entry != NULL?entry->offset:FF_EF_NULL;
+		hdr.routine = entry != NULL?entry->adr:FF_EF_NULL;
 		hdr.format = _ffexec_bc;
 		hdr.nsg = 0;
 		hdr.nrg = 0;
@@ -279,12 +297,12 @@ void finalize(void) {
 		hdr.rg = FF_EF_NULL;
 		hdr.rl = FF_EF_NULL;
 		hdr.hk = FF_EF_NULL;
+		hdr.adr = curadr();
 		outsegs();
 		char const **cur = globl;
 		while(*(--cur) != NULL) {
 			printf("symbol: %s\n", *cur);
-			symbolp sy = syt(*cur, NULL);
-			sy->sort = SY_LABEL;
+			symbolp sy = getsymbol(*cur);
 			sy->type = FF_SY_GBL;
 		}
 
@@ -313,6 +331,20 @@ void finalize(void) {
 			if (hok != NULL)
 				hdr.hk = offset-ffef_hoksz;
 		}	
+
+		relocatep rl = rel;
+		while(rl != NULL) {
+			struct ffef_rel rel;
+			rel.offset = rl->offset;
+			rel.l = rl->l;
+			rel.sy = getsymbol(rl->la->s)->off;
+			oust((mdl_u8_t*)&rel, ffef_relsz);
+			rl = rl->next;
+			hdr.nrl++;
+		}
+
+		if (rel != NULL)
+			hdr.rl = offset-ffef_relsz;
 
 		segmentp sg = curseg;
 		while(sg != NULL) {

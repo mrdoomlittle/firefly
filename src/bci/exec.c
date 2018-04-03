@@ -5,7 +5,7 @@
 # include "../linux/stat.h"
 # include "../ffef.h"
 mdl_u8_t static *bin = NULL, *end = NULL;
-ffly_addr_t static ip;
+mdl_u32_t static ip;
 mdl_u8_t static
 fetch_byte(ffly_off_t __off) {
 	if (bin+ip+__off >= end) return 0x0;
@@ -40,10 +40,10 @@ static struct ffly_bci ctx = {
 	.rin = ring
 };
 
-void ffbci_exec(void *__bin, void *__end, void(*__prep)(void*, void*), void *__hdr) {
+void ffbci_exec(void *__bin, void *__end, void(*__prep)(void*, void*), void *__hdr, mdl_u32_t __entry) {
 	bin = (mdl_u8_t*)__bin;
 	end = (mdl_u8_t*)__end;
-	ip = 0;
+	ip = __entry;
 	ffly_bci_init(&ctx);
 	if (__prep != NULL)
 		__prep(__hdr, (void*)&ctx);

@@ -30,17 +30,23 @@ typedef struct region {
 	struct region *next;
 	mdl_u8_t type;
 	mdl_u64_t beg, end;
+	mdl_uint_t adr;
 } *regionp;
-
-typedef struct relocate {
-
-} *relocatep;
 
 typedef struct symbol {
 	struct symbol *next;
 	char const *name;
+	mdl_u8_t type;
 	mdl_uint_t loc;
+	regionp *reg;
 } *symbolp;
+
+typedef struct relocate {
+	struct relocate *next;
+	mdl_u64_t offset;
+	mdl_u8_t l;
+	symbolp sy;
+} *relocatep;
 
 typedef struct hook {
 	struct hook *next;
@@ -57,6 +63,7 @@ struct ffly_bond {
 regionp extern curbin;
 segmentp extern curseg;
 mdl_uint_t extern offset;
+mdl_uint_t extern adr;
 int extern d;
 
 void oust(void*, mdl_uint_t);

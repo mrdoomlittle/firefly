@@ -33,7 +33,7 @@ typedef struct ins {
 # define LA_LOOSE 0x1
 typedef struct region* regionp;
 typedef struct label {
-	mdl_uint_t offset, adr;
+	mdl_uint_t offset, s_adr, adr;
 	mdl_u8_t flags;
 	char const *s;
 	regionp reg;
@@ -60,6 +60,7 @@ typedef struct relocate {
 	struct relocate *next;
 	mdl_u64_t offset;
 	mdl_u8_t l;
+	labelp la;
 } *relocatep;
 
 typedef struct hook {
@@ -101,7 +102,7 @@ void oust_64l(mdl_u64_t);
 mdl_uint_t stt(char const*, mdl_uint_t);
 mdl_u64_t stt_drop();
 
-void reloc(mdl_u64_t, mdl_u8_t);
+void reloc(mdl_u64_t, mdl_u8_t, labelp);
 void hook(mdl_u64_t, mdl_u8_t, labelp);
 void finalize(void);
 void ffas_init(void);

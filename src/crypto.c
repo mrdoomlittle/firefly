@@ -4,15 +4,21 @@
 # include "system/io.h"
 void print_bin(mdl_u8_t);
 
+
+# define NUM 16
 void mdl_encrypt(void *__p, mdl_uint_t __bc, mdl_u64_t __key) {
 	mdl_u8_t *p = (mdl_u8_t*)__p;
 	mdl_u8_t *end = p+__bc;
+	mdl_u8_t c;
 	while(p != end) {
-		print_bin(*p);
+		c = NUM;
+_again:
 		*p = ((*p&0xf)^(__key>>4&0xf))|(((*p>>4&0xf)^(__key&0xf))<<4);
-		print_bin(*p);
-		ffly_printf("\n");
-		__key = (__key>>62)|__key<<2;
+		__key = (__key>>60)|__key<<4;
+		if (c>0) {
+			c--;
+			goto _again;
+		}
 		p++;
 	} 
 }
@@ -20,9 +26,16 @@ void mdl_encrypt(void *__p, mdl_uint_t __bc, mdl_u64_t __key) {
 void mdl_decrypt(void *__p, mdl_uint_t __bc, mdl_u64_t __key) {
 	mdl_u8_t *p = (mdl_u8_t*)__p;
 	mdl_u8_t *end = p+__bc;
+	mdl_u8_t c;
 	while(p != end) {
+		c = NUM;
+_again:
 		*p = ((__key>>4&0xf)^(*p&0xf))|(((__key&0xf)^(*p>>4&0xf))<<4);
-		__key = (__key>>62)|__key<<2;
+		__key = (__key>>60)|__key<<4;
+		if (c>0) {
+			c--;
+			goto _again;
+		}
 		p++;
 	}
 }
@@ -34,13 +47,8 @@ void print_bin(mdl_u8_t __d) {
 	ffly_printf("\n");
 }
 
-void ffly_encrypt(void *__p, mdl_uint_t __bc, mdl_u64_t __key) {
-	mdl_encrypt(__p, __bc, __key);
-}
-
-void ffly_decrypt(void *__p, mdl_uint_t __bc, mdl_u64_t __key) {
-	mdl_decrypt(__p, __bc, __key);
-}
+void(*ffly_encrypt)(void*, mdl_uint_t, mdl_u64_t) = mdl_encrypt;
+void(*ffly_decrypt)(void*, mdl_uint_t, mdl_u64_t) = mdl_decrypt;
 
 /*
 int main() {

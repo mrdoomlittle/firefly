@@ -3,7 +3,7 @@
 # include "malloc.h"
 # include "bci.h"
 # include "bcd.h"
-
+# include "string.h"
 # define MAX 8
 void static
 op_exit(mdl_u8_t **__p) {
@@ -17,8 +17,12 @@ op_as(mdl_u8_t **__p) {
 	printf("as,\t\t");
 	mdl_u8_t l;
 	printf("l{%u},\t\t", l = *(mdl_u8_t*)((*__p)++));
-	printf("to{%x}\n", *(ffly_addr_t*)*__p);
-	(*__p)+=sizeof(ffly_addr_t)+l;
+	printf("to{%x},\t\t", *(ffly_addr_t*)*__p);
+	(*__p)+=sizeof(ffly_addr_t);
+	mdl_u64_t val = 0;
+	memcpy(&val, *__p, l);
+	printf("val{%u}\n", val);
+	(*__p)+=l;
 }
 
 void static

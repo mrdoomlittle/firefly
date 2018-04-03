@@ -31,6 +31,7 @@ char const* sytype_s(mdl_u8_t __type) {
 		case FF_SY_NULL: return "null";
 		case FF_SY_IND: return "ind";
 		case FF_SY_GBL: return "global";
+		case FF_SY_LCA: return "local";
 	}
 	return "unknown";
 }
@@ -50,14 +51,14 @@ void prsy(ffef_reg_hdrp __sttr, ffef_syp __sy, mdl_uint_t __no) {
 	lseek(fd, __sttr->end-__sy->name, SEEK_SET);
 	read(fd, name, __sy->l);
 
-	printf("%u: symbol, type: %s, name: %s:%u, loc: %u, reg: %u\n", __no, sytype_s(__sy->type),
+	printf("%u: symbol,\ttype: %s,\tname: %s\t: %u,\tloc: %u,\treg: %u\n", __no, sytype_s(__sy->type),
 		name, __sy->name, __sy->loc, __sy->reg);
 
 	free(name);
 }
 
 void prseg(ffef_seg_hdrp __seg, mdl_uint_t __no) {
-	printf("%u: segment, type: %s, adr: %u, offset: %u, size: %u\n", __no, segtype_s(__seg->type),
+	printf("%u: segment,\ttype: %s,\tadr: %u,\toffset: %u,\tsize: %u\n", __no, segtype_s(__seg->type),
 		__seg->adr, __seg->offset, __seg->sz);
 }
 
@@ -66,16 +67,16 @@ void prreg(ffef_reg_hdrp __reg, mdl_uint_t __no) {
 	lseek(fd, __reg->name, SEEK_SET);
 	read(fd, name, __reg->l);
 
-	printf("%u: region, name: %s, beg: %u, end: %u, type: %s, %s\n", __no, name, __reg->beg,
+	printf("%u: region,\tname: %s,\tbeg: %u,\tend: %u,\ttype: %s,\t%s\n", __no, name, __reg->beg,
 		__reg->end, regtype_s(__reg->type), __reg->beg==__reg->end?"empty":"not empty");
 }
 
 void prhok(ffef_hokp __hok, mdl_uint_t __no) {
-	printf("%u: hook, offset: %u\n", __no, __hok->offset);
+	printf("%u: hook,\toffset: %u\tlength: %u,\tto: %u\n", __no, __hok->offset, __hok->l, __hok->to);
 }
 
 void prrel(ffef_relp __rel, mdl_uint_t __no) {
-	printf("%u: relocate, offset: %u, length: %u\n", __no, __rel->offset, __rel->l);
+	printf("%u: relocate,\toffset: %u,\tlength: %u,\tsymbol: %u\n", __no, __rel->offset, __rel->l, __rel->sy);
 }
 
 int main(int __argc, char const *__argv[]) {

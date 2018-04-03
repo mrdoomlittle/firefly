@@ -1,8 +1,8 @@
 # include "exec.h"
-void ffexec(void *__p, void *__end, mdl_u8_t __format, void(*__prep)(void*, void*), void *__hdr) {
+void ffexec(void *__p, void *__end, mdl_u8_t __format, void(*__prep)(void*, void*), void *__hdr, mdl_u32_t __entry) {
 	switch(__format) {
 		case _ffexec_bc:
-			ffbci_exec(__p, __end, __prep, __hdr);	
+			ffbci_exec(__p, __end, __prep, __hdr, __entry);
 		break;
 	}
 }
@@ -34,13 +34,16 @@ prep(void *__hdr, void *__ctx) {
 	ffef_hdrp hdr = (ffef_hdrp)__hdr;
 	ffly_bcip ctx = (ffly_bcip)__ctx;
 
-	ffly_printf("loading stack segment/s.\n");
+	if (ss != NULL)
+		ffly_printf("loading stack segment/s.\n");
+	else
+		ffly_printf("no stack segment/s to load.\n");
 	segmentp cur = ss, bk;
 	while(cur != NULL) {
 		ffly_printf("...\n");
 		mdl_u8_t *seg;	
 		if (!(seg = (mdl_u8_t*)__ffly_mem_alloc(cur->hdr.sz))) {
-
+			// err
 		}
 
 		lseek(fd, cur->hdr.offset, SEEK_SET);
@@ -134,13 +137,14 @@ void ffexecf(char const *__file) {
 	end = bin+size;
 
 	ffly_bcd(bin, end);
+	ffly_printf("routine at: %u\n", hdr.routine);
 	ffly_printf("exec, in 3\n");
 	ffly_nanosleep(1, 0);
 	ffly_printf("2\n");
 	ffly_nanosleep(1, 0);
 	ffly_printf("1\n");
 	ffly_nanosleep(1, 0);
-	ffexec(bin, end, hdr.format, prep, &hdr);
+	ffexec(bin, end, hdr.format, prep, &hdr, hdr.routine);
 	__ffly_mem_free(bin);
 	_corrupt:
 	close(fd);

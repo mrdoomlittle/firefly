@@ -33,7 +33,7 @@ typedef struct symbol {
 	mdl_u8_t sort:4;
 
 	mdl_u8_t type;
-
+	mdl_u16_t off;
 	struct symbol *next;
 } *symbolp;
 

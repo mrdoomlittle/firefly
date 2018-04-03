@@ -31,6 +31,7 @@
 # define FF_SY_NULL 0x0
 # define FF_SY_IND 0x1
 # define FF_SY_GBL 0x2
+# define FF_SY_LCA 0x3
 typedef struct ffef_sy {
 	mdl_u16_t name;
 	mdl_u8_t type;
@@ -56,6 +57,7 @@ typedef struct ffef_seg_hdr {
 typedef struct ffef_rel {
 	mdl_u64_t offset;
 	mdl_u8_t l;
+	mdl_u16_t sy;
 } *ffef_relp;
 
 typedef struct ffef_hok {
@@ -72,6 +74,7 @@ typedef struct ffef_hdr {
 
 	mdl_u16_t nsg, nrg, nrl, nhk;
 	mdl_u64_t sg, rg, rl, hk;
+	mdl_u32_t adr;
 } *ffef_hdrp;
 
 # endif /*__ffly__ffef__h*/
