@@ -30,11 +30,11 @@ void *thr(void *__arg_p) {
 # include "linux/sched.h"
 # include "linux/unistd.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
-	p = malloc(200);
-	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&pot);
-	ffly_tid_t id;
-	ffly_thread_create(&id, thr, NULL);
-	ffly_thread_wait(id);
+//	p = malloc(200);
+//	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&pot);
+//	ffly_tid_t id;
+//	ffly_thread_create(&id, thr, NULL);
+//	ffly_thread_wait(id);
 
 	ffly_arstat();
 }

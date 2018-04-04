@@ -1,3 +1,4 @@
+# define __ffly_debug_enabled
 # include "types/err_t.h"
 # include "linux/unistd.h"
 
@@ -10,6 +11,8 @@
 # include "dep/str_cmp.h"
 # include "dep/mem_dup.h"
 # include "dep/mem_cpy.h"
+# include "memory/mem_alloc.h"
+# include "memory/mem_free.h"
 /*
 extern void*(*ffly_allocp)(mdl_uint_t);
 extern void(*ffly_freep)(void*);
@@ -100,6 +103,8 @@ fini() {
 	ffly_thread_cleanup();
 	ffly_arcs_de_init();
 	ffly_alloca_cleanup();
+//	pr();
+//	pf();
 	ffly_io_closeup();
 	ffly_ar_cleanup();
 }

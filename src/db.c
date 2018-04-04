@@ -11,10 +11,136 @@
 # define blkd_size sizeof(struct ffdb_blkd)
 # define PAGE_SHIFT 6
 # define PAGE_SIZE (1<<PAGE_SHIFT)
+# define FFDB_NNO 0xffff
+
+# define FFDBF_MAG0 'f'
+# define FFDBF_MAG1 'f'
+# define FFDBF_MAG2 'd'
+# define FFDBF_MAG3 'b'
 /*
 	TODO:
 	 make thread safe
 */
+
+/*
+	TODO:
+		ffdb_settle
+		ffdb_load
+*/
+
+// has not been tested
+
+
+
+ffdb_rivetp rt[64] = {
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+};
+
+mdl_u16_t static diched[100];
+mdl_u16_t static *next = diched;
+mdl_u16_t static fresh = 0;
+mdl_u16_t static feed = FFDB_NNO;
+mdl_u16_t static
+obtain_no() {
+	if (feed != FFDB_NNO) {
+		mdl_u16_t ret;
+		ret = feed;
+		feed = FFDB_NNO;
+		return ret;
+	}
+	if (next>diched)
+		return *(--next);
+	return fresh++;
+}
+
+void static
+ditch_no(mdl_u16_t __no) {
+	if (fresh-1 == __no) {
+		fresh--;
+		return;
+	}
+	*(next++) = __no;
+}
+
+ffdb_rivetp static
+lookup(mdl_u16_t __no) {
+	ffdb_rivetp cur = rt[__no&0x3f];
+	while(cur != NULL) {
+		if (cur->no == __no) return cur;
+		cur = cur->next;
+	}
+	return NULL;
+}
+
+mdl_i8_t ffdb_exist(mdl_u16_t __no) {
+	return !lookup(__no)?-1:0;
+}
+
+void* ffdb_rivetto(mdl_u16_t __no) {
+	ffdb_rivetp rivet;
+	if (!(rivet = lookup(__no)))
+		return NULL;
+	return rivet->to;
+}
+
+void ffdb_rivet(mdl_u16_t *__no, void *__to) {
+	mdl_u16_t no = (*__no = obtain_no());
+	ffdb_rivetp *p = rt+(no&0x3f);
+	ffdb_rivetp rivet = (ffdb_rivetp)__ffly_mem_alloc(sizeof(struct ffdb_rivet));
+	rivet->next = *p;
+	rivet->no = no;
+	rivet->to = __to;
+	*p = rivet;
+}
+
+void ffdb_derivet(mdl_u16_t __no) {
+	ffdb_rivetp *p = rt+(__no&0x3f);
+	ffdb_rivetp *i = p;
+	ffdb_rivetp cur = *p;
+	while(cur != NULL) {
+		if (cur->no == __no) {
+			*i = cur->next;
+			__ffly_mem_free(cur);
+			ditch_no(__no);
+			return;
+		}
+		i = &cur->next;
+	}
+}
+
+struct ffdbf_record {
+	mdl_u32_t p;
+	mdl_uint_t no;
+};
+
+struct ffdbf_pile {
+	mdl_u16_t nr;
+	mdl_u32_t rec;
+	mdl_uint_t no;
+	mdl_u32_t next;
+};
+// ffdbf
+struct ffdbf_hdr {
+	char ident[4];
+	mdl_u32_t top, off;
+	mdl_u32_t bin;
+
+	mdl_u32_t pile;
+
+	mdl_u16_t fresh;
+
+	mdl_uint_t nd;
+	mdl_u16_t diched;
+};
+
+# define hdrsize sizeof(struct ffdbf_hdr)
 
 char const* ff_db_errst(ff_db_err __errno) {
 	switch(__errno) {
@@ -28,7 +154,7 @@ char const* ff_db_errst(ff_db_err __errno) {
 }
 
 ffly_err_t ffdb_init(ffdbp __db) {
-	__db->off = 0;
+	__db->off = hdrsize;
 	__db->top = NULL;
 	__db->next = __db->free;
 
@@ -40,17 +166,25 @@ ffly_err_t ffdb_init(ffdbp __db) {
 	retok;
 }
 
+
+void ffdb_load(ffdbp);
+
 ffly_err_t ffdb_open(ffdbp __db, char const *__file) {
 	ffly_err_t err;
+	mdl_i8_t load = -1;
 	if (!access(__file, F_OK)) {
 		ffly_printf("database file exists.\n");
+		load = 0;
 	}
 
-	__db->file = ffly_fopen(__file, FF_O_RDWR|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err);
+	__db->file = ffly_fopen(__file, FF_O_RDWR|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err);
 	if (_err(err)) {
 		ffly_printf("failed to open database file.\b");
 		_ret;
 	}
+
+//	if (!load)
+//		ffdb_load(__db);
 	retok;
 }
 
@@ -302,7 +436,7 @@ void ffdb_del_pile(ffdbp __db, ffdb_pilep __pile) {
 
 
 # define FFDB_NULL ((mdl_uint_t)~0)
-mdl_uint_t static top = FFDB_NULL;
+mdl_u32_t static top = FFDB_NULL;
 ffdb_blkdp static bin = NULL;
 void ffdb_unlink(ffdb_blkdp);
 mdl_uint_t ffdb_alloc(ffdbp __db, mdl_uint_t __bc) {
@@ -326,7 +460,7 @@ mdl_uint_t ffdb_alloc(ffdbp __db, mdl_uint_t __bc) {
 		}
 	}
 
-	ffly_off_t off = __db->off;
+	mdl_u32_t off = __db->off;
 	struct ffdb_blkd blk = {
 		.size = __bc,
 		.off = off,
@@ -473,6 +607,108 @@ void ffdb_free(ffdbp __db, mdl_uint_t __p) {
 	write_blkd(__db, &blk, off);	
 }
 
+# include "ffly_def.h"
+void ffdb_load(ffdbp __db) {
+	struct ffdbf_hdr hdr;
+	ffly_fseek(__db->file, 0, FF_SEEK_SET);
+	ffly_fread(__db->file, &hdr, hdrsize);
+	if (*hdr.ident != FFDBF_MAG0) {
+		ffly_printf("mag0 corrupted\n");
+		return;
+	}
+
+	if (hdr.ident[1] != FFDBF_MAG1) {
+		ffly_printf("mag1 corrupted\n");	
+		return;
+	}
+
+	if (hdr.ident[2] != FFDBF_MAG2) {
+		ffly_printf("mag2 corrupted\n");
+		return;
+	}
+
+	if (hdr.ident[3] != FFDBF_MAG3) {
+		ffly_printf("mag3 corrupted\n");
+		return;
+	}
+
+	__db->off = hdr.off;
+	top = hdr.top;
+
+	mdl_u32_t cur = hdr.bin;
+	ffdb_blkdp bk = NULL;
+	while(cur != FFDB_NULL) {
+		ffdb_blkdp blk = (ffdb_blkdp)__ffly_mem_alloc(sizeof(struct ffdb_blkd));
+		read_blkd(__db, blk, cur);
+		blk->p = blk;
+		if ((mdl_u64_t)blk->bk != FFDB_NULL) {
+			ffly_fseek(__db->file, (mdl_u64_t)blk->bk+offsetof(struct ffdb_blkd, fd), FF_SEEK_SET);
+			ffly_fwrite(__db->file, &blk, sizeof(ffdb_blkdp));
+		}
+		blk->bk = bk;
+		bk = blk;
+		write_blkd(__db, blk, cur);
+		cur = (mdl_u64_t)blk->fd;
+	}
+}
+
+void out_record(ffdbp __db, ffdb_recordp __rec) {
+	struct ffdbf_record out;
+	out.p = __rec->p;
+	out.no = __rec->no;	
+	ffly_fwrite(__db->file, &out, sizeof(struct ffdbf_record));
+}
+
+void out_pile(ffdbp __db, ffdb_pilep __pile, mdl_u32_t *__bk) {
+	struct ffdbf_pile out;
+	out.nr = 0;
+	out.no = __pile->no;
+	out.next = *__bk;
+	ffdb_recordp cur = __pile->top;
+	while(cur != NULL) {
+		out_record(__db, cur);
+		cur = cur->next;
+		out.nr++;
+	}
+	*__bk = ffly_fseek(__db->file, 0, FF_SEEK_CUR);
+	ffly_fwrite(__db->file, &out, sizeof(struct ffdbf_pile));
+}
+
+void ffdb_settle(ffdbp __db) {
+	struct ffdbf_hdr hdr;
+	*hdr.ident = FFDBF_MAG0;
+	hdr.ident[1] = FFDBF_MAG1;
+	hdr.ident[2] = FFDBF_MAG2;
+	hdr.ident[3] = FFDBF_MAG3;
+
+	hdr.top = top;
+	hdr.off = __db->off;
+	hdr.bin = !bin?FFDB_NULL:bin->off;
+	ffdb_blkdp cur = bin;
+	while(cur != NULL) {
+		struct ffdb_blkd blk;
+		read_blkd(__db, &blk, cur->off);
+		blk.fd = (void*)!cur->fd?FFDB_NULL:cur->fd->off;
+		blk.bk = (void*)!cur->bk?FFDB_NULL:cur->bk->off;
+		blk.p = NULL;
+		write_blkd(__db, &blk, cur->off);
+		cur = cur->fd;
+	}
+
+	ffdb_pilep pile = __db->top;
+	ffdb_recordp rec;
+	mdl_u32_t bk = FFDB_NULL;
+	struct ffdbf_pile out;
+	while(pile != NULL) {
+		out_pile(__db, pile, &bk);
+		pile = pile->next;
+	}
+	hdr.pile = bk;
+
+	ffly_fseek(__db->file, 0, FF_SEEK_SET);
+	ffly_fwrite(__db->file, &hdr, hdrsize);
+}
+
 mdl_uint_t no = 0;
 mdl_uint_t rand() {
 	mdl_uint_t ret;
@@ -585,19 +821,25 @@ void ts4(ffdbp __db) {
 
 	ffly_printf("passwd: %s\n", passwd);
 }
-/*
+
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	struct ffdb db;
 	ffdb_init(&db);
 	ffdb_open(&db, "test.db");
-
-	ffdb_pilep pile = ffdb_creat_pile(&db);
-	ffdb_recordp rec = ffdb_creat_record(&db, pile, 20);
-
-	//ffdb_del_record(&db, pile, rec);
+/*
+	mdl_u16_t r = 0;
+	if (ffdb_exist(r) == -1) {
+		ffly_printf("creating pile.\n");
+		ffdb_pilep p0 = ffdb_creat_pile(&db);
+		ffdb_rivet(&r, p0);
+		ffdb_bind(p0, r);
+	} else
+		ffly_printf("pile already exists.\n");
 
 	_pr(&db);
 	_pf();
+*/
+	ffdb_settle(&db);
 	ffdb_cleanup(&db);
 	ffdb_close(&db);
-}*/
+}

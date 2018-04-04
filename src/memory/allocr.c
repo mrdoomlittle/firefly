@@ -442,6 +442,8 @@ void pot_pf(potp __pot) {
 	blkdp blk, bk;
 	mdl_uint_t static depth = 0;
 	if (p->fd != NULL) {
+		if (!depth)
+			ffly_printf("**start\n");
 		ffly_printf("\ndepth, %u, %u\n", depth++, p->fd->off);
 		pot_pf(p->fd);
 		ffly_printf("**end\n");
@@ -492,7 +494,7 @@ _next:
 	if (p != NULL) {
 		if (p == &main_pot)
 			ffly_printf("~: main pot, no{%u}\n", no);
-		ffly_printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u, pages: %u, blocks: %u\n", no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off, p->page_c, p->blk_c);
+		ffly_printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u, pages: %u, blocks: %u, total: %u\n", no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off, p->page_c, p->blk_c, p->total);
 		pot_pr(p);
 		if ((p = p->next) != NULL)
 			goto _next;
@@ -516,7 +518,7 @@ void pf() {
 	mdl_uint_t no = 0;
 _next:
 	if (p != NULL) {
-		ffly_printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u\n", no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off);
+		ffly_printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u, pages: %u, blocks: %u, total: %u\n", no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off, p->page_c, p->blk_c, p->total);
 		pot_pf(p);
 
 		if ((p = p->next) != NULL)

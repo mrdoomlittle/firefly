@@ -101,12 +101,14 @@ void ffly_arc_free(ffly_arcp __arc) {
 				tmp = rec->fd;
 				if (rec->sort == _ffly_rec_arc)
 					ffly_arc_free((ffly_arcp)rec->p);
-				__ffly_mem_free(rec);
+				//__ffly_mem_free(rec);
+				ffly_arc_delrec(__arc, rec);
 				rec = tmp;
 			}
 		}
 		p++;
 	}
+	__ffly_mem_free(__arc->rr);
 }
 
 ffly_arc_recp ffly_arc_creatrec(ffly_arcp __arc, mdl_u64_t __no,
@@ -138,6 +140,7 @@ void ffly_arc_delrec(ffly_arcp __arc, ffly_arc_recp __rec) {
 
 	if (ffly_is_flag(__rec->flags, REC_FLG_TOFREE) && __rec->p != NULL)
 		__ffly_mem_free(__rec->p);
+	__ffly_mem_free(__rec);
 }
 
 ffly_arcp ffly_creatarc(ffly_arcp __arc, mdl_u64_t __no) {

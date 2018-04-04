@@ -8,6 +8,11 @@
 # include "system/file.h"
 # include "system/mutex.h"
 # define KEY_SIZE 2 // bytes
+# define ffdb_no(__p) \
+		(__p)->no
+// bind rivet to pile or record
+# define ffdb_bind(__p, __no) \
+		(__p)->no = __no
 // needs testing
 enum {
 	_ff_db_auth_root,
@@ -45,7 +50,8 @@ typedef mdl_u8_t ffdb_key[KEY_SIZE];
 typedef mdl_u8_t ff_db_err;
 # define MAX_PILES 20
 struct ffdb_blkd {
-	mdl_uint_t size, end, off;
+	mdl_uint_t size;
+	mdl_u32_t end, off;
 	struct ffdb_blkd *fd, *bk, *p;
 	mdl_u64_t prev, next;
 	mdl_u8_t inuse;
@@ -60,12 +66,21 @@ struct ff_db_rep {
 	mdl_u8_t type;
 };
 
+/*
+	hold the underworld and surface together
+*/
+typedef struct ffdb_rivet {
+	struct ffdb_rivet *next;
+	mdl_u16_t no;
+	void *to;
+} *ffdb_rivetp;
+
 struct ffdb_pile;
 struct ffdb_record;
 
 struct ffdb {
 	FF_FILE *file;
-	ffly_off_t off;
+	mdl_u32_t off;
 	ffly_mutex_t lock;
 	struct ffdb_pile *top, *free[20], **next;
 	struct ffly_map map;
@@ -90,11 +105,13 @@ typedef struct ffdb_pile {
 	struct ffdb_record *top;
 	struct ffdb_pile *prev, *next;
 	ffly_mutex_t lock;
+	mdl_u16_t no;
 } *ffdb_pilep;
 
 typedef struct ffdb_record {
-	mdl_uint_t p;
+	mdl_u32_t p;
 	struct ffdb_record *prev, *next;
+	mdl_u16_t no;
 } *ffdb_recordp;
 
 typedef struct ffdb_blkd* ffdb_blkdp;

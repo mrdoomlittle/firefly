@@ -1,5 +1,11 @@
 .extern test
 .region text
-_start:
+proxy:
+asb %al, 86
+outb %al
 jmp $test
+_start:
+asb %al, 56
+outb %al
+jmp $proxy
 .axe
