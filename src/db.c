@@ -577,13 +577,12 @@ void ffdb_free(ffdbp __db, mdl_uint_t __p) {
 		}
 	}
 	ffly_printf("2; %ubytes.\n", blk.size);
-	/*
+	
 	if (blk.end == __db->off) {
 		__db->off = off;
 		ftruncate(ffly_fileno(__db->file), off);
 		return;
 	}
-*/
 	ffdb_reattach(__db, &blk);
 	blk.inuse = 0;
 	blk.p = (ffdb_blkdp)__ffly_mem_alloc(sizeof(struct ffdb_blkd));
@@ -875,41 +874,58 @@ void ts4(ffdbp __db) {
 
 	ffly_printf("passwd: %s\n", passwd);
 }
+
+# ifdef __debug
 # include "dep/str_cpy.h"
+# define PILE 0
+# define GITHUB_REC 1
+# define TWITTER_REC 2
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	struct ffdb db;
 	ffdb_init(&db);
 	ffdb_open(&db, "test.db");
 
-	if (ffdb_exist(0) == -1) {
+	if (ffdb_exist(PILE) == -1) {
 		ffly_printf("creating pile.\n");
 		ffdb_pilep pile = ffdb_creat_pile(&db);
-		ffdb_rivet(0, pile);
-		ffdb_bind(pile, 0);
+		ffdb_rivet(PILE, pile);
+		ffdb_bind(pile, PILE);
 	} else {
 		ffly_printf("pile already exists.\n");
 		ffdb_pilep pile;
 		ffdb_recordp rec;
-		pile = ffdb_rivetto(0);
-		if (ffdb_exist(1) == -1) {
-			ffly_printf("creating record.\n");
+		pile = ffdb_rivetto(PILE);
+		char buf[67];
+		if (ffdb_exist(GITHUB_REC) == -1) {
 			rec = ffdb_creat_record(&db, pile, 67);
 			ffdb_record_alloc(&db, rec);
-			ffdb_rivet(1, rec);
-			ffdb_bind(rec, 1);
-//			char buf[67];
-//			ffly_str_cpy(buf, "http://github.com/mrdoomlittle/");
-//			ffdb_write(&db, pile, rec, 0, buf, 67);
+			ffdb_rivet(GITHUB_REC, rec);
+			ffdb_bind(rec, GITHUB_REC);
+
+			ffly_str_cpy(buf, "http://github.com/mrdoomlittle/");
+			ffdb_write(&db, pile, rec, 0, buf, 67);
 		} else {
-			ffly_printf("deleting record.\n");
-			rec = ffdb_rivetto(1);
-//			char buf[67];
-//			ffdb_read(&db, pile, rec, 0, buf, 67);
-//			ffly_printf("record: %s\n", buf);
+			rec = ffdb_rivetto(GITHUB_REC);
+
+			ffdb_read(&db, pile, rec, 0, buf, 67);
+			ffly_printf("github: %s\n", buf);
 			ffdb_record_free(&db, rec);
 			ffdb_del_record(&db, pile, rec);
-			ffdb_derivet(1);
-		}	
+			ffdb_derivet(GITHUB_REC);
+		}
+
+		if (ffdb_exist(TWITTER_REC) == -1) {
+			rec = ffdb_creat_record(&db, pile, 67);
+			ffdb_record_alloc(&db, rec);
+			ffdb_rivet(TWITTER_REC, rec);
+			ffdb_bind(rec, TWITTER_REC);
+			ffly_str_cpy(buf, "http://twitter.com/mrunoko/");
+			ffdb_write(&db, pile, rec, 0, buf, 67);
+		} else {
+			rec = ffdb_rivetto(TWITTER_REC);
+			ffdb_read(&db, pile, rec, 0, buf, 67);
+			ffly_printf("twitter: %s\n", buf);
+		}
 	}
 
 	_pr(&db);
@@ -934,3 +950,4 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	ffdb_cleanup(&db);
 	ffdb_close(&db);
 }
+# endif
