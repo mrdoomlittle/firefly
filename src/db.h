@@ -30,7 +30,18 @@ enum {
 	_ff_db_msg_creat_pile,
 	_ff_db_msg_del_pile,
 	_ff_db_msg_creat_record,
-	_ff_db_msg_del_record
+	_ff_db_msg_del_record,
+	_ff_db_msg_write,
+	_ff_db_msg_read,
+	_ff_db_msg_record_alloc,
+	_ff_db_msg_record_free,
+	_ff_db_msg_rivet,
+	_ff_db_msg_derivet,
+	_ff_db_msg_rivetto,
+	_ff_db_msg_bind,
+	_ff_db_msg_acquire_slot,
+	_ff_db_msg_scrap_slot,
+	_ff_db_msg_exist
 };
 
 /*
@@ -57,7 +68,10 @@ struct ffdb_blkd {
 	mdl_u8_t inuse;
 };
 
-// rethink this 'msg/kind'
+/*
+	need to rething
+	'struct ff_db_msg'
+*/
 struct ff_db_msg {
 	mdl_u8_t kind;	 
 };
@@ -145,9 +159,17 @@ ffdb_recordp ffdb_fetch_record(ffdbp, char const*, char const*);
 void ffdb_del_record(ffdbp, ffdb_pilep, ffdb_recordp);
 void ffdb_record_alloc(ffdbp, ffdb_recordp);
 void ffdb_record_free(ffdbp, ffdb_recordp);
+mdl_i8_t ffdb_exist(mdl_u16_t);
 
 void ffdb_write(ffdbp, ffdb_pilep, ffdb_recordp, ffly_off_t, void*, mdl_uint_t);
 void ffdb_read(ffdbp, ffdb_pilep, ffdb_recordp, ffly_off_t, void*, mdl_uint_t);
+void ffdb_rivet(mdl_u16_t, void*);
+void ffdb_derivet(mdl_u16_t);
+void* ffdb_rivetto(mdl_u16_t);
+mdl_u16_t ffdb_obtain_no();
+void ffdb_ditch_no(mdl_u16_t); 
+
+void ffdb_settle(ffdbp);
 
 ffdb_pilep ffdb_creat_pile(ffdbp);
 void ffdb_record_alias(ffdbp, ffdb_pilep, char const*, ffdb_recordp); 

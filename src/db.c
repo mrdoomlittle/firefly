@@ -336,7 +336,8 @@ ffdb_recordp ffdb_fetch_record(ffdbp __db, char const *__pile, char const *__nam
 	ffdb_recordp p;
 
 	ffly_err_t err;
-	p = (ffdb_recordp)ffly_map_get(&ffdb_fetch_pile(__db, __pile)->map, (mdl_u8_t const*)__name, ffly_str_len(__name), &err);	 
+	p = (ffdb_recordp)ffly_map_get(&ffdb_fetch_pile(__db, __pile)->map,
+		(mdl_u8_t const*)__name, ffly_str_len(__name), &err);	 
 	return p;
 }
 
@@ -363,12 +364,16 @@ void read_blkd(ffdbp __db, ffdb_blkdp __p, ffly_off_t __off) {
 	ffly_fread(__db->file, __p, blkd_size);
 }
 
-void ffdb_write(ffdbp __db, ffdb_pilep __pile, ffdb_recordp __rec, ffly_off_t __off, void *__buf, mdl_uint_t __size) {
+void ffdb_write(ffdbp __db, ffdb_pilep __pile, ffdb_recordp __rec,
+	ffly_off_t __off, void *__buf, mdl_uint_t __size)	
+{
 	ffly_fseek(__db->file, __rec->p+__off, FF_SEEK_SET);
 	ffly_fwrite(__db->file, __buf, __size);
 }
 
-void ffdb_read(ffdbp __db, ffdb_pilep __pile, ffdb_recordp __rec, ffly_off_t __off, void *__buf, mdl_uint_t __size) {
+void ffdb_read(ffdbp __db, ffdb_pilep __pile, ffdb_recordp __rec,
+	ffly_off_t __off, void *__buf, mdl_uint_t __size)
+{
 	ffly_fseek(__db->file, __rec->p+__off, FF_SEEK_SET);
 	ffly_fread(__db->file, __buf, __size);
 }
@@ -405,7 +410,8 @@ ffdb_pilep ffdb_fetch_pile(ffdbp __db, char const *__name) {
 	ffdb_pilep p;
 
 	ffly_err_t err;
-	p = (ffdb_pilep)ffly_map_get(&__db->map, (mdl_u8_t const*)__name, ffly_str_len(__name), &err);
+	p = (ffdb_pilep)ffly_map_get(&__db->map, (mdl_u8_t const*)__name,
+		ffly_str_len(__name), &err);
 	return p;
 }
 
