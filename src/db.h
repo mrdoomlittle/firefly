@@ -53,7 +53,7 @@ struct ffdb_blkd {
 	mdl_uint_t size;
 	mdl_u32_t end, off;
 	struct ffdb_blkd *fd, *bk, *p;
-	mdl_u64_t prev, next;
+	mdl_u32_t prev, next;
 	mdl_u8_t inuse;
 };
 

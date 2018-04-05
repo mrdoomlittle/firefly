@@ -450,8 +450,12 @@ mdl_uint_t ffdb_alloc(ffdbp __db, mdl_uint_t __bc) {
 					}
 				}
 				ffly_printf("found free space.\n");
+				mdl_uint_t off = p->off;
+				ffly_fseek(__db->file, off+offsetof(struct ffdb_blkd, inuse), FF_SEEK_SET);
+				mdl_u8_t inuse = 1;
+				ffly_fwrite(__db->file, &inuse, 1);
 				ffdb_unlink(p);
-				return p->off+blkd_size; 
+				return off+blkd_size; 
 			}
 			p = p->fd;
 		}
@@ -469,10 +473,8 @@ mdl_uint_t ffdb_alloc(ffdbp __db, mdl_uint_t __bc) {
 	};
 
 	if (top != FFDB_NULL) {
-		struct ffdb_blkd blk;
-		read_blkd(__db, &blk, top);
-		blk.next = off;
-		write_blkd(__db, &blk, top);
+		ffly_fseek(__db->file, top+offsetof(struct ffdb_blkd, next), FF_SEEK_SET);
+		ffly_fwrite(__db->file, &off, sizeof(mdl_u32_t));
 	}
 
 	top = off;
@@ -485,24 +487,20 @@ mdl_uint_t ffdb_alloc(ffdbp __db, mdl_uint_t __bc) {
 void ffdb_reattach(ffdbp __db, struct ffdb_blkd *__blk) {
 	struct ffdb_blkd prev, next;
 	if (__blk->end == __db->off) {
-		struct ffdb_blkd blk;
-		read_blkd(__db, &blk, top);
-		blk.next = __blk->off;
-		write_blkd(__db, &blk, top);
+		ffly_fseek(__db->file, top+offsetof(struct ffdb_blkd, next), FF_SEEK_SET);
+		ffly_fwrite(__db->file, &__blk->off, sizeof(mdl_u32_t));	
 		top = __blk->off;
 		return;
 	}  
 
 	if (__blk->prev != FFDB_NULL) {
-		read_blkd(__db, &prev, __blk->prev);
-		prev.next = __blk->off;
-		write_blkd(__db, &prev, __blk->prev); 
+		ffly_fseek(__db->file, __blk->prev+offsetof(struct ffdb_blkd, next), FF_SEEK_SET);
+		ffly_fwrite(__db->file, &__blk->off, sizeof(mdl_u32_t));
 	}
 
 	if (__blk->next != FFDB_NULL) {
-		read_blkd(__db, &next, __blk->next);
-		next.prev = __blk->off;
-		write_blkd(__db, &next, __blk->next);
+		ffly_fseek(__db->file, __blk->next+offsetof(struct ffdb_blkd, prev), FF_SEEK_SET);
+		ffly_fwrite(__db->file, &__blk->off, sizeof(mdl_u32_t));
 	}
 }
 
@@ -510,29 +508,26 @@ void ffdb_detatch(ffdbp __db, struct ffdb_blkd *__blk) {
 	struct ffdb_blkd prev, next;
 	if (__blk->off == top) {
 		if ((top = __blk->prev) != FFDB_NULL) {
-			struct ffdb_blkd blk;
-			read_blkd(__db, &blk, top);
-			blk.next = FFDB_NULL;
-			write_blkd(__db, &blk, top);
+			ffly_fseek(__db->file, top+offsetof(struct ffdb_blkd, next), FF_SEEK_SET);
+			mdl_u32_t buf = FFDB_NULL;
+			ffly_fwrite(__db->file, &buf, sizeof(mdl_u32_t));
 		}
 		return;
 	}
 
 	if (__blk->prev != FFDB_NULL) {
-		read_blkd(__db, &prev, __blk->prev);
-		prev.next = __blk->next;
-		write_blkd(__db, &prev, __blk->prev);
+		ffly_fseek(__db->file, __blk->prev+offsetof(struct ffdb_blkd, next), FF_SEEK_SET);
+		ffly_fwrite(__db->file, &__blk->next, sizeof(mdl_u32_t));
 	}
 
 	if (__blk->next != FFDB_NULL) {
-		read_blkd(__db, &next, __blk->next);
-		next.prev = __blk->prev;
-		write_blkd(__db, &next, __blk->next);
+		ffly_fseek(__db->file, __blk->next+offsetof(struct ffdb_blkd, prev), FF_SEEK_SET);
+		ffly_fwrite(__db->file, &__blk->prev, sizeof(mdl_u32_t));
 	}
 }
 
 void ffdb_unlink(ffdb_blkdp __blk) {
-	if (__blk->p == bin) {
+	if (__blk == bin) {
 		if ((bin = __blk->fd) != NULL)
 			bin->bk = NULL;
 		goto _end;
@@ -542,7 +537,7 @@ void ffdb_unlink(ffdb_blkdp __blk) {
 		__blk->fd->bk = __blk->bk;
 	if (__blk->bk != NULL)
 		__blk->bk->fd = __blk->fd;
-	_end:
+_end:
 	__ffly_mem_free(__blk);
 }
 
@@ -563,7 +558,7 @@ void ffdb_free(ffdbp __db, mdl_uint_t __p) {
 			ffly_printf("prev not inuse, %ubytes.\n", blk.size);
 			ffdb_detatch(__db, &prev);
 			ffdb_unlink(prev.p);
-			blk.size += prev.size+blkd_size;
+			blk.size+=prev.size+blkd_size;
 			blk.prev = prev.prev;
 			blk.off = prev.off;
 			off = blk.off;
@@ -577,28 +572,27 @@ void ffdb_free(ffdbp __db, mdl_uint_t __p) {
 			ffdb_detatch(__db, &next);
 			ffdb_unlink(next.p);
 			blk.next = next.next;
-			blk.size += next.size+blkd_size;
+			blk.size+=next.size+blkd_size;
 			blk.end = next.end; 
 		}
 	}
 	ffly_printf("2; %ubytes.\n", blk.size);
+	/*
 	if (blk.end == __db->off) {
 		__db->off = off;
 		ftruncate(ffly_fileno(__db->file), off);
 		return;
 	}
-
+*/
 	ffdb_reattach(__db, &blk);
 	blk.inuse = 0;
 	blk.p = (ffdb_blkdp)__ffly_mem_alloc(sizeof(struct ffdb_blkd));
 	*blk.p = blk;
-	if (!bin)
-		bin = blk.p;
-	else {
+	blk.p->bk = NULL;
+	blk.p->fd = bin;
+	if (bin != NULL)
 		bin->bk = blk.p;
-		blk.p->fd = bin;
-		bin = blk.p;
-	}
+	bin = blk.p;
 	ffly_printf("freed: %u\n", blk.size);
 	write_blkd(__db, &blk, off);	
 }
@@ -669,17 +663,24 @@ void ffdb_load(ffdbp __db) {
 	ffdb_blkdp bk = NULL;
 	while(cur != FFDB_NULL) {
 		ffdb_blkdp blk = (ffdb_blkdp)__ffly_mem_alloc(sizeof(struct ffdb_blkd));
+		if (!bin)
+			bin = blk;
 		read_blkd(__db, blk, cur);
 		blk->p = blk;
+		
 		if ((mdl_u64_t)blk->bk != FFDB_NULL) {
-			ffly_fseek(__db->file, (mdl_u64_t)blk->bk+offsetof(struct ffdb_blkd, fd), FF_SEEK_SET);
+			ffly_fseek(__db->file, (mdl_u64_t)blk->bk+offsetof(struct ffdb_blkd, p), FF_SEEK_SET);
 			ffly_fwrite(__db->file, &blk, sizeof(ffdb_blkdp));
 		}
-		blk->bk = bk;
+
+		if (bk != NULL)
+			bk->fd = blk;
 		bk = blk;
-		write_blkd(__db, blk, cur);
+		blk->bk = bk;
 		cur = (mdl_u64_t)blk->fd;
 	}
+	if (bk != NULL)
+		bk->fd = NULL;
 
 	mdl_u32_t pile = hdr.pile;
 	while(pile != FFDB_NULL) {
@@ -691,6 +692,7 @@ void ffdb_load(ffdbp __db) {
 
 	ffly_fseek(__db->file, hdr.diched, FF_SEEK_SET);
 	ffly_fread(__db->file, diched, hdr.nd*sizeof(mdl_u16_t));
+	ftruncate(ffly_fileno(__db->file), __db->off);
 }
 
 void out_record(ffdbp __db, ffdb_recordp __rec) {
@@ -725,6 +727,7 @@ void ffdb_settle(ffdbp __db) {
 
 	hdr.top = top;
 	hdr.off = __db->off;
+
 	hdr.bin = !bin?FFDB_NULL:bin->off;
 	ffdb_blkdp cur = bin;
 	while(cur != NULL) {
@@ -753,7 +756,7 @@ void ffdb_settle(ffdbp __db) {
 	hdr.nd = next-diched;
 	if (hdr.nd>0) {
 		hdr.diched = ffly_fseek(__db->file, 0, FF_SEEK_CUR);
-		ffly_fwrite(__db->file, diched, hdr.nd*sizeof(mdl_u32_t));
+		ffly_fwrite(__db->file, diched, hdr.nd*sizeof(mdl_u16_t));
 	}
 
 	ffly_fseek(__db->file, 0, FF_SEEK_SET);
@@ -883,28 +886,50 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		ffdb_pilep pile = ffdb_creat_pile(&db);
 		ffdb_rivet(0, pile);
 		ffdb_bind(pile, 0);
-
-		ffdb_recordp rec = ffdb_creat_record(&db, pile, 67);
-		ffdb_record_alloc(&db, rec);
-		ffdb_rivet(1, rec);
-		ffdb_bind(rec, 1);
-		char buf[67];
-		ffly_str_cpy(buf, "http://github.com/mrdoomlittle/");
-		ffdb_write(&db, pile, rec, 0, buf, 67);
 	} else {
 		ffly_printf("pile already exists.\n");
-		
-		ffdb_pilep pile = (ffdb_pilep)ffdb_rivetto(0);
-		ffdb_recordp rec = (ffdb_recordp)ffdb_rivetto(1);
-		char buf[67];
-		ffdb_read(&db, pile, rec, 0, buf, 67);
-		ffly_printf("record: %s\n", buf);
+		ffdb_pilep pile;
+		ffdb_recordp rec;
+		pile = ffdb_rivetto(0);
+		if (ffdb_exist(1) == -1) {
+			ffly_printf("creating record.\n");
+			rec = ffdb_creat_record(&db, pile, 67);
+			ffdb_record_alloc(&db, rec);
+			ffdb_rivet(1, rec);
+			ffdb_bind(rec, 1);
+//			char buf[67];
+//			ffly_str_cpy(buf, "http://github.com/mrdoomlittle/");
+//			ffdb_write(&db, pile, rec, 0, buf, 67);
+		} else {
+			ffly_printf("deleting record.\n");
+			rec = ffdb_rivetto(1);
+//			char buf[67];
+//			ffdb_read(&db, pile, rec, 0, buf, 67);
+//			ffly_printf("record: %s\n", buf);
+			ffdb_record_free(&db, rec);
+			ffdb_del_record(&db, pile, rec);
+			ffdb_derivet(1);
+		}	
 	}
+
+	_pr(&db);
+	_pf();
+	
 /*
+	mdl_u32_t p0, p1;
+	p0 = ffdb_alloc(&db, 100);
+	p1 = ffdb_alloc(&db, 100);
+
+
+	ffdb_free(&db, p0);
+	p0 = ffdb_alloc(&db, 100);
+
+	ffdb_free(&db, p1);
+	ffdb_free(&db, p0);
+
 	_pr(&db);
 	_pf();
 */
-
 	ffdb_settle(&db);
 	ffdb_cleanup(&db);
 	ffdb_close(&db);
