@@ -4,16 +4,11 @@ max_threads:20~_64l_u,
 # alloca stack size
 alssize:400~_64l_u,
 # list of modules to execute
-modl:["a.out"],
+modl:[],
 # list of scripts for init - not finished
-inil:[],
+inil:["a.out"],
 # directory from root dir
 moddir:"modules",
 inidir:"init",
-aa:"xxxxxx",
-bb:"xxxxxxxxxxxx",
-cc:"xxxxxx",
-dd:"xxxxxxxxxxxx",
-ee:"xxxxxxxxxxxx",
 # where are we installed
 root_dir:"/home/daniel-robson/mount/firefly",

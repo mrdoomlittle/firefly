@@ -111,6 +111,7 @@ typedef struct ffdb_pile {
 typedef struct ffdb_record {
 	mdl_u32_t p;
 	struct ffdb_record *prev, *next;
+	mdl_uint_t size;
 	mdl_u16_t no;
 } *ffdb_recordp;
 
@@ -142,6 +143,9 @@ ffly_err_t ff_db_rcvmsg(FF_SOCKET*, ff_db_msgp);
 ffdb_recordp ffdb_creat_record(ffdbp, ffdb_pilep, mdl_uint_t);
 ffdb_recordp ffdb_fetch_record(ffdbp, char const*, char const*);
 void ffdb_del_record(ffdbp, ffdb_pilep, ffdb_recordp);
+void ffdb_record_alloc(ffdbp, ffdb_recordp);
+void ffdb_record_free(ffdbp, ffdb_recordp);
+
 void ffdb_write(ffdbp, ffdb_pilep, ffdb_recordp, ffly_off_t, void*, mdl_uint_t);
 void ffdb_read(ffdbp, ffdb_pilep, ffdb_recordp, ffly_off_t, void*, mdl_uint_t);
 
