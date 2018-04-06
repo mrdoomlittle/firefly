@@ -8,6 +8,7 @@
 # include "mutex.h"
 # include "system/nanosleep.h"
 # include "ctl.h"
+# include "string.h"
 /*
 	only for testing allocr need more woking on
 */
@@ -24,11 +25,21 @@ void *thr(void *__arg_p) {
 }
 
 
+# include "system/errno.h"
 # include "system/nanosleep.h"
 # include "linux/signal.h"
 # include "linux/types.h"
 # include "linux/sched.h"
 # include "linux/unistd.h"
+mdl_i8_t run = -1;
+void sig(int __no) {
+	run = 0;
+}
+
+void restore();
+__asm__("restore:mov $15,%rax\n\t"
+		"syscall");
+
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 //	p = malloc(200);
 //	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&pot);
@@ -36,5 +47,16 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 //	ffly_thread_create(&id, thr, NULL);
 //	ffly_thread_wait(id);
 
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(struct sigaction));
+	sa.sa_handler = sig;
+	sa.sa_restorer = restore;
+	sa.sa_flags = SA_RESTORER;
+	if (rt_sigaction(SIGINT, &sa, NULL, sizeof(sigset_t)) == -1) {
+		ffly_printf("failed, %s\n", strerror(errno));
+		return -1;
+	}
+	while(run<0);
+	ffly_printf("bye.\n");
 	ffly_arstat();
 }

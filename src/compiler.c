@@ -188,7 +188,8 @@ void print_line(struct ffly_compiler *__compiler, mdl_uint_t __off) {
 	ffly_printf("\n");
 }
 
-# define expectmsg(__s) ffly_fprintf(ffly_out, "%s:%u;%u: %s, got %s.\n", __compiler->file->path, tokl(tok), tokcol(tok), __s, tokid_str(tok->id))
+# define expectmsg(__s) \
+	ffly_fprintf(ffly_out, "%s:%u;%u: %s, got %s.\n", __compiler->file->path, tokl(tok), tokcol(tok), __s, tokid_str(tok->id))
 ffly_bool_t expect_token(struct ffly_compiler *__compiler, mdl_u8_t __kind, mdl_u8_t __id) {
 	struct token *tok = next_token(__compiler);
 	if (!tok) {

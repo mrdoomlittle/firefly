@@ -346,7 +346,8 @@ emit_print_call(struct ffly_compiler *__compiler, struct node *__node) {
 	struct obj **arg;
 	emit(__compiler, __node->arg);
 	pop(__compiler, &arg);
-	next_obj(__compiler, (struct obj){.opno=_op_print_, .p=NULL, ._type=convtk(__node->arg->_type->kind), .to=NULL, .from=NULL, .val=arg});
+	next_obj(__compiler, (struct obj){.opno=_op_print_, .p=NULL,
+		._type=convtk(__node->arg->_type->kind), .to=NULL, .from=NULL, .val=arg});
 }
 
 void static

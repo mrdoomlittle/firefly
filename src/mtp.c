@@ -269,7 +269,7 @@ ffly_err_t ffly_mtpd_start() {
 
 	ffly_printf("file: %s\n", buf);
 
-	_end:
+_end:
 	ff_net_close(peer);
 	if (_err(err))
 		_ret;

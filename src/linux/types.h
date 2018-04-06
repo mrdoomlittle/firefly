@@ -13,6 +13,7 @@ typedef mdl_u32_t __linux_uid_t;
 typedef mdl_u32_t __linux_gid_t;
 typedef mdl_u32_t __linux_mode_t;
 typedef mdl_s64_t __linux_time_t;
+typedef mdl_s32_t __linux_timer_t;
 
 typedef mdl_s32_t __linux_ipc_pid_t;
 typedef mdl_u64_t __linux_size_t;
@@ -21,4 +22,5 @@ typedef mdl_s64_t __linux_ssize_t;
 typedef mdl_s64_t __linux_suseconds_t;
 typedef mdl_u16_t __linux_sa_family_t;
 typedef mdl_s32_t __linux_clockid_t;
+typedef	mdl_u64_t __linux_clock_t;
 # endif /*__ffly__linux__type__h*/

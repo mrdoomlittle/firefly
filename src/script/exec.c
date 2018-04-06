@@ -11,7 +11,7 @@
 # include "../dep/bcopy.h"
 
 char const static* 
-opstr(mdl_u8_t __op) {
+opst(mdl_u8_t __op) {
 	switch(__op) {
 		case _op_fresh_: return "fresh";
         case _op_free_: return "free";
@@ -368,7 +368,7 @@ ffly_err_t ffscript_exec(ffscriptp __script, void*(*__call)(mdl_u8_t, void*, voi
     __script->arg_p = __arg_p;
 	struct obj *_obj = (struct obj*)(!__entry?__script->top:__entry);
 	while(_obj != (struct obj*)__end) {
-        ffly_fprintf(ffly_log, "op: %s\n", opstr(_obj->opno));
+        ffly_fprintf(ffly_log, "op: %s\n", opst(_obj->opno));
         if (_obj->opno == _op_exit_) {
 			ffly_printf("goodbye.\n");
 			break;
