@@ -264,16 +264,17 @@ emit_jmp(insp __ins) {
 	char const *rgname = rbl(sizeof(ffly_addr_t));
 	symbolp l = __ins->l;
 	mdl_uint_t adr;
-	mdl_u8_t ground = RELOCATE;
+	mdl_i8_t ground = RELOCATE;
 	labelp la;
 	if (is_sylabel(l)) {
 		la = (labelp)l->p;
 		adr = la->adr;
 		if (is_flag(la->flags, LA_LOOSE))
 			ground = HOOK;
-	} 
-	else 
+	} else {
 		printf("-----> error.\n");
+		ground = -1;
+	}
 	// assign register 
 	rgasw(rgname, adr);
 
@@ -295,6 +296,35 @@ emit_rin(insp __ins) {
 	oust_addr(*(ffly_addr_t*)__ins->l->p);
 }
 
+void static
+op_arm(mdl_u8_t __opcode, mdl_u8_t __l, ffly_addr_t __lt, ffly_addr_t __rt, ffly_addr_t __dst) {
+	oustbyte(__opcode);
+	oustbyte(__l);
+	oust_addr(__lt);
+	oust_addr(__rt);
+	oust_addr(__dst);
+}
+
+void static
+emit_armb(insp __ins) {
+	op_arm(*__ins->opcode, 1, *(ffly_addr_t*)__ins->l->p, *(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+}
+
+void static
+emit_armw(insp __ins) {
+	op_arm(*__ins->opcode, 2, *(ffly_addr_t*)__ins->l->p, *(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+}
+
+void static
+emit_armd(insp __ins) {
+	op_arm(*__ins->opcode, 4, *(ffly_addr_t*)__ins->l->p, *(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+}
+
+void static
+emit_armq(insp __ins) {
+	op_arm(*__ins->opcode, 8, *(ffly_addr_t*)__ins->l->p, *(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+}
+
 struct ins *bc[] = {
 	&(struct ins){"exit", NULL, emit_exit, NULL, NULL, {_op_exit}},
 	&(struct ins){"asb", NULL, emit_asb, NULL, NULL, {_op_as}},
@@ -306,5 +336,9 @@ struct ins *bc[] = {
 	&(struct ins){"outb", NULL, emit_outb, NULL, NULL, {_op_out}},
 	&(struct ins){"jmp", NULL, emit_jmp, NULL, NULL, {_op_jmp}},
 	&(struct ins){"rin", NULL, emit_rin, NULL, NULL, {_op_rin}},
+	&(struct ins){"divb", NULL, emit_armb, NULL, NULL, {_op_div}},
+	&(struct ins){"mulb", NULL, emit_armb, NULL, NULL, {_op_mul}},
+	&(struct ins){"subb", NULL, emit_armb, NULL, NULL, {_op_sub}},
+	&(struct ins){"addb", NULL, emit_armb, NULL, NULL, {_op_add}},
 	NULL
 };

@@ -28,7 +28,8 @@ mdl_uint_t static
 keysum(mdl_u8_t *__key) {
 	mdl_u8_t *p = __key;
 	mdl_uint_t ret = 0;
-	while(p != __key+KEY_SIZE) ret+= *(p++);
+	while(p != __key+KEY_SIZE)
+		ret+= *(p++);
 	return ret; 
 }
 

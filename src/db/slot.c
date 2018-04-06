@@ -30,7 +30,7 @@ mdl_uint_t acquire_slot() {
 		goto _end;
 	}
 	ret = (fresh++)-slot;
-	_end:
+_end:
 	ffly_mutex_unlock(&lock);
 	return ret;
 }
@@ -44,7 +44,7 @@ void scrap_slot(mdl_uint_t __no) {
 		fresh--;
 	else
 		*(next++) = __no;
-	_end:
+_end:
 	ffly_mutex_unlock(&lock);
 }
 
@@ -56,7 +56,7 @@ void *slotget(mdl_uint_t __no) {
 		goto _end;
 	}
 	ret = *(slot+__no);
-	_end:
+_end:
 	ffly_mutex_unlock(&lock);
 	return ret;
 }
@@ -66,6 +66,6 @@ void slotput(mdl_uint_t __no, void *__p) {
 	if (__no>=NO_SLOTS)
 		goto _end;
 	*(slot+__no) = __p;
-	_end:
+_end:
 	ffly_mutex_unlock(&lock);
 }

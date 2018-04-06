@@ -228,11 +228,11 @@ void absorb_region(ffef_reg_hdrp __reg) {
 		mdl_uint_t l;
 		syt = (symbolp*)malloc((l = (size/sizeof(struct ffef_sy)))*sizeof(symbolp));
 		to_free(syt);
-		symbolp *p = syt;
 		syt+=(l-1);
+		symbolp *p = syt;
 		ffef_syp sy = (ffef_syp)buf;
 		while(sy != (ffef_syp)(buf+size))
-			absorb_symbol(sy++, p++);
+			absorb_symbol(sy++, p--);
 		free(buf);
 		return;
 	}

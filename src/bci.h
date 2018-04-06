@@ -14,6 +14,10 @@
 # define _op_out 0x5 //debug
 # define _op_mov 0x6
 # define _op_rin 0x7
+# define _op_div 0x8
+# define _op_mul 0x9
+# define _op_sub 0xa
+# define _op_add 0xb
 typedef mdl_u16_t ffly_addr_t;
 typedef struct ffly_bci {
 	struct ffly_getbit bit;

@@ -4,7 +4,7 @@
 # include "bci.h"
 # include "bcd.h"
 # include "string.h"
-# define MAX 8
+# define MAX 12
 void static
 op_exit(mdl_u8_t **__p) {
 	printf("exit,\t\t");
@@ -64,7 +64,7 @@ void static
 op_mov(mdl_u8_t **__p) {
 	printf("mov,\t\t");
 	printf("l{%u},\t\t", *(mdl_u8_t*)((*__p)++));
-	printf("src{%x}\n", *(ffly_addr_t*)*__p);
+	printf("src{%x},\t\t", *(ffly_addr_t*)*__p);
 	(*__p)+=sizeof(ffly_addr_t);
 	printf("dst{%x}\n", *(ffly_addr_t*)*__p);
 	(*__p)+=sizeof(ffly_addr_t);
@@ -77,6 +77,20 @@ op_rin(mdl_u8_t **__p) {
 	(*__p)+=sizeof(ffly_addr_t);
 }
 
+void static
+op_arm(mdl_u8_t **__p) {
+	mdl_u8_t *p = *__p;
+	printf("arm,\t\t");
+	printf("l{%u},\t\t", *(mdl_u8_t*)(p++));
+    printf("lhs{%x},\t\t", *(ffly_addr_t*)p);
+	p+=sizeof(ffly_addr_t);
+	printf("rhs{%x},\t\t", *(ffly_addr_t*)p);
+	p+=sizeof(ffly_addr_t);
+	printf("dst{%x}\n", *(ffly_addr_t*)p);
+	p+=sizeof(ffly_addr_t);
+	*__p = p;
+}
+
 void static(*out[])(mdl_u8_t**) = {
 	op_exit,
 	op_as,
@@ -85,7 +99,11 @@ void static(*out[])(mdl_u8_t**) = {
 	op_ld,
 	op_out,
 	op_mov,
-	op_rin
+	op_rin,
+	op_arm,
+	op_arm,
+	op_arm,
+	op_arm
 };
 
 void ffly_bcd(mdl_u8_t *__p, mdl_u8_t *__end) {

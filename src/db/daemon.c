@@ -858,7 +858,7 @@ ff_dbd_start(mdl_u16_t __port) {
 	ffly_thread_create(&id, serve, pel);
 	ffly_thread_wait(id);
 
-	_end:
+_end:
 	ff_net_close(sock);
 	cleanup(&daemon);
 	ffly_map_de_init(&daemon.users);

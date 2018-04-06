@@ -113,6 +113,7 @@ void _ld();
 void _out();
 void _mov();
 void _rin();
+void _arm();
 static void(*op[])() = {
 	_exit,
 	_as,
@@ -121,10 +122,14 @@ static void(*op[])() = {
 	_ld,
 	_out,
 	_mov,
-	_rin
+	_rin,
+	_arm,
+	_arm,
+	_arm,
+	_arm
 };
 
-# define NOOP 8
+# define NOOP 12
 # define get_addr(__bci, __err) \
 	get_16l(__bci, __err)
 
@@ -134,6 +139,7 @@ static void(*op[])() = {
 # define jmpto(__p) __asm__("jmp *%0" : : "r"(__p))
 # define errjmp if (_err(err)) jmpend
 # include "system/io.h"
+# include "system/nanosleep.h"
 ffly_err_t ffly_bci_exec(ffly_bcip __bci, ffly_err_t *__exit_code) {
 	ffly_err_t err;
 
@@ -146,7 +152,44 @@ ffly_err_t ffly_bci_exec(ffly_bcip __bci, ffly_err_t *__exit_code) {
 		ffly_errmsg("opno invalid, got: %u\n", opno);
 		reterr;
 	}
+	ffly_nanosleep(0, 100000000);
 	jmpto(op[opno]);
+
+	__asm__("_arm:\n\t");
+	{
+		mdl_u8_t l = get_8l(__bci, &err);
+		mdl_u64_t lt, rt;
+		ffly_addr_t la, ra, dst_adr;
+
+		la = get_addr(__bci, &err);
+		ra = get_addr(__bci, &err);
+		dst_adr = get_addr(__bci, &err);
+
+		stack_get(__bci, (mdl_u8_t*)&lt, l, la);
+		stack_get(__bci, (mdl_u8_t*)&rt, l, ra);
+		mdl_u64_t dst;
+
+		mdl_u64_t mask = 0xffffffffffffffff>>(64-(8<<l));
+		lt &= mask;
+		rt &= mask;
+		switch(opno) {
+			case _op_div:
+				dst = lt/rt;
+			break;
+			case _op_mul:
+				dst = lt-rt;
+			break;
+			case _op_sub:
+				dst = lt-rt;
+			break;
+			case _op_add:
+				dst = lt+rt;
+			break;
+		}
+
+		stack_put(__bci, (mdl_u8_t*)&dst, l, dst_adr);
+	}
+	fi;
 
 	__asm__("_as:\n\t");
 	{

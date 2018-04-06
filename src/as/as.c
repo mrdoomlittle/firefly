@@ -162,13 +162,18 @@ assemble(char *__p, char *__end) {
 					
 				}
 			} else if (is_sylabel(sy)) {
-				labelp la = (labelp)_alloca(sizeof(struct label));
+				labelp la = (labelp)hash_get(&env, sy->p, sy->len);
+				mdl_i8_t exist = !la?-1:0;
+
+				if (exist == -1)
+					la = (labelp)_alloca(sizeof(struct label));
 				la->offset = offset;
 				la->s_adr = stackadr();
 				la->adr = curadr();
 				la->s = sy->p;
 				la->reg = curreg;
-				hash_put(&env, sy->p, sy->len, la);
+				if (exist == -1)
+					hash_put(&env, sy->p, sy->len, la);
 
 				symbolp s = syt(sy->p, NULL);
 				putsymbol(s);
@@ -218,19 +223,24 @@ assemble(char *__p, char *__end) {
 					hash_put(&env, sy->next->p, sy->next->len, la);
 					printf("extern %s\n", sy->next->p);
 					*(extrn++) = sy->next->p;
+				} else if (!strcmp(sy->p, "label")) {
+					labelp la = (labelp)_alloca(sizeof(struct label));
+					hash_put(&env, sy->next->p, sy->next->len, la);
 				}
 			} else {
 				insp ins;
 				if ((ins = (insp)hash_get(&env, sy->p, sy->len))) {
-					if (is_sylabel(sy->next)) {
-						sy->next->p = hash_get(&env, sy->next->p, ffly_str_len(sy->next->p));
-					} else
-						adaptreg(sy->next);	
-					ins->l = sy->next;
-					if (sy->next != NULL) {
-						adaptreg(sy->next->next);
-						ins->r = sy->next->next;
+					symbolp cur = sy->next;
+					while(cur != NULL) {
+						adaptreg(cur);
+						cur = cur->next;
 					}
+
+					if (is_sylabel(sy->next))
+						sy->next->p = hash_get(&env, sy->next->p, ffly_str_len(sy->next->p));
+					ins->l = sy->next;
+					if (sy->next != NULL)
+						ins->r = sy->next->next;
 
 					mdl_u64_t beg = offset;
 					ins->post(ins);
@@ -244,21 +254,21 @@ assemble(char *__p, char *__end) {
 	}
 }
 
-void reloc(mdl_u64_t __offset, mdl_u8_t __l, labelp __la) {
+void reloc(mdl_u64_t __offset, mdl_u8_t __l, labelp __label) {
 	relocatep rl = (relocatep)_alloca(sizeof(struct relocate));
 	rl->offset = __offset;
 	rl->l = __l;
-	rl->la = __la;
+	rl->la = __label;
 	rl->next = rel;
 	rel = rl;
 }
 
-void hook(mdl_u64_t __offset, mdl_u8_t __l, labelp __la) {
+void hook(mdl_u64_t __offset, mdl_u8_t __l, labelp __to) {
 	hookp hk = (hookp)_alloca(sizeof(struct hook));
 
 	hk->offset = __offset;
 	hk->l = __l;
-	hk->to = __la;
+	hk->to = __to;
 	hk->next = hok;
 	hok = hk;
 }

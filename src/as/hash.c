@@ -6,7 +6,8 @@ void hash_init(struct hash *__table) {
 	__table->table = (hash_entryp*)_alloca(0x100*sizeof(struct hash_entry*));
 	struct hash_entry **p = __table->table;
 	struct hash_entry **bot = p+0x100;
-	while(p != bot) *(p++) = NULL;
+	while(p != bot)
+		*(p++) = NULL;
 }
 
 struct hash_entry static* find(struct hash *__table, mdl_u8_t const *__key, mdl_uint_t __len) {
