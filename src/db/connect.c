@@ -1,15 +1,157 @@
 # include "../db.h"
 # include "../system/io.h"
 # include "../system/err.h"
-# include "../types/err_t.h"
 # include "../dep/str_cmp.h"
 # include "../system/string.h"
-# include "../system/util/hash.h"
 # include "../dep/bzero.h"
 # include "../inet.h"
+# include "../system/nanosleep.h"
+# include "connect.h"
+# include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
+# include "../dep/str_len.h"
 ff_db_err static get_errno(FF_SOCKET*, ffly_err_t*);
 
+ffly_err_t static ff_db_shutdown(FF_SOCKET*);
+ffly_err_t static ff_db_login(FF_SOCKET*, mdl_u8_t const*, mdl_uint_t, mdl_u32_t, mdl_u8_t*, mdl_u64_t);
+ffly_err_t static ff_db_logout(FF_SOCKET*, mdl_u8_t*, mdl_u64_t);
+ffly_err_t static ff_db_creat_pile(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_uint_t*);
+ffly_err_t static ff_db_del_pile(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_uint_t);
+ffly_err_t static ff_db_creat_record(FF_SOCKET*, mdl_u8_t*, mdl_u64_t,mdl_uint_t, mdl_uint_t*, mdl_uint_t);
+ffly_err_t static ff_db_del_record(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_uint_t, mdl_uint_t);
+ffly_err_t static ff_db_write(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_uint_t, mdl_uint_t, mdl_u32_t, void*, mdl_uint_t);
+ffly_err_t static ff_db_read(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_uint_t, mdl_uint_t, mdl_u32_t, void*, mdl_uint_t);
+ffly_err_t static ff_db_record_alloc(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_uint_t);
+ffly_err_t static ff_db_record_free(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_uint_t);
+ffly_err_t static ff_db_rivet(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_u16_t, mdl_uint_t);
+ffly_err_t static ff_db_derivet(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_u16_t);
+ffly_err_t static ff_db_rivetto(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_u16_t, mdl_uint_t);
+ffly_err_t static ff_db_bind(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_u16_t, mdl_uint_t, mdl_u8_t);
+ffly_err_t static ff_db_acquire_slot(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_uint_t*);
+ffly_err_t static ff_db_scrap_slot(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_uint_t);
+mdl_i8_t static ff_db_exist(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_u16_t, ffly_err_t*);
+
+ff_db_ctrp
+ff_db_ctr(mdl_u64_t __enckey, char const *__ip_adr, mdl_u16_t __port, ffly_err_t *__err) {
+	ff_db_ctrp ret = (ff_db_ctrp)__ffly_mem_alloc(sizeof(struct ff_db_ctr));
+	ret->enckey = __enckey;
+	ffly_err_t err;
+	ret->sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
+	if (_err(err)) {
+		*__err = err;
+		return NULL;
+	}
+
+	struct sockaddr_in adr;
+	ffly_bzero(&adr, sizeof(struct sockaddr_in));
+	adr.sin_addr.s_addr = inet_addr(__ip_adr);
+	adr.sin_family = AF_INET;
+	adr.sin_port = htons(__port);
+	if (_err(err = ff_net_connect(ret->sock, (struct sockaddr*)&adr, sizeof(struct sockaddr_in)))) {
+		*__err = err;
+		return NULL;
+	}
+	*__err = FFLY_SUCCESS;
+	return ret;
+}
+
+void ff_db_ctr_destroy(ff_db_ctrp __ctr) {
+	ffly_nanosleep(1, 0); // change me
+	ff_net_close(__ctr->sock);
+	__ffly_mem_free(__ctr);
+}
+
+ffly_err_t
+ff_db_ctr_shutdown(ff_db_ctrp __ctr) {
+	return ff_db_shutdown(__ctr->sock);
+}
+
+ffly_err_t
+ff_db_ctr_login(ff_db_ctrp __ctr, char const *__id, mdl_u32_t __passkey) {
+	return ff_db_login(__ctr->sock, (mdl_u8_t const*)__id, ffly_str_len(__id), __passkey, __ctr->key, __ctr->enckey);
+}
+
+ffly_err_t
+ff_db_ctr_logout(ff_db_ctrp __ctr) {
+	return ff_db_logout(__ctr->sock, __ctr->key, __ctr->enckey);
+}
+
+ffly_err_t
+ff_db_ctr_creat_pile(ff_db_ctrp __ctr, mdl_uint_t *__slotno) {
+	return ff_db_creat_pile(__ctr->sock, __ctr->key, __ctr->enckey, __slotno);
+}
+
+ffly_err_t
+ff_db_ctr_del_pile(ff_db_ctrp __ctr, mdl_uint_t __slotno) {
+	return ff_db_del_pile(__ctr->sock, __ctr->key, __ctr->enckey, __slotno);
+}
+
+ffly_err_t
+ff_db_ctr_creat_record(ff_db_ctrp __ctr, mdl_uint_t __pile, mdl_uint_t *__slotno, mdl_uint_t __size) {
+	return ff_db_creat_record(__ctr->sock, __ctr->key, __ctr->enckey, __pile, __slotno, __size);
+}
+
+ffly_err_t
+ff_db_ctr_del_record(ff_db_ctrp __ctr, mdl_uint_t __pile, mdl_uint_t __slotno) {
+	return ff_db_del_record(__ctr->sock, __ctr->key, __ctr->enckey, __pile, __slotno);
+}
+
+ffly_err_t
+ff_db_ctr_write(ff_db_ctrp __ctr, mdl_uint_t __pile, mdl_uint_t __rec, mdl_u32_t __offset, void *__buf, mdl_uint_t __size) {
+	return ff_db_write(__ctr->sock, __ctr->key, __ctr->enckey, __pile, __rec, __offset, __buf, __size);
+}
+
+ffly_err_t
+ff_db_ctr_read(ff_db_ctrp __ctr, mdl_uint_t __pile, mdl_uint_t __rec, mdl_u32_t __offset, void *__buf, mdl_uint_t __size) {
+	return ff_db_read(__ctr->sock, __ctr->key, __ctr->enckey, __pile, __rec, __offset, __buf, __size);
+}
+
+ffly_err_t
+ff_db_ctr_record_alloc(ff_db_ctrp __ctr, mdl_uint_t __rec) {
+	return ff_db_record_alloc(__ctr->sock, __ctr->key, __ctr->enckey, __rec);
+}
+
+ffly_err_t
+ff_db_ctr_record_free(ff_db_ctrp __ctr, mdl_uint_t __rec) {
+	return ff_db_record_free(__ctr->sock, __ctr->key, __ctr->enckey, __rec);
+}
+
+ffly_err_t
+ff_db_ctr_rivet(ff_db_ctrp __ctr, mdl_u16_t __rivetno, mdl_uint_t __slotno) {
+	return ff_db_rivet(__ctr->sock, __ctr->key, __ctr->enckey, __rivetno, __slotno);
+}
+
+ffly_err_t
+ff_db_ctr_derivet(ff_db_ctrp __ctr, mdl_u16_t __rivetno) {
+	return ff_db_derivet(__ctr->sock, __ctr->key, __ctr->enckey, __rivetno);
+}
+
+ffly_err_t
+ff_db_ctr_rivetto(ff_db_ctrp __ctr, mdl_u16_t __rivetno, mdl_uint_t __slotno) {
+	return ff_db_rivetto(__ctr->sock, __ctr->key, __ctr->enckey, __rivetno, __slotno);
+}
+
+ffly_err_t
+ff_db_ctr_bind(ff_db_ctrp __ctr, mdl_u16_t __rivetno, mdl_uint_t __slotno, mdl_u8_t __offset) {
+	return ff_db_bind(__ctr->sock, __ctr->key, __ctr->enckey, __rivetno, __slotno, __offset);
+}
+
+ffly_err_t
+ff_db_ctr_acquire_slot(ff_db_ctrp __ctr, mdl_uint_t *__slotno) {
+	return ff_db_acquire_slot(__ctr->sock, __ctr->key, __ctr->enckey, __slotno);
+}
+
+ffly_err_t
+ff_db_ctr_scrap_slot(ff_db_ctrp __ctr, mdl_uint_t __slotno) {
+	return ff_db_scrap_slot(__ctr->sock, __ctr->key, __ctr->enckey, __slotno);
+}
+
 mdl_i8_t
+ff_db_ctr_exist(ff_db_ctrp __ctr, mdl_u16_t __rivetno, ffly_err_t *__err) {
+	return ff_db_exist(__ctr->sock, __ctr->key, __ctr->enckey, __rivetno, __err);
+}
+
+mdl_i8_t static
 ratifykey(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey) {
 	ffly_err_t err;
 	ffly_err_t fault;
@@ -45,7 +187,7 @@ ff_db_shutdown(FF_SOCKET *__sock) {
 	retok;
 }
 
-ff_db_err
+ff_db_err static
 get_errno(FF_SOCKET *__sock, ffly_err_t *__err) {
 	struct ff_db_msg msg = {
 		.kind = _ff_db_msg_req_errno
@@ -67,7 +209,9 @@ get_errno(FF_SOCKET *__sock, ffly_err_t *__err) {
 }
 
 ffly_err_t
-ff_db_login(FF_SOCKET *__sock, mdl_u8_t const *__id, mdl_uint_t __il, mdl_u32_t __passkey, mdl_u8_t *__key, mdl_u64_t __enckey) {
+ff_db_login(FF_SOCKET *__sock, mdl_u8_t const *__id, mdl_uint_t __il,
+	mdl_u32_t __passkey, mdl_u8_t *__key, mdl_u64_t __enckey)
+{
 	struct ff_db_msg msg = {
 		.kind = _ff_db_msg_login
 	};
@@ -131,7 +275,9 @@ ff_db_logout(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey) {
 }
 
 ffly_err_t
-ff_db_creat_pile(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey, mdl_uint_t *__slotno) {
+ff_db_creat_pile(FF_SOCKET *__sock, mdl_u8_t *__key,
+	mdl_u64_t __enckey, mdl_uint_t *__slotno)
+{
 	struct ff_db_msg msg = {
 		.kind = _ff_db_msg_creat_pile
 	};
@@ -159,7 +305,9 @@ ff_db_creat_pile(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey, mdl_uin
 }
 
 ffly_err_t
-ff_db_del_pile(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey, mdl_uint_t __slotno) {
+ff_db_del_pile(FF_SOCKET *__sock, mdl_u8_t *__key,
+	mdl_u64_t __enckey, mdl_uint_t __slotno)
+{
 	struct ff_db_msg msg = {
 		.kind = _ff_db_msg_del_pile
 	};
@@ -363,8 +511,8 @@ ff_db_rivet(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey,
 }
 
 ffly_err_t
-ff_db_derivet(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey,
-	mdl_u16_t __rivetno)
+ff_db_derivet(FF_SOCKET *__sock, mdl_u8_t *__key,
+	mdl_u64_t __enckey, mdl_u16_t __rivetno)
 {
 	struct ff_db_msg msg = {
 		.kind = _ff_db_msg_derivet
@@ -504,94 +652,4 @@ ff_db_exist(FF_SOCKET *__sock, mdl_u8_t *__key, mdl_u64_t __enckey,
 	mdl_i8_t ret;
 	ff_net_recv(__sock, &ret, sizeof(mdl_u8_t), &err);
 	return ret;
-}
-
-# include "../ffly_def.h"
-# include "../dep/str_cpy.h"
-# include "../system/nanosleep.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
-	char const **arg = __argv+1;
-	char const *port = NULL;
-	char const *ip = NULL;
-	while(arg != __argv+__argc) {
-		if (!ffly_str_cmp(*arg, "-port"))
-			port = *(++arg);
-		else if (!ffly_str_cmp(*arg, "-ip"))
-			ip = *(++arg);
-		arg++;
-	}
-
-	if (!port){
-		ffly_printf("missing -port.\n");
-		return -1;
-	}
-
-	if (!ip) {
-		ffly_printf("missing -ip.\n");
-		return -1;
-	}
-
-	ffly_printf("port: %s, address: %s\n", port, ip);
-
-	ffly_err_t err;
-	FF_SOCKET *sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
-	struct sockaddr_in addr;
-	ffly_bzero(&addr, sizeof(struct sockaddr_in));
-	addr.sin_addr.s_addr = inet_addr(ip);
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(ffly_stno(port));
-	ff_net_connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
-	mdl_u8_t key[KEY_SIZE];
-
-	mdl_u64_t enckey = 9331413;
-
-	char const *uname = "root";
-	if (_err(ff_db_login(sock, uname, ffly_str_len(uname), ffly_hash("21299", 5), key, enckey))) {
-		ffly_printf("failed to login.\n");
-	}
-
-	if (ff_db_exist(sock, key, enckey, 0, &err) == -1) {
-		mdl_uint_t pile, rec;
-		if (_err(ff_db_creat_pile(sock, key, enckey, &pile))) {
-			ffly_printf("failed to create pile.\n");
-		}
-
-		ff_db_rivet(sock, key, enckey, 0, pile);
-		ff_db_bind(sock, key, enckey, 0, pile, offsetof(struct ffdb_pile, no));
-
-		ffly_printf("pile, slotno: %u\n", pile);
-		ff_db_creat_record(sock, key, enckey, pile, &rec, 20);	
-		ff_db_rivet(sock, key, enckey, 1, rec);
-		ff_db_bind(sock, key, enckey, 1, rec, offsetof(struct ffdb_record, no));
-
-		ffly_printf("record, slotno: %u\n", rec);
-
-		ff_db_record_alloc(sock, key, enckey, rec);
-		char buf[67];
-		ffly_str_cpy(buf, "https://github.com/mrdoomlittle/");
-		ff_db_write(sock, key, enckey, pile, rec, 0, buf, 67);
-	} else {
-		ffly_printf("pile exists.\n");
-		mdl_uint_t pile, rec;
-		ff_db_acquire_slot(sock, key, enckey, &pile);
-		ff_db_acquire_slot(sock, key, enckey, &rec);
-		ff_db_rivetto(sock, key, enckey, 0, pile);
-		ff_db_rivetto(sock, key, enckey, 1, rec);
-
-		char buf[67];
-		ff_db_read(sock, key, enckey, pile, rec, 0, buf, 67);
-		ffly_printf("record: %s\n", buf);
-	}
-
-	if (_err(ff_db_logout(sock, key, enckey))) {
-		ffly_printf("failed to logout.\n");
-	}
-
-	if (_err(ff_db_shutdown(sock))) {
-		ffly_printf("failed to shutdown.\n");
-	}
-	
-	ffly_nanosleep(1, 0);
-	ff_net_close(sock);
-	return 0;  
 }

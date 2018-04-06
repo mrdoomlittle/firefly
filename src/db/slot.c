@@ -1,7 +1,13 @@
 # include <mdlint.h>
 # include "../ffly_def.h"
 # include "../system/mutex.h"
+/*
+	should make this automatic
+*/
 # define NO_SLOTS 20
+/*
+	so we dont need to give the pointers to clients
+*/
 
 ffly_mutex_t static lock = FFLY_MUTEX_INIT;
 
