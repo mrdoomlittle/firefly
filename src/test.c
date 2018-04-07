@@ -16,12 +16,15 @@ ffly_potp pot;
 void *p = NULL;
 
 void *thr(void *__arg_p) {
+/*
 	free(malloc(200));
 	free(p);
 	ffly_ctl(ffly_malc, _ar_setpot, (mdl_u64_t)pot);
 	//free(malloc(200));
 	
 	ffly_ctl(ffly_malc, _ar_unset, 0);
+*/
+ffly_printf("hello.\n");
 }
 
 
@@ -35,18 +38,18 @@ mdl_i8_t run = -1;
 void sig(int __no) {
 	run = 0;
 }
-
+/*
 void restore();
 __asm__("restore:mov $15,%rax\n\t"
 		"syscall");
-
+*/
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 //	p = malloc(200);
 //	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&pot);
 //	ffly_tid_t id;
 //	ffly_thread_create(&id, thr, NULL);
 //	ffly_thread_wait(id);
-
+/*
 	struct sigaction sa;
 	memset(&sa, 0, sizeof(struct sigaction));
 	sa.sa_handler = sig;
@@ -58,5 +61,6 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	}
 	while(run<0);
 	ffly_printf("bye.\n");
+	*/
 	ffly_arstat();
 }

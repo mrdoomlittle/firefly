@@ -126,7 +126,7 @@ typedef struct rod {
 
 # define rodno(__p) \
 	(((((mdl_u64_t)(__p))&0xff)^(((mdl_u64_t)(__p))>>8&0xff)^(((mdl_u64_t)(__p))>>16&0xff)^(((mdl_u64_t)(__p))>>24&0xff)^\
-	(((mdl_u64_t)(__p))>>32&0xff)^(((mdl_u64_t)(__p))>>40&0xff)^(((mdl_u64_t)(__p))>>48&0xff)^(((mdl_u64_t)(__p))>>56&0xff))>>1&0x3f)
+	(((mdl_u64_t)(__p))>>32&0xff)^(((mdl_u64_t)(__p))>>40&0xff)^(((mdl_u64_t)(__p))>>48&0xff)^(((mdl_u64_t)(__p))>>56&0xff))>>2)
 # define rod_at(__p) \
 	(rods+rodno(__p))
 rodp rods[64] = {
@@ -396,7 +396,7 @@ ffly_err_t ffly_ar_init() {
 	rodp *p = rods;
 	while(p != rods+64) {
 		*(*(p++) = (rodp)_ffly_alloc(&main_pot, sizeof(struct rod))) =
-			(struct rod){.lock=FFLY_MUTEX_INIT,.p=NULL,.no=((p-1)==rods)?0:((*(p-1))->no+1)};
+			(struct rod){.lock=FFLY_MUTEX_INIT,.p=NULL, .no=(p-rods)-1};
 	}
 
 	while(p != rods+1)
