@@ -47,7 +47,10 @@ mul: clean
 #	gcc -Wall -o connect crypto.o db/connect.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
 #	gcc -Wall -o daemon crypto.o db/daemon.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
 ##	gcc -Wall -o main db/key.c $(ffly_objs)
-
+db_term: clean
+	gcc $(cc_flags) -c db.c
+	gcc $(cc_flags) -c db/connect.c
+	gcc $(cc_flags) -o terminal db/terminal.c db.o connect.o $(ffly_objs) -nostdlib
 db: clean
 	gcc $(cc_flags) -c db.c #$(ffly_objs) -nostdlib
 	gcc $(cc_flags) -c db/user.c

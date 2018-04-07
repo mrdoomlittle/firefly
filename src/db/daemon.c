@@ -72,7 +72,7 @@ ff_db_login(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp *__user, ff_db_err *__er
 		goto _fail;
 	}
 
-	if (user->loggedin) {
+	if (!user->loggedin) {
 		ffly_printf("already logged in.\n");
 		*__err = _ff_err_ali;
 		goto _fail;
@@ -88,7 +88,7 @@ _succ:
 	ff_db_keygen(__key);
 	ff_db_add_key(__d, __key);
 	ff_db_snd_key(__sock, __key, user->enckey);
-	user->loggedin = 1;
+	user->loggedin = 0;
 	retok; 
 }
 
@@ -110,6 +110,7 @@ _fail:
 _succ:
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
 	*__err = _ff_err_null;
+	__user->loggedin = -1;
 	ffly_printf("logged out.\n");
 	retok;
 }
@@ -822,7 +823,8 @@ ff_dbd_start(mdl_u16_t __port) {
 	char const *rootid = "root";
 	ff_db_userp root = ff_db_add_user(&daemon, rootid, ffly_str_len(rootid), ffly_hash("21299", 5));
 	root->auth_level = _ff_db_auth_root;
-	root->enckey = 9331413;
+//	root->enckey = 9331413;
+	root->enckey = ffly_hash("mrdoomlittle", 12);
 
 	ffly_err_t err;
 	struct sockaddr_in addr, cl;

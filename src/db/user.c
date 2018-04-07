@@ -11,7 +11,7 @@ ff_db_add_user(ff_dbdp __d, mdl_u8_t const *__id, mdl_uint_t __il, mdl_u32_t __p
 	ff_db_userp user = (ff_db_userp)__ffly_mem_alloc(sizeof(struct ff_db_user));
 	ffly_mem_dupe((void**)&user->id, __id, __il);
 	user->passkey = __passkey;
-	user->loggedin = 0;
+	user->loggedin = -1;
 
 	ffly_map_put(&__d->users, __id, __il, user);
 	return user;

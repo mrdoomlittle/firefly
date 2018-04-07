@@ -43,24 +43,20 @@ void restore();
 __asm__("restore:mov $15,%rax\n\t"
 		"syscall");
 */
+# include "signal.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 //	p = malloc(200);
 //	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&pot);
 //	ffly_tid_t id;
 //	ffly_thread_create(&id, thr, NULL);
 //	ffly_thread_wait(id);
-/*
+
 	struct sigaction sa;
 	memset(&sa, 0, sizeof(struct sigaction));
 	sa.sa_handler = sig;
-	sa.sa_restorer = restore;
-	sa.sa_flags = SA_RESTORER;
-	if (rt_sigaction(SIGINT, &sa, NULL, sizeof(sigset_t)) == -1) {
-		ffly_printf("failed, %s\n", strerror(errno));
-		return -1;
-	}
+	sigaction(SIGINT, &sa, NULL);	
 	while(run<0);
 	ffly_printf("bye.\n");
-	*/
+	
 	ffly_arstat();
 }

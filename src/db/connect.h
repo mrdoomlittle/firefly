@@ -13,6 +13,7 @@ ff_db_ctrp ff_db_ctr(mdl_u64_t, char const*, mdl_u16_t, ffly_err_t*);
 void ff_db_ctr_destroy(ff_db_ctrp);
 
 ffly_err_t ff_db_ctr_shutdown(ff_db_ctrp);
+ffly_err_t ff_db_ctr_disconnect(ff_db_ctrp);
 ffly_err_t ff_db_ctr_login(ff_db_ctrp, char const*, mdl_u32_t);
 ffly_err_t ff_db_ctr_logout(ff_db_ctrp);
 ffly_err_t ff_db_ctr_creat_pile(ff_db_ctrp, mdl_uint_t*);

@@ -13,6 +13,7 @@
 ff_db_err static get_errno(FF_SOCKET*, ffly_err_t*);
 
 ffly_err_t static ff_db_shutdown(FF_SOCKET*);
+ffly_err_t static ff_db_disconnect(FF_SOCKET*);
 ffly_err_t static ff_db_login(FF_SOCKET*, mdl_u8_t const*, mdl_uint_t, mdl_u32_t, mdl_u8_t*, mdl_u64_t);
 ffly_err_t static ff_db_logout(FF_SOCKET*, mdl_u8_t*, mdl_u64_t);
 ffly_err_t static ff_db_creat_pile(FF_SOCKET*, mdl_u8_t*, mdl_u64_t, mdl_uint_t*);
@@ -64,6 +65,11 @@ void ff_db_ctr_destroy(ff_db_ctrp __ctr) {
 ffly_err_t
 ff_db_ctr_shutdown(ff_db_ctrp __ctr) {
 	return ff_db_shutdown(__ctr->sock);
+}
+
+ffly_err_t
+ff_db_ctr_disconnect(ff_db_ctrp __ctr) {
+	return ff_db_disconnect(__ctr->sock);
 }
 
 ffly_err_t
@@ -172,6 +178,26 @@ ff_db_shutdown(FF_SOCKET *__sock) {
 	ffly_printf("shutdown.\n");
 	struct ff_db_msg msg = {
 		.kind = _ff_db_msg_shutdown
+	};
+
+	ffly_err_t err;
+	if (_err(err = ff_db_sndmsg(__sock, &msg))) {
+
+	}
+
+	ff_db_rcv_err(__sock, &err);
+	if (_err(err)) {
+		ffly_printf("errstr: %s\n", ff_db_errst(get_errno(__sock, &err)));
+		reterr;
+	}
+	retok;
+}
+
+ffly_err_t
+ff_db_disconnect(FF_SOCKET *__sock) {
+	ffly_printf("disconnect.\n");
+	struct ff_db_msg msg = {
+		.kind = _ff_db_msg_disconnect
 	};
 
 	ffly_err_t err;

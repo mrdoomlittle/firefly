@@ -103,7 +103,7 @@ struct ffdb {
 typedef struct ff_db_user {
 	mdl_u8_t const *id;
 	mdl_u32_t passkey;
-	mdl_u8_t loggedin;
+	mdl_i8_t loggedin;
 	mdl_u8_t auth_level;
 	mdl_u64_t enckey;
 } *ff_db_userp;
