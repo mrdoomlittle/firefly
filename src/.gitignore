@@ -5,3 +5,6 @@
 log
 err
 main
+client
+daemon
+terminal

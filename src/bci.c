@@ -5,6 +5,9 @@
 # include "dep/mem_cpy.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
+
+# define is_flag(__flags, __flag) \
+	((__flags&__flag)==__flag)
 ffly_err_t static
 stack_put(ffly_bcip __bci, mdl_u8_t *__src, mdl_uint_t __bc, ffly_addr_t __addr) {
 	mdl_u8_t *p = __src;
@@ -113,7 +116,10 @@ void _ld();
 void _out();
 void _mov();
 void _rin();
-void _arm();
+void _arm(); // rename
+void _inc_or_dec();
+void _cmp();
+void _cjmp();
 static void(*op[])() = {
 	_exit,
 	_as,
@@ -126,10 +132,17 @@ static void(*op[])() = {
 	_arm,
 	_arm,
 	_arm,
-	_arm
+	_arm,
+	_inc_or_dec,
+	_inc_or_dec,
+	_cmp,
+	_cjmp,
+	_cjmp,
+	_cjmp,
+	_cjmp
 };
 
-# define NOOP 12
+# define NOOP 19
 # define get_addr(__bci, __err) \
 	get_16l(__bci, __err)
 
@@ -152,7 +165,7 @@ ffly_err_t ffly_bci_exec(ffly_bcip __bci, ffly_err_t *__exit_code) {
 		ffly_errmsg("opno invalid, got: %u\n", opno);
 		reterr;
 	}
-	ffly_nanosleep(0, 100000000);
+	ffly_nanosleep(0, 100000000); // <- debug
 	jmpto(op[opno]);
 
 	__asm__("_arm:\n\t");
@@ -191,6 +204,39 @@ ffly_err_t ffly_bci_exec(ffly_bcip __bci, ffly_err_t *__exit_code) {
 	}
 	fi;
 
+	__asm__("_inc_or_dec:\n\t"); {
+		mdl_u8_t l = get_8l(__bci, &err);
+		ffly_addr_t adr = get_addr(__bci, &err);
+		mdl_u64_t tmp = 0;
+		stack_get(__bci, (mdl_u8_t*)&tmp, l, adr);
+		if (opno == _op_inc)
+			tmp++;
+		else if (opno == _op_dec)
+			tmp--;
+		stack_put(__bci, (mdl_u8_t*)&tmp, l, adr);
+	}
+	fi;
+
+	__asm__("_cmp:\n\t"); {
+		mdl_u8_t l = get_8l(__bci, &err);
+		ffly_addr_t la, ra, dst;
+		
+		la = get_addr(__bci, &err);
+		ra = get_addr(__bci, &err);
+		dst = get_addr(__bci, &err);
+
+		mdl_u64_t lv = 0, rv = 0;
+		stack_get(__bci, (mdl_u8_t*)&lv, l, la);
+		stack_get(__bci, (mdl_u8_t*)&rv, l, ra);
+
+		mdl_u8_t flags = 0;
+		if (lv>rv) flags |= _gt;
+		if (lv<rv) flags |= _lt;
+		if (lv==rv) flags |= _eq;
+		stack_put(__bci, (mdl_u8_t*)&flags, 1, dst);
+	}
+	fi;
+
 	__asm__("_as:\n\t");
 	{
 		mdl_u8_t l = get_8l(__bci, &err);
@@ -201,11 +247,45 @@ ffly_err_t ffly_bci_exec(ffly_bcip __bci, ffly_err_t *__exit_code) {
 	}
 	fi;
 
+	__asm__("_cjmp:\n\t"); {
+		ffly_addr_t adr = get_addr(__bci, &err);
+		ffly_addr_t dst;
+		stack_get(__bci, (mdl_u8_t*)&dst, sizeof(ffly_addr_t), adr);
+
+		ffly_addr_t fa = get_addr(__bci, &err);
+		mdl_u8_t flags;
+		stack_get(__bci, (mdl_u8_t*)&flags, 1, fa);
+	
+		if (is_flag(flags, _gt)) {
+			if (opno == _op_jg)
+				goto _end;
+		}
+
+		if (is_flag(flags, _lt)) {
+			if (opno == _op_jl)
+				goto _end;
+		}
+
+		if (is_flag(flags, _eq)) {
+			if (opno == _op_je)
+				goto _end;
+		} else {
+			if (opno == _op_jne)
+				goto _end;
+		}
+
+		fi;
+	_end:
+		__bci->set_ip(dst);
+		__bci->ip_off = 0;
+	}
+	next;
+
 	__asm__("_jmp:\n\t");
 	{
-		ffly_addr_t addr = get_addr(__bci, &err);
+		ffly_addr_t adr = get_addr(__bci, &err);
 		ffly_addr_t dst;
-		stack_get(__bci, (mdl_u8_t*)&dst, sizeof(ffly_addr_t), addr);
+		stack_get(__bci, (mdl_u8_t*)&dst, sizeof(ffly_addr_t), adr);
 		__bci->set_ip(dst);
 		__bci->ip_off = 0;
 	}

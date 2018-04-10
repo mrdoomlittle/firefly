@@ -347,6 +347,7 @@ void finalize(void) {
 			struct ffef_rel rel;
 			rel.offset = rl->offset;
 			rel.l = rl->l;
+			printf("reloc: %s\n", rl->la->s);
 			rel.sy = getsymbol(rl->la->s)->off;
 			oust((mdl_u8_t*)&rel, ffef_relsz);
 			rl = rl->next;

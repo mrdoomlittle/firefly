@@ -7,6 +7,8 @@
 # include "../system/mutex.h"
 # include "../mode.h"
 ffly_err_t ffly_printf(char*, ...);
+//	might want to keep track of mmaps
+
 /*
 	not using this until finished
 	as it may hide issues.
@@ -119,10 +121,6 @@ typedef struct rod {
     potp p;
 	mdl_u8_t no;
 } *rodp;
-
-/*
-	
-*/
 
 # define rodno(__p) \
 	(((((mdl_u64_t)(__p))&0xff)^(((mdl_u64_t)(__p))>>8&0xff)^(((mdl_u64_t)(__p))>>16&0xff)^(((mdl_u64_t)(__p))>>24&0xff)^\
@@ -405,8 +403,6 @@ ffly_err_t ffly_ar_init() {
 }
 
 ffly_err_t _ffly_ar_cleanup(potp __pot) {
-	// need to track mmaps
-
 	brk(__pot->end);
 }
 

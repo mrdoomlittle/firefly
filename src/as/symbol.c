@@ -20,7 +20,7 @@ symbolp syt(char const *__name, mdl_u16_t *__off) {
 	head = sy;
 	if (__off != NULL)
 		*__off = off;
-	off++;
+	sy->off = off++;
 	return sy;
 }
 

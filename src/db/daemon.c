@@ -15,9 +15,13 @@ void scrap_slot(mdl_uint_t);
 void *slotget(mdl_uint_t);
 void slotput(mdl_uint_t, void*);
 
+/*
+	multiclient not done.
+*/
+
 mdl_i8_t static
 ratifykey(FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__errn, ffly_err_t *__err, mdl_u8_t *__key) {
-	ffdb_key key;
+	ff_db_key key;
 	*__err = FFLY_SUCCESS;
 	if (_err(*__err = ff_db_rcv_key(__sock, key, __user->enckey))) {
 		ffly_printf("failed to recv key.\n");
@@ -650,16 +654,23 @@ cleanup(ff_dbdp __daemon) {
 # include "../linux/types.h"
 # include "../pellet.h"
 # include "../ctl.h"
+# include "client.h"
+# include "../system/atomic.h"
 ffly_potp static main_pot;
+FF_SOCKET *sock;
+mdl_i8_t to_shut = -1;
+ffly_atomic_u32_t live = 0;
+void ff_db_shut();
 
 void*
-serve(void *__arg_p) {
+ff_db_serve(void *__arg_p) {
+	ffly_atomic_incr(&live);
 	ffly_pelletp pel = (ffly_pelletp)__arg_p;
 	ffly_err_t err;
 	ff_dbdp daemon;
 	mdl_i8_t alive;
 	ff_db_err ern;
-	mdl_u8_t key[KEY_SIZE];
+	ff_db_key key;
 	ff_db_userp user = NULL;
 	struct ff_db_msg msg;
 	FF_SOCKET *peer;
@@ -670,7 +681,7 @@ serve(void *__arg_p) {
 
 	alive = 0;
 	ffly_ctl(ffly_malc, _ar_setpot, (mdl_u64_t)main_pot);	
-	while(!alive) {
+	while(!alive && to_shut<0) {
 		if (_err(err = ff_db_rcvmsg(peer, &msg))) {
 			ffly_printf("failed to recv message.\n");
 			jmpexit;
@@ -773,7 +784,7 @@ serve(void *__arg_p) {
 		__asm__("_ff_shutdown:\n\t"); {
 			ffly_printf("goodbye.\n");
 			ff_net_close(peer);
-			// should shutdown daemon
+			ff_db_shut();
 		}
 		jmpexit;
 
@@ -807,24 +818,40 @@ serve(void *__arg_p) {
 		__asm__("_ff_end:\n\t");
 		// do somthing
 	}
+	ff_net_close(peer);	
 	__asm__("_ff_exit:\n\t");
 	ffly_ctl(ffly_malc, _ar_unset, 0);
+	ffly_atomic_decr(&live);
 	return NULL;
 }
 
+void ff_db_shut() {
+	to_shut = 0;
+	ff_net_shutdown(sock, SHUT_RDWR);
+}
+
+void static
+def_users(ff_dbdp __d) {
+	char const *id[] = {"root", "mrdoomlittle", NULL};
+	char const **cur_id = id;
+	ff_db_userp user;
+	while(*cur_id != NULL) {
+		user = ff_db_add_user(__d, *cur_id, ffly_str_len(*cur_id), ffly_hash("none", 4));
+		user->auth_level = _ff_db_auth_root;
+		user->enckey = ffly_hash("firefly", 7);
+		cur_id++;
+	}
+}
+
 void
-ff_dbd_start(mdl_u16_t __port) {
+ff_dbd_start(char const *__file, mdl_u16_t __port) {
 	struct ff_dbd daemon;
 	ffdb_init(&daemon.db);
-	ffdb_open(&daemon.db, "test.db");
-	daemon.list = (void**)__ffly_mem_alloc((KEY_SIZE*0x100)*sizeof(void*));
+	ffdb_open(&daemon.db, __file);
+	daemon.list = (void**)__ffly_mem_alloc(0x100*sizeof(void*));
 	ffly_map_init(&daemon.users, _ffly_map_127);
 
-	char const *rootid = "root";
-	ff_db_userp root = ff_db_add_user(&daemon, rootid, ffly_str_len(rootid), ffly_hash("21299", 5));
-	root->auth_level = _ff_db_auth_root;
-//	root->enckey = 9331413;
-	root->enckey = ffly_hash("mrdoomlittle", 12);
+	def_users(&daemon);
 
 	ffly_err_t err;
 	struct sockaddr_in addr, cl;
@@ -833,7 +860,7 @@ ff_dbd_start(mdl_u16_t __port) {
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htons(INADDR_ANY);
 	addr.sin_port = htons(__port);
-	FF_SOCKET *sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
+	sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
 	int val = 1;
 	setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int));
 
@@ -842,25 +869,32 @@ ff_dbd_start(mdl_u16_t __port) {
 		return;
 	}
 
-	socklen_t len = sizeof(struct sockaddr_in);
+	socklen_t len;
 	FF_SOCKET *peer;
-	ff_net_listen(sock);
-	peer = ff_net_accept(sock, (struct sockaddr*)&cl, &len, &err);
-	if (_err(err))
-		goto _end;
-
 	ffly_pelletp pel;
+	void *p;
+_again:
+	if (_err(ff_net_listen(sock))) {
+		ffly_printf("failed to listen.\n");
+		goto _end;
+	}
+
+	len = sizeof(struct sockaddr_in);
+	peer = ff_net_accept(sock, (struct sockaddr*)&cl, &len, &err);
+	if (_err(err)) {
+		ffly_printf("failed to accept client.\n");
+		goto _end;
+	}
+
 	pel = ffly_pellet_mk(sizeof(FF_SOCKET*)+sizeof(ff_dbdp));
 	ffly_pellet_puti(pel, (void**)&peer, sizeof(FF_SOCKET*));
-	void *p = &daemon;
+	p = &daemon;
 	ffly_pellet_puti(pel, (void**)&p, sizeof(ff_dbdp));
-	ffly_printf("-----> %p\n", peer);
-
-	ffly_tid_t id;
-	ffly_thread_create(&id, serve, pel);
-	ffly_thread_wait(id);
-
+	ff_db_client(peer, pel);
+	goto _again;
 _end:
+	ffly_printf("waiting for theads.\n");
+	while(live>0);
 	ff_net_close(sock);
 	cleanup(&daemon);
 	ffly_map_de_init(&daemon.users);
@@ -870,14 +904,27 @@ _end:
 	ffdb_close(&daemon.db);
 }
 
+# include "../opt.h"
+# include "../depart.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
-	if (__argc != 2) {
-		ffly_printf("usage: deamon {port number}.\n");
+	char const *file = NULL;
+	char const *port = NULL;
+	struct ffpcll pcl;
+	ffoe_prep();
+	pcl.cur = __argv+1;
+	pcl.end = __argv+__argc;
+	ffoe(ffoe_pcll, (void*)&pcl);
+	file = ffoptval(ffoe_get("f")) ;
+	port = ffoptval(ffoe_get("p"));
+	ffoe_end();
+
+	if (!file || !port) {
+		ffly_printf("usage: ./daemon -p #### -f ####.db\n");
 		return -1;
 	}
 
 	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&main_pot);
-	char const *port = __argv[1];
-	ff_dbd_start(ffly_stno(port));	  
+	ff_dbd_start(file, ffly_stno(port));	  
+	ffly_depart(NULL);
 	return 0;
 }

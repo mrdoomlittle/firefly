@@ -21,14 +21,20 @@ typedef struct {
 # define lx_rg 0x6
 # define ll_rg 0x7
 
+# define rel_rg 0x8
+# define ael_rg 0x9
+# define el_rg 0xa
+# define ae_rg 0xb
+
 void oust_addr(ffly_addr_t __addr) {
 	oust((mdl_u8_t*)&__addr, sizeof(ffly_addr_t));
 }
 
 
 reginfo reg[] = {
-	{"rax", 8, 0}, {"eax", 4, 0}, {"ax", 2, 0}, {"al", 1, 0},
-	{"rlx", 8, 8}, {"elx", 4, 8}, {"lx", 2, 8}, {"ll", 1, 8}
+	{"rax", 8, 0},	{"eax", 4, 0},	{"ax", 2, 0},	{"al", 1, 0},
+	{"rlx", 8, 8},	{"elx", 4, 8},	{"lx", 2, 8},	{"ll", 1, 8},
+	{"rel", 8, 16},	{"ael", 4, 16},	{"el", 2, 16},	{"ae", 1, 16}
 };
 
 /*
@@ -41,10 +47,14 @@ reginfo reg[] = {
 	eax	=	10001	= 17
 	ax	=	10011	= 25
 	al	=	10110	= 13
-	rlx	=			= 10	
-	elx	=			= 3
-	lx	=			= 11
-	ll	=			= 31
+	rlx	=	01010	= 10	
+	elx	=	11000	= 3
+	lx	=	11010	= 11
+	ll	=	11111	= 31
+	rel	=	01100	= 6
+	ael	=	10100	= 5
+	el	=	11100	= 7
+	ae	=	10101	= 21
 */
 
 mdl_u8_t c[] = {
@@ -84,17 +94,22 @@ getreg(char const *__name) {
 		p++;
 	}
 
-	printf("reg: %u\n", no);
+	printf("reg: %u, %s\n", no, __name);
 	switch(no) {
-		case 24: return reg+rax_rg;
-		case 17: return reg+eax_rg;
-		case 25: return reg+ax_rg;
-		case 13: return reg+al_rg;
-		case 10: return reg+rlx_rg;
-		case 3: return reg+elx_rg;
-		case 11: return reg+lx_rg;
-		case 31: return reg+ll_rg;
+		case 24:	return reg+rax_rg;
+		case 17:	return reg+eax_rg;
+		case 25:	return reg+ax_rg;
+		case 13:	return reg+al_rg;
+		case 10:	return reg+rlx_rg;
+		case 3:		return reg+elx_rg;
+		case 11:	return reg+lx_rg;
+		case 31:	return reg+ll_rg;
+		case 6:		return reg+rel_rg;
+		case 5:		return reg+ael_rg;
+		case 7:		return reg+el_rg;
+		case 21:	return reg+ae_rg;
 	}
+	printf("failed to get register.\n");
 	return NULL;
 }
 
@@ -102,7 +117,7 @@ ffly_addr_t rgadr(char const *__reg) {
 	return getreg(__reg)->addr;
 }
 
-# define POSTST 16//registers
+# define POSTST 24//registers
 void prepstack(void) {
 	bed+=POSTST;		
 }
@@ -173,6 +188,26 @@ void op_movq(mdl_u8_t __opcode, ffly_addr_t __src, ffly_addr_t __dst) {
 	oustbyte(__opcode);
 	oustbyte(8);
 	oust_addr(__src);
+	oust_addr(__dst);
+}
+
+void op_inc(mdl_u8_t __opcode, mdl_u8_t __l, ffly_addr_t __adr) {
+	oustbyte(__opcode);
+	oustbyte(__l);
+	oust_addr(__adr);
+}
+
+void op_dec(mdl_u8_t __opcode, mdl_u8_t __l, ffly_addr_t __adr) {
+	oustbyte(__opcode);
+	oustbyte(__l);
+	oust_addr(__adr);
+}
+
+void op_cmp(mdl_u8_t __opcode, mdl_u8_t __l, ffly_addr_t __lt, ffly_addr_t __rt, ffly_addr_t __dst) {
+	oustbyte(__opcode);
+	oustbyte(__l);
+	oust_addr(__lt);
+	oust_addr(__rt);
 	oust_addr(__dst);
 }
 
@@ -322,7 +357,72 @@ emit_armd(insp __ins) {
 
 void static
 emit_armq(insp __ins) {
-	op_arm(*__ins->opcode, 8, *(ffly_addr_t*)__ins->l->p, *(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+	op_arm(*__ins->opcode, 8, *(ffly_addr_t*)__ins->l->p,
+		*(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+}
+
+void static
+emit_incb(insp __ins) {
+	op_inc(*__ins->opcode, 1, *(ffly_addr_t*)__ins->l->p);
+}
+
+void static
+emit_incw(insp __ins) {
+	op_inc(*__ins->opcode, 2, *(ffly_addr_t*)__ins->l->p);
+}
+
+void static
+emit_incd(insp __ins) {
+	op_inc(*__ins->opcode, 4, *(ffly_addr_t*)__ins->l->p);
+}
+
+void static
+emit_incq(insp __ins) {
+	op_inc(*__ins->opcode, 8, *(ffly_addr_t*)__ins->l->p);
+}
+
+void static 
+emit_decb(insp __ins) {
+	op_dec(*__ins->opcode, 1, *(ffly_addr_t*)__ins->l->p);
+}
+
+void static
+emit_decw(insp __ins) {
+	op_dec(*__ins->opcode, 2, *(ffly_addr_t*)__ins->l->p);
+}
+
+void static
+emit_decd(insp __ins) {
+	op_dec(*__ins->opcode, 4, *(ffly_addr_t*)__ins->l->p);
+}
+
+void static
+emit_decq(insp __ins) {
+	op_dec(*__ins->opcode, 8, *(ffly_addr_t*)__ins->l->p);
+}
+
+void static
+emit_cmpb(insp __ins) {
+	op_cmp(*__ins->opcode, 1, *(ffly_addr_t*)__ins->l->p,
+		*(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+}
+
+void static
+emit_cjmp(insp __ins) {
+	char const *rgname = rbl(sizeof(ffly_addr_t));
+	symbolp l = __ins->l;
+	mdl_uint_t adr;
+
+	labelp la = (labelp)l->p;
+	adr = la->adr;
+
+	rgasw(rgname, adr);
+
+	mdl_uint_t off = offset-sizeof(ffly_addr_t);
+	reloc(off, 2, la);
+	oustbyte(*__ins->opcode);
+	oust_addr(getreg(rgname)->addr);
+	oust_addr(*(ffly_addr_t*)__ins->r->p);
 }
 
 struct ins *bc[] = {
@@ -340,5 +440,12 @@ struct ins *bc[] = {
 	&(struct ins){"mulb", NULL, emit_armb, NULL, NULL, {_op_mul}},
 	&(struct ins){"subb", NULL, emit_armb, NULL, NULL, {_op_sub}},
 	&(struct ins){"addb", NULL, emit_armb, NULL, NULL, {_op_add}},
+	&(struct ins){"incb", NULL, emit_incb, NULL, NULL, {_op_inc}},
+	&(struct ins){"decb", NULL, emit_decb, NULL, NULL, {_op_dec}},
+	&(struct ins){"cmpb", NULL, emit_cmpb, NULL, NULL, {_op_cmp}},
+	&(struct ins){"je", NULL, emit_cjmp, NULL, NULL, {_op_je}},
+	&(struct ins){"jne", NULL, emit_cjmp, NULL, NULL, {_op_jne}},
+	&(struct ins){"jg", NULL, emit_cjmp, NULL, NULL, {_op_jg}},
+	&(struct ins){"jl", NULL, emit_cjmp, NULL, NULL, {_op_jl}},
 	NULL
 };

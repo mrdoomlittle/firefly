@@ -56,7 +56,7 @@ enum {
 	_ff_err_prd
 };
 
-typedef mdl_u8_t ffdb_key[KEY_SIZE];
+typedef mdl_u8_t ff_db_key[KEY_SIZE];
 
 typedef mdl_u8_t ff_db_err;
 # define MAX_PILES 20

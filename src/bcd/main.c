@@ -8,6 +8,7 @@
 # include "../system/err.h"
 # include "../malloc.h"
 # include "../stdio.h"
+# include "../depart.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	if (__argc<2) {
 		printf("please provide binfile.\n");
@@ -50,5 +51,6 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	printf("beg, %u, size, %u\n", beg, size);
 	ffly_bcd(p, p+size);
 	free(p);
+	ffly_depart(NULL);
 	retok;
 }

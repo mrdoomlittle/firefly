@@ -3,12 +3,21 @@
 # include <mdlint.h>
 # include "../db.h"
 # include "../types/err_t.h"
+
+// connector
 typedef struct ff_db_ctr {
 	FF_SOCKET *sock;
-	ffdb_key key;
+	ff_db_key key;
 	mdl_u64_t enckey;
 } *ff_db_ctrp;
 
+// connection
+typedef struct ff_db_conn {
+	struct ff_db_ctr ctr;
+
+} *ff_db_connp;
+
+# ifndef __only_struc
 ff_db_ctrp ff_db_ctr(mdl_u64_t, char const*, mdl_u16_t, ffly_err_t*); 
 void ff_db_ctr_destroy(ff_db_ctrp);
 
@@ -31,5 +40,5 @@ ffly_err_t ff_db_ctr_bind(ff_db_ctrp, mdl_u16_t, mdl_uint_t, mdl_u8_t);
 ffly_err_t ff_db_ctr_acquire_slot(ff_db_ctrp, mdl_uint_t*);
 ffly_err_t ff_db_ctr_scrap_slot(ff_db_ctrp, mdl_uint_t);
 mdl_i8_t ff_db_ctr_exist(ff_db_ctrp, mdl_u16_t, ffly_err_t*);
-
+# endif
 # endif /*__ffly__db__connect__h*/

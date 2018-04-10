@@ -8,11 +8,11 @@
 # define nextc(__p) (*(__p+1))
 symbolp eval(char *__s) {
 	char *p = __s;
-	if (*p == '\n' || *p == '\0') return NULL;
+	if (*p == '\n' || *p == '\0' || *p == ';') return NULL;
 	symbolp head = _alloca(sizeof(struct symbol));
 	symbolp cur = head;
 
-	while(*p != '\0') {
+	while(*p != '\0' && *p != ';') {
 		while(*p == ' ') p++;
 		switch(*p) {
 			case '%': {

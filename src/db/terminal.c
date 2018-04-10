@@ -73,6 +73,7 @@ struct cmd {
 	void(*p)();
 };
 
+void _shutdown();
 void _connect();
 void _disconnect();
 void _login();
@@ -100,6 +101,7 @@ void _help();
 void _exit();
 
 struct cmd *cmdl[] = {
+	&(struct cmd){"shutdown", _shutdown},
 	&(struct cmd){"connect", _connect},
 	&(struct cmd){"disconnect", _disconnect},
 	&(struct cmd){"login", _login},
@@ -138,6 +140,7 @@ void lddct(ffly_mapp __map) {
 }
 
 char const *help = "commands:\n"
+	"	shutdown\n"
 	"	connect\n"
 	"	disconnect\n"
 	"	login\n"
@@ -146,14 +149,30 @@ char const *help = "commands:\n"
 	"	delpile\n"
 	"	creatrecord\n"
 	"	delrecord\n"
+	"	write\n"
+	"	read\n"
+	"	recordalloc\n"
+	"	recordfree\n"
+	"	rivet\n"
+	"	derivet\n"
+	"	rivetto\n"
+	"	bind\n"
+	"	acquireslot\n"
+	"	scrapslot\n"
 	"	exist\n"
+	"	bufal\n"
+	"	buffr\n"
+	"	bufld\n"
 	"	help\n"
 	"	exit";
 
 # define jmpagain __asm__("jmp _again")
 # include "../dep/str_cpy.h"
+# include "../linux/unistd.h"
+# include "../linux/fcntl.h"
+# include "../linux/stat.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
-	void *buf;
+	void *buf = NULL;
 	char ln[200];
 	ff_db_ctrp ctor;
 	mdl_i8_t conn = -1;
@@ -177,6 +196,11 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	}
 
 	__asm__("jmp *%0" : : "r"(to));
+
+	__asm__("_shutdown:\n\t"); {
+		ff_db_ctr_shutdown(ctor);
+	}
+	jmpagain;
 
 	__asm__("_connect:\n\t"); {
 		char const *ip_adr = *cur->params;
@@ -209,14 +233,16 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 				loggedin = 0;
 			else
 				ffly_printf("failure to login.\n");
-		}
+		} else
+			ffly_printf("already loggedin.\n");
 	}
 	jmpagain;
 
 	__asm__("_logout:\n\t"); {
-		if (!loggedin)
+		if (!loggedin) {
 			ff_db_ctr_logout(ctor);
-		else
+			loggedin = -1;
+		} else
 			ffly_printf("not loggedin.\n");
 	}
 	jmpagain;
@@ -333,11 +359,20 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 
 	__asm__("_buffr:\n\t"); {
 		__ffly_mem_free(buf);
+		buf = NULL;
 	}
 	jmpagain;
 
 	__asm__("_bufld:\n\t"); {
-		ffly_str_cpy(buf, *cur->params);
+		char const *file = *cur->params;
+		int fd;
+		if ((fd = open(file, O_RDONLY, 0))>=0) {
+			struct stat st;
+			fstat(fd, &st);
+			read(fd, buf, st.st_size);
+			close(fd);
+		} else
+			ffly_printf("failed to open file\n");
 	}
 	jmpagain;
 
@@ -360,4 +395,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	__asm__("_exit:\n\t");
 	ffly_map_de_init(&map);
 	dct_free(back);
+
+	if (buf != NULL)
+		__ffly_mem_free(buf);
 }

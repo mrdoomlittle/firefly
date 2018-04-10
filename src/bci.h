@@ -18,6 +18,16 @@
 # define _op_mul 0x9
 # define _op_sub 0xa
 # define _op_add 0xb
+# define _op_inc 0xc
+# define _op_dec 0xd
+# define _op_cmp 0xe
+# define _op_je 0xf
+# define _op_jne 0x10
+# define _op_jg 0x11
+# define _op_jl 0x12
+# define _gt 0x1
+# define _lt 0x2
+# define _eq 0x4
 typedef mdl_u16_t ffly_addr_t;
 typedef struct ffly_bci {
 	struct ffly_getbit bit;

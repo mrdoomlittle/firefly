@@ -11,7 +11,11 @@
 # include "../types/byte_t.h"
 # include "../types/flag_t.h"
 # include "cond_lock.h"
+# ifndef __ffly_no_sysconf
+# define MAX_THREADS __ffly_sysconf__.max_threads
+# else
 # define MAX_THREADS 20
+# endif
 # define PAGE_SIZE 4
 # define UU_PAGE_SIZE 26
 # define DSS 0xffff
@@ -20,12 +24,11 @@
 # ifndef __ffly_no_sysconf
 #	include "config.h"
 # endif
-# define MAX_THREADS 20
 # include "../mal.h"
 typedef struct ffly_thread {
 	ffly_cond_lock_t lock;
 	__linux_pid_t pid;
-	ffly_tid_t tid;
+	ffly_tid_t tid; // change to 'id'
 	ffly_bool_t alive;
 	mdl_i8_t exit;
 	ffly_byte_t *sp, *tls;
@@ -38,7 +41,7 @@ static struct ffly_thread **threads = NULL;
 mdl_uint_t static page_c = 0;
 ffly_off_t static off = 0;
 ffly_atomic_uint_t active_threads = 0;
-static ffly_potp pot = NULL;
+ffly_potp static pot = NULL;
 
 # include "../linux/signal.h"
 # include "../linux/types.h"
@@ -50,13 +53,19 @@ struct {
 	ffly_tid_t *p;
 	mdl_uint_t page_c;
 	ffly_off_t off;
-} uu_ids = {.p = NULL, .page_c = 0, .off = 0};
+} uu_ids = {
+	.p = NULL,
+	.page_c = 0,
+	.off = 0
+};
+
 ffly_mutex_t static mutex = FFLY_MUTEX_INIT;
 
-// change this to macro
-static struct ffly_thread *get_thr(ffly_tid_t __tid) {return *(threads+__tid);}
+# define get_thr(__tid) \
+	(*(threads+(__tid)))
 
-mdl_uint_t no_threads() {return off-uu_ids.off;}
+# define no_threads \
+	(off-uu_ids.off)
 
 static __thread ffly_tid_t id = FFLY_TID_NULL;
 ffly_tid_t ffly_gettid() {
@@ -92,20 +101,22 @@ ffly_thread_del(ffly_tid_t __tid) {
 
 		ffly_ctl(ffly_malc, _ar_unset, 0);
 		goto _sk;
-		_fail:
+	_fail:
 		ffly_ctl(ffly_malc, _ar_unset, 0);
 		ffly_mutex_unlock(&mutex);
 		return FFLY_FAILURE;
 	}
 
-	_sk:
+_sk:
 	*(uu_ids.p+(uu_ids.off++)) = __tid;
 	ffly_mutex_unlock(&mutex);
 	return FFLY_SUCCESS;
 }
 
-void static thread_free(ffly_tid_t __tid) {
-	struct ffly_thread *thr = get_thr(__tid);
+// ??? 
+void static
+thread_free(ffly_tid_t __id) {
+	struct ffly_thread *thr = get_thr(__id);
 	__ffly_mem_free(thr->sp);
 	thr->sp = NULL;
 }
@@ -159,13 +170,8 @@ void ffly_thread_wait(ffly_tid_t __tid) {
 }
 
 ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg_p) {
-# ifndef __ffly_no_sysconf
-	if (no_threads() == __ffly_sysconf__.max_threads) {
-		ffly_fprintf(ffly_log, "thread: only %u threads are allowed.\n", __ffly_sysconf__.max_threads);
-# else
-	if (no_threads() == MAX_THREADS) {
+	if (no_threads == MAX_THREADS) {
 		ffly_fprintf(ffly_log, "thread: only %u threads are allowed.\n", MAX_THREADS);
-# endif
 		return FFLY_FAILURE;
 	}
 
@@ -190,7 +196,7 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	ffly_mutex_unlock(&mutex);
 	goto _alloc;
 
-	_exec:
+_exec:
 	{
 	ffly_printf("stage, exec.\n");
 
@@ -199,8 +205,6 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	thr->exit = -1;
 	thr->lock = FFLY_COND_LOCK_INIT;
 	if (reused_id) {
-		//if (thr->sp == NULL)
-		//	thr->sp = (ffly_byte_t*)__ffly_mem_alloc(DSS);
 		thr->arg_p = __arg_p;
 		thr->routine = __p;
 	} else {
@@ -220,7 +224,7 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	if ((pid = clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD|CLONE_SETTLS,
 		(mdl_u64_t)(thr->sp+(DSS-8)), NULL, NULL, (mdl_u64_t)(thr->tls+TLS))) == (__linux_pid_t)-1)
 	{
-		ffly_fprintf(ffly_err, "thread: failed.\n");
+		ffly_fprintf(ffly_err, "thread, failed to create.\n");
 		return FFLY_FAILURE;
 	}
 
@@ -228,7 +232,7 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	}
 	return FFLY_SUCCESS;
 
-	_alloc:
+_alloc:
 	ffly_printf("stage, alloc.\n");
 	ffly_mutex_lock(&mutex);
 	if (off > page_c*PAGE_SIZE) {
@@ -236,20 +240,20 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 			page_c++;
 			if ((threads = (ffly_threadp*)__ffly_mem_alloc(PAGE_SIZE*sizeof(ffly_threadp))) == NULL) {
 				ffly_fprintf(ffly_err, "thread: failed to alloc memory, errno{%d}, ffly_errno{%u}\n", 0, ffly_errno);
-				goto _err;
+				goto _fail;
 			}
 		} else {
 			if ((threads = (ffly_threadp*)__ffly_mem_realloc(threads,
 				((++page_c)*PAGE_SIZE)*sizeof(ffly_threadp))) == NULL)
 			{
 				ffly_fprintf(ffly_err, "thread: failed to realloc memory, errno{%d}, ffly_errno{%u}\n", 0, ffly_errno);
-				goto _err;
+				goto _fail;
 			}
 		}
 
 		ffly_threadp *beg = threads+((page_c-1)*PAGE_SIZE);
 		ffly_threadp *itr = beg, *end = beg+PAGE_SIZE;
-		while(itr != end)
+		while(itr != end) // set all to null
 			*(itr++) = NULL;
 	}
 
@@ -258,7 +262,7 @@ ffly_err_t ffly_thread_create(ffly_tid_t *__tid, void*(*__p)(void*), void *__arg
 	
 	ffly_mutex_unlock(&mutex);
 	goto _exec;
-	_err:
+_fail:
 	ffly_mutex_unlock(&mutex);
 	return FFLY_FAILURE;
 }
@@ -270,8 +274,8 @@ ffly_err_t ffly_thread_cleanup() {
 	ffly_printf("thread shutdown, stage 0.\n");
 	while(itr != end) {
 		cur = *(itr++);
-		if (cur->alive)
-			ffly_thread_kill(cur->tid); // bad - rethink
+//		if (cur->alive)
+//			ffly_thread_kill(cur->tid); // bad - rethink
 		ffly_thread_wait(cur->tid);
 		if (cur->sp != NULL)
 			__ffly_mem_free(cur->sp);

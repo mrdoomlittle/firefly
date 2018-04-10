@@ -64,3 +64,6 @@ so we will use the terminal until we can get it up and working.
 -. db needs testing and improvements need to be made
 -. as and bond are a total mess and it needs to be fixed.
 -. fix printf as for now ive been using a fixed buffer, change!
+-. sending kill signal will cause thread issues 
+	if killed inside lock or somthing else - need to fix.
+

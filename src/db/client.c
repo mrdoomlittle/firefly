@@ -1,73 +1,60 @@
-# include "connect.h"
-# include "../ffly_def.h"
-# include "../string.h"
-# include "../stdio.h"
-# include "../system/util/hash.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
-	char const **arg = __argv+1;
-	char const *port = NULL;
-	char const *ip_adr = NULL;
-	while(arg != __argv+__argc) {
-		if (!strcmp(*arg, "-port"))
-			port = *(++arg);
-		else if (!strcmp(*arg, "-ip"))
-			ip_adr = *(++arg);
-		arg++;
+# include "client.h"
+# include "../system/io.h"
+# include "../system/thread.h"
+# include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
+void* ff_db_serve(void*);
+# define MAX 20
+
+ff_db_clp static client[MAX];
+ff_db_clp static *fresh = client;
+ff_db_clp static *devoid[MAX];
+ff_db_clp static **next = devoid;
+
+struct arg_s {
+	void *arg_p;
+	mdl_uint_t id;
+};
+
+void static*
+prox(void *__arg_p) {
+	struct arg_s *arg = (struct arg_s*)__arg_p;
+	ff_db_serve(arg->arg_p);
+	ff_db_client_destory(arg->id);
+	__ffly_mem_free(__arg_p);
+	return NULL;
+}
+
+mdl_uint_t
+ff_db_client(FF_SOCKET *__sock, void *__arg_p) {
+	ff_db_clp *p;
+	if (next>devoid)
+		p = *(--next);
+	else {
+		if (fresh>=client+MAX) {
+			ffly_printf("max clients.\n");
+			return 0;
+		}
+		p = fresh++;
 	}
+	*p = (ff_db_clp)__ffly_mem_alloc(sizeof(struct ff_db_cl));
+	ff_db_clp cl = *p;
+	mdl_uint_t id = p-client;
 
-	if (!port) {
-		printf("missing port number.\n");
-		return -1;
+	cl->conn.ctr.sock = __sock;
+	struct arg_s *arg = (struct arg_s*)__ffly_mem_alloc(sizeof(struct arg_s));
+	arg->arg_p = __arg_p;
+	arg->id = id; 
+	ffly_thread_create(&cl->thread, prox, arg);
+	return id;
+}
+
+void ff_db_client_destory(mdl_uint_t __id) {
+	ff_db_clp *p = client+__id;
+	__ffly_mem_free(*p);
+	if (p == fresh-1)
+		fresh--;
+	else {
+		*(next++) = p;
 	}
-
-	if (!ip_adr) {
-		printf("missing ip address.\n");
-		return -1;
-	}
-
-	printf("port: %s, address: %s\n", port, ip_adr);
-	ff_db_ctrp ctor;
-	// create connector
-	ffly_err_t err;
-	ctor = ff_db_ctr(9331413, ip_adr, ffly_stno(port), &err);
-	if (err != FFLY_SUCCESS) {
-
-	}
-
-	ff_db_ctr_login(ctor, "root", ffly_hash("21299", 5));
-
-	char buf[67];
-	mdl_uint_t pile, rec;
-	if (ff_db_ctr_exist(ctor, 0, &err) == -1) {
-		ff_db_ctr_creat_pile(ctor, &pile);
-		ff_db_ctr_rivet(ctor, 0, pile);
-		ff_db_ctr_bind(ctor, 0, pile, offsetof(struct ffdb_pile, no));
-
-		printf("pile, slotno: %u\n", pile);
-
-		ff_db_ctr_creat_record(ctor, pile, &rec,67);
-		ff_db_ctr_rivet(ctor, 1, rec);
-		ff_db_ctr_bind(ctor, 1, rec, offsetof(struct ffdb_record, no));
-
-		printf("record, slotno: %u\n", rec);
-
-		ff_db_ctr_record_alloc(ctor, rec);
-		strcpy(buf, "https://github.com/mrdoomlittle/");
-		ff_db_ctr_write(ctor, pile, rec, 0, buf, 67);
-	} else {
-		ff_db_ctr_acquire_slot(ctor, &pile);
-		ff_db_ctr_acquire_slot(ctor, &rec);
-
-		ff_db_ctr_rivetto(ctor, 0, pile);
-		ff_db_ctr_rivetto(ctor, 1, rec);
-
-		ff_db_ctr_read(ctor, pile, rec, 0, buf, 67);
-		printf("record: %s\n", buf);
-	}
-
-	ff_db_ctr_logout(ctor);
-	ff_db_ctr_shutdown(ctor);
-
-	ff_db_ctr_destroy(ctor);
-	return 0;
 }
