@@ -69,7 +69,8 @@ ffmod_printf() {
 	__ffmod_debug
 		ffly_printf("printf.\n");
 	ffpap p, bk;
-	p = (ffpap)ffly_pipe_rd64l(ffmod_pipeno());
+	ffly_err_t err;
+	p = (ffpap)ffly_pipe_rd64l(ffmod_pipeno(), &err);
 
 	ffcall(_ffcal_printf, NULL, &p);
 
@@ -86,6 +87,7 @@ ffmod_malloc() {
 	__ffmod_debug
 		ffly_printf("malloc.\n");
 	mdl_uint_t bc;
+	ffly_err_t err;
 	void *ret;
 	ffly_pipe_read(&bc, sizeof(mdl_uint_t), ffmod_pipeno());
 	__ffmod_debug
@@ -101,8 +103,9 @@ void static
 ffmod_free() {
 	__ffmod_debug
 		ffly_printf("free.\n");
+	ffly_err_t err;
 	void *p;
-	p = (void*)ffly_pipe_rd64l(ffmod_pipeno());
+	p = (void*)ffly_pipe_rd64l(ffmod_pipeno(), &err);
 	__ffmod_debug
 		ffly_printf("inbound, p: %p\n", p);
 	__ffly_mem_free(p);
@@ -112,10 +115,11 @@ void static
 ffmod_dcp() {
 	__ffmod_debug
 		ffly_printf("dcp.\n");
+	ffly_err_t err;
 	void *src;
 	mdl_uint_t n;
 
-	src = (void*)ffly_pipe_rd64l(ffmod_pipeno());
+	src = (void*)ffly_pipe_rd64l(ffmod_pipeno(), &err);
 	ffly_pipe_read(&n, sizeof(mdl_uint_t), ffmod_pipeno());
 	ffly_pipe_write(src, n, ffmod_pipeno());
 }
@@ -124,10 +128,11 @@ void static
 ffmod_scp() {
 	__ffmod_debug
 		ffly_printf("scp.\n");
+	ffly_err_t err;
 	void *dst;
 	mdl_uint_t n;
 
-	dst = (void*)ffly_pipe_rd64l(ffmod_pipeno());
+	dst = (void*)ffly_pipe_rd64l(ffmod_pipeno(), &err);
 	ffly_pipe_read(&n, sizeof(mdl_uint_t), ffmod_pipeno());
 	ffly_pipe_read(dst, n, ffmod_pipeno());	
 }
@@ -161,8 +166,9 @@ void ffmodld(char const *__file) {
 
 	ffly_pipe_listen(ffmod_pipeno());
 	mdl_u8_t no;
-	_again:
-	if ((no = ffly_pipe_rd8l(ffmod_pipeno())) != 0xff) {
+	ffly_err_t err;
+_again:
+	if ((no = ffly_pipe_rd8l(ffmod_pipeno(), &err)) != 0xff) {
 		if (no <= _ffcal_mod_scp) {
 			process[no]();
 			goto _again;

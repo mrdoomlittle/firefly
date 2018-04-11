@@ -1,6 +1,6 @@
 %include "syscall.mac"
 %include "err.mac"
-extern set_errno
+extern __set_errno
 global __bind
 section .text
 __bind:
@@ -10,8 +10,8 @@ __bind:
 	jae _fault
 
 	ret
-	_fault: 
-	call set_errno
+_fault: 
+	call __set_errno
 	mov rax, -1
 	ret
 

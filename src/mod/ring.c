@@ -3,6 +3,7 @@
 # include "pipe.h"
 # include "../system/pipe.h"
 # include "../ffly_def.h"
+# include "../types/err_t.h"
 void static
 ring_printf(void *__ret, void *__params) {
 	ffly_pipe_wr64l(*(mdl_u64_t*)__params, ffmod_pipeno());
@@ -10,8 +11,9 @@ ring_printf(void *__ret, void *__params) {
 
 void static
 ring_malloc(void *__ret, void *__params) {
+	ffly_err_t err;
 	ffly_pipe_write(__params, sizeof(mdl_uint_t), ffmod_pipeno());
-	*(void**)__ret = (void*)ffly_pipe_rd64l(ffmod_pipeno()); 
+	*(void**)__ret = (void*)ffly_pipe_rd64l(ffmod_pipeno(), &err); 
 }
 
 void static

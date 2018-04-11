@@ -13,6 +13,7 @@
 # include "dep/mem_cpy.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
+# include "hatch.h"
 /*
 extern void*(*ffly_allocp)(mdl_uint_t);
 extern void(*ffly_freep)(void*);
@@ -32,7 +33,7 @@ void evalopts(char const *__s) {
 	char buf[128];
 	char *bufp;
 	ffoptp opt, end = NULL;
-	_again:
+_again:
 	bufp = buf;
 	opt = (ffoptp)__ffly_mem_alloc(ffopt_size);
 	if (!optbed) 
@@ -132,6 +133,7 @@ void _start(void) {
 	*(arg++) = *(argp++); 
 
 	mdl_i8_t conf = -1;
+	mdl_i8_t hatch = -1;
 	if (argc > 1) {
 		if (!ffly_str_cmp(*argp, "-proc")) {
 			evalopts(*(++argp));
@@ -149,9 +151,15 @@ void _start(void) {
 				ffly_ld_sysconf(cur->val);
 				ffly_printf("loaded sysconfig.\n");
 				conf = 0;
-			} else if (!ffly_str_cmp(cur->name, "-mode"))
+			} else if (!ffly_str_cmp(cur->name, "-mode")) {
 				if (!ffly_str_cmp(cur->val, "debug"))
 					ffset_mode(_ff_mod_debug);	
+			} else if (!ffly_str_cmp(cur->name, "-hatch")) {
+				if (!ffly_str_cmp(cur->val, "enable")) {
+					ffly_printf("hatch enabled.\n");
+					hatch = 0;
+				}
+			}
 			cur = cur->next;
 		}
 		//ffly_printf("please provide sysconf.\n");
@@ -177,12 +185,20 @@ void _start(void) {
 
 	prep();
 
+	if (!hatch)
+		ffly_hatch_start();
+
 	ffmain(arg-argl, argl);
 	ffly_printf("\n\n");
 
+	if (!hatch) {
+		ffly_hatch_shutoff();
+		ffly_hatch_wait();
+	}
+
 	if (!conf)
 		ffly_free_sysconf();
-	_end:
+_end:
 	{
 		ffoptp cur = optbed, bk;
 		while(cur != NULL) {

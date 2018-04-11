@@ -1,5 +1,5 @@
 # include "errno.h"
-int errno = 0;
+mdl_s32_t errno = 0;
 mdl_u8_t ffly_errno = FF_ERR_NULL;
 char const static *s[] = {
 	"okay",							//0
@@ -125,6 +125,11 @@ char const* strerror(int __no) {
 	return s[no];
 }
 
-void set_errno(void) {
-	__asm__("mov %%eax, %0" : "=m"(errno) :);
+/*
+	find diffrent way to set errno
+	as compiler is setting up the stack
+	when its not needed.
+*/
+void __set_errno(void) {
+	__asm__("mov %%eax, %0\n\t" : "=m"(errno));
 }

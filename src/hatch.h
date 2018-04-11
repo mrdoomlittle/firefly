@@ -1,5 +1,7 @@
 # ifndef __ffly__hatch__h
 # define __ffly__hatch__h
+# include <mdlint.h>
+# include "types/err_t.h"
 enum {
     _ffly_ho_shutdown,
     _ffly_ho_lsvec,
@@ -13,4 +15,8 @@ enum {
 struct ffly_meminfo {
     mdl_uint_t used;
 };
+
+ffly_err_t ffly_hatch_start();
+void ffly_hatch_shutoff();
+void ffly_hatch_wait();
 # endif /*__ffly__hatch__h*/

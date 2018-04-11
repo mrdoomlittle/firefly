@@ -10,11 +10,13 @@ mdl_uint_t ffmod_pipeno(void) {
 }
 
 void ffmod_pipe(void) {
-	pipe = ffly_pipe(8, FF_PIPE_CREAT, 0);
+	ffly_err_t err;
+	pipe = ffly_pipe(8, FF_PIPE_CREAT, 0, &err);
 }
 
 void ffmod_pipe_open(mdl_uint_t __shm_id) {
-	pipe = ffly_pipe(8, FF_PIPE_SHMM, __shm_id);
+	ffly_err_t err;
+	pipe = ffly_pipe(8, FF_PIPE_SHMM, __shm_id, &err);
 }
 
 void ffmod_pipe_close(void) {
