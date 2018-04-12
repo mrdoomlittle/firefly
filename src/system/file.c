@@ -9,14 +9,35 @@
 # include "../dep/mem_dup.h"
 # include "err.h"
 
-# include "../linux/unistd.h"
-# include "../linux/fcntl.h"
-# include "../linux/stat.h"
 /*
 	TODO:
 	add buffer to read and write
 
 */
+
+# ifndef __fflib
+# include <string.h>
+typedef mdl_s32_t __linux_off_t;
+# define is_flag(__flags, __flag) \
+	(((__flags)&(__flag))==(__flag))
+char const static* mode_str(mdl_u32_t __flags) {
+	char static buf[24];
+	char *p = buf; 
+	if (is_flag(__flags, FF_O_RDWR)) {
+		*(p++) = 'r';
+		*(p++) = '+';
+	} else if (is_flag(__flags, FF_O_WRONLY) && is_flag(__flags, FF_O_CREAT) && is_flag(__flags, FF_O_TRUNC))
+		*(p++) = 'w';
+	else if (is_flag(__flags, FF_O_RDWR) && is_flag(__flags, FF_O_CREAT) && is_flag(__flags, FF_O_TRUNC)) {
+		*(p++) = 'w';
+		*(p++) = '+';
+	} else {
+		*(p++) = 'r';
+	}
+	*p = '\0';
+	return (char const*)buf;
+}
+# endif
 
 struct ffly_file*
 ffly_fopen(char const *__path, int __flags, mdl_u32_t __mode, ffly_err_t *__err) {
@@ -32,6 +53,11 @@ ffly_fopen(char const *__path, int __flags, mdl_u32_t __mode, ffly_err_t *__err)
 		return NULL;
 	}
 	*__err = FFLY_SUCCESS;
+# ifndef __fflib
+	printf("%s\n", mode_str(__flags));
+	file->libc_fp = fdopen(dup(file->fd), mode_str(__flags));
+	fchmod(fileno(file->libc_fp), __mode);
+# endif
 	return file;
 }
 
@@ -109,6 +135,9 @@ ffly_err_t ffly_fclose(struct ffly_file *__f) {
 	}
 
 	close(__f->fd);
+# ifndef __fflib
+	fclose(__f->libc_fp);
+# endif
 	ffly_err_t err;
 	__ffly_mem_free((void*)__f->path);
 	if (_err(err = __ffly_mem_free(__f))) {

@@ -6,6 +6,10 @@
 # include "errno.h"
 # include "mutex.h"
 # include "err.h"
+/*
+	move to memory/pool.h
+*/
+
 ffly_err_t ffly_pool_init(struct ffly_pool *__pool, ffly_size_t __size, ffly_size_t __slice_size) {
 	if ((__pool->p = (void*)__ffly_mem_alloc(__size*__slice_size)) == NULL) {
 		ffly_fprintf(ffly_err, "pool: failed to allocate memory.\n");

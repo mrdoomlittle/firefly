@@ -5,13 +5,11 @@
 # include "ui/camera.h"
 # include "data/mem_set.h"
 # include "system/nanosleep.h"
-# include <stdlib.h>
-# include <unistd.h>
-# include <fcntl.h>
-# include <termios.h>
-# include <time.h>
-# include <linux/input-event-codes.h>
-# include <linux/input.h>
+# include "linux/unistd.h"
+# include "linux/fcntl.h"
+# include "linux/time.h"
+# include "linux/input-event-codes.h"
+# include "linux/input.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "types/byte_t.h"
@@ -35,8 +33,7 @@ char *frame;
 # include "maths/barycentric.h"
 # include "maths/pi.h"
 # include "cache.h"
-int main() {
-    ffly_io_init();
+ffly_err_t ffmain(int __argc, char const *__argv[]) {
     ffly_cache_prepare(20);
 /*
     frame = __ffly_mem_alloc(xal*yal);
@@ -118,7 +115,7 @@ int main() {
     ffly_uni_attach_obj(&uni, obj);
 */
     int fd;
-    if ((fd = open("/dev/input/event2", O_RDONLY|O_NONBLOCK)) == -1) {
+    if ((fd = open("/dev/input/event2", O_RDONLY|O_NONBLOCK, 0)) == -1) {
         ffly_printf("failed to open.\n");
         return -1;
     } 
@@ -196,7 +193,6 @@ int main() {
    //         ffly_obj_rotate(obj, r);
      //       r+= 1;         
             ffly_camera_handle(&camera);
-            system("clear");
             printf("-------------- x: %u:%u, y: %u:%u -------------\n", x, cam_x, y, cam_y);
             ffly_camera_print(&camera);
             i = 0;
@@ -213,5 +209,4 @@ int main() {
     ffly_uni_free(&uni);
     close(fd);
     ffly_cache_free();
-    ffly_io_closeup();
 }

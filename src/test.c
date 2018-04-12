@@ -44,19 +44,31 @@ __asm__("restore:mov $15,%rax\n\t"
 		"syscall");
 */
 # include "signal.h"
+# include "maths/round.h"
+# include "maths/floor.h"
+# include "maths/ceil.h"
+
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 //	p = malloc(200);
 //	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&pot);
 //	ffly_tid_t id;
 //	ffly_thread_create(&id, thr, NULL);
 //	ffly_thread_wait(id);
-
+/*
 	struct sigaction sa;
 	memset(&sa, 0, sizeof(struct sigaction));
 	sa.sa_handler = sig;
 	sigaction(SIGINT, &sa, NULL);	
 	while(run<0);
 	ffly_printf("bye.\n");
-	
+*/
+	double val = 21.12;
+	val = ffly_round(val);
+
+	mdl_u64_t adr;
+	__asm__("movq %%rsp, %0\n\t" : "=m"(adr));
+	adr = (adr+(16-1))&-16;
+	__asm__("movq %0, %%rsp\n\t" : : "m"(adr));
+	ffly_printf("%f\n", val);
 	ffly_arstat();
 }

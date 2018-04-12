@@ -5,15 +5,27 @@
 # include "../types/err_t.h"
 # include "../types/off_t.h"
 # include "stat.h"
+
+# ifdef __fflib
 # include "../linux/stat.h"
 # include "../linux/fcntl.h"
 # include "../linux/unistd.h"
+# else
+# include <sys/stat.h>
+# include <fcntl.h>
+# include <unistd.h>
+# include <stdio.h>
+# endif
+
 # define ffly_fileno(__file) \
     (__file)->fd
 
 struct ffly_file {
 	char const *path;
 	mdl_int_t fd;
+# ifndef __fflib
+	FILE *libc_fp;
+# endif
 //	mdl_u8_t wbuf[], rbuf[];
 };
 

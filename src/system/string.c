@@ -123,7 +123,7 @@ mdl_u64_t ffly_htint(char *__s) {
 	return ret;
 }
 
-# include <stdio.h>
+//# include <stdio.h>
 // needs testing
 mdl_uint_t ffly_floatts(double __no, char *__buf) {
 	mdl_u8_t i = 0;
@@ -149,14 +149,13 @@ mdl_uint_t ffly_floatts(double __no, char *__buf) {
 		no = (mdl_u64_t)(__no/0.00000001); // needs to be rounded
 	mdl_uint_t l = ffly_nots(no, __buf+s);
 	char *p = __buf+l+s;
-	*(p+1) = '\0';
 	while((p-__buf) >= i) {
 		*(p+1) = *p;
 		p--;
 	}
 	*(__buf+i) = '.';
 	*(__buf+s+l+1) = '\0';
-	return l+s;
+	return l+s+1;
 }
 
 mdl_uint_t ffly_noths(mdl_u64_t __no, char *__buf) {
@@ -231,6 +230,16 @@ int main() {
 //	  ffly_floatts(4.2332, s);
 }
 */
+
+/*
+# include <stdio.h>
+int main() {
+	char s[12];
+	mdl_uint_t len = ffly_floatts(21.1, s);
+
+	printf("%s:%u\n", s, len);
+}*/
+
 double ffly_stfloat(char *__s) {
 	double ret;
 	mdl_u8_t sign;

@@ -9,6 +9,8 @@
 # define O_CREAT 00000100
 # define O_TRUNC 00001000
 
+#define O_NONBLOCK 00004000
+
 # define F_GETFD 1
 
 mdl_s32_t fcntl(mdl_u32_t, mdl_s32_t, mdl_u64_t);

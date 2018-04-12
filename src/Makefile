@@ -1,7 +1,7 @@
 DEFINES=-I../eint_t/inc -D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
 nasm_flags="-I${PWD}/system/asm/"
 dst_dir=${PWD}
-cc_flags=-O0 -Wall -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr
+cc_flags=-O0 -Wall -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr -D__fflib
 ffly_objs=$(shell export dst_dir=$(dst_dir);export root_dir=${PWD};. ./compile.sh;echo $$ffly_objs)
 test: clean
 	gcc $(cc_flags) -Wall -o main test.c $(ffly_objs) -nostdlib
@@ -73,25 +73,24 @@ ca: clean
 	gcc -c memory/mem_realloc.c
 	gcc cache.c mem_alloc.o mem_free.o mem_realloc.o
 uni: clean
-	gcc -D__ffly_testing -c cache.c
-	gcc -D__ffly_testing -c lot.c
-	gcc -D__ffly_testing -c chunk_manager.c
-	gcc -D__ffly_testing -c memory/alloc_pixelmap.c
-	gcc -D__ffly_testing -c uni.c
-	gcc -D__ffly_testing -c chunk.c
-	gcc -D__ffly_testing -c obj.c
-	gcc -D__ffly_testing -c obj_pool.c
-	gcc -D__ffly_testing -c obj_manager.c
-	gcc -D__ffly_testing -c ui/camera.c
-	gcc -D__ffly_testing -c maths/min.c
-	gcc -D__ffly_testing -c maths/max.c
-	gcc -D__ffly_testing -c maths/barycentric.c
-	gcc -D__ffly_testing -c polygon.c
-	gcc -D__ffly_testing -c maths/rotate.c
+	gcc $(cc_flags) -c cache.c
+	gcc $(cc_flags) -c lot.c
+	gcc $(cc_flags) -c chunk_manager.c
+	gcc $(cc_flags) -c memory/alloc_pixelmap.c
+	gcc $(cc_flags) -c uni.c
+	gcc $(cc_flags) -c chunk.c
+	gcc $(cc_flags) -c obj.c
+	gcc $(cc_flags) -c obj_pool.c
+	gcc $(cc_flags) -c obj_manager.c
+	gcc $(cc_flags) -c ui/camera.c
+	gcc $(cc_flags) -c maths/min.c
+	gcc $(cc_flags) -c maths/max.c
+	gcc $(cc_flags) -c maths/barycentric.c
+	gcc $(cc_flags) -c polygon.c
+	gcc $(cc_flags) -c maths/rotate.c
 	nasm -f elf64 $(nasm_flags) -o round.o.0 maths/asm/round.asm
-	gcc -D__ffly_testing -c -o round.o.1 maths/round.c
-
-	gcc -D__ffly_testing main.c cache.o round.o.0 round.o.1 rotate.o polygon.o max.o barycentric.o min.o lot.o obj_manager.o obj_pool.o camera.o obj.o alloc_pixelmap.o uni.o chunk.o chunk_manager.o $(ffly_objs) -lm
+	gcc $(cc_flags) -c -o round.o.1 maths/round.c
+	gcc $(cc_flags) main.c cache.o round.o.0 round.o.1 rotate.o polygon.o max.o barycentric.o min.o lot.o obj_manager.o obj_pool.o camera.o obj.o alloc_pixelmap.o uni.o chunk.o chunk_manager.o $(ffly_objs) -nostdlib
 all:
 	rm -f *.o
 	nasm -f elf64 $(nasm_flags) -o mutex.o system/asm/mutex.asm

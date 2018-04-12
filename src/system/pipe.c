@@ -1,8 +1,13 @@
 # include "pipe.h"
 # include "shm.h"
-# include "../data/bcopy.h"
+# include "../dep/bcopy.h"
+# ifdef __fflib
 # include "../linux/ipc.h"
 # include "../linux/stat.h"
+# else
+# include <sys/ipc.h>
+# include <sys/stat.h>
+# endif
 # ifndef __ffly_module
 # include "io.h"
 # else

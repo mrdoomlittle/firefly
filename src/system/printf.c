@@ -47,7 +47,7 @@ gen(char *__buf, ffly_size_t __n, char const *__format, va_list __args) {
 				} 
 				bufp+= ffly_nots(v, bufp);
 			} else if (*p == 'u') {
-				mdl_u64_t v = is_long? va_arg(__args, mdl_u64_t):va_arg(__args, mdl_u32_t);
+				mdl_u64_t v = is_long?va_arg(__args, mdl_u64_t):va_arg(__args, mdl_u32_t);
 				bufp+= ffly_nots(v, bufp);
 			} else if (*p == 's') {
 				char *s = va_arg(__args, char*);
@@ -56,8 +56,8 @@ gen(char *__buf, ffly_size_t __n, char const *__format, va_list __args) {
 				char c = va_arg(__args, int);
 				*(bufp++) = c;		
 			} else if (*p == 'f') {
-//				  double v = va_arg(__args, double);
-//				  bufp+= ffly_floatts(v, bufp);
+				double v = va_arg(__args, double);
+				bufp+= ffly_floatts(v, bufp);
 			} else if (*p == 'p') {
 				void *v = va_arg(__args, void*);
 				*(bufp++) = '0';
@@ -67,7 +67,6 @@ gen(char *__buf, ffly_size_t __n, char const *__format, va_list __args) {
 				mdl_u64_t v = is_long? va_arg(__args, mdl_u64_t):va_arg(__args, mdl_u32_t);
 				bufp+= ffly_noths((mdl_u64_t)v, bufp);
 			}
-
 			p++;
 		} else
 			*(bufp++) = *(p-1);

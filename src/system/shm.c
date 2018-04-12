@@ -1,7 +1,14 @@
 # include "shm.h"
+# ifdef __fflib
 # include "../linux/ipc/shm.h"
 # include "../linux/stat.h"
 # include "../linux/unistd.h"
+# else
+# include <sys/shm.h>
+# include <sys/stat.h>
+# include <unistd.h>
+# endif
+
 # ifndef __ffly_module
 # include "io.h"
 # else

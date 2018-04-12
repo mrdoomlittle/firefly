@@ -5,8 +5,11 @@
 # else
 #	include <mdlint.h>
 # endif
+# ifdef __fflib
 # include "../linux/errno.h"
-
+# else
+# include <errno.h>
+# endif
 # ifdef __ffly_use_opencl
 #   include <CL/cl.hpp>
 #	define ffly_cl_success CL_SUCCESS
@@ -71,9 +74,11 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
+# ifdef __fflib
 int extern errno;
-mdl_u8_t extern ffly_errno;
 char const* strerror(int);
+# endif
+mdl_u8_t extern ffly_errno;
 # ifdef __cplusplus
 }
 # endif

@@ -1,6 +1,6 @@
 #!/bin/sh
 ffly_cc=gcc
-cc_flags="-fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr"
+cc_flags="-fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr -D__fflib"
 ffly_objs=$(
 	dst_dir=$PWD/dep
 	root_dir=dep;

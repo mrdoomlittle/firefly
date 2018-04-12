@@ -3,13 +3,17 @@
 # include <mdlint.h>
 # include "mutex.h"
 # include "errno.h"
+# ifdef __fflib
 # include "../linux/unistd.h"
-
+# else
+# include <unistd.h>
+# endif
 # include "../types/size_t.h"
 FF_FILE *ffly_out = NULL;
 FF_FILE *ffly_log = NULL;
 FF_FILE *ffly_err = NULL;
 FF_FILE *ffly_in = NULL;
+# ifdef __fflib
 void putchar(char __c) {
 	write(ffly_fileno(ffly_out), &__c, 1);
 }
@@ -33,6 +37,7 @@ mdl_uint_t ffly_rdline(void *__buf, mdl_uint_t __size, FF_FILE *__file) {
 
     *p = '\0';
 }
+# endif
 /*
 ffly_fd_t ffly_open(char const *__path, int __flags, mode_t __mode) {
 	return open(__path, __flags, __mode);
@@ -85,38 +90,37 @@ ffly_err_t ffly_io_init() {
 }
 
 void ffly_io_closeup() {
+# ifdef __fflib
 	fsync(ffly_fileno(ffly_out));
     fsync(ffly_fileno(ffly_log));
     fsync(ffly_fileno(ffly_err));
-
+# endif
 	ffly_fclose(ffly_out);
 	ffly_fclose(ffly_log);
 	ffly_fclose(ffly_err);
 }
-/*
-ffly_mutex_t static mutex = FFLY_MUTEX_INIT;
-void static ffly_print(FILE *__stream, char const *__s, va_list __args) {
-	if (__stream == NULL || __s == NULL) return;
-	ffly_mutex_lock(&mutex);
-	fprintf(__stream, "firefly; ");
-	fflush(__stream);
 
-	vfprintf(__stream, __s, __args);
-	fflush(__stream);
-	ffly_mutex_unlock(&mutex);
+# ifndef __fflib
+ffly_mutex_t static lock = FFLY_MUTEX_INIT;
+void static
+ffly_print(FF_FILE *__file, char const *__format, va_list __args) {
+	ffly_mutex_lock(&lock);
+	vfprintf(__file->libc_fp, __format, __args);
+	fflush(__file->libc_fp);
+	ffly_mutex_unlock(&lock);
 }
 
-void ffly_fprintf(FILE *__stream, char const *__s, ...) {
+void ffly_fprintf(FF_FILE *__file, char const *__format, ...) {
 	va_list args;
-	va_start(args, __s);
-	ffly_print(__stream, __s, args);
+	va_start(args, __format);
+	ffly_print(__file, __format, args);
 	va_end(args);
 }
 
-void ffly_printf(char const *__s, ...) {
+void ffly_printf(char const *__format, ...) {
 	va_list args;
-	va_start(args, __s);
-	ffly_print(ffly_out, __s, args);
+	va_start(args, __format);
+	ffly_print(ffly_out, __format, args);
 	va_end(args);
-}*/
-
+}
+# endif

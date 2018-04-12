@@ -1,9 +1,10 @@
 # ifndef __ffly__def__h
 # define __ffly__def__h
 
+# ifdef __fflib
 # define offsetof(__type, __member) \
 	((mdl_u64_t)&((__type*)0)->__member)
-
+# endif
 # ifndef FF_ZERO
 #	define FF_ZERO 0
 # endif

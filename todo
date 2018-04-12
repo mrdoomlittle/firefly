@@ -70,3 +70,4 @@ so we will use the terminal until we can get it up and working.
 -. pulse, alsa, xcb, x11 require libc so
 we will pipe data back for forth using shared memory
 until we can do somthing about that.
+-. ffly_mem_cpy, ffly_mem_set, etc under 'data' is to be renamed to ff_mem_cpy

@@ -21,7 +21,7 @@ void static print_pixel(ffly_byte_t *__pixel) {
     mdl_u8_t gray = (__pixel[0]+__pixel[1]+__pixel[2])/3;
     char c[] = {'-', '+', '=', '#'};
     double max = 255.0/sizeof(c);
-    printf("%c", c[(mdl_u8_t)(gray/max)]);
+    ffly_printf("%c", c[(mdl_u8_t)(gray/max)]);
 }
 
 ffly_err_t ffly_camera_print(ffly_camerap __camera) {
@@ -32,7 +32,7 @@ ffly_err_t ffly_camera_print(ffly_camerap __camera) {
             print_pixel(__camera->pixels+((x+(y*__camera->width))*4));
             x++;
         }
-        printf("\n");
+        ffly_printf("\n");
         y++;
     }
 

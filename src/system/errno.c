@@ -1,6 +1,7 @@
 # include "errno.h"
-mdl_s32_t errno = 0;
 mdl_u8_t ffly_errno = FF_ERR_NULL;
+# ifdef __fflib
+mdl_s32_t errno = 0;
 char const static *s[] = {
 	"okay",							//0
 	"operation not permitted",		//1
@@ -133,3 +134,4 @@ char const* strerror(int __no) {
 void __set_errno(void) {
 	__asm__("mov %%eax, %0\n\t" : "=m"(errno));
 }
+# endif

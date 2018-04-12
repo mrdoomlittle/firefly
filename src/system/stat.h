@@ -6,5 +6,4 @@ struct ffly_stat {
     ffly_size_t size;
 };
 
-
 # endif /*__ffly__stat__h*/
