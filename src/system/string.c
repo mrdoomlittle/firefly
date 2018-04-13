@@ -135,20 +135,21 @@ mdl_uint_t ffly_floatts(double __no, char *__buf) {
 	}
 
 	mdl_u64_t no, s = 0;
+	mdl_uint_t l;
+	char *p;
+_bk:
 	if (__no<1) {
-		while(((*(mdl_u64_t*)&__no)&0x000fffffffffffff)>0) {
-			if (__no>0) {
-				__buf[s] = '0';
-				s++;
-			}
+		while(__no<1) {
+			__buf[s++] = '0';			
 			__no*=10;
 		}
 		s--; 
 		no = (mdl_u64_t)__no;
+		goto _bk;
 	} else
 		no = (mdl_u64_t)(__no/0.00000001); // needs to be rounded
-	mdl_uint_t l = ffly_nots(no, __buf+s);
-	char *p = __buf+l+s;
+	l = ffly_nots(no, __buf+s);
+	p = __buf+l+s;
 	while((p-__buf) >= i) {
 		*(p+1) = *p;
 		p--;
@@ -234,8 +235,8 @@ int main() {
 /*
 # include <stdio.h>
 int main() {
-	char s[12];
-	mdl_uint_t len = ffly_floatts(21.1, s);
+	char s[1220];
+	mdl_uint_t len = ffly_floatts(1.00397972, s);
 
 	printf("%s:%u\n", s, len);
 }*/
