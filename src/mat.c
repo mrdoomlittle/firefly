@@ -15,13 +15,13 @@ to_free(void *__p) {
 
 char static fetchc(ffly_matp __mat){return *__mat->p;}
 
-mdl_u8_t static 
+ff_u8_t static 
 is_space(ffly_matp __mat) {
 	char c = *__mat->p;
 	return (c == ' ' || c == '\t'); 
 }
 
-mdl_u8_t static
+ff_u8_t static
 at_eof(ffly_matp __mat) {
 	return __mat->p>=__mat->end;
 }
@@ -60,22 +60,22 @@ typedef struct parameter {
 } *parameterp;
 
 typedef struct pill {
-	mdl_u8_t type;
-	mdl_u64_t bits;
+	ff_u8_t type;
+	ff_u64_t bits;
 
-	mdl_uint_t pad_left;
-	mdl_uint_t pad_top;
-	mdl_u8_t r, g, b;
+	ff_uint_t pad_left;
+	ff_uint_t pad_top;
+	ff_u8_t r, g, b;
 } *pillp;
 
 typedef struct bucket {
-	mdl_u8_t sort;
-	mdl_u8_t val;
+	ff_u8_t sort;
+	ff_u8_t val;
 	void *p;
 } *bucketp;
 
 char const static*
-read_ident(ffly_matp __mat, mdl_uint_t *__l) {
+read_ident(ffly_matp __mat, ff_uint_t *__l) {
 	char buf[128];
 	char *bufp = buf;
 	char c = fetchc(__mat);
@@ -91,7 +91,7 @@ read_ident(ffly_matp __mat, mdl_uint_t *__l) {
 }
 
 char const static*
-read_no(ffly_matp __mat, mdl_uint_t *__l) {
+read_no(ffly_matp __mat, ff_uint_t *__l) {
 	char buf[128];
 	char *bufp = buf;
 	char c = fetchc(__mat);
@@ -149,11 +149,11 @@ lex(ffly_matp __mat) {
 		default:
 		if (c>='a'&&c<='z') {
 			ret->sort = _ident;
-			mdl_uint_t l;
+			ff_uint_t l;
 			ret->p = (void*)read_ident(__mat, &l);
 		} else if (c>='0'&&c<='9') {
 			ret->sort = _no;
-			mdl_uint_t l;
+			ff_uint_t l;
 			ret->p = (void*)read_no(__mat, &l);
 		}
 	}
@@ -169,19 +169,19 @@ ulex(bucketp __tok) {
 	*(next++) = __tok;
 }
 
-mdl_u8_t static
-expect(ffly_matp __mat, mdl_u8_t __sort, mdl_u8_t __val) {
+ff_u8_t static
+expect(ffly_matp __mat, ff_u8_t __sort, ff_u8_t __val) {
 	bucketp tok = lex(__mat);
 	if (!tok) return 0;
 	return (tok->sort == __sort && tok->val == __val);
 }
 
-mdl_i8_t static
-next_tokis(ffly_matp __mat, mdl_u8_t __sort, mdl_u8_t __val) {
+ff_i8_t static
+next_tokis(ffly_matp __mat, ff_u8_t __sort, ff_u8_t __val) {
 	bucketp tok = lex(__mat);
 	if (!tok) return -1;
 
-	mdl_u8_t res = (tok->sort == __sort && tok->val == __val);
+	ff_u8_t res = (tok->sort == __sort && tok->val == __val);
 	if (res)
 		return 0;
 
@@ -192,7 +192,7 @@ next_tokis(ffly_matp __mat, mdl_u8_t __sort, mdl_u8_t __val) {
 
 void static act(ffly_matp, pillp);
 void static 
-label(ffly_matp __mat, mdl_i8_t *__exit) {
+label(ffly_matp __mat, ff_i8_t *__exit) {
 	if (!next_tokis(__mat, _keychr, _slash)) {
 		*__exit = 0;
 		expect(__mat, _keychr, _gt);
@@ -241,7 +241,7 @@ label(ffly_matp __mat, mdl_i8_t *__exit) {
 	parameterp cur;
 	while((cur = *(--param)) != NULL) {
 		if (*(cur->name+1) == '\0') {
-			mdl_u8_t *val;
+			ff_u8_t *val;
 			p.r = 0;
 			p.g = 0;
 			p.b = 0;
@@ -290,7 +290,7 @@ act(ffly_matp __mat, pillp __pill) {
 		*bkbuf = *(bkbuf-1);
 	char *p = *(bkbuf++);
 
-	mdl_u8_t rc = 0;
+	ff_u8_t rc = 0;
 	if (__pill != NULL) {
 		if (is_bit(__pill, _padl))
 			p+=__pill->pad_left;
@@ -320,7 +320,7 @@ act(ffly_matp __mat, pillp __pill) {
 			goto _no;
 		if (!(tok = lex(__mat)))
 			break;
-		mdl_i8_t exit;
+		ff_i8_t exit;
 		if (tok->sort == _keychr && tok->val == _lt) {
 			*(bkbuf-1) = p;
 			if (!next_tokis(__mat, _keychr, _gt))

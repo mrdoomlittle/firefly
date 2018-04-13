@@ -21,7 +21,7 @@ objpp(struct obj *__obj) {
 }
 
 struct obj static*
-get_reg(mdl_u8_t __kind) {
+get_reg(ff_u8_t __kind) {
 	switch(__kind) {
 		case _8l_u: return rg_8l_u;
 		case _16l_u: return rg_16l_u;
@@ -34,7 +34,7 @@ get_reg(mdl_u8_t __kind) {
 	}
 }
 
-ffly_byte_t static **stack;
+ff_byte_t static **stack;
 static struct obj *top = NULL;
 static struct obj *end = NULL;
 struct obj static*
@@ -53,10 +53,10 @@ next_obj(struct ffly_compiler *__compiler, struct obj __tmpl) {
 	return _obj;
 }
 
-mdl_u8_t static
-convtk(mdl_u8_t __kind) {
+ff_u8_t static
+convtk(ff_u8_t __kind) {
 	if (__kind == _uint_t) {
-		switch(sizeof(mdl_uint_t)) {
+		switch(sizeof(ff_uint_t)) {
 			case 1: return _8l_u;
 			case 2: return _16l_u;
 			case 4: return _32l_u;
@@ -85,7 +85,7 @@ struct obj obj_tmpl = {
 };
 
 struct obj static
-mk_op_copy(mdl_uint_t __size, struct obj **__to, struct obj **__from) {
+mk_op_copy(ff_uint_t __size, struct obj **__to, struct obj **__from) {
 	struct obj _obj = obj_tmpl;
 	_obj.opno = _op_copy_;
 	_obj.size = __size;
@@ -95,7 +95,7 @@ mk_op_copy(mdl_uint_t __size, struct obj **__to, struct obj **__from) {
 }
 
 struct obj static
-mk_op_fresh(mdl_uint_t __size) {
+mk_op_fresh(ff_uint_t __size) {
 	struct obj _obj = obj_tmpl;
 	_obj.opno = _op_fresh_;
 	_obj.size = __size;
@@ -103,7 +103,7 @@ mk_op_fresh(mdl_uint_t __size) {
 }
 
 struct obj static
-mk_op_free(mdl_uint_t __size) {
+mk_op_free(ff_uint_t __size) {
 	struct obj _obj = obj_tmpl;
 	_obj.opno = _op_free_;
 	_obj.size = __size;
@@ -118,7 +118,7 @@ mk_exit() {
 }
 
 struct obj static
-mk_op_assign(void *__p, mdl_uint_t __size, struct obj **__to) {
+mk_op_assign(void *__p, ff_uint_t __size, struct obj **__to) {
 	struct obj _obj = obj_tmpl;
 	_obj.opno = _op_assign_;
 	_obj.p = __p;
@@ -138,7 +138,7 @@ mk_op_compare(struct obj *__flags, struct obj **__l, struct obj **__r) {
 }
 
 struct obj static
-mk_op_cond_jump(struct obj *__flags, mdl_u8_t __cond) {
+mk_op_cond_jump(struct obj *__flags, ff_u8_t __cond) {
 	struct obj _obj = obj_tmpl;
 	_obj.opno = _op_cond_jump_;
 	_obj.flags = __flags;
@@ -251,17 +251,17 @@ free_frame(struct ffly_compiler *__compiler, struct obj *__frame) {
 }
 
 struct obj static*
-__fresh(struct ffly_compiler *__compiler, mdl_uint_t __size) {
+__fresh(struct ffly_compiler *__compiler, ff_uint_t __size) {
 	return next_obj(__compiler, mk_op_fresh(__size));
 }
 
 void static
-__free(struct ffly_compiler *__compiler, mdl_uint_t __n) {
+__free(struct ffly_compiler *__compiler, ff_uint_t __n) {
 	next_obj(__compiler, mk_op_free(__n));
 }
 
 void static*
-stack_push(void *__p, mdl_uint_t __n) {
+stack_push(void *__p, ff_uint_t __n) {
 	void *p = *stack;
 	(*stack)+=__n;
 	ffly_mem_cpy(p, __p, __n);
@@ -273,7 +273,7 @@ void static
 emit(struct ffly_compiler*, struct node*);
 
 void static
-conv(struct ffly_compiler *__compiler, mdl_u8_t __to, mdl_uint_t __size) {
+conv(struct ffly_compiler *__compiler, ff_u8_t __to, ff_uint_t __size) {
 	struct obj **_obj, *dst = __fresh(__compiler, __size);
 	dst->_type = __to;
 	pop(__compiler, &_obj);
@@ -359,7 +359,7 @@ void static
 emit_if(struct ffly_compiler *__compiler, struct node *__node) {
 	struct obj *frame = create_frame(__compiler);
 	emit(__compiler, __node->cond);
-	mdl_u8_t flag = 0x0;
+	ff_u8_t flag = 0x0;
 	if (__node->cond->kind == _op_eq)
 		flag = _flg_neq;
 	else if (__node->cond->kind == _op_neq)
@@ -400,7 +400,7 @@ emit_while(struct ffly_compiler *__compiler, struct node *__node) {
 	__compiler->frame = frame;
 	struct obj **top = &end->next;
 	emit(__compiler, __node->cond);
-	mdl_u8_t flag = 0x0;
+	ff_u8_t flag = 0x0;
 	if (__node->cond->kind == _op_eq)
 		flag = _flg_neq;
 	else if (__node->cond->kind == _op_neq)
@@ -442,7 +442,7 @@ emit_binop(struct ffly_compiler *__compiler, struct node *__node) {
 	pop(__compiler, &r);
 	pop(__compiler, &l);
 
-	mdl_u8_t op = __node->kind;
+	ff_u8_t op = __node->kind;
 	if (op == _op_eq || op ==  _op_neq || op == _op_gt || op == _op_lt)
 		next_obj(__compiler, mk_op_compare(rg_8l_u, l, r));
 }
@@ -546,7 +546,7 @@ emit_call(struct ffly_compiler *__compiler, struct node *__node) {
 
 	struct node **p;
 	struct obj **params[12] = {NULL};
-	mdl_uint_t i = 0;
+	ff_uint_t i = 0;
 	___ffly_vec_nonempty(&__node->params) {
 		p = (struct node**)ffly_vec_begin(&__node->params);
 		while(!vec_deadstop(p, &__node->params)) {
@@ -661,8 +661,8 @@ void emit(struct ffly_compiler *__compiler, struct node *__node) {
 	}
 }
 
-ffly_err_t
-ffly_gen(struct ffly_compiler *__compiler, void **__top, ffly_byte_t **__stack) {
+ff_err_t
+ffly_gen(struct ffly_compiler *__compiler, void **__top, ff_byte_t **__stack) {
 	if (!ffly_vec_size(&__compiler->nodes)) return FFLY_FAILURE;
 	stack = __stack;
 	rg_8l_u = __fresh(__compiler, 1);

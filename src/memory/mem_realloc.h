@@ -5,23 +5,22 @@
 # else
 #   include "allocr.h"
 # endif
-
-# include <mdlint.h>
+# include "../ffint.h"
+# include "../types.h"
 # include "mem_alloc.h"
 # include "../ffly_def.h"
-# include "../types/bool_t.h"
 # include "../system/atomic.h"
 # ifdef __cplusplus
 extern "C" {
 # endif
 # if defined(__ffly_debug_enabled) && !defined(__ffly_mem__alloc__h)
-ffly_atomic_uint_t extern ffly_mem_alloc_bc;
-ffly_atomic_uint_t extern ffly_mem_alloc_c;
+ff_atomic_uint_t extern ffly_mem_alloc_bc;
+ff_atomic_uint_t extern ffly_mem_alloc_c;
 # endif
 # ifdef __ffly_mal_track
-void* ffly_mem_realloc(void*, mdl_uint_t, ffly_bool_t);
+void* ffly_mem_realloc(void*, ff_uint_t, ff_bool_t);
 # else
-void* ffly_mem_realloc(void*, mdl_uint_t);
+void* ffly_mem_realloc(void*, ff_uint_t);
 # endif
 # ifdef __cplusplus
 }

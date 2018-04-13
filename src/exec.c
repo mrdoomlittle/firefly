@@ -1,5 +1,5 @@
 # include "exec.h"
-void ffexec(void *__p, void *__end, mdl_u8_t __format, void(*__prep)(void*, void*), void *__hdr, mdl_u32_t __entry) {
+void ffexec(void *__p, void *__end, ff_u8_t __format, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
 	switch(__format) {
 		case _ffexec_bc:
 			ffbci_exec(__p, __end, __prep, __hdr, __entry);
@@ -41,8 +41,8 @@ prep(void *__hdr, void *__ctx) {
 	segmentp cur = ss, bk;
 	while(cur != NULL) {
 		ffly_printf("...\n");
-		mdl_u8_t *seg;	
-		if (!(seg = (mdl_u8_t*)__ffly_mem_alloc(cur->hdr.sz))) {
+		ff_u8_t *seg;	
+		if (!(seg = (ff_u8_t*)__ffly_mem_alloc(cur->hdr.sz))) {
 			// err
 		}
 
@@ -89,12 +89,12 @@ void ffexecf(char const *__file) {
 	}
 
 	segmentp ps = NULL;
-	mdl_uint_t size = 0;
+	ff_uint_t size = 0;
 
 	segmentp seg;
 	if (hdr.sg != FF_EF_NULL) {
-		mdl_uint_t i = 0;
-		mdl_u64_t offset = hdr.sg;
+		ff_uint_t i = 0;
+		ff_u64_t offset = hdr.sg;
 		_again:
 		
 		seg = (segmentp)__ffly_mem_alloc(sizeof(struct segment));
@@ -120,8 +120,8 @@ void ffexecf(char const *__file) {
 		}	
 	}
 
-	mdl_u8_t *bin, *end;
-	if (!(bin = (mdl_u8_t*)__ffly_mem_alloc(size))) {
+	ff_u8_t *bin, *end;
+	if (!(bin = (ff_u8_t*)__ffly_mem_alloc(size))) {
 		// error
 	}
 

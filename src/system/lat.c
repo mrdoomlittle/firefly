@@ -42,7 +42,7 @@ void ffly_lat_prepare(ffly_latp __lat) {
 	__lat->head = NULL;
 }
 
-void ffly_lat_put(ffly_latp __lat, mdl_u64_t __key, void *__p) {
+void ffly_lat_put(ffly_latp __lat, ff_u64_t __key, void *__p) {
 	podp *p = (podp*)__lat->p->p;
 	if (!*(p = (p+((__key&0xff)^(__key>>8&0xff))))) {
 		if (!(*p = alloc_pod())) {
@@ -95,7 +95,7 @@ void ffly_lat_put(ffly_latp __lat, mdl_u64_t __key, void *__p) {
 	__lat->head = rec;
 }
 
-void* ffly_lat_get(ffly_latp __lat, mdl_u64_t __key) {
+void* ffly_lat_get(ffly_latp __lat, ff_u64_t __key) {
 	podp *p = (podp*)__lat->p->p;
 	if (!*(p = (p+((__key&0xff)^(__key>>8&0xff))))) {
 		ffly_fprintf(ffly_err, "pod 0 dead-end.\n");
@@ -129,7 +129,7 @@ void* ffly_lat_get(ffly_latp __lat, mdl_u64_t __key) {
 
 void static
 free_pod(podp __pod) {
-	mdl_u8_t static depth = 0;
+	ff_u8_t static depth = 0;
 	if (depth <= 3) {
 		depth++;
 		podp *p = (podp*)__pod->p;

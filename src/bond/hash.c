@@ -34,8 +34,8 @@ hash_destroy(hashp __hash) {
 }
 
 void
-hash_put(hashp __hash, mdl_u8_t const *__key, mdl_uint_t __len, void *__p) {
-	mdl_u64_t sum = ffly_hash(__key, __len);
+hash_put(hashp __hash, ff_u8_t const *__key, ff_uint_t __len, void *__p) {
+	ff_u64_t sum = ffly_hash(__key, __len);
 	struct hash_entry *entry = (struct hash_entry*)malloc(sizeof(struct hash_entry));
 	struct hash_entry **table = __hash->table+(sum&0xff);
 
@@ -48,8 +48,8 @@ hash_put(hashp __hash, mdl_u8_t const *__key, mdl_uint_t __len, void *__p) {
 }
 
 void* const
-hash_get(hashp __hash, mdl_u8_t const *__key, mdl_uint_t __len) {
-	mdl_u64_t sum = ffly_hash(__key, __len);
+hash_get(hashp __hash, ff_u8_t const *__key, ff_uint_t __len) {
+	ff_u64_t sum = ffly_hash(__key, __len);
 	struct hash_entry *cur = *(__hash->table+(sum&0xff));
 	while(cur != NULL) {
 		if (cur->len == __len) {

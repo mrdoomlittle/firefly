@@ -6,7 +6,7 @@
 # include <stdio.h>
 int fd;
 
-char const* regtype_s(mdl_u8_t __type) {
+char const* regtype_s(ff_u8_t __type) {
 	switch(__type) {
 		case FF_RG_NULL:	return "null";
 		case FF_RG_PROG:	return "program";
@@ -17,7 +17,7 @@ char const* regtype_s(mdl_u8_t __type) {
 	return "unknown";
 }
 
-char const* segtype_s(mdl_u8_t __type) {
+char const* segtype_s(ff_u8_t __type) {
 	switch(__type) {
 		case FF_SG_NULL: return "null";
 		case FF_SG_STACK:	return "stack segment";
@@ -26,7 +26,7 @@ char const* segtype_s(mdl_u8_t __type) {
 	return "unknown";
 }
 
-char const* sytype_s(mdl_u8_t __type) {
+char const* sytype_s(ff_u8_t __type) {
 	switch(__type) {
 		case FF_SY_NULL: return "null";
 		case FF_SY_IND: return "ind";
@@ -46,7 +46,7 @@ void prhdr(ffef_hdrp __hdr) {
 	printf("entry, at: %u\n", __hdr->routine);
 }
 
-void prsy(ffef_reg_hdrp __sttr, ffef_syp __sy, mdl_uint_t __no) {
+void prsy(ffef_reg_hdrp __sttr, ffef_syp __sy, ff_uint_t __no) {
 	char *name = (char*)malloc(__sy->l);
 	lseek(fd, __sttr->end-__sy->name, SEEK_SET);
 	read(fd, name, __sy->l);
@@ -57,12 +57,12 @@ void prsy(ffef_reg_hdrp __sttr, ffef_syp __sy, mdl_uint_t __no) {
 	free(name);
 }
 
-void prseg(ffef_seg_hdrp __seg, mdl_uint_t __no) {
+void prseg(ffef_seg_hdrp __seg, ff_uint_t __no) {
 	printf("%u: segment,\ttype: %s,\tadr: %u,\toffset: %u,\tsize: %u\n", __no, segtype_s(__seg->type),
 		__seg->adr, __seg->offset, __seg->sz);
 }
 
-void prreg(ffef_reg_hdrp __reg, mdl_uint_t __no) {
+void prreg(ffef_reg_hdrp __reg, ff_uint_t __no) {
 	char *name = (char*)malloc(__reg->l);
 	lseek(fd, __reg->name, SEEK_SET);
 	read(fd, name, __reg->l);
@@ -71,11 +71,11 @@ void prreg(ffef_reg_hdrp __reg, mdl_uint_t __no) {
 		__reg->end, regtype_s(__reg->type), __reg->beg==__reg->end?"empty":"not empty");
 }
 
-void prhok(ffef_hokp __hok, mdl_uint_t __no) {
+void prhok(ffef_hokp __hok, ff_uint_t __no) {
 	printf("%u: hook,\toffset: %u\tlength: %u,\tto: %u\n", __no, __hok->offset, __hok->l, __hok->to);
 }
 
-void prrel(ffef_relp __rel, mdl_uint_t __no) {
+void prrel(ffef_relp __rel, ff_uint_t __no) {
 	printf("%u: relocate,\toffset: %u,\tlength: %u,\tsymbol: %u\n", __no, __rel->offset, __rel->l, __rel->sy);
 }
 
@@ -109,8 +109,8 @@ int main(int __argc, char const *__argv[]) {
 	struct ffef_hok hok;
 	if (hdr.hk != FF_EF_NULL) {
 		printf("hook, entries: %u\n", hdr.nhk);
-		mdl_uint_t i;
-		mdl_u64_t offset = hdr.hk;
+		ff_uint_t i;
+		ff_u64_t offset = hdr.hk;
 		for(i = 0;i != hdr.nhk;i++,offset-=ffef_hoksz) {
 			lseek(fd, offset, SEEK_SET);
 			read(fd, &hok, ffef_hoksz);
@@ -122,8 +122,8 @@ int main(int __argc, char const *__argv[]) {
 	struct ffef_seg_hdr seg;
 	if (hdr.sg != FF_EF_NULL) {
 		printf("segment, entries: %u\n", hdr.nsg);
-		mdl_uint_t i;
-		mdl_u64_t offset = hdr.sg;
+		ff_uint_t i;
+		ff_u64_t offset = hdr.sg;
 		for(i = 0;i != hdr.nsg;i++,offset-=ffef_seg_hdrsz) {
 			lseek(fd, offset, SEEK_SET);
 			read(fd, &seg, ffef_seg_hdrsz);
@@ -135,14 +135,14 @@ int main(int __argc, char const *__argv[]) {
 	struct ffef_reg_hdr reg;
 	if (hdr.rg != FF_EF_NULL) {
 		printf("region, entries: %u\n", hdr.nrg);
-		mdl_uint_t i;
-		mdl_u64_t offset = hdr.rg;
+		ff_uint_t i;
+		ff_u64_t offset = hdr.rg;
 		for(i = 0;i != hdr.nrg;i++,offset-=ffef_reg_hdrsz+reg.l) {
 			lseek(fd, offset, SEEK_SET);
 			read(fd, &reg, ffef_reg_hdrsz);
 			prreg(&reg, i);
 			if (reg.type == FF_RG_SYT) {
-				mdl_uint_t size;
+				ff_uint_t size;
 				ffef_syp bed;
 				ffef_syp sy = (ffef_syp)malloc(size = (reg.end-reg.beg));
 				bed = sy;
@@ -150,8 +150,8 @@ int main(int __argc, char const *__argv[]) {
 				lseek(fd, reg.beg, SEEK_SET);
 				read(fd, sy, size);
 
-				ffef_syp end = (ffef_syp)((mdl_u8_t*)sy+size);
-				mdl_uint_t i = 0;
+				ffef_syp end = (ffef_syp)((ff_u8_t*)sy+size);
+				ff_uint_t i = 0;
 				while(sy != end) {
 					prsy(&sttr, sy, i++);
 					sy++;
@@ -164,8 +164,8 @@ int main(int __argc, char const *__argv[]) {
 
 	struct ffef_rel rel;
 	if (hdr.rl != FF_EF_NULL) {
-		mdl_uint_t i;
-		mdl_u64_t offset = hdr.rl;
+		ff_uint_t i;
+		ff_u64_t offset = hdr.rl;
 		for(i = 0;i != hdr.nrl;i++,offset-=ffef_relsz) {
 			lseek(fd, offset, SEEK_SET);
 			read(fd, &rel, ffef_relsz);

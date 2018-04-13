@@ -1,6 +1,6 @@
 # ifndef __ffly__call__h
 # define __ffly__call__h
-# include <mdlint.h>
+# include "ffint.h"
 enum {
     _ffcal_printf,
     _ffcal_fprintf,
@@ -18,9 +18,9 @@ enum {
 
 typedef struct ffpa {
 	struct ffpa *next;
-	mdl_u8_t type;
+	ff_u8_t type;
 	void *p, *end;
 } *ffpap;
 
-void ffcall(mdl_u8_t, void*, void*);
+void ffcall(ff_u8_t, void*, void*);
 # endif /*__ffly__call__h*/

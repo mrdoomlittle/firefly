@@ -1,13 +1,13 @@
 # ifndef __ffly__linux__input__h
 # define __ffly__linux__input__h
+# include "../ffint.h"
 # include "time.h"
-# include <mdlint.h>
 
 struct input_event {
 	struct timeval time;
-	mdl_u16_t type;
-	mdl_u16_t code;
-	mdl_s32_t value ;
+	ff_u16_t type;
+	ff_u16_t code;
+	ff_s32_t value ;
 };
 
 # endif /*__ffly__linux__input__h*/

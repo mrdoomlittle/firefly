@@ -1,6 +1,6 @@
-# include <mdlint.h>
-mdl_s32_t fsync(mdl_s32_t __fd) {
-	mdl_s32_t ret;
+# include "../ffint.h"
+ff_s32_t fsync(ff_s32_t __fd) {
+	ff_s32_t ret;
 	__asm__("xorq %%rdi, %%rdi\n\t"
 			"mov %1, %%edi\n\t"
 			"call __fsync\n\t"

@@ -11,23 +11,23 @@
 	connected users will need a key inorder to do anything.
 */
 
-ffly_mutex_t static lock = FFLY_MUTEX_INIT;
+ff_mlock_t static lock = FFLY_MUTEX_INIT;
 struct node {
-	mdl_u8_t *key;
+	ff_u8_t *key;
 	struct node *next;
 };
 
 void
-ff_db_keygen(mdl_u8_t *__key) {
-	mdl_u8_t *p = __key;
+ff_db_keygen(ff_u8_t *__key) {
+	ff_u8_t *p = __key;
 	while(p != __key+KEY_SIZE)
 		*(p++) = ffgen_rand8l();
 }
 
-mdl_uint_t static
-keysum(mdl_u8_t *__key) {
-	mdl_u8_t *p = __key;
-	mdl_uint_t ret = 0;
+ff_uint_t static
+keysum(ff_u8_t *__key) {
+	ff_u8_t *p = __key;
+	ff_uint_t ret = 0;
 	while(p != __key+KEY_SIZE)
 		ret+= *(p++);
 	return ret; 
@@ -35,10 +35,10 @@ keysum(mdl_u8_t *__key) {
 
 typedef struct node* nodep;
 void
-ff_db_add_key(ff_dbdp __d, mdl_u8_t *__key) {
+ff_db_add_key(ff_dbdp __d, ff_u8_t *__key) {
 	ffly_mutex_lock(&lock);
 	nodep n = (nodep)__ffly_mem_alloc(sizeof(struct node));
-	n->key = (mdl_u8_t*)__ffly_mem_alloc(KEY_SIZE);
+	n->key = (ff_u8_t*)__ffly_mem_alloc(KEY_SIZE);
 	ffly_mem_cpy(n->key, __key, KEY_SIZE);
 	n->next = NULL;
  
@@ -55,9 +55,9 @@ ff_db_add_key(ff_dbdp __d, mdl_u8_t *__key) {
 }
 
 void
-ff_db_rm_key(ff_dbdp __d, mdl_u8_t *__key) { 
+ff_db_rm_key(ff_dbdp __d, ff_u8_t *__key) { 
 	ffly_mutex_lock(&lock);
-	mdl_uint_t sum = keysum(__key);
+	ff_uint_t sum = keysum(__key);
 	nodep beg = (nodep)*(__d->list+(sum&0xff));
 	nodep p = beg;
 	nodep prev = NULL;
@@ -78,10 +78,10 @@ ff_db_rm_key(ff_dbdp __d, mdl_u8_t *__key) {
 	ffly_mutex_unlock(&lock);
 }
 
-mdl_u8_t
-ff_db_valid_key(ff_dbdp __d, mdl_u8_t *__key) {
+ff_u8_t
+ff_db_valid_key(ff_dbdp __d, ff_u8_t *__key) {
 	ffly_mutex_lock(&lock);
-	mdl_u8_t ret;
+	ff_u8_t ret;
 	nodep p = *(__d->list+(keysum(__key)&0xff));
 	while(p != NULL) {
 		if (!ffly_mem_cmp(__key, p->key, KEY_SIZE)) {
@@ -103,21 +103,21 @@ int main() {
 	ffly_io_init();
 	struct ff_dbd daemon;
 	daemon.list = (void**)__ffly_mem_alloc((KEY_SIZE*0xff)*sizeof(void*));
-	mdl_u16_t key = 0;
+	ff_u16_t key = 0;
 	while(key != TEST) {
-		ff_db_add_key(&daemon, (mdl_u8_t*)&key);
+		ff_db_add_key(&daemon, (ff_u8_t*)&key);
 		key++;
 	}
 
 	key = 0;
 	while(key != 50) {
-		ff_db_rm_key(&daemon, (mdl_u8_t*)&key);
+		ff_db_rm_key(&daemon, (ff_u8_t*)&key);
 		key++;
 	}
 	
 	key = 0;
 	while(key != TEST) {
-		ffly_printf("%u, valid: %s\n", key, !ff_db_valid_key(&daemon, (mdl_u8_t*)&key)?"yes":"no");
+		ffly_printf("%u, valid: %s\n", key, !ff_db_valid_key(&daemon, (ff_u8_t*)&key)?"yes":"no");
 		key++;
 	}
 	__ffly_mem_free(daemon.list);

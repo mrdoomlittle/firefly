@@ -1,7 +1,7 @@
 DEFINES=-I../eint_t/inc -D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
 nasm_flags="-I${PWD}/system/asm/"
 dst_dir=${PWD}
-cc_flags=-O0 -Wall -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr -D__fflib
+cc_flags=-O0 -Wall -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr -D__ffly_source -D__fflib
 ffly_objs=$(shell export dst_dir=$(dst_dir);export root_dir=${PWD};. ./compile.sh;echo $$ffly_objs)
 test: clean
 	gcc $(cc_flags) -Wall -o main test.c $(ffly_objs) -nostdlib
@@ -146,17 +146,17 @@ cc:
 	gcc $(cc_flags) -c parser.c
 	gcc $(cc_flags) -c lexer.c
 	gcc $(cc_flags) -c gen.c
-	gcc $(cc_flags) -c data/mem_swp.c
+#	gcc $(cc_flags) -c data/mem_swp.c
 	gcc $(cc_flags) -c compiler.c
-	gcc $(cc_flags) -Wall -o cc c-lang.c compiler.o $(ffly_objs) mem_swp.o parser.o gen.o lexer.o -nostdlib
+	gcc $(cc_flags) -Wall -o cc c-lang.c compiler.o $(ffly_objs) parser.o gen.o lexer.o -nostdlib
 script: clean
 	gcc $(cc_flags) -c parser.c
 	gcc $(cc_flags) -c lexer.c
 	gcc $(cc_flags) -c gen.c
 	gcc $(cc_flags) -o script/exec.o -c script/exec.c
-	gcc $(cc_flags) -c data/mem_swp.c
+#	gcc $(cc_flags) -c data/mem_swp.c
 	gcc $(cc_flags) -c compiler.c
-	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) mem_swp.o script/exec.o parser.o gen.o lexer.o -nostdlib
+	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) script/exec.o parser.o gen.o lexer.o -nostdlib
 clean:
 	rm -f main
 	cd ../ && make clean && cd src

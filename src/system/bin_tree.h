@@ -1,7 +1,7 @@
 # ifndef __ffly__bin_tree__h
 # define __ffly__bin_tree__h
-# include <mdlint.h>
-# include "../types/err_t.h"
+# include "../ffint.h"
+# include "../types.h"
 struct ffly_bin_tree {
 	void *root;
 };
@@ -9,12 +9,12 @@ struct ffly_bin_tree {
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_bin_tree_init(struct ffly_bin_tree*);
-ffly_err_t ffly_bin_tree_insert(struct ffly_bin_tree*, mdl_u64_t, void*);
-ffly_err_t ffly_bin_tree_find(struct ffly_bin_tree*, mdl_u64_t, void**);
-ffly_err_t ffly_bin_tree_del(struct ffly_bin_tree*, mdl_u64_t);
-ffly_err_t ffly_bin_tree_erase(struct ffly_bin_tree*, mdl_u64_t);
-ffly_err_t ffly_bin_tree_de_init(struct ffly_bin_tree*);
+ff_err_t ffly_bin_tree_init(struct ffly_bin_tree*);
+ff_err_t ffly_bin_tree_insert(struct ffly_bin_tree*, ff_u64_t, void*);
+ff_err_t ffly_bin_tree_find(struct ffly_bin_tree*, ff_u64_t, void**);
+ff_err_t ffly_bin_tree_del(struct ffly_bin_tree*, ff_u64_t);
+ff_err_t ffly_bin_tree_erase(struct ffly_bin_tree*, ff_u64_t);
+ff_err_t ffly_bin_tree_de_init(struct ffly_bin_tree*);
 # ifdef __cplusplus
 }
 # include "../memory/mem_alloc.h"

@@ -1,6 +1,6 @@
 # ifndef __ffly__linux__signal__h
 # define __ffly__linux__signal__h
-# include <mdlint.h>
+# include "../ffint.h"
 # include "types.h"
 
 typedef void(*__sighandler_t)(int);
@@ -82,8 +82,8 @@ struct sigaction {
 	sigset_t sa_mask;
 };
 
-mdl_s32_t kill(__linux_pid_t, mdl_s32_t);
-mdl_s32_t rt_sigaction(mdl_s32_t, struct sigaction const*, struct sigaction*, mdl_u32_t);
+ff_s32_t kill(__linux_pid_t, ff_s32_t);
+ff_s32_t rt_sigaction(ff_s32_t, struct sigaction const*, struct sigaction*, ff_u32_t);
 #define SIGKILL	9
 #define SIGINT	2
 #define SIGCHLD	17

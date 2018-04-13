@@ -1,9 +1,7 @@
 # ifndef __ffly__io__h
 # define __ffly__io__h
-# include <mdlint.h>
-# include "../types/err_t.h"
-# include "../types/fd_t.h"
-# include "../types/size_t.h"
+# include "../ffint.h"
+# include "../types.h"
 # include "file.h"
 # ifdef __fflib
 # include "printf.h"
@@ -18,19 +16,19 @@ extern FF_FILE *ffly_out;
 extern FF_FILE *ffly_in;
 extern FF_FILE *ffly_log;
 extern  FF_FILE *ffly_err;
-ffly_err_t ffly_io_init();
+ff_err_t ffly_io_init();
 void ffly_io_closeup();
 # ifdef __fflib
 void putchar(char);
-void ppad(char, mdl_uint_t);
-mdl_uint_t ffly_rdline(void*, mdl_uint_t, FF_FILE*);
+void ppad(char, ff_uint_t);
+ff_uint_t ffly_rdline(void*, ff_uint_t, FF_FILE*);
 # else
 void ffly_fprintf(FF_FILE*, char const*, ...);
 void ffly_printf(char const*, ...);
 # endif
 /*
-ffly_size_t ffly_write(ffly_fd_t, void*, ffly_size_t, ffly_err_t*);
-ffly_size_t ffly_read(ffly_fd_t, void*, ffly_size_t, ffly_err_t*);
+ffly_size_t ffly_write(ffly_fd_t, void*, ffly_size_t, ff_err_t*);
+ffly_size_t ffly_read(ffly_fd_t, void*, ffly_size_t, ff_err_t*);
 */
 # ifdef __cplusplus
 }
@@ -42,8 +40,8 @@ namespace mdl {
 namespace firefly {
 namespace system {
 namespace io {
-static types::err_t(*fprintf)(FF_FILE*, char const*, ...) = &ffly_fprintf;
-static types::err_t(*printf)(char const*, ...) = &ffly_printf;
+static ff::err_t(*fprintf)(FF_FILE*, char const*, ...) = &ffly_fprintf;
+static ff::err_t(*printf)(char const*, ...) = &ffly_printf;
 struct _cout {
 	_cout& operator<<(char const *__s) {
 		printf(__s);

@@ -1,5 +1,6 @@
 # ifndef __ffly__linux__ipc__h
 # define __ffly__linux__ipc__h
+# include "../ffint.h"
 # include "types.h"
 
 #define IPC_CREAT 00001000
@@ -16,7 +17,7 @@ struct ipc_perm {
 	__linux_gid_t cuid;
 	__linux_uid_t cgid;
 	__linux_gid_t mode;
-	mdl_u16_t seq;
+	ff_u16_t seq;
 };
 
 # endif /*__ffly__linux__ipc__h*/

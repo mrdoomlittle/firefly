@@ -7,12 +7,12 @@
 # include "../memory/mem_free.h"
 # include "../memory/mem_realloc.h"
 # include "mutex.h"
-ffly_err_t ffly_buff_init(ffly_buffp __buff, mdl_uint_t __blk_c, ffly_size_t __blk_size) {
+ff_err_t ffly_buff_init(ffly_buffp __buff, ff_uint_t __blk_c, ff_size_t __blk_size) {
 	if ((__buff->p = __ffly_mem_alloc(__blk_c*__blk_size)) == NULL) {
 		ffly_fprintf(ffly_err, "buff: failed to allocate memory.\n");
 		return FFLY_FAILURE;
 	}
-	__buff->m = FFLY_MUTEX_INIT;
+	__buff->lock = FFLY_MUTEX_INIT;
 	__buff->off = 0;
 	__buff->blk_c = __blk_c;
 	__buff->rs_blk_c = __blk_c;
@@ -21,54 +21,54 @@ ffly_err_t ffly_buff_init(ffly_buffp __buff, mdl_uint_t __blk_c, ffly_size_t __b
 }
 
 void* ffly_buff_getp(ffly_buffp __buff) {
-	return (mdl_u8_t*)__buff->p+(__buff->off*__buff->blk_size);
+	return (ff_u8_t*)__buff->p+(__buff->off*__buff->blk_size);
 }
 
-void* ffly_buff_at(ffly_buffp __buff, mdl_uint_t __off) {
-	return (mdl_u8_t*)__buff->p+(__off*__buff->blk_size);
+void* ffly_buff_at(ffly_buffp __buff, ff_uint_t __off) {
+	return (ff_u8_t*)__buff->p+(__off*__buff->blk_size);
 }
 
-ffly_err_t ffly_buff_put(ffly_buffp __buff, void *__p) {
-	ffly_err_t err;
-	ffly_mutex_lock(&__buff->m);
-	if (_err(err = ffly_mem_cpy((mdl_u8_t*)__buff->p+(__buff->off*__buff->blk_size), __p, __buff->blk_size)))
+ff_err_t ffly_buff_put(ffly_buffp __buff, void *__p) {
+	ff_err_t err;
+	ffly_mutex_lock(&__buff->lock);
+	if (_err(err = ffly_mem_cpy((ff_u8_t*)__buff->p+(__buff->off*__buff->blk_size), __p, __buff->blk_size)))
 		ffly_fprintf(ffly_err, "buff: failed to copy blk.\n");
-	ffly_mutex_unlock(&__buff->m);
+	ffly_mutex_unlock(&__buff->lock);
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_buff_get(ffly_buffp __buff, void *__p) {
-	ffly_err_t err;
-	ffly_mutex_lock(&__buff->m);
-	if (_err(err = ffly_mem_cpy(__p, (mdl_u8_t*)__buff->p+(__buff->off*__buff->blk_size), __buff->blk_size)))
+ff_err_t ffly_buff_get(ffly_buffp __buff, void *__p) {
+	ff_err_t err;
+	ffly_mutex_lock(&__buff->lock);
+	if (_err(err = ffly_mem_cpy(__p, (ff_u8_t*)__buff->p+(__buff->off*__buff->blk_size), __buff->blk_size)))
 		ffly_fprintf(ffly_err, "buff: failed to copy blk.\n");
-	ffly_mutex_unlock(&__buff->m);
+	ffly_mutex_unlock(&__buff->lock);
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_buff_incr(ffly_buffp __buff) {
-	ffly_err_t err = FFLY_SUCCESS;
-	ffly_mutex_lock(&__buff->m);
+ff_err_t ffly_buff_incr(ffly_buffp __buff) {
+	ff_err_t err = FFLY_SUCCESS;
+	ffly_mutex_lock(&__buff->lock);
 	if (__buff->off == __buff->blk_c-1) {
 		ffly_fprintf(ffly_err, "buff: can't incrment any further.\n");
 		err = FFLY_FAILURE;
 	} else __buff->off++;
-	ffly_mutex_unlock(&__buff->m);
+	ffly_mutex_unlock(&__buff->lock);
 	return err;
 }
 
-ffly_err_t ffly_buff_decr(ffly_buffp __buff) {
-	ffly_err_t err = FFLY_SUCCESS;
-	ffly_mutex_lock(&__buff->m);
+ff_err_t ffly_buff_decr(ffly_buffp __buff) {
+	ff_err_t err = FFLY_SUCCESS;
+	ffly_mutex_lock(&__buff->lock);
 	if (!__buff->off) {
 		ffly_fprintf(ffly_err, "buff: can't de-incrment any further.\n");
 		err =  FFLY_FAILURE;
 	} else __buff->off--;
-	ffly_mutex_unlock(&__buff->m);
+	ffly_mutex_unlock(&__buff->lock);
 	return err;
 }
 
-ffly_err_t ffly_buff_resize(ffly_buffp __buff, mdl_uint_t __blk_c) {
+ff_err_t ffly_buff_resize(ffly_buffp __buff, ff_uint_t __blk_c) {
 	if ((__buff->p = __ffly_mem_realloc(__buff->p, (__buff->blk_c = __blk_c)*__buff->blk_size)) == NULL) {
 		ffly_fprintf(ffly_err, "buff: failed to realloc memory.\n");
 		return FFLY_FAILURE;
@@ -76,8 +76,8 @@ ffly_err_t ffly_buff_resize(ffly_buffp __buff, mdl_uint_t __blk_c) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_buff_reset(ffly_buffp __buff) {
-	ffly_err_t err;
+ff_err_t ffly_buff_reset(ffly_buffp __buff) {
+	ff_err_t err;
 	__buff->off = 0;
 	if (_err(err = ffly_buff_resize(__buff, __buff->rs_blk_c))) {
 		ffly_fprintf(ffly_err, "buff: failed to resize.\n");
@@ -86,8 +86,8 @@ ffly_err_t ffly_buff_reset(ffly_buffp __buff) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_buff_de_init(ffly_buffp __buff) {
-	ffly_err_t err;
+ff_err_t ffly_buff_de_init(ffly_buffp __buff) {
+	ff_err_t err;
 	if (_err(err = __ffly_mem_free(__buff->p))) {
 		ffly_fprintf(ffly_err, "buff: failed to free.\n");
 		return err;

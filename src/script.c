@@ -40,12 +40,12 @@ ldkeywds(struct ffly_script *__script) {
 	}
 }
 
-ffly_err_t ffly_script_ld(struct ffly_script *__script, char const *__file) {
+ff_err_t ffly_script_ld(struct ffly_script *__script, char const *__file) {
 	ffly_compiler_ld(&__script->c_ctx, __file);
 }
 
-ffly_err_t ffly_script_prepare(struct ffly_script *__script) {
-	ffly_err_t ret = ffly_compiler_prepare(&__script->c_ctx);
+ff_err_t ffly_script_prepare(struct ffly_script *__script) {
+	ff_err_t ret = ffly_compiler_prepare(&__script->c_ctx);
 	ldkeywds(__script);
 	return ret;
 }
@@ -56,7 +56,7 @@ void* ffscript_call(ffscriptp __script, void *__func) {
 	retnull;
 }
 
-ffly_err_t ffscript_free(ffscriptp __script) {
+ff_err_t ffscript_free(ffscriptp __script) {
 	struct obj *_obj = (struct obj*)__script->top, *prev = NULL;
 	while(!null(_obj)) {
 		if (!null(prev))
@@ -71,30 +71,30 @@ ffly_err_t ffscript_free(ffscriptp __script) {
 	retok;
 }
 
-ffly_err_t ffscript_init(ffscriptp __script, mdl_uint_t __stack_size) {
-	__script->stack = (ffly_byte_t*)__ffly_mem_alloc(__stack_size);
+ff_err_t ffscript_init(ffscriptp __script, ff_uint_t __stack_size) {
+	__script->stack = (ff_byte_t*)__ffly_mem_alloc(__stack_size);
 	__script->fresh = __script->stack;
 	retok;
 }
 			
-ffly_err_t ffly_script_build(struct ffly_script *__script, void **__top, ffly_byte_t **__stack) {
+ff_err_t ffly_script_build(struct ffly_script *__script, void **__top, ff_byte_t **__stack) {
 	ffly_compiler_build(&__script->c_ctx, __top, __stack);
 }
 
-ffly_err_t ffly_script_free(struct ffly_script *__script) {
+ff_err_t ffly_script_free(struct ffly_script *__script) {
 	ffly_compiler_free(&__script->c_ctx);
 }
 
 /*
-ffly_err_t ffly_script_save_bin(struct ffly_compiler *__compiler, char *__file) {
+ff_err_t ffly_script_save_bin(struct ffly_compiler *__compiler, char *__file) {
 
-	ffly_err_t err;
+	ff_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_WRONLY|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err);
-	ffly_fseek(f, sizeof(mdl_u32_t), FF_SEEK_SET);
-	mdl_u32_t top = ffly_fseek(f, 0, FF_SEEK_CUR);
-	mdl_u32_t off = top;
+	ffly_fseek(f, sizeof(ff_u32_t), FF_SEEK_SET);
+	ff_u32_t top = ffly_fseek(f, 0, FF_SEEK_CUR);
+	ff_u32_t off = top;
 
-	mdl_u32_t prev;
+	ff_u32_t prev;
 	struct obj *_obj = (struct obj*)__compiler->top;
 	struct obj o;
 	while(_obj != NULL) {
@@ -112,11 +112,11 @@ ffly_err_t ffly_script_save_bin(struct ffly_compiler *__compiler, char *__file) 
 			if (_obj->p != NULL) {
 				o.p = (void*)off;
 				ffly_fwrite(f, _obj->p, _obj->_type->size);
-				ffly_printf("data: %u\n", *(mdl_u16_t*)_obj->p);
+				ffly_printf("data: %u\n", *(ff_u16_t*)_obj->p);
 				off+= _obj->_type->size;
 			}
 
-			ffly_printf("types, off: %u\n", (mdl_u32_t)o._type);
+			ffly_printf("types, off: %u\n", (ff_u32_t)o._type);
 		}
 
 		if (_obj->to != NULL) {
@@ -159,23 +159,23 @@ ffly_err_t ffly_script_save_bin(struct ffly_compiler *__compiler, char *__file) 
 	}
 
 	ffly_fseek(f, 0, FF_SEEK_SET);
-	ffly_fwrite(f, &top, sizeof(mdl_u32_t));
+	ffly_fwrite(f, &top, sizeof(ff_u32_t));
 	ffly_fclose(f);
 
 	return FFLY_SUCCESS;
 }
 
 # include "system/bin_tree.h"
-ffly_err_t ffly_script_ld_bin(struct ffly_compiler *__compiler, char *__file) {
+ff_err_t ffly_script_ld_bin(struct ffly_compiler *__compiler, char *__file) {
 
-	ffly_err_t err;
+	ff_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
 	struct ffly_bin_tree objs;
 
 	ffly_bin_tree_init(&objs);
 
-	mdl_u32_t off;
-	ffly_fread(f, &off, sizeof(mdl_u32_t));
+	ff_u32_t off;
+	ffly_fread(f, &off, sizeof(ff_u32_t));
 	struct obj *_obj, *prev = NULL;
 	struct obj *top = NULL;
 
@@ -188,43 +188,43 @@ ffly_err_t ffly_script_ld_bin(struct ffly_compiler *__compiler, char *__file) {
 	ffly_fread(f, _obj, sizeof(struct obj));
 	ffly_bin_tree_insert(&objs, off, _obj);
 	if (_obj->_type != NULL) {
-		ffly_fseek(f, (mdl_u32_t)_obj->_type, FF_SEEK_SET);
+		ffly_fseek(f, (ff_u32_t)_obj->_type, FF_SEEK_SET);
 		_obj->_type = (struct obj*)__ffly_mem_alloc(sizeof(struct type));
 		ffly_fread(f, _obj->_type, sizeof(struct type));
 	
 		ffly_printf("---> size: %u\n", _obj->_type->size);
 		if (_obj->p != NULL) {
-			ffly_fseek(f, (mdl_u32_t)_obj->p, FF_SEEK_SET);
+			ffly_fseek(f, (ff_u32_t)_obj->p, FF_SEEK_SET);
 			if (_obj->_type->size < 100) { // in case 
 				_obj->p = __ffly_mem_alloc(_obj->_type->size);
 				ffly_fread(f, _obj->p, _obj->_type->size);
 			}
-			ffly_printf("data: %u\n", *(mdl_u16_t*)_obj->p);
+			ffly_printf("data: %u\n", *(ff_u16_t*)_obj->p);
 		}
 	}
 
 	if (_obj->to != NULL)
-		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->to, (void**)&_obj->to);
+		ffly_bin_tree_find(&objs, (ff_u32_t)_obj->to, (void**)&_obj->to);
 	if (_obj->from != NULL)
-		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->from, (void**)&_obj->from);
+		ffly_bin_tree_find(&objs, (ff_u32_t)_obj->from, (void**)&_obj->from);
 	if (_obj->val != NULL)
-		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->val, (void**)&_obj->val); 
+		ffly_bin_tree_find(&objs, (ff_u32_t)_obj->val, (void**)&_obj->val); 
 	if (_obj->l != NULL)
-		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->l, (void**)&_obj->l);
+		ffly_bin_tree_find(&objs, (ff_u32_t)_obj->l, (void**)&_obj->l);
 	if (_obj->r != NULL)
-		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->r, (void**)&_obj->r);
+		ffly_bin_tree_find(&objs, (ff_u32_t)_obj->r, (void**)&_obj->r);
 	
 	if (_obj->opcode == _op_jump || _obj->opcode == _op_cond_jump) {
 		struct obj **p = (struct obj**)__ffly_mem_alloc(sizeof(struct obj*));
 		if (_obj->jmp != NULL) {
-			ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->jmp, (void**)p);
+			ffly_bin_tree_find(&objs, (ff_u32_t)_obj->jmp, (void**)p);
 		} else
 			*p = NULL;
 		_obj->jmp = p;
 	}
 
 	if (_obj->flags != NULL)
-		ffly_bin_tree_find(&objs, (mdl_u32_t)_obj->flags, (void**)&_obj->flags);
+		ffly_bin_tree_find(&objs, (ff_u32_t)_obj->flags, (void**)&_obj->flags);
 
 	pr_obj(_obj);
 	if (prev != NULL)
@@ -232,7 +232,7 @@ ffly_err_t ffly_script_ld_bin(struct ffly_compiler *__compiler, char *__file) {
 	prev = _obj;
 
 	if (_obj->next != NULL) {
-		off = (mdl_u32_t)_obj->next;
+		off = (ff_u32_t)_obj->next;
 		goto _next;
 	}
 	_obj->next = NULL;
@@ -246,7 +246,7 @@ ffly_err_t ffly_script_ld_bin(struct ffly_compiler *__compiler, char *__file) {
 //# define LOAD
 */
 
-ffly_err_t ffmain(int __argc, char const **__argv) {
+ff_err_t ffmain(int __argc, char const **__argv) {
 	char const *file;
 	if (__argc < 2) {
 		ffly_printf("you can provide a file you know?\n");

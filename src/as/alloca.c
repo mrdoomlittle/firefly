@@ -32,8 +32,8 @@ void _cleanup() {
 		free(top);
 }
 
-void* _alloca(mdl_uint_t __size) {
-	mdl_u8_t *p = (mdl_u8_t*)malloc(hdrsize+__size);
+void* _alloca(ff_uint_t __size) {
+	ff_u8_t *p = (ff_u8_t*)malloc(hdrsize+__size);
 	hdrp hdr = (hdrp)p;
 
 	if (top != NULL)

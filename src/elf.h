@@ -1,6 +1,6 @@
 # ifndef __ffly__elf__h
 # define __ffly__elf__h
-# include <mdlint.h>
+# include "ffint.h"
 
 # define EI_MAG0 0
 # define EI_MAG1 1 
@@ -36,31 +36,31 @@
 # define EM_X86_64 62
 typedef struct elf64_hdr {
 	char unsigned ident[EI_NIDENT];
-	mdl_u16_t type;
-	mdl_u16_t machine;
-	mdl_u32_t version;
-	mdl_u64_t entry;
-	mdl_u64_t ph_off;
-	mdl_u64_t sh_off;
-	mdl_u32_t flags;
-	mdl_u16_t hdr_size;
-	mdl_u16_t phtesize;
-	mdl_u16_t phtec;
-	mdl_u16_t shtesize;
-	mdl_u16_t shtec;
-	mdl_u16_t shstdx;
+	ff_u16_t type;
+	ff_u16_t machine;
+	ff_u32_t version;
+	ff_u64_t entry;
+	ff_u64_t ph_off;
+	ff_u64_t sh_off;
+	ff_u32_t flags;
+	ff_u16_t hdr_size;
+	ff_u16_t phtesize;
+	ff_u16_t phtec;
+	ff_u16_t shtesize;
+	ff_u16_t shtec;
+	ff_u16_t shstdx;
 } *elf64_hdrp;
 
 # define STV_DEFAULT 0
 # define STB_GLOBAL 1
 
 typedef struct elf64_sym {
-	mdl_u32_t name;
-	mdl_u8_t info;
-	mdl_u8_t other;
-	mdl_u16_t sdx;
-	mdl_u64_t val;
-	mdl_u64_t size;
+	ff_u32_t name;
+	ff_u8_t info;
+	ff_u8_t other;
+	ff_u16_t sdx;
+	ff_u64_t val;
+	ff_u64_t size;
 } *elf64_symp;
 
 # define SHT_NULL 0
@@ -69,16 +69,16 @@ typedef struct elf64_sym {
 # define SHF_EXECINSTR 0x4
 
 typedef struct elf64_shdr {
-	mdl_u32_t name;
-	mdl_u32_t type;
-	mdl_u64_t flags;
-	mdl_u64_t addr;
-	mdl_u64_t offset;
-	mdl_u64_t size;
-	mdl_u32_t link;
-	mdl_u32_t info;
-	mdl_u64_t addralign;
-	mdl_u64_t entsize;
+	ff_u32_t name;
+	ff_u32_t type;
+	ff_u64_t flags;
+	ff_u64_t addr;
+	ff_u64_t offset;
+	ff_u64_t size;
+	ff_u32_t link;
+	ff_u32_t info;
+	ff_u64_t addralign;
+	ff_u64_t entsize;
 } *elf64_shdrp;
 
 typedef struct elf64_syminfo {

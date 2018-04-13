@@ -4,9 +4,8 @@
 # include "../linux/unistd.h"
 # include "../linux/stat.h"
 # include "../malloc.h"
-# include "../types/err_t.h"
 # include "../stdio.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	if(__argc<2) {
 		fprintf(stderr, "please provide file.\n");
 		return -1;

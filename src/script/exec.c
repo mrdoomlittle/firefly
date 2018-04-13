@@ -11,7 +11,7 @@
 # include "../dep/bcopy.h"
 
 char const static* 
-opst(mdl_u8_t __op) {
+opst(ff_u8_t __op) {
 	switch(__op) {
 		case _op_fresh_: return "fresh";
         case _op_free_: return "free";
@@ -48,29 +48,29 @@ op_copy(ffscriptp __script, struct obj *__obj) {
 
 void static 
 op_compare(ffscriptp __script, struct obj *__obj) {
-    mdl_u8_t l[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    mdl_u8_t r[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    ff_u8_t l[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    ff_u8_t r[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     ffly_mem_cpy(l, (*__obj->l)->p, (*__obj->l)->size);
     ffly_mem_cpy(r, (*__obj->r)->p, (*__obj->r)->size);
-    mdl_u8_t *flags = (mdl_u8_t*)__obj->flags->p;
+    ff_u8_t *flags = (ff_u8_t*)__obj->flags->p;
     *flags = 0x0;
     switch((*__obj->l)->_type) {
         case _64l_u: case _32l_u: case _16l_u: case _8l_u:
-            if (*(mdl_u64_t*)l == *(mdl_u64_t*)r) *flags |= _flg_eq; else *flags |= _flg_neq;
-            if (*(mdl_u64_t*)l > *(mdl_u64_t*)r) *flags |= _flg_gt;
-            if (*(mdl_u64_t*)l < *(mdl_u64_t*)r) *flags |= _flg_lt;
+            if (*(ff_u64_t*)l == *(ff_u64_t*)r) *flags |= _flg_eq; else *flags |= _flg_neq;
+            if (*(ff_u64_t*)l > *(ff_u64_t*)r) *flags |= _flg_gt;
+            if (*(ff_u64_t*)l < *(ff_u64_t*)r) *flags |= _flg_lt;
         break;
         case _64l_s: case _32l_s: case _16l_s: case _8l_s:
-            if (*(mdl_u64_t*)l > (1<<((*__obj->l)->size*8))>>1) {
-                *(mdl_u64_t*)l |= (~(mdl_u64_t)0)>>((*__obj->l)->size*8);
+            if (*(ff_u64_t*)l > (1<<((*__obj->l)->size*8))>>1) {
+                *(ff_u64_t*)l |= (~(ff_u64_t)0)>>((*__obj->l)->size*8);
             }
-            if (*(mdl_u64_t*)r > (1<<((*__obj->r)->size*8))>>1) {
-                *(mdl_u64_t*)r |= (~(mdl_u64_t)0)>>((*__obj->r)->size*8);
+            if (*(ff_u64_t*)r > (1<<((*__obj->r)->size*8))>>1) {
+                *(ff_u64_t*)r |= (~(ff_u64_t)0)>>((*__obj->r)->size*8);
             }
 
-            if (*(mdl_i64_t*)l == *(mdl_i64_t*)r) *flags |= _flg_eq; else *flags |= _flg_neq;
-            if (*(mdl_i64_t*)l > *(mdl_i64_t*)r) *flags |= _flg_gt;
-            if (*(mdl_i64_t*)l < *(mdl_i64_t*)r) *flags |= _flg_lt;
+            if (*(ff_i64_t*)l == *(ff_i64_t*)r) *flags |= _flg_eq; else *flags |= _flg_neq;
+            if (*(ff_i64_t*)l > *(ff_i64_t*)r) *flags |= _flg_gt;
+            if (*(ff_i64_t*)l < *(ff_i64_t*)r) *flags |= _flg_lt;
         break;
     }
 }
@@ -86,7 +86,7 @@ op_jump(ffscriptp __script, struct obj *__objp) {
 void static 
 op_cond_jump(ffscriptp __script, struct obj *__objp) {
     struct obj *_obj = *(struct obj**)__objp;
-    if (((*(mdl_u8_t*)_obj->flags->p)&_obj->cond)>0)
+    if (((*(ff_u8_t*)_obj->flags->p)&_obj->cond)>0)
         op_jump(__script, __objp);
 }
 // debug
@@ -98,28 +98,28 @@ op_print(ffscriptp __script, struct obj *__obj) {
             ffly_printf("%lf\n", *(double*)p);
         break;
 		case _64l_u:
-			ffly_printf("%lu\n", *(mdl_u64_t*)p);
+			ffly_printf("%lu\n", *(ff_u64_t*)p);
 		break;
 		case _64l_s:
-			ffly_printf("%ld\n", *(mdl_i64_t*)p);
+			ffly_printf("%ld\n", *(ff_i64_t*)p);
 		break;
 		case _32l_u:
-			ffly_printf("%u\n", *(mdl_u32_t*)p);
+			ffly_printf("%u\n", *(ff_u32_t*)p);
 		break;
 		case _32l_s:
-			ffly_printf("%d\n", *(mdl_i32_t*)p);
+			ffly_printf("%d\n", *(ff_i32_t*)p);
 		break;
 		case _16l_u:
-			ffly_printf("%u\n", *(mdl_u16_t*)p);
+			ffly_printf("%u\n", *(ff_u16_t*)p);
 		break;
 		case _16l_s:
-			ffly_printf("%d\n", *(mdl_i16_t*)p);
+			ffly_printf("%d\n", *(ff_i16_t*)p);
 		break;
 		case _8l_u:
-			ffly_printf("%u\n", *(mdl_u8_t*)p);
+			ffly_printf("%u\n", *(ff_u8_t*)p);
 		break;
 		case _8l_s:
-			ffly_printf("%d\n", *(mdl_i8_t*)p);
+			ffly_printf("%d\n", *(ff_i8_t*)p);
 		break;
         default:
             ffly_printf("unknown type.\n");
@@ -148,18 +148,18 @@ op_pop(ffscriptp __script, struct obj *__obj) {
 
 void static 
 op_incr(ffscriptp __script, struct obj *__obj) {
-    mdl_u8_t val[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    mdl_u8_t size = (*__obj->val)->size;
+    ff_u8_t val[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    ff_u8_t size = (*__obj->val)->size;
     ffly_mem_cpy(val, (*__obj->val)->p, size);
 
-    mdl_u8_t type = (*__obj->val)->_type;
+    ff_u8_t type = (*__obj->val)->_type;
     if (type >= _64l_u && type <= _8l_u) {
-        (*(mdl_u64_t*)val)++;
+        (*(ff_u64_t*)val)++;
     } else if (type >= _64l_s && type <= _8l_s) {
-        if (*(mdl_u64_t*)val > ((mdl_u64_t)1<<(size*8))>>1)
-            *(mdl_i64_t*)val = ((mdl_i64_t)((*(mdl_u64_t*)val)|((~(mdl_u64_t)0)<<((*__obj->val)->size*8))))+1;
+        if (*(ff_u64_t*)val > ((ff_u64_t)1<<(size*8))>>1)
+            *(ff_i64_t*)val = ((ff_i64_t)((*(ff_u64_t*)val)|((~(ff_u64_t)0)<<((*__obj->val)->size*8))))+1;
         else
-            (*(mdl_u64_t*)val)++;
+            (*(ff_u64_t*)val)++;
     }
 
     ffly_mem_cpy((*__obj->val)->p, val, (*__obj->val)->size);
@@ -177,20 +177,20 @@ op_free(ffscriptp __script, struct obj *__obj) {
 
 void static 
 nanosleep(struct obj ***__params) {
-    mdl_u64_t sec = *(mdl_u64_t*)(**(__params++))->p;
-    mdl_u64_t nsec = *(mdl_u64_t*)(**__params)->p;
+    ff_u64_t sec = *(ff_u64_t*)(**(__params++))->p;
+    ff_u64_t nsec = *(ff_u64_t*)(**__params)->p;
     ffly_nanosleep(sec, nsec);
 }
 
 void static
 mutex_lock(struct obj ***__params) {
-    ffly_mutex_t *mutex = (ffly_mutex_t*)(*((struct obj**)(**__params)->p))->p;
+    ff_mlock_t *mutex = (ff_mlock_t*)(*((struct obj**)(**__params)->p))->p;
     ffly_mutex_lock(mutex);
 }
 
 void static 
 mutex_unlock(struct obj ***__params) {
-    ffly_mutex_t *mutex = (ffly_mutex_t*)(*((struct obj**)(**__params)->p))->p;
+    ff_mlock_t *mutex = (ff_mlock_t*)(*((struct obj**)(**__params)->p))->p;
     ffly_mutex_unlock(mutex);
 }
 
@@ -201,9 +201,9 @@ static ffly_buffp *next_buff = free_buffs;
 
 void static 
 creat_buff(struct obj ***__params) {
-    mdl_uint_t *id = (mdl_uint_t*)(*((struct obj**)(**(__params++))->p))->p;
-    mdl_uint_t size = *(mdl_uint_t*)(**(__params++))->p;
-    mdl_uint_t blk_size = *(mdl_uint_t*)(**__params)->p;
+    ff_uint_t *id = (ff_uint_t*)(*((struct obj**)(**(__params++))->p))->p;
+    ff_uint_t size = *(ff_uint_t*)(**(__params++))->p;
+    ff_uint_t blk_size = *(ff_uint_t*)(**__params)->p;
 
     ffly_buffp buff = fresh_buff++;
     *id = buff-buffers;
@@ -212,40 +212,40 @@ creat_buff(struct obj ***__params) {
 
 void static 
 del_buff(struct obj ***__params) {
-    mdl_uint_t id = *(mdl_uint_t*)(**__params)->p;    
+    ff_uint_t id = *(ff_uint_t*)(**__params)->p;    
     ffly_buff_de_init(buffers+id);
 }
 
 void static 
 buff_incr(struct obj ***__params) {
-    mdl_uint_t id = *(mdl_uint_t*)(**__params)->p;
+    ff_uint_t id = *(ff_uint_t*)(**__params)->p;
     ffly_buff_incr(buffers+id);
 }
 
 void static 
 buff_decr(struct obj ***__params) {
-    mdl_uint_t id = *(mdl_uint_t*)(**__params)->p;
+    ff_uint_t id = *(ff_uint_t*)(**__params)->p;
     ffly_buff_decr(buffers+id);
 }
 
 void static 
 buff_off(struct obj ***__params) {
-    mdl_uint_t id = *(mdl_uint_t*)(**(__params++))->p;
-    mdl_uint_t *off = (mdl_uint_t*)(*((struct obj**)(**__params)->p))->p;
+    ff_uint_t id = *(ff_uint_t*)(**(__params++))->p;
+    ff_uint_t *off = (ff_uint_t*)(*((struct obj**)(**__params)->p))->p;
     *off = ffly_buff_off(buffers+id);
 }
 
 void static 
 buff_resize(struct obj ***__params) {
-    mdl_uint_t id = *(mdl_uint_t*)(**(__params++))->p;
-    mdl_uint_t size = *(mdl_uint_t*)(**__params)->p;
+    ff_uint_t id = *(ff_uint_t*)(**(__params++))->p;
+    ff_uint_t size = *(ff_uint_t*)(**__params)->p;
     ffly_buff_resize(buffers+id, size);
 }
 
 void static 
 buff_size(struct obj ***__params) {
-    mdl_uint_t id = *(mdl_uint_t*)(**(__params++))->p;
-    mdl_uint_t *size = (mdl_uint_t*)(*((struct obj**)(**__params)->p))->p;
+    ff_uint_t id = *(ff_uint_t*)(**(__params++))->p;
+    ff_uint_t *size = (ff_uint_t*)(*((struct obj**)(**__params)->p))->p;
     *size = ffly_buff_size(buffers+id);
 }
 
@@ -264,17 +264,17 @@ void static(*call[])(struct obj***) = {
 
 void static 
 op_call(ffscriptp __script, struct obj *__obj) {
-    mdl_u8_t no = *(mdl_u8_t*)(*__obj->no)->p;
+    ff_u8_t no = *(ff_u8_t*)(*__obj->no)->p;
     ffly_printf("called no %u\n", no);
     if (!no && __script->call != NULL) { // self
         void *params[12];
-        mdl_uint_t i = 0;
+        ff_uint_t i = 0;
         while(__obj->params[1+i] != NULL) {
             params[i] = (*(__obj->params[1+i]))->p;
             i++;
         }
         params[i] = NULL;
-        __script->call(*(mdl_u8_t*)(**__obj->params)->p, __script->arg_p, params);
+        __script->call(*(ff_u8_t*)(**__obj->params)->p, __script->arg_p, params);
         return;
     }
 
@@ -291,7 +291,7 @@ op_frame(ffscriptp __script, struct obj *__obj) {
 
 void static
 op_free_frame(ffscriptp __script, struct obj *__obj) {
-    __script->fresh = (ffly_byte_t*)__obj->frame->p;
+    __script->fresh = (ff_byte_t*)__obj->frame->p;
 }
 
 void static
@@ -300,7 +300,7 @@ op_conv(ffscriptp __script, struct obj *__obj) {
     struct obj *src = *__obj->src;
     if ((src->_type >= _64l_u && src->_type <= _8l_u)
         && (dst->_type >= _64l_u && dst->_type <= _8l_u)) {
-        mdl_u64_t tmp = 0;
+        ff_u64_t tmp = 0;
         ffly_bcopy(&tmp, src->p, src->size);
         ffly_bcopy(dst->p, &tmp, dst->size);
     }
@@ -363,7 +363,7 @@ static void(*op[])(ffscriptp, struct obj*) = {
     &op_div
 };
 
-ffly_err_t ffscript_exec(ffscriptp __script, void*(*__call)(mdl_u8_t, void*, void**), void *__arg_p, void *__entry, void *__end) {
+ff_err_t ffscript_exec(ffscriptp __script, void*(*__call)(ff_u8_t, void*, void**), void *__arg_p, void *__entry, void *__end) {
     __script->call = __call;
     __script->arg_p = __arg_p;
 	struct obj *_obj = (struct obj*)(!__entry?__script->top:__entry);
@@ -374,7 +374,7 @@ ffly_err_t ffscript_exec(ffscriptp __script, void*(*__call)(mdl_u8_t, void*, voi
 			break;
 		}
 		if (_obj->opno >= _op_fresh_ && _obj->opno <= _op_div_) {
-            mdl_u8_t isjmp = (_obj->opno == _op_jump_ || _obj->opno == _op_cond_jump_);
+            ff_u8_t isjmp = (_obj->opno == _op_jump_ || _obj->opno == _op_cond_jump_);
             if (!isjmp)
 			    op[_obj->opno](__script, _obj);
             else {

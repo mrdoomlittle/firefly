@@ -3,17 +3,16 @@
 # include "../net.h"
 # include "../inet.h"
 # include "../dep/bzero.h"
-# include "../types/err_t.h"
 # include "../memory/mem_free.h"
 # include "../system/err.h"
 # include "../system/io.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	if (__argc<2) {
 		ffly_printf("please provide file.\n");
 		retok;
 	}
 
-	ffly_err_t err;
+	ff_err_t err;
 	FF_SOCKET *sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
 	if (_err(err)) {
 		ffly_fprintf(ffly_err, "failed to crate socket.\n");
@@ -39,7 +38,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		goto _end;
 	}
 
-	ffly_err_t fault;
+	ff_err_t fault;
 	if (_err(err = ffly_mtp_rcverr(&fault, sock))) {
 		ffly_fprintf(ffly_err, "failed to recv error.\n");
 		goto _end;
@@ -50,7 +49,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		goto _end;
 	}
 
-	mdl_uint_t size;
+	ff_uint_t size;
 	void *p;
 
 	p = ffly_mtp_rcv(sock, &size, &err);

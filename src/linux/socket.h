@@ -1,8 +1,9 @@
 # ifndef __ffly__linux__socket__h
 # define __ffly__linux__socket__h
+# include "../ffint.h"
 # include "types.h"
 # include "../types/socket.h"
-# include <mdlint.h>
+
 struct sockaddr {
 	__linux_sa_family_t sa_family;
 	char sa_data[14];
@@ -165,16 +166,16 @@ struct sockaddr {
 #define SHUT_RD 0
 #define SHUT_WR 1
 #define SHUT_RDWR 2
-mdl_s32_t shutdown(mdl_u32_t, mdl_u32_t);
-mdl_s32_t connect(mdl_u32_t, struct sockaddr*, sockl_t);
-mdl_s32_t socket(mdl_u32_t, mdl_u32_t, mdl_u32_t);
-mdl_s32_t bind(mdl_u32_t, struct sockaddr*, sockl_t);
-mdl_s32_t accept(mdl_u32_t, struct sockaddr*, sockl_t*);
-mdl_s32_t listen(mdl_u32_t, mdl_u32_t);
-mdl_s32_t sendto(mdl_u32_t, void*, mdl_u32_t, mdl_u32_t, struct sockaddr*, sockl_t);
-mdl_s32_t recvfrom(mdl_u32_t, void*, mdl_u32_t, mdl_u32_t, struct sockaddr*, sockl_t*);
-mdl_s32_t send(mdl_u32_t, void*, mdl_u32_t, mdl_u32_t);
-mdl_s32_t recv(mdl_u32_t, void*, mdl_u32_t, mdl_u32_t);
-mdl_s32_t setsockopt(mdl_u32_t, mdl_u32_t, mdl_u32_t, void*, mdl_u32_t);
-mdl_s32_t getsockopt(mdl_u32_t, mdl_u32_t, mdl_u32_t, void*, mdl_u32_t*);
+ff_s32_t shutdown(ff_u32_t, ff_u32_t);
+ff_s32_t connect(ff_u32_t, struct sockaddr*, sockl_t);
+ff_s32_t socket(ff_u32_t, ff_u32_t, ff_u32_t);
+ff_s32_t bind(ff_u32_t, struct sockaddr*, sockl_t);
+ff_s32_t accept(ff_u32_t, struct sockaddr*, sockl_t*);
+ff_s32_t listen(ff_u32_t, ff_u32_t);
+ff_s32_t sendto(ff_u32_t, void*, ff_u32_t, ff_u32_t, struct sockaddr*, sockl_t);
+ff_s32_t recvfrom(ff_u32_t, void*, ff_u32_t, ff_u32_t, struct sockaddr*, sockl_t*);
+ff_s32_t send(ff_u32_t, void*, ff_u32_t, ff_u32_t);
+ff_s32_t recv(ff_u32_t, void*, ff_u32_t, ff_u32_t);
+ff_s32_t setsockopt(ff_u32_t, ff_u32_t, ff_u32_t, void*, ff_u32_t);
+ff_s32_t getsockopt(ff_u32_t, ff_u32_t, ff_u32_t, void*, ff_u32_t*);
 # endif /*__ffly__linux__socket__h*/

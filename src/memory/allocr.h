@@ -1,8 +1,7 @@
 # ifndef __ffly__allocr__h
 # define __ffly__allocr__h
-# include <mdlint.h>
-# include "../types/err_t.h"
-
+# include "../ffint.h"
+# include "../types.h"
 typedef void const* ffly_potp;
 
 enum {
@@ -11,17 +10,17 @@ enum {
 	_ar_getpot
 };
 
-ffly_err_t ffly_ar_init();
-ffly_err_t ffly_ar_cleanup();
-void ffly_arctl(mdl_u8_t, mdl_u64_t);
+ff_err_t ffly_ar_init();
+ff_err_t ffly_ar_cleanup();
+void ffly_arctl(ff_u8_t, ff_u64_t);
 
 void ffly_arstat();
-void* ffly_alloc(mdl_uint_t);
+void* ffly_alloc(ff_uint_t);
 void ffly_free(void*);
-void* ffly_realloc(void*, mdl_uint_t);
+void* ffly_realloc(void*, ff_uint_t);
 /*should only be used for trimming small amount off*/
-void* ffly_arsh(void*, mdl_uint_t);
-void* ffly_argr(void*, mdl_uint_t);
+void* ffly_arsh(void*, ff_uint_t);
+void* ffly_argr(void*, ff_uint_t);
 void ffly_arbl(void*);
 void ffly_araxe();
 # endif /*__ffly__allocr__h*/

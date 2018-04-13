@@ -1,6 +1,5 @@
 # include "io.h"
 # include <stdarg.h>
-# include <mdlint.h>
 # include "mutex.h"
 # include "errno.h"
 # ifdef __fflib
@@ -8,7 +7,6 @@
 # else
 # include <unistd.h>
 # endif
-# include "../types/size_t.h"
 FF_FILE *ffly_out = NULL;
 FF_FILE *ffly_log = NULL;
 FF_FILE *ffly_err = NULL;
@@ -21,13 +19,13 @@ void putchar(char __c) {
 /*
 	shoud print in chunks and not single bytes.
 */
-void ppad(char __c, mdl_uint_t __n) {
+void ppad(char __c, ff_uint_t __n) {
 	while(__n-->0) putchar(__c);
 }
 
-mdl_uint_t ffly_rdline(void *__buf, mdl_uint_t __size, FF_FILE *__file) {
-    mdl_u8_t *p = (mdl_u8_t*)__buf;
-    while((p-(mdl_u8_t*)__buf)<__size) {
+ff_uint_t ffly_rdline(void *__buf, ff_uint_t __size, FF_FILE *__file) {
+    ff_u8_t *p = (ff_u8_t*)__buf;
+    while((p-(ff_u8_t*)__buf)<__size) {
 
         char c;
         if (read(__file->fd, &c, 1) <= 0) continue;
@@ -43,7 +41,7 @@ ffly_fd_t ffly_open(char const *__path, int __flags, mode_t __mode) {
 	return open(__path, __flags, __mode);
 }
 
-ffly_err_t ffly_close(ffly_fd_t __fd) {
+ff_err_t ffly_close(ffly_fd_t __fd) {
 	if (close(__fd) == -1) {
 		ffly_fprintf(ffly_err, "failed to close.\n");
 		return FFLY_FAILURE;
@@ -51,7 +49,7 @@ ffly_err_t ffly_close(ffly_fd_t __fd) {
 	return FFLY_SUCCESS;
 }
 
-ffly_size_t ffly_write(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ffly_err_t *__err) {
+ffly_size_t ffly_write(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ff_err_t *__err) {
     ssize_t res;
     if ((res = write(__fd, __buf, __size)) == -1) {
         ffly_fprintf(ffly_err, "failed to write.\n");
@@ -62,7 +60,7 @@ ffly_size_t ffly_write(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ffly_err
     return res;
 }
 
-ffly_size_t ffly_read(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ffly_err_t *__err) {
+ffly_size_t ffly_read(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ff_err_t *__err) {
 	ssize_t res;
     if ((res = read(__fd, __buf, __size)) == -1) {
         ffly_fprintf(ffly_err, "failed to read.\n");
@@ -73,8 +71,8 @@ ffly_size_t ffly_read(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ffly_err_
     return res;
 }
 */
-ffly_err_t ffly_io_init() {
-    ffly_err_t err;
+ff_err_t ffly_io_init() {
+    ff_err_t err;
 	if (!(ffly_out = ffly_fopen("/dev/tty", FF_O_RDWR, 0, &err))) {
 		return FFLY_FAILURE;
 	}
@@ -101,7 +99,7 @@ void ffly_io_closeup() {
 }
 
 # ifndef __fflib
-ffly_mutex_t static lock = FFLY_MUTEX_INIT;
+ff_mlock_t static lock = FFLY_MUTEX_INIT;
 void static
 ffly_print(FF_FILE *__file, char const *__format, va_list __args) {
 	ffly_mutex_lock(&lock);

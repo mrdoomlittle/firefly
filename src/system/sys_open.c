@@ -1,6 +1,6 @@
-# include <mdlint.h>
-mdl_s32_t open(char const *__file, mdl_s32_t __flags, mdl_s32_t __mode) {
-    mdl_s32_t ret;
+# include "../ffint.h"
+ff_s32_t open(char const *__file, ff_s32_t __flags, ff_s32_t __mode) {
+    ff_s32_t ret;
     __asm__("mov %1, %%rdi\n\t"
         "mov %2, %%esi\n\t"
         "mov %3, %%edx\n\t"

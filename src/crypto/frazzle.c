@@ -1,8 +1,8 @@
-# include <mdlint.h>
+# include "../ffint.h"
 void static
-spook(mdl_u8_t *__p, mdl_u8_t __imn) {
-	mdl_u8_t byte;
-	mdl_u8_t l,r;
+spook(ff_u8_t *__p, ff_u8_t __imn) {
+	ff_u8_t byte;
+	ff_u8_t l,r;
 _again:
 	byte = *__p;
 	l = byte&0xe0;
@@ -15,9 +15,9 @@ _again:
 }
 
 void static
-despook(mdl_u8_t *__p, mdl_u8_t __imn) {
-	mdl_u8_t byte;
-	mdl_u8_t l,r;
+despook(ff_u8_t *__p, ff_u8_t __imn) {
+	ff_u8_t byte;
+	ff_u8_t l,r;
 _again:
 	byte = *__p;
 	l = byte&0x70;
@@ -29,9 +29,9 @@ _again:
 	}
 }
 
-void ffly_frzz_enc(void *__p, mdl_uint_t __bc, mdl_u64_t __key) {
-	mdl_u8_t *p = (mdl_u8_t*)__p;
-	mdl_u8_t *end = p+__bc;
+void ffly_frzz_enc(void *__p, ff_uint_t __bc, ff_u64_t __key) {
+	ff_u8_t *p = (ff_u8_t*)__p;
+	ff_u8_t *end = p+__bc;
 	while(p != end) {
 		spook(p, __key&0xf);
 		*p ^= __key;
@@ -41,9 +41,9 @@ void ffly_frzz_enc(void *__p, mdl_uint_t __bc, mdl_u64_t __key) {
 	}
 }
 
-void ffly_frzz_dec(void *__p, mdl_uint_t __bc, mdl_u64_t __key) {
-	mdl_u8_t *p = (mdl_u8_t*)__p;
-	mdl_u8_t *end = p+__bc;
+void ffly_frzz_dec(void *__p, ff_uint_t __bc, ff_u64_t __key) {
+	ff_u8_t *p = (ff_u8_t*)__p;
+	ff_u8_t *end = p+__bc;
 	while(p != end) {
 		despook(p, __key>>4&0xf);
 		*p ^= __key;

@@ -3,7 +3,7 @@
 # include <sys/stat.h>
 # include <malloc.h>
 # include "../elf.h"
-char const *hdrtyps(mdl_u16_t __type) {
+char const *hdrtyps(ff_u16_t __type) {
 	switch(__type) {
 		case ET_NONE: return "none";
 		case ET_REL: return "relocatable";
@@ -16,7 +16,7 @@ char const *hdrtyps(mdl_u16_t __type) {
 
 
 void print_hdr(elf64_hdrp __hdr) {
-	mdl_u8_t *i = __hdr->ident;
+	ff_u8_t *i = __hdr->ident;
 	printf("magic: ");
 	while(i != __hdr->ident+EI_NIDENT-1)
 		printf("%02x ", *(i++));

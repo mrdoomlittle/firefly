@@ -9,8 +9,8 @@ void putsymbol(symbolp __sy) {
 	hash_put(&symbols, __sy->p, __sy->len, __sy);
 }
 
-mdl_u16_t static off = 0;
-symbolp syt(char const *__name, mdl_u16_t *__off) {
+ff_u16_t static off = 0;
+symbolp syt(char const *__name, ff_u16_t *__off) {
 	symbolp sy = (symbolp)malloc(sizeof(struct symbol));
 	sy->len = strlen(__name);
 
@@ -29,7 +29,7 @@ symbolp getsymbol(char const *__s) {
 }
 
 struct ffef_reg_hdr static reg;
-mdl_u64_t static dst;
+ff_u64_t static dst;
 void syt_store() {
 	reg.name = dst;
 	reg.l = 4;
@@ -61,7 +61,7 @@ void syt_gut() {
 		}
 
 		sy.l = cur->len+1;
-		oust((mdl_u8_t*)&sy, ffef_sysz);
+		oust((ff_u8_t*)&sy, ffef_sysz);
 		symbolp bk = cur;
 		cur = cur->next;
 

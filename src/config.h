@@ -1,11 +1,10 @@
 # ifndef __ffly__config__h
 # define __ffly__config__h
 # include "system/buff.h"
-# include "types/byte_t.h"
-# include "types/off_t.h"
 # include "system/vec.h"
 # include "system/map.h"
-# include <mdlint.h>
+# include "ffint.h"
+# include "types.h"
 # define ffly_conf_is_str(__p) \
 	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_str)
 # define ffly_conf_is_chr(__p) \
@@ -27,8 +26,8 @@
 # define ffly_conf_is_8l_s(__p) \
 	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_8l_s)
 struct ffly_conf_val {
-	mdl_u8_t kind;
-	ffly_byte_t *p;
+	ff_u8_t kind;
+	ff_byte_t *p;
 };
 
 struct ffly_conf_var {
@@ -39,7 +38,7 @@ struct ffly_conf_var {
 struct ffly_conf_arr {
 	struct ffly_vec data;
 	char *name;
-	mdl_uint_t l;
+	ff_uint_t l;
 };
 
 // config bare
@@ -54,8 +53,8 @@ typedef ffconf* ffconfp;
 
 struct ffly_conf {
 	struct ffly_buff sbuf;
-	ffly_byte_t *p, *end;
-	ffly_off_t off;
+	ff_byte_t *p, *end;
+	ff_off_t off;
 	struct ffly_vec toks;
 	struct ffly_buff iject_buff;
 
@@ -80,25 +79,25 @@ enum {
 };
 
 void const* ffly_conf_get(ffconfp, char const*);
-mdl_uint_t ffly_conf_arr_len(void const*);
-void const* ffly_conf_arr_elem(void const*, mdl_uint_t);
-ffly_err_t ffly_conf_init(struct ffly_conf*);
-ffly_err_t ffly_conf_read(struct ffly_conf*);
-ffly_err_t ffly_conf_ld(struct ffly_conf*, char const*);
-ffly_err_t ffly_conf_free(struct ffly_conf*);
-ffly_err_t ffconf_free(ffconfp);
+ff_uint_t ffly_conf_arr_len(void const*);
+void const* ffly_conf_arr_elem(void const*, ff_uint_t);
+ff_err_t ffly_conf_init(struct ffly_conf*);
+ff_err_t ffly_conf_read(struct ffly_conf*);
+ff_err_t ffly_conf_ld(struct ffly_conf*, char const*);
+ff_err_t ffly_conf_free(struct ffly_conf*);
+ff_err_t ffconf_free(ffconfp);
 void ffly_conf_depos(struct ffly_conf*, ffconfp);
 char const* ffly_conf_str(void const*);
 char ffly_conf_chr(void const*);
-mdl_u64_t ffly_conf_64l_u(void const*);
-mdl_u32_t ffly_conf_32l_u(void const*);
-mdl_u16_t ffly_conf_16l_u(void const*);
-mdl_u8_t ffly_conf_8l_u(void const*);
-mdl_u64_t ffly_conf_int_u(void const*);
+ff_u64_t ffly_conf_64l_u(void const*);
+ff_u32_t ffly_conf_32l_u(void const*);
+ff_u16_t ffly_conf_16l_u(void const*);
+ff_u8_t ffly_conf_8l_u(void const*);
+ff_u64_t ffly_conf_int_u(void const*);
 
-mdl_i64_t ffly_conf_64l_s(void const*);
-mdl_i32_t ffly_conf_32l_s(void const*);
-mdl_i16_t ffly_conf_16l_s(void const*);
-mdl_i8_t ffly_conf_8l_s(void const*);
-mdl_i64_t ffly_conf_int_s(void const*);
+ff_i64_t ffly_conf_64l_s(void const*);
+ff_i32_t ffly_conf_32l_s(void const*);
+ff_i16_t ffly_conf_16l_s(void const*);
+ff_i8_t ffly_conf_8l_s(void const*);
+ff_i64_t ffly_conf_int_s(void const*);
 # endif /*__ffly__config__h*/

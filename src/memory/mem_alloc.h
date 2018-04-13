@@ -5,9 +5,8 @@
 # else
 #   include "allocr.h"
 # endif
-# include <mdlint.h>
-# include "../types/bool_t.h"
-# include "../types/size_t.h"
+# include "../ffint.h"
+# include "../types.h"
 # include "../ffly_def.h"
 # include "../system/atomic.h"
 # ifdef __ffly_mal_track
@@ -19,14 +18,14 @@ extern "C" {
 # endif
 
 # ifdef __ffly_debug_enabled
-ffly_atomic_uint_t extern ffly_mem_alloc_bc;
-ffly_atomic_uint_t extern ffly_mem_alloc_c;
+ff_atomic_uint_t extern ffly_mem_alloc_bc;
+ff_atomic_uint_t extern ffly_mem_alloc_c;
 # endif
 
 # ifdef __ffly_mal_track
-void* ffly_mem_alloc(mdl_uint_t, ffly_bool_t);
+void* ffly_mem_alloc(ff_uint_t, ffly_bool_t);
 # else
-void* ffly_mem_alloc(mdl_uint_t);
+void* ffly_mem_alloc(ff_uint_t);
 # endif /*__ffly_mal_track*/
 
 # ifdef __cplusplus
@@ -34,7 +33,6 @@ void* ffly_mem_alloc(mdl_uint_t);
 # endif
 
 # ifdef __cplusplus
-# include "../types/err_t.h"
 # include "../system/errno.h"
 
 namespace mdl {

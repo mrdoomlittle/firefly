@@ -1,25 +1,25 @@
+global __ffly_atomic_add
+global __ffly_atomic_sub
+global __ffly_atomic_set
+global __ffly_atomic_get
+global __ffly_atomic_incr
+global __ffly_atomic_decr
 section .text
-global _ffly_atomic_add
-global _ffly_atomic_sub
-global _ffly_atomic_set
-global _ffly_atomic_get
-global _ffly_atomic_incr
-global _ffly_atomic_decr
-_ffly_atomic_add:
+__ffly_atomic_add:
 	lock add [rdi], rsi
 	ret
-_ffly_atomic_sub:
+__ffly_atomic_sub:
 	lock sub [rdi], rsi
 	ret
-_ffly_atomic_set:
+__ffly_atomic_set:
 	mov [rdi], rsi
 	ret
-_ffly_atomic_get:
+__ffly_atomic_get:
 	mov rax, [rdi]
 	ret
-_ffly_atomic_incr:
+__ffly_atomic_incr:
 	lock inc QWORD[rdi]
 	ret
-_ffly_atomic_decr:
+__ffly_atomic_decr:
 	lock dec QWORD[rdi]
 	ret

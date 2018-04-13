@@ -1,6 +1,6 @@
-# include <mdlint.h>
-mdl_s32_t socket(mdl_u32_t __family, mdl_u32_t __type, mdl_u32_t __proto) {
-	mdl_s32_t ret;
+# include "../ffint.h"
+ff_s32_t socket(ff_u32_t __family, ff_u32_t __type, ff_u32_t __proto) {
+	ff_s32_t ret;
 	__asm__("xorq %%rdi, %%rdi\n\t"
 			"mov %1, %%edi\n\t"
 			"xorq %%rsi, %%rsi\n\t"

@@ -1,6 +1,6 @@
-# include <mdlint.h>
-mdl_s32_t write(mdl_u32_t __fd, void *__buf, mdl_u64_t __size) {
-	mdl_s32_t ret;
+# include "../ffint.h"
+ff_s32_t write(ff_u32_t __fd, void *__buf, ff_u64_t __size) {
+	ff_s32_t ret;
 	__asm__("xorq %%rax, %%rax\n\t"
 		"mov %1, %%edi\n\t"
         "mov %2, %%rsi\n\t"

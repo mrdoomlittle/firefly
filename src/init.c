@@ -2,7 +2,6 @@
 # include "system/config.h"
 # include "dep/str_cpy.h"
 # include "exec.h"
-# include <mdlint.h>
 void ffly_init() {
 	if (!__ffly_sysconf__.root_dir ||
 		!__ffly_sysconf__.inidir ||

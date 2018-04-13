@@ -15,19 +15,19 @@ brickp get_brick(mulp __mul, char const *__id) {
 	return (brickp)hash_get(&__mul->bricks, __id, strlen(__id));
 }
 
-mdl_uint_t mul_bricklen(brickp __brc) {
+ff_uint_t mul_bricklen(brickp __brc) {
 	return (__brc->end-__brc->p);
 }
 
-void mul_brickw(void *__buf, mdl_uint_t __off, mdl_uint_t __n, brickp __brc) {
+void mul_brickw(void *__buf, ff_uint_t __off, ff_uint_t __n, brickp __brc) {
 	memcpy(__brc->p+__off, __buf, __n);
 }
 
-void mul_brickr(void *__buf, mdl_uint_t __off, mdl_uint_t __n, brickp __brc) {
+void mul_brickr(void *__buf, ff_uint_t __off, ff_uint_t __n, brickp __brc) {
 	memcpy(__buf, __brc->p+__off, __n);
 }
 
-mdl_u8_t at_eof(mulp __mul) {
+ff_u8_t at_eof(mulp __mul) {
 	return (__mul->cur>=__mul->end) || *__mul->cur == '\0';
 }
 
@@ -36,24 +36,24 @@ void mul_prepare(mulp __mul) {
 	__mul->top = NULL;
 }
 
-mdl_u8_t expect(mulp __mul, mdl_u8_t __sort, mdl_u8_t __val) {
+ff_u8_t expect(mulp __mul, ff_u8_t __sort, ff_u8_t __val) {
 	bucketp tok;
 	lex(__mul, &tok);
 	return (tok->sort == __sort && tok->val == __val);
 }
 
-void build_brick(brickp *__brick, mdl_u8_t *__beg, mdl_u8_t *__end) {
-	mdl_uint_t l = __end-__beg;
-	mdl_u8_t *p = (mdl_u8_t*)malloc(l);	
-	mdl_u8_t *cur = __beg;
-	mdl_uint_t off;
+void build_brick(brickp *__brick, ff_u8_t *__beg, ff_u8_t *__end) {
+	ff_uint_t l = __end-__beg;
+	ff_u8_t *p = (ff_u8_t*)malloc(l);	
+	ff_u8_t *cur = __beg;
+	ff_uint_t off;
 
 	while(cur != __end) {
-		mdl_uint_t left = __end-cur;
+		ff_uint_t left = __end-cur;
 		off = cur-__beg;
 		if (left>>3 > 0) {
-			*((mdl_u64_t*)(p+off)) = *(mdl_u64_t*)cur;
-			cur+=sizeof(mdl_u64_t);
+			*((ff_u64_t*)(p+off)) = *(ff_u64_t*)cur;
+			cur+=sizeof(ff_u64_t);
 		} else
 			*(p+off) = *(cur++); 
 	}
@@ -63,7 +63,7 @@ void build_brick(brickp *__brick, mdl_u8_t *__beg, mdl_u8_t *__end) {
 }
 
 brickp static end = NULL;
-void leak_brick(mulp __mul, char const *__id, mdl_u8_t *__beg, mdl_u8_t *__end) {
+void leak_brick(mulp __mul, char const *__id, ff_u8_t *__beg, ff_u8_t *__end) {
 	brickp brc;
 	build_brick(&brc, __beg, __end);
 	if (!__mul->top)
@@ -108,7 +108,7 @@ void mul_ld(mulp __mul, char const *__file) {
 
 	struct stat st;
 	fstat(fd, &st);
-	__mul->p = (mdl_u8_t*)malloc(st.st_size);
+	__mul->p = (ff_u8_t*)malloc(st.st_size);
 	__mul->end = __mul->p+st.st_size;
 	__mul->cur = __mul->p;
 	read(fd, __mul->p, st.st_size);

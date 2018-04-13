@@ -22,7 +22,7 @@ enum {
 	_r_bracket
 };
 
-ffly_bool_t static is_space(char __c) {
+ff_bool_t static is_space(char __c) {
 	return (__c == ' ' || __c == '\n' || __c == '\t');
 }
 
@@ -33,22 +33,22 @@ char ffly_conf_chr(void const *__p) {
 	return *(char*)((struct ffly_conf_val*)__p)->p;
 }
 
-mdl_u64_t ffly_conf_64l_u(void const *__p) {
-	return *(mdl_u64_t*)((struct ffly_conf_val*)__p)->p;}
-mdl_u32_t ffly_conf_32l_u(void const *__p) {
-	return *(mdl_u32_t*)((struct ffly_conf_val*)__p)->p;}
-mdl_u16_t ffly_conf_16l_u(void const *__p) {
-	return *(mdl_u16_t*)((struct ffly_conf_val*)__p)->p;}
-mdl_u8_t ffly_conf_8l_u(void const *__p) {
-	return *(mdl_u8_t*)((struct ffly_conf_val*)__p)->p;}
-mdl_i64_t ffly_conf_64l_s(void const *__p) {
-	return *(mdl_i64_t*)((struct ffly_conf_val*)__p)->p;}
-mdl_i32_t ffly_conf_32l_s(void const *__p) {
-	return *(mdl_i32_t*)((struct ffly_conf_val*)__p)->p;}
-mdl_i16_t ffly_conf_16l_s(void const *__p) {
-	return *(mdl_i16_t*)((struct ffly_conf_val*)__p)->p;}
-mdl_i8_t ffly_conf_8l_s(void const *__p) {
-	return *(mdl_i8_t*)((struct ffly_conf_val*)__p)->p;}
+ff_u64_t ffly_conf_64l_u(void const *__p) {
+	return *(ff_u64_t*)((struct ffly_conf_val*)__p)->p;}
+ff_u32_t ffly_conf_32l_u(void const *__p) {
+	return *(ff_u32_t*)((struct ffly_conf_val*)__p)->p;}
+ff_u16_t ffly_conf_16l_u(void const *__p) {
+	return *(ff_u16_t*)((struct ffly_conf_val*)__p)->p;}
+ff_u8_t ffly_conf_8l_u(void const *__p) {
+	return *(ff_u8_t*)((struct ffly_conf_val*)__p)->p;}
+ff_i64_t ffly_conf_64l_s(void const *__p) {
+	return *(ff_i64_t*)((struct ffly_conf_val*)__p)->p;}
+ff_i32_t ffly_conf_32l_s(void const *__p) {
+	return *(ff_i32_t*)((struct ffly_conf_val*)__p)->p;}
+ff_i16_t ffly_conf_16l_s(void const *__p) {
+	return *(ff_i16_t*)((struct ffly_conf_val*)__p)->p;}
+ff_i8_t ffly_conf_8l_s(void const *__p) {
+	return *(ff_i8_t*)((struct ffly_conf_val*)__p)->p;}
 
 /*
 	deposit all into ffconf
@@ -60,30 +60,30 @@ void ffly_conf_depos(struct ffly_conf *__conf, ffconfp __d) {
 }
 
 void const* ffly_conf_get(ffconfp __conf, char const *__name) {
-	ffly_err_t err;
-	return ffly_map_get(&__conf->env, (mdl_u8_t const*)__name, ffly_str_len(__name), &err);
+	ff_err_t err;
+	return ffly_map_get(&__conf->env, (ff_u8_t const*)__name, ffly_str_len(__name), &err);
 }
 
-void const* ffly_conf_arr_elem(void const *__p, mdl_uint_t __no) {
+void const* ffly_conf_arr_elem(void const *__p, ff_uint_t __no) {
 	return *(void**)ffly_vec_at(&((struct ffly_conf_arr*)__p)->data, __no);
 }
 
-mdl_uint_t ffly_conf_arr_len(void const *__p) {
+ff_uint_t ffly_conf_arr_len(void const *__p) {
 	return ((struct ffly_conf_arr*)__p)->l;
 }
 
 struct token {
-	mdl_u8_t kind, id;
+	ff_u8_t kind, id;
 	void *p, *end;
 };
 
-struct token static* read_token(struct ffly_conf*, ffly_err_t*);
-struct token static* peek_token(struct ffly_conf*, ffly_err_t*);
-ffly_bool_t static
-expect_token(struct ffly_conf *__conf, mdl_u8_t __kind, mdl_u8_t __id, ffly_err_t *__err) {
+struct token static* read_token(struct ffly_conf*, ff_err_t*);
+struct token static* peek_token(struct ffly_conf*, ff_err_t*);
+ff_bool_t static
+expect_token(struct ffly_conf *__conf, ff_u8_t __kind, ff_u8_t __id, ff_err_t *__err) {
 	struct token *tok = read_token(__conf, __err);
 	if (_err(*__err) || !tok) return 0;
-	mdl_u8_t ret_val;
+	ff_u8_t ret_val;
 	if (!(ret_val = (tok->kind == __kind && tok->id == __id))) {
 		if (tok->kind == __kind) {
 			switch(__id) {
@@ -106,26 +106,26 @@ expect_token(struct ffly_conf *__conf, mdl_u8_t __kind, mdl_u8_t __id, ffly_err_
 	return ret_val;
 }
 
-ffly_err_t static push_free(struct ffly_conf *__conf, void *__p) {
+ff_err_t static push_free(struct ffly_conf *__conf, void *__p) {
 	void **p;
 	ffly_vec_push_back(&__conf->free, (void**)&p);
 	*p = __p;
 }
 
-ffly_err_t static push_arr(struct ffly_conf *__conf, struct ffly_conf_arr *__arr) {
+ff_err_t static push_arr(struct ffly_conf *__conf, struct ffly_conf_arr *__arr) {
 	struct ffly_conf_arr **p;
 	ffly_vec_push_back(&__conf->arrs, (void**)&p);
 	*p = __arr;
 }
 
-ffly_bool_t static is_eof(struct ffly_conf *__conf) {
+ff_bool_t static is_eof(struct ffly_conf *__conf) {
 	return (__conf->p+__conf->off) >= __conf->end;
 }
 
 void static mk_ident(struct token *__tok, char *__s) {
 	*__tok = (struct token){.kind=_tok_ident, .p=(void*)__s};
 }
-void static mk_keyword(struct token *__tok, mdl_u8_t __id) {
+void static mk_keyword(struct token *__tok, ff_u8_t __id) {
 	*__tok = (struct token){.kind=_tok_keyword, .id=__id, .p=NULL};
 }
 void static mk_str(struct token *__tok, char *__s) {
@@ -151,7 +151,7 @@ read_ident(struct ffly_conf *__conf, char **__end) {
 	char end = '\0';
 	ffly_buff_put(&__conf->sbuf, &end);
 	char *s = (char*)ffly_str_dupe((char*)ffly_buff_begin(&__conf->sbuf));
-	mdl_uint_t l = ffly_buff_off(&__conf->sbuf);
+	ff_uint_t l = ffly_buff_off(&__conf->sbuf);
 	*__end = s+l;
 	__conf->off+= l;
 	ffly_buff_off_reset(&__conf->sbuf);
@@ -171,7 +171,7 @@ read_no(struct ffly_conf *__conf, char **__end) {
 	char end = '\0';
 	ffly_buff_put(&__conf->sbuf, &end);
 	char *s = (char*)ffly_str_dupe((char*)ffly_buff_begin(&__conf->sbuf));
-	mdl_uint_t l = ffly_buff_off(&__conf->sbuf);
+	ff_uint_t l = ffly_buff_off(&__conf->sbuf);
 	*__end = s+l;
 	__conf->off+= l;
 	ffly_buff_off_reset(&__conf->sbuf);
@@ -189,7 +189,7 @@ read_str(struct ffly_conf *__conf, char **__end) {
 	char end = '\0';
 	ffly_buff_put(&__conf->sbuf, &end);
 	char *s = (char*)ffly_str_dupe((char*)ffly_buff_begin(&__conf->sbuf));
-	mdl_uint_t l = ffly_buff_off(&__conf->sbuf);
+	ff_uint_t l = ffly_buff_off(&__conf->sbuf);
 	*__end = s+l; 
 	__conf->off+= l;
 	ffly_buff_off_reset(&__conf->sbuf);
@@ -202,9 +202,9 @@ read_chr(struct ffly_conf *__conf) {
 	return (char*)(__conf->p+(__conf->off-1));
 }
 
-ffly_err_t static
+ff_err_t static
 uread_token(struct ffly_conf *__conf, struct token *__tok) {
-	ffly_err_t err;
+	ff_err_t err;
 	ffly_buff_put(&__conf->iject_buff, (void*)&__tok);
 	ffly_buff_incr(&__conf->iject_buff);
 	return FFLY_SUCCESS;
@@ -216,8 +216,8 @@ fetchc(struct ffly_conf *__conf) {
 }
 
 struct token static*
-read_token(struct ffly_conf *__conf, ffly_err_t *__err) {
-	ffly_err_t err;
+read_token(struct ffly_conf *__conf, ff_err_t *__err) {
+	ff_err_t err;
 	if (ffly_buff_off(&__conf->iject_buff)>0){
 		struct token *tok;
 		ffly_buff_decr(&__conf->iject_buff);
@@ -299,8 +299,8 @@ read_token(struct ffly_conf *__conf, ffly_err_t *__err) {
 	return tok;
 }
 
-ffly_bool_t static
-next_token_is(struct ffly_conf *__conf, mdl_u8_t __kind, mdl_u8_t __id, ffly_err_t *__err) {
+ff_bool_t static
+next_token_is(struct ffly_conf *__conf, ff_u8_t __kind, ff_u8_t __id, ff_err_t *__err) {
 	struct token *tok = read_token(__conf, __err);
 	*__err = FFLY_SUCCESS;
 	if (tok->kind == __kind && tok->id == __id) return 1;
@@ -308,8 +308,8 @@ next_token_is(struct ffly_conf *__conf, mdl_u8_t __kind, mdl_u8_t __id, ffly_err
 	return 0;
 }
 
-ffly_byte_t static*
-read_literal(struct ffly_conf *__conf, mdl_u8_t *__kind, ffly_err_t *__err) {
+ff_byte_t static*
+read_literal(struct ffly_conf *__conf, ff_u8_t *__kind, ff_err_t *__err) {
 	struct token *tok = read_token(__conf, __err);
 	if (_err(*__err)) {
 
@@ -317,16 +317,16 @@ read_literal(struct ffly_conf *__conf, mdl_u8_t *__kind, ffly_err_t *__err) {
 
 	*__err = FFLY_SUCCESS;
 	if (tok->kind == _tok_no) {
-		mdl_u8_t neg = (*(char*)tok->p == '-');
+		ff_u8_t neg = (*(char*)tok->p == '-');
 		void *p;
-		mdl_u64_t no = ffly_stno(((char*)tok->p)+neg);
+		ff_u64_t no = ffly_stno(((char*)tok->p)+neg);
 		if (neg)
 			no = -no; 
 		if (next_token_is(__conf, _tok_keyword, _tilde, __err)) {
 			struct token *type = read_token(__conf, __err);
-			mdl_u8_t sign = *(((char*)type->end)-1) == 's';
+			ff_u8_t sign = *(((char*)type->end)-1) == 's';
 			char *p = ((char*)type->p)+1;
-			mdl_uint_t size = (char*)type->p-(char*)type->end;
+			ff_uint_t size = (char*)type->p-(char*)type->end;
 			if (size != 6 && size != 5) {
 				// err
 			}
@@ -339,26 +339,26 @@ read_literal(struct ffly_conf *__conf, mdl_u8_t *__kind, ffly_err_t *__err) {
 			}
 		}
 
-		if (no >= 0 && no <= (mdl_u8_t)~0) {
+		if (no >= 0 && no <= (ff_u8_t)~0) {
 			_8l:
-			*(mdl_u8_t*)(p = __ffly_mem_alloc(sizeof(mdl_u8_t))) = no;
+			*(ff_u8_t*)(p = __ffly_mem_alloc(sizeof(ff_u8_t))) = no;
 			*__kind = neg?_ffly_conf_8l_s:_ffly_conf_8l_u;
-			return (ffly_byte_t*)p;
-		} else if (no > (mdl_u8_t)~0 && no <= (mdl_u16_t)~0) {
+			return (ff_byte_t*)p;
+		} else if (no > (ff_u8_t)~0 && no <= (ff_u16_t)~0) {
 			_16l:
-			*(mdl_u16_t*)(p = __ffly_mem_alloc(sizeof(mdl_u16_t))) = no;
+			*(ff_u16_t*)(p = __ffly_mem_alloc(sizeof(ff_u16_t))) = no;
 			*__kind = neg?_ffly_conf_16l_s:_ffly_conf_16l_u;
-			return (ffly_byte_t*)p;
-		} else if (no > (mdl_u16_t)~0 && no <= (mdl_u32_t)~0) {
+			return (ff_byte_t*)p;
+		} else if (no > (ff_u16_t)~0 && no <= (ff_u32_t)~0) {
 			_32l:
-			*(mdl_u32_t*)(p = __ffly_mem_alloc(sizeof(mdl_u32_t))) = no;
+			*(ff_u32_t*)(p = __ffly_mem_alloc(sizeof(ff_u32_t))) = no;
 			*__kind = neg?_ffly_conf_32l_s:_ffly_conf_32l_u;
-			return (ffly_byte_t*)p;
-		} else if (no > (mdl_u32_t)~0 && no <= ~(mdl_u64_t)0) {
+			return (ff_byte_t*)p;
+		} else if (no > (ff_u32_t)~0 && no <= ~(ff_u64_t)0) {
 			_64l:
-			*(mdl_u64_t*)(p = __ffly_mem_alloc(sizeof(mdl_u64_t))) = no;
+			*(ff_u64_t*)(p = __ffly_mem_alloc(sizeof(ff_u64_t))) = no;
 			*__kind = neg?_ffly_conf_64l_s:_ffly_conf_64l_u;
-			return (ffly_byte_t*)p;
+			return (ff_byte_t*)p;
 		}
 		return NULL;
 	}
@@ -367,12 +367,12 @@ read_literal(struct ffly_conf *__conf, mdl_u8_t *__kind, ffly_err_t *__err) {
 		*__kind = _ffly_conf_str;
 	else if (tok->kind == _tok_chr)
 		*__kind = _ffly_conf_chr;
-	return (ffly_byte_t*)ffly_str_dupe((char*)tok->p); 
+	return (ff_byte_t*)ffly_str_dupe((char*)tok->p); 
 }
 
-ffly_err_t static
+ff_err_t static
 read_val(struct ffly_conf *__conf, struct ffly_conf_val *__val) {
-	ffly_err_t err = FFLY_SUCCESS;
+	ff_err_t err = FFLY_SUCCESS;
 	__val->p = read_literal(__conf, &__val->kind, &err);
 	if (!__val->p) {
 		ffly_fprintf(ffly_err, "got null.\n");
@@ -384,9 +384,9 @@ read_val(struct ffly_conf *__conf, struct ffly_conf_val *__val) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t static
-read_arr(struct ffly_conf *__conf, struct ffly_vec *__data, mdl_uint_t *__l) {
-	ffly_err_t err;
+ff_err_t static
+read_arr(struct ffly_conf *__conf, struct ffly_vec *__data, ff_uint_t *__l) {
+	ff_err_t err;
 	if (next_token_is(__conf, _tok_keyword, _r_bracket, &err)) {
 		return FFLY_SUCCESS;
 	}
@@ -441,9 +441,9 @@ read_arr(struct ffly_conf *__conf, struct ffly_vec *__data, mdl_uint_t *__l) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t static
+ff_err_t static
 read_decl(struct ffly_conf *__conf) {
-	ffly_err_t err;
+	ff_err_t err;
 	struct token *name = read_token(__conf, &err);
 	if (_err(err)) return FFLY_FAILURE;
 	if (!expect_token(__conf, _tok_keyword, _colon, &err)) {
@@ -482,7 +482,7 @@ read_decl(struct ffly_conf *__conf) {
 		push_free(__conf, p);
 	}
 
-	ffly_map_put(&__conf->env, (mdl_u8_t*)name->p, ffly_str_len((char*)name->p), p);
+	ffly_map_put(&__conf->env, (ff_u8_t*)name->p, ffly_str_len((char*)name->p), p);
 	if (!expect_token(__conf, _tok_keyword, _comma, &err)) {
 		ffly_errmsg("expect error.\n");
 		return FFLY_FAILURE;
@@ -490,9 +490,9 @@ read_decl(struct ffly_conf *__conf) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t
+ff_err_t
 ffly_conf_init(struct ffly_conf *__conf) {
-	ffly_err_t err;
+	ff_err_t err;
 	if (_err(err = ffly_buff_init(&__conf->sbuf, 56, 1))) {
 		ffly_fprintf(ffly_err, "failed to init buff.\n");
 		return err;
@@ -529,7 +529,7 @@ ffly_conf_init(struct ffly_conf *__conf) {
 }
 
 struct token static*
-peek_token(struct ffly_conf *__conf, ffly_err_t *__err) {
+peek_token(struct ffly_conf *__conf, ff_err_t *__err) {
 	struct token *tok = read_token(__conf, __err);
 	if (_err(*__err)) return NULL;
 	*__err = uread_token(__conf, tok);
@@ -538,9 +538,9 @@ peek_token(struct ffly_conf *__conf, ffly_err_t *__err) {
 
 
 // rename to ffly_conf_process
-ffly_err_t
+ff_err_t
 ffly_conf_read(struct ffly_conf *__conf) {
-	ffly_err_t err;
+	ff_err_t err;
 	struct token *tok;
 	while(!is_eof(__conf)) {
 		tok = peek_token(__conf, &err);
@@ -563,14 +563,14 @@ ffly_conf_read(struct ffly_conf *__conf) {
 }
 
 # include "dep/mem_set.h"
-ffly_err_t
+ff_err_t
 ffly_conf_ld(struct ffly_conf *__conf, char const *__file) {
-	ffly_err_t err;
+	ff_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
 	struct ffly_stat st;
 	ffly_fstat(__file, &st);
 
-	__conf->p = (ffly_byte_t*)__ffly_mem_alloc(st.size);
+	__conf->p = (ff_byte_t*)__ffly_mem_alloc(st.size);
 	ffly_fread(f, __conf->p, st.size);
 	__conf->end = __conf->p+st.size;
 	ffly_fclose(f);
@@ -578,9 +578,9 @@ ffly_conf_ld(struct ffly_conf *__conf, char const *__file) {
 	return FFLY_SUCCESS; 
 }
 
-ffly_err_t
+ff_err_t
 ffconf_free(ffconfp __conf) {
-	ffly_err_t err;
+	ff_err_t err;
 	if (ffly_vec_size(&__conf->arrs)>0) {
 		struct ffly_conf_arr **itr = (struct ffly_conf_arr**)ffly_vec_begin(&__conf->arrs);
 		while(itr <= (struct ffly_conf_arr**)ffly_vec_end(&__conf->arrs)) {
@@ -613,9 +613,9 @@ ffconf_free(ffconfp __conf) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t
+ff_err_t
 ffly_conf_free(struct ffly_conf *__conf) {
-	ffly_err_t err;
+	ff_err_t err;
 	if (_err(err = ffly_buff_de_init(&__conf->sbuf))) {
 		ffly_fprintf(ffly_err, "failed to de-init buff.\n");
 		return err;
@@ -627,7 +627,7 @@ ffly_conf_free(struct ffly_conf *__conf) {
 		while(itr <= (struct token**)ffly_vec_end(&__conf->toks)) {
 			tok = *(itr++);
 			if (tok->p != NULL) {
-				if ((mdl_u8_t*)tok->p > __conf->end || (mdl_u8_t*)tok->p < __conf->p)
+				if ((ff_u8_t*)tok->p > __conf->end || (ff_u8_t*)tok->p < __conf->p)
 					__ffly_mem_free(tok->p);
 			}
 			__ffly_mem_free(tok);
@@ -649,34 +649,34 @@ ffly_conf_free(struct ffly_conf *__conf) {
 	return FFLY_SUCCESS;
 }
 
-mdl_u64_t
+ff_u64_t
 ffly_conf_int_u(void const *__val) {
 	struct ffly_conf_val *val = (struct ffly_conf_val*)__val;
 	switch(val->kind) {
 		case _ffly_conf_64l_u:
-			return *(mdl_u64_t*)val->p;
+			return *(ff_u64_t*)val->p;
 		case _ffly_conf_32l_u:
-			return *(mdl_u32_t*)val->p;
+			return *(ff_u32_t*)val->p;
 		case _ffly_conf_16l_u:
-			return *(mdl_u16_t*)val->p;
+			return *(ff_u16_t*)val->p;
 		case _ffly_conf_8l_u: 
-			return *(mdl_u8_t*)val->p;
+			return *(ff_u8_t*)val->p;
 	}
 	return 0;
 }
 
-mdl_i64_t
+ff_i64_t
 ffly_conf_int_s(void const *__val) {
 	struct ffly_conf_val *val = (struct ffly_conf_val*)__val;
 	switch(val->kind) {
 		case _ffly_conf_64l_s:
-			return *(mdl_i64_t*)val->p;
+			return *(ff_i64_t*)val->p;
 		case _ffly_conf_32l_s:
-			return *(mdl_i32_t*)val->p;
+			return *(ff_i32_t*)val->p;
 		case _ffly_conf_16l_s:
-			return *(mdl_i16_t*)val->p;
+			return *(ff_i16_t*)val->p;
 		case _ffly_conf_8l_s:
-			return *(mdl_i8_t*)val->p;
+			return *(ff_i8_t*)val->p;
 	}
 	return 0;
 }
@@ -687,21 +687,21 @@ void static print_val(struct ffly_conf_val *__val) {
 	else if (__val->kind == _ffly_conf_chr)
 		ffly_printf("%c\n", *(char*)__val->p);
 	else if (__val->kind == _ffly_conf_64l_u)
-		ffly_printf("%lu\n", *(mdl_u64_t*)__val->p);
+		ffly_printf("%lu\n", *(ff_u64_t*)__val->p);
 	else if (__val->kind == _ffly_conf_32l_u)
-		ffly_printf("%u\n", *(mdl_u32_t*)__val->p);
+		ffly_printf("%u\n", *(ff_u32_t*)__val->p);
 	else if (__val->kind == _ffly_conf_16l_u)
-		ffly_printf("%u\n", *(mdl_u16_t*)__val->p);
+		ffly_printf("%u\n", *(ff_u16_t*)__val->p);
 	else if (__val->kind == _ffly_conf_8l_u)
-		ffly_printf("%u\n", *(mdl_u8_t*)__val->p);
+		ffly_printf("%u\n", *(ff_u8_t*)__val->p);
 	else if (__val->kind == _ffly_conf_64l_s)
-		ffly_printf("%ld\n", *(mdl_i64_t*)__val->p);
+		ffly_printf("%ld\n", *(ff_i64_t*)__val->p);
 	else if (__val->kind == _ffly_conf_32l_s)
-		ffly_printf("%d\n", *(mdl_i32_t*)__val->p);
+		ffly_printf("%d\n", *(ff_i32_t*)__val->p);
 	else if (__val->kind == _ffly_conf_16l_s)
-		ffly_printf("%d\n", *(mdl_i16_t*)__val->p);
+		ffly_printf("%d\n", *(ff_i16_t*)__val->p);
 	else if (__val->kind == _ffly_conf_8l_s)
-		ffly_printf("%d\n", *(mdl_i8_t*)__val->p);
+		ffly_printf("%d\n", *(ff_i8_t*)__val->p);
 }
 
 //# define DEBUG

@@ -10,8 +10,8 @@ void hash_init(struct hash *__table) {
 		*(p++) = NULL;
 }
 
-struct hash_entry static* find(struct hash *__table, mdl_u8_t const *__key, mdl_uint_t __len) {
-	mdl_u64_t sum = ffly_hash(__key, __len);
+struct hash_entry static* find(struct hash *__table, ff_u8_t const *__key, ff_uint_t __len) {
+	ff_u64_t sum = ffly_hash(__key, __len);
 	struct hash_entry *entry = *(__table->table+(sum&0xff));
 	while(entry != NULL) {
 		if (entry->len == __len) {
@@ -22,8 +22,8 @@ struct hash_entry static* find(struct hash *__table, mdl_u8_t const *__key, mdl_
 	return NULL;
 }
 
-void hash_put(struct hash *__table, mdl_u8_t const *__key, mdl_uint_t __len, void *__p) {
-	mdl_u64_t sum = ffly_hash(__key, __len);
+void hash_put(struct hash *__table, ff_u8_t const *__key, ff_uint_t __len, void *__p) {
+	ff_u64_t sum = ffly_hash(__key, __len);
 	struct hash_entry **table = __table->table+(sum&0xff);
 	hash_entryp entry = (hash_entryp)_alloca(sizeof(struct hash_entry)); 
 	entry->next = *table;
@@ -34,7 +34,7 @@ void hash_put(struct hash *__table, mdl_u8_t const *__key, mdl_uint_t __len, voi
 	entry->len = __len;
 }
 
-void* hash_get(struct hash *__table, mdl_u8_t const *__key, mdl_uint_t __len) {
+void* hash_get(struct hash *__table, ff_u8_t const *__key, ff_uint_t __len) {
 	hash_entryp entry = find(__table, __key, __len);
 	if (!entry) return NULL;
 	return entry->p;

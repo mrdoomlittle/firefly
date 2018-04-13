@@ -1,9 +1,8 @@
-# include "types/err_t.h"
 # include "system/err.h"
 # include "system/pipe.h"
 # include "linux/types.h"
 # include "linux/unistd.h"
-# include "data/str_cpy.h"
+# include "dep/str_cpy.h"
 # include "system/io.h"
 # include "hatch.h"
 # define __ffly_debug_enabled
@@ -15,9 +14,9 @@
 # include "lib.h"
 # include "system/thread.h"
 static char const tmpl[] = "/tmp/hatch.XXXXXX";
-mdl_u8_t static
-rcvop(mdl_uint_t __pipe, ffly_err_t *__err){
-	mdl_u8_t op = 0;
+ff_u8_t static
+rcvop(ff_uint_t __pipe, ff_err_t *__err){
+	ff_u8_t op = 0;
 	ffly_printf("recving op.\n");
 	op = ffly_pipe_rd8l(__pipe, __err);
 	ffly_printf("recved.\n");
@@ -47,8 +46,8 @@ vec_flags(ffly_vecp __vec) {
 	return buf;
 }
 
-ffly_err_t static
-lsvec(mdl_uint_t __pipe) {
+ff_err_t static
+lsvec(ff_uint_t __pipe) {
 	ffly_vecp p;
 	if (!(p = ffly_vec_list())) {
 		ffly_printf("nothing to be sent.\n");
@@ -58,11 +57,11 @@ lsvec(mdl_uint_t __pipe) {
 
 	if (_err(ffly_pipe_wr8l(0, __pipe)))
 		reterr;
-	mdl_uint_t l = 1024;
+	ff_uint_t l = 1024;
 	char *buf = (char*)__ffly_mem_alloc(l);
-	if (_err(ffly_pipe_write(&l, sizeof(mdl_uint_t), __pipe)))
+	if (_err(ffly_pipe_write(&l, sizeof(ff_uint_t), __pipe)))
 		reterr;
-	mdl_uint_t i = 0;
+	ff_uint_t i = 0;
 	while(p != NULL) {
 		ffly_sprintf(buf, "vec %u; size: %u, page_c: %u, blk_size: %u - off: %u, flags: %s\n",
 			i, p->size, p->page_c, p->blk_size, p->off, vec_flags(p));
@@ -78,14 +77,14 @@ lsvec(mdl_uint_t __pipe) {
 }
 
 void static
-lsmap(mdl_uint_t __pipe) {
+lsmap(ff_uint_t __pipe) {
 
 }
 
-mdl_uint_t static pipe;
-ffly_tid_t static thread;
+ff_uint_t static pipe;
+ff_tid_t static thread;
 
-mdl_i8_t static live = -1;
+ff_i8_t static live = -1;
 void static*
 hatch(void *__arg_p) {
 	char file[sizeof(tmpl)];
@@ -95,13 +94,13 @@ hatch(void *__arg_p) {
 		return NULL;
 	}
 
-	ffly_err_t err;
+	ff_err_t err;
 	ffly_printf("key: %s\n", file); 
 	pipe = ffly_pipe(8, FF_PIPE_CREAT, 0, &err);
 
-	mdl_uint_t shm_id = ffly_pipe_get_shmid(pipe);
-	write(fd, &shm_id, sizeof(mdl_uint_t));
-	mdl_u8_t op;
+	ff_uint_t shm_id = ffly_pipe_get_shmid(pipe);
+	write(fd, &shm_id, sizeof(ff_uint_t));
+	ff_u8_t op;
 _bk:
 	live = 0;
 	if (_err(ffly_pipe_listen(pipe))) {
@@ -144,7 +143,7 @@ _end:
 	return NULL;
 }
 
-ffly_err_t
+ff_err_t
 ffly_hatch_start() {
 	ffly_thread_create(&thread, hatch, NULL);
 	while(live<0);
@@ -160,8 +159,8 @@ void ffly_hatch_wait() {
 
 /*
 # include "system/vec.h"
-ffly_err_t ffmain(int __argc, char **__argv) {
-//	ffly_err_t err;
+ff_err_t ffmain(int __argc, char **__argv) {
+//	ff_err_t err;
 //	ffly_vecp p = ffly_vec(1, VEC_AUTO_RESIZE|VEC_NONCONTINUOUS, &err);
 //	ffly_hatch_run();
 //	ffly_vec_destroy(p);

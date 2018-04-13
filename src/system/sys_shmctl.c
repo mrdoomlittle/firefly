@@ -1,7 +1,7 @@
-# include <mdlint.h> 
+# include "../ffint.h"
 # include "../linux/ipc/shm.h"
-mdl_s32_t shmctl(mdl_s32_t __id, mdl_s32_t __cmd, struct shmid_ds *__buf) {
-	mdl_s32_t ret;
+ff_s32_t shmctl(ff_s32_t __id, ff_s32_t __cmd, struct shmid_ds *__buf) {
+	ff_s32_t ret;
 	__asm__("xorq %%rdi, %%rdi\n\t"
 			"mov %1, %%edi\n\t"
 			"xorq %%rsi, %%rsi\n\t"

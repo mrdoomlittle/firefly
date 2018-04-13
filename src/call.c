@@ -11,11 +11,11 @@ ffcall_printf(void *__ret, void *__params) {
 	char *bufp = buf;
 	while(arg != NULL) {
 		if (arg->type == _ffpa_seg) {
-			mdl_u8_t *p = (mdl_u8_t*)arg->p;
+			ff_u8_t *p = (ff_u8_t*)arg->p;
 			while(p != arg->end)
 				*(bufp++) = *(p++);
 		} else if (arg->type == _ffpa_u)
-			bufp+= ffly_nots(*(mdl_u32_t*)arg->p, bufp);
+			bufp+= ffly_nots(*(ff_u32_t*)arg->p, bufp);
 		arg = arg->next;
 	}
 	*bufp = '\0';
@@ -30,7 +30,7 @@ ffcall_fprintf(void *__ret, void *__params) {
 
 void static
 ffcall_malloc(void *__ret, void *__params) {
-	*(void**)__ret = __ffly_mem_alloc(*(mdl_uint_t*)__params);
+	*(void**)__ret = __ffly_mem_alloc(*(ff_uint_t*)__params);
 }
 
 void static
@@ -40,7 +40,7 @@ ffcall_free(void *__ret, void *__params) {
 
 void static
 ffcall_realloc(void *__ret, void *__params) {
-	*(void**)__ret = __ffly_mem_realloc(*(void**)__params, *(mdl_uint_t*)((mdl_u8_t*)__params+8));
+	*(void**)__ret = __ffly_mem_realloc(*(void**)__params, *(ff_uint_t*)((ff_u8_t*)__params+8));
 }
 
 static void(*call[])(void*, void*) = {
@@ -51,7 +51,7 @@ static void(*call[])(void*, void*) = {
 	ffcall_realloc
 };
 
-void ffcall(mdl_u8_t __no, void *__ret, void *__params) {
+void ffcall(ff_u8_t __no, void *__ret, void *__params) {
 	call[__no](__ret, __params);
 }
 

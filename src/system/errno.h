@@ -1,10 +1,6 @@
 # ifndef __ffly__errno__h
 # define __ffly__errno__h
-# ifdef __cplusplus
-#	include <mdlint.h>
-# else
-#	include <mdlint.h>
-# endif
+# include "../ffint.h"
 # ifdef __fflib
 # include "../linux/errno.h"
 # else
@@ -78,7 +74,7 @@ extern "C" {
 int extern errno;
 char const* strerror(int);
 # endif
-mdl_u8_t extern ffly_errno;
+ff_u8_t extern ffly_errno;
 # ifdef __cplusplus
 }
 # endif

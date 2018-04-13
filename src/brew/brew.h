@@ -1,16 +1,16 @@
 # ifndef __brew__h
 # define __brew__h
-# include <mdlint.h>
-extern mdl_u8_t *p;
+# include "../ffint.h"
+extern ff_u8_t *p;
 # define incrp p++
 # define decrp p--
 typedef struct bucket {
 	struct bucket *next, *fd;
 	void *src, *dst;
-	mdl_u8_t sort:4;
-	mdl_u8_t val;
+	ff_u8_t sort:4;
+	ff_u8_t val;
 	void *p;
-	mdl_u16_t len;
+	ff_u16_t len;
 } *bucketp;
 
 enum {
@@ -23,7 +23,7 @@ enum {
 
 typedef struct obj {
 	struct obj *next;
-	mdl_u8_t opcode;
+	ff_u8_t opcode;
 	void *src, *dst, *p;
 	struct obj *to;
 } *objp;
@@ -59,19 +59,19 @@ enum {
 	_str
 };
 
-mdl_u8_t is_keywd(bucketp, mdl_u8_t);
+ff_u8_t is_keywd(bucketp, ff_u8_t);
 bucketp nexttok();
 void maybe_keyword(bucketp);
-mdl_u8_t tokbuf_size();
-mdl_u8_t expect_token(mdl_u8_t, mdl_u8_t);
+ff_u8_t tokbuf_size();
+ff_u8_t expect_token(ff_u8_t, ff_u8_t);
 bucketp peektok();
 bucketp lex();
 void ulex(bucketp);
 void parse(bucketp*);
-mdl_u8_t at_eof();
+ff_u8_t at_eof();
 void lexer_cleanup();
 void brew_exec(objp);
 void gen(bucketp, objp*);
-void oust(bucketp, mdl_u8_t);
+void oust(bucketp, ff_u8_t);
 void to_free(void*);
 # endif /*__brew__h*/

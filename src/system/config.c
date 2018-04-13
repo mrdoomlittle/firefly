@@ -68,7 +68,7 @@ ld_modl(ffconf *__cf) {
 	void const *p;
 	if ((p = ffly_conf_get(__cf, "modl")) != NULL) {
 		ffly_printf("module list len: %u\n", ffly_conf_arr_len(p));
-		mdl_u8_t i = 0, l = ffly_conf_arr_len(p);
+		ff_u8_t i = 0, l = ffly_conf_arr_len(p);
 		__ffly_sysconf__.modl = (char const**)__ffly_mem_alloc((l+1)*sizeof(char const*));
 
 		while(i != l) {
@@ -85,7 +85,7 @@ ld_inil(ffconf *__cf) {
 	void const *p;
 	if ((p = ffly_conf_get(__cf, "inil")) != NULL) {
 		ffly_printf("init list len: %u\n", ffly_conf_arr_len(p));
-		mdl_u8_t i = 0, l = ffly_conf_arr_len(p);
+		ff_u8_t i = 0, l = ffly_conf_arr_len(p);
 		if (!(__ffly_sysconf__.inil = (char const**)__ffly_mem_alloc((l+1)*sizeof(char const*)))) {
 			ffly_printf("error.\n");
 			return;
@@ -100,9 +100,9 @@ ld_inil(ffconf *__cf) {
 	}
 }
 
-ffly_err_t ffly_ld_sysconf(char const *__path) {
+ff_err_t ffly_ld_sysconf(char const *__path) {
 	struct ffly_conf conf;
-	ffly_err_t err = FFLY_SUCCESS;
+	ff_err_t err = FFLY_SUCCESS;
 	if (_err(err = ffly_conf_init(&conf))) {
 		ffly_fprintf(ffly_err, "failed to init config.\n");
 		return err;

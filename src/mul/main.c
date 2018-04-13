@@ -1,8 +1,8 @@
 # include "mul.h"
 # include "../stdio.h"
 # include "../string.h"
-# include "../types/err_t.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+# include "../types.h"
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	char const *src = NULL, *dst = NULL;
 
 	char const **arg = __argv;

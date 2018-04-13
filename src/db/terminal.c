@@ -14,7 +14,7 @@ typedef struct dct {
 	char const *params[20];
 } *dctp;
 
-mdl_uint_t
+ff_uint_t
 read_part(char *__buf, char **__p) {
 	char *p = *__p;
 	char *bufp = __buf;
@@ -23,7 +23,7 @@ read_part(char *__buf, char **__p) {
 		*__buf = '\0';
 		return 0;
 	}
-	mdl_i8_t s;
+	ff_i8_t s;
 	if (*p == '"') {
 		s = 0;
 		p++;
@@ -33,7 +33,7 @@ read_part(char *__buf, char **__p) {
 		*(bufp++) = *(p++);
 	if (!s)
 		p++;
-	mdl_uint_t l = bufp-__buf;
+	ff_uint_t l = bufp-__buf;
 	*(__buf+l) = '\0';
 	*__p = p;
 	return l;
@@ -171,13 +171,13 @@ char const *help = "commands:\n"
 # include "../linux/unistd.h"
 # include "../linux/fcntl.h"
 # include "../linux/stat.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	void *buf = NULL;
 	char ln[200];
 	ff_db_ctrp ctor;
-	mdl_i8_t conn = -1;
-	mdl_i8_t loggedin = -1;
-	ffly_err_t err;
+	ff_i8_t conn = -1;
+	ff_i8_t loggedin = -1;
+	ff_err_t err;
 
 	FF_MAP map;
 	ffly_map_init(&map, _ffly_map_127);
@@ -248,89 +248,89 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	jmpagain;
 
 	__asm__("_creat_pile:\n\t"); {
-		mdl_uint_t slotno;
+		ff_uint_t slotno;
 		ff_db_ctr_creat_pile(ctor, &slotno);
 		ffly_printf("pile-slotno: %u\n", slotno);
 	}
 	jmpagain;
 
 	__asm__("_del_pile:\n\t"); {
-		mdl_uint_t slotno = ffly_stno(*cur->params);
+		ff_uint_t slotno = ffly_stno(*cur->params);
 		ff_db_ctr_del_pile(ctor, slotno);
 	}
 	jmpagain;
 
 	__asm__("_creat_record:\n\t"); {
-		mdl_uint_t pile = ffly_stno(*cur->params);
-		mdl_uint_t size = ffly_stno(cur->params[1]);
-		mdl_uint_t slotno;
+		ff_uint_t pile = ffly_stno(*cur->params);
+		ff_uint_t size = ffly_stno(cur->params[1]);
+		ff_uint_t slotno;
 		ff_db_ctr_creat_record(ctor, pile, &slotno, size);
 		ffly_printf("record-slotno: %u\n", slotno);
 	}
 	jmpagain;
 
 	__asm__("_del_record:\n\t"); {
-		mdl_uint_t pile = ffly_stno(*cur->params);
-		mdl_uint_t slotno = ffly_stno(cur->params[1]);
+		ff_uint_t pile = ffly_stno(*cur->params);
+		ff_uint_t slotno = ffly_stno(cur->params[1]);
 		ff_db_ctr_del_record(ctor, pile, slotno);
 	}
 	jmpagain;
 
 	__asm__("_write:\n\t"); {
-		mdl_uint_t pile = ffly_stno(*cur->params);
-		mdl_uint_t rec = ffly_stno(cur->params[1]);
-		mdl_uint_t offset = ffly_stno(cur->params[2]);
-		mdl_uint_t size = ffly_stno(cur->params[3]);
+		ff_uint_t pile = ffly_stno(*cur->params);
+		ff_uint_t rec = ffly_stno(cur->params[1]);
+		ff_uint_t offset = ffly_stno(cur->params[2]);
+		ff_uint_t size = ffly_stno(cur->params[3]);
 		ff_db_ctr_write(ctor, pile, rec, offset, buf, size);
 	}
 	jmpagain;
 
 	__asm__("_read:\n\t"); {
-		mdl_uint_t pile = ffly_stno(*cur->params);
-		mdl_uint_t rec = ffly_stno(cur->params[1]);
-		mdl_uint_t offset = ffly_stno(cur->params[2]);
-		mdl_uint_t size = ffly_stno(cur->params[3]);
+		ff_uint_t pile = ffly_stno(*cur->params);
+		ff_uint_t rec = ffly_stno(cur->params[1]);
+		ff_uint_t offset = ffly_stno(cur->params[2]);
+		ff_uint_t size = ffly_stno(cur->params[3]);
 		ff_db_ctr_read(ctor, pile, rec, offset, buf, size);
 	}
 	jmpagain;
 
 	__asm__("_record_alloc:\n\t"); {
-		mdl_uint_t slotno = ffly_stno(*cur->params);
+		ff_uint_t slotno = ffly_stno(*cur->params);
 		ff_db_ctr_record_alloc(ctor, slotno);	
 	}
 	jmpagain;
 
 	__asm__("_record_free:\n\t"); {
-		mdl_uint_t slotno = ffly_stno(*cur->params);
+		ff_uint_t slotno = ffly_stno(*cur->params);
 		ff_db_ctr_record_free(ctor, slotno);
 	}
 	jmpagain;
 
 	__asm__("_rivet:\n\t"); {
-		mdl_u16_t rivetno = ffly_stno(*cur->params);
-		mdl_uint_t slotno = ffly_stno(cur->params[1]);
+		ff_u16_t rivetno = ffly_stno(*cur->params);
+		ff_uint_t slotno = ffly_stno(cur->params[1]);
 		ff_db_ctr_rivet(ctor, rivetno, slotno);
 	}
 	jmpagain;
 
 	__asm__("_derivet:\n\t"); {
-		mdl_u16_t rivetno = ffly_stno(cur->params[1]);
+		ff_u16_t rivetno = ffly_stno(cur->params[1]);
 		ff_db_ctr_derivet(ctor, rivetno);
 	}
 	jmpagain;
 
 	__asm__("_rivetto:\n\t"); {
-		mdl_u16_t rivetno = ffly_stno(*cur->params);
-		mdl_uint_t slotno = ffly_stno(cur->params[1]);
+		ff_u16_t rivetno = ffly_stno(*cur->params);
+		ff_uint_t slotno = ffly_stno(cur->params[1]);
 		ff_db_ctr_rivetto(ctor, rivetno, slotno);
 	}
 	jmpagain;
 
 	__asm__("_bind:\n\t"); {
-		mdl_u16_t rivetno = ffly_stno(*cur->params);
-		mdl_uint_t slotno = ffly_stno(cur->params[1]);
+		ff_u16_t rivetno = ffly_stno(*cur->params);
+		ff_uint_t slotno = ffly_stno(cur->params[1]);
 		char const *type = cur->params[2];
-		mdl_int_t offset = -1;
+		ff_int_t offset = -1;
 		if (!ffly_str_cmp(type, "record"))
 			offset = offsetof(struct ffdb_record, no);
 		else if (!ffly_str_cmp(type, "pile"))
@@ -341,7 +341,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	jmpagain;
 
 	__asm__("_acquire_slot:\n\t"); {
-		mdl_uint_t slotno;
+		ff_uint_t slotno;
 		ff_db_ctr_acquire_slot(ctor, &slotno);
 		ffly_printf("slotno: %u\n", slotno);
 	}
@@ -382,7 +382,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	jmpagain;
 
 	__asm__("_exist:\n\t"); {
-		mdl_u16_t rivetno = ffly_stno(*cur->params);
+		ff_u16_t rivetno = ffly_stno(*cur->params);
 		ffly_printf("%s\n", ff_db_ctr_exist(ctor, rivetno, &err) == -1?"doesen't exist.":"does exist.");
 	}
 	jmpagain;

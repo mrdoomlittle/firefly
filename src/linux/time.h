@@ -1,9 +1,10 @@
 # ifndef __ffly__linux__time__h
 # define __ffly__linux__time__h
+# include "../ffint.h"
 # include "types.h"
 struct timespec {
 	__linux_time_t tv_sec;
-	mdl_u64_t tv_nsec;
+	ff_u64_t tv_nsec;
 };
 
 struct timeval {
@@ -14,5 +15,5 @@ struct timeval {
 # define CLOCK_REALTIME 0
 # define CLOCK_MONOTONIC 1
 
-mdl_s32_t clock_gettime(__linux_clockid_t, struct timespec*);
+ff_s32_t clock_gettime(__linux_clockid_t, struct timespec*);
 # endif /*__ffly__linux__time__h*/

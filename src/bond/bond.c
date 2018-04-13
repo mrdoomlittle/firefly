@@ -7,12 +7,12 @@
 int static s;
 int d;
 
-mdl_u32_t adr = 0;
-void iadr(mdl_uint_t __by) {
+ff_u32_t adr = 0;
+void iadr(ff_uint_t __by) {
 	adr+=__by;
 }
 
-mdl_u32_t curadr() {return adr;}
+ff_u32_t curadr() {return adr;}
 struct hash symbols;
 
 char const *extsrcfl(char const **__p) {
@@ -33,7 +33,7 @@ char const *extsrcfl(char const **__p) {
 	return (char const*)buf;
 }
 
-mdl_i8_t validate(ffef_hdrp __hdr) {
+ff_i8_t validate(ffef_hdrp __hdr) {
 	if (*__hdr->ident != FF_EF_MAG0) {
 		printf("mag0 corrupted\n");
 		return -1;
@@ -58,12 +58,12 @@ mdl_i8_t validate(ffef_hdrp __hdr) {
 
 # include "../malloc.h"
 # include "../dep/bzero.h"
-mdl_uint_t offset = ffef_hdr_size;
-mdl_uint_t get_offset() {
+ff_uint_t offset = ffef_hdr_size;
+ff_uint_t get_offset() {
 	return offset;
 }
 
-void incr_offset(mdl_uint_t __by) {
+void incr_offset(ff_uint_t __by) {
 	offset+=__by;
 }
 
@@ -93,21 +93,21 @@ void static to_free(void *__p) {
 	*(fresh++) = __p;
 }
 
-mdl_u64_t bot = 0;
-mdl_u64_t rise = 0;
+ff_u64_t bot = 0;
+ff_u64_t rise = 0;
 
-void bond_write(mdl_u64_t __offset, void *__buf, mdl_uint_t __size) {
-	mdl_u8_t *p = (mdl_u8_t*)__buf;
-	mdl_u8_t *end = p+__size;
-	mdl_u64_t offset;
+void bond_write(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
+	ff_u8_t *p = (ff_u8_t*)__buf;
+	ff_u8_t *end = p+__size;
+	ff_u64_t offset;
 	while(p != end) {
-		offset = __offset+(p-(mdl_u8_t*)__buf);
+		offset = __offset+(p-(ff_u8_t*)__buf);
 
-		mdl_uint_t page = offset>>PAGE_SHIFT;
-		mdl_uint_t pg_off = offset-(page*PAGE_SIZE);
-		mdl_uint_t left = end-p;
+		ff_uint_t page = offset>>PAGE_SHIFT;
+		ff_uint_t pg_off = offset-(page*PAGE_SIZE);
+		ff_uint_t left = end-p;
 
-		mdl_uint_t shred = PAGE_SIZE-pg_off;
+		ff_uint_t shred = PAGE_SIZE-pg_off;
 		if (shred>left)
 			shred = left;
 
@@ -116,13 +116,13 @@ void bond_write(mdl_u64_t __offset, void *__buf, mdl_uint_t __size) {
 	}
 }
 
-void bond_mapout(mdl_u64_t __offset, mdl_uint_t __size) {
-	mdl_uint_t page = __offset>>PAGE_SHIFT;
-	mdl_uint_t pg_off = __offset-(page*PAGE_SIZE);
-	mdl_u64_t end_off = __size+__offset;
-	mdl_uint_t pg_c = ((end_off>>PAGE_SHIFT)+((end_off-((end_off>>PAGE_SHIFT)*PAGE_SIZE))>0));
+void bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
+	ff_uint_t page = __offset>>PAGE_SHIFT;
+	ff_uint_t pg_off = __offset-(page*PAGE_SIZE);
+	ff_u64_t end_off = __size+__offset;
+	ff_uint_t pg_c = ((end_off>>PAGE_SHIFT)+((end_off-((end_off>>PAGE_SHIFT)*PAGE_SIZE))>0));
 
-	mdl_uint_t static crest = 0;
+	ff_uint_t static crest = 0;
 	if (!map) {
 		map = (void**)malloc(pg_c*sizeof(void*));
 		crest = pg_c;
@@ -140,19 +140,19 @@ void bond_mapout(mdl_u64_t __offset, mdl_uint_t __size) {
 	}
 }
 
-void bond_read(mdl_u64_t __offset, void *__buf, mdl_uint_t __size) {
-	mdl_u8_t *p = (mdl_u8_t*)__buf;
-	mdl_u8_t *end = p+__size;
+void bond_read(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
+	ff_u8_t *p = (ff_u8_t*)__buf;
+	ff_u8_t *end = p+__size;
 
-	mdl_u64_t offset;
+	ff_u64_t offset;
 	while(p != end) {
-		offset = __offset+(p-(mdl_u8_t*)__buf);
+		offset = __offset+(p-(ff_u8_t*)__buf);
 
-		mdl_uint_t page = offset>>PAGE_SHIFT;
-		mdl_uint_t pg_off = offset-(page*PAGE_SIZE);
-		mdl_uint_t left = end-p;
+		ff_uint_t page = offset>>PAGE_SHIFT;
+		ff_uint_t pg_off = offset-(page*PAGE_SIZE);
+		ff_uint_t left = end-p;
 
-		mdl_uint_t shred = PAGE_SIZE-pg_off;
+		ff_uint_t shred = PAGE_SIZE-pg_off;
 		if (shred>left)
 			shred = left;
 		memcpy(p, map[page]+pg_off, shred);
@@ -160,7 +160,7 @@ void bond_read(mdl_u64_t __offset, void *__buf, mdl_uint_t __size) {
 	}
 }
 
-void oust(void *__p, mdl_uint_t __size) {
+void oust(void *__p, ff_uint_t __size) {
 	lseek(d, offset, SEEK_SET);
 	write(d, __p, __size);
 	offset+=__size;
@@ -206,7 +206,7 @@ void absorb_segment(ffef_seg_hdrp __seg) {
 	seg->next = curseg;
 	curseg = seg;
 
-	seg->p = (mdl_u8_t*)malloc(seg->size = __seg->sz);
+	seg->p = (ff_u8_t*)malloc(seg->size = __seg->sz);
 	seg->addr = __seg->adr;
 	lseek(d, __seg->offset, SEEK_SET);
 	read(d, seg->p, __seg->sz);
@@ -218,14 +218,14 @@ void absorb_region(ffef_reg_hdrp __reg) {
 	read(s, name, __reg->l);
 	printf("region, %s\n", name);
 
-	mdl_uint_t size;
-	mdl_u8_t *buf = (mdl_u8_t*)malloc(size = (__reg->end-__reg->beg));
+	ff_uint_t size;
+	ff_u8_t *buf = (ff_u8_t*)malloc(size = (__reg->end-__reg->beg));
 
 	lseek(s, __reg->beg, SEEK_SET);
 	read(s, buf, size);
 
 	if (__reg->type == FF_RG_SYT) {
-		mdl_uint_t l;
+		ff_uint_t l;
 		syt = (symbolp*)malloc((l = (size/sizeof(struct ffef_sy)))*sizeof(symbolp));
 		to_free(syt);
 		symbolp *p = syt;
@@ -277,14 +277,14 @@ void ldstt(ffef_hdrp __hdr) {
 	lseek(s, __hdr->sttr, SEEK_SET);
 	read(s, &reg, ffef_reg_hdrsz);
 
-	mdl_uint_t size;
+	ff_uint_t size;
 	stt = (char const*)malloc(size = (reg.end-reg.beg));
 	lseek(s, reg.beg, SEEK_SET);
 	read(s, (void*)stt, size);
 	stte = stt+size;
 }
 
-mdl_i8_t static epdeg = -1;
+ff_i8_t static epdeg = -1;
 void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 	if ((s = open(__file, O_RDONLY, 0)) == -1) {
 		printf("failed to open source file.\n");
@@ -309,8 +309,8 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 	ldstt(&hdr);
 	struct ffef_reg_hdr reg;
 	if (hdr.rg != FF_EF_NULL) {
-		mdl_uint_t i;
-		mdl_u64_t offset = hdr.rg;
+		ff_uint_t i;
+		ff_u64_t offset = hdr.rg;
 //		to_free(rindx = (regionp*)malloc(hdr.nrg*sizeof(regionp)));
 		for(i = 0;i != hdr.nrg;i++,offset-=ffef_reg_hdrsz+reg.l) {
 			lseek(s, offset, SEEK_SET);
@@ -323,8 +323,8 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 /*
 	struct ffef_seg_hdr seg;
 	if (hdr.sg != FF_EF_NULL) {
-		mdl_uint_t i;
-		mdl_u64_t offset = hdr.sg;
+		ff_uint_t i;
+		ff_u64_t offset = hdr.sg;
 		for(i = 0;i != hdr.nsg;i++,offset-=ffef_seg_hdrsz) {
 			lseek(s, offset, SEEK_SET);
 			read(s, &seg, ffef_reg_hdrsz);
@@ -335,8 +335,8 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 
 	struct ffef_rel rel;
 	if (hdr.rl != FF_EF_NULL) {
-		mdl_uint_t i = 0;
-		mdl_u64_t offset = hdr.rl;
+		ff_uint_t i = 0;
+		ff_u64_t offset = hdr.rl;
 		for(i = 0;i != hdr.nrl;i++,offset-=ffef_relsz) {
 			lseek(s, offset, SEEK_SET);
 			read(s, &rel, ffef_relsz);
@@ -346,8 +346,8 @@ void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 
 	struct ffef_hok hok;
 	if (hdr.hk != FF_EF_NULL) {
-		mdl_uint_t i;
-		mdl_u64_t offset = hdr.hk;
+		ff_uint_t i;
+		ff_u64_t offset = hdr.hk;
 		for(i = 0;i != hdr.nhk;i++,offset-=ffef_hoksz) {
 			lseek(s, offset, SEEK_SET);
 			read(s, &hok, ffef_hoksz);
@@ -400,7 +400,7 @@ void bond(char const *__s, char const *__dst) {
 /*
 	printf("pagesize: %u\n", PAGE_SIZE);
 	char const *text = "1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20";
-	mdl_uint_t l = strlen(text)+1;
+	ff_uint_t l = strlen(text)+1;
 	bond_mapout(0, l);
 
 	bond_write(0, text, l);
@@ -437,7 +437,7 @@ return;
 
 	dhdr.sttr = FF_EF_NULL;
 
-	mdl_i8_t epdeg = -1;
+	ff_i8_t epdeg = -1;
 	while(*p != '\0') {
 		char const *file;
 		if (!(file = extsrcfl(&p)))

@@ -5,11 +5,11 @@
 # include "linux/fcntl.h"
 # include "system/io.h"
 
-mdl_s32_t ff_mktemp(char *__tmpl) {
+ff_s32_t ff_mktemp(char *__tmpl) {
 	char *p = __tmpl;
 	while(*p++ != '.');
 	
-	mdl_u32_t no = ffgen_rand32l();
+	ff_u32_t no = ffgen_rand32l();
 	while(*p != '\0') {
 		*(p++) = 'a'+(no&0xf);	
 		no>>=4;

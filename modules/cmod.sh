@@ -1,4 +1,4 @@
-cc_flags="-D__ffly_module -fno-builtin"
+cc_flags="-D__fflib -D__ffly_source -D__ffly_module -fno-builtin"
 
 gcc $cc_flags -c main.c
 gcc $cc_flags -c ../src/mod/printf.c
@@ -12,7 +12,7 @@ gcc $cc_flags -c ../src/mode.c
 gcc $cc_flags -c -o mod_pipe.o ../src/mod/pipe.c
 gcc $cc_flags -c -o copy.o ../src/mod/copy.c
 
-as_inc="-I $(realpath ../)/src/system/asm/"
+as_inc="-I$(realpath ../)/src/system/asm/ -I$(realpath ../)/src/linux/asm/"
 nasm -f elf64 $as_inc -o sys_shmctl.o.0 ../src/system/asm/sys_shmctl.asm
 gcc $cc_flags -c -o sys_shmctl.o.1 ../src/system/sys_shmctl.c
 
@@ -25,8 +25,16 @@ gcc $cc_flags -c -o sys_shmat.o.1 ../src/system/sys_shmat.c
 nasm -f elf64 $as_inc -o sys_shmdt.o.0 ../src/system/asm/sys_shmdt.asm
 gcc $cc_flags -c -o sys_shmdt.o.1 ../src/system/sys_shmdt.c
 
+nasm -f elf64 $as_inc -o mutex.o.0 ../src/system/asm/mutex.asm
+gcc $cc_flags -c -o mutex.o.1 ../src/system/mutex.c
+
 gcc $cc_flags -c -o bcopy.o.1 ../src/dep/bcopy.c
 as -o bcopy.o.0 ../src/dep/bcopy.s
-gcc $cc_flags main.o $ffly_objs pipe.o shm.o string.o malloc.o printf.o bcopy.o.1 bcopy.o.0 \
+
+gcc $cc_flags -c ../src/system/errno.c
+ffly_objs="pipe.o shm.o string.o malloc.o printf.o bcopy.o.1 bcopy.o.0 \
 sys_shmctl.o.0 sys_shmctl.o.1 sys_shmget.o.0 sys_shmget.o.1 sys_shmat.o.0 sys_shmat.o.1 \
-sys_shmdt.o.0 sys_shmdt.o.1 io.o mode.o ring.o mod_pipe.o copy.o $1 -nostdlib
+sys_shmdt.o.0 sys_shmdt.o.1 io.o mode.o ring.o mod_pipe.o copy.o mutex.o.0 mutex.o.1 \
+errno.o"
+
+gcc $cc_flags main.o $ffly_objs $1 -nostdlib

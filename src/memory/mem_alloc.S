@@ -10,11 +10,11 @@ __ffly_mal:
 	sub $1, %rsp
 	movb $0x0, (%rsp)
 #endif
-#if (!defined(__arc32) && !defined(__arc64)) || defined(__arc32)
+#if (!defined(__ff32) && !defined(__ff64)) || defined(__ff32)
 	sub $4, %rsp
 	movl %eax, (%rsp)
 #else
-#ifdef __arc64
+#ifdef __ff64
 	sub $8, %rsp
 	movq %rax, (%rsp)
 #endif

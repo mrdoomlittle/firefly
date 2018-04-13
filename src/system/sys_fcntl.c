@@ -1,6 +1,6 @@
-# include <mdlint.h>
-mdl_s32_t fcntl(mdl_u32_t __fd, mdl_s32_t __cmd, mdl_u64_t __arg) {
-	mdl_s32_t ret;
+# include "../ffint.h"
+ff_s32_t fcntl(ff_u32_t __fd, ff_s32_t __cmd, ff_u64_t __arg) {
+	ff_s32_t ret;
 	__asm__("mov %1, %%edi\n\t"
         "mov %2, %%esi\n\t"
         "mov %3, %%rdx\n\t"

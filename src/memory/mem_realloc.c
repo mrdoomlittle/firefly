@@ -1,34 +1,34 @@
 # include "mem_realloc.h"
 # include "../system/io.h"
 # ifdef __ffly_mal_track
-void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc, ffly_bool_t __track_bypass) {
+void* ffly_mem_realloc(void *__p, ff_uint_t __nbc, ff_bool_t __track_bypass) {
 # else
-void* ffly_mem_realloc(void *__p, mdl_uint_t __nbc) {
+void* ffly_mem_realloc(void *__p, ff_uint_t __nbc) {
 # endif
-	mdl_u8_t *p;
+	ff_u8_t *p;
 # ifdef __ffly_debug_enabled
-	p = (mdl_u8_t*)__p-sizeof(mdl_uint_t);
-	mdl_uint_t mem_size = *((mdl_uint_t*)p);
+	p = (ff_u8_t*)__p-sizeof(ff_uint_t);
+	ff_uint_t mem_size = *((ff_uint_t*)p);
 # ifndef __ffly_use_allocr
-	if ((p = (mdl_u8_t*)realloc(p, __nbc+sizeof(mdl_uint_t))) == NULL) {
+	if ((p = (ff_u8_t*)realloc(p, __nbc+sizeof(ff_uint_t))) == NULL) {
 		ffly_fprintf(ffly_err, "mem_realloc: failed to reallocate memory.\n");
 		return NULL;
 	}
 # else
-    p = (mdl_u8_t*)ffly_realloc(p, __nbc+sizeof(mdl_uint_t));
+    p = (ff_u8_t*)ffly_realloc(p, __nbc+sizeof(ff_uint_t));
 # endif
 
 	if (__nbc > mem_size)
 		ffly_atomic_add(&ffly_mem_alloc_bc, __nbc-mem_size);
 	else if (__nbc < mem_size)
 		ffly_atomic_sub(&ffly_mem_alloc_bc, mem_size-__nbc);
-	*(mdl_uint_t*)p = __nbc;
-	p += sizeof(mdl_uint_t);
+	*(ff_uint_t*)p = __nbc;
+	p += sizeof(ff_uint_t);
 # else
 # ifndef __ffly_use_allocr
-	p = (mdl_u8_t*)realloc(__p, __nbc);
+	p = (ff_u8_t*)realloc(__p, __nbc);
 # else
-    p = (mdl_u8_t*)ffly_realloc(__p, __nbc);
+    p = (ff_u8_t*)ffly_realloc(__p, __nbc);
 # endif
 # endif
 

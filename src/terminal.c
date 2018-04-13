@@ -1,4 +1,4 @@
-# include "types/err_t.h"
+# include "types.h"
 # include "system/err.h"
 # include "system/pipe.h"
 # include "system/io.h"
@@ -30,23 +30,23 @@ char const *help = "commands:\n"
 				   "   lsvec,\n"
 				   "   exit\n";
 
-ffly_err_t static
-sndop(mdl_u8_t __op, mdl_uint_t __pipe) {
-	ffly_err_t ret;
+ff_err_t static
+sndop(ff_u8_t __op, ff_uint_t __pipe) {
+	ff_err_t ret;
 	ffly_printf("sending op.\n");
 	ret= ffly_pipe_wr8l(__op, __pipe);
 	ffly_printf("sent.\n");
 	return ret;
 }
 
-ffly_err_t static
-lsvec(mdl_uint_t __pipe) {
+ff_err_t static
+lsvec(ff_uint_t __pipe) {
 	if (_err(sndop(_ffly_ho_lsvec, __pipe)))
 		reterr;
 
-	ffly_err_t err;
-	mdl_uint_t l;
-	if ((mdl_i8_t)ffly_pipe_rd8l(__pipe, &err) == -1) {
+	ff_err_t err;
+	ff_uint_t l;
+	if ((ff_i8_t)ffly_pipe_rd8l(__pipe, &err) == -1) {
 		ffly_printf("nothing to be recved.\n");
 		retok; 
 	}
@@ -54,7 +54,7 @@ lsvec(mdl_uint_t __pipe) {
 	if (_err(err))
 		reterr;
 
-	ffly_pipe_read(&l, sizeof(mdl_uint_t), __pipe); 
+	ffly_pipe_read(&l, sizeof(ff_uint_t), __pipe); 
 	if (_err(err))
 		reterr;
 	ffly_printf("buffer size: %u\n", l);
@@ -73,16 +73,16 @@ lsvec(mdl_uint_t __pipe) {
 	__ffly_mem_free(s);
 }
 
-void static lsmap(mdl_uint_t __pipe) {
+void static lsmap(ff_uint_t __pipe) {
 }
 
-ffly_err_t ffmain(int __argc, char **__argv) {
+ff_err_t ffmain(int __argc, char **__argv) {
 	char buf[200];
 	char line[200];
 	char *p;
-	ffly_err_t err;
-	mdl_uint_t pipe;
-	mdl_i8_t conn = -1;
+	ff_err_t err;
+	ff_uint_t pipe;
+	ff_i8_t conn = -1;
 	while(1) {
 		p = line;
 		ffly_printf("~: ");
@@ -116,10 +116,11 @@ ffly_err_t ffmain(int __argc, char **__argv) {
 			char *key = read_part_and_dupe(&p, buf);
 			FF_FILE *file = ffly_fopen(key, FF_O_RDONLY, 0, &err);
 
-			mdl_uint_t shm_id;
-			ffly_fread(file, &shm_id, sizeof(mdl_uint_t));	 
+			ff_uint_t shm_id;
+			ffly_fread(file, &shm_id, sizeof(ff_uint_t));	 
 			ffly_printf("connecting to pipe with shmid: %u\n", shm_id);
-			pipe = ffly_pipe(8, FF_PIPE_SHMM, shm_id);
+			ff_err_t err;
+			pipe = ffly_pipe(8, FF_PIPE_SHMM, shm_id, &err);
 			ffly_pipe_connect(pipe);
 			conn = 0;  
 			ffly_fclose(file); 

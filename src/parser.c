@@ -27,8 +27,8 @@ build_type(struct ffly_compiler *__compiler, struct type **__type, struct type *
 
 struct type static *float_t = &(struct type){.kind=_float, .size=sizeof(double)};
 
-struct type static *uint_t = &(struct type){.kind=_uint_t, .size=sizeof(mdl_uint_t)};
-struct type static *int_t = &(struct type){.kind=_int_t, .size=sizeof(mdl_int_t)};
+struct type static *uint_t = &(struct type){.kind=_uint_t, .size=sizeof(ff_uint_t)};
+struct type static *int_t = &(struct type){.kind=_int_t, .size=sizeof(ff_int_t)};
 
 struct type static *u64_t = &(struct type){.kind=_u64_t, .size=8};
 struct type static *i64_t = &(struct type){.kind=_i64_t, .size=8};
@@ -44,7 +44,7 @@ struct type static *i8_t = &(struct type){.kind=_i8_t, .size=1};
 
 struct type static *ptr = &(struct type){.kind=_u64_t, .size=8};
 void static
-mk_notype(struct ffly_compiler *__compiler, struct type **__type, mdl_u8_t __id) {
+mk_notype(struct ffly_compiler *__compiler, struct type **__type, ff_u8_t __id) {
 	struct type *tmpl;
 	switch(__id) {
 		case _k_float:
@@ -95,7 +95,7 @@ ast_decl(struct ffly_compiler *__compiler, struct node **__node,
 
 void static
 ast_int_type(struct ffly_compiler *__compiler, struct node **__node,
-	struct type *__type, ffly_byte_t *__p)
+	struct type *__type, ff_byte_t *__p)
 {
 	build_node(__compiler, __node, &(struct node){.kind=_ast_literal, ._type=__type});
 	ffly_mem_cpy((*__node)->val, __p, __type->size);
@@ -120,7 +120,7 @@ ast_if(struct ffly_compiler *__compiler, struct node **__node,
 
 void static
 ast_func(struct ffly_compiler *__compiler, struct node **__node, struct ffly_vec *__args,
-	struct ffly_vec *__block, struct type *__type, ffly_bool_t __va)
+	struct ffly_vec *__block, struct type *__type, ff_bool_t __va)
 {
 	build_node(__compiler, __node, &(struct node){.kind=_ast_func, .args=*__args, .block=*__block, ._type=__type, .va=__va});
 }
@@ -160,7 +160,7 @@ ast_while(struct ffly_compiler *__compiler, struct node **__node,
 
 void static
 ast_uop(struct ffly_compiler *__compiler, struct node **__node,
-	mdl_u8_t __kind, struct node *__operand, struct type *__type) {
+	ff_u8_t __kind, struct node *__operand, struct type *__type) {
 
 	build_node(__compiler, __node, &(struct node){.kind=__kind, .operand=__operand, ._type=__type});
 }
@@ -198,7 +198,7 @@ ast_brk(struct ffly_compiler *__compiler, struct node **__node) {
 
 void static
 ast_binop(struct ffly_compiler *__compiler, struct node **__node,
-	mdl_u8_t __op, struct type *__type, struct node *__l, struct node *__r)
+	ff_u8_t __op, struct type *__type, struct node *__l, struct node *__r)
 {
 	build_node(__compiler, __node, &(struct node){.kind=__op, ._type=__type, .l=__l, .r=__r});
 }
@@ -210,13 +210,13 @@ mk_ptr_type(struct ffly_compiler *__compiler, struct type **__type, struct type 
 }
 
 struct type static*
-get_typedef(struct ffly_compiler *__compiler, char *__name, ffly_err_t *__err) {
+get_typedef(struct ffly_compiler *__compiler, char *__name, ff_err_t *__err) {
 	return (struct type*)ffly_map_get(&__compiler->typedefs, __name, ffly_str_len(__name), __err);
 }
 
-ffly_bool_t static
+ff_bool_t static
 is_type(struct ffly_compiler *__compiler, struct token *__tok) {
-	ffly_err_t err;
+	ff_err_t err;
 	if (__tok->kind == TOK_IDENT) { 
 		struct type *_type = get_typedef(__compiler, (char*)__tok->p, &err);
 		if (_ok(err) && _type != NULL) return 1;
@@ -228,60 +228,60 @@ is_type(struct ffly_compiler *__compiler, struct token *__tok) {
 		|| __tok->id == _k_var || __tok->id == _k_float || __tok->id == _k_typedef);
 }
 	
-ffly_bool_t static
+ff_bool_t static
 is_stmt(struct token *__tok) {
 	return (__tok->id == _k_if || __tok->id == _k_exit
 		|| __tok->id == _k_while || __tok->id == _k_match);
 }
 
-ffly_err_t static
+ff_err_t static
 conv(struct ffly_compiler *__compiler, struct node **__node, struct node *__operand, struct type *__to) {
 	ast_conv(__compiler, __node, __to, __operand);
 	retok;
 }
 
-ffly_err_t static parser_func_call(struct ffly_compiler*, struct node**, struct node*);
-ffly_err_t static parser_decl_spec(struct ffly_compiler*, struct token*, struct type**);
-ffly_err_t static parser_struct_decl(struct ffly_compiler*, struct ffly_map*, mdl_uint_t*);
-ffly_err_t static parser_struct_spec(struct ffly_compiler*, struct type**);
-ffly_err_t static parser_struct_field(struct ffly_compiler*, struct node**, struct node*);
-ffly_err_t static parser_declarator(struct ffly_compiler*, struct type**, struct type*);
-ffly_err_t static parser_stmt(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_decl(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_print_call(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_expr(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_primary_expr(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_conditional_expr(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_unary_addrof(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_unary_expr(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_postfix_expr(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_assign_expr(struct ffly_compiler*, struct node**);
-struct type static* parser_cast_type(struct ffly_compiler*, ffly_err_t*);
-ffly_err_t static parser_cast_expr(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_binary_expr(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_decl_init(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_brk_stmt(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_call(struct ffly_compiler*, struct node**);
-ffly_bool_t static is_func_call(struct ffly_compiler*);
-ffly_err_t static parser_compound_stmt(struct ffly_compiler*, struct ffly_vec*);
-ffly_err_t static parser_if_stmt(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_match_stmt(struct ffly_compiler*, struct node**); 
-ffly_err_t static parser_exit_stmt(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_ret_stmt(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_while_stmt(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_func_def(struct ffly_compiler*, struct node**);
-ffly_err_t static parser_call(struct ffly_compiler*, struct node**);
+ff_err_t static parser_func_call(struct ffly_compiler*, struct node**, struct node*);
+ff_err_t static parser_decl_spec(struct ffly_compiler*, struct token*, struct type**);
+ff_err_t static parser_struct_decl(struct ffly_compiler*, struct ffly_map*, ff_uint_t*);
+ff_err_t static parser_struct_spec(struct ffly_compiler*, struct type**);
+ff_err_t static parser_struct_field(struct ffly_compiler*, struct node**, struct node*);
+ff_err_t static parser_declarator(struct ffly_compiler*, struct type**, struct type*);
+ff_err_t static parser_stmt(struct ffly_compiler*, struct node**);
+ff_err_t static parser_decl(struct ffly_compiler*, struct node**);
+ff_err_t static parser_print_call(struct ffly_compiler*, struct node**);
+ff_err_t static parser_expr(struct ffly_compiler*, struct node**);
+ff_err_t static parser_primary_expr(struct ffly_compiler*, struct node**);
+ff_err_t static parser_conditional_expr(struct ffly_compiler*, struct node**);
+ff_err_t static parser_unary_addrof(struct ffly_compiler*, struct node**);
+ff_err_t static parser_unary_expr(struct ffly_compiler*, struct node**);
+ff_err_t static parser_postfix_expr(struct ffly_compiler*, struct node**);
+ff_err_t static parser_assign_expr(struct ffly_compiler*, struct node**);
+struct type static* parser_cast_type(struct ffly_compiler*, ff_err_t*);
+ff_err_t static parser_cast_expr(struct ffly_compiler*, struct node**);
+ff_err_t static parser_binary_expr(struct ffly_compiler*, struct node**);
+ff_err_t static parser_decl_init(struct ffly_compiler*, struct node**);
+ff_err_t static parser_brk_stmt(struct ffly_compiler*, struct node**);
+ff_err_t static parser_call(struct ffly_compiler*, struct node**);
+ff_bool_t static is_func_call(struct ffly_compiler*);
+ff_err_t static parser_compound_stmt(struct ffly_compiler*, struct ffly_vec*);
+ff_err_t static parser_if_stmt(struct ffly_compiler*, struct node**);
+ff_err_t static parser_match_stmt(struct ffly_compiler*, struct node**); 
+ff_err_t static parser_exit_stmt(struct ffly_compiler*, struct node**);
+ff_err_t static parser_ret_stmt(struct ffly_compiler*, struct node**);
+ff_err_t static parser_while_stmt(struct ffly_compiler*, struct node**);
+ff_err_t static parser_func_def(struct ffly_compiler*, struct node**);
+ff_err_t static parser_call(struct ffly_compiler*, struct node**);
 
 
-ffly_err_t
-parser_struct_decl(struct ffly_compiler *__compiler, struct ffly_map *__fields, mdl_uint_t *__size) {
+ff_err_t
+parser_struct_decl(struct ffly_compiler *__compiler, struct ffly_map *__fields, ff_uint_t *__size) {
 	if (!expect_token(__compiler, TOK_KEYWORD, _l_brace)) {
 		errmsg("expected error.\n");
 		reterr;
 	}
 
-	ffly_off_t off = 0;
-	ffly_err_t err;
+	ff_off_t off = 0;
+	ff_err_t err;
 	if (!next_token_is(__compiler, TOK_KEYWORD, _r_brace)) {
 		_next:
 		{
@@ -308,7 +308,7 @@ parser_struct_decl(struct ffly_compiler *__compiler, struct ffly_map *__fields, 
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_struct_spec(struct ffly_compiler *__compiler, struct type **__type) {
 	struct token *name = next_token(__compiler);
 	if (name->kind != TOK_IDENT) {
@@ -316,7 +316,7 @@ parser_struct_spec(struct ffly_compiler *__compiler, struct type **__type) {
 		reterr;
 	}
 
-	ffly_err_t err;
+	ff_err_t err;
 	*__type = (struct type*)ffly_map_get(get_env(__compiler), name->p, ffly_str_len((char*)name->p), &err);
 	if (*__type != NULL) {
 		// err
@@ -325,7 +325,7 @@ parser_struct_spec(struct ffly_compiler *__compiler, struct type **__type) {
 
 	struct ffly_map fields;    
 	ffly_map_init(&fields, _ffly_map_127);
-	mdl_uint_t size;
+	ff_uint_t size;
 	if (_err(err = parser_struct_decl(__compiler, &fields, &size))) {
 		// err
 		reterr;
@@ -336,10 +336,10 @@ parser_struct_spec(struct ffly_compiler *__compiler, struct type **__type) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_struct_field(struct ffly_compiler *__compiler, struct node **__node, struct node *__struct) {
 	struct token *name = next_token(__compiler); 
-	ffly_err_t err;
+	ff_err_t err;
 	struct type *_type = (struct type*)ffly_map_get(&__struct->_type->fields, name->p, ffly_str_len((char*)name->p), &err);
 	if (!_type) {
 		errmsg("structure field doesen't exist.\n");
@@ -350,10 +350,10 @@ parser_struct_field(struct ffly_compiler *__compiler, struct node **__node, stru
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_decl_spec(struct ffly_compiler *__compiler, struct token *__tok, struct type **__type) {
 	if (__tok->kind == TOK_IDENT) {
-		ffly_err_t err;
+		ff_err_t err;
 		struct type *_type = get_typedef(__compiler, (char*)__tok->p, &err);
 		if (_ok(err) && _type != NULL) {
 			build_type(__compiler, __type, _type);
@@ -381,15 +381,15 @@ parser_decl_spec(struct ffly_compiler *__compiler, struct token *__tok, struct t
 }
 
 void
-read_no(struct ffly_compiler *__compiler, struct node **__node, char *__s, mdl_u8_t __is_hex, mdl_u8_t __is_float) {
-	mdl_u8_t sign = *__s == '-';
+read_no(struct ffly_compiler *__compiler, struct node **__node, char *__s, ff_u8_t __is_hex, ff_u8_t __is_float) {
+	ff_u8_t sign = *__s == '-';
 	struct type *_type;
-	ffly_byte_t val[sizeof(mdl_u64_t)];
+	ff_byte_t val[sizeof(ff_u64_t)];
 	if (__is_float) {
 		*(double*)val = ffly_stfloat(__s);
 		_type = float_t;
 	} else {
-		mdl_u64_t no;
+		ff_u64_t no;
 		if (__is_hex) {
 			if (ffly_islen(__s, 2) == -1)
 				if (*__s == '0' && ffly_tolow(*(__s+1)) == 'x') __s+=2;
@@ -398,24 +398,24 @@ read_no(struct ffly_compiler *__compiler, struct node **__node, char *__s, mdl_u
 			no = ffly_stno(__s);
 
 		if (sign) no = -no;
-		if (no >= 0 && no <= (mdl_u8_t)~0)
+		if (no >= 0 && no <= (ff_u8_t)~0)
 			_type = sign?i8_t:u8_t;
-		else if (no > (mdl_u8_t)~0 && no <= (mdl_u16_t)~0)
+		else if (no > (ff_u8_t)~0 && no <= (ff_u16_t)~0)
 			_type = sign?i16_t:u16_t;
-		else if (no > (mdl_u16_t)~0 && no <= (mdl_u32_t)~0)
+		else if (no > (ff_u16_t)~0 && no <= (ff_u32_t)~0)
 			_type = sign?i32_t:u32_t;
-		else if (no > (mdl_u32_t)~0 && no <= (mdl_u64_t)~0)
+		else if (no > (ff_u32_t)~0 && no <= (ff_u64_t)~0)
 			_type = sign?i64_t:u64_t;
-		*(mdl_u64_t*)val = sign?-no:no;
+		*(ff_u64_t*)val = sign?-no:no;
 	}
 
 	ast_int_type(__compiler, __node, _type, val);
 }
 
-ffly_err_t
+ff_err_t
 parser_primary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	struct token *tok = next_token(__compiler);
-	ffly_err_t err;
+	ff_err_t err;
 	if (!tok) {
 		retok;
 	}
@@ -447,20 +447,20 @@ parser_primary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_conditional_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	struct token *tok = next_token(__compiler);
 	if (is_keyword(tok, _eqeq) || is_keyword(tok, _neq) || is_keyword(tok, _gt) || is_keyword(tok, _lt)) {
 		struct node *l = *__node;
 		struct node *r;
-		ffly_err_t err;
+		ff_err_t err;
 		if (_err(err = parser_primary_expr(__compiler, &r))) {
 			_ret;
 		}
 		struct type *_type;
 		build_type(__compiler, &_type, u8_t);
 
-		mdl_u8_t op;
+		ff_u8_t op;
 		if (is_keyword(tok, _eqeq))
 			op = _op_eq;
 		else if (is_keyword(tok, _neq))
@@ -479,10 +479,10 @@ parser_conditional_expr(struct ffly_compiler *__compiler, struct node **__node) 
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_unary_addrof(struct ffly_compiler *__compiler, struct node **__node) {
 	struct node *_node;
-	ffly_err_t err;
+	ff_err_t err;
 	if (_err(err = parser_expr(__compiler, &_node)))
 		_ret;
 	
@@ -492,7 +492,7 @@ parser_unary_addrof(struct ffly_compiler *__compiler, struct node **__node) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t
+ff_err_t
 parser_unary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	if (next_token_is(__compiler, TOK_KEYWORD, _incr))
 		ast_uop(__compiler, __node, _ast_incr, *__node, (*__node)->_type);
@@ -511,9 +511,9 @@ parser_unary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_postfix_expr(struct ffly_compiler *__compiler, struct node **__node) {
-	ffly_err_t err;
+	ff_err_t err;
 	if (next_token_is(__compiler, TOK_KEYWORD, _period)) {
 		if (_err(err = parser_struct_field(__compiler, __node, *__node))) {
 			errmsg("failed to read struct field.\n");
@@ -532,9 +532,9 @@ parser_postfix_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_assign_expr(struct ffly_compiler *__compiler, struct node **__node) {
-	ffly_err_t err;
+	ff_err_t err;
 	if (next_token_is(__compiler, TOK_KEYWORD, _eq)) {
 		struct node *l = *__node;
 		struct node *r = NULL;
@@ -548,7 +548,7 @@ parser_assign_expr(struct ffly_compiler *__compiler, struct node **__node) {
 }
 
 struct type*
-parser_cast_type(struct ffly_compiler *__compiler, ffly_err_t *__err) {
+parser_cast_type(struct ffly_compiler *__compiler, ff_err_t *__err) {
 	struct type *_type;
 	struct token *tok = next_token(__compiler);
 	if (!is_type(__compiler, tok)) {
@@ -570,10 +570,10 @@ parser_cast_type(struct ffly_compiler *__compiler, ffly_err_t *__err) {
 	return _type;
 }
 
-ffly_err_t
+ff_err_t
 parser_cast_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	struct token *tok = next_token(__compiler);
-	ffly_err_t err;
+	ff_err_t err;
 	if (is_keyword(tok, _l_paren) && is_type(__compiler, peek_token(__compiler))) {
 		struct type *_type = parser_cast_type(__compiler, &err);
 		if (_err(err)) {
@@ -602,11 +602,11 @@ parser_cast_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_binary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 /*
 	struct token *tok = next_token(__compiler);
-	mdl_u8_t op;
+	ff_u8_t op;
 	if (is_keyword(tok, _astrisk)) {
 		op = _opr_mul;
 	} else if (is_keyword(tok, _plus)) {
@@ -629,10 +629,10 @@ parser_binary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	*__node = NULL;
-	ffly_err_t err;
+	ff_err_t err;
 	if (_err(err = parser_primary_expr(__compiler, __node))) {
 		errmsg("failed to read primary expression.\n");
 		_ret;
@@ -660,9 +660,9 @@ parser_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_decl_init(struct ffly_compiler *__compiler, struct node **__node) {
-	ffly_err_t err;
+	ff_err_t err;
 	*__node = NULL;
 	if (_err(err = parser_expr(__compiler, __node))) {
 		errmsg("failed to read expression.\n");
@@ -675,7 +675,7 @@ parser_decl_init(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_brk_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	sktok(__compiler);
 	if (!expect_token(__compiler, TOK_KEYWORD, _semicolon)) {
@@ -686,13 +686,13 @@ parser_brk_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_compound_stmt(struct ffly_compiler *__compiler, struct ffly_vec *__vec) {
 	if (!expect_token(__compiler, TOK_KEYWORD, _l_brace)) {
 		reterr;
 	}
 
-	ffly_err_t err = FFLY_SUCCESS;
+	ff_err_t err = FFLY_SUCCESS;
 	struct token *tok = peek_token(__compiler);
 	while(!is_keyword(tok, _r_brace)) {
 		struct node *_node = NULL;
@@ -748,7 +748,7 @@ parser_compound_stmt(struct ffly_compiler *__compiler, struct ffly_vec *__vec) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_declarator(struct ffly_compiler *__compiler, struct type **__type, struct type *__base_type) {
 	if (next_token_is(__compiler, TOK_KEYWORD, _astrisk)) {
 		mk_ptr_type(__compiler, __type, __base_type);
@@ -763,12 +763,12 @@ get_env(struct ffly_compiler *__compiler) {
 	return __compiler->local != NULL?__compiler->local:&__compiler->env;
 }
 
-ffly_err_t
+ff_err_t
 parser_decl(struct ffly_compiler *__compiler, struct node **__node) {
-	ffly_err_t err;
+	ff_err_t err;
 	struct type *_type;
 	struct node *init = NULL;
-	mdl_u8_t is_typedef = next_token_is(__compiler, TOK_KEYWORD, _k_typedef);
+	ff_u8_t is_typedef = next_token_is(__compiler, TOK_KEYWORD, _k_typedef);
 	struct token *tok = next_token(__compiler);
 	if (tok->kind != TOK_KEYWORD && tok->kind != TOK_IDENT) {
 		errmsg("%u;%u: wanted keyword got %s.\n", tokl(tok), tokcol(tok), tokk_str(tok->kind));
@@ -825,7 +825,7 @@ parser_decl(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_print_call(struct ffly_compiler *__compiler, struct node **__node) {
 	sktok(__compiler);
 	if (!expect_token(__compiler, TOK_KEYWORD, _l_paren)) {
@@ -833,7 +833,7 @@ parser_print_call(struct ffly_compiler *__compiler, struct node **__node) {
 		reterr;
 	}
 
-	ffly_err_t err;
+	ff_err_t err;
 	struct node *arg;
 	if (_err(err = parser_expr(__compiler, &arg))) {
 		errmsg("failed to read expression.\n");
@@ -852,9 +852,9 @@ parser_print_call(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_if_stmt(struct ffly_compiler *__compiler, struct node **__node) {
-	ffly_err_t err;
+	ff_err_t err;
 	sktok(__compiler);
 	if (!expect_token(__compiler, TOK_KEYWORD, _l_paren)) {
 		errmsg("expect error.\n");
@@ -897,7 +897,7 @@ parser_if_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t
+ff_err_t
 parser_match_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	sktok(__compiler);
 	if (!expect_token(__compiler, TOK_KEYWORD, _l_paren)) {
@@ -906,7 +906,7 @@ parser_match_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	}
 
 	struct node *expr;
-	ffly_err_t err;
+	ff_err_t err;
 	if (_err(err = parser_expr(__compiler, &expr))) {
 		errmsg("failed to read expression.\n");
 		_ret;
@@ -953,7 +953,7 @@ parser_match_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_exit_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	sktok(__compiler);
 	if (!expect_token(__compiler, TOK_KEYWORD, _semicolon)) {
@@ -965,11 +965,11 @@ parser_exit_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_ret_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	sktok(__compiler);
 
-	ffly_err_t err;
+	ff_err_t err;
 	struct node *ret = NULL;
 	if (!next_token_is(__compiler, TOK_KEYWORD, _semicolon)) {
 		if (_err(err = parser_expr(__compiler, &ret))) {
@@ -986,9 +986,9 @@ parser_ret_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_stmt(struct ffly_compiler *__compiler, struct node **__node) {
-	ffly_err_t err;
+	ff_err_t err;
 	struct token *tok;
 	if (!(tok = peek_token(__compiler))) {
 		// err
@@ -1028,14 +1028,14 @@ parser_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_func_call(struct ffly_compiler *__compiler, struct node **__node, struct node *__call) {
 	if (!expect_token(__compiler, TOK_KEYWORD, _l_paren)) {
 		errmsg("expect error.\n");
 		reterr;
 	}
 
-	ffly_err_t err;
+	ff_err_t err;
 	struct ffly_vec params;
 	ffly_vec_set_flags(&params, VEC_AUTO_RESIZE);
 	ffly_vec_init(&params, sizeof(struct node*));
@@ -1078,17 +1078,17 @@ parser_func_call(struct ffly_compiler *__compiler, struct node **__node, struct 
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t
+ff_err_t
 parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
 	sktok(__compiler);
-	ffly_err_t err;
+	ff_err_t err;
 	struct token *name = next_token(__compiler);
 	if (!expect_token(__compiler, TOK_KEYWORD, _l_paren)) {
 		errmsg("expect error.\n");
 		reterr;
 	}
 
-	ffly_bool_t va = 0;
+	ff_bool_t va = 0;
 	struct ffly_map local, *save = NULL;
 	ffly_map_init(&local, _ffly_map_127);
 	save = __compiler->local;
@@ -1172,21 +1172,21 @@ parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
 }
 
 
-ffly_bool_t
+ff_bool_t
 is_func_call(struct ffly_compiler *__compiler) {
 	struct token *name = next_token(__compiler);
 	struct token *l_paren = next_token(__compiler);
 	if (!name || !l_paren) return 0;
-	mdl_u8_t res = !(name->kind != TOK_IDENT || !is_keyword(l_paren, _l_paren));
+	ff_u8_t res = !(name->kind != TOK_IDENT || !is_keyword(l_paren, _l_paren));
 	ffly_ulex(__compiler, l_paren);
 	ffly_ulex(__compiler, name);
 	return res;
 }
 
-ffly_err_t
+ff_err_t
 parser_while_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	sktok(__compiler);
-	ffly_err_t err;    
+	ff_err_t err;    
 	if (!expect_token(__compiler, TOK_KEYWORD, _l_paren)) {
 		reterr;
 	}
@@ -1214,11 +1214,11 @@ parser_while_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 parser_call(struct ffly_compiler *__compiler, struct node **__node) {
 	sktok(__compiler);
 
-	ffly_err_t err;
+	ff_err_t err;
 	struct node *no;
 	if (_err(err = parser_expr(__compiler, &no))) {
 		errmsg("failed to read expression.\n");
@@ -1267,9 +1267,9 @@ parser_call(struct ffly_compiler *__compiler, struct node **__node) {
 	retok;
 }
 
-ffly_err_t
+ff_err_t
 ffly_parse(struct ffly_compiler *__compiler) {
-	ffly_err_t err = FFLY_SUCCESS;
+	ff_err_t err = FFLY_SUCCESS;
 	while(!at_eof(__compiler)) {
 		struct token *tok;
 		if (!(tok = peek_token(__compiler))) {

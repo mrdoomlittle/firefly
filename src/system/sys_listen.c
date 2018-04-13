@@ -1,6 +1,6 @@
-# include <mdlint.h>
-mdl_s32_t listen(mdl_u32_t __fd, mdl_u32_t __backlog) {
-	mdl_s32_t ret;
+# include "../ffint.h"
+ff_s32_t listen(ff_u32_t __fd, ff_u32_t __backlog) {
+	ff_s32_t ret;
 	__asm__("xorq %%rdi, %%rdi\n\t"
 			"mov %1, %%edi\n\t"
 			"xorq %%rsi, %%rsi\n\t"

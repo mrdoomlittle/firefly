@@ -5,10 +5,8 @@
 # else
 #   include "allocr.h"
 # endif
-
-# include <mdlint.h>
-# include "../types/bool_t.h"
-# include "../types/err_t.h"
+# include "../ffint.h"
+# include "../types.h"
 # include "../system/atomic.h"
 # include "../ffly_def.h"
 # ifdef __ffly_mal_track
@@ -19,14 +17,14 @@
 extern "C" {
 # endif
 # ifdef __ffly_debug_enabled
-ffly_atomic_uint_t extern ffly_mem_free_bc;
-ffly_atomic_uint_t extern ffly_mem_free_c;
+ff_atomic_uint_t extern ffly_mem_free_bc;
+ff_atomic_uint_t extern ffly_mem_free_c;
 # endif /*__ffly_debug_enabled*/
 
 # ifdef __ffly_mal_track
-ffly_err_t ffly_mem_free(void*, ffly_bool_t);
+ff_err_t ffly_mem_free(void*, ff_bool_t);
 # else
-ffly_err_t ffly_mem_free(void*);
+ff_err_t ffly_mem_free(void*);
 # endif /*__ffly_mal_track*/
 # ifdef __cplusplus
 }

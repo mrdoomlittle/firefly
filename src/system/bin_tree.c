@@ -5,18 +5,18 @@
 # include "io.h"
 # include "err.h"
 struct node {
-	mdl_u8_t inuse;
-	mdl_u64_t key;
+	ff_u8_t inuse;
+	ff_u64_t key;
 	void *p;
 	struct node *lhs, *rhs, *back;
 };
 
-ffly_err_t ffly_bin_tree_init(struct ffly_bin_tree *__bin_tree) {
+ff_err_t ffly_bin_tree_init(struct ffly_bin_tree *__bin_tree) {
 	__bin_tree->root = NULL;
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t _ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key, struct node **__node) {
+ff_err_t _ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, ff_u64_t __key, struct node **__node) {
 	struct node *branch = __bin_tree->root;
 	_again:
 	if (!branch) {
@@ -41,9 +41,9 @@ ffly_err_t _ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key, void **__p) {
+ff_err_t ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, ff_u64_t __key, void **__p) {
 	struct node *branch;
-	ffly_err_t err;
+	ff_err_t err;
 	if (_err(err = _ffly_bin_tree_find(__bin_tree, __key, &branch))) {
 		return err;
 	}
@@ -56,7 +56,7 @@ ffly_err_t ffly_bin_tree_find(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key,
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t static insert(struct node *__root, mdl_uint_t __key, void *__p) {
+ff_err_t static insert(struct node *__root, ff_uint_t __key, void *__p) {
 	struct node *branch = __root;
 	_again:
 	if (branch->key < __key) {
@@ -111,9 +111,9 @@ void static remap_branch(struct node *__dst, struct node *__src) {
 	}
 }
 
-ffly_err_t ffly_bin_tree_del(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key) {
+ff_err_t ffly_bin_tree_del(struct ffly_bin_tree *__bin_tree, ff_u64_t __key) {
 	struct node *branch;
-	ffly_err_t err;
+	ff_err_t err;
 	if (_err(err = _ffly_bin_tree_find(__bin_tree, __key, &branch))) {
 		return err;
 	}
@@ -140,9 +140,9 @@ ffly_err_t ffly_bin_tree_del(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key) 
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_bin_tree_erase(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key) {
+ff_err_t ffly_bin_tree_erase(struct ffly_bin_tree *__bin_tree, ff_u64_t __key) {
 	struct node *branch;
-	ffly_err_t err;
+	ff_err_t err;
 	if (_err(err = _ffly_bin_tree_find(__bin_tree, __key, &branch))) {
 		return err;
 	}
@@ -153,7 +153,7 @@ ffly_err_t ffly_bin_tree_erase(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_bin_tree_insert(struct ffly_bin_tree *__bin_tree, mdl_u64_t __key, void *__p) {
+ff_err_t ffly_bin_tree_insert(struct ffly_bin_tree *__bin_tree, ff_u64_t __key, void *__p) {
 	if (!__bin_tree->root) {
 		if ((__bin_tree->root = __ffly_mem_alloc(sizeof(struct node))) == NULL) {
 			return FFLY_FAILURE;
@@ -163,7 +163,7 @@ ffly_err_t ffly_bin_tree_insert(struct ffly_bin_tree *__bin_tree, mdl_u64_t __ke
 			.lhs = NULL, .rhs = NULL, .back = NULL
 		};
 	} else {
-		ffly_err_t err;
+		ff_err_t err;
 		if (_err(err = insert(__bin_tree->root, __key, __p))) {
 			return err;
 		}
@@ -177,7 +177,7 @@ void static free_tree(struct node *__branch) {
 	if (__branch->rhs != NULL) free_tree(__branch->rhs);
 }
 
-ffly_err_t ffly_bin_tree_de_init(struct ffly_bin_tree *__bin_tree) {
+ff_err_t ffly_bin_tree_de_init(struct ffly_bin_tree *__bin_tree) {
 	free_tree(__bin_tree->root);
 	return FFLY_SUCCESS;
 }

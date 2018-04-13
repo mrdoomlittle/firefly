@@ -3,12 +3,12 @@
 # include "../../stdio.h"
 
 // bed of stack
-mdl_uint_t static bed = 0;
+ff_uint_t static bed = 0;
 
 typedef struct {
 	char const *name;
-	mdl_u8_t l;
-	mdl_uint_t addr;
+	ff_u8_t l;
+	ff_uint_t addr;
 } reginfo;
 
 # define rax_rg 0x0
@@ -26,8 +26,8 @@ typedef struct {
 # define el_rg 0xa
 # define ae_rg 0xb
 
-void oust_addr(ffly_addr_t __addr) {
-	oust((mdl_u8_t*)&__addr, sizeof(ffly_addr_t));
+void oust_addr(ff_addr_t __addr) {
+	oust((ff_u8_t*)&__addr, sizeof(ff_addr_t));
 }
 
 
@@ -57,7 +57,7 @@ reginfo reg[] = {
 	ae	=	10101	= 21
 */
 
-mdl_u8_t c[] = {
+ff_u8_t c[] = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,	//0
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,	//1
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,	//2
@@ -76,7 +76,7 @@ mdl_u8_t c[] = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 	//15
 };
 
-char const* rbl(mdl_u8_t __l) {
+char const* rbl(ff_u8_t __l) {
 	switch(__l) {
 		case 1: return "al";
 		case 2: return "ax";
@@ -88,7 +88,7 @@ char const* rbl(mdl_u8_t __l) {
 reginfo*
 getreg(char const *__name) {
 	char const *p = __name;
-	mdl_u8_t no = 0x1f;
+	ff_u8_t no = 0x1f;
 	while(*p != '\0') {
 		no ^= 1<<c[(*p)];
 		p++;
@@ -113,7 +113,7 @@ getreg(char const *__name) {
 	return NULL;
 }
 
-ffly_addr_t rgadr(char const *__reg) {
+ff_addr_t rgadr(char const *__reg) {
 	return getreg(__reg)->addr;
 }
 
@@ -122,88 +122,88 @@ void prepstack(void) {
 	bed+=POSTST;		
 }
 
-mdl_uint_t stackadr() {
+ff_uint_t stackadr() {
 	return bed;
 }
 
-void isa(mdl_uint_t __by) {
+void isa(ff_uint_t __by) {
 	bed+=__by;
 }
 
-void op_exit(mdl_u8_t __opcode, ffly_addr_t __exit) {
+void op_exit(ff_u8_t __opcode, ff_addr_t __exit) {
 	oustbyte(__opcode);
 	oust_addr(__exit);
 }
 
-void op_asb(mdl_u8_t __opcode, ffly_addr_t __dst, mdl_u8_t __val) {
+void op_asb(ff_u8_t __opcode, ff_addr_t __dst, ff_u8_t __val) {
 	oustbyte(__opcode);
 	oustbyte(1);
 	oust_addr(__dst);
 	oustbyte(__val);
 }
 
-void op_asw(mdl_u8_t __opcode, ffly_addr_t __dst, mdl_u16_t __val) {
+void op_asw(ff_u8_t __opcode, ff_addr_t __dst, ff_u16_t __val) {
 	oustbyte(__opcode);
 	oustbyte(2);
 	oust_addr(__dst);
 	oust_16l(__val);
 }
 
-void op_asd(mdl_u8_t __opcode, ffly_addr_t __dst, mdl_u32_t __val) {
+void op_asd(ff_u8_t __opcode, ff_addr_t __dst, ff_u32_t __val) {
 	oustbyte(__opcode);
 	oustbyte(4);
 	oust_addr(__dst);
 	oust_32l(__val);
 }
 
-void op_asq(mdl_u8_t __opcode, ffly_addr_t __dst, mdl_u64_t __val) {
+void op_asq(ff_u8_t __opcode, ff_addr_t __dst, ff_u64_t __val) {
 	oustbyte(__opcode);
 	oustbyte(8);
 	oust_addr(__dst);
 	oust_64l(__val);
 }
 
-void op_movb(mdl_u8_t __opcode, ffly_addr_t __src, ffly_addr_t __dst) {
+void op_movb(ff_u8_t __opcode, ff_addr_t __src, ff_addr_t __dst) {
 	oustbyte(__opcode);
 	oustbyte(1);
 	oust_addr(__src);
 	oust_addr(__dst);
 }
 
-void op_movw(mdl_u8_t __opcode, ffly_addr_t __src, ffly_addr_t __dst) {
+void op_movw(ff_u8_t __opcode, ff_addr_t __src, ff_addr_t __dst) {
 	oustbyte(__opcode);
 	oustbyte(2);
 	oust_addr(__src);
 	oust_addr(__dst);
 }
 
-void op_movd(mdl_u8_t __opcode, ffly_addr_t __src, ffly_addr_t __dst) {
+void op_movd(ff_u8_t __opcode, ff_addr_t __src, ff_addr_t __dst) {
 	oustbyte(__opcode);
 	oustbyte(4);
 	oust_addr(__src);
 	oust_addr(__dst);
 }
 
-void op_movq(mdl_u8_t __opcode, ffly_addr_t __src, ffly_addr_t __dst) {
+void op_movq(ff_u8_t __opcode, ff_addr_t __src, ff_addr_t __dst) {
 	oustbyte(__opcode);
 	oustbyte(8);
 	oust_addr(__src);
 	oust_addr(__dst);
 }
 
-void op_inc(mdl_u8_t __opcode, mdl_u8_t __l, ffly_addr_t __adr) {
+void op_inc(ff_u8_t __opcode, ff_u8_t __l, ff_addr_t __adr) {
 	oustbyte(__opcode);
 	oustbyte(__l);
 	oust_addr(__adr);
 }
 
-void op_dec(mdl_u8_t __opcode, mdl_u8_t __l, ffly_addr_t __adr) {
+void op_dec(ff_u8_t __opcode, ff_u8_t __l, ff_addr_t __adr) {
 	oustbyte(__opcode);
 	oustbyte(__l);
 	oust_addr(__adr);
 }
 
-void op_cmp(mdl_u8_t __opcode, mdl_u8_t __l, ffly_addr_t __lt, ffly_addr_t __rt, ffly_addr_t __dst) {
+void op_cmp(ff_u8_t __opcode, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
 	oustbyte(__opcode);
 	oustbyte(__l);
 	oust_addr(__lt);
@@ -211,7 +211,7 @@ void op_cmp(mdl_u8_t __opcode, mdl_u8_t __l, ffly_addr_t __lt, ffly_addr_t __rt,
 	oust_addr(__dst);
 }
 
-void op_mov(mdl_u8_t __l, ffly_addr_t __src, ffly_addr_t __dst) {
+void op_mov(ff_u8_t __l, ff_addr_t __src, ff_addr_t __dst) {
 	switch(__l) {
 		case 1:
 			op_movb(_op_mov, __src, __dst);
@@ -228,78 +228,78 @@ void op_mov(mdl_u8_t __l, ffly_addr_t __src, ffly_addr_t __dst) {
 	}
 }
 
-void rgasb(char const *__reg, mdl_u8_t __to) {
+void rgasb(char const *__reg, ff_u8_t __to) {
 	op_asb(_op_as, getreg(__reg)->addr, __to);
 }
 
-void rgasw(char const *__reg, mdl_u16_t __to) {
+void rgasw(char const *__reg, ff_u16_t __to) {
 	op_asw(_op_as, getreg(__reg)->addr, __to);
 }
 
-void rgasd(char const *__reg, mdl_u32_t __to) {
+void rgasd(char const *__reg, ff_u32_t __to) {
 	op_asd(_op_as, getreg(__reg)->addr, __to);
 }
 
-void rgasq(char const *__reg, mdl_u64_t __to) {
+void rgasq(char const *__reg, ff_u64_t __to) {
 	op_asq(_op_as, getreg(__reg)->addr, __to);
 }
 
-void rgst(char const *__reg, ffly_addr_t __dst) {
+void rgst(char const *__reg, ff_addr_t __dst) {
 	reginfo *rg = getreg(__reg);
 	op_mov(rg->l, rg->addr, __dst);
 }
 
-void rgld(char const *__reg, ffly_addr_t __src) {
+void rgld(char const *__reg, ff_addr_t __src) {
 	reginfo *rg = getreg(__reg);
 	op_mov(rg->l, __src, rg->addr);
 }
 
 void emit_exit(insp __ins) {
-	op_exit(*__ins->opcode, *(ffly_addr_t*)__ins->l->p);
+	op_exit(*__ins->opcode, *(ff_addr_t*)__ins->l->p);
 }
 
 void emit_asb(insp __ins) {
-	op_asb(*__ins->opcode, *(ffly_addr_t*)__ins->l->p, *(mdl_u8_t*)__ins->r->p);
+	op_asb(*__ins->opcode, *(ff_addr_t*)__ins->l->p, *(ff_u8_t*)__ins->r->p);
 }
 
 void emit_asw(insp __ins) {
-	op_asw(*__ins->opcode, *(ffly_addr_t*)__ins->l->p, *(mdl_u16_t*)__ins->r->p);
+	op_asw(*__ins->opcode, *(ff_addr_t*)__ins->l->p, *(ff_u16_t*)__ins->r->p);
 }
 
 void emit_asd(insp __ins) {
-	op_asd(*__ins->opcode, *(ffly_addr_t*)__ins->l->p, *(mdl_u32_t*)__ins->r->p);
+	op_asd(*__ins->opcode, *(ff_addr_t*)__ins->l->p, *(ff_u32_t*)__ins->r->p);
 }
 
 void emit_asq(insp __ins) {
-	op_asq(*__ins->opcode, *(ffly_addr_t*)__ins->l->p, *(mdl_u64_t*)__ins->r->p);
+	op_asq(*__ins->opcode, *(ff_addr_t*)__ins->l->p, *(ff_u64_t*)__ins->r->p);
 }
 
 void emit_ldb(insp __ins) {
 	oustbyte(*__ins->opcode);
 	oustbyte(1);
-	oust_addr(*(ffly_addr_t*)__ins->r->p);
-	oust_addr(*(ffly_addr_t*)__ins->l->p);
+	oust_addr(*(ff_addr_t*)__ins->r->p);
+	oust_addr(*(ff_addr_t*)__ins->l->p);
 }
 
 void emit_stb(insp __ins) {
 	oustbyte(*__ins->opcode);
 	oustbyte(1);
-	oust_addr(*(ffly_addr_t*)__ins->r->p);
-	oust_addr(*(ffly_addr_t*)__ins->l->p);
+	oust_addr(*(ff_addr_t*)__ins->r->p);
+	oust_addr(*(ff_addr_t*)__ins->l->p);
 }
 
 void emit_outb(insp __ins) {
 	oustbyte(*__ins->opcode);
 	oustbyte(1);
-	oust_addr(*(ffly_addr_t*)__ins->l->p);
+	oust_addr(*(ff_addr_t*)__ins->l->p);
 }
 
 void static
 emit_jmp(insp __ins) {
-	char const *rgname = rbl(sizeof(ffly_addr_t));
+	char const *rgname = rbl(sizeof(ff_addr_t));
 	symbolp l = __ins->l;
-	mdl_uint_t adr;
-	mdl_i8_t ground = RELOCATE;
+	ff_uint_t adr;
+	ff_i8_t ground = RELOCATE;
 	labelp la;
 	if (is_sylabel(l)) {
 		la = (labelp)l->p;
@@ -313,7 +313,7 @@ emit_jmp(insp __ins) {
 	// assign register 
 	rgasw(rgname, adr);
 
-	mdl_uint_t off = offset-sizeof(ffly_addr_t);
+	ff_uint_t off = offset-sizeof(ff_addr_t);
 	if (ground == RELOCATE) {
 		reloc(off, 2, la);
 		printf("reloc.\n");
@@ -328,11 +328,11 @@ emit_jmp(insp __ins) {
 void static
 emit_rin(insp __ins) {
 	oustbyte(*__ins->opcode);
-	oust_addr(*(ffly_addr_t*)__ins->l->p);
+	oust_addr(*(ff_addr_t*)__ins->l->p);
 }
 
 void static
-op_arm(mdl_u8_t __opcode, mdl_u8_t __l, ffly_addr_t __lt, ffly_addr_t __rt, ffly_addr_t __dst) {
+op_arm(ff_u8_t __opcode, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
 	oustbyte(__opcode);
 	oustbyte(__l);
 	oust_addr(__lt);
@@ -342,87 +342,87 @@ op_arm(mdl_u8_t __opcode, mdl_u8_t __l, ffly_addr_t __lt, ffly_addr_t __rt, ffly
 
 void static
 emit_armb(insp __ins) {
-	op_arm(*__ins->opcode, 1, *(ffly_addr_t*)__ins->l->p, *(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+	op_arm(*__ins->opcode, 1, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
 }
 
 void static
 emit_armw(insp __ins) {
-	op_arm(*__ins->opcode, 2, *(ffly_addr_t*)__ins->l->p, *(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+	op_arm(*__ins->opcode, 2, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
 }
 
 void static
 emit_armd(insp __ins) {
-	op_arm(*__ins->opcode, 4, *(ffly_addr_t*)__ins->l->p, *(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+	op_arm(*__ins->opcode, 4, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
 }
 
 void static
 emit_armq(insp __ins) {
-	op_arm(*__ins->opcode, 8, *(ffly_addr_t*)__ins->l->p,
-		*(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+	op_arm(*__ins->opcode, 8, *(ff_addr_t*)__ins->l->p,
+		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
 }
 
 void static
 emit_incb(insp __ins) {
-	op_inc(*__ins->opcode, 1, *(ffly_addr_t*)__ins->l->p);
+	op_inc(*__ins->opcode, 1, *(ff_addr_t*)__ins->l->p);
 }
 
 void static
 emit_incw(insp __ins) {
-	op_inc(*__ins->opcode, 2, *(ffly_addr_t*)__ins->l->p);
+	op_inc(*__ins->opcode, 2, *(ff_addr_t*)__ins->l->p);
 }
 
 void static
 emit_incd(insp __ins) {
-	op_inc(*__ins->opcode, 4, *(ffly_addr_t*)__ins->l->p);
+	op_inc(*__ins->opcode, 4, *(ff_addr_t*)__ins->l->p);
 }
 
 void static
 emit_incq(insp __ins) {
-	op_inc(*__ins->opcode, 8, *(ffly_addr_t*)__ins->l->p);
+	op_inc(*__ins->opcode, 8, *(ff_addr_t*)__ins->l->p);
 }
 
 void static 
 emit_decb(insp __ins) {
-	op_dec(*__ins->opcode, 1, *(ffly_addr_t*)__ins->l->p);
+	op_dec(*__ins->opcode, 1, *(ff_addr_t*)__ins->l->p);
 }
 
 void static
 emit_decw(insp __ins) {
-	op_dec(*__ins->opcode, 2, *(ffly_addr_t*)__ins->l->p);
+	op_dec(*__ins->opcode, 2, *(ff_addr_t*)__ins->l->p);
 }
 
 void static
 emit_decd(insp __ins) {
-	op_dec(*__ins->opcode, 4, *(ffly_addr_t*)__ins->l->p);
+	op_dec(*__ins->opcode, 4, *(ff_addr_t*)__ins->l->p);
 }
 
 void static
 emit_decq(insp __ins) {
-	op_dec(*__ins->opcode, 8, *(ffly_addr_t*)__ins->l->p);
+	op_dec(*__ins->opcode, 8, *(ff_addr_t*)__ins->l->p);
 }
 
 void static
 emit_cmpb(insp __ins) {
-	op_cmp(*__ins->opcode, 1, *(ffly_addr_t*)__ins->l->p,
-		*(ffly_addr_t*)__ins->r->p, *(ffly_addr_t*)__ins->r->next->p);
+	op_cmp(*__ins->opcode, 1, *(ff_addr_t*)__ins->l->p,
+		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
 }
 
 void static
 emit_cjmp(insp __ins) {
-	char const *rgname = rbl(sizeof(ffly_addr_t));
+	char const *rgname = rbl(sizeof(ff_addr_t));
 	symbolp l = __ins->l;
-	mdl_uint_t adr;
+	ff_uint_t adr;
 
 	labelp la = (labelp)l->p;
 	adr = la->adr;
 
 	rgasw(rgname, adr);
 
-	mdl_uint_t off = offset-sizeof(ffly_addr_t);
+	ff_uint_t off = offset-sizeof(ff_addr_t);
 	reloc(off, 2, la);
 	oustbyte(*__ins->opcode);
 	oust_addr(getreg(rgname)->addr);
-	oust_addr(*(ffly_addr_t*)__ins->r->p);
+	oust_addr(*(ff_addr_t*)__ins->r->p);
 }
 
 struct ins *bc[] = {

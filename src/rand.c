@@ -1,8 +1,8 @@
 # include "rand.h"
 /*
 # include <stdio.h>
-void print_bin(mdl_u64_t __val) {
-	mdl_u8_t i = 0;
+void print_bin(ff_u64_t __val) {
+	ff_u8_t i = 0;
 	while(i != 64) {
 		printf("%c", (__val>>i&0x1)?'@':'.');
 		i++;
@@ -14,11 +14,11 @@ void print_bin(mdl_u64_t __val) {
 /*
 	for now
 */
-mdl_u64_t static no = 0x81886ed4;
-mdl_u8_t ffgen_rand8l() {
+ff_u64_t static no = 0x81886ed4;
+ff_u8_t ffgen_rand8l() {
 	no = no>>60|no<<4;
 
-	mdl_u64_t a0, a1, a2, a3, a4, a5, a6;
+	ff_u64_t a0, a1, a2, a3, a4, a5, a6;
 	a0 = no>>8;
 	a1 = no>>16;
 	a2 = no>>24;
@@ -31,19 +31,19 @@ mdl_u8_t ffgen_rand8l() {
 	return no;
 }
 
-mdl_u16_t ffgen_rand16l() {
-	return (mdl_u16_t)ffgen_rand8l()|(mdl_u16_t)ffgen_rand8l()<<8;
+ff_u16_t ffgen_rand16l() {
+	return (ff_u16_t)ffgen_rand8l()|(ff_u16_t)ffgen_rand8l()<<8;
 }
 
-mdl_u32_t ffgen_rand32l() {
-	return (mdl_u32_t)ffgen_rand16l()|(mdl_u32_t)ffgen_rand16l()<<16;
+ff_u32_t ffgen_rand32l() {
+	return (ff_u32_t)ffgen_rand16l()|(ff_u32_t)ffgen_rand16l()<<16;
 }
 
-mdl_u64_t ffgen_rand64l() {
-	return (mdl_u64_t)ffgen_rand32l()|(mdl_u64_t)ffgen_rand32l()<<32;
+ff_u64_t ffgen_rand64l() {
+	return (ff_u64_t)ffgen_rand32l()|(ff_u64_t)ffgen_rand32l()<<32;
 }
 
-mdl_u64_t ffly_rand() {
+ff_u64_t ffly_rand() {
 	return ffgen_rand64l();
 }
 
@@ -52,9 +52,9 @@ mdl_u64_t ffly_rand() {
 # include <string.h>
 # include <stdlib.h>
 int main() {
-	mdl_u32_t freq[0xff];
+	ff_u32_t freq[0xff];
 	bzero(freq, sizeof(freq));
-	mdl_u64_t i;
+	ff_u64_t i;
 	while(i != 0xfffff) {
 		
 		//while(i++ != 16-1) {

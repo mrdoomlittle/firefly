@@ -1,13 +1,13 @@
 # include "brew.h"
 # include "../dep/str_cmp.h"
 # include "../ffly_def.h"
-mdl_u8_t 
-is_keywd(bucketp __tok, mdl_u8_t __val) {
+ff_u8_t 
+is_keywd(bucketp __tok, ff_u8_t __val) {
 	return (__tok->sort == _keywd && __tok->val == __val);
 }
 
 void static
-to_keyword(bucketp __tok, mdl_u8_t __val) {
+to_keyword(bucketp __tok, ff_u8_t __val) {
 	__tok->sort = _keywd;
 	__tok->val = __val;
 }

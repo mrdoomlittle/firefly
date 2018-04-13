@@ -1,6 +1,6 @@
 # ifndef __ffly__linux__stat__h
 # define __ffly__linux__stat__h
-# include <mdlint.h>
+# include "../ffint.h"
 # include "time.h"
 # ifndef S_IRWXU
 # define S_IRWXU 00700 // user: r/w/x
@@ -52,15 +52,15 @@ struct stat { //needs testing
 	int __pad1;
 	long st_blocks;
 	__linux_time_t st_atime;
-	mdl_u64_t st_atime_nsec;
+	ff_u64_t st_atime_nsec;
 	__linux_time_t st_mtime;	
-	mdl_u64_t st_mtime_nsec;
+	ff_u64_t st_mtime_nsec;
 	__linux_time_t st_ctime;
-	mdl_u64_t st_ctime_nsec;
+	ff_u64_t st_ctime_nsec;
 	unsigned long __unused4;
 	unsigned long __unused5;
 };
 
-mdl_s32_t stat(char const*, struct stat*);
-mdl_s32_t fstat(mdl_s32_t, struct stat*);
+ff_s32_t stat(char const*, struct stat*);
+ff_s32_t fstat(ff_s32_t, struct stat*);
 # endif /*__ffly__linux__stat__h*/

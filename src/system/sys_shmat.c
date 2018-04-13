@@ -1,5 +1,5 @@
-# include <mdlint.h>
-void* shmat(mdl_s32_t __id, void *__addr, mdl_s32_t __flg) {
+# include "../ffint.h"
+void* shmat(ff_s32_t __id, void *__addr, ff_s32_t __flg) {
 	void *ret;
 	__asm__("xorq %%rdi, %%rdi\n\t"
 			"mov %1, %%edi\n\t"

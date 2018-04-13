@@ -1,4 +1,3 @@
-# include <mdlint.h>
 void* brk(void *__p) {
 	void *ret;
     __asm__("mov %1, %%rdi\n\t"

@@ -86,7 +86,7 @@ static void(*emit[])(bucketp) = {
 	emit_echo
 };
 
-void oust(bucketp __p, mdl_u8_t __no) {
+void oust(bucketp __p, ff_u8_t __no) {
 	emit[__no](__p);
 }
 
@@ -123,7 +123,7 @@ void gen(bucketp __p, objp *__top) {
 	if (end != NULL)
 		end->next = NULL;
 
-	ffly_err_t err;
+	ff_err_t err;
 	jmpdp jmp, end;
 	___ffly_vec_nonempty(&jmpto) {
 		jmp = (jmpdp)ffly_vec_begin(&jmpto);

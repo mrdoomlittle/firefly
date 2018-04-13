@@ -1,7 +1,6 @@
 # define __ffly_compiler_internal
 # define __ffly_lexer
 # include "compiler.h"
-# include "types/bool_t.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "dep/str_dup.h"
@@ -18,24 +17,24 @@ nextc(struct ffly_compiler *__compiler) {
     return *(__compiler->file->p+__compiler->file->off+1);
 }
 
-ffly_bool_t static
+ff_bool_t static
 is_next(struct ffly_compiler *__compiler, char __c) {
     return (*(__compiler->file->p+__compiler->file->off+1) == __c);
 }
 
-ffly_bool_t static
+ff_bool_t static
 is_prev(struct ffly_compiler *__compiler, char __c) {
     return (*(__compiler->file->p+__compiler->file->off-1) == __c);
 }
 
-ffly_bool_t static
+ff_bool_t static
 is_space(struct ffly_compiler *__compiler) {
     char c;
 	if ((c = fetchc(__compiler)) == '\0') {
 		// something may have gone terribly wong
 	}
 
-    mdl_i8_t static comment = 0;
+    ff_i8_t static comment = 0;
     if (comment>0) {
 		if (c == '/' && is_prev(__compiler, '*'))
 			comment = 0;
@@ -57,7 +56,7 @@ is_space(struct ffly_compiler *__compiler) {
     return (c == ' ' || c == '\t');
 }
 
-ffly_bool_t static
+ff_bool_t static
 at_nl(struct ffly_compiler *__compiler) {
     return (fetchc(__compiler) == '\n');
 }
@@ -82,7 +81,7 @@ read_ident(struct ffly_compiler *__compiler) {
 }
 
 char static* 
-read_no(struct ffly_compiler *__compiler, mdl_u8_t *__is_hex, mdl_u8_t *__is_float) {
+read_no(struct ffly_compiler *__compiler, ff_u8_t *__is_hex, ff_u8_t *__is_float) {
 	char *p = (char*)(__compiler->file->p+__compiler->file->off);
     char c = *p;
 	while((c >= '0' && c <= '9') || c == '.' || c == '-' || ffly_tolow(c) == 'x' || (ffly_tolow(c) >= 'a' && ffly_tolow(c) <= 'f')) {
@@ -120,7 +119,7 @@ read_str(struct ffly_compiler *__compiler) {
 }
 
 void static
-mk_keywd(struct token *__tok, mdl_u8_t __id) {
+mk_keywd(struct token *__tok, ff_u8_t __id) {
 	__tok->kind = TOK_KEYWORD;
 	__tok->id = __id;
 }
@@ -280,7 +279,7 @@ read_token(struct ffly_compiler *__compiler) {
         break;
         _no:
         {
-            mdl_u8_t is_float = 0, is_hex = 0;
+            ff_u8_t is_float = 0, is_hex = 0;
             *tok = (struct token) {
                 .kind = TOK_NO,
                 .p = (void*)read_no(__compiler, &is_hex, &is_float)
@@ -304,7 +303,7 @@ void ffly_ulex(struct ffly_compiler *__compiler, struct token *__tok) {
 }
 
 struct token*
-ffly_lex(struct ffly_compiler *__compiler, ffly_err_t *__err) {
+ffly_lex(struct ffly_compiler *__compiler, ff_err_t *__err) {
 	if (ffly_buff_off(&__compiler->iject_buff)>0) {
 		ffly_buff_decr(&__compiler->iject_buff);
 		struct token *tok;

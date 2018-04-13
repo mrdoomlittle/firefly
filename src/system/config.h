@@ -1,21 +1,22 @@
 # ifndef __ffly__system__config__h
 # define __ffly__system__config__h
-# include "../types/err_t.h"
+# include "../ffint.h"
+# include "../types.h"
 # include "../dep/str_dup.h"
 struct ffly_sysconf {
     char const *version;
-    mdl_uint_t max_threads;
+    ff_uint_t max_threads;
 	char const *root_dir;
 	char const *moddir, *inidir;
 	char const **modl, **inil;
-	mdl_uint_t alssize;
+	ff_uint_t alssize;
 };
 
 # ifdef __cplusplus
 extern "C" {
 # endif
 extern struct ffly_sysconf __ffly_sysconf__;
-ffly_err_t ffly_ld_sysconf(char const*);
+ff_err_t ffly_ld_sysconf(char const*);
 void ffly_ld_sysconf_def();
 void ffly_free_sysconf();
 # ifdef __cplusplus

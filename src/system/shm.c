@@ -27,7 +27,7 @@
 /*
 	BASE+key = real key
 */
-mdl_uint_t static keys[MAX] = {
+ff_uint_t static keys[MAX] = {
 	0, 1, 2, 3, 4, 5, 6,
 	7, 8, 9, 10, 11, 12,
 	13, 14, 15, 16, 17, 18,
@@ -36,17 +36,17 @@ mdl_uint_t static keys[MAX] = {
 
 struct obj {
 	int seg_id;
-	mdl_uint_t size;
+	ff_uint_t size;
 	void *p;
 };
 
 struct obj static objs[MAX];
-mdl_uint_t static bin[MAX];
-mdl_uint_t static *end = bin; 
-mdl_uint_t static *next = keys;
-ffly_mutex_t static lock = FFLY_MUTEX_INIT;
-void* ffly_shmget(mdl_uint_t *__id, mdl_uint_t __size, int __flags, mdl_u8_t __opts) {
-	mdl_uint_t id, key;
+ff_uint_t static bin[MAX];
+ff_uint_t static *end = bin; 
+ff_uint_t static *next = keys;
+ff_mlock_t static lock = FFLY_MUTEX_INIT;
+void* ffly_shmget(ff_uint_t *__id, ff_uint_t __size, int __flags, ff_u8_t __opts) {
+	ff_uint_t id, key;
 	if (is_opt(__opts, FF_SHM_MCI)) {
 		id = *__id;
 		key = get_key(id);	 
@@ -79,21 +79,21 @@ void* ffly_shmget(mdl_uint_t *__id, mdl_uint_t __size, int __flags, mdl_u8_t __o
 	return p;
 }
 
-ffly_err_t
-ffly_shmdt(mdl_uint_t __id) { 
+ff_err_t
+ffly_shmdt(ff_uint_t __id) { 
 	if (shmdt(get_obj(__id)->p) == -1)
 		reterr;
 	retok;
 }
 
-ffly_err_t
-ffly_shm_free(mdl_uint_t __id) { 
+ff_err_t
+ffly_shm_free(ff_uint_t __id) { 
 	if (shmctl(get_obj(__id)->seg_id, IPC_RMID, 0) == -1)
 		reterr;
 	retok;
 }
 
-void ffly_shm_cleanup(mdl_uint_t __id) {
+void ffly_shm_cleanup(ff_uint_t __id) {
 	ffly_mutex_lock(&lock);
 	if (keys+__id == next+1)
 		next--;
@@ -105,7 +105,7 @@ void ffly_shm_cleanup(mdl_uint_t __id) {
 /*
 int main() {
 	ffly_io_init();
-	mdl_uint_t id0, id1;
+	ff_uint_t id0, id1;
 	void *p0 = ffly_shmget(&id0, 8, IPC_CREAT|S_IRWXU|S_IRWXO|S_IRWXG);
 	void *p1 = ffly_shmget(&id1, 8, IPC_CREAT|S_IRWXU|S_IRWXO|S_IRWXG);
 	ffly_shmdt(id0);

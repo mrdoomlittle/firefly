@@ -1,6 +1,6 @@
 # ifndef __ffly__as__symbol__h
 # define __ffly__as__symbol__h
-# include <mdlint.h>
+# include "../ffint.h"
 # define SY_STR 0x1
 # define SY_MAC 0x2
 # define SY_CHR 0x3
@@ -27,13 +27,13 @@
 typedef struct symbol {
 	void *p;
 	
-	mdl_u8_t len:6;
-	mdl_u8_t flags:4;
-	mdl_u8_t sign:1;
-	mdl_u8_t sort:4;
+	ff_u8_t len:6;
+	ff_u8_t flags:4;
+	ff_u8_t sign:1;
+	ff_u8_t sort:4;
 
-	mdl_u8_t type;
-	mdl_u16_t off;
+	ff_u8_t type;
+	ff_u16_t off;
 	struct symbol *next;
 } *symbolp;
 
@@ -41,7 +41,7 @@ typedef struct symbol {
 struct hash extern symbols;
 void putsymbol(symbolp);
 symbolp getsymbol(char const*);
-symbolp syt(char const*, mdl_u16_t*);
+symbolp syt(char const*, ff_u16_t*);
 void syt_store();
 void syt_drop();
 void syt_gut();

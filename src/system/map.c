@@ -7,18 +7,18 @@
 # include "errno.h"
 # include "err.h"
 # include "io.h"
-# define map_mask(__map) ((~(mdl_u64_t)0)>>(64-__map->size))
+# define map_mask(__map) ((~(ff_u64_t)0)>>(64-__map->size))
 /*still working on this*/
 typedef struct {
-	mdl_u64_t val;
-	mdl_u8_t const *key;
-	mdl_uint_t bc;
+	ff_u64_t val;
+	ff_u8_t const *key;
+	ff_uint_t bc;
 	void *p;
 	void *prev, *next;
 	struct ffly_vec *blk;
 } map_entry_t;
 
-ffly_err_t ffly_map_init(ffly_mapp __map, mdl_uint_t __size) {
+ff_err_t ffly_map_init(ffly_mapp __map, ff_uint_t __size) {
 	__map->size = __size;
 	__map->table = (struct ffly_vec**)__ffly_mem_alloc((map_mask(__map)+1)*sizeof(struct ffly_vec*));
 	struct ffly_vec **itr = __map->table;
@@ -30,7 +30,7 @@ ffly_err_t ffly_map_init(ffly_mapp __map, mdl_uint_t __size) {
 	return FFLY_SUCCESS;
 }
 
-ffly_mapp ffly_map(mdl_uint_t __size) {
+ffly_mapp ffly_map(ff_uint_t __size) {
 	ffly_mapp p = (ffly_mapp)__ffly_mem_alloc(sizeof(struct ffly_map));
 	ffly_map_init(p, __size);
 	return p;
@@ -74,7 +74,7 @@ void ffly_map_bk(ffly_mapp __map, void const **__p) {
 	*(void**)__p = ((map_entry_t*)*__p)->prev;
 }
 
-void ffly_map_itr(ffly_mapp __map, void const **__p, mdl_u8_t __dir) {
+void ffly_map_itr(ffly_mapp __map, void const **__p, ff_u8_t __dir) {
 	if (__dir == MAP_ITR_FD)
 		ffly_map_fd(__map, __p);
 	else if (__dir == MAP_ITR_BK)
@@ -89,8 +89,8 @@ void ffly_map_parent(ffly_mapp __map, ffly_mapp __child) {
 	__child->parent = __map;
 }
 
-map_entry_t static* map_find(ffly_mapp __map, mdl_u8_t const *__key, mdl_uint_t __bc) {
-	mdl_u64_t val = ffly_hash(__key, __bc);
+map_entry_t static* map_find(ffly_mapp __map, ff_u8_t const *__key, ff_uint_t __bc) {
+	ff_u64_t val = ffly_hash(__key, __bc);
 	struct ffly_vec **blk = __map->table+(val&map_mask(__map));
 	if (!*blk) {
 		ffly_fprintf(ffly_log, "map block is null, nothing hear.\n");
@@ -114,8 +114,8 @@ map_entry_t static* map_find(ffly_mapp __map, mdl_u8_t const *__key, mdl_uint_t 
 	return NULL;
 }
 
-ffly_err_t ffly_map_put(ffly_mapp __map, mdl_u8_t const *__key, mdl_uint_t __bc, void *const __p) {
-	mdl_u64_t val = ffly_hash(__key, __bc);
+ff_err_t ffly_map_put(ffly_mapp __map, ff_u8_t const *__key, ff_uint_t __bc, void *const __p) {
+	ff_u64_t val = ffly_hash(__key, __bc);
 	struct ffly_vec **blk = __map->table+(val&map_mask(__map));
 	if (!*blk) {
 		*blk = (struct ffly_vec*)__ffly_mem_alloc(sizeof(struct ffly_vec));
@@ -131,7 +131,7 @@ ffly_err_t ffly_map_put(ffly_mapp __map, mdl_u8_t const *__key, mdl_uint_t __bc,
 		ffly_fprintf(ffly_err, "failed to push map entry.\n");
 	}
 
-	mdl_u8_t *key;
+	ff_u8_t *key;
 	if (_err(ffly_mem_dupe((void**)&key, (void*)__key, __bc))) {
 		ffly_fprintf(ffly_err, "failed to dupe key.\n");
 	}
@@ -157,11 +157,11 @@ ffly_err_t ffly_map_put(ffly_mapp __map, mdl_u8_t const *__key, mdl_uint_t __bc,
 		__map->begin = (void*)*entry;
 }
 
-void const* ffly_map_fetch(ffly_mapp __map, mdl_u8_t const *__key, mdl_uint_t __bc) {
+void const* ffly_map_fetch(ffly_mapp __map, ff_u8_t const *__key, ff_uint_t __bc) {
 	return (void const*)map_find(__map, __key, __bc);
 }
 
-void *const ffly_map_get(ffly_mapp __map, mdl_u8_t const *__key, mdl_uint_t __bc, ffly_err_t *__err) {
+void *const ffly_map_get(ffly_mapp __map, ff_u8_t const *__key, ff_uint_t __bc, ff_err_t *__err) {
 	map_entry_t *entry = map_find(__map, __key, __bc);
 	if (!entry) {
 		ffly_fprintf(ffly_log, "entry was not found.\n");
@@ -186,7 +186,7 @@ void static free_blk(struct ffly_vec **__blk) {
 	__ffly_mem_free(*__blk);
 }
 
-ffly_err_t ffly_map_de_init(ffly_mapp __map) {
+ff_err_t ffly_map_de_init(ffly_mapp __map) {
 	struct ffly_vec **itr = __map->table;
 	while(itr != __map->table+map_mask(__map)) {
 		if (*itr != NULL) free_blk(itr);

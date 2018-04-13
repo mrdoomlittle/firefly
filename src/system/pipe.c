@@ -23,7 +23,7 @@
 */
 
 typedef struct hdr {
-	mdl_u16_t size;
+	ff_u16_t size;
 } *hdrp;
 
 # define STRT 0x1
@@ -31,13 +31,13 @@ typedef struct hdr {
 # define DUMP 0x4
 # define OK 0x8
 struct pipe {
-	mdl_uint_t shm_id;
-	mdl_u8_t *bits;
+	ff_uint_t shm_id;
+	ff_u8_t *bits;
 	hdrp h;
 	void *buf, *p;
-	mdl_uint_t width;
-	mdl_u8_t flags;
-	mdl_i8_t to_shut;
+	ff_uint_t width;
+	ff_u8_t flags;
+	ff_i8_t to_shut;
 };
 
 # define is_flag(__flags, __flag) \
@@ -55,24 +55,24 @@ struct pipe static *next = pipes;
 struct pipe static *dead[MAX];
 struct pipe static **reuse = dead;
 
-ffly_mutex_t static lock = FFLY_MUTEX_INIT;
-mdl_uint_t ffly_pipe_get_shmid(mdl_uint_t __id) {
+ff_mlock_t static lock = FFLY_MUTEX_INIT;
+ff_uint_t ffly_pipe_get_shmid(ff_uint_t __id) {
 	return get_pipe(__id)->shm_id;
 }
 
-ffly_err_t
-ffly_pipe_wrl(mdl_u64_t __val, mdl_u8_t __l, mdl_uint_t __pipe) {
+ff_err_t
+ffly_pipe_wrl(ff_u64_t __val, ff_u8_t __l, ff_uint_t __pipe) {
 	return ffly_pipe_write(&__val, __l, __pipe);
 }
 
-mdl_u64_t
-ffly_pipe_rdl(mdl_u8_t __l, mdl_uint_t __pipe, ffly_err_t *__err) {
-	mdl_u64_t ret = 0;
+ff_u64_t
+ffly_pipe_rdl(ff_u8_t __l, ff_uint_t __pipe, ff_err_t *__err) {
+	ff_u64_t ret = 0;
 	*__err = ffly_pipe_read(&ret, __l, __pipe);
 	return ret;
 }
 
-void ffly_pipe_shutoff(mdl_uint_t __id) {
+void ffly_pipe_shutoff(ff_uint_t __id) {
 	struct pipe *pi = get_pipe(__id);
 	pi->to_shut = 0;
 }
@@ -87,11 +87,11 @@ discard(struct pipe *__pi) {
 	ffly_mutex_unlock(&lock);
 }
 
-mdl_uint_t
-ffly_pipe(mdl_uint_t __width, mdl_u8_t __flags,
-	mdl_uint_t __id, ffly_err_t *__err)
+ff_uint_t
+ffly_pipe(ff_uint_t __width, ff_u8_t __flags,
+	ff_uint_t __id, ff_err_t *__err)
 {
-	mdl_uint_t id;
+	ff_uint_t id;
 	ffly_mutex_lock(&lock);
 	if (reuse>dead)
 		id = *(--reuse)-pipes;
@@ -115,7 +115,7 @@ ffly_pipe(mdl_uint_t __width, mdl_u8_t __flags,
 		*__err = FFLY_FAILURE;
 		return 0;
 	}
-	mdl_u8_t *p = (mdl_u8_t*)pi->p;
+	ff_u8_t *p = (ff_u8_t*)pi->p;
 	pi->bits = p++;
 	if (is_flag(__flags, FF_PIPE_CREAT))
 		*pi->bits = 0x0;
@@ -128,10 +128,10 @@ ffly_pipe(mdl_uint_t __width, mdl_u8_t __flags,
 }
 
 # include "nanosleep.h"
-ffly_err_t
-ffly_pipe_listen(mdl_uint_t __id) {
+ff_err_t
+ffly_pipe_listen(ff_uint_t __id) {
 	struct pipe *pi = get_pipe(__id);
-	mdl_i8_t *to_shut = &pi->to_shut;
+	ff_i8_t *to_shut = &pi->to_shut;
 	while(!is_bit(pi->bits, OK)) {
 		if (!*to_shut)
 			reterr;
@@ -140,10 +140,10 @@ ffly_pipe_listen(mdl_uint_t __id) {
 	retok;
 }
 
-ffly_err_t
-ffly_pipe_connect(mdl_uint_t __id) {
+ff_err_t
+ffly_pipe_connect(ff_uint_t __id) {
 	struct pipe *pi = get_pipe(__id);
-	mdl_i8_t *to_shut = &pi->to_shut;
+	ff_i8_t *to_shut = &pi->to_shut;
 	set_bit(pi->bits, OK); 
 	while(is_bit(pi->bits, OK)) {
 		if (!*to_shut)
@@ -152,10 +152,10 @@ ffly_pipe_connect(mdl_uint_t __id) {
 	retok;
 }
 
-ffly_err_t
-ffly_pipe_write(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
+ff_err_t
+ffly_pipe_write(void *__buf, ff_uint_t __size, ff_uint_t __id) {
 	struct pipe *pi = get_pipe(__id);
-	mdl_i8_t *to_shut = &pi->to_shut;
+	ff_i8_t *to_shut = &pi->to_shut;
 	__ffmod_debug
 		ffly_printf("write. %u\n", *pi->bits);
 
@@ -165,11 +165,11 @@ ffly_pipe_write(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
 			reterr;
 	}
 
-	mdl_u8_t *p = (mdl_u8_t*)__buf;
-	mdl_u8_t *end = p+__size;
+	ff_u8_t *p = (ff_u8_t*)__buf;
+	ff_u8_t *end = p+__size;
 	while(p < end) {
-		mdl_uint_t left = __size-(p-(mdl_u8_t*)__buf);
-		mdl_uint_t size = left>pi->width?pi->width:left;
+		ff_uint_t left = __size-(p-(ff_u8_t*)__buf);
+		ff_uint_t size = left>pi->width?pi->width:left;
 		ffly_bcopy(pi->buf, p, size);
 		p+=size;
 		pi->h->size = size;
@@ -197,10 +197,10 @@ ffly_pipe_write(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
 	retok;
 }
 
-ffly_err_t
-ffly_pipe_read(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
+ff_err_t
+ffly_pipe_read(void *__buf, ff_uint_t __size, ff_uint_t __id) {
 	struct pipe *pi = get_pipe(__id);
-	mdl_i8_t *to_shut = &pi->to_shut;
+	ff_i8_t *to_shut = &pi->to_shut;
 	while(is_bit(pi->bits, OK)) {
 		if (!*to_shut)
 			reterr;
@@ -214,13 +214,13 @@ ffly_pipe_read(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
 
 	clr_bit(pi->bits, STRT);
 
-	mdl_u8_t *p = (mdl_u8_t*)__buf;
-	mdl_u8_t *end = p+__size;
+	ff_u8_t *p = (ff_u8_t*)__buf;
+	ff_u8_t *end = p+__size;
 	while(!is_bit(pi->bits, STOP)) {
 		if (!*to_shut)
 			reterr;
 		if (is_bit(pi->bits, DUMP) && p < end) {
-			mdl_uint_t size = pi->h->size;
+			ff_uint_t size = pi->h->size;
 			__ffmod_debug
 				ffly_printf("size: %u\n", size);
 
@@ -242,7 +242,7 @@ ffly_pipe_read(void *__buf, mdl_uint_t __size, mdl_uint_t __id) {
 	retok;
 }
 
-void ffly_pipe_close(mdl_uint_t __id) {
+void ffly_pipe_close(ff_uint_t __id) {
 	struct pipe *pi = get_pipe(__id);
 	ffly_shmdt(pi->shm_id);
 	if (is_flag(pi->flags, FF_PIPE_CREAT)) 

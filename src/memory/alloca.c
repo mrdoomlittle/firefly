@@ -6,23 +6,23 @@
 # include "../system/io.h"
 # include "../system/config.h"
 # include "../dep/mem_cpy.h"
-static mdl_u8_t *p = NULL;
-static mdl_u8_t *fresh = NULL;
-static mdl_u8_t *end;
+static ff_u8_t *p = NULL;
+static ff_u8_t *fresh = NULL;
+static ff_u8_t *end;
 
 void static **amend[20];
 void static ***bot = amend;
 
 void ffly_alrr() {
-	mdl_u8_t *tmp = p;
-	mdl_u8_t *end = fresh;
+	ff_u8_t *tmp = p;
+	ff_u8_t *end = fresh;
 	ffly_alrig();
 	ffly_alsld(tmp, end-tmp);
 	fresh+=end-tmp;
 	void ***cur = amend;
 	while(cur != bot) {
 		ffly_printf("......\n");
-		**cur = (void*)(p+(((mdl_u8_t*)**cur)-tmp));
+		**cur = (void*)(p+(((ff_u8_t*)**cur)-tmp));
 		cur++;
 	}
 	bot = amend;
@@ -32,7 +32,7 @@ void ffly_alad(void **__p) {
 	*(bot++) = __p;
 }
 
-mdl_uint_t ffly_alssz() {
+ff_uint_t ffly_alssz() {
 	return fresh-p;
 }
 
@@ -40,23 +40,23 @@ void ffly_alsst(void *__p) {
 	ffly_mem_cpy(__p, p, fresh-p);
 }
 
-void ffly_alsld(void *__p, mdl_uint_t __size) {
+void ffly_alsld(void *__p, ff_uint_t __size) {
 	ffly_mem_cpy(p, __p, __size);
 }
 
 void ffly_alrig() {
-	p = (mdl_u8_t*)__ffly_mem_alloc(__ffly_sysconf__.alssize);
+	p = (ff_u8_t*)__ffly_mem_alloc(__ffly_sysconf__.alssize);
 	fresh = p;
 	end = p+__ffly_sysconf__.alssize;
 }
 
-void ffly_alss(void *__p, mdl_uint_t __size) {
-	p = (mdl_u8_t*)__p;
+void ffly_alss(void *__p, ff_uint_t __size) {
+	p = (ff_u8_t*)__p;
 	fresh = p;
 	end = p+__size;
 }
 
-void* ffly_alloca(mdl_uint_t __size, ffly_err_t *__err) {
+void* ffly_alloca(ff_uint_t __size, ff_err_t *__err) {
 	if (fresh>=end) {
 		ffly_errmsg("alloca failure.\n");
 		return NULL;
@@ -71,7 +71,7 @@ void* ffly_alloca(mdl_uint_t __size, ffly_err_t *__err) {
 	return ret;
 }
 
-void ffly_trim(mdl_uint_t __n) {
+void ffly_trim(ff_uint_t __n) {
 	if (fresh-__n < p) {
 		ffly_printf("warning: someone has tryed to trim to much.\n");
 		fresh = p; // reset just in case

@@ -6,14 +6,14 @@
 	keep small
 */
 
-mdl_u8_t static opt = FF_MAL_O_LOC;
-mdl_u8_t static heap[8048];
-mdl_u8_t static *fresh = heap;
+ff_u8_t static opt = FF_MAL_O_LOC;
+ff_u8_t static heap[8048];
+ff_u8_t static *fresh = heap;
 
 typedef struct hdr {
 	struct hdr *prev, *next, *fd, *bk;
-	mdl_u16_t size;
-	mdl_u8_t inuse, *end;
+	ff_u16_t size;
+	ff_u8_t inuse, *end;
 } *hdrp;
 
 # define hdr_size sizeof(struct hdr)
@@ -23,7 +23,7 @@ hdrp static top = NULL, bin = NULL;
 # define is_opt(__opt) \
 	(__opt == opt)
 
-void setmalopt(mdl_u8_t __opt) {
+void setmalopt(ff_u8_t __opt) {
 	opt = __opt;
 }
 
@@ -91,7 +91,7 @@ void unlink(hdrp __block) {
 }
 
 
-void* malloc(mdl_uint_t __bc) {
+void* malloc(ff_uint_t __bc) {
 	if (is_opt(FF_MAL_O_LOC)) {
 		if (bin != NULL) {
 			hdrp cur = bin;
@@ -100,7 +100,7 @@ void* malloc(mdl_uint_t __bc) {
 					cur->inuse = 1;
 					unlink(cur);
 					if (cur->size>__bc+hdr_size) {
-						hdrp h = (hdrp)((mdl_u8_t*)cur+(__bc+hdr_size));
+						hdrp h = (hdrp)((ff_u8_t*)cur+(__bc+hdr_size));
 						*h = (struct hdr) {
 							.prev=cur, .next=cur->next,
 							.fd=NULL, .bk=NULL, .size=cur->size-(hdr_size+__bc),
@@ -109,20 +109,20 @@ void* malloc(mdl_uint_t __bc) {
 
 						cur->next = h;
 						cur->size = __bc;
-						cur->end = (mdl_u8_t*)h;
+						cur->end = (ff_u8_t*)h;
 						if (h->next != NULL)
 							h->next->prev = h;
 
-						free((mdl_u8_t*)h+hdr_size);
+						free((ff_u8_t*)h+hdr_size);
 					}
 
-					return (void*)((mdl_u8_t*)cur+hdr_size);
+					return (void*)((ff_u8_t*)cur+hdr_size);
 				}
 				cur = cur->fd;
 			}
 		}
 
-		mdl_u8_t *p = fresh;
+		ff_u8_t *p = fresh;
 		fresh+=hdr_size+__bc;
 
 		hdrp h = (hdrp)p;
@@ -146,7 +146,7 @@ void* malloc(mdl_uint_t __bc) {
 
 void free(void *__p) {
 	if (is_opt(FF_MAL_O_LOC)) {
-		hdrp h = (hdrp)((mdl_u8_t*)__p-hdr_size);
+		hdrp h = (hdrp)((ff_u8_t*)__p-hdr_size);
 
 		hdrp prev = h->prev, next;
 		if (prev != NULL) {
@@ -171,7 +171,7 @@ void free(void *__p) {
 
 		if (fresh == h->end) {
 			detach(h);
-			fresh = (mdl_u8_t*)h;
+			fresh = (ff_u8_t*)h;
 			return;
 		}
 
@@ -187,17 +187,17 @@ void free(void *__p) {
 	ffmod_ring(_ffcal_free, NULL, &__p);
 }
 
-void* realloc(void *__p, mdl_uint_t __bc) {
+void* realloc(void *__p, ff_uint_t __bc) {
 	if (is_opt(FF_MAL_O_LOC)) {
 
 
 		return NULL;
 	}
 
-	mdl_u8_t p[sizeof(void*)+sizeof(mdl_uint_t)];
+	ff_u8_t p[sizeof(void*)+sizeof(ff_uint_t)];
 	
 	*(void**)p = __p;
-	*(mdl_uint_t*)(p+sizeof(void*)) = __bc;
+	*(ff_uint_t*)(p+sizeof(void*)) = __bc;
 
 	void *ret;
 	ffmod_ring(_ffcal_realloc, &ret, p);

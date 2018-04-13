@@ -1,5 +1,5 @@
 # define __ffly_debug_enabled
-# include "types/err_t.h"
+# include "types.h"
 # include "dep/mem_cpy.h"
 # include "system/thread.h"
 # include "stdio.h"
@@ -19,7 +19,7 @@ void *thr(void *__arg_p) {
 /*
 	free(malloc(200));
 	free(p);
-	ffly_ctl(ffly_malc, _ar_setpot, (mdl_u64_t)pot);
+	ffly_ctl(ffly_malc, _ar_setpot, (ff_u64_t)pot);
 	//free(malloc(200));
 	
 	ffly_ctl(ffly_malc, _ar_unset, 0);
@@ -34,7 +34,7 @@ ffly_printf("hello.\n");
 # include "linux/types.h"
 # include "linux/sched.h"
 # include "linux/unistd.h"
-mdl_i8_t run = -1;
+ff_i8_t run = -1;
 void sig(int __no) {
 	run = 0;
 }
@@ -49,9 +49,9 @@ __asm__("restore:mov $15,%rax\n\t"
 # include "maths/ceil.h"
 # include "maths/sin.h"
 # include "maths/cos.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 //	p = malloc(200);
-//	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&pot);
+//	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&pot);
 //	ffly_tid_t id;
 //	ffly_thread_create(&id, thr, NULL);
 //	ffly_thread_wait(id);
@@ -68,7 +68,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	cos = ffly_cos(val);
 	sin = ffly_sin(val);
 
-	mdl_u64_t adr;
+	ff_u64_t adr;
 	__asm__("movq %%rsp, %0\n\t" : "=m"(adr));
 	adr = (adr+(16-1))&-16;
 	__asm__("movq %0, %%rsp\n\t" : : "m"(adr));

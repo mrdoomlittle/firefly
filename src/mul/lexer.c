@@ -7,11 +7,11 @@ char fetchc(mulp __mul) {
 	return at_eof(__mul)?'\0':*__mul->cur;
 }
 
-mdl_u8_t is_space(char __c) {
+ff_u8_t is_space(char __c) {
 	return (__c == ' ' || __c == '\t' || __c == '\n');
 }
 
-char* read_ident(mulp __mul, mdl_u16_t *__len) {
+char* read_ident(mulp __mul, ff_u16_t *__len) {
 	char buf[1024];
 	char *bufp = buf;
 	while((fetchc(__mul) >= 'a' && fetchc(__mul) <= 'z') || fetchc(__mul) == '_' || (fetchc(__mul) >= '0' && fetchc(__mul) <= '9')) {
@@ -19,7 +19,7 @@ char* read_ident(mulp __mul, mdl_u16_t *__len) {
 		incrp(__mul);
 	}
 	*bufp = '\0';
-	mdl_u16_t len;
+	ff_u16_t len;
 	char *p = (char*)malloc((len = (bufp-buf))+1);
 	to_free(p);
 	memcpy(p, buf, len+1);
@@ -30,7 +30,7 @@ char* read_ident(mulp __mul, mdl_u16_t *__len) {
 # define BACK 6
 bucketp static head = NULL;
 bucketp static back = NULL;
-mdl_uint_t static len = 0;
+ff_uint_t static len = 0;
 
 void lex(mulp __mul, bucketp *__tok) {
 	if (len >= BACK) {

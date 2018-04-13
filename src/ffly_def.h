@@ -3,7 +3,7 @@
 
 # ifdef __fflib
 # define offsetof(__type, __member) \
-	((mdl_u64_t)&((__type*)0)->__member)
+	((ff_u64_t)&((__type*)0)->__member)
 # endif
 # ifndef FF_ZERO
 #	define FF_ZERO 0

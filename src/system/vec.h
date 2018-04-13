@@ -8,14 +8,11 @@
 # define VEC_BLK_CHAIN 0x2
 # define VEC_UUU_BLKS 0x4
 # define VEC_NONCONTINUOUS 0x8
-# include <mdlint.h>
+# include "../ffint.h"
+# include "../types.h"
 # include "io.h"
-# include "../types/err_t.h"
-# include "../types/bool_t.h"
 # include "flags.h"
 # include "err.h"
-# include "../types/off_t.h"
-# include "../types/size_t.h"
 # define FF_VEC struct ffly_vec
 # define ff_vec struct ffly_vec
 # define ___ffly_vec_nonempty(__vec) if (ffly_vec_nonempty(__vec))
@@ -30,20 +27,20 @@
 	rename begin to just 'beg' e.g. ffly_vec_beg();
 */
 struct ffly_vec_blkd {
-	ffly_flag_t flags;
-    mdl_u16_t page; // page no
-    mdl_u8_t off; // offset from page in blocks
-	ffly_off_t prev, next;
+	ff_flag_t flags;
+    ff_u16_t page; // page no
+    ff_u8_t off; // offset from page in blocks
+	ff_off_t prev, next;
 };
 
 typedef struct ffly_vec_blkd* ffly_vec_blkdp;
 typedef struct ffly_vec {
-	ffly_off_t top, end;
+	ff_off_t top, end;
 	void *p;
-	ffly_flag_t flags;
-	ffly_off_t off;
-	ffly_size_t size, blk_size;
-	mdl_uint_t page_c;
+	ff_flag_t flags;
+	ff_off_t off;
+	ff_size_t size, blk_size;
+	ff_uint_t page_c;
 	struct ffly_vec *uu_blks;
     struct ffly_vec *prev, *next;
 } *ffly_vecp;
@@ -52,55 +49,55 @@ typedef struct ffly_vec {
 extern "C" {
 # endif
 // de-init and then free
-ffly_err_t ffly_vec_destroy(ffly_vecp);
+ff_err_t ffly_vec_destroy(ffly_vecp);
 // detach and {free - not the same as de-init}
-ffly_err_t ffly_vec_free(ffly_vecp);
+ff_err_t ffly_vec_free(ffly_vecp);
 // attach/detach vector to/from list
 void ffly_vec_attach(ffly_vecp);
 void ffly_vec_detach(ffly_vecp);
 void ffly_vec_fd(ffly_vecp, void**);
 void ffly_vec_bk(ffly_vecp, void**);
 // allocate and then attach and init
-ffly_vecp ffly_vec(ffly_size_t, ffly_flag_t, ffly_err_t*);
+ffly_vecp ffly_vec(ff_size_t, ff_flag_t, ff_err_t*);
 ffly_vecp ffly_vec_list(); //get list of all vectors
-ffly_err_t ffly_vec_init(ffly_vecp, ffly_size_t);
-ffly_err_t ffly_vec_push_back(ffly_vecp, void**);
-ffly_err_t ffly_vec_pop_back(ffly_vecp, void*);
-ffly_err_t ffly_vec_de_init(ffly_vecp);
-ffly_err_t ffly_vec_resize(ffly_vecp, ffly_size_t);
-void* ffly_vec_at(ffly_vecp, mdl_uint_t);
+ff_err_t ffly_vec_init(ffly_vecp, ff_size_t);
+ff_err_t ffly_vec_push_back(ffly_vecp, void**);
+ff_err_t ffly_vec_pop_back(ffly_vecp, void*);
+ff_err_t ffly_vec_de_init(ffly_vecp);
+ff_err_t ffly_vec_resize(ffly_vecp, ff_size_t);
+void* ffly_vec_at(ffly_vecp, ff_uint_t);
 void ffly_vec_del(ffly_vecp, void*);
-void ffly_vec_itr(ffly_vecp, void**, mdl_u8_t, mdl_uint_t);
+void ffly_vec_itr(ffly_vecp, void**, ff_u8_t, ff_uint_t);
 void* ffly_vec_rbegin(ffly_vecp);
 void* ffly_vec_rend(ffly_vecp);
 void* ffly_vec_first(ffly_vecp);
 void* ffly_vec_last(ffly_vecp);
 void* ffly_vec_begin(ffly_vecp);
 void* ffly_vec_end(ffly_vecp);
-ffly_off_t ffly_vec_off(ffly_vecp, void*);
-mdl_uint_t ffly_vec_blk_off(ffly_vecp, void*);
+ff_off_t ffly_vec_off(ffly_vecp, void*);
+ff_uint_t ffly_vec_blk_off(ffly_vecp, void*);
 # ifdef __cplusplus
 }
 # endif
 void static __inline__* ffly_vec_p(struct ffly_vec *__vec){return __vec->p;}
-ffly_size_t static __inline__ ffly_vec_size(struct ffly_vec *__vec) {return __vec->size;}
-ffly_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return !__vec->size;}
-ffly_bool_t static __inline__ ffly_vec_nonempty(struct ffly_vec *__vec) {return __vec->size>0;}
-void static __inline__ ffly_vec_tog_flag(struct ffly_vec *__vec, ffly_flag_t __flag) {ffly_add_flag(&__vec->flags, __flag, 0);}
+ff_size_t static __inline__ ffly_vec_size(struct ffly_vec *__vec) {return __vec->size;}
+ff_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return !__vec->size;}
+ff_bool_t static __inline__ ffly_vec_nonempty(struct ffly_vec *__vec) {return __vec->size>0;}
+void static __inline__ ffly_vec_tog_flag(struct ffly_vec *__vec, ff_flag_t __flag) {ffly_add_flag(&__vec->flags, __flag, 0);}
 void static __inline__ ffly_vec_clear_flags(struct ffly_vec *__vec){__vec->flags = 0x0;} // remove
 void static __inline__ ffly_vec_clr_flags(struct ffly_vec *__vec){__vec->flags = 0x0;}
-void static __inline__ ffly_vec_set_flags(struct ffly_vec *__vec, ffly_flag_t __flags) {__vec->flags = __flags;}
+void static __inline__ ffly_vec_set_flags(struct ffly_vec *__vec, ff_flag_t __flags) {__vec->flags = __flags;}
 # ifdef __cplusplus
 # include "../data/mem_swp.h"
 # include "errno.h"
 namespace mdl {
 namespace firefly {
 namespace system {
-static types::err_t(*vec_init)(ffly_vecp, types::size_t) = &ffly_vec_init;
-static types::err_t(*vec_push_back)(ffly_vecp, void**) = &ffly_vec_push_back;
-static types::err_t(*vec_pop_back)(ffly_vecp, void*) = &ffly_vec_pop_back;
-static types::err_t(*vec_de_init)(ffly_vecp) = &ffly_vec_de_init;
-static types::err_t(*vec_resize)(ffly_vecp, types::size_t) = &ffly_vec_resize;
+static ff::err_t(*vec_init)(ffly_vecp, types::size_t) = &ffly_vec_init;
+static ff::err_t(*vec_push_back)(ffly_vecp, void**) = &ffly_vec_push_back;
+static ff::err_t(*vec_pop_back)(ffly_vecp, void*) = &ffly_vec_pop_back;
+static ff::err_t(*vec_de_init)(ffly_vecp) = &ffly_vec_de_init;
+static ff::err_t(*vec_resize)(ffly_vecp, types::size_t) = &ffly_vec_resize;
 static void(*vec_del)(ffly_vecp, void*) = &ffly_vec_del;
 static void*(*vec_first)(ffly_vecp) = &ffly_vec_first;
 static void*(*vec_last)(ffly_vecp) = &ffly_vec_last;
@@ -114,7 +111,7 @@ struct vec {
 	vec() {
 		if (_err(this->init(0)))
 			io::fprintf(ffly_err, "vec: failed to init.\n");}
-	vec(mdl_u8_t __flags) {
+	vec(ff_u8_t __flags) {
 		if (_err(this->init(__flags)))
 			io::fprintf(ffly_err, "vec: failed to init.\n");}
 	~vec() {
@@ -135,7 +132,7 @@ struct vec {
 	_T* first() {return static_cast<_T*>(vec_first(&this->raw));}
 	_T* last() {return static_cast<_T*>(vec_last(&this->raw));}
 	types::bool_t empty() {return vec_empty(&this->raw);}
-	_T& operator()(mdl_uint_t __off) {return this->at(__off);}
+	_T& operator()(ff_uint_t __off) {return this->at(__off);}
 
 	types::err_t del(_T *__p) {
 		vec_del(&this->raw, static_cast<void*>(__p));

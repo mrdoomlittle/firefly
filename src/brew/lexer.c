@@ -9,7 +9,7 @@ nextc() {
 	return *p;
 }
 
-mdl_u8_t static
+ff_u8_t static
 is_space(char __c) {
 	return (__c == ' ' || __c == '\t' || __c == '\n');
 }
@@ -23,7 +23,7 @@ void static sk_white_space() {
 bucketp static buf[BUFSIZE];
 bucketp static* end = buf;
 
-mdl_u8_t tokbuf_size() {
+ff_u8_t tokbuf_size() {
 	return end-buf;
 }
 
@@ -36,9 +36,9 @@ void ulex(bucketp __p) {
 	*(end++) = __p;
 }
 
-mdl_u8_t expect_token(mdl_u8_t __sort, mdl_u8_t __val) {
+ff_u8_t expect_token(ff_u8_t __sort, ff_u8_t __val) {
 	bucketp tok = nexttok();
-	mdl_u8_t res = (tok->sort == __sort && tok->val == __val);
+	ff_u8_t res = (tok->sort == __sort && tok->val == __val);
 	if (!res) {
 		fprintf(stdout, "got %u expected: %u, sort: %u\n", tok->val, __val, tok->sort);
 	}
@@ -46,7 +46,7 @@ mdl_u8_t expect_token(mdl_u8_t __sort, mdl_u8_t __val) {
 	return res;
 }
 
-char* read_ident(mdl_u16_t *__len) {
+char* read_ident(ff_u16_t *__len) {
 	char buf[1024];
 	char *bufp = buf;
 	while((nextc() >= 'a' && nextc() <= 'z') || nextc() == '_') {
@@ -54,7 +54,7 @@ char* read_ident(mdl_u16_t *__len) {
 		incrp;
 	}
 	*bufp = '\0';
-	mdl_u16_t len;
+	ff_u16_t len;
 	char *p = (char*)malloc((len = (bufp-buf))+1);
 	to_free(p);
 	memcpy(p, buf, len+1);		
@@ -75,7 +75,7 @@ void escape_chr(char *__c) {
 	}
 }
 
-char* read_str(mdl_u16_t *__len) {
+char* read_str(ff_u16_t *__len) {
 	char buf[1024];
 	char *bufp = buf;
 	while(nextc() != '"') {
@@ -88,7 +88,7 @@ char* read_str(mdl_u16_t *__len) {
 		}
 	}
 	*bufp = '\0';
-	mdl_u16_t len;
+	ff_u16_t len;
 	char *p = (char*)malloc((len = (bufp-buf))+1);
 	to_free(p);
 	memcpy(p, buf, len+1);
@@ -103,7 +103,7 @@ char* read_str(mdl_u16_t *__len) {
 # define BACK 10
 bucketp static head = NULL;
 bucketp static next = NULL;
-mdl_uint_t static len = 0;
+ff_uint_t static len = 0;
 
 bucketp lex() {
 	if (end > buf)

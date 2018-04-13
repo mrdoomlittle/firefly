@@ -1,7 +1,6 @@
 # ifndef __ffly__script__h
 # define __ffly__script__h
-# include "types/byte_t.h"
-# include "types/err_t.h"
+# include "types.h"
 # include "compiler.h"
 # ifdef __ffly_script_internal
 enum {
@@ -51,12 +50,12 @@ typedef struct {
 	| to be used    |
 	-----------------
 */
-	ffly_byte_t *stack;
-	ffly_byte_t *fresh;
+	ff_byte_t *stack;
+	ff_byte_t *fresh;
 	void *top; // top object
 	void *arg_p;
 	// id, arg_p, params that where passed thru. max 12
-	void*(*call)(mdl_u8_t, void*, void**);
+	void*(*call)(ff_u8_t, void*, void**);
 } ffscript, *ffscriptp;
 
 struct ffly_script {
@@ -65,11 +64,11 @@ struct ffly_script {
 };
 /* clean this up */
 struct obj {
-	mdl_u32_t off;
-	mdl_u8_t opno, cond;
+	ff_u32_t off;
+	ff_u8_t opno, cond;
 	void *p;
-	mdl_uint_t size;
-	mdl_u8_t _type;
+	ff_uint_t size;
+	ff_u8_t _type;
 	struct obj *objpp, *frame;
 	struct obj **dst, **src, *_obj, **no;
 	struct obj **to, **from, **l, **r, **by;
@@ -78,13 +77,13 @@ struct obj {
 	struct obj **params[12];
 };
 
-ffly_err_t ffly_script_build(struct ffly_script*, void**, ffly_byte_t**);
-ffly_err_t ffly_script_prepare(struct ffly_script*);
-ffly_err_t ffly_script_free(struct ffly_script*);
+ff_err_t ffly_script_build(struct ffly_script*, void**, ff_byte_t**);
+ff_err_t ffly_script_prepare(struct ffly_script*);
+ff_err_t ffly_script_free(struct ffly_script*);
 
-ffly_err_t ffscript_init(ffscriptp, mdl_uint_t);
-ffly_err_t ffscript_exec(ffscriptp, void*(*)(mdl_u8_t, void*, void**), void*, void*, void*);
+ff_err_t ffscript_init(ffscriptp, ff_uint_t);
+ff_err_t ffscript_exec(ffscriptp, void*(*)(ff_u8_t, void*, void**), void*, void*, void*);
 void* ffscript_call(ffscriptp, void*);
-ffly_err_t ffscript_free(ffscriptp);
-ffly_err_t ffly_script_free(struct ffly_script*);
+ff_err_t ffscript_free(ffscriptp);
+ff_err_t ffly_script_free(struct ffly_script*);
 # endif /*__ffly__script__h*/

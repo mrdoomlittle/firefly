@@ -9,9 +9,9 @@
 
 /* not tested */
 		
-mdl_u64_t static
-sum(char const *__key, mdl_uint_t __len) {
-	mdl_u64_t ret = 0xffffffffffffffff;
+ff_u64_t static
+sum(char const *__key, ff_uint_t __len) {
+	ff_u64_t ret = 0xffffffffffffffff;
 	char const *p = __key;
 	char const *end = p+__len;
 	while(p != end) {
@@ -21,7 +21,7 @@ sum(char const *__key, mdl_uint_t __len) {
 	return ret;
 }
 
-ffly_err_t ffly_dict_init(ffly_dictp __dict) {
+ff_err_t ffly_dict_init(ffly_dictp __dict) {
 	ffly_lat_prepare(&__dict->lat);
 	__dict->head = NULL;
 }
@@ -38,9 +38,9 @@ void const* ffly_dict_getp(void *__p) {
 	return ((entryp)__p)->p;
 }
 
-ffly_err_t ffly_dict_put(ffly_dictp __dict, char const *__key, void const *__p) {
-	mdl_uint_t l = ffly_str_len(__key);
-	mdl_u64_t val = sum(__key, l);
+ff_err_t ffly_dict_put(ffly_dictp __dict, char const *__key, void const *__p) {
+	ff_uint_t l = ffly_str_len(__key);
+	ff_u64_t val = sum(__key, l);
 
 	entryp p;
 	p = (entryp)__ffly_mem_alloc(sizeof(struct entry));
@@ -54,9 +54,9 @@ ffly_err_t ffly_dict_put(ffly_dictp __dict, char const *__key, void const *__p) 
 	ffly_lat_put(&__dict->lat, val, p);
 }
 
-void const* ffly_dict_get(ffly_dictp __dict, char const *__key, ffly_err_t *__err) {
-	mdl_uint_t l = ffly_str_len(__key);
-	mdl_u64_t val = sum(__key, l);
+void const* ffly_dict_get(ffly_dictp __dict, char const *__key, ff_err_t *__err) {
+	ff_uint_t l = ffly_str_len(__key);
+	ff_u64_t val = sum(__key, l);
 
 	entryp cur = (entryp)ffly_lat_get(&__dict->lat, val);	
 	while(cur != NULL) {
@@ -66,7 +66,7 @@ void const* ffly_dict_get(ffly_dictp __dict, char const *__key, ffly_err_t *__er
 	return NULL;
 }
 
-ffly_err_t ffly_dict_de_init(ffly_dictp __dict) {
+ff_err_t ffly_dict_de_init(ffly_dictp __dict) {
 	void *cur = ffly_lat_head(&__dict->lat);
 	while(cur != NULL) {
 		entryp p = (entryp)ffly_lat_getp(cur);

@@ -1,8 +1,8 @@
-# include <mdlint.h>
+# include "../ffint.h"
 # include "../types/socket.h"
 # include "../linux/socket.h"
-mdl_s32_t bind(mdl_u32_t __fd, struct sockaddr *__adr, sockl_t __len) {
-	mdl_s32_t ret;
+ff_s32_t bind(ff_u32_t __fd, struct sockaddr *__adr, sockl_t __len) {
+	ff_s32_t ret;
 	__asm__("xorq %%rdi, %%rdi\n\t"
 			"mov %1, %%edi\n\t"
 			"mov %2, %%rsi\n\t"

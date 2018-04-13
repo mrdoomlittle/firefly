@@ -6,9 +6,9 @@
 # include "../malloc.h"
 # include "../stdio.h"
 # include "../types.h"
-mdl_u8_t *p = NULL;
-mdl_u8_t static *eof;
-mdl_u8_t at_eof() {
+ff_u8_t *p = NULL;
+ff_u8_t static *eof;
+ff_u8_t at_eof() {
 	return p >= eof;
 }
 
@@ -22,7 +22,7 @@ void to_free(void *__p) {
 	*(fresh++) = __p;
 }
 
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	char const *file;
 	if (__argc < 2) {
 		fprintf(stderr, "please provide file.\n");
@@ -30,8 +30,8 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	}
 
 	file = __argv[1];
-	mdl_s32_t fd;
-	mdl_u8_t *bed;
+	ff_s32_t fd;
+	ff_u8_t *bed;
 	if ((fd = open(file, O_RDONLY, 0)) == -1) {
 		fprintf(stderr, "failed to open file.\n");
 		return -1;
@@ -43,7 +43,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		goto _fault;	
 	}
 
-	if ((p = (mdl_u8_t*)malloc(st.st_size)) == NULL) {
+	if ((p = (ff_u8_t*)malloc(st.st_size)) == NULL) {
 		fprintf(stderr, "failed to allocate memory.\n");
 		goto _fault;
 	}	

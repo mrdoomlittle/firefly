@@ -1,7 +1,6 @@
 # include "../db.h"
-# include "../types/err_t.h"
+# include "../types.h"
 # include "../system/io.h"
-# include "../types/err_t.h"
 # include "../dep/bzero.h"
 # include "../system/string.h"
 # include "../system/err.h"
@@ -10,17 +9,17 @@
 # include "../memory/mem_free.h"
 # include "../dep/str_len.h"
 # include "../system/thread.h"
-mdl_uint_t acquire_slot();
-void scrap_slot(mdl_uint_t);
-void *slotget(mdl_uint_t);
-void slotput(mdl_uint_t, void*);
+ff_uint_t acquire_slot();
+void scrap_slot(ff_uint_t);
+void *slotget(ff_uint_t);
+void slotput(ff_uint_t, void*);
 
 /*
 	multiclient not done.
 */
 
-mdl_i8_t static
-ratifykey(FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__errn, ffly_err_t *__err, mdl_u8_t *__key) {
+ff_i8_t static
+ratifykey(FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__errn, ff_err_t *__err, ff_u8_t *__key) {
 	ff_db_key key;
 	*__err = FFLY_SUCCESS;
 	if (_err(*__err = ff_db_rcv_key(__sock, key, __user->enckey))) {
@@ -35,14 +34,14 @@ ratifykey(FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__errn, ffly_err_t *
 	return 0;
 }
 
-ffly_err_t static
-ff_db_login(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp *__user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_login(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp *__user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("logging in.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	char id[40];
-	mdl_uint_t il;
+	ff_uint_t il;
  
-	ff_net_recv(__sock, &il, sizeof(mdl_uint_t), &err);
+	ff_net_recv(__sock, &il, sizeof(ff_uint_t), &err);
 	if (il >= 40) {
 		ffly_printf("id length too long.\n");
 		reterr;
@@ -51,12 +50,12 @@ ff_db_login(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp *__user, ff_db_err *__er
 
 	ff_net_recv(__sock, id, il, &err);
 	ffly_printf("recved id.\n");
-	mdl_u32_t passkey;
-	ff_net_recv(__sock, &passkey, sizeof(mdl_u32_t), &err);
+	ff_u32_t passkey;
+	ff_net_recv(__sock, &passkey, sizeof(ff_u32_t), &err);
 	ffly_printf("idlen: %u\n", il);
 
 	ffly_printf("id: ");
-	mdl_u8_t i = 0;
+	ff_u8_t i = 0;
 	while(i != il) {
 		ffly_printf("%c", id[i]);
 		i++;
@@ -96,10 +95,10 @@ _succ:
 	retok; 
 }
 
-ffly_err_t static
-ff_db_logout(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_logout(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("logging out.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (!ratifykey(__sock, __user, __err, &err, __key)) {
 		goto _succ;
 	}
@@ -119,10 +118,10 @@ _succ:
 	retok;
 }
 
-ffly_err_t static
-ff_db_creat_pile(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_creat_pile(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("create pile.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -132,12 +131,12 @@ ff_db_creat_pile(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
 
-	mdl_uint_t slotno = acquire_slot();
+	ff_uint_t slotno = acquire_slot();
 
 	slotput(slotno, ffdb_creat_pile(&__d->db));
 	ffly_printf("create pile at slotno: %u\n", slotno);
 
-	ff_net_send(__sock, &slotno, sizeof(mdl_uint_t), &err);	
+	ff_net_send(__sock, &slotno, sizeof(ff_uint_t), &err);	
 	if (_err(err)) {
 		ffly_printf("failed to send slotno.\n");
 	}
@@ -148,10 +147,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_del_pile(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_del_pile(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("delete pile.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -161,8 +160,8 @@ ff_db_del_pile(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
 
-	mdl_uint_t slotno;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_uint_t slotno;
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 	if (_err(err)) {
 		ffly_printf("failed to recv slotno.\n");
 	}
@@ -176,10 +175,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_creat_record(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_creat_record(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("create record.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -188,17 +187,17 @@ ff_db_creat_record(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_uint_t slotno;
+	ff_uint_t slotno;
 	ffdb_pilep pile;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 	pile = (ffdb_pilep)slotget(slotno);
 
-	mdl_uint_t size;
-	ff_net_recv(__sock, &size, sizeof(mdl_uint_t), &err);
+	ff_uint_t size;
+	ff_net_recv(__sock, &size, sizeof(ff_uint_t), &err);
 
 	slotno = acquire_slot();
 	slotput(slotno, ffdb_creat_record(&__d->db, pile, size));
-	ff_net_send(__sock, &slotno, sizeof(mdl_uint_t), &err);	
+	ff_net_send(__sock, &slotno, sizeof(ff_uint_t), &err);	
 
 	retok;
 _fail:
@@ -206,10 +205,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_del_record(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_del_record(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("delete record.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -218,13 +217,13 @@ ff_db_del_record(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_uint_t slotno;
+	ff_uint_t slotno;
 	ffdb_pilep pile;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 	pile = (ffdb_pilep)slotget(slotno);
 
 	ffdb_recordp rec;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 
 	rec = (ffdb_recordp)slotget(slotno);
 
@@ -237,10 +236,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_write(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_write(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("write.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -249,20 +248,20 @@ ff_db_write(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_uint_t slotno;
+	ff_uint_t slotno;
 	ffdb_pilep pile;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 	pile = (ffdb_pilep)slotget(slotno);
 
 	ffdb_recordp rec;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 	rec = (ffdb_recordp)slotget(slotno);
 
-	mdl_u32_t offset;
-	ff_net_recv(__sock, &offset, sizeof(mdl_u32_t), &err);
+	ff_u32_t offset;
+	ff_net_recv(__sock, &offset, sizeof(ff_u32_t), &err);
 
-	mdl_uint_t size;
-	ff_net_recv(__sock, &size, sizeof(mdl_uint_t), &err);
+	ff_uint_t size;
+	ff_net_recv(__sock, &size, sizeof(ff_uint_t), &err);
 
 	void *buf = __ffly_mem_alloc(size);
 	ff_net_recv(__sock, buf, size, &err);
@@ -276,10 +275,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_read(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_read(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("read.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -288,20 +287,20 @@ ff_db_read(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err,
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_uint_t slotno;
+	ff_uint_t slotno;
 	ffdb_pilep pile;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 	pile = (ffdb_pilep)slotget(slotno);
 
 	ffdb_recordp rec;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 	rec = (ffdb_recordp)slotget(slotno);
 
-	mdl_u32_t offset;
-	ff_net_recv(__sock, &offset, sizeof(mdl_u32_t), &err);
+	ff_u32_t offset;
+	ff_net_recv(__sock, &offset, sizeof(ff_u32_t), &err);
 
-	mdl_uint_t size;
-	ff_net_recv(__sock, &size, sizeof(mdl_uint_t), &err);
+	ff_uint_t size;
+	ff_net_recv(__sock, &size, sizeof(ff_uint_t), &err);
 
 	void *buf = __ffly_mem_alloc(size);
 	ffdb_read(&__d->db, pile, rec, offset, buf, size);
@@ -314,10 +313,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_record_alloc(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_record_alloc(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("record alloc.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -326,9 +325,9 @@ ff_db_record_alloc(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_uint_t slotno;
+	ff_uint_t slotno;
 	ffdb_recordp rec;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 	rec = (ffdb_recordp)slotget(slotno);
 
 	ffdb_record_alloc(&__d->db, rec);
@@ -338,10 +337,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_record_free(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_record_free(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("record free.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -350,9 +349,9 @@ ff_db_record_free(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err 
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_uint_t slotno;
+	ff_uint_t slotno;
 	ffdb_recordp rec;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 	rec = (ffdb_recordp)slotget(slotno);
 
 	ffdb_record_free(&__d->db, rec);
@@ -362,10 +361,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_rivet(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_rivet(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("rivet.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -374,11 +373,11 @@ ff_db_rivet(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_uint_t slotno;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_uint_t slotno;
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 
-	mdl_u16_t rivetno;
-	ff_net_recv(__sock, &rivetno, sizeof(mdl_u16_t), &err);
+	ff_u16_t rivetno;
+	ff_net_recv(__sock, &rivetno, sizeof(ff_u16_t), &err);
 
 	ffdb_rivet(rivetno, slotget(slotno));	
 	retok;
@@ -387,10 +386,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_derivet(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_derivet(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("derivet.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -399,8 +398,8 @@ ff_db_derivet(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__e
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_u16_t rivetno;
-	ff_net_recv(__sock, &rivetno, sizeof(mdl_u16_t), &err);
+	ff_u16_t rivetno;
+	ff_net_recv(__sock, &rivetno, sizeof(ff_u16_t), &err);
 
 	ffdb_derivet(rivetno);
 	retok;
@@ -409,10 +408,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_rivetto(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_rivetto(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("rivetto.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -421,11 +420,11 @@ ff_db_rivetto(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__e
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_uint_t slotno;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_uint_t slotno;
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 
-	mdl_u16_t rivetno;
-	ff_net_recv(__sock, &rivetno, sizeof(mdl_u16_t), &err);
+	ff_u16_t rivetno;
+	ff_net_recv(__sock, &rivetno, sizeof(ff_u16_t), &err);
 
 	slotput(slotno, ffdb_rivetto(rivetno));
 	retok;
@@ -434,10 +433,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_bind(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_bind(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("bind.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -446,25 +445,25 @@ ff_db_bind(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err,
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_uint_t slotno;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_uint_t slotno;
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 
-	mdl_u16_t rivetno;
-	ff_net_recv(__sock, &rivetno, sizeof(mdl_u16_t), &err);
+	ff_u16_t rivetno;
+	ff_net_recv(__sock, &rivetno, sizeof(ff_u16_t), &err);
 
-	mdl_u8_t offset;
-	ff_net_recv(__sock, &offset, sizeof(mdl_u8_t), &err);
-	*(mdl_u16_t*)((mdl_u8_t*)slotget(slotno)+offset) = rivetno;
+	ff_u8_t offset;
+	ff_net_recv(__sock, &offset, sizeof(ff_u8_t), &err);
+	*(ff_u16_t*)((ff_u8_t*)slotget(slotno)+offset) = rivetno;
 	retok;
 _fail:
 	ff_db_snd_err(__sock, FFLY_FAILURE);
 	reterr;
 }
 
-ffly_err_t static
-ff_db_acquire_slot(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_acquire_slot(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("acquire slot.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -473,20 +472,20 @@ ff_db_acquire_slot(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_uint_t slotno;
+	ff_uint_t slotno;
 
 	slotno = acquire_slot();
-	ff_net_send(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_net_send(__sock, &slotno, sizeof(ff_uint_t), &err);
 	retok;
 _fail:
 	ff_db_snd_err(__sock, FFLY_FAILURE);
 	reterr;
 }
 
-ffly_err_t static
-ff_db_scrap_slot(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_scrap_slot(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("scrap slot.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -495,8 +494,8 @@ ff_db_scrap_slot(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *
 	}
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
-	mdl_uint_t slotno;
-	ff_net_recv(__sock, &slotno, sizeof(mdl_uint_t), &err);
+	ff_uint_t slotno;
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
 
 	scrap_slot(slotno);
 	retok;
@@ -505,10 +504,10 @@ _fail:
 	reterr;
 }
 
-ffly_err_t static
-ff_db_exist(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, mdl_u8_t *__key) {
+ff_err_t static
+ff_db_exist(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
 	ffly_printf("exist.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
 		if (_err(err))
 			_ret;
@@ -518,13 +517,13 @@ ff_db_exist(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err
 
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
 
-	mdl_u16_t rivetno;
-	ff_net_recv(__sock, &rivetno, sizeof(mdl_u16_t), &err);
+	ff_u16_t rivetno;
+	ff_net_recv(__sock, &rivetno, sizeof(ff_u16_t), &err);
 
-	mdl_i8_t ret;
+	ff_i8_t ret;
 	
 	ret = ffdb_exist(rivetno);
-	ff_net_send(__sock, &ret, sizeof(mdl_i8_t), &err);
+	ff_net_send(__sock, &ret, sizeof(ff_i8_t), &err);
 
 	retok;
 _fail:
@@ -533,7 +532,7 @@ _fail:
 }
 
 # include "../system/util/hash.h"
-mdl_u8_t cmdauth[] = {
+ff_u8_t cmdauth[] = {
 	_ff_db_auth_null,	//login
 	_ff_db_auth_null,	//logout
 	_ff_db_auth_null,	//pulse
@@ -557,8 +556,8 @@ mdl_u8_t cmdauth[] = {
 	_ff_db_auth_root	//exist
 };
 
-mdl_u8_t static
-has_auth(ff_db_userp __user, mdl_u8_t __cmd) {
+ff_u8_t static
+has_auth(ff_db_userp __user, ff_u8_t __cmd) {
 	if (!__user)
 		return (cmdauth[__cmd] == _ff_db_auth_null);
 	ffly_printf("root access: %s\n", __user->auth_level == _ff_db_auth_root?"yes":"no");
@@ -611,7 +610,7 @@ void *jmp[] = {
 	_ff_exist
 };
 
-char const *msgstr(mdl_u8_t __kind) {
+char const *msgstr(ff_u8_t __kind) {
 	switch(__kind) {
 		case _ff_db_msg_login:		return "login";
 		case _ff_db_msg_logout:		return "logout";
@@ -658,17 +657,17 @@ cleanup(ff_dbdp __daemon) {
 # include "../system/atomic.h"
 ffly_potp static main_pot;
 FF_SOCKET *sock;
-mdl_i8_t to_shut = -1;
-ffly_atomic_u32_t live = 0;
+ff_i8_t to_shut = -1;
+ff_atomic_u32_t live = 0;
 void ff_db_shut();
 
 void*
 ff_db_serve(void *__arg_p) {
 	ffly_atomic_incr(&live);
 	ffly_pelletp pel = (ffly_pelletp)__arg_p;
-	ffly_err_t err;
+	ff_err_t err;
 	ff_dbdp daemon;
-	mdl_i8_t alive;
+	ff_i8_t alive;
 	ff_db_err ern;
 	ff_db_key key;
 	ff_db_userp user = NULL;
@@ -680,7 +679,7 @@ ff_db_serve(void *__arg_p) {
 	ffly_pellet_free(pel);
 
 	alive = 0;
-	ffly_ctl(ffly_malc, _ar_setpot, (mdl_u64_t)main_pot);	
+	ffly_ctl(ffly_malc, _ar_setpot, (ff_u64_t)main_pot);	
 	while(!alive && to_shut<0) {
 		if (_err(err = ff_db_rcvmsg(peer, &msg))) {
 			ffly_printf("failed to recv message.\n");
@@ -844,7 +843,7 @@ def_users(ff_dbdp __d) {
 }
 
 void
-ff_dbd_start(char const *__file, mdl_u16_t __port) {
+ff_dbd_start(char const *__file, ff_u16_t __port) {
 	struct ff_dbd daemon;
 	ffdb_init(&daemon.db);
 	ffdb_open(&daemon.db, __file);
@@ -853,7 +852,7 @@ ff_dbd_start(char const *__file, mdl_u16_t __port) {
 
 	def_users(&daemon);
 
-	ffly_err_t err;
+	ff_err_t err;
 	struct sockaddr_in addr, cl;
 	ffly_bzero(&addr, sizeof(struct sockaddr_in));
 	ffly_bzero(&cl, sizeof(struct sockaddr_in));
@@ -906,7 +905,7 @@ _end:
 
 # include "../opt.h"
 # include "../depart.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	char const *file = NULL;
 	char const *port = NULL;
 	struct ffpcll pcl;
@@ -923,7 +922,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		return -1;
 	}
 
-	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&main_pot);
+	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&main_pot);
 	ff_dbd_start(file, ffly_stno(port));	  
 	ffly_depart(NULL);
 	return 0;

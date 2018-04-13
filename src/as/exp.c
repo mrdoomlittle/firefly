@@ -17,7 +17,7 @@ symbolp eval(char *__s) {
 		switch(*p) {
 			case '%': {
 				p++;
-				mdl_uint_t l;
+				ff_uint_t l;
 				cur->p = read_str(p, &l);
 				cur->sort = SY_REG;
 				cur->len = l;
@@ -27,7 +27,7 @@ symbolp eval(char *__s) {
 			case '$':
 				p++;
 				if (*p >= 'a' && *p <= 'z') {
-					mdl_uint_t l;
+					ff_uint_t l;
 					cur->p = read_str(p, &l);
 					cur->sort = SY_LABEL;
 					cur->len = l;
@@ -47,17 +47,17 @@ symbolp eval(char *__s) {
 			}
 			default:
 				if (isno(*p)) _no: {
-					mdl_uint_t l;
-					mdl_u8_t sign;
-					cur->p = _alloca(sizeof(mdl_u64_t));
-					*(mdl_u64_t*)cur->p = read_no(p, &l, &sign);
+					ff_uint_t l;
+					ff_u8_t sign;
+					cur->p = _alloca(sizeof(ff_u64_t));
+					*(ff_u64_t*)cur->p = read_no(p, &l, &sign);
 					p+=l;
 					cur->sort = SY_INT;
 					if (sign)
 						cur->flags |= SIGNED;
-					cur->len = sizeof(mdl_uint_t);
+					cur->len = sizeof(ff_uint_t);
 				} else if (*p >= 'a' && *p <= 'z') _str: {
-					mdl_uint_t l;
+					ff_uint_t l;
 					cur->p = read_str(p, &l);	
 					cur->sort = SY_STR;
 					cur->len = l;

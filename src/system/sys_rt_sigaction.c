@@ -1,7 +1,7 @@
-# include <mdlint.h>
+# include "../ffint.h"
 # include "../linux/signal.h"
-mdl_s32_t rt_sigaction(mdl_s32_t __sig, struct sigaction const *__act, struct sigaction *__oact, mdl_u32_t __size) {
-	mdl_s32_t ret;
+ff_s32_t rt_sigaction(ff_s32_t __sig, struct sigaction const *__act, struct sigaction *__oact, ff_u32_t __size) {
+	ff_s32_t ret;
 	__asm__("xorq %%rdi, %%rdi\n\t"
 			"mov %1, %%edi\n\t"
 			"mov %2, %%rsi\n\t"

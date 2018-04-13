@@ -4,8 +4,8 @@
 symbolp parse(char *__s) {
 	char *p = __s;
 
-	mdl_u8_t dir = 0;
-	mdl_uint_t len;
+	ff_u8_t dir = 0;
+	ff_uint_t len;
 	while(*p == ' ') p++;
 	char buf[128], *bufp;
 	bufp = buf;
@@ -54,7 +54,7 @@ symbolp parse(char *__s) {
 /*
 	cur = sy;
 	while(cur != NULL) {
-		printf("%u\n", *(mdl_u8_t*)cur->p);
+		printf("%u\n", *(ff_u8_t*)cur->p);
 		cur = cur->next;
 	}
 */		

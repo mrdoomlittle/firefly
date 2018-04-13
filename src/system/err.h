@@ -1,8 +1,8 @@
 # include "errno.h"
-# include "../types/err_t.h"
+# include "../types.h"
 # ifndef __ffly__err__h
 # define __ffly__err__h
-ffly_err_t extern ffly_errval;
+ff_err_t extern ffly_errval;
 # endif
 
 # ifndef ffly_errmsg
@@ -22,7 +22,7 @@ void _ffly_errmsg(char const*, int unsigned, char const*, ...);
 #   define retok return FFLY_SUCCESS
 # endif
 # ifndef FF_ERR
-#	define FF_ERR ffly_err_t
+#	define FF_ERR ff_err_t
 # endif
 # ifndef _ret
 #	define _ret return err

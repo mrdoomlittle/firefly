@@ -1,5 +1,5 @@
 # define __ffly_debug_enabled
-# include "types/err_t.h"
+# include "types.h"
 # include "linux/unistd.h"
 
 # include "memory/allocr.h"
@@ -15,9 +15,9 @@
 # include "memory/mem_free.h"
 # include "hatch.h"
 /*
-extern void*(*ffly_allocp)(mdl_uint_t);
+extern void*(*ffly_allocp)(ff_uint_t);
 extern void(*ffly_freep)(void*);
-extern void*(*ffly_reallocp)(void*, mdl_uint_t);
+extern void*(*ffly_reallocp)(void*, ff_uint_t);
 */
 
 typedef struct _ffopt {
@@ -71,7 +71,7 @@ _again:
 
 # include "mode.h"
 # include "system/config.h"
-ffly_err_t ffmain(int, char const**);
+ff_err_t ffmain(int, char const**);
 char const static *by = "mrdoomlittle"; 
 # include "dep/str_cpy.h"
 # include "mod.h"
@@ -132,8 +132,8 @@ void _start(void) {
 	char const **arg = argl;
 	*(arg++) = *(argp++); 
 
-	mdl_i8_t conf = -1;
-	mdl_i8_t hatch = -1;
+	ff_i8_t conf = -1;
+	ff_i8_t hatch = -1;
 	if (argc > 1) {
 		if (!ffly_str_cmp(*argp, "-proc")) {
 			evalopts(*(++argp));

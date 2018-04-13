@@ -1,13 +1,11 @@
 # ifndef __ffly__thread__h
 # define __ffly__thread__h
-# include "../types/err_t.h"
+# include "../types.h"
 # include "../system/errno.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../dep/mem_cpy.h"
 # include "../dep/mem_dup.h"
-# include "../types/thread.h"
-# include "../types/bool_t.h"
 # include "../linux/types.h"
 /*
 	no thread shall create its own.
@@ -30,25 +28,25 @@
 		// go back to the original
 		ffly_ctl(ffly_malc, _ar_unset, 0);
 */
-# define FFLY_TID_NULL ((ffly_tid_t)~0)
+# define FFLY_TID_NULL ((ff_tid_t)~0)
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_tid_t ffly_gettid();
+ff_tid_t ffly_gettid();
 void ffly_thread_init();
-ffly_err_t ffly_thread_create(ffly_tid_t*, void*(*)(void*), void*);
-ffly_err_t ffly_thread_kill(ffly_tid_t);
-ffly_bool_t ffly_thread_alive(ffly_tid_t);
-ffly_bool_t ffly_thread_dead(ffly_tid_t);
-void ffly_thread_wait(ffly_tid_t);
-__linux_pid_t ffly_thread_getpid(ffly_tid_t);
-ffly_err_t ffly_thread_cleanup();
+ff_err_t ffly_thread_create(ff_tid_t*, void*(*)(void*), void*);
+ff_err_t ffly_thread_kill(ff_tid_t);
+ff_bool_t ffly_thread_alive(ff_tid_t);
+ff_bool_t ffly_thread_dead(ff_tid_t);
+void ffly_thread_wait(ff_tid_t);
+__linux_pid_t ffly_thread_getpid(ff_tid_t);
+ff_err_t ffly_thread_cleanup();
 # ifdef __cplusplus
 }
 namespace mdl {
 namespace firefly {
 namespace system {
-static ffly_err_t(*thread_create)(ffly_tid_t*, void*(*)(void*), void*) = &ffly_thread_create;
+static ff_err_t(*thread_create)(ff_tid_t*, void*(*)(void*), void*) = &ffly_thread_create;
 
 template<typename... _E> struct thread_arg;
 template<typename _F, typename _A1>
@@ -121,12 +119,12 @@ static void* proxy(void *__arg) {
 
 struct thread {
 	template<typename _F>
-	thread(_F __f, ffly_tid_t& __tid) {
+	thread(_F __f, ff_tid_t& __tid) {
 		thread_create(&__tid, &proxy<_F>, (void*)__f);
 	}
 
 	template<typename _F, typename _A1>
-	thread(_F __f, _A1 __a1, ffly_tid_t& __tid) {
+	thread(_F __f, _A1 __a1, ff_tid_t& __tid) {
 		struct thread_arg<_F, _A1> arg {
 			f:__f,
 			a1:__a1
@@ -138,7 +136,7 @@ struct thread {
 	}
 
 	template<typename _F, typename _A1, typename _A2>
-	thread(_F __f, _A1 __a1, _A2 __a2, ffly_tid_t& __tid) {
+	thread(_F __f, _A1 __a1, _A2 __a2, ff_tid_t& __tid) {
 		struct thread_arg<_F, _A1, _A2> arg {
 			f:__f,
 			a1:__a1,
@@ -151,7 +149,7 @@ struct thread {
 	}
 
 	template<typename _F, typename _A1, typename _A2, typename _A3>
-	thread(_F __f, _A1 __a1, _A2 __a2, _A3 __a3, ffly_tid_t& __tid) {
+	thread(_F __f, _A1 __a1, _A2 __a2, _A3 __a3, ff_tid_t& __tid) {
 		struct thread_arg<_F, _A1, _A2, _A3> arg {
 			f:__f,
 			a1:__a1,
@@ -165,7 +163,7 @@ struct thread {
 	}
 
 	template<typename _F, typename _A1, typename _A2, typename _A3, typename _A4>
-	thread(_F __f, _A1 __a1, _A2 __a2, _A3 __a3, _A4 __a4, ffly_tid_t& __tid) {
+	thread(_F __f, _A1 __a1, _A2 __a2, _A3 __a3, _A4 __a4, ff_tid_t& __tid) {
 		struct thread_arg<_F, _A1, _A2, _A3, _A4> arg {
 			f:__f,
 			a1:__a1,

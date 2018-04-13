@@ -1,7 +1,7 @@
 # ifndef __ffly__opt__h
 # define __ffly__opt__h
-# include <mdlint.h>
-# include "types/err_t.h"
+# include "ffint.h"
+# include "types.h"
 typedef struct ffopt {
 	char const *val;
 } *ffoptp;

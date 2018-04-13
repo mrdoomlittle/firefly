@@ -27,13 +27,13 @@ void ffoe_end() {
 
 void static
 putopt(char const *__name, ffoptp __opt) {
-	ffly_map_put(&opt, (mdl_u8_t const*)__name, ffly_str_len(__name), __opt);
+	ffly_map_put(&opt, (ff_u8_t const*)__name, ffly_str_len(__name), __opt);
 }
 
 ffoptp static
 getopt(char const *__name) {
-	ffly_err_t err;
-	ffoptp ret = (ffoptp)ffly_map_get(&opt, (mdl_u8_t const*)__name, ffly_str_len(__name), &err);
+	ff_err_t err;
+	ffoptp ret = (ffoptp)ffly_map_get(&opt, (ff_u8_t const*)__name, ffly_str_len(__name), &err);
 	if (_err(err))
 		return NULL;
 	return ret;

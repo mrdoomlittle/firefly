@@ -1,4 +1,4 @@
-# include <mdlint.h>
+# include "../src/ffint.h"
 # include "../src/system/string.h"
 # include "../src/mod/pipe.h"
 # include "../src/system/pipe.h"
@@ -13,7 +13,7 @@ void _start(void) {
 			"mov %%rbp, %%rax\n\t"
 			"add $16, %%rax\n\t"
 			"mov %%rax, %1" : "=r"(argc), "=r"(argv) : : "rax");
-	mdl_uint_t shm_id = ffly_stno((char*)*argv);
+	ff_uint_t shm_id = ffly_stno((char*)*argv);
 	ffmod_pipe_open(shm_id);
 	ffly_pipe_connect(ffmod_pipeno());
 	main();

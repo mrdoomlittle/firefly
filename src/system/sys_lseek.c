@@ -1,6 +1,6 @@
-# include <mdlint.h>
-mdl_s32_t lseek(mdl_u32_t __fd, mdl_u64_t __off, mdl_u32_t __whence) {
-	mdl_s32_t ret;
+# include "../ffint.h"
+ff_s32_t lseek(ff_u32_t __fd, ff_u64_t __off, ff_u32_t __whence) {
+	ff_s32_t ret;
 	__asm__("xorq %%rdi, %%rdi\n\t"
 			"mov %1, %%edi\n\t"
 			"mov %2, %%rsi\n\t"

@@ -1,6 +1,6 @@
-# include <mdlint.h>
-mdl_s32_t setsockopt(mdl_u32_t __fd, mdl_u32_t __level, mdl_u32_t __name, void *__val, mdl_u32_t __len) {
-	mdl_s32_t ret;
+# include "../ffint.h"
+ff_s32_t setsockopt(ff_u32_t __fd, ff_u32_t __level, ff_u32_t __name, void *__val, ff_u32_t __len) {
+	ff_s32_t ret;
 	__asm__("xorq %%rdi, %%rdi\n\t"
 			"mov %1, %%edi\n\t"
 			"xorq %%rsi, %%rsi\n\t"

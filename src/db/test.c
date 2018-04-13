@@ -3,7 +3,7 @@
 # include "../string.h"
 # include "../stdio.h"
 # include "../system/util/hash.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	char const **arg = __argv+1;
 	char const *port = NULL;
 	char const *ip_adr = NULL;
@@ -28,7 +28,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	printf("port: %s, address: %s\n", port, ip_adr);
 	ff_db_ctrp ctor;
 	// create connector
-	ffly_err_t err;
+	ff_err_t err;
 	ctor = ff_db_ctr(ffly_hash("firefly", 7), ip_adr, ffly_stno(port), &err);
 	if (err != FFLY_SUCCESS) {
 
@@ -37,7 +37,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_db_ctr_login(ctor, "root", ffly_hash("none", 4));
 
 	char buf[67];
-	mdl_uint_t pile, rec;
+	ff_uint_t pile, rec;
 	if (ff_db_ctr_exist(ctor, 0, &err) == -1) {
 		ff_db_ctr_creat_pile(ctor, &pile);
 		ff_db_ctr_rivet(ctor, 0, pile);

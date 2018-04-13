@@ -1,7 +1,7 @@
-# include <mdlint.h>
+# include "../ffint.h"
 # include "../linux/stat.h"
-mdl_s32_t stat(char const *__path, struct stat *__buf) {
-	mdl_s32_t ret;
+ff_s32_t stat(char const *__path, struct stat *__buf) {
+	ff_s32_t ret;
 	__asm__("mov %1, %%rdi\n\t"
 			"mov %2, %%rsi\n\t"
 			"call __stat\n\t"

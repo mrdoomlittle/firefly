@@ -1,11 +1,11 @@
 # ifndef __ffly__get__bit__h
 # define __ffly__get__bit__h
-# include "types/err_t.h"
-# include <mdlint.h>
+# include "ffint.h"
+# include "types.h"
 typedef struct ffly_getbit {
-    mdl_u8_t buf;
-    mdl_u8_t left;
-    mdl_u8_t(*in)(void*);
+    ff_u8_t buf;
+    ff_u8_t left;
+    ff_u8_t(*in)(void*);
 	void *arg_p;
 } *ffly_getbitp;
 # define ffly_init_get_bit(__getbit, __in, __arg_p) \
@@ -14,5 +14,5 @@ typedef struct ffly_getbit {
     (__getbit)->in = __in; \
 	(__getbit)->arg_p = __arg_p
 
-mdl_u8_t ffly_get_bit(ffly_getbitp, mdl_u8_t);
+ff_u8_t ffly_get_bit(ffly_getbitp, ff_u8_t);
 # endif /*__ffly__get__bit__h*/

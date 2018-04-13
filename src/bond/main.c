@@ -1,11 +1,11 @@
 # include "bond.h"
-# include "../types/err_t.h"
+# include "../types.h"
 # include "../stdio.h"
 # include "../malloc.h"
 # include "../system/err.h"
 # include "../opt.h"
 # include "../depart.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffoe_prep();
 	char const *s = NULL;
 	char const *d = NULL;

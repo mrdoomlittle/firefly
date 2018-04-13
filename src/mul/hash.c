@@ -2,20 +2,10 @@
 # include "../string.h"
 # include "../malloc.h"
 # include "../stdio.h"
-void* memdup(void const *__p, mdl_uint_t __bc) {
-	mdl_u8_t *p = (mdl_u8_t*)malloc(__bc);
-	mdl_u8_t *cur = p, *end = p+__bc;
-	while(cur != end) {
-		*cur = *((mdl_u8_t*)__p+(cur-p));
-		cur++;
-	}
-	return p;
-}
-
-mdl_u64_t sum(mdl_u8_t const *__key, mdl_uint_t __len) {
-	mdl_u8_t const *end = __key+__len;
-	mdl_u8_t const *p = __key;
-	mdl_u64_t ret = ~(mdl_u64_t)0;
+ff_u64_t sum(ff_u8_t const *__key, ff_uint_t __len) {
+	ff_u8_t const *end = __key+__len;
+	ff_u8_t const *p = __key;
+	ff_u64_t ret = ~(ff_u64_t)0;
 	while(p != end) {
 		ret ^= *p;
 		ret = ret<<4|ret>>60;
@@ -32,8 +22,8 @@ void hash_init(hashp __table) {
 	__table->head = NULL;
 }
 
-void hash_put(hashp __table, mdl_u8_t const *__key, mdl_uint_t __len, void *__p) {
-	mdl_u64_t val = sum(__key, __len);
+void hash_put(hashp __table, ff_u8_t const *__key, ff_uint_t __len, void *__p) {
+	ff_u64_t val = sum(__key, __len);
 	entryp *table = __table->table+(val&0xff);
 
 	entryp e = (entryp)malloc(sizeof(struct entry));
@@ -43,13 +33,13 @@ void hash_put(hashp __table, mdl_u8_t const *__key, mdl_uint_t __len, void *__p)
 	e->fd = __table->head;
 	__table->head = e;
 
-	e->key = (mdl_u8_t const*)memdup(__key, __len);
+	memdup((void**)&e->key, __key, __len);
 	e->len = __len;
 	e->p = __p;
 }
 
-void* hash_get(hashp __table, mdl_u8_t const *__key, mdl_uint_t __len) {
-	mdl_u64_t val = sum(__key, __len);
+void* hash_get(hashp __table, ff_u8_t const *__key, ff_uint_t __len) {
+	ff_u64_t val = sum(__key, __len);
 	entryp p;
 	if (!(p = *(__table->table+(val&0xff)))) {
 		return NULL;

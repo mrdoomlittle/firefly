@@ -15,10 +15,10 @@ int out, in;
 
 struct ins extern* x86[];
 struct ins extern* bc[];
-mdl_u64_t extern offset;
+ff_u64_t extern offset;
 
 extern void prepstack(void);
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffoe_prep();
 	char const *infile = NULL;
 	char const *outfile = NULL;

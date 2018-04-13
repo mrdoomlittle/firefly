@@ -1,5 +1,6 @@
 # include "mod.h"
-# include "types/err_t.h"
+# include "types.h"
+
 # include "call.h"
 # include "system/io.h"
 # include "linux/mman.h"
@@ -53,10 +54,10 @@ execmod() {
 		"movq %%rdi, %0": "=m"(file) : : "rdi");
 
 	char buf[128];
-	ffly_nots((mdl_u64_t)ffmod_pipe_shmid(), buf);
+	ffly_nots((ff_u64_t)ffmod_pipe_shmid(), buf);
 	ffly_printf("pipeno: %s\n", buf);
 	char *argv[] = {(char*)buf, NULL};
-	mdl_s32_t res = execve(file, (char*const)argv, NULL);
+	ff_s32_t res = execve(file, (char*const)argv, NULL);
 	if (res < 0) {
 		ffly_printf("error, %s\n", strerror(errno));
 	}
@@ -69,7 +70,7 @@ ffmod_printf() {
 	__ffmod_debug
 		ffly_printf("printf.\n");
 	ffpap p, bk;
-	ffly_err_t err;
+	ff_err_t err;
 	p = (ffpap)ffly_pipe_rd64l(ffmod_pipeno(), &err);
 
 	ffcall(_ffcal_printf, NULL, &p);
@@ -86,15 +87,15 @@ void static
 ffmod_malloc() {
 	__ffmod_debug
 		ffly_printf("malloc.\n");
-	mdl_uint_t bc;
-	ffly_err_t err;
+	ff_uint_t bc;
+	ff_err_t err;
 	void *ret;
-	ffly_pipe_read(&bc, sizeof(mdl_uint_t), ffmod_pipeno());
+	ffly_pipe_read(&bc, sizeof(ff_uint_t), ffmod_pipeno());
 	__ffmod_debug
 		ffly_printf("inbound, bc: %u\n", bc);
 
 	ret = __ffly_mem_alloc(bc);
-	ffly_pipe_wr64l((mdl_u64_t)ret, ffmod_pipeno());
+	ffly_pipe_wr64l((ff_u64_t)ret, ffmod_pipeno());
 	__ffmod_debug
 		ffly_printf("outbound: %p\n", ret);
 }
@@ -103,7 +104,7 @@ void static
 ffmod_free() {
 	__ffmod_debug
 		ffly_printf("free.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	void *p;
 	p = (void*)ffly_pipe_rd64l(ffmod_pipeno(), &err);
 	__ffmod_debug
@@ -115,12 +116,12 @@ void static
 ffmod_dcp() {
 	__ffmod_debug
 		ffly_printf("dcp.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	void *src;
-	mdl_uint_t n;
+	ff_uint_t n;
 
 	src = (void*)ffly_pipe_rd64l(ffmod_pipeno(), &err);
-	ffly_pipe_read(&n, sizeof(mdl_uint_t), ffmod_pipeno());
+	ffly_pipe_read(&n, sizeof(ff_uint_t), ffmod_pipeno());
 	ffly_pipe_write(src, n, ffmod_pipeno());
 }
 
@@ -128,12 +129,12 @@ void static
 ffmod_scp() {
 	__ffmod_debug
 		ffly_printf("scp.\n");
-	ffly_err_t err;
+	ff_err_t err;
 	void *dst;
-	mdl_uint_t n;
+	ff_uint_t n;
 
 	dst = (void*)ffly_pipe_rd64l(ffmod_pipeno(), &err);
-	ffly_pipe_read(&n, sizeof(mdl_uint_t), ffmod_pipeno());
+	ffly_pipe_read(&n, sizeof(ff_uint_t), ffmod_pipeno());
 	ffly_pipe_read(dst, n, ffmod_pipeno());	
 }
 
@@ -150,7 +151,7 @@ static void(*process[])() = {
 void ffmodld(char const *__file) {
 	ffmod_pipe();
 	ffly_printf("shm: %lu\n", ffmod_pipe_shmid());
-	mdl_u8_t *stack = (mdl_u8_t*)__ffly_mem_alloc(DSS);
+	ff_u8_t *stack = (ff_u8_t*)__ffly_mem_alloc(DSS);
 	ffly_printf("file: %s\n", __file);
 
 	*(void**)(stack+(DSS-8)) = (void*)execmod;
@@ -158,15 +159,15 @@ void ffmodld(char const *__file) {
 
 	__linux_pid_t pid;
 	if ((pid = clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD,
-		(mdl_u64_t)(stack+(DSS-8)), NULL, NULL, 0)) == (__linux_pid_t)-1)
+		(ff_u64_t)(stack+(DSS-8)), NULL, NULL, 0)) == (__linux_pid_t)-1)
 	{
 		ffly_printf("error.\n");
 		goto _end;
 	}
 
 	ffly_pipe_listen(ffmod_pipeno());
-	mdl_u8_t no;
-	ffly_err_t err;
+	ff_u8_t no;
+	ff_err_t err;
 _again:
 	if ((no = ffly_pipe_rd8l(ffmod_pipeno(), &err)) != 0xff) {
 		if (no <= _ffcal_mod_scp) {
@@ -202,7 +203,7 @@ void ffmodldl(char const **__file) {
 # ifdef DEBUG
 
 # include "system/realpath.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	char *file;
 	ffmodld(file = ffly_realpath("../modules/a.out"));
 	__ffly_mem_free(file);

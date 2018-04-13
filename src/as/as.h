@@ -4,7 +4,7 @@
 int extern out;
 int extern in;
 # include "../bci.h"
-# include <mdlint.h>
+# include "../ffint.h"
 # define inssize struct(ins)
 # define is_flag(__flags, __flag) \
 	((__flags&__flag)==__flag)
@@ -17,8 +17,8 @@ enum {
 	_of_ffef
 };
 
-mdl_u8_t extern of;
-mdl_u64_t extern offset;
+ff_u8_t extern of;
+ff_u64_t extern offset;
 
 typedef struct label *labelp;
 
@@ -27,14 +27,14 @@ typedef struct ins {
 	struct ins *next;
 	void(*post)(struct ins*);
 	symbolp l, r;
-	mdl_u8_t opcode[8];
+	ff_u8_t opcode[8];
 } *insp;
 
 # define LA_LOOSE 0x1
 typedef struct region* regionp;
 typedef struct label {
-	mdl_uint_t offset, s_adr, adr;
-	mdl_u8_t flags;
+	ff_uint_t offset, s_adr, adr;
+	ff_u8_t flags;
 	char const *s;
 	regionp reg;
 } *labelp;
@@ -42,31 +42,31 @@ typedef struct label {
 typedef struct segment {
 	char const *name;
 	struct segment *next;
-	mdl_u64_t offset;
-	mdl_u64_t addr;
-	mdl_uint_t size;
-	mdl_u8_t buf[200];
-	mdl_u8_t *fresh;
+	ff_u64_t offset;
+	ff_u64_t addr;
+	ff_uint_t size;
+	ff_u8_t buf[200];
+	ff_u8_t *fresh;
 } *segmentp;
 
 typedef struct region {
 	char const *name;
 	struct region *next;
-	mdl_u64_t beg, end;
-	mdl_u16_t no;
+	ff_u64_t beg, end;
+	ff_u16_t no;
 } *regionp;
 
 typedef struct relocate {
 	struct relocate *next;
-	mdl_u64_t offset;
-	mdl_u8_t l;
+	ff_u64_t offset;
+	ff_u8_t l;
 	labelp la;
 } *relocatep;
 
 typedef struct hook {
 	struct hook *next;
-	mdl_u64_t offset;
-	mdl_u8_t l;
+	ff_u64_t offset;
+	ff_u8_t l;
 	labelp to;
 } *hookp;
 
@@ -75,9 +75,9 @@ regionp extern curreg;
 
 typedef struct hash_entry {
 	struct hash_entry *next;
-	mdl_u8_t const *key;
+	ff_u8_t const *key;
 	void *p;
-	mdl_uint_t len;
+	ff_uint_t len;
 } *hash_entryp;
 
 struct hash {
@@ -85,36 +85,36 @@ struct hash {
 };
 
 void assemble(char*, char*);
-char* read_str(char*, mdl_uint_t*);
+char* read_str(char*, ff_uint_t*);
 symbolp eval(char*);
-void* _memdup(void*, mdl_uint_t);
+void* _memdup(void*, ff_uint_t);
 struct hash extern env;
 void _cleanup();
-void* _alloca(mdl_uint_t);
-void oust(mdl_u8_t*, mdl_u8_t);
-void oustbyte(mdl_u8_t);
-void oust_16l(mdl_u16_t);
-void oust_32l(mdl_u32_t);
-void oust_64l(mdl_u64_t);
+void* _alloca(ff_uint_t);
+void oust(ff_u8_t*, ff_u8_t);
+void oustbyte(ff_u8_t);
+void oust_16l(ff_u16_t);
+void oust_32l(ff_u32_t);
+void oust_64l(ff_u64_t);
 
 
 // stt.c
-mdl_uint_t stt(char const*, mdl_uint_t);
-mdl_u64_t stt_drop();
+ff_uint_t stt(char const*, ff_uint_t);
+ff_u64_t stt_drop();
 
-void reloc(mdl_u64_t, mdl_u8_t, labelp);
-void hook(mdl_u64_t, mdl_u8_t, labelp);
+void reloc(ff_u64_t, ff_u8_t, labelp);
+void hook(ff_u64_t, ff_u8_t, labelp);
 void finalize(void);
 void ffas_init(void);
 void ffas_de_init(void);
 symbolp parse(char*);
-mdl_u64_t read_no(char*, mdl_uint_t*, mdl_u8_t*);
+ff_u64_t read_no(char*, ff_uint_t*, ff_u8_t*);
 void hash_init(struct hash*);
-void hash_put(struct hash*, mdl_u8_t const*, mdl_uint_t, void*);
-void* hash_get(struct hash*, mdl_u8_t const*, mdl_uint_t);
+void hash_put(struct hash*, ff_u8_t const*, ff_uint_t, void*);
+void* hash_get(struct hash*, ff_u8_t const*, ff_uint_t);
 void load(insp*);
-mdl_uint_t stackadr();
-void isa(mdl_uint_t);
+ff_uint_t stackadr();
+void isa(ff_uint_t);
 
 //void ffef(symbolp);
 # endif /*__ffly__as__h*/

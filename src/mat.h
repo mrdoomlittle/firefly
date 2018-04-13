@@ -1,6 +1,6 @@
 # ifndef __ffly__mat__h
 # define __ffly__mat__h
-# include <mdlint.h>
+# include "ffint.h"
 # include "ffly_def.h"
 
 typedef struct ffly_mat {

@@ -4,7 +4,6 @@
 # include "io.h"
 # include "../dep/mem_set.h"
 # include "errno.h"
-# include "../types/off_t.h"
 # include "../dep/str_len.h"
 # include "../dep/mem_dup.h"
 # include "err.h"
@@ -17,10 +16,10 @@
 
 # ifndef __fflib
 # include <string.h>
-typedef mdl_s32_t __linux_off_t;
+typedef ff_s32_t __linux_off_t;
 # define is_flag(__flags, __flag) \
 	(((__flags)&(__flag))==(__flag))
-char const static* mode_str(mdl_u32_t __flags) {
+char const static* mode_str(ff_u32_t __flags) {
 	char static buf[24];
 	char *p = buf; 
 	if (is_flag(__flags, FF_O_RDWR)) {
@@ -40,7 +39,7 @@ char const static* mode_str(mdl_u32_t __flags) {
 # endif
 
 struct ffly_file*
-ffly_fopen(char const *__path, int __flags, mdl_u32_t __mode, ffly_err_t *__err) {
+ffly_fopen(char const *__path, int __flags, ff_u32_t __mode, ff_err_t *__err) {
 	struct ffly_file *file = (struct ffly_file*)__ffly_mem_alloc(sizeof(struct ffly_file));
 	if ((file->fd = open(__path, __flags, __mode)) == -1) {
 		ffly_fprintf(ffly_err, "file, failed to open file, error: %d, %s\n", errno, strerror(errno));
@@ -61,13 +60,13 @@ ffly_fopen(char const *__path, int __flags, mdl_u32_t __mode, ffly_err_t *__err)
 	return file;
 }
 
-ffly_bool_t static valid_fd(int __fd) {
+ff_bool_t static valid_fd(int __fd) {
 	if (fcntl(__fd, F_GETFD, 0) == -1)
 		return 0;
 	return 1;
 }
 
-ffly_err_t ffly_fstat(char const *__path, struct ffly_stat *__stat) {
+ff_err_t ffly_fstat(char const *__path, struct ffly_stat *__stat) {
 	struct stat st;
 	ffly_mem_set(&st, 0, sizeof(struct stat));
 	if (stat(__path, &st) == -1) {
@@ -81,16 +80,16 @@ ffly_err_t ffly_fstat(char const *__path, struct ffly_stat *__stat) {
 	return FFLY_SUCCESS;
 }
 
-ffly_off_t ffly_fseek(struct ffly_file *__f, ffly_off_t __off, int __whence) {
+ff_off_t ffly_fseek(struct ffly_file *__f, ff_off_t __off, int __whence) {
 	__linux_off_t off = lseek(__f->fd, __off, __whence);
 	if (off == (__linux_off_t)-1) {
 		ffly_fprintf(ffly_err, "fseek failed.\n");
 		return 0;
 	}
-	return (ffly_off_t)off;
+	return (ff_off_t)off;
 }
 
-ffly_err_t ffly_fcreat(char const *__path, mdl_u32_t __mode) {
+ff_err_t ffly_fcreat(char const *__path, ff_u32_t __mode) {
 	if (access(__path, F_OK)) {
 		ffly_fprintf(ffly_err, "file at '%s' allready exists.\n");
 		return FFLY_FAILURE;
@@ -103,7 +102,7 @@ ffly_err_t ffly_fcreat(char const *__path, mdl_u32_t __mode) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_fwrite(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
+ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	if (!valid_fd(__f->fd)) {
 		ffly_fprintf(ffly_err, "file descriptor not valid.\n");
 		return FFLY_FAILURE;
@@ -115,7 +114,7 @@ ffly_err_t ffly_fwrite(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_fread(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
+ff_err_t ffly_fread(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	if (!valid_fd(__f->fd)) {
 		ffly_fprintf(ffly_err, "file descriptor not valid.\n");
 		return FFLY_FAILURE;
@@ -128,7 +127,7 @@ ffly_err_t ffly_fread(struct ffly_file *__f, void *__p, mdl_uint_t __bc) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_fclose(struct ffly_file *__f) {
+ff_err_t ffly_fclose(struct ffly_file *__f) {
 	if (!valid_fd(__f->fd)) {
 		ffly_fprintf(ffly_err, "file descriptor not valid.\n");
 		return FFLY_FAILURE;
@@ -138,7 +137,7 @@ ffly_err_t ffly_fclose(struct ffly_file *__f) {
 # ifndef __fflib
 	fclose(__f->libc_fp);
 # endif
-	ffly_err_t err;
+	ff_err_t err;
 	__ffly_mem_free((void*)__f->path);
 	if (_err(err = __ffly_mem_free(__f))) {
 		ffly_fprintf(ffly_err, "failed to free file.\n");

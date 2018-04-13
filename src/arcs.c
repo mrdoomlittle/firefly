@@ -3,24 +3,23 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/dict.h"
-# include "types/err_t.h"
 struct ffly_arc __ffly_arcroot__;
 ffly_arcp __ffly_arccur__ = &__ffly_arcroot__;
 
 struct ffly_dict static dict;
 
-mdl_u64_t static deadno[200];
-mdl_u64_t static out = 0;
+ff_u64_t static deadno[200];
+ff_u64_t static out = 0;
 
-mdl_u64_t static* fresh = deadno;
+ff_u64_t static* fresh = deadno;
 
-mdl_u64_t ffly_arcs_alno() {
+ff_u64_t ffly_arcs_alno() {
 	if (fresh > deadno)
 		return *(--fresh);	
 	return out++;	
 }
 
-void ffly_arcs_frno(mdl_u64_t __no) {
+void ffly_arcs_frno(ff_u64_t __no) {
 	if (out-1 == __no) out--;
 	*(fresh++) = __no;
 }
@@ -45,23 +44,23 @@ void ffly_arcs_de_init() {
 # include "stdio.h"
 # include "dep/str_cpy.h"
 # include "system/util/base64.h"
-mdl_u64_t* ffly_arcs_alias(char const *__name) {
-	ffly_err_t err;
+ff_u64_t* ffly_arcs_alias(char const *__name) {
+	ff_err_t err;
 	char const *s;
 	void *frame = NULL;
 	if (&__ffly_arcroot__ != __ffly_arccur__) {
 		frame = ffly_frame();
 		char *buf = (char*)ffly_alloca(128, NULL);
-		ffly_b64_encode(buf, &__ffly_arccur__->p->no, sizeof(mdl_u64_t));	
-		ffly_str_cpy(buf+ffly_b64_enc_len(sizeof(mdl_u64_t)), __name);
+		ffly_b64_encode(buf, &__ffly_arccur__->p->no, sizeof(ff_u64_t));	
+		ffly_str_cpy(buf+ffly_b64_enc_len(sizeof(ff_u64_t)), __name);
 		s = buf;
 	} else
 		s = __name;
 
-	mdl_u64_t *p = NULL;
-	if (!(p = (mdl_u64_t*)ffly_dict_get(&dict, s, &err)))
+	ff_u64_t *p = NULL;
+	if (!(p = (ff_u64_t*)ffly_dict_get(&dict, s, &err)))
 		// remove __ffly_mem_alloc for somthing else
-		ffly_dict_put(&dict, s, p = (mdl_u64_t*)__ffly_mem_alloc(sizeof(mdl_u64_t)));
+		ffly_dict_put(&dict, s, p = (ff_u64_t*)__ffly_mem_alloc(sizeof(ff_u64_t)));
 	if (frame != NULL)
 		ffly_collapse(frame);
 	if (!p) {
@@ -71,7 +70,7 @@ mdl_u64_t* ffly_arcs_alias(char const *__name) {
 	return p;
 }
 
-ffly_arc_recp ffly_arc_lookup(ffly_arcp __arc, mdl_u64_t __no) {
+ffly_arc_recp ffly_arc_lookup(ffly_arcp __arc, ff_u64_t __no) {
 	ffly_arc_recp cur = *(__arc->rr+(__no&0xff));
 	while(cur != NULL) {
 		if (cur->no == __no) return cur;
@@ -111,8 +110,8 @@ void ffly_arc_free(ffly_arcp __arc) {
 	__ffly_mem_free(__arc->rr);
 }
 
-ffly_arc_recp ffly_arc_creatrec(ffly_arcp __arc, mdl_u64_t __no,
-	void *__p, mdl_u8_t __sort, ffly_flag_t __flags)
+ffly_arc_recp ffly_arc_creatrec(ffly_arcp __arc, ff_u64_t __no,
+	void *__p, ff_u8_t __sort, ff_flag_t __flags)
 {
 	ffly_arc_recp *p = __arc->rr+(__no&0xff); 
 	ffly_arc_recp rec = (ffly_arc_recp)__ffly_mem_alloc(sizeof(struct ffly_arc_rec));
@@ -143,7 +142,7 @@ void ffly_arc_delrec(ffly_arcp __arc, ffly_arc_recp __rec) {
 	__ffly_mem_free(__rec);
 }
 
-ffly_arcp ffly_creatarc(ffly_arcp __arc, mdl_u64_t __no) {
+ffly_arcp ffly_creatarc(ffly_arcp __arc, ff_u64_t __no) {
 	ffly_arc_recp rec = ffly_arc_creatrec(__arc, __no, __ffly_mem_alloc(sizeof(struct ffly_arc)), _ffly_rec_arc, REC_FLG_TOFREE);
 	
 	ffly_arcp arc = (ffly_arcp)rec->p;
@@ -160,15 +159,15 @@ void ffly_delarc(ffly_arcp __arc) {
 
 # include "dep/mem_cpy.h"
 void ffly_arc_recw(ffly_arc_recp __rec, void *__buf,
-	mdl_uint_t __offset, mdl_uint_t __n)
+	ff_uint_t __offset, ff_uint_t __n)
 {
-	ffly_mem_cpy((mdl_u8_t*)__rec->p+__offset, __buf, __n);
+	ffly_mem_cpy((ff_u8_t*)__rec->p+__offset, __buf, __n);
 }
 
 void ffly_arc_recr(ffly_arc_recp __rec, void *__buf,
-	mdl_uint_t __offset, mdl_uint_t __n)
+	ff_uint_t __offset, ff_uint_t __n)
 {
-	ffly_mem_cpy(__buf, (mdl_u8_t*)__rec->p+__offset, __n);
+	ffly_mem_cpy(__buf, (ff_u8_t*)__rec->p+__offset, __n);
 }
 
 # include "stdio.h"
@@ -176,12 +175,12 @@ void tree(ffly_arcp __root) {
     ffly_arc_recp *p = __root->rr;
     ffly_arc_recp *end = p+0x100;
     ffly_arc_recp rec;
-	mdl_uint_t static pad = 0;
+	ff_uint_t static pad = 0;
     while(p != end) {
         if (*p != NULL) {
             rec = *p;
             while(rec != NULL) {
-				mdl_u8_t i = 0;
+				ff_u8_t i = 0;
 				while(i != pad) {
 					ppad('~', pad<<1);
 					putchar('+');
@@ -212,7 +211,7 @@ void pr();
 # include "dep/str_cmp.h"
 # include "dep/mem_cpy.h"
 # include "dep/str_dup.h"
-ffly_err_t ffmain(int __argc, char const *__argv) {
+ff_err_t ffmain(int __argc, char const *__argv) {
 	char buf[200];
 	ffly_mem_cpy(buf, "Hello", 6);
 

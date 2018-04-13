@@ -24,27 +24,27 @@ ld_script(ffly_compilerp __compiler) {
 }
 
 void
-ffc_ldsyntax(ffly_compilerp __compiler, mdl_u8_t __no) {
+ffc_ldsyntax(ffly_compilerp __compiler, ff_u8_t __no) {
 	
 }
 
-ffly_err_t
+ff_err_t
 ffly_compiler_ld(struct ffly_compiler *__compiler, char const *__file) {
-	ffly_err_t err;
+	ff_err_t err;
 	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
 	__compiler->file->path = ffly_realpath(__file);
 
 	struct ffly_stat st;
 	ffly_fstat(__file, &st);
 
-	__compiler->file->p = (ffly_byte_t*)__ffly_mem_alloc(st.size);
+	__compiler->file->p = (ff_byte_t*)__ffly_mem_alloc(st.size);
 	__compiler->file->end = __compiler->file->p+st.size;
 	ffly_fread(f, __compiler->file->p, st.size);
 	ffly_fclose(f);
 	return FFLY_SUCCESS;
 }
 /*
-void set_call(struct ffly_compiler *__compiler, void *__p, mdl_u8_t __no) {
+void set_call(struct ffly_compiler *__compiler, void *__p, ff_u8_t __no) {
 	__compiler->call[__no] = __p;	
 }
 
@@ -56,7 +56,7 @@ void static *jmp[] = {
 	(void*)__parser_decl_spec
 };
 
-mdl_u64_t _ringup(struct ffly_compiler *__compiler, mdl_u8_t __no, ...) {
+ff_u64_t _ringup(struct ffly_compiler *__compiler, ff_u8_t __no, ...) {
 	__asm__("jmp *%0\n\t" : : ""(jmp[__no]));
 	__asm__("__parser_func_call:\n\t");
 	{
@@ -74,7 +74,7 @@ mdl_u64_t _ringup(struct ffly_compiler *__compiler, mdl_u8_t __no, ...) {
 }
 */
 // not the best way but works
-char const* tokk_str(mdl_u8_t __kind) {
+char const* tokk_str(ff_u8_t __kind) {
 	switch(__kind) {
 		case TOK_IDENT: return "ident";
 		case TOK_KEYWORD: return "keyword";
@@ -84,7 +84,7 @@ char const* tokk_str(mdl_u8_t __kind) {
 	return "unknown";
 }
 
-char const* tokid_str(mdl_u8_t __id) {
+char const* tokid_str(ff_u8_t __id) {
 	switch(__id) {
 		case _k_void: return "void";
 		case _k_float: return "float";
@@ -153,19 +153,19 @@ void cleanup(struct ffly_compiler *__compiler, void *__p) {
 }
 
 
-ffly_bool_t is_keyword(struct token *__tok, mdl_u8_t __id) {
+ff_bool_t is_keyword(struct token *__tok, ff_u8_t __id) {
 	return (__tok->kind == TOK_KEYWORD && __tok->id == __id);
 }
 
-ffly_off_t toklo(struct token *__tok) {
+ff_off_t toklo(struct token *__tok) {
 	return __tok->lo;
 }
 
-ffly_off_t curlo(struct ffly_compiler *__compiler) {
+ff_off_t curlo(struct ffly_compiler *__compiler) {
 	return __compiler->file->lo;
 }
 
-ffly_bool_t next_token_is(struct ffly_compiler *__compiler, mdl_u8_t __kind, mdl_u8_t __id) {
+ff_bool_t next_token_is(struct ffly_compiler *__compiler, ff_u8_t __kind, ff_u8_t __id) {
 	struct token *tok = next_token(__compiler);
 	if (!tok) return 0;
 	if (tok->kind == __kind && tok->id == __id)
@@ -174,11 +174,11 @@ ffly_bool_t next_token_is(struct ffly_compiler *__compiler, mdl_u8_t __kind, mdl
 	return 0;
 }
 
-mdl_uint_t tokcol(struct token *__tok) {
+ff_uint_t tokcol(struct token *__tok) {
 	return __tok->off-toklo(__tok);
 }
 
-void print_line(struct ffly_compiler *__compiler, mdl_uint_t __off) {
+void print_line(struct ffly_compiler *__compiler, ff_uint_t __off) {
 	char *p = (char*)__compiler->file->p+__off;
 	while(*p != '\n' && *p != '\0') {
 		if (*p != '\t')
@@ -190,14 +190,14 @@ void print_line(struct ffly_compiler *__compiler, mdl_uint_t __off) {
 
 # define expectmsg(__s) \
 	ffly_fprintf(ffly_out, "%s:%u;%u: %s, got %s.\n", __compiler->file->path, tokl(tok), tokcol(tok), __s, tokid_str(tok->id))
-ffly_bool_t expect_token(struct ffly_compiler *__compiler, mdl_u8_t __kind, mdl_u8_t __id) {
+ff_bool_t expect_token(struct ffly_compiler *__compiler, ff_u8_t __kind, ff_u8_t __id) {
 	struct token *tok = next_token(__compiler);
 	if (!tok) {
 		errmsg("token is null.\n");
 		return 0;
 	}
 
-	mdl_u8_t ret;
+	ff_u8_t ret;
 	if (!(ret = (tok->kind == __kind && tok->id == __id))) {
 		if (__kind == TOK_KEYWORD) {
 			switch(__id) {
@@ -227,7 +227,7 @@ ffly_bool_t expect_token(struct ffly_compiler *__compiler, mdl_u8_t __kind, mdl_
 				break;
 			}
 			print_line(__compiler, tok->lo);
-			mdl_uint_t pad = tok->off-toklo(tok);
+			ff_uint_t pad = tok->off-toklo(tok);
 			while(pad != 0) {
 				ffly_printf(" ");
 				pad--;
@@ -240,8 +240,8 @@ ffly_bool_t expect_token(struct ffly_compiler *__compiler, mdl_u8_t __kind, mdl_
 }
 
 # include "system/util/hash.h"
-void put_keyword(struct ffly_compiler *__compiler, char const *__key, mdl_u8_t __id) {
-	mdl_u64_t val = ffly_hash((mdl_u8_t const*)__key, ffly_str_len(__key));
+void put_keyword(struct ffly_compiler *__compiler, char const *__key, ff_u8_t __id) {
+	ff_u64_t val = ffly_hash((ff_u8_t const*)__key, ffly_str_len(__key));
 
 	keywdp p = (keywdp)__ffly_mem_alloc(sizeof(struct keywd));
 	p->id = __id;
@@ -251,7 +251,7 @@ void put_keyword(struct ffly_compiler *__compiler, char const *__key, mdl_u8_t _
 }
 
 keywdp get_keyword(struct ffly_compiler *__compiler, char const *__key) {
-	mdl_u64_t val = ffly_hash(__key, ffly_str_len(__key));
+	ff_u64_t val = ffly_hash(__key, ffly_str_len(__key));
 	keywdp cur = (keywdp)ffly_lat_get(&__compiler->keywd, val);
 	while(!null(cur)) {
 		if (!ffly_str_cmp(cur->key, __key)) return cur;
@@ -260,7 +260,7 @@ keywdp get_keyword(struct ffly_compiler *__compiler, char const *__key) {
 	return NULL;
 }
 
-ffly_err_t ffly_compiler_free(struct ffly_compiler *__compiler) {
+ff_err_t ffly_compiler_free(struct ffly_compiler *__compiler) {
 	FF_ERR err;
 	void *cur = ffly_lat_head(&__compiler->keywd);
 	while(cur != NULL) {
@@ -341,8 +341,8 @@ struct token* peek_token(struct ffly_compiler *__compiler) {
 	return tok;
 }
 
-ffly_bool_t next_tok_nl(struct ffly_compiler *__compiler) {
-	ffly_err_t err;
+ff_bool_t next_tok_nl(struct ffly_compiler *__compiler) {
+	ff_err_t err;
 	struct token *tok = ffly_lex(__compiler, &err);
 	if (tok != NULL) {
 		if (tok->kind == TOK_NEWLINE) {
@@ -375,9 +375,9 @@ void read_define(struct ffly_compiler *__compiler) {
 	ffly_map_put(&__compiler->macros, name->p, ffly_str_len((char*)name->p), p);
 }
 
-ffly_bool_t is_endif(struct ffly_compiler *__compiler, struct token *__tok) {
+ff_bool_t is_endif(struct ffly_compiler *__compiler, struct token *__tok) {
 	if (is_keyword(__tok, _percent)) {
-		ffly_err_t err;
+		ff_err_t err;
 		struct token *tok = ffly_lex(__compiler, &err);
 		return !ffly_str_cmp(tok->p, "endif");
 	}
@@ -386,7 +386,7 @@ ffly_bool_t is_endif(struct ffly_compiler *__compiler, struct token *__tok) {
 
 void static
 skip_until_endif(struct ffly_compiler *__compiler) {
-	ffly_err_t err;
+	ff_err_t err;
 	struct token *tok = NULL;
 	for(;;) {
 		if (!(tok = ffly_lex(__compiler, &err))) break;
@@ -400,7 +400,7 @@ skip_until_endif(struct ffly_compiler *__compiler) {
 void static
 read_ifdef(struct ffly_compiler *__compiler) {
 	struct token *name = next_token(__compiler);
-	ffly_err_t err;
+	ff_err_t err;
 	ffly_map_get(&__compiler->macros, name->p, ffly_str_len((char*)name->p), &err);
 	if (_err(err)) skip_until_endif(__compiler);
 }
@@ -408,7 +408,7 @@ read_ifdef(struct ffly_compiler *__compiler) {
 void static
 read_ifndef(struct ffly_compiler *__compiler) {
 	struct token *name = next_token(__compiler);
-	ffly_err_t err;
+	ff_err_t err;
 	ffly_map_get(&__compiler->macros, name->p, ffly_str_len((char*)name->p), &err);
 	if (_ok(err)) skip_until_endif(__compiler);
 }
@@ -449,7 +449,7 @@ void read_macro(struct ffly_compiler *__compiler) {
 }
 
 struct token* next_token(struct ffly_compiler *__compiler) {
-	ffly_err_t err;
+	ff_err_t err;
 	struct token *tok;
 	_back:
 	tok = ffly_lex(__compiler, &err);
@@ -479,16 +479,16 @@ struct token* next_token(struct ffly_compiler *__compiler) {
 	return tok;
 }
 
-mdl_uint_t tokl(struct token *__tok) {
+ff_uint_t tokl(struct token *__tok) {
 	return __tok->line;
 }
 
-void to_keyword(struct token *__tok, mdl_u8_t __id) {
+void to_keyword(struct token *__tok, ff_u8_t __id) {
 	__tok->kind = TOK_KEYWORD;
 	__tok->id = __id;
 }
 
-ffly_bool_t maybe_keyword(struct ffly_compiler *__compiler, struct token *__tok) {
+ff_bool_t maybe_keyword(struct ffly_compiler *__compiler, struct token *__tok) {
 	if (!__tok) return 0;
 	if (__tok->kind != TOK_IDENT || __tok->p == NULL) return 0;
 	keywdp p;	
@@ -527,7 +527,7 @@ char const static *keywords[] = {
 	NULL
 };
 
-mdl_u8_t static keyword_ids[] = {
+ff_u8_t static keyword_ids[] = {
 	_k_print,
 	_k_if,
 	_k_uint_t,
@@ -556,9 +556,9 @@ mdl_u8_t static keyword_ids[] = {
 	0
 };
 
-mdl_u8_t ffly_compiler_kwno(char const *__keyword) {
+ff_u8_t ffly_compiler_kwno(char const *__keyword) {
 	char const **s = keywords;
-	mdl_u8_t no = 0;
+	ff_u8_t no = 0;
 	while(*s != NULL) {
 		if (!ffly_str_cmp(*s, __keyword))
 			return no;
@@ -568,12 +568,12 @@ mdl_u8_t ffly_compiler_kwno(char const *__keyword) {
 	return no;
 }
 
-void ffly_compiler_ldkeywd(struct ffly_compiler *__compiler, mdl_u8_t __no) {
+void ffly_compiler_ldkeywd(struct ffly_compiler *__compiler, ff_u8_t __no) {
 	put_keyword(__compiler, keywords[__no], keyword_ids[__no]);
 }
 
-ffly_err_t parser_init(struct ffly_compiler*);
-ffly_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
+ff_err_t parser_init(struct ffly_compiler*);
+ff_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 	FF_ERR err;
 //	parser_init(__compiler);
 
@@ -642,8 +642,8 @@ ffly_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 	retok;
 }
 
-ffly_err_t ffly_compiler_finalize(struct ffly_compiler *__compiler, void **__top, ffly_byte_t **__stack) {
-	ffly_err_t err;
+ff_err_t ffly_compiler_finalize(struct ffly_compiler *__compiler, void **__top, ff_byte_t **__stack) {
+	ff_err_t err;
 	if (_err(err = ffly_gen(__compiler, __top, __stack))) {
 		errmsg("an error has occurred in the generative process.\n");
 		_ret;
@@ -651,8 +651,8 @@ ffly_err_t ffly_compiler_finalize(struct ffly_compiler *__compiler, void **__top
 	retok;
 }
 
-ffly_err_t ffly_compiler_build(struct ffly_compiler *__compiler, void ** __top, ffly_byte_t **__stack) {
-	ffly_err_t err;
+ff_err_t ffly_compiler_build(struct ffly_compiler *__compiler, void ** __top, ff_byte_t **__stack) {
+	ff_err_t err;
 	if (_err(err = ffly_parse(__compiler))) {
 		errmsg("an error has occurred in the parsing process.\n");
 		_ret;
@@ -666,11 +666,11 @@ ffly_err_t ffly_compiler_build(struct ffly_compiler *__compiler, void ** __top, 
 	retok;
 }
 
-ffly_bool_t at_eof(struct ffly_compiler *__compiler) {
+ff_bool_t at_eof(struct ffly_compiler *__compiler) {
 	return (__compiler->file->p+__compiler->file->off) >= __compiler->file->end;
 }
 
-mdl_uint_t curl(struct ffly_compiler *__compiler) {
+ff_uint_t curl(struct ffly_compiler *__compiler) {
 	return __compiler->file->line;
 }
 

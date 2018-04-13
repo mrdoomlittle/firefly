@@ -5,7 +5,7 @@ __asm__("__restore:\n\t"
 		"syscall");
 
 # include "dep/mem_cpy.h"
-mdl_s32_t sigaction(mdl_s32_t __sig, struct sigaction const *__act, struct sigaction *__oact) {
+ff_s32_t sigaction(ff_s32_t __sig, struct sigaction const *__act, struct sigaction *__oact) {
 	struct sigaction sa;
 	ffly_mem_cpy(&sa, __act, sizeof(struct sigaction));
 	sa.sa_restorer = __restore;

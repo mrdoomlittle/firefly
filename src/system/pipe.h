@@ -1,18 +1,18 @@
 # ifndef __ffly__pipe__h
 # define __ffly__pipe__h
-# include <mdlint.h>
-# include "../types/err_t.h"
+# include "../ffint.h"
+# include "../types.h"
 # define FF_PIPE_CREAT 0x1
 # define FF_PIPE_SHMM 0x2
 # define FF_PIPE_ENC 0x3
-mdl_uint_t ffly_pipe_get_shmid(mdl_uint_t);
-mdl_uint_t ffly_pipe(mdl_uint_t, mdl_u8_t, mdl_uint_t, ffly_err_t*);
-ffly_err_t ffly_pipe_write(void*, mdl_uint_t, mdl_uint_t);
-ffly_err_t ffly_pipe_read(void*, mdl_uint_t, mdl_uint_t);
-void ffly_pipe_shutoff(mdl_uint_t);
-void ffly_pipe_close(mdl_uint_t);
-ffly_err_t ffly_pipe_listen(mdl_uint_t);
-ffly_err_t ffly_pipe_connect(mdl_uint_t);
+ff_uint_t ffly_pipe_get_shmid(ff_uint_t);
+ff_uint_t ffly_pipe(ff_uint_t, ff_u8_t, ff_uint_t, ff_err_t*);
+ff_err_t ffly_pipe_write(void*, ff_uint_t, ff_uint_t);
+ff_err_t ffly_pipe_read(void*, ff_uint_t, ff_uint_t);
+void ffly_pipe_shutoff(ff_uint_t);
+void ffly_pipe_close(ff_uint_t);
+ff_err_t ffly_pipe_listen(ff_uint_t);
+ff_err_t ffly_pipe_connect(ff_uint_t);
 # define ffly_pipe_wr8l(__val, __pipe) \
     ffly_pipe_wrl(__val, 1, __pipe)
 # define ffly_pipe_wr16l(__val, __pipe) \
@@ -31,6 +31,6 @@ ffly_err_t ffly_pipe_connect(mdl_uint_t);
 # define ffly_pipe_rd64l(__pipe, __err) \
     ffly_pipe_rdl(8, __pipe, __err)
 
-ffly_err_t ffly_pipe_wrl(mdl_u64_t, mdl_u8_t, mdl_uint_t);
-mdl_u64_t ffly_pipe_rdl(mdl_u8_t, mdl_uint_t, ffly_err_t*);
+ff_err_t ffly_pipe_wrl(ff_u64_t, ff_u8_t, ff_uint_t);
+ff_u64_t ffly_pipe_rdl(ff_u8_t, ff_uint_t, ff_err_t*);
 # endif /*__ffly__pipe__h*/

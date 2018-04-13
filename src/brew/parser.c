@@ -6,7 +6,7 @@
 # include "../system/err.h"
 # define alloc_node (bucketp)malloc(sizeof(struct bucket))
 
-ffly_err_t parser_jump(bucketp *__node) {
+ff_err_t parser_jump(bucketp *__node) {
 	bucketp label = nexttok();
 	if (label->sort != _ident) {
 		fprintf(stderr, "wrong sort of token.\n");
@@ -19,7 +19,7 @@ ffly_err_t parser_jump(bucketp *__node) {
 	retok;
 }
 
-ffly_err_t parser_label(bucketp *__node) {
+ff_err_t parser_label(bucketp *__node) {
 	bucketp name = nexttok();
 	if (!expect_token(_keywd, _comma)) {
 		fprintf(stderr, "expect error.\n");
@@ -43,7 +43,7 @@ ffly_err_t parser_label(bucketp *__node) {
 	retok;
 }
 
-ffly_err_t parser_cp(bucketp *__node) {
+ff_err_t parser_cp(bucketp *__node) {
 	if (!expect_token(_keywd, _keywd_cp)) {
 		fprintf(stderr, "expect error.\n");
 		reterr;
@@ -60,7 +60,7 @@ ffly_err_t parser_cp(bucketp *__node) {
 	retok;
 }
 
-ffly_err_t parser_end(bucketp *__node) {
+ff_err_t parser_end(bucketp *__node) {
 	if (!expect_token(_keywd, _keywd_end)) {
 		fprintf(stderr, "expect error.\n");
 		reterr;
@@ -71,7 +71,7 @@ ffly_err_t parser_end(bucketp *__node) {
 	retok;
 }
 
-ffly_err_t parser_exit(bucketp *__node) {
+ff_err_t parser_exit(bucketp *__node) {
 	if (!expect_token(_keywd, _keywd_exit)) {
 		fprintf(stderr, "expect error.\n");
 		reterr;
@@ -82,7 +82,7 @@ ffly_err_t parser_exit(bucketp *__node) {
 	retok;
 }
 
-ffly_err_t parser_echo(bucketp *__node) {
+ff_err_t parser_echo(bucketp *__node) {
 	if (!expect_token(_keywd, _keywd_echo)) {
 		fprintf(stderr, "expect error.\n");
 		reterr;
@@ -96,7 +96,7 @@ ffly_err_t parser_echo(bucketp *__node) {
 }
 
 // entry point designation
-mdl_i8_t static epdeg = -1;
+ff_i8_t static epdeg = -1;
 void parse(bucketp *__p) {
 	bucketp end = NULL, p;
 	while(!at_eof() && !tokbuf_size()) {

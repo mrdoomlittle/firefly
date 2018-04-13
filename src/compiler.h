@@ -1,12 +1,10 @@
 # ifndef __ffly__compiler__h
 # define __ffly__compiler__h
 # include "system/vec.h"
-# include "types/byte_t.h"
-# include "types/off_t.h"
+# include "types.h"
 # include "system/buff.h"
 # include "system/map.h"
 # include "data/pair.h"
-# include "types/bool_t.h"
 # include "system/lat.h"
 
 enum {
@@ -20,10 +18,10 @@ enum {
 
 */
 typedef struct ffly_compiler_file {
-	ffly_byte_t *p, *end;
-	ffly_off_t off;
+	ff_byte_t *p, *end;
+	ff_off_t off;
 	char *path;
-	mdl_uint_t line, lo;
+	ff_uint_t line, lo;
 } *ffly_compiler_filep;
 
 # ifdef __ffly_compiler_internal
@@ -60,7 +58,7 @@ typedef struct ffly_compiler {
 # ifdef __ffly_compiler_internal
 typedef struct keywd {
 	struct keywd *next;
-	mdl_u8_t id;
+	ff_u8_t id;
 	char key[40];
 } *keywdp;
 
@@ -75,12 +73,12 @@ typedef struct keywd {
 # define TOK_CHR 6
 
 # define ring_parser_func_call(__compiler, ...) \
-	ringup(ffly_err_t, __compiler, _parser_func_call, __VA_ARGS__)
+	ringup(ff_err_t, __compiler, _parser_func_call, __VA_ARGS__)
 # define ring_parser_decl_spec(__compiler, ...) \
-	ringup(ffly_err_t, __compiler, _parser_func_call, __VA_ARGS__)
+	ringup(ff_err_t, __compiler, _parser_func_call, __VA_ARGS__)
 
-void set_call(struct ffly_compiler*, void*, mdl_u8_t);
-mdl_u64_t _ringup(struct ffly_compiler*, mdl_u8_t, ...);
+void set_call(struct ffly_compiler*, void*, ff_u8_t);
+ff_u64_t _ringup(struct ffly_compiler*, ff_u8_t, ...);
 # define ringup(__rettype, __compiler, __no, ...) \
 	((__rettype)_ringup(__compiler, __no, __VA_ARGS__))
 
@@ -195,9 +193,9 @@ enum {
 # define _flg_lt 0x8
 
 struct node {
-    mdl_u8_t kind, op;
+    ff_u8_t kind, op;
     struct type *_type, *to;
-    ffly_byte_t val[sizeof(mdl_u64_t)];
+    ff_byte_t val[sizeof(ff_u64_t)];
     struct node *init, *var, *arg;
     struct obj *_obj, **jmp;
     struct node *l, *r, *operand, *no, *ret;
@@ -206,59 +204,59 @@ struct node {
     struct ffly_vec _else, _do;
     ffly_pair pair;
     void *p;
-    ffly_bool_t va;
+    ff_bool_t va;
     struct ffly_vec fields;
 };
 
 struct token {
 	void *p;
-	mdl_u8_t kind, id;
-    mdl_uint_t line;
-    ffly_off_t off, lo;
-    mdl_u8_t is_float, is_hex;
+	ff_u8_t kind, id;
+    ff_uint_t line;
+    ff_off_t off, lo;
+    ff_u8_t is_float, is_hex;
 };
 
 struct type {
-	mdl_u8_t kind;
-	mdl_uint_t size;
-    ffly_off_t off;
+	ff_u8_t kind;
+	ff_uint_t size;
+    ff_off_t off;
     struct ffly_map fields;
     struct type *ptr;
 };
 
-char const* tokk_str(mdl_u8_t);
-char const* tokid_str(mdl_u8_t);
-mdl_uint_t tokcol(struct token*);
+char const* tokk_str(ff_u8_t);
+char const* tokid_str(ff_u8_t);
+ff_uint_t tokcol(struct token*);
 void sktok(ffly_compilerp);
-ffly_off_t toklo(struct token*);
-ffly_off_t curlo(struct ffly_compiler*);
-mdl_uint_t tokl(struct token*);
-mdl_uint_t curl(struct ffly_compiler*);
-ffly_bool_t next_token_is(struct ffly_compiler*, mdl_u8_t, mdl_u8_t);
-ffly_bool_t is_keyword(struct token*, mdl_u8_t);
-ffly_bool_t expect_token(struct ffly_compiler*, mdl_u8_t, mdl_u8_t);
+ff_off_t toklo(struct token*);
+ff_off_t curlo(struct ffly_compiler*);
+ff_uint_t tokl(struct token*);
+ff_uint_t curl(struct ffly_compiler*);
+ff_bool_t next_token_is(struct ffly_compiler*, ff_u8_t, ff_u8_t);
+ff_bool_t is_keyword(struct token*, ff_u8_t);
+ff_bool_t expect_token(struct ffly_compiler*, ff_u8_t, ff_u8_t);
 struct token* next_token(struct ffly_compiler*);
 struct token* peek_token(struct ffly_compiler*);
 // change to lex & ulex without 'ffly_'
-struct token* ffly_lex(struct ffly_compiler*, ffly_err_t*);
+struct token* ffly_lex(struct ffly_compiler*, ff_err_t*);
 void ffly_ulex(struct ffly_compiler*, struct token*);
 
-ffly_bool_t maybe_keyword(struct ffly_compiler*, struct token*);
-ffly_bool_t at_eof(struct ffly_compiler*);
+ff_bool_t maybe_keyword(struct ffly_compiler*, struct token*);
+ff_bool_t at_eof(struct ffly_compiler*);
 void pr_tok(struct token*);
 void vec_cleanup(struct ffly_compiler*, struct ffly_vec*);
 void map_cleanup(struct ffly_compiler*, struct ffly_map*);
 void cleanup(struct ffly_compiler*, void*);
-ffly_bool_t next_tok_nl(struct ffly_compiler*);
+ff_bool_t next_tok_nl(struct ffly_compiler*);
 # endif
-ffly_err_t ffly_compiler_ld(struct ffly_compiler*, char const*);
-ffly_err_t ffly_compiler_build(struct ffly_compiler*, void **, ffly_byte_t**);
-ffly_err_t ffly_compiler_prepare(struct ffly_compiler*);
-ffly_err_t ffly_compiler_free(struct ffly_compiler*);
-mdl_u8_t ffly_compiler_kwno(char const*);
-void ffly_compiler_ldkeywd(struct ffly_compiler*, mdl_u8_t);
-ffly_err_t ffly_parse(struct ffly_compiler*);
-ffly_err_t ffly_gen(struct ffly_compiler*, void**, ffly_byte_t**);
+ff_err_t ffly_compiler_ld(struct ffly_compiler*, char const*);
+ff_err_t ffly_compiler_build(struct ffly_compiler*, void **, ff_byte_t**);
+ff_err_t ffly_compiler_prepare(struct ffly_compiler*);
+ff_err_t ffly_compiler_free(struct ffly_compiler*);
+ff_u8_t ffly_compiler_kwno(char const*);
+void ffly_compiler_ldkeywd(struct ffly_compiler*, ff_u8_t);
+ff_err_t ffly_parse(struct ffly_compiler*);
+ff_err_t ffly_gen(struct ffly_compiler*, void**, ff_byte_t**);
 
-void ffc_ldsyntax(ffly_compilerp, mdl_u8_t);
+void ffc_ldsyntax(ffly_compilerp, ff_u8_t);
 # endif /*__ffly__compiler__h*/

@@ -10,14 +10,14 @@
 #   include "system/task_pool.h"
 # endif
 # include "system/thread.h"
-ffly_err_t ffly_system_init() {
+ff_err_t ffly_system_init() {
 # ifndef __ffly_no_sysconf
     if (access("sys.conf", F_OK) == -1) {
        // download config
         return FFLY_FAILURE;
     }
 
-    ffly_err_t err;
+    ff_err_t err;
     if (_err(err = ffly_ld_sysconf("sys.conf"))) {
         ffly_fprintf(ffly_err, "failed to load system config.\n");
         return err;
@@ -29,7 +29,7 @@ ffly_err_t ffly_system_init() {
     return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_system_de_init() {
+ff_err_t ffly_system_de_init() {
 # ifndef __ffly_no_task_pool
     ffly_task_pool_cleanup(&__ffly_task_pool__);
 # endif

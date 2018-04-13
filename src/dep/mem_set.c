@@ -1,8 +1,8 @@
-# include <mdlint.h>
+# include "../ffint.h"
 # ifndef __fflib
 # include <string.h>
 # endif
-void* ffly_mem_set(void *__dst, mdl_u8_t __val, mdl_u32_t __bc) {
+void* ffly_mem_set(void *__dst, ff_u8_t __val, ff_u32_t __bc) {
 # ifdef __fflib
 	__asm__("mov %0, %%rdi\n\t"
 			"mov %1, %%sil\n\t"

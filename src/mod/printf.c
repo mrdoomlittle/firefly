@@ -1,3 +1,4 @@
+# include "../ffint.h"
 # include "printf.h"
 # include "../call.h"
 # include "ring.h"
@@ -44,7 +45,7 @@ out(char const *__format, va_list __args) {
 			setmalopt(FF_MAL_O_OSD);
 		}
 
-		mdl_uint_t l = cur->end-cur->p;
+		ff_uint_t l = cur->end-cur->p;
 		void *pre = cur->p;
 		cur->p = (ffpap)malloc(l);
 		cur->end = cur->p+l;
@@ -92,9 +93,9 @@ gen(char *__buf, char const *__format, va_list __args) {
 		if (*p == '%') {
 			p++;
 			if (*p == 'u') {
-				*(mdl_u32_t*)bufp = va_arg(__args, mdl_u32_t);
+				*(ff_u32_t*)bufp = va_arg(__args, ff_u32_t);
 				cur->p = bufp;
-				bufp+=sizeof(mdl_u32_t);
+				bufp+=sizeof(ff_u32_t);
 				cur->end = bufp;
 				cur->type = _ffpa_u;
 			}

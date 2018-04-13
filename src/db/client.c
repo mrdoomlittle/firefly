@@ -13,7 +13,7 @@ ff_db_clp static **next = devoid;
 
 struct arg_s {
 	void *arg_p;
-	mdl_uint_t id;
+	ff_uint_t id;
 };
 
 void static*
@@ -25,7 +25,7 @@ prox(void *__arg_p) {
 	return NULL;
 }
 
-mdl_uint_t
+ff_uint_t
 ff_db_client(FF_SOCKET *__sock, void *__arg_p) {
 	ff_db_clp *p;
 	if (next>devoid)
@@ -39,7 +39,7 @@ ff_db_client(FF_SOCKET *__sock, void *__arg_p) {
 	}
 	*p = (ff_db_clp)__ffly_mem_alloc(sizeof(struct ff_db_cl));
 	ff_db_clp cl = *p;
-	mdl_uint_t id = p-client;
+	ff_uint_t id = p-client;
 
 	cl->conn.ctr.sock = __sock;
 	struct arg_s *arg = (struct arg_s*)__ffly_mem_alloc(sizeof(struct arg_s));
@@ -49,7 +49,7 @@ ff_db_client(FF_SOCKET *__sock, void *__arg_p) {
 	return id;
 }
 
-void ff_db_client_destory(mdl_uint_t __id) {
+void ff_db_client_destory(ff_uint_t __id) {
 	ff_db_clp *p = client+__id;
 	__ffly_mem_free(*p);
 	if (p == fresh-1)

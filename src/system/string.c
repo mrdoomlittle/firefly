@@ -1,6 +1,6 @@
 # include "string.h"
 # include "../ffly_def.h"
-mdl_u64_t static powof10[] = {
+ff_u64_t static powof10[] = {
 	1,
 	10,
 	100,
@@ -22,18 +22,18 @@ mdl_u64_t static powof10[] = {
 	1000000000000000000
 };
 
-mdl_uint_t ffly_nots(mdl_u64_t __no, char *__buf) {
+ff_uint_t ffly_nots(ff_u64_t __no, char *__buf) {
 	if (!__no) {
 		*(__buf++) = '0';
 		*__buf = '\0';
 		return 1;
 	}
 
-	mdl_uint_t l = 0;
-	mdl_u64_t ret = 0, pl = 1;
+	ff_uint_t l = 0;
+	ff_u64_t ret = 0, pl = 1;
 	for (;pl <= __no;pl*=10,l++);
 
-	mdl_u64_t g = 0, i = l-1, r;
+	ff_u64_t g = 0, i = l-1, r;
 	char *p = __buf;
 	while(p != __buf+l) {
 		switch(r = ((__no-g)/powof10[i])) { 
@@ -56,14 +56,14 @@ mdl_uint_t ffly_nots(mdl_u64_t __no, char *__buf) {
 	return l;
 }
 
-mdl_u64_t ffly_stno(char *__s) {
+ff_u64_t ffly_stno(char *__s) {
 	if(*__s == '0' && *(__s+1) == '\0')
 		return 0;
 
-	mdl_u8_t sign;
+	ff_u8_t sign;
 	if (sign = (*__s == '-')) __s++;
 
-	mdl_u64_t no = 0;
+	ff_u64_t no = 0;
 	char *p = __s;
 	for(;*p != '\0';p++) {
 		no = no*10;
@@ -95,7 +95,7 @@ char ffly_tolow(char __c) {
 	return 'a'+(__c-'A');
 }
 
-mdl_i8_t ffly_islen(char *__s, mdl_uint_t __l) {
+ff_i8_t ffly_islen(char *__s, ff_uint_t __l) {
 	while(*__s != '\0') {
 		if (!(__l--)) { 
 			if (*(__s+1) == '\0')
@@ -108,9 +108,9 @@ mdl_i8_t ffly_islen(char *__s, mdl_uint_t __l) {
 	return 0;
 }
 
-mdl_u64_t ffly_htint(char *__s) {
+ff_u64_t ffly_htint(char *__s) {
 	char *p = __s, c;
-	mdl_u64_t ret = 0;
+	ff_u64_t ret = 0;
 	while(*p != '\0') {
 		c = *(p++);
 		if (c >= 'A' && c <= 'F')
@@ -125,8 +125,8 @@ mdl_u64_t ffly_htint(char *__s) {
 
 //# include <stdio.h>
 // needs testing
-mdl_uint_t ffly_floatts(double __no, char *__buf) {
-	mdl_u8_t i = 0;
+ff_uint_t ffly_floatts(double __no, char *__buf) {
+	ff_u8_t i = 0;
 	double v = __no;
 	while(i != 9) {
 		if (v<1) break; 
@@ -134,8 +134,8 @@ mdl_uint_t ffly_floatts(double __no, char *__buf) {
 		i++;	   
 	}
 
-	mdl_u64_t no, s = 0;
-	mdl_uint_t l;
+	ff_u64_t no, s = 0;
+	ff_uint_t l;
 	char *p;
 _bk:
 	if (__no<1) {
@@ -144,10 +144,10 @@ _bk:
 			__no*=10;
 		}
 		s--; 
-		no = (mdl_u64_t)__no;
+		no = (ff_u64_t)__no;
 		goto _bk;
 	} else
-		no = (mdl_u64_t)(__no/0.00000001); // needs to be rounded
+		no = (ff_u64_t)(__no/0.00000001); // needs to be rounded
 	l = ffly_nots(no, __buf+s);
 	p = __buf+l+s;
 	while((p-__buf) >= i) {
@@ -159,7 +159,7 @@ _bk:
 	return l+s+1;
 }
 
-mdl_uint_t ffly_noths(mdl_u64_t __no, char *__buf) {
+ff_uint_t ffly_noths(ff_u64_t __no, char *__buf) {
 	if (!__no) {
 		*(__buf++) = '0';
 		*__buf = '\0';
@@ -167,10 +167,10 @@ mdl_uint_t ffly_noths(mdl_u64_t __no, char *__buf) {
 	}
 
 	char *p = __buf;
-	mdl_u8_t offset = 0;
-	mdl_u8_t sk = 1;
+	ff_u8_t offset = 0;
+	ff_u8_t sk = 1;
 	while(!((offset++)>>4)) {
-		mdl_u8_t b = __no>>60&0xf;
+		ff_u8_t b = __no>>60&0xf;
 		if (b>0 && sk) // skip until somthing other then zero pops up
 			sk = 0;
 		if (!sk) {
@@ -204,7 +204,7 @@ static double t[] = {
 int main() {
 	char buf[200];
 
-	mdl_u64_t i = 800;
+	ff_u64_t i = 800;
 	ffly_noths(i, buf);
 	printf("%s, %u, %u\n", buf, i, ffly_htint(buf));
 }*/
@@ -214,14 +214,14 @@ int main() {
 # include <stdio.h>
 int main() {
 	char s[1000];
-//	  mdl_uint_t ii = ffly_floatts(21.22, s);
+//	  ff_uint_t ii = ffly_floatts(21.22, s);
 	//ffly_nots(2129900000000, s);
-//	  mdl_uint_t i = ffly_str_len(s);
+//	  ff_uint_t i = ffly_str_len(s);
 	ffly_noths(101987, s);
 	printf("'%s'\n", s);
 
 
-//	  mdl_u8_t i = 0;
+//	  ff_u8_t i = 0;
   //  while(i != 4) {
 	//	  printf("%lf\n", 0.01/t[i]);
 	 //  i++;
@@ -236,21 +236,21 @@ int main() {
 # include <stdio.h>
 int main() {
 	char s[1220];
-	mdl_uint_t len = ffly_floatts(1.00397972, s);
+	ff_uint_t len = ffly_floatts(1.00397972, s);
 
 	printf("%s:%u\n", s, len);
 }*/
 
 double ffly_stfloat(char *__s) {
 	double ret;
-	mdl_u8_t sign;
+	ff_u8_t sign;
 	if (sign = (*__s == '-')) __s++; 
 
-	mdl_uint_t frac;
+	ff_uint_t frac;
 	char *p = __s, *end = NULL;
 	while(*p != '.' && *p != '\0') p++;
 
-	mdl_uint_t k = 0;
+	ff_uint_t k = 0;
 	if (*p == '.') {
 		p++;
 		frac = 0;
@@ -262,7 +262,7 @@ double ffly_stfloat(char *__s) {
 	}
 
 	p = __s;
-	mdl_u32_t v = 0;
+	ff_u32_t v = 0;
 	while(*p != '.' && *p != '\0') {
 		v = v*10+(*p-'0');
 		p++;

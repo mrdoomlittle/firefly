@@ -23,27 +23,27 @@ segmentp curseg = NULL;
 regionp curreg = NULL;
 relocatep rel = NULL;
 hookp hok = NULL;
-mdl_u64_t offset = 0;
-mdl_u32_t adr = 0;
+ff_u64_t offset = 0;
+ff_u32_t adr = 0;
 
-mdl_u8_t of = _of_null;
+ff_u8_t of = _of_null;
 
 # define OBSIZE 60
 
 struct {
-	mdl_uint_t off, dst;
-	mdl_u8_t p[OBSIZE], *end;
+	ff_uint_t off, dst;
+	ff_u8_t p[OBSIZE], *end;
 } outbuf;
 
 void ffas_ldsrc(void) {
 
 }
 
-void iadr(mdl_uint_t __by) {
+void iadr(ff_uint_t __by) {
 	adr+=__by;
 }
 
-mdl_u32_t curadr() {return adr;}
+ff_u32_t curadr() {return adr;}
 
 void ffas_init(void) {
 	hash_init(&symbols);
@@ -65,18 +65,18 @@ void ffas_de_init(void) {
 	free(extrn);
 }
 
-void* _memdup(void *__p, mdl_uint_t __bc) {
+void* _memdup(void *__p, ff_uint_t __bc) {
 	void *ret = _alloca(__bc);
-	mdl_u8_t *p = (mdl_u8_t*)ret;
-	mdl_u8_t *end = p+__bc;
+	ff_u8_t *p = (ff_u8_t*)ret;
+	ff_u8_t *end = p+__bc;
 	while(p != end) {
-		*p = *((mdl_u8_t*)__p+(p-(mdl_u8_t*)ret));
+		*p = *((ff_u8_t*)__p+(p-(ff_u8_t*)ret));
 		p++;
 	}
 	return ret;
 }
 
-char* read_str(char *__p, mdl_uint_t *__len) {
+char* read_str(char *__p, ff_uint_t *__len) {
 	char *p = __p;
 	char buf[128];
 	char *bufp = buf;
@@ -88,13 +88,13 @@ char* read_str(char *__p, mdl_uint_t *__len) {
 	return _memdup(buf, (bufp-buf)+1);
 }
 
-mdl_u64_t read_no(char *__p, mdl_uint_t *__len, mdl_u8_t *__sign) {
+ff_u64_t read_no(char *__p, ff_uint_t *__len, ff_u8_t *__sign) {
 	char *p = __p;
 	char buf[128];
 	char *bufp = buf;
 	if ((*__sign = (*p == '-')))
 		p++;
-	mdl_u8_t hex = 0;
+	ff_u8_t hex = 0;
 	while(*p >= '0' && *p <= '9') {
 		if (*p == 'x') {
 			bufp = buf;
@@ -116,7 +116,7 @@ mdl_u64_t read_no(char *__p, mdl_uint_t *__len, mdl_u8_t *__sign) {
 
 # include "../linux/unistd.h"
 char*
-copyln(char *__dst, char *__src, char *__end, mdl_uint_t *__len) {
+copyln(char *__dst, char *__src, char *__end, ff_uint_t *__len) {
 	char *p = __src;
 	while(*p != '\n' && *p != '\0' && p < __end) {
 		*(__dst+(p-__src)) = *p;
@@ -126,18 +126,18 @@ copyln(char *__dst, char *__src, char *__end, mdl_uint_t *__len) {
 	return p;
 }
 
-ffly_addr_t rgadr(char const*);
+ff_addr_t rgadr(char const*);
 // resolve register address
 void adaptreg(symbolp __sy) {
 	if (!__sy) return;
 	if (is_syreg(__sy)) {
-		ffly_addr_t *ra = (ffly_addr_t*)_alloca(sizeof(ffly_addr_t));
+		ff_addr_t *ra = (ff_addr_t*)_alloca(sizeof(ff_addr_t));
 		*ra = rgadr((char const*)__sy->p);
 		__sy->p = ra;
 	}
 }
 
-mdl_i8_t static epdeg = -1;
+ff_i8_t static epdeg = -1;
 char const static *ep = NULL;
 void
 assemble(char *__p, char *__end) {
@@ -146,7 +146,7 @@ assemble(char *__p, char *__end) {
 	*/
 	char buf[256]; // line buffer
 	char *p = __p;
-	mdl_uint_t len;
+	ff_uint_t len;
 	while(p < __end) {
 		while ((*p == ' ' | *p == '\t' | *p == '\n') && p < __end) p++;
 		if (*p == '\0') break;
@@ -163,7 +163,7 @@ assemble(char *__p, char *__end) {
 				}
 			} else if (is_sylabel(sy)) {
 				labelp la = (labelp)hash_get(&env, sy->p, sy->len);
-				mdl_i8_t exist = !la?-1:0;
+				ff_i8_t exist = !la?-1:0;
 
 				if (exist == -1)
 					la = (labelp)_alloca(sizeof(struct label));
@@ -186,8 +186,8 @@ assemble(char *__p, char *__end) {
 					if (curseg->offset != offset) {
 						// err
 					}
-					//oustbyte((mdl_u8_t*)sy->next->p);
-					*(curseg->fresh++) = *(mdl_u8_t*)sy->next->p;
+					//oustbyte((ff_u8_t*)sy->next->p);
+					*(curseg->fresh++) = *(ff_u8_t*)sy->next->p;
 					isa(1);
 					curseg->size++;
 				} else if (!strcmp(sy->p, "entry") && epdeg<0) {
@@ -242,9 +242,9 @@ assemble(char *__p, char *__end) {
 					if (sy->next != NULL)
 						ins->r = sy->next->next;
 
-					mdl_u64_t beg = offset;
+					ff_u64_t beg = offset;
 					ins->post(ins);
-					mdl_u64_t end = offset;
+					ff_u64_t end = offset;
 					iadr(end-beg);
 					printf("got: %s\n", ins->name);
 				} else
@@ -254,7 +254,7 @@ assemble(char *__p, char *__end) {
 	}
 }
 
-void reloc(mdl_u64_t __offset, mdl_u8_t __l, labelp __label) {
+void reloc(ff_u64_t __offset, ff_u8_t __l, labelp __label) {
 	relocatep rl = (relocatep)_alloca(sizeof(struct relocate));
 	rl->offset = __offset;
 	rl->l = __l;
@@ -263,7 +263,7 @@ void reloc(mdl_u64_t __offset, mdl_u8_t __l, labelp __label) {
 	rel = rl;
 }
 
-void hook(mdl_u64_t __offset, mdl_u8_t __l, labelp __to) {
+void hook(ff_u64_t __offset, ff_u8_t __l, labelp __to) {
 	hookp hk = (hookp)_alloca(sizeof(struct hook));
 
 	hk->offset = __offset;
@@ -319,7 +319,7 @@ void finalize(void) {
 		cur = extrn;
 		while(*(--cur) != NULL) {
 			printf("extern: %s\n", *cur);
-			mdl_u16_t off;
+			ff_u16_t off;
 			symbolp sy = syt(*cur, &off);
 			sy->type = FF_SY_IND;
 			sy->sort = 0;
@@ -332,7 +332,7 @@ void finalize(void) {
 					hok.offset = hk->offset;
 					hok.l = hk->l;
 					hok.to = off;
-					oust((mdl_u8_t*)&hok, ffef_hoksz);
+					oust((ff_u8_t*)&hok, ffef_hoksz);
 				}
 				hk = hk->next;
 				hdr.nhk++;
@@ -349,7 +349,7 @@ void finalize(void) {
 			rel.l = rl->l;
 			printf("reloc: %s\n", rl->la->s);
 			rel.sy = getsymbol(rl->la->s)->off;
-			oust((mdl_u8_t*)&rel, ffef_relsz);
+			oust((ff_u8_t*)&rel, ffef_relsz);
 			rl = rl->next;
 			hdr.nrl++;
 		}
@@ -363,7 +363,7 @@ void finalize(void) {
 			seg.adr = sg->addr;
 			seg.offset = sg->offset;
 			seg.sz = sg->size;
-			oust((mdl_u8_t*)&seg, ffef_seg_hdrsz);
+			oust((ff_u8_t*)&seg, ffef_seg_hdrsz);
 			hdr.nsg++;
 			sg = sg->next;
 		}
@@ -385,7 +385,7 @@ void finalize(void) {
 			else
 				reg.type = FF_RG_NULL;
 
-			oust((mdl_u8_t*)&reg, ffef_reg_hdrsz);
+			oust((ff_u8_t*)&reg, ffef_reg_hdrsz);
 			hdr.nrg++;
 			rg = rg->next;
 		}
@@ -421,7 +421,7 @@ void static drain() {
 	outbuf.dst = offset;
 }
 
-void oust(mdl_u8_t *__p, mdl_u8_t __n) {
+void oust(ff_u8_t *__p, ff_u8_t __n) {
 	if (__n > OBSIZE) { //shoud remove
 		printf("error: cant oust anything larger then %u\n", OBSIZE);
 		return;
@@ -432,8 +432,8 @@ void oust(mdl_u8_t *__p, mdl_u8_t __n) {
 	if (outbuf.dst+outbuf.off != offset)
 		drain();
 
-	mdl_int_t overflow;
-	if ((overflow = (mdl_int_t)(outbuf.off+__n)-(mdl_int_t)((outbuf.end-outbuf.p)-1))>0)
+	ff_int_t overflow;
+	if ((overflow = (ff_int_t)(outbuf.off+__n)-(ff_int_t)((outbuf.end-outbuf.p)-1))>0)
 		__n-=overflow;
 
 	ffly_mem_cpy(outbuf.p+outbuf.off, __p, __n);
@@ -444,27 +444,27 @@ void oust(mdl_u8_t *__p, mdl_u8_t __n) {
 		drain();
 
 	if (overflow>0) {
-		mdl_u8_t *p = __p+__n;
-		mdl_u8_t *end = p+overflow;
+		ff_u8_t *p = __p+__n;
+		ff_u8_t *end = p+overflow;
 		while(p != end)
 			oust(p++, 1);
 	}
 }
 
-void oustbyte(mdl_u8_t __byte) {
+void oustbyte(ff_u8_t __byte) {
 	oust(&__byte, 1);
 }
 
-void oust_16l(mdl_u16_t __data) {
-	oust((mdl_u8_t*)&__data, 2);
+void oust_16l(ff_u16_t __data) {
+	oust((ff_u8_t*)&__data, 2);
 }
 
-void oust_32l(mdl_u32_t __data) {
-	oust((mdl_u8_t*)&__data, 4);
+void oust_32l(ff_u32_t __data) {
+	oust((ff_u8_t*)&__data, 4);
 }
 
-void oust_64l(mdl_u64_t __data) {
-	oust((mdl_u8_t*)&__data, 8);
+void oust_64l(ff_u64_t __data) {
+	oust((ff_u8_t*)&__data, 8);
 }
 
 void load(insp* __list) {

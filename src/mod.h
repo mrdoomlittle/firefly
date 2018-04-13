@@ -1,7 +1,6 @@
 # ifndef __ffly__mod__h
 # define __ffly__mod__h
-# include <mdlint.h>
-
+# include "ffint.h"
 void ffmodld(char const*);
 void ffmodldl(char const**);
 

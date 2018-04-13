@@ -1,7 +1,8 @@
+# include "../ffint.h"
 # include "../linux/stat.h"
 # include "../linux/types.h"
-mdl_s32_t fstat(mdl_s32_t __fd, struct stat *__buf) {
-	mdl_s32_t ret;
+ff_s32_t fstat(ff_s32_t __fd, struct stat *__buf) {
+	ff_s32_t ret;
 	__asm__("xorq %%rdi, %%rdi\n\t"
 			"mov %1, %%edi\n\t"
 			"mov %2, %%rsi\n\t"

@@ -1,6 +1,6 @@
-# include <mdlint.h>
-mdl_i8_t ffly_mem_cmp(void const *__p0, void const *__p1, mdl_u32_t __bc) {
-	mdl_i8_t ret;
+# include "../ffint.h"
+ff_i8_t ffly_mem_cmp(void const *__p0, void const *__p1, ff_u32_t __bc) {
+	ff_i8_t ret;
 	__asm__("mov %1, %%rdi\n\t"
 			"mov %2, %%rsi\n\t"
 			"xorq %%rbx, %%rbx\n\t"
