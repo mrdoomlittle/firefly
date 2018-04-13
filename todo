@@ -71,3 +71,6 @@ so we will use the terminal until we can get it up and working.
 we will pipe data back for forth using shared memory
 until we can do somthing about that.
 -. ffly_mem_cpy, ffly_mem_set, etc under 'data' is to be renamed to ff_mem_cpy
+-. stack neededs to be alligned to 16 bytes, either allign it on init and keep it alligned
+	or allign it before printf calles but the problem might
+	pop up when using double precision floats if movaps happens to be used - need to be fixed.

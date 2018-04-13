@@ -47,7 +47,8 @@ __asm__("restore:mov $15,%rax\n\t"
 # include "maths/round.h"
 # include "maths/floor.h"
 # include "maths/ceil.h"
-
+# include "maths/sin.h"
+# include "maths/cos.h"
 ffly_err_t ffmain(int __argc, char const *__argv[]) {
 //	p = malloc(200);
 //	ffly_ctl(ffly_malc, _ar_getpot, (mdl_u64_t)&pot);
@@ -62,13 +63,15 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 	while(run<0);
 	ffly_printf("bye.\n");
 */
-	double val = 21.12;
-	val = ffly_round(val);
+	double val = 1;
+	double cos = 0, sin = 0; 
+	cos = ffly_cos(val);
+	sin = ffly_sin(val);
 
 	mdl_u64_t adr;
 	__asm__("movq %%rsp, %0\n\t" : "=m"(adr));
 	adr = (adr+(16-1))&-16;
 	__asm__("movq %0, %%rsp\n\t" : : "m"(adr));
-	ffly_printf("%f\n", val);
+	ffly_printf("cos: %f, sin: %f\n", cos, sin);
 	ffly_arstat();
 }

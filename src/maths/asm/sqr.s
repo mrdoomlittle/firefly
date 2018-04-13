@@ -7,7 +7,7 @@ __ffly_sqr:
 	movq -8(%rbp), %xmm0
 
 	fldl -8(%rbp)
-
+	fwait
 	fmul %st(0)
 
 	fstpl -8(%rbp)

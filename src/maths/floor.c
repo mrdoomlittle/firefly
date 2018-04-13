@@ -1,4 +1,3 @@
-# include "floor.h"
 double ffly_floor(double __val) {
 	double ret_val;
 	__asm__("movq %1, %%xmm0\n\t"

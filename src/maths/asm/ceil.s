@@ -14,8 +14,8 @@ __ffly_ceil:
 
 	movw $0b0001101000111111, -12(%rbp)
 	fldcw -12(%rbp)
-	frndint
 	fwait
+	frndint
 	fclex
 
 	fldcw -10(%rbp)

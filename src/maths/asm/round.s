@@ -14,8 +14,8 @@ __ffly_round:
 
 	movw $0b0001001000111111, -12(%rbp)
 	fldcw -12(%rbp)
-	frndint
 	fwait
+	frndint
 	fclex
 
 	fldcw -10(%rbp)
