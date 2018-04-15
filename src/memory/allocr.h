@@ -10,11 +10,11 @@ enum {
 	_ar_getpot
 };
 
-ff_err_t ffly_ar_init();
-ff_err_t ffly_ar_cleanup();
+ff_err_t ffly_ar_init(void);
+ff_err_t ffly_ar_cleanup(void);
 void ffly_arctl(ff_u8_t, ff_u64_t);
 
-void ffly_arstat();
+void ffly_arstat(void);
 void* ffly_alloc(ff_uint_t);
 void ffly_free(void*);
 void* ffly_realloc(void*, ff_uint_t);
@@ -22,5 +22,5 @@ void* ffly_realloc(void*, ff_uint_t);
 void* ffly_arsh(void*, ff_uint_t);
 void* ffly_argr(void*, ff_uint_t);
 void ffly_arbl(void*);
-void ffly_araxe();
+void ffly_araxe(void);
 # endif /*__ffly__allocr__h*/

@@ -1,6 +1,6 @@
 # include "bci.h"
+# include "system/errno.h"
 # include "system/io.h"
-# include "system/err.h"
 # include "dep/mem_set.h"
 # include "dep/mem_cpy.h"
 # include "memory/mem_alloc.h"
@@ -16,12 +16,12 @@ stack_put(ffly_bcip __bci, ff_u8_t *__src, ff_uint_t __bc, ff_addr_t __addr) {
 	while(p != end) {
 		if ((dst = __addr+(p-__src)) >= __bci->stack_size) {
 			// err
-			reterr;
+			return FFLY_FAILURE;
 		}
 
 		*(__bci->stack+dst) = *(p++);
 	}
-	retok;
+	return FFLY_SUCCESS;
 }
 
 ff_err_t static
@@ -33,12 +33,12 @@ stack_get(ffly_bcip __bci, ff_u8_t *__dst, ff_uint_t __bc, ff_addr_t __addr) {
 	while(p != end) {
 		if ((src = __addr+(p-__dst)) >= __bci->stack_size) {
 			// err
-			reterr;
+			return FFLY_FAILURE;
 		}
 
 		*(p++) = *(__bci->stack+src);	
 	}
-	retok;
+	return FFLY_SUCCESS;
 }
 
 void ffly_bci_sst(ffly_bcip __bci, void *__p, ff_addr_t __adr, ff_uint_t __n) {
@@ -82,14 +82,14 @@ ff_err_t ffly_bci_init(ffly_bcip __bci) {
 	ffly_init_get_bit(&__bci->bit, next_byte, (void*)__bci);
 	__bci->stack = (ff_u8_t*)__ffly_mem_alloc(__bci->stack_size);
 	ffly_mem_set(__bci->stack, 0xff, __bci->stack_size);
-
-	retok;
+	__bci->retto = __bci->rtbuf;
+	return FFLY_SUCCESS;
 }
 
 ff_err_t ffly_bci_de_init(ffly_bcip __bci) {
 	__ffly_mem_free(__bci->stack);
 
-	retok;
+	return FFLY_SUCCESS;
 }
 
 void static
@@ -118,6 +118,8 @@ void _arm(); // rename
 void _inc_or_dec();
 void _cmp();
 void _cjmp();
+void _call();
+void _ret();
 static void(*op[])() = {
 	_exit,
 	_as,
@@ -137,10 +139,12 @@ static void(*op[])() = {
 	_cjmp,
 	_cjmp,
 	_cjmp,
-	_cjmp
+	_cjmp,
+	_call,
+	_ret
 };
 
-# define NOOP 19
+# define NOOP 21
 # define get_addr(__bci, __err) \
 	get_16l(__bci, __err)
 
@@ -160,8 +164,8 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 	__bci->ip_off = 0;
 	ff_u8_t opno;	
 	if ((opno = get_8l(__bci, &err)) >= NOOP) {
-		ffly_errmsg("opno invalid, got: %u\n", opno);
-		reterr;
+		//ffly_errmsg("opno invalid, got: %u\n", opno);
+		return FFLY_FAILURE;
 	}
 	ffly_nanosleep(0, 100000000); // <- debug
 	jmpto(op[opno]);
@@ -336,6 +340,24 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 		ffly_printf("%u\n", val);
 	}
 	fi;
+
+	__asm__("_call:\n\t");
+	{
+		ff_addr_t adr = get_addr(__bci, &err);
+		ff_addr_t dst;
+		stack_get(__bci, (ff_u8_t*)&dst, sizeof(ff_addr_t), adr);
+		*(__bci->retto++) = __bci->get_ip()+__bci->ip_off;
+		__bci->set_ip(dst);
+		__bci->ip_off = 0;
+	}
+	next;
+
+	__asm__("_ret:\n\t");
+	{
+		__bci->set_ip(*(--__bci->retto));
+		__bci->ip_off = 0;
+	}
+	next;
 
 	__asm__("_exit:\n\t");
 	{

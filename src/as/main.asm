@@ -2,16 +2,16 @@
 .label again
 .region text
 _start:
-
-jmp $test
+	call $test; call test
+	exit %al; exit
 test:
-outb %ll
+	asb %ll, 0; set to zero
 again:
-incb %ll
-
-asb %al, 20
-cmpb %ll, %al, %ae
-outb %ll
-jne $again, %ae
-exit %al
-.axe
+	incb %ll; incrment
+	asb %al, 20; assign 20 to al register
+	cmpb %ll, %al, %ae; compare ll and al registers
+	outb %ll; output ll value
+	jne $again, %ae; jump if not equal
+	movb %ll, %al; move ll to al
+	ret; return
+.endof

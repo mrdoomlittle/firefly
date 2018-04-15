@@ -127,7 +127,6 @@ copyln(char *__dst, char *__src, char *__end, ff_uint_t *__len) {
 }
 
 ff_addr_t rgadr(char const*);
-// resolve register address
 void adaptreg(symbolp __sy) {
 	if (!__sy) return;
 	if (is_syreg(__sy)) {
@@ -214,7 +213,7 @@ assemble(char *__p, char *__end) {
 					else
 						rg->no = curreg->no+1;
 					curreg = rg;
-				} else if (!strcmp(sy->p, "axe")) {
+				} else if (!strcmp(sy->p, "endof")) {
 					curreg->end = offset;
 				} else if (!strcmp(sy->p, "extern")) {
 					labelp la = (labelp)_alloca(sizeof(struct label));
@@ -236,11 +235,12 @@ assemble(char *__p, char *__end) {
 						cur = cur->next;
 					}
 
-					if (is_sylabel(sy->next))
-						sy->next->p = hash_get(&env, sy->next->p, ffly_str_len(sy->next->p));
 					ins->l = sy->next;
-					if (sy->next != NULL)
+					if (sy->next != NULL) {
+						if (is_sylabel(sy->next))
+							sy->next->p = hash_get(&env, sy->next->p, ffly_str_len(sy->next->p));
 						ins->r = sy->next->next;
+					}
 
 					ff_u64_t beg = offset;
 					ins->post(ins);

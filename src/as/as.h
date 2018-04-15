@@ -27,7 +27,7 @@ typedef struct ins {
 	struct ins *next;
 	void(*post)(struct ins*);
 	symbolp l, r;
-	ff_u8_t opcode[8];
+	ff_u8_t op;
 } *insp;
 
 # define LA_LOOSE 0x1

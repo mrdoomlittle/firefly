@@ -1,7 +1,7 @@
-.globl test
+.globl main
 .region text
-test:
-asb %al, 21
-outb %al
-exit %al
-.axe
+main:
+	asb %al, 212
+	outb %al
+	ret
+.endof

@@ -4,7 +4,7 @@
 # include "bci.h"
 # include "bcd.h"
 # include "string.h"
-# define MAX 19
+# define MAX 21
 void static
 op_exit(ff_u8_t **__p) {
 	ffly_printf("exit,\t\t");
@@ -131,6 +131,17 @@ op_cjmp(ff_u8_t **__p) {
 	(*__p)+=sizeof(ff_addr_t);
 }
 
+void static
+op_call(ff_u8_t **__p) {
+	ffly_printf("call,\t\t");
+	ffly_printf("adr{%x}\n", *(ff_addr_t*)*__p);
+	(*__p)+=sizeof(ff_addr_t);
+}
+
+void op_ret(ff_u8_t **__p) {
+	ffly_printf("ret\n");
+}
+
 void static(*out[])(ff_u8_t**) = {
 	op_exit,
 	op_as,
@@ -150,7 +161,9 @@ void static(*out[])(ff_u8_t**) = {
 	op_cjmp,
 	op_cjmp,
 	op_cjmp,
-	op_cjmp
+	op_cjmp,
+	op_call,
+	op_ret
 };
 
 void ffly_bcd(ff_u8_t *__p, ff_u8_t *__end) {

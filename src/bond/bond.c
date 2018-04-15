@@ -253,7 +253,6 @@ void absorb_region(ffef_reg_hdrp __reg) {
 		curreg = reg;
 	}
 
-
 	if (__reg->type == FF_RG_PROG) {
 		bond_mapout(reg->beg, size);
 		bond_write(reg->beg, buf, size);

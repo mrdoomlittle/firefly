@@ -315,11 +315,16 @@ void copy(void *__dst, void *__src, ff_uint_t __bc);
 # include "../mode.h"
 # include "../stdio.h"
 # include "../linux/time.h"
+# include "mem_alloc.h"
+# include "mem_free.h"
+# include "mem_realloc.h"
+# include "../rat.h"
 void _start() {
 	ffly_ar_init();
 	ffly_io_init();
-//	ffset_mode(_ff_mod_debug);
-
+	ffset_mode(_ff_mod_debug);
+	ff_rat_put(_ff_rat_1);
+/*
 	struct ffly_vec vec;
 	ffly_vec_set_flags(&vec, VEC_AUTO_RESIZE);
 	ffly_vec_init(&vec, 8);
@@ -345,7 +350,7 @@ void _start() {
 	}
 
 	ffly_vec_de_init(&vec);
-
+*/
 //	ffly_free(p2);
 /*
 	ff_uint_t const n = 6000;
@@ -359,99 +364,74 @@ void _start() {
 	struct timespec begt, endt;
 
 	ff_u64_t nsec = 0, c = 0;
-
 	i = 0;
 	while(i != n) {
 //		ffly_printf("%u, %u\n", i, n);
 		cur = list;
 		while(cur != end) {
 			if (!*cur) {
-				size = ((ffly_rand()%200)+1);
+				size = ((ffly_rand()%400)+100);
 				clock_gettime(CLOCK_MONOTONIC, &begt);
-				*cur = ffly_alloc(size);
+				*cur = __ffly_mem_alloc(size);
 				clock_gettime(CLOCK_MONOTONIC, &endt);
+				*cur = __ffly_mem_realloc(*cur, size-=40);
 				nsec += (endt.tv_nsec-begt.tv_nsec)+((endt.tv_sec-begt.tv_sec)*1000000000);
-				ffly_bzero(*cur, size);	
+//				ffly_bzero(*cur, size);	
 				i++;
 				c++;
 			}
 
-			if (ffly_rand()%0x1) {
-				void **p = (void*)((ff_u8_t*)list+((ffly_rand()%(n-1))*sizeof(void*)));
-				if (*p != NULL) {
-					ffly_free(*p);
-					*p = NULL;
-					i--;
-				}
+			void **p = (void*)((ff_u8_t*)list+((ffly_rand()%(n-1))*sizeof(void*)));
+			if (*p != NULL) {
+				__ffly_mem_free(*p);
+				*p = NULL;
 			}
-
 		cur++;
 		}
 	}
 
+//	pr();
+
 	ffly_arstat();
-	ffly_printf("%luns\n", nsec/c);
-	ts3();
+	ffly_printf("used: %lu\n", ffly_mem_alloc_bc-ffly_mem_free_bc);
+
 	i = 0;
 	while(i != n) {
 		if (list[i] != NULL)
-			ffly_free(list[i]);
+			__ffly_mem_free(list[i]);
 		i++;
 	}
+
+	ffly_printf("%luns\n", nsec/c);
 */
-/*
-	void *p0, *p1, *p2, *p;
-	p0 = ffly_alloc(22);
-	p1 = ffly_alloc(24);
-	*(ff_uint_t*)p1 = 21299;
-	p2 = ffly_alloc(26);
+	void *p0, *p1, *p2, *p3;
+
+	p0 = ffly_alloc(12);
+	p1 = ffly_alloc(12);
+	p2 = ffly_alloc(12);
+	p3 = ffly_alloc(12);
+
 	ffly_free(p0);
-	p1 = ffly_realloc(p1, 30);
-	p1 = ffly_realloc(p1, 4);
-	ffly_printf("%u\n", *(ff_uint_t*)p1);
-*/
-//	p0 = ffly_alloc(36);
-	//ffly_printf("%u\n", *(ff_uint_t*)p1);
-/*
-	p = ffly_alloc(1);
-	p0 = ffly_alloc(2000);
-	p1 = ffly_alloc(1500);
-	p2 = ffly_alloc(1);
-	
-	ffly_free(p1);
-	ffly_free(p0);
-	p0 = ffly_alloc(2500);
-*/
+	//ffly_free(p1);
 
+	ffly_arsh(p1, 8);
 
-//	pr();
-//	pf();
-/*
-	void *p = ffly_alloc(20);
-	struct timespec beg, end;
-	clock_gettime(CLOCK_MONOTONIC, &beg);
+	if (!ffly_argr(p2, 14))
+		ffly_printf("failed.\n");
 
-	ffly_free(p);
-	clock_gettime(CLOCK_MONOTONIC, &end);
-	
-	ff_u64_t nsec = (end.tv_nsec-beg.tv_nsec)+((end.tv_sec-beg.tv_sec)*1000000000.0);
-	ffly_printf("%luns\n", nsec);
-
-	ffly_printf("mem-usage: %u\n", ffly_mem_alloc_bc-ffly_mem_free_bc);
-*/
-	ffly_arstat();
-
-//	ffly_printf("end.\n");
 	pr();
 	pf();
+	ffly_arstat();
+
 	ffly_io_closeup();
 	ffly_ar_cleanup();
 	exit(0);
 }
-
+/*
 int main(int __argc, char **__argv) {
 	ffly_ar_init();
 	ffly_io_init();
+*/
 /*
 	ffly_set_ppid(getpid());
 	void *p0;
@@ -510,7 +490,6 @@ int main(int __argc, char **__argv) {
 //	ts12();
 	//pr();
 	//pf();
-	ffly_arstat();
-	ffly_io_closeup();
-	ffly_ar_cleanup();
-}
+//	ffly_arstat();
+//	ffly_io_closeup();
+//	ffly_ar_cleanup();

@@ -14,6 +14,8 @@ void print_bin(ff_u64_t __val) {
 /*
 	for now
 */
+
+// not 100% random but will do
 ff_u64_t static no = 0x81886ed4;
 ff_u8_t ffgen_rand8l() {
 	no = no>>60|no<<4;
@@ -27,7 +29,7 @@ ff_u8_t ffgen_rand8l() {
 	a5 = no>>48;
 	a6 = no>>56;
 
-	no += a0^a1^a2^a3^a4^a5^a6;
+	no+=a0^a1^a2^a3^a4^a5^a6;
 	return no;
 }
 

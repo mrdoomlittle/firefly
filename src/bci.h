@@ -9,7 +9,7 @@
 # define _op_jmp 0x2
 # define _op_st 0x3
 # define _op_ld 0x4
-# define _op_out 0x5 //debug
+# define _op_out 0x5
 # define _op_mov 0x6
 # define _op_rin 0x7
 # define _op_div 0x8
@@ -23,6 +23,8 @@
 # define _op_jne 0x10
 # define _op_jg 0x11
 # define _op_jl 0x12
+# define _op_call 0x13
+# define _op_ret 0x14
 # define _gt 0x1
 # define _lt 0x2
 # define _eq 0x4
@@ -36,6 +38,8 @@ typedef struct ffly_bci {
 	void(*set_ip)(ff_addr_t);
 	ff_off_t ip_off;
 	void*(*rin)(ff_u8_t, void*);
+	ff_addr_t rtbuf[22];//return buffer
+	ff_addr_t *retto;
 } *ffly_bcip;
 
 void ffly_bci_sst(ffly_bcip, void*, ff_addr_t, ff_uint_t);

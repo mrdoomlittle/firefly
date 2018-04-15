@@ -6,7 +6,7 @@ symbolp parse(char *__s) {
 
 	ff_u8_t dir = 0;
 	ff_uint_t len;
-	while(*p == ' ') p++;
+	while(*p == ' ' && *p == '\t') p++;
 	char buf[128], *bufp;
 	bufp = buf;
 	char *s = NULL;
@@ -58,6 +58,6 @@ symbolp parse(char *__s) {
 		cur = cur->next;
 	}
 */		
-	_ret:
+_ret:
 	return sy;
 }

@@ -5,7 +5,7 @@
 	if (ffis_mode(_ff_mod_debug))
 enum {
 	_ff_mod_def,
-	_ff_mod_debug
+	_ff_mod_debug,
 };
 
 void ffset_mode(ff_i8_t);

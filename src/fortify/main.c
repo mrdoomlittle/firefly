@@ -1,4 +1,5 @@
-# include "../types/err_t.h"
+# include "../ffint.h"
+# include "../types.h"
 # include "../malloc.h"
 # include "../stdio.h"
 # include "../opt.h"
@@ -8,7 +9,7 @@
 # include "../string.h"
 # include "../crypto.h"
 # include "../system/util/hash.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	char const *method;
 	char const *src, *dst;
 	char const *key;
@@ -52,8 +53,8 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		struct stat st;
 		fstat(s, &st);
 
-		mdl_uint_t size;
-		mdl_u8_t *p = (mdl_u8_t*)malloc(size = st.st_size);
+		ff_uint_t size;
+		ff_u8_t *p = (ff_u8_t*)malloc(size = st.st_size);
 		read(s, p, size);
 		if (!strcmp(method, "enc"))
 			ffly_encrypt(p, size, ffly_hash(key, strlen(key)));
