@@ -17,7 +17,8 @@ void ffoe_end() {
 	while(cur != end) {
 		ffoptp p = (ffoptp)ffly_map_getp(cur);
 //		__ffly_mem_free((void*)p->val);
-		ffly_depart((void*)p->val);
+		if (p->val != NULL)
+			ffly_depart((void*)p->val);
 		__ffly_mem_free(p);
 		ffly_map_fd(&opt, &cur);
 	}
@@ -64,6 +65,7 @@ void ffoe(char const*(*__pcl)(void*), void *__arg_p) {
 	char const *p;
 	char buf[128];
 	char *bufp;
+	ffoptp opt;
 	while((p = __pcl(__arg_p)) != NULL) {
 		ffly_printf("optname: '%s'\n", p);
 		while(*p != '\0') {
@@ -72,6 +74,13 @@ void ffoe(char const*(*__pcl)(void*), void *__arg_p) {
 				while(*p != '\0')
 					*(bufp++) = *(p++);
 				*bufp = '\0';
+
+				if ((opt = getopt(buf)) != NULL) {
+					opt->present = 0;
+					if (!opt->sigl)
+						break;
+				}
+		
 				// next
 				if (!(p = __pcl(__arg_p))) {
 					ffly_printf("error");
@@ -79,14 +88,34 @@ void ffoe(char const*(*__pcl)(void*), void *__arg_p) {
 				}
 
 				// should use alloca
-				ffoptp opt = (ffoptp)__ffly_mem_alloc(sizeof(struct ffopt));
+				opt = (ffoptp)__ffly_mem_alloc(sizeof(struct ffopt));
 				opt->val = ffly_str_dup(p);
-
+				opt->sigl = -1;
 				putopt(buf, opt);
 				break;
 			}
 		}
 	}
+}
+
+void ffoe_single(char const *__name) {
+	ffoptp opt = (ffoptp)__ffly_mem_alloc(sizeof(struct ffopt));
+	opt->val = NULL;
+	opt->sigl = 0;
+	opt->present = -1;
+	putopt(__name, opt);
+}
+
+char const* ffopt_getval(ffoptp __opt) {
+	if (!__opt)
+		return NULL;
+	return __opt->val;
+}
+
+ff_i8_t ffopt_present(ffoptp __opt) {
+	if (!__opt)
+		return -1;
+	return __opt->present;
 }
 
 ffoptp ffoe_get(char const *__name) {

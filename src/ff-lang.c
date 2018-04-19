@@ -32,26 +32,49 @@ out(void *__p, ff_uint_t __n) {
 	write(fd, __p, __n);
 }
 
+# include "opt.h"
+# include "depart.h"
+# include "dep/str_cpy.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
-	fd = open("main.out", O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU);
+	ffoe_prep();
+	char const *infile;
+	char const *outfile;
+	struct ffpcll pcl;
+	pcl.cur = __argv+1;
+	pcl.end = __argv+__argc;
+
+	ffoe(ffoe_pcll, (void*)&pcl);
+	infile = ffopt_getval(ffoe_get("i"));
+	outfile = ffopt_getval(ffoe_get("o"));
+	ffoe_end();
+
+	if (!infile || !outfile) {
+		ffly_printf("missing -i or -o.\n");
+		reterr;
+	}
+
+	if ((fd = open(outfile, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU)) == -1) {
+		ffly_printf("failed to open file.\n");
+		reterr;
+	}
 	struct ffly_compiler compiler;
 	compiler.out = out;
 	ffly_compiler_prepare(&compiler);
 	ffc_ldlang(&compiler, _ffc_ff);
 	ldkeywds(&compiler);	
-	ffly_compiler_ld(&compiler, "ff/main.ff");
+	ffly_compiler_ld(&compiler, infile);
 
 	ffc_build(&compiler);
 	ffly_compiler_free(&compiler);
 	close(fd);
-
+/*
 	if (access("as/as", F_OK) == -1) {
 		ffly_printf("assembler doesen't exist.\n");
 		goto _end;
 	}
 	__linux_pid_t pid;
 	if ((pid = fork()) == 0) {
-		char *argv[] = {"as", "-f", "ffef", "-i", "main.out", "-o", "main.o", NULL};
+		char *argv[] = {"as", "-f", "ffef", "-i", "s.out", "-o", ".o", NULL};
 		char *envp[] = {NULL};
 		execve("as/as", argv, envp);
 		exit(0);
@@ -60,13 +83,14 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_printf("waiting for assembler.\n");
 	wait4(pid, NULL, __WALL, NULL);	
 
+
 	if (access("bond/bond", F_OK) == -1) {
 		ffly_printf("linker doesen't exist.\n");
 		goto _end;
 	}
 
 	if ((pid = fork()) == 0) {
-		char *argv[] = {"bond", "-s", "main.o", "-d", "a.out", NULL};
+		char *argv[] = {"bond", "-s", ".o", "-d", "a.out", NULL};
 		char *envp[] = {NULL};
 		execve("bond/bond", argv, envp);
 		exit(0);
@@ -74,6 +98,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_printf("waiting for linker.\n");
 	wait4(pid, NULL, __WALL, NULL);
-_end:
+_end:*/
+	ffly_depart(NULL);
 	reterr;
 }
