@@ -1,5 +1,3 @@
-.label test; define label
-.label again
 .region text
 _start:
 	call $test; call test

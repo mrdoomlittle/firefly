@@ -7,8 +7,44 @@
 # include "data/pair.h"
 # include "system/lat.h"
 
+# ifdef __ffly_script
+# ifndef ffc_final
+# define ffc_final(__compiler, __top, __stack) \
+	((ff_err_t(*)(struct ffly_compiler*, void**, ff_byte_t**))_ffc_final)(__compiler, __top, __stack)
+# endif /*ffc_final*/
+# ifndef ffc_build
+# define ffc_build(__compiler, __top, __stack) \
+	((ff_err_t(*)(struct ffly_compiler*, void**, ff_byte_t**))_ffc_build)(__compiler, __top, __stack)
+# endif /*ffc_build*/
+# ifndef ffc_parse
+# define ffc_parse(__compiler) \
+	((ff_err_t(*)(struct ffly_compiler*))_ffc_parse)(__compiler, __top, __stack)
+# endif /*ffc_parse*/
+# ifndef ffc_gen
+# define ffc_gen(__compiler, __top, __stack) \
+	((ff_err_t(*)(struct ffly_compiler*, void**, ff_byte_t**))_ffc_gen)(__compiler, __top, __stack)
+# endif /*ffc_gen*/
+# elif defined(__ffly_ff)
+# ifndef ffc_final
+# define ffc_final(__compiler) \
+	((ff_err_t(*)(struct ffly_compiler*))_ffc_final)(__compiler)
+# endif /*ffc_final*/
+# ifndef ffc_build
+# define ffc_build(__compiler) \
+	((ff_err_t(*)(struct ffly_compiler*))_ffc_build)(__compiler)
+# endif /*ffc_build*/
+# ifndef ffc_parse
+# define ffc_parse(__compiler) \
+	((ff_err_t(*)(struct ffly_compiler*))_ffc_parse)(__compiler)
+# endif /*ffc_parse*/
+# ifndef ffc_gen
+# define ffc_gen(__compiler) \
+	((ff_err_t(*)(struct ffly_compiler*))_ffc_gen)(__compiler)
+# endif /*ffc_gen*/
+# endif
+
 enum {
-	_ffc_clang,
+	_ffc_ff,
 	_ffc_script
 };
 
@@ -50,10 +86,15 @@ typedef struct ffly_compiler {
 	/*
 		keywords
 	*/
+	ff_u8_t lang;
 
+
+	void(*out)(void*, ff_uint_t);
 	struct ffly_lat keywd;
 	void *call[86];
 } *ffly_compilerp;
+
+# define ff_compilerp ffly_compilerp
 
 # ifdef __ffly_compiler_internal
 typedef struct keywd {
@@ -64,13 +105,13 @@ typedef struct keywd {
 
 # include "system/err.h"
 # define errmsg(...) ffly_errmsg(__VA_ARGS__)
-# define TOK_IDENT 0
-# define TOK_KEYWORD 1
-# define TOK_NO 2
-# define TOK_NULL 3
-# define TOK_STR 4
-# define TOK_NEWLINE 5
-# define TOK_CHR 6
+# define _tok_ident 0
+# define _tok_keywd 1
+# define _tok_no 2
+# define _tok_null 3
+# define _tok_str 4
+# define _tok_newline 5
+# define _tok_chr 6
 
 # define ring_parser_func_call(__compiler, ...) \
 	ringup(ff_err_t, __compiler, _parser_func_call, __VA_ARGS__)
@@ -121,6 +162,7 @@ enum {
     _k_void,
     _k_if,
     _k_fn,
+	_k_as,
     _k_extern,
     _k_struct,
     _k_exit,
@@ -167,7 +209,8 @@ enum {
     _op_add,
     _op_sub,
     _op_mul,
-    _op_div
+    _op_div,
+	_ast_as
 };
 
 enum {
@@ -241,6 +284,7 @@ struct token* peek_token(struct ffly_compiler*);
 struct token* ffly_lex(struct ffly_compiler*, ff_err_t*);
 void ffly_ulex(struct ffly_compiler*, struct token*);
 
+
 ff_bool_t maybe_keyword(struct ffly_compiler*, struct token*);
 ff_bool_t at_eof(struct ffly_compiler*);
 void pr_tok(struct token*);
@@ -250,13 +294,15 @@ void cleanup(struct ffly_compiler*, void*);
 ff_bool_t next_tok_nl(struct ffly_compiler*);
 # endif
 ff_err_t ffly_compiler_ld(struct ffly_compiler*, char const*);
-ff_err_t ffly_compiler_build(struct ffly_compiler*, void **, ff_byte_t**);
+
+void extern *_ffc_final;
+void extern *_ffc_build;
+void extern *_ffly_parse;
+void extern *_ffly_gen;
+
 ff_err_t ffly_compiler_prepare(struct ffly_compiler*);
 ff_err_t ffly_compiler_free(struct ffly_compiler*);
 ff_u8_t ffly_compiler_kwno(char const*);
 void ffly_compiler_ldkeywd(struct ffly_compiler*, ff_u8_t);
-ff_err_t ffly_parse(struct ffly_compiler*);
-ff_err_t ffly_gen(struct ffly_compiler*, void**, ff_byte_t**);
-
-void ffc_ldsyntax(ffly_compilerp, ff_u8_t);
+void ffc_ldlang(ffly_compilerp, ff_u8_t);
 # endif /*__ffly__compiler__h*/

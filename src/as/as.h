@@ -85,7 +85,7 @@ struct hash {
 };
 
 void assemble(char*, char*);
-char* read_str(char*, ff_uint_t*);
+void* _memdup(void*, ff_uint_t);
 symbolp eval(char*);
 void* _memdup(void*, ff_uint_t);
 struct hash extern env;

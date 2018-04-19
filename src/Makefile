@@ -142,21 +142,25 @@ brew: clean
 	gcc $(cc_flags) -o brew/parser.o -c brew/parser.c
 	gcc $(cc_flags) -o brew/lexer.o -c brew/lexer.c
 	gcc $(cc_flags) -Wall -o main brew/main.c $(ffly_objs) brew/parser.o brew/gen.o brew/exec.o brew/brew.o brew/lexer.o -nostdlib
-cc:
+ffc: clean
+	gcc $(cc_flags) -c -o ff/parser.o ff/parser.c
+	gcc $(cc_flags) -c -o ff/gen.o ff/gen.c
 	gcc $(cc_flags) -c parser.c
 	gcc $(cc_flags) -c lexer.c
-	gcc $(cc_flags) -c gen.c
+#	gcc $(cc_flags) -c gen.c
 #	gcc $(cc_flags) -c data/mem_swp.c
-	gcc $(cc_flags) -c compiler.c
-	gcc $(cc_flags) -Wall -o cc c-lang.c compiler.o $(ffly_objs) parser.o gen.o lexer.o -nostdlib
+	gcc $(cc_flags) -D__ffc_no_script -c compiler.c
+	gcc $(cc_flags) -Wall -o ffc ff-lang.c compiler.o $(ffly_objs) parser.o lexer.o ff/parser.o ff/gen.o -nostdlib
 script: clean
+	gcc $(cc_flags) -c -o script/parser.o script/parser.c
+	gcc $(cc_flags) -c -o script/gen.o script/gen.c
 	gcc $(cc_flags) -c parser.c
 	gcc $(cc_flags) -c lexer.c
-	gcc $(cc_flags) -c gen.c
+#	gcc $(cc_flags) -c gen.c
 	gcc $(cc_flags) -o script/exec.o -c script/exec.c
 #	gcc $(cc_flags) -c data/mem_swp.c
-	gcc $(cc_flags) -c compiler.c
-	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) script/exec.o parser.o gen.o lexer.o -nostdlib
+	gcc $(cc_flags) -D__ffc_no_ff -c compiler.c
+	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) script/exec.o script/parser.o script/gen.o parser.o lexer.o -nostdlib
 clean:
 	rm -f main
 	cd ../ && make clean && cd src

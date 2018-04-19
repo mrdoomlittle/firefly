@@ -1,0 +1,34 @@
+%define return ret
+void ts0();
+void ts1();
+void ts2();
+void ts3();
+
+void _start() {
+	as("asb %ll, 21\n");
+	ts0();
+	as("exit %ll\n");
+}
+
+void ts0() {
+	as("outb %ll\n");
+	ts1();
+	return;
+}
+
+void ts1() {
+	as("outb %ll\n");
+	ts2();
+	return;
+}
+
+void ts2() {
+	as("outb %ll\n");
+	ts3();
+	return;
+}
+
+void ts3() {
+	as("outb %ll\n");
+	return;
+}

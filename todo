@@ -77,3 +77,4 @@ until we can do somthing about that.
 
 
 -. c++ crap is out of date <- fix
+-. parser and lexer should have own structure

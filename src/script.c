@@ -1,3 +1,4 @@
+# define __ffly_script
 # include "script.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
@@ -78,7 +79,7 @@ ff_err_t ffscript_init(ffscriptp __script, ff_uint_t __stack_size) {
 }
 			
 ff_err_t ffly_script_build(struct ffly_script *__script, void **__top, ff_byte_t **__stack) {
-	ffly_compiler_build(&__script->c_ctx, __top, __stack);
+	ffc_build(&__script->c_ctx, __top, __stack);
 }
 
 ff_err_t ffly_script_free(struct ffly_script *__script) {
@@ -263,6 +264,7 @@ ff_err_t ffmain(int __argc, char const **__argv) {
 		return -1;
 	}
 
+	ffc_ldlang(&script.c_ctx, _ffc_script);
 	ffly_script_ld(&script, file);
 	ffly_printf("building script.\n");
 

@@ -8,6 +8,7 @@
 # define SY_LABEL 0x5
 # define SY_DIR 0x6
 # define SY_REG 0x7
+# define SY_UNKNOWN 0x8
 
 # define is_syreg(__st) \
 	((__sy)->sort==SY_REG)
@@ -36,7 +37,6 @@ typedef struct symbol {
 	ff_u16_t off;
 	struct symbol *next;
 } *symbolp;
-
 
 struct hash extern symbols;
 void putsymbol(symbolp);

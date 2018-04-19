@@ -12,26 +12,38 @@ symbolp eval(char *__s) {
 	symbolp head = _alloca(sizeof(struct symbol));
 	symbolp cur = head;
 
+	char buf[128];
+	char *bufp;
+
 	while(*p != '\0' && *p != ';') {
 		while(*p == ' ') p++;
+		if (*p == '\0') break;
 		switch(*p) {
 			case '%': {
 				p++;
 				ff_uint_t l;
-				cur->p = read_str(p, &l);
+				bufp = buf;
+				while(*p >= 'a' && *p <= 'z')
+					*(bufp++) = *(p++);
+				*bufp = '\0';
+				l = bufp-buf;
+				cur->p = _memdup(buf, l+1);
 				cur->sort = SY_REG;
 				cur->len = l;
-				p+=l;
 				break;
 			}
 			case '$':
 				p++;
 				if (*p >= 'a' && *p <= 'z') {
 					ff_uint_t l;
-					cur->p = read_str(p, &l);
+					bufp = buf;
+					while((*p >= 'a' && *p <= 'z') | *p == '_' | (*p >= '0' && *p <= '9'))
+						*(bufp++) = *(p++);
+					*bufp = '\0';
+					l = bufp-buf;
+					cur->p = _memdup(buf, l+1);
 					cur->sort = SY_LABEL;
 					cur->len = l;
-					p+=l;
 				} else if (isno(nextc(p))) {
 					goto _no;
 				}
@@ -40,9 +52,6 @@ symbolp eval(char *__s) {
 				p++;
 				cur->next = _alloca(sizeof(struct symbol));
 				cur = cur->next;
-				if (*p >= 'a' && *p <= 'z') {
-					goto _str;
-				}
 				break;
 			}
 			default:
@@ -56,12 +65,16 @@ symbolp eval(char *__s) {
 					if (sign)
 						cur->flags |= SIGNED;
 					cur->len = sizeof(ff_uint_t);
-				} else if (*p >= 'a' && *p <= 'z') _str: {
+				} else if (*p >= 'a' && *p <= 'z') {
 					ff_uint_t l;
-					cur->p = read_str(p, &l);	
-					cur->sort = SY_STR;
+					bufp = buf;
+					while((*p >= 'a' && *p <= 'z') | *p == '_' | (*p >= '0' && *p <= '9'))
+						*(bufp++) = *(p++);
+					*bufp = '\0';
+					l = bufp-buf;
+					cur->p = _memdup(buf, l+1);
+					cur->sort = SY_UNKNOWN;
 					cur->len = l;
-					p+=l;
 				}
 		}
 	}

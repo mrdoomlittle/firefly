@@ -34,6 +34,7 @@ ffly_printf("hello.\n");
 # include "linux/types.h"
 # include "linux/sched.h"
 # include "linux/unistd.h"
+# include "linux/wait.h"
 ff_i8_t run = -1;
 void sig(int __no) {
 	run = 0;
@@ -49,6 +50,7 @@ __asm__("restore:mov $15,%rax\n\t"
 # include "maths/ceil.h"
 # include "maths/sin.h"
 # include "maths/cos.h"
+# include "system/errno.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 //	p = malloc(200);
 //	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&pot);
@@ -63,6 +65,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	while(run<0);
 	ffly_printf("bye.\n");
 */
+/*
 	double val = 1;
 	double cos = 0, sin = 0; 
 	cos = ffly_cos(val);
@@ -73,5 +76,16 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	adr = (adr+(16-1))&-16;
 	__asm__("movq %0, %%rsp\n\t" : : "m"(adr));
 	ffly_printf("cos: %f, sin: %f\n", cos, sin);
+*/
+/*
+	__linux_pid_t pid = fork();
+	if (pid == 0) {
+		ffly_nanosleep(2, 0);
+		exit(0);
+	}
+
+	wait4(pid, NULL, __WALL, NULL);
+	ffly_printf("report: %s\n", strerror(errno));
+*/
 	ffly_arstat();
 }

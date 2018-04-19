@@ -76,18 +76,6 @@ void* _memdup(void *__p, ff_uint_t __bc) {
 	return ret;
 }
 
-char* read_str(char *__p, ff_uint_t *__len) {
-	char *p = __p;
-	char buf[128];
-	char *bufp = buf;
-	while((*p >= 'a' && *p <= 'z') | *p == '_') {
-		*(bufp++) = *(p++);
-	}
-	*bufp = '\0';
-	*__len = bufp-buf;
-	return _memdup(buf, (bufp-buf)+1);
-}
-
 ff_u64_t read_no(char *__p, ff_uint_t *__len, ff_u8_t *__sign) {
 	char *p = __p;
 	char buf[128];
@@ -222,9 +210,6 @@ assemble(char *__p, char *__end) {
 					hash_put(&env, sy->next->p, sy->next->len, la);
 					printf("extern %s\n", sy->next->p);
 					*(extrn++) = sy->next->p;
-				} else if (!strcmp(sy->p, "label")) {
-					labelp la = (labelp)_alloca(sizeof(struct label));
-					hash_put(&env, sy->next->p, sy->next->len, la);
 				}
 			} else {
 				insp ins;
@@ -237,8 +222,12 @@ assemble(char *__p, char *__end) {
 
 					ins->l = sy->next;
 					if (sy->next != NULL) {
-						if (is_sylabel(sy->next))
-							sy->next->p = hash_get(&env, sy->next->p, ffly_str_len(sy->next->p));
+						if (is_sylabel(sy->next)) {
+							void *p;
+							if (!(p = hash_get(&env, sy->next->p, ffly_str_len(sy->next->p))))
+								hash_put(&env, sy->next->p, sy->next->len, p = _alloca(sizeof(struct label)));
+							sy->next->p = p;
+						}
 						ins->r = sy->next->next;
 					}
 

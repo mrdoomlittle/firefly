@@ -31,16 +31,23 @@ symbolp parse(char *__s) {
 
 	if (dir) {
 		p++; //space
-		s = read_str(p, &len);
-		p+=len;
+		bufp = buf;
+		while(*p >= 'a' && *p <= 'z')
+			*(bufp++) = *(p++);
+		*bufp = '\0';
+		s = _memdup(buf, (len = (bufp-buf))+1);
 		cur->sort = SY_DIR;
 		cur->p = s;
 		cur->len = len;
 		return sy;
 	}
 
-	cur->p = read_str(p, &len);
-	p+= len;
+	bufp = buf;
+	while((*p >= 'a' && *p <= 'z') | *p == '_' | (*p >= '0' && *p <= '9'))
+		*(bufp++) = *(p++);
+	*bufp = '\0';
+
+	cur->p = _memdup(buf, (len = (bufp-buf))+1);
 	cur->len = len;
 
 	if (*p == ':') {

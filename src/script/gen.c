@@ -1,12 +1,12 @@
 # define __ffly_compiler_internal
 # define __ffly_script_internal
 # define __ffly_generator
-# include "compiler.h"
-# include "script.h"
-# include "memory/mem_alloc.h"
-# include "memory/mem_free.h"
-# include "system/buff.h"
-# include "dep/mem_cpy.h"
+# include "../compiler.h"
+# include "../script.h"
+# include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
+# include "../system/buff.h"
+# include "../dep/mem_cpy.h"
 struct obj static *rg_8l_u, *rg_16l_u, *rg_32l_u, *rg_64l_u;
 void static
 build_obj(struct obj **__obj, struct obj *__tmpl) {
@@ -662,7 +662,7 @@ void emit(struct ffly_compiler *__compiler, struct node *__node) {
 }
 
 ff_err_t
-ffly_gen(struct ffly_compiler *__compiler, void **__top, ff_byte_t **__stack) {
+ffly_script_gen(struct ffly_compiler *__compiler, void **__top, ff_byte_t **__stack) {
 	if (!ffly_vec_size(&__compiler->nodes)) return FFLY_FAILURE;
 	stack = __stack;
 	rg_8l_u = __fresh(__compiler, 1);

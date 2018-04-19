@@ -13,19 +13,58 @@
 # include "system/nanosleep.h"
 # include "dep/str_cpy.h"
 # include "system/realpath.h"
+
+# ifndef __ffc_no_script
+ff_err_t ffc_script_final(struct ffly_compiler*, void**, ff_byte_t**);
+ff_err_t ffc_script_build(struct ffly_compiler*, void**, ff_byte_t**);
+
+ff_err_t ffly_script_parse(struct ffly_compiler*);
+ff_err_t ffly_script_gen(struct ffly_compiler*, void**, ff_byte_t**);
+# endif
+# ifndef __ffc_no_ff
+ff_err_t ffc_ff_final(struct ffly_compiler*);
+ff_err_t ffc_ff_build(struct ffly_compiler*);
+ff_err_t ffly_ff_parse(struct ffly_compiler*);
+ff_err_t ffly_ff_gen(struct ffly_compiler*);
+# endif
+void *_ffc_final;
+void *_ffc_build;
+void *_ffly_parse;
+void *_ffly_gen;
+# ifndef __ffc_no_ff
 void static
-ld_clang(ffly_compilerp __compiler) {
-
+ld_ff(ffly_compilerp __compiler) {
+	_ffc_final = ffc_ff_final;
+	_ffc_build = ffc_ff_build;
+	_ffly_parse = ffly_ff_parse;
+	_ffly_gen = ffly_ff_gen;
 }
-
+# endif
+# ifndef __ffc_no_script
 void static
 ld_script(ffly_compilerp __compiler) {
-
+	_ffc_final = ffc_script_final;
+	_ffc_build = ffc_script_build;
+	_ffly_parse = ffly_script_parse;
+	_ffly_gen = ffly_script_gen;
 }
-
+# endif
 void
-ffc_ldsyntax(ffly_compilerp __compiler, ff_u8_t __no) {
-	
+ffc_ldlang(ffly_compilerp __compiler, ff_u8_t __no) {
+	switch(__no) {
+# ifndef __ffc_no_ff
+		case _ffc_ff:
+			ld_ff(__compiler);
+		break;
+# endif
+# ifndef __ffc_no_script
+		case _ffc_script:
+			ld_script(__compiler);
+		break;
+# endif
+	}
+
+	__compiler->lang = __no;
 }
 
 ff_err_t
@@ -76,10 +115,10 @@ ff_u64_t _ringup(struct ffly_compiler *__compiler, ff_u8_t __no, ...) {
 // not the best way but works
 char const* tokk_str(ff_u8_t __kind) {
 	switch(__kind) {
-		case TOK_IDENT: return "ident";
-		case TOK_KEYWORD: return "keyword";
-		case TOK_NO: return "number";
-		case TOK_NEWLINE: return "newline";
+		case _tok_ident: return "ident";
+		case _tok_keywd: return "keyword";
+		case _tok_no: return "number";
+		case _tok_newline: return "newline";
 	}
 	return "unknown";
 }
@@ -152,9 +191,8 @@ void cleanup(struct ffly_compiler *__compiler, void *__p) {
 	*p = __p;
 }
 
-
 ff_bool_t is_keyword(struct token *__tok, ff_u8_t __id) {
-	return (__tok->kind == TOK_KEYWORD && __tok->id == __id);
+	return (__tok->kind == _tok_keywd && __tok->id == __id);
 }
 
 ff_off_t toklo(struct token *__tok) {
@@ -199,7 +237,7 @@ ff_bool_t expect_token(struct ffly_compiler *__compiler, ff_u8_t __kind, ff_u8_t
 
 	ff_u8_t ret;
 	if (!(ret = (tok->kind == __kind && tok->id == __id))) {
-		if (__kind == TOK_KEYWORD) {
+		if (__kind == _tok_keywd) {
 			switch(__id) {
 				case _colon:
 					expectmsg("expected colon");
@@ -345,7 +383,7 @@ ff_bool_t next_tok_nl(struct ffly_compiler *__compiler) {
 	ff_err_t err;
 	struct token *tok = ffly_lex(__compiler, &err);
 	if (tok != NULL) {
-		if (tok->kind == TOK_NEWLINE) {
+		if (tok->kind == _tok_newline) {
 			__ffly_mem_free(tok);
 			return 1;
 		}
@@ -392,7 +430,7 @@ skip_until_endif(struct ffly_compiler *__compiler) {
 		if (!(tok = ffly_lex(__compiler, &err))) break;
 		if (_err(err)) break;
 		if (is_endif(__compiler, tok)) break;
-		if (tok->kind == TOK_NEWLINE)
+		if (tok->kind == _tok_newline)
 			__ffly_mem_free(tok);
 	}
 }
@@ -429,7 +467,19 @@ read_include(struct ffly_compiler *__compiler) {
 	__compiler->file->lo = 0;
 	__compiler->file->off = 0;
 	ffly_compiler_ld(__compiler, (char*)file->p);  
-	ffly_parse(__compiler);
+	switch(__compiler->lang) {
+# ifndef __ffc_no_ff
+		case _ffc_ff:
+
+		break;
+# endif
+# ifndef __ffc_no_script
+		case _ffc_script:
+			ffly_script_parse(__compiler);
+		break;
+# endif
+	}
+
 	__ffly_mem_free(__compiler->file->path);
 	__ffly_mem_free(__compiler->file->p);
 	__compiler->file--;
@@ -437,7 +487,7 @@ read_include(struct ffly_compiler *__compiler) {
 
 void read_macro(struct ffly_compiler *__compiler) {
 	struct token *tok = next_token(__compiler);
-	if (tok->kind != TOK_IDENT) return;
+	if (tok->kind != _tok_ident) return;
 	if (!ffly_str_cmp(tok->p, "define"))
 		read_define(__compiler);
 	else if (!ffly_str_cmp(tok->p, "ifdef"))
@@ -455,7 +505,7 @@ struct token* next_token(struct ffly_compiler *__compiler) {
 	tok = ffly_lex(__compiler, &err);
 	if (!tok) return NULL;
 
-	if (tok->kind == TOK_NEWLINE) {
+	if (tok->kind == _tok_newline) {
 		__ffly_mem_free(tok);
 		goto _back;
 	}
@@ -465,7 +515,7 @@ struct token* next_token(struct ffly_compiler *__compiler) {
 		goto _back;
 	}
 
-	if (tok->kind == TOK_IDENT) {
+	if (tok->kind == _tok_ident) {
 		struct ffly_vec *toks = (struct ffly_vec*)ffly_map_get(&__compiler->macros, tok->p, ffly_str_len((char*)tok->p), &err);
 		if (toks != NULL && _ok(err)) {
 			struct token **p = (struct token**)ffly_vec_end(toks);
@@ -484,13 +534,13 @@ ff_uint_t tokl(struct token *__tok) {
 }
 
 void to_keyword(struct token *__tok, ff_u8_t __id) {
-	__tok->kind = TOK_KEYWORD;
+	__tok->kind = _tok_keywd;
 	__tok->id = __id;
 }
 
 ff_bool_t maybe_keyword(struct ffly_compiler *__compiler, struct token *__tok) {
 	if (!__tok) return 0;
-	if (__tok->kind != TOK_IDENT || __tok->p == NULL) return 0;
+	if (__tok->kind != _tok_ident || __tok->p == NULL) return 0;
 	keywdp p;	
 	if (!(p = get_keyword(__compiler, __tok->p)))	
 		return 0;
@@ -524,6 +574,7 @@ char const static *keywords[] = {
 	"typedef",
 	"ret",
 	"brk",
+	"as",
 	NULL
 };
 
@@ -553,6 +604,7 @@ ff_u8_t static keyword_ids[] = {
 	_k_typedef,
 	_k_ret,
 	_k_brk,
+	_k_as,
 	0
 };
 
@@ -642,29 +694,42 @@ ff_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 	retok;
 }
 
-ff_err_t ffly_compiler_finalize(struct ffly_compiler *__compiler, void **__top, ff_byte_t **__stack) {
+# ifndef __ffc_no_script
+ff_err_t ffc_script_final(struct ffly_compiler *__compiler, void **__top, ff_byte_t **__stack) {
 	ff_err_t err;
-	if (_err(err = ffly_gen(__compiler, __top, __stack))) {
+	if (_err(err = ffly_script_gen(__compiler, __top, __stack))) {
 		errmsg("an error has occurred in the generative process.\n");
 		_ret;
 	}
 	retok;
 }
 
-ff_err_t ffly_compiler_build(struct ffly_compiler *__compiler, void ** __top, ff_byte_t **__stack) {
+ff_err_t ffc_script_build(struct ffly_compiler *__compiler, void ** __top, ff_byte_t **__stack) {
 	ff_err_t err;
-	if (_err(err = ffly_parse(__compiler))) {
+	if (_err(err = ffly_script_parse(__compiler))) {
 		errmsg("an error has occurred in the parsing process.\n");
 		_ret;
 	}
 
-	if (_err(err = ffly_compiler_finalize(__compiler, __top, __stack))) {
+	if (_err(err = ffc_script_final(__compiler, __top, __stack))) {
 		errmsg("failed to finalize.\n");
 		_ret;
 	}
 	ffly_fprintf(ffly_out, "build successful.\n");
 	retok;
 }
+# endif
+
+# ifndef __ffc_no_ff
+ff_err_t ffc_ff_final(struct ffly_compiler *__compiler) {
+	ffly_ff_gen(__compiler);
+}
+
+ff_err_t ffc_ff_build(struct ffly_compiler *__compiler) {
+	ffly_ff_parse(__compiler);
+	ffc_ff_final(__compiler);
+}
+# endif
 
 ff_bool_t at_eof(struct ffly_compiler *__compiler) {
 	return (__compiler->file->p+__compiler->file->off) >= __compiler->file->end;

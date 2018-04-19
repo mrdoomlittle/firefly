@@ -61,6 +61,18 @@ at_nl(struct ffly_compiler *__compiler) {
     return (fetchc(__compiler) == '\n');
 }
 
+void static
+escape_chr(char *__c, char *__p) {
+	switch(*__p) {
+		case 'n':
+			*__c = '\n';
+		break;
+		case 't':
+			*__c = '\t';
+		break;
+	}
+}
+
 char static*
 read_ident(struct ffly_compiler *__compiler) {
 	char *p = (char*)(__compiler->file->p+__compiler->file->off);
@@ -103,8 +115,19 @@ read_no(struct ffly_compiler *__compiler, ff_u8_t *__is_hex, ff_u8_t *__is_float
 
 char static* 
 read_str(struct ffly_compiler *__compiler) {
-    char *p = (char*)(__compiler->file->p+__compiler->file->off);
+	char *beg = (char*)(__compiler->file->p+__compiler->file->off);
+    char *p = beg;
     while(*p != '"') {
+		if (*p == 0x5c) {
+			p++;
+			char c;
+			escape_chr(&c, p);
+			p++;
+			ffly_buff_put(&__compiler->sbuf, &c);
+			ffly_buff_incr(&__compiler->sbuf);
+			continue;
+		}
+
         ffly_buff_put(&__compiler->sbuf, p++);
         ffly_buff_incr(&__compiler->sbuf);
     }
@@ -112,7 +135,7 @@ read_str(struct ffly_compiler *__compiler) {
     char end = '\0';
     ffly_buff_put(&__compiler->sbuf, &end);
     char *s = ffly_str_dupe((char*)ffly_buff_begin(&__compiler->sbuf));
-    __compiler->file->off+= ffly_buff_off(&__compiler->sbuf);
+    __compiler->file->off+= p-beg;
     ffly_buff_off_reset(&__compiler->sbuf);
     cleanup(__compiler, (void*)s);
     return s;
@@ -120,7 +143,7 @@ read_str(struct ffly_compiler *__compiler) {
 
 void static
 mk_keywd(struct token *__tok, ff_u8_t __id) {
-	__tok->kind = TOK_KEYWORD;
+	__tok->kind = _tok_keywd;
 	__tok->id = __id;
 }
 
@@ -145,7 +168,7 @@ read_token(struct ffly_compiler *__compiler) {
     if (at_nl(__compiler)) {
         register_line(__compiler);
         incr_off;
-        tok->kind = TOK_NEWLINE;  
+        tok->kind = _tok_newline;  
         return tok;
     }
 
@@ -158,7 +181,7 @@ read_token(struct ffly_compiler *__compiler) {
         case '\x27':
             incr_off;
             *tok = (struct token) {
-                .kind = TOK_CHR,
+                .kind = _tok_chr,
                 .p = (void*)read_chr(__compiler) 
             };
             incr_off;
@@ -178,7 +201,7 @@ read_token(struct ffly_compiler *__compiler) {
         case '"':
             incr_off;
             *tok = (struct token) {
-                .kind = TOK_STR,
+                .kind = _tok_str,
                 .p = (void*)read_str(__compiler)
             };
             incr_off;
@@ -268,20 +291,20 @@ read_token(struct ffly_compiler *__compiler) {
 		default:
 		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
 			*tok = (struct token) {
-				.kind = TOK_IDENT,
+				.kind = _tok_ident,
 				.p = (void*)read_ident(__compiler)
 			};
 		} else if (c >= '0' && c <= '9') goto _no;
 		else {
 		    incr_off;
-		    tok->kind = TOK_NULL;
+		    tok->kind = _tok_null;
         }
         break;
         _no:
         {
             ff_u8_t is_float = 0, is_hex = 0;
             *tok = (struct token) {
-                .kind = TOK_NO,
+                .kind = _tok_no,
                 .p = (void*)read_no(__compiler, &is_hex, &is_float)
             };
             tok->is_float = is_float;
