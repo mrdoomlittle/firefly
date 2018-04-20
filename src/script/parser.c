@@ -269,7 +269,7 @@ parser_struct_decl(struct ffly_compiler *__compiler, struct ffly_map *__fields, 
 	ff_off_t off = 0;
 	ff_err_t err;
 	if (!next_token_is(__compiler, _tok_keywd, _r_brace)) {
-		_next:
+	_next:
 		{
 			struct token *tok = next_token(__compiler);
 			struct token *name = next_token(__compiler);
@@ -493,7 +493,7 @@ parser_unary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 		ffly_ulex(__compiler, tok);
 	}
 
-	_end:
+_end:
 	retok;
 }
 
@@ -679,58 +679,61 @@ parser_compound_stmt(struct ffly_compiler *__compiler, struct ffly_vec *__vec) {
 	}
 
 	ff_err_t err = FFLY_SUCCESS;
-	struct token *tok = peek_token(__compiler);
-	while(!is_keyword(tok, _r_brace)) {
-		struct node *_node = NULL;
-		if (is_type(__compiler, tok)) {
+	struct token *tok;
+	struct node *_node;
+	struct node **p;
+_again:
+	tok = peek_token(__compiler);
+	if (is_keyword(tok, _r_brace)) {
+		sktok(__compiler);
+		goto _end;
+	}
+
+	if (is_type(__compiler, tok)) {
+		if (_err(err = parser_decl(__compiler, &_node))) {
+			errmsg("failed to read decl.\n");
+			goto _end;
+		}
+	} else if (tok->kind == _tok_keywd) {
+		if (tok->id == _k_print) {
+			if (_err(err = parser_print_call(__compiler, &_node))) {
+				errmsg("failed to read print call.\n");
+				goto _end;
+			}
+		} else if (tok->id == _colon) {
+			if (_err(err = parser_call(__compiler, &_node))) {
+				errmsg("failed to read call.\n");
+				goto _end;
+			}
+		} else if (tok->id >= _k_uint_t && tok->id <= _k_i8_t) {
 			if (_err(err = parser_decl(__compiler, &_node))) {
 				errmsg("failed to read decl.\n");
-				break;
+				goto _end;
 			}
-		} else if (tok->kind == _tok_keywd) {
-			if (tok->id == _k_print) {
-				if (_err(err = parser_print_call(__compiler, &_node))) {
-					errmsg("failed to read print call.\n");
-					break;
+		} else {
+			if (is_stmt(tok) || tok->id == _k_ret || tok->id == _k_brk) {
+				if (_err(err = parser_stmt(__compiler, &_node))) {
+					errmsg("failed to read statment.\n");
+					goto _end;
 				}
-			} else if (tok->id == _colon) {
-				if (_err(err = parser_call(__compiler, &_node))) {
-					errmsg("failed to read call.\n");
-					break;
-				}
-			} else if (tok->id >= _k_uint_t && tok->id <= _k_i8_t) {
-				if (_err(err = parser_decl(__compiler, &_node))) {
-					errmsg("failed to read decl.\n");
-					break;
-				}
-			} else {
-				if (is_stmt(tok) || tok->id == _k_ret || tok->id == _k_brk) {
-					if (_err(err = parser_stmt(__compiler, &_node))) {
-						errmsg("failed to read statment.\n");
-						break;
-					}
-				}
-			}
-		} else if (tok->kind == _tok_ident) {
-			if (_err(err = parser_expr(__compiler, &_node))) {
-				errmsg("failed to read expression.\n");
-				break;
-			}
-
-			if (!expect_token(__compiler, _tok_keywd, _semicolon)) {
-				errmsg("expect error.\n");
-				break;
 			}
 		}
-
-		struct node **p;
-		ffly_vec_push_back(__vec, (void**)&p);
-		*p = _node;
-
-		tok = peek_token(__compiler);
+	} else if (tok->kind == _tok_ident) {
+		if (_err(err = parser_expr(__compiler, &_node))) {
+			errmsg("failed to read expression.\n");
+			goto _end;
+		}
+		if (!expect_token(__compiler, _tok_keywd, _semicolon)) {
+			errmsg("expect error.\n");
+			goto _end;
+		}
 	}
+
+	ffly_vec_push_back(__vec, (void**)&p);
+	*p = _node;
+	goto _again;
+_end:
 	if (_err(err)) _ret;
-	sktok(__compiler);
 	retok;
 }
 
@@ -1023,7 +1026,7 @@ parser_func_call(struct ffly_compiler *__compiler, struct node **__node, struct 
 
 	struct node **arg = (struct node**)ffly_vec_begin(&__call->args);
 	if (!next_token_is(__compiler, _tok_keywd, _r_paren)) {
-		_next:
+	_next:
 		{
 			struct node *param;
 			if (_err(err = parser_expr(__compiler, &param))) {
@@ -1083,7 +1086,7 @@ parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
 	}
 
 	if (!next_token_is(__compiler, _tok_keywd, _r_paren)) {
-		_next:
+	_next:
 		if (next_token_is(__compiler, _tok_keywd, _ellipsis)) {
 			va = 1;
 			goto _sk;
@@ -1117,7 +1120,7 @@ parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
 			}
 		}
 
-		_sk:
+	_sk:
 		if (!expect_token(__compiler, _tok_keywd, _r_paren)) {
 			errmsg("expect error.\n");
 			reterr;
@@ -1155,12 +1158,17 @@ parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
 
 ff_bool_t
 is_func_call(struct ffly_compiler *__compiler) {
-	struct token *name = next_token(__compiler);
-	struct token *l_paren = next_token(__compiler);
-	if (!name || !l_paren) return 0;
-	ff_u8_t res = !(name->kind != _tok_ident || !is_keyword(l_paren, _l_paren));
+	struct token *name, *l_paren;
+	ff_u8_t res = 0;	
+	if (!(name = next_token(__compiler)))
+		goto _r0;
+	if (!(l_paren = next_token(__compiler)))
+		goto _r1;
+	res = !(name->kind != _tok_ident || !is_keyword(l_paren, _l_paren));
 	ffly_ulex(__compiler, l_paren);
+_r1:
 	ffly_ulex(__compiler, name);
+_r0:
 	return res;
 }
 
@@ -1218,7 +1226,7 @@ parser_call(struct ffly_compiler *__compiler, struct node **__node) {
 	ffly_vec_set_flags(&params, VEC_AUTO_RESIZE);
 	ffly_vec_init(&params, sizeof(struct node*));
 	if (!next_token_is(__compiler, _tok_keywd, _r_brace)) {
-		_next:
+	_next:
 		{
 			struct node *param;
 			if (_err(err = parser_expr(__compiler, &param))) {
