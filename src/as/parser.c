@@ -32,7 +32,7 @@ symbolp parse(char *__s) {
 	if (dir) {
 		p++; //space
 		bufp = buf;
-		while(*p >= 'a' && *p <= 'z')
+		while((*p >= 'a' && *p <= 'z') || *p == '_' || (*p >= '0' && *p <= '9'))
 			*(bufp++) = *(p++);
 		*bufp = '\0';
 		s = _memdup(buf, (len = (bufp-buf))+1);
@@ -43,7 +43,7 @@ symbolp parse(char *__s) {
 	}
 
 	bufp = buf;
-	while((*p >= 'a' && *p <= 'z') | *p == '_' | (*p >= '0' && *p <= '9'))
+	while((*p >= 'a' && *p <= 'z') || *p == '_' || (*p >= '0' && *p <= '9'))
 		*(bufp++) = *(p++);
 	*bufp = '\0';
 

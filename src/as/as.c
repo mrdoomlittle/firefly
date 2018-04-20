@@ -180,9 +180,10 @@ assemble(char *__p, char *__end) {
 				} else if (!strcmp(sy->p, "entry") && epdeg<0) {
 					epdeg = 0;
 					ep = sy->next->p;
-				} else if (!strcmp(sy->p, "globl"))
+				} else if (!strcmp(sy->p, "globl")) {
 					*(globl++) = sy->next->p;
-				else if (!strcmp(sy->p, "segment")) {
+					printf("-->symbol: %s\n", sy->next->p);
+				} else if (!strcmp(sy->p, "segment")) {
 					segmentp sg = (segmentp)_alloca(sizeof(struct segment));
 					sg->name = sy->next->p;
 					sg->next = curseg;
@@ -206,7 +207,7 @@ assemble(char *__p, char *__end) {
 				} else if (!strcmp(sy->p, "extern")) {
 					labelp la = (labelp)_alloca(sizeof(struct label));
 					la->flags = LA_LOOSE;
-					la->s = (char const*)_memdup(sy->next->p, sy->next->len);
+					la->s = (char const*)_memdup(sy->next->p, sy->next->len+1);
 					hash_put(&env, sy->next->p, sy->next->len, la);
 					printf("extern %s\n", sy->next->p);
 					*(extrn++) = sy->next->p;

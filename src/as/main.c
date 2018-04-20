@@ -49,7 +49,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		return -1;
 	}
 
-	if ((out = open(outfile, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU)) == -1) {
+	if ((out = open(outfile, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR)) == -1) {
 		return -1;
 	}
 

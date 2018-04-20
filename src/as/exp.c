@@ -37,7 +37,7 @@ symbolp eval(char *__s) {
 				if (*p >= 'a' && *p <= 'z') {
 					ff_uint_t l;
 					bufp = buf;
-					while((*p >= 'a' && *p <= 'z') | *p == '_' | (*p >= '0' && *p <= '9'))
+					while((*p >= 'a' && *p <= 'z') || *p == '_' || (*p >= '0' && *p <= '9'))
 						*(bufp++) = *(p++);
 					*bufp = '\0';
 					l = bufp-buf;
@@ -68,7 +68,7 @@ symbolp eval(char *__s) {
 				} else if (*p >= 'a' && *p <= 'z') {
 					ff_uint_t l;
 					bufp = buf;
-					while((*p >= 'a' && *p <= 'z') | *p == '_' | (*p >= '0' && *p <= '9'))
+					while((*p >= 'a' && *p <= 'z') || *p == '_' || (*p >= '0' && *p <= '9'))
 						*(bufp++) = *(p++);
 					*bufp = '\0';
 					l = bufp-buf;
