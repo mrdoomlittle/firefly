@@ -5,10 +5,61 @@
 # include "../dep/mem_cpy.h"
 # include "../dep/str_cpy.h"
 # include "../memory/mem_free.h"
+# include "../system/string.h"
 void emit(ff_compilerp, struct node*);
 void static
 out_s(ff_compilerp __compiler, char const *__s) {
 	__compiler->out(__s, ffly_str_len(__s));
+}
+
+/*
+	real address = %sp-s_adr
+*/
+ff_uint_t static s_off = 0;
+
+# define s_off_dec(__by) s_off-=__by
+# define s_off_inc(__by) s_off+=__by
+
+void static
+op(ff_compilerp __compiler, char const *__op, char const *__l, char const *__r, char const *__fr) {
+	char buf[128];
+	char *p = buf;
+	p+=ffly_str_cpy(p, __op);
+	if (!__l)
+		goto _sk;
+	*(p++) = ' ';
+	p+=ffly_str_cpy(p, __l);
+	if (!__r)
+		goto _sk;
+	*(p++) = ',';
+	*(p++) = ' ';
+	p+=ffly_str_cpy(p, __r);
+	if (!__fr)
+		goto _sk;
+	*(p++) = ',';
+	*(p++) = ' ';
+	p+=ffly_str_cpy(p, __fr);
+_sk:
+	*p = '\n';
+	__compiler->out(buf, (p-buf)+1);
+}
+
+void push(ff_compilerp __compiler, ff_u8_t __l) {
+	char buf[128];
+	ffly_nots(__l, buf);
+	op(__compiler, "asq", "%rlx", buf, NULL);
+	op(__compiler, "subq", "%sp", "%rlx", "%sp");
+	op(__compiler, "ldq", "%sp", "%rax", NULL);
+	s_off_inc(__l);
+}
+
+void pop(ff_compilerp __compiler, ff_u8_t __l) {
+	char buf[128];
+	ffly_nots(__l, buf);
+	op(__compiler, "stq", "%sp", "%rax", NULL);
+	op(__compiler, "asq", "%rlx", buf, NULL);
+	op(__compiler, "addq", "%sp", "%rlx", "%sp");
+	s_off_dec(__l);
 }
 
 void static
@@ -69,8 +120,94 @@ emit_func_call(ff_compilerp __compiler, struct node *__node) {
 	__compiler->out(buf, (p-buf)+1);
 }
 
+void emit_decl(ff_compilerp __compiler, struct node *__node) {
+	s_off_inc(__node->var->_type->size);
+	__node->var->s_off = s_off;
+}
+
+void emit_assign(ff_compilerp __compiler, struct node *__node) {
+	emit(__compiler, __node->r);
+	char buf[128];
+	ffly_nots(__node->l->s_off, buf);
+	op(__compiler, "asq", "%rlx", buf, NULL);
+	op(__compiler, "subq", "%sp", "%rlx", "%rlx");
+	switch(__node->r->_type->size) {
+		case 1:
+			op(__compiler, "ldb", "%rlx", "%al", NULL);
+		break;
+		case 2:
+			op(__compiler, "ldw", "%rlx", "%ax", NULL);
+		break;
+		case 4:
+			op(__compiler, "ldd", "%rlx", "%eax", NULL);
+		break;
+		case 8:
+			op(__compiler, "ldq", "%rlx", "%rax", NULL);
+		break;
+	}
+}
+
+void emit_literal(ff_compilerp __compiler, struct node *__node) {
+	switch(__node->_type->size) {
+		case 1:
+			op(__compiler, "asb", "%al", __node->p, NULL);
+		break;
+		case 2:
+			op(__compiler, "asw", "%ax", __node->p, NULL);
+		break;
+		case 4:
+			op(__compiler, "asd", "%eax", __node->p, NULL);
+		break;
+		case 8:
+			op(__compiler, "asq", "%rax", __node->p, NULL);
+		break;
+	}
+}
+
+void emit_out(ff_compilerp __compiler, struct node *__node) {
+	emit(__compiler, __node->var);
+	switch(__node->var->_type->size) {
+		case 1:
+			op(__compiler, "outb", "%al", __node->p, NULL);
+		break;
+		case 2:
+			op(__compiler, "outw", "%ax", __node->p, NULL);
+		break;
+		case 4:
+			op(__compiler, "outd", "%eax", __node->p, NULL);
+		break;
+		case 8:
+			op(__compiler, "outq", "%rax", __node->p, NULL);
+		break;
+	}
+}
+
+void emit_var(ff_compilerp __compiler, struct node *__node) {
+	char buf[128];
+	ffly_nots(__node->s_off, buf);
+	op(__compiler, "asq", "%rlx", buf, NULL);
+	op(__compiler, "subq", "%sp", "%rlx", "%rlx");
+	switch(__node->_type->size) {
+		case 1:
+			op(__compiler, "stb", "%rlx", "%al", NULL);
+		break;
+		case 2:
+			op(__compiler, "stw", "%rlx", "%ax", NULL);
+		break;
+		case 4:
+			op(__compiler, "std", "%rlx", "%eax", NULL);
+		break;
+		case 8:
+			op(__compiler, "stq", "%rlx", "%rax", NULL);
+		break;
+	}
+}
+
 void emit(ff_compilerp __compiler, struct node *__node) {
 	switch(__node->kind) {
+		case _ast_var:
+			emit_var(__compiler, __node);
+		break;
 		case _ast_func:
 			emit_func(__compiler, __node);
 		break;
@@ -82,6 +219,18 @@ void emit(ff_compilerp __compiler, struct node *__node) {
 		break;
 		case _ast_func_call:
 			emit_func_call(__compiler, __node);
+		break;
+		case _ast_decl:
+			emit_decl(__compiler, __node);
+		break;
+		case _ast_assign:
+			emit_assign(__compiler, __node);
+		break;
+		case _ast_literal:
+			emit_literal(__compiler, __node);
+		break;
+		case _ast_out:
+			emit_out(__compiler, __node);
 		break;
 	}
 }

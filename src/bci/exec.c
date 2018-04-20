@@ -27,11 +27,19 @@ set_ip(ff_addr_t __to) {
 	ip = __to;
 }
 
+struct ffly_bci ctx;
 void* ring(ff_u8_t __no, void *__argp) {
+	switch(__no) {
+		case 0: {// set stack pointer
+			ff_u64_t sp = ctx.stack_size;
+			ffly_bci_sst(&ctx, &sp, 0, sizeof(ff_u64_t));
+			break;
+		}
+	}
 	printf("ring ring hello?\n");
 }
 
-static struct ffly_bci ctx = {
+struct ffly_bci ctx = {
 	.stack_size = 200,
 	.fetch_byte = fetch_byte,
 	.ip_incr = ip_incr,

@@ -20,6 +20,12 @@ outb %ll
 ret
 .globl main
 main:
+asb %al, 212
+movq %sp, %rlx
+stb %rlx, %al
+movq %sp, %rlx
+ldb %rlx, %al
+outb %al
 asb %ll, 21
 call $ts0
 ret

@@ -1,23 +1,37 @@
-	.file	"test.c"
-	.text
-	.globl	main
-	.type	main, @function
-main:
-.LFB0:
-	.cfi_startproc
-	pushq	%rbp
-	.cfi_def_cfa_offset 16
-	.cfi_offset 6, -16
-	movq	%rsp, %rbp
-	.cfi_def_cfa_register 6
-	movl	$0, %eax
-	call	test@PLT
-	movl	$0, %eax
-	popq	%rbp
-	.cfi_def_cfa 7, 8
-	ret
-	.cfi_endproc
-.LFE0:
-	.size	main, .-main
-	.ident	"GCC: (Debian 6.3.0-18+deb9u1) 6.3.0 20170516"
-	.section	.note.GNU-stack,"",@progbits
+.region text
+.globl _exit
+_exit:
+asb %al, 0
+exit %al
+.globl _start
+_start:
+rin 0
+asb %al, 21
+asq %rlx, 1
+subq %sp, %rlx, %rlx
+ldb %rlx, %al
+asb %al, 31
+asq %rlx, 2
+subq %sp, %rlx, %rlx
+ldb %rlx, %al
+asb %al, 41
+asq %rlx, 3
+subq %sp, %rlx, %rlx
+ldb %rlx, %al
+asq %rlx, 1
+subq %sp, %rlx, %rlx
+stb %rlx, %al
+outb %al
+asq %rlx, 2
+subq %sp, %rlx, %rlx
+stb %rlx, %al
+outb %al
+asq %rlx, 3
+subq %sp, %rlx, %rlx
+stb %rlx, %al
+outb %al
+asq %rlx, 3
+subq %sp, %rlx, %rlx
+stb %rlx, %al
+outb %al
+.endof

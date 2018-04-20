@@ -11,23 +11,23 @@ typedef struct {
 	ff_uint_t addr;
 } reginfo;
 
-# define rax_rg 0x0
-# define eax_rg 0x1
-# define ax_rg 0x2
-# define al_rg 0x3
+# define sp_rg 0x0
+# define bp_rg 0x1
 
-# define rlx_rg 0x4
-# define elx_rg 0x5
-# define lx_rg 0x6
-# define ll_rg 0x7
+# define rax_rg 0x2
+# define eax_rg 0x3
+# define ax_rg 0x4
+# define al_rg 0x5
 
-# define rel_rg 0x8
-# define ael_rg 0x9
-# define el_rg 0xa
-# define ae_rg 0xb
+# define rlx_rg 0x6
+# define elx_rg 0x7
+# define lx_rg 0x8
+# define ll_rg 0x9
 
-# define sp_rg 0xc
-# define bp_rg 0xd
+# define rel_rg 0xa
+# define ael_rg 0xb
+# define el_rg 0xc
+# define ae_rg 0xd
 
 void oust_addr(ff_addr_t __addr) {
 	oust((ff_u8_t*)&__addr, sizeof(ff_addr_t));
@@ -35,10 +35,10 @@ void oust_addr(ff_addr_t __addr) {
 
 
 reginfo reg[] = {
-	{"rax", 8, 0},	{"eax", 4, 0},	{"ax", 2, 0},	{"al", 1, 0},
-	{"rlx", 8, 8},	{"elx", 4, 8},	{"lx", 2, 8},	{"ll", 1, 8},
-	{"rel", 8, 16},	{"ael", 4, 16},	{"el", 2, 16},	{"ae", 1, 16},
-	{"sp", 8, 24},	{"bp", 8, 32},
+	{"sp", 8, 0},  {"bp", 8, 8},
+	{"rax", 8, 16},	{"eax", 4, 16},	{"ax", 2, 16},	{"al", 1, 16},
+	{"rlx", 8, 24},	{"elx", 4, 24},	{"lx", 2, 24},	{"ll", 1, 24},
+	{"rel", 8, 32},	{"ael", 4, 32},	{"el", 2, 32},	{"ae", 1, 32},
 };
 
 /*
@@ -244,18 +244,43 @@ void emit_asq(insp __ins) {
 	op_asq(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_u64_t*)__ins->r->p);
 }
 
-void emit_ldb(insp __ins) {
-	oustbyte(__ins->op);
-	oustbyte(1);
-	oust_addr(*(ff_addr_t*)__ins->r->p);
-	oust_addr(*(ff_addr_t*)__ins->l->p);
+void op_ld(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt) {
+	oustbyte(__op);
+	oustbyte(__l);
+	oust_addr(__lt);
+	oust_addr(__rt);
 }
 
+void op_st(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt) {
+	oustbyte(__op);
+	oustbyte(__l);
+	oust_addr(__lt);
+	oust_addr(__rt);
+}
+
+void emit_ldq(insp __ins) {
+	op_ld(__ins->op, 8, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+}
+
+void emit_ldb(insp __ins) {
+	op_ld(__ins->op, 1, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+}
+
+
 void emit_stb(insp __ins) {
-	oustbyte(__ins->op);
-	oustbyte(1);
-	oust_addr(*(ff_addr_t*)__ins->r->p);
-	oust_addr(*(ff_addr_t*)__ins->l->p);
+	op_st(__ins->op, 1, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+}
+
+void emit_stw(insp __ins) {
+	op_st(__ins->op, 2, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+}
+
+void emit_std(insp __ins) {
+	op_st(__ins->op, 4, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+}
+
+void emit_stq(insp __ins) {
+	op_st(__ins->op, 8, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
 }
 
 void emit_outb(insp __ins) {
@@ -288,7 +313,7 @@ emit_jmp(insp __ins) {
 void static
 emit_rin(insp __ins) {
 	oustbyte(__ins->op);
-	oust_addr(*(ff_addr_t*)__ins->l->p);
+	oustbyte(*(ff_u8_t*)__ins->l->p);
 }
 
 void static
@@ -449,8 +474,12 @@ struct ins *bc[] = {
 	&(struct ins){"asw", NULL, emit_asw, NULL, NULL, _op_as},
 	&(struct ins){"asd", NULL, emit_asd, NULL, NULL, _op_as},
 	&(struct ins){"asq", NULL, emit_asq, NULL, NULL, _op_as},
+	&(struct ins){"ldq", NULL, emit_ldq, NULL, NULL, _op_ld},
 	&(struct ins){"ldb", NULL, emit_ldb, NULL, NULL, _op_ld},
 	&(struct ins){"stb", NULL, emit_stb, NULL, NULL, _op_st},
+	&(struct ins){"stw", NULL, emit_stb, NULL, NULL, _op_st},
+	&(struct ins){"std", NULL, emit_stb, NULL, NULL, _op_st},
+	&(struct ins){"stq", NULL, emit_stq, NULL, NULL, _op_st},
 	&(struct ins){"outb", NULL, emit_outb, NULL, NULL, _op_out},
 	&(struct ins){"jmp", NULL, emit_jmp, NULL, NULL, _op_jmp},
 	&(struct ins){"rin", NULL, emit_rin, NULL, NULL, _op_rin},
@@ -461,6 +490,9 @@ struct ins *bc[] = {
 	&(struct ins){"subd", NULL, emit_armd, NULL, NULL, _op_sub},
 	&(struct ins){"subq", NULL, emit_armq, NULL, NULL, _op_sub},
 	&(struct ins){"addb", NULL, emit_armb, NULL, NULL, _op_add},
+	&(struct ins){"addw", NULL, emit_armw, NULL, NULL, _op_add},
+	&(struct ins){"addd", NULL, emit_armd, NULL, NULL, _op_add},
+	&(struct ins){"addq", NULL, emit_armq, NULL, NULL, _op_add},
 	&(struct ins){"incb", NULL, emit_incb, NULL, NULL, _op_inc},
 	&(struct ins){"decb", NULL, emit_decb, NULL, NULL, _op_dec},
 	&(struct ins){"cmpb", NULL, emit_cmpb, NULL, NULL, _op_cmp},

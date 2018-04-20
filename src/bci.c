@@ -102,8 +102,8 @@ get(ffly_bcip __bci, ff_u8_t *__dst, ff_u8_t __n, ff_err_t *__err) {
 }
 
 void*
-ffly_bci_resolv_adr(ffly_bcip __bci, ff_addr_t __addr) {
-	return (void*)(__bci->stack+__addr);
+ffly_bci_resolv_adr(ffly_bcip __bci, ff_addr_t __adr) {
+	return (void*)(__bci->stack+__adr);
 }
 
 void _exit();
@@ -201,7 +201,6 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 				dst = lt+rt;
 			break;
 		}
-
 		stack_put(__bci, (ff_u8_t*)&dst, l, dst_adr);
 	}
 	fi;
@@ -293,22 +292,28 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 	}
 	next;
 
-	__asm__("_ld:\n\t");
+	__asm__("_ld:\n\t"); // from ??? to stack
 	{
 		ff_u8_t l = get_8l(__bci, &err);
 		ff_addr_t dst = get_addr(__bci, &err);
 		ff_addr_t src = get_addr(__bci, &err);
-		void *p = ffly_bci_resolv_adr(__bci, dst);
+		ff_addr_t adr;
+		stack_get(__bci, (ff_u8_t*)&adr, sizeof(ff_addr_t), dst);
+
+		void *p = ffly_bci_resolv_adr(__bci, adr);
 		stack_get(__bci, (ff_u8_t*)p, l, src);
 	}
 	fi;
 
-	__asm__("_st:\n\t");
+	__asm__("_st:\n\t"); // from stack to ???
 	{
 		ff_u8_t l = get_8l(__bci, &err);
 		ff_addr_t src = get_addr(__bci, &err);
 		ff_addr_t dst = get_addr(__bci, &err);
-		void *p = ffly_bci_resolv_adr(__bci, src);
+		ff_addr_t adr;
+		stack_get(__bci, (ff_u8_t*)&adr, sizeof(ff_addr_t), src);
+
+		void *p = ffly_bci_resolv_adr(__bci, adr);
 		stack_put(__bci, (ff_u8_t*)p, l, dst);
 	}
 	fi;
@@ -337,7 +342,7 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 		ff_addr_t addr = get_addr(__bci, &err);
 		ff_u64_t val = 0;
 		stack_get(__bci, (ff_u8_t*)&val, l, addr);
-		ffly_printf("%u\n", val);
+		ffly_printf("out: %u\n", val);
 	}
 	fi;
 

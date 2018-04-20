@@ -27,6 +27,7 @@ typedef struct segment {
 	struct ffef_seg_hdr hdr;
 } *segmentp;
 
+// stack segments
 static segmentp ss = NULL;
 
 void static
@@ -88,6 +89,7 @@ void ffexecf(char const *__file) {
 		goto _corrupt;
 	}
 
+	// program segments
 	segmentp ps = NULL;
 	ff_uint_t size = 0;
 

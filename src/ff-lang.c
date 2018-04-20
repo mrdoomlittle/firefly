@@ -13,6 +13,8 @@ char const static *keywords[] = {
 	"as",
 	"void",
 	"ret",
+	"u8_t",
+	"out",
 	NULL
 };
 

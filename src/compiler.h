@@ -163,6 +163,7 @@ enum {
     _k_if,
     _k_fn,
 	_k_as,
+	_k_out,
     _k_extern,
     _k_struct,
     _k_exit,
@@ -210,7 +211,8 @@ enum {
     _op_sub,
     _op_mul,
     _op_div,
-	_ast_as
+	_ast_as,
+	_ast_out
 };
 
 enum {
@@ -255,6 +257,7 @@ struct node {
     ff_bool_t va;
 	ffly_vecp _block;
 	ff_u8_t flags;
+	ff_uint_t s_off;
 	struct ffly_vec fields;
 };
 

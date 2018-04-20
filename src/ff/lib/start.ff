@@ -1,5 +1,8 @@
 void main();
 void _start() {
+	// set up stack
+	as("asb %al, 0\n");
+	as("rin %al\n");
 	main();
 	as("exit %ll\n");
 }

@@ -1,0 +1,25 @@
+u8_t a;
+u8_t b;
+u8_t c;
+
+void _exit();
+
+/* entry point
+*/
+void _start() {
+	as("rin 0\n");
+	a = 21;
+	b = 31;
+	c = 41;
+	out(a);
+	out(b);
+	out(c);
+	_exit2();
+}
+
+/* exit out of program
+*/
+void _exit() {
+	as("asb %al, 0\n");
+	as("exit %al\n");
+}
