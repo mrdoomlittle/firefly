@@ -235,6 +235,11 @@ enum {
 # define _flg_gt 0x4
 # define _flg_lt 0x8
 
+# define _func_exr 0x1
+# define _func_gbl 0x2
+# define _func_lca 0x4
+# define _func_def 0x8
+// clean up
 struct node {
     ff_u8_t kind, op;
     struct type *_type, *to;
@@ -248,7 +253,9 @@ struct node {
     ffly_pair pair;
     void *p;
     ff_bool_t va;
-    struct ffly_vec fields;
+	ffly_vecp _block;
+	ff_u8_t flags;
+	struct ffly_vec fields;
 };
 
 struct token {

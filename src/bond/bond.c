@@ -265,7 +265,7 @@ void absorb_relocate(ffef_relp __rel) {
 	relocatep rel = (relocatep)malloc(sizeof(struct relocate));
 	rel->next = currel;
 	currel = rel;
-	rel->offset = __rel->offset;
+	rel->offset = bot+__rel->offset;
 	rel->l = __rel->l;
 	rel->sy = *(syt-__rel->sy);
 	printf("reloc: symbol, %s\n", rel->sy->name);

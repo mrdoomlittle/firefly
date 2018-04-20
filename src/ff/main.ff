@@ -4,10 +4,10 @@ void ts1();
 void ts2();
 void ts3();
 
-void _start() {
+void main() {
 	as("asb %ll, 21\n");
 	ts0();
-	as("exit %ll\n");
+	return;
 }
 
 void ts0() {

@@ -9,13 +9,13 @@
 # include "../malloc.h"
 # include "../stdio.h"
 # include "../depart.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	if (__argc<2) {
 		printf("please provide binfile.\n");
 		reterr;
 	}
 
-	mdl_u64_t beg = 0, size = 0;
+	ff_u64_t beg = 0, size = 0;
 	if (__argc>2) {
 		struct ffpcll pcl;
 		ffoe_prep();
@@ -42,7 +42,7 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 			size-=beg;
 	}
 
-	mdl_u8_t *p = (mdl_u8_t*)malloc(size);
+	ff_u8_t *p = (ff_u8_t*)malloc(size);
 	if (beg>0)
 		lseek(fd, beg, SEEK_SET);
 	read(fd, p, size);

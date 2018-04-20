@@ -53,7 +53,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		reterr;
 	}
 
-	if ((fd = open(outfile, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU)) == -1) {
+	if ((fd = open(outfile, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR)) == -1) {
 		ffly_printf("failed to open file.\n");
 		reterr;
 	}

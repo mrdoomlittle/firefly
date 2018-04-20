@@ -1,7 +1,7 @@
 # define __ffly_compiler_internal
 # define __ffly_parser
 # include "../compiler.h"
-
+# include "../memory/mem_alloc.h"
 ffly_mapp ffc_get_env(struct ffly_compiler*);
 void ffc_build_node(struct ffly_compiler*, struct node**, struct node*);
 void ffc_build_type(struct ffly_compiler*, struct type**, struct type*);
@@ -24,8 +24,8 @@ struct type static *u8_t = &(struct type){.kind=_u8_t, .size=1};
 struct type static *i8_t = &(struct type){.kind=_i8_t, .size=1};
 
 void static
-ast_func(ff_compilerp __compiler, struct node **__node, char const *__name, ffly_vecp __block) {
-	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_func, .block=*__block});
+ast_func(ff_compilerp __compiler, struct node **__node, char const *__name, ffly_vecp __block, ff_u8_t __flags) {
+	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_func, ._block=__block, .flags=__flags});
 	(*__node)->p = (void*)__name;
 }
 
@@ -156,23 +156,25 @@ parser_func(ff_compilerp __compiler, struct node **__node) {
 
 	}
 
-	struct ffly_vec block;
+	ff_u8_t flags = _func_gbl|_func_def;
+	ffly_vecp block = NULL;
 	if (!next_token_is(__compiler, _tok_keywd, _semicolon)) {
-		ffly_vec_set_flags(&block, VEC_AUTO_RESIZE);
-		ffly_vec_init(&block, sizeof(struct node*));
-		parser_compound_stmt(__compiler, &block);
-
-		vec_cleanup(__compiler, &block);
+		block = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));	
+		ffly_vec_set_flags(block, VEC_AUTO_RESIZE);
+		ffly_vec_init(block, sizeof(struct node*));
+		parser_compound_stmt(__compiler, block);
 
 		struct node *nod;
 		ff_err_t err;
 		if ((nod = (struct node*)ffly_map_get(&__compiler->env, name->p, ffly_str_len((char*)name->p), &err)) != NULL) {
-			nod->block = block;
+			nod->_block = block;
+			nod->flags = flags;
 			goto _end;
 		}
-	}
+	} else
+		flags = _func_exr;
 
-	ast_func(__compiler, __node, name->p, &block);
+	ast_func(__compiler, __node, name->p, block, flags);
 	ffly_map_put(&__compiler->env, name->p, ffly_str_len((char*)name->p), *__node);
 _end:
 	retok;

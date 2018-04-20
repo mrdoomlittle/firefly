@@ -4,7 +4,7 @@
 # include "../dep/str_len.h"
 # include "../dep/mem_cpy.h"
 # include "../dep/str_cpy.h"
-
+# include "../memory/mem_free.h"
 void emit(ff_compilerp, struct node*);
 void static
 out_s(ff_compilerp __compiler, char const *__s) {
@@ -19,17 +19,35 @@ emit_as(ff_compilerp __compiler, struct node *__node) {
 void static
 emit_func(ff_compilerp __compiler, struct node *__node) {
 	char buf[128];
-	ff_uint_t l;
-	l = ffly_str_cpy(buf, __node->p);
-	*(buf+l) = ':';
-	*(buf+l+1) = '\n';
-	__compiler->out(buf, l+2);
+	char *p = buf;
 
-	struct node **itr;
-	___ffly_vec_nonempty(&__node->block) {
-		itr = (struct node**)ffly_vec_begin(&__node->block);
-		while(itr <= (struct node**)ffly_vec_end(&__node->block))
-			emit(__compiler, *(itr++));
+	ff_u8_t *flags = &__node->flags;
+	if ((*flags&_func_gbl)>0)
+		p+=ffly_str_cpy(p, ".globl");
+	else if ((*flags&_func_exr)>0)
+		p+=ffly_str_cpy(p, ".extern");
+	*(p++) = ' ';
+	p+=ffly_str_cpy(p, __node->p);
+	*p = '\n';
+	__compiler->out(buf, (p-buf)+1);
+
+	if ((*flags&_func_def)>0) {
+		p = buf;
+		p+=ffly_str_cpy(p, __node->p);
+		*(p++) = ':';
+		*p = '\n';
+		__compiler->out(buf, (p-buf)+1);
+
+		struct node **itr;
+		if (__node->_block != NULL) {
+			___ffly_vec_nonempty(__node->_block) {
+				itr = (struct node**)ffly_vec_begin(__node->_block);
+				while(itr <= (struct node**)ffly_vec_end(__node->_block))
+					emit(__compiler, *(itr++));
+			}
+			ffly_vec_de_init(__node->_block);
+			__ffly_mem_free(__node->_block);
+		}
 	}
 }
 
