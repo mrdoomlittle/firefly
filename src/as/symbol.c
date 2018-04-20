@@ -52,7 +52,6 @@ void syt_gut() {
 		sy.name = stt(cur->p, cur->len);
 		sy.type = cur->type;
 		sy.reg = 0;
-		sy.offset = 0;
 		if (is_sylabel(cur)) {
 			labelp la = (labelp)hash_get(&env, cur->p, cur->len);
 			sy.reg = la->reg->no;  
