@@ -67,7 +67,8 @@ struct keywd;
 typedef struct ffly_compiler {
 	void *ret_type;
     struct ffly_map env, macros;
-    struct ffly_map *local;
+    ffly_mapp local;
+	ffly_vecp var_pond;
     void *frame, *ret_to;
     void *brk[20], **brkp;
 
@@ -82,8 +83,6 @@ typedef struct ffly_compiler {
     struct ffly_vec to_free;
 
 	ff_u8_t lang;
-	char curdir[PATH_MAX];
-
 	struct ff_lexer lexer;
 
 	void(*out)(void*, ff_uint_t);
@@ -195,6 +194,7 @@ struct node {
 	ffly_vecp _block;
 	ff_u8_t flags;
 	ff_uint_t s_off;
+	struct ffly_vec var_pond;
 	struct ffly_vec fields;
 };
 

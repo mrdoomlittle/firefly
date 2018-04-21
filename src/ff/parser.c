@@ -37,8 +37,8 @@ ast_var(struct ffly_compiler *__compiler, struct node **__node, struct type *__t
 }
 
 void static
-ast_func(ff_compilerp __compiler, struct node **__node, char const *__name, ffly_vecp __block, ff_u8_t __flags) {
-	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_func, ._block=__block, .flags=__flags});
+ast_func(ff_compilerp __compiler, struct node **__node, char const *__name, ffly_vecp __block, ff_u8_t __flags, struct ffly_vec __var_pond) {
+	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_func, ._block=__block, .flags=__flags, .var_pond=__var_pond});
 	(*__node)->p = (void*)__name;
 }
 
@@ -93,7 +93,7 @@ parser_primary_expr(ff_compilerp __compiler, struct node **__node) {
 	ff_err_t err;
 	switch(tok->kind) {
 		case _tok_ident:
-			*__node = (struct node*)ffly_map_get(&__compiler->env, tok->p, ffly_str_len((char*)tok->p), &err);
+			*__node = (struct node*)ffly_map_get(ffc_get_env(__compiler), tok->p, ffly_str_len((char*)tok->p), &err);
 		break;
 		case _tok_no:
 			read_no(__compiler, __node, tok->p);
@@ -160,6 +160,12 @@ parser_decl(ff_compilerp __compiler, struct node **__node) {
 	struct node *var = NULL;
 	ast_var(__compiler, &var, _type);
 	ffly_map_put(ffc_get_env(__compiler), name->p, ffly_str_len((char*)name->p), var);
+
+	if (__compiler->var_pond != NULL) {
+		struct node **p;
+		ffly_vec_push_back(__compiler->var_pond, (void**)&p);
+		*p = var;
+	}
 
 	ast_decl(__compiler, __node, var);
 }
@@ -254,7 +260,9 @@ _again:
 		goto _end;
 	}
 
-	if (tok->id == _k_out) 
+	if (is_type(__compiler, tok))
+		parser_decl(__compiler, &nod);
+	else if (tok->id == _k_out) 
 		parser_out_stmt(__compiler, &nod);
 	else if (tok->id == _k_as)
 		parser_as_stmt(__compiler, &nod);
@@ -293,12 +301,28 @@ parser_func(ff_compilerp __compiler, struct node **__node) {
 
 	ff_u8_t flags = _func_gbl|_func_def;
 	ffly_vecp block = NULL;
+	struct ffly_vec var_pond;
 	if (!next_token_is(__compiler, _tok_keywd, _semicolon)) {
 		block = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));	
 		ffly_vec_set_flags(block, VEC_AUTO_RESIZE);
 		ffly_vec_init(block, sizeof(struct node*));
-		parser_compound_stmt(__compiler, block);
 
+		struct ffly_map local, *pre_local;
+		ffly_map_init(&local, _ffly_map_127);
+
+		pre_local = __compiler->local;
+		__compiler->local = &local;
+
+		ffly_vec_set_flags(&var_pond, VEC_AUTO_RESIZE);
+		ffly_vec_init(&var_pond, sizeof(struct node*));
+		ffly_vecp pre_vars = __compiler->var_pond;
+		__compiler->var_pond = &var_pond;
+
+		parser_compound_stmt(__compiler, block);
+		__compiler->local = pre_local;
+		__compiler->var_pond = pre_vars;
+
+		ffly_map_de_init(&local);
 		struct node *nod;
 		ff_err_t err;
 		if ((nod = (struct node*)ffly_map_get(&__compiler->env, name->p, ffly_str_len((char*)name->p), &err)) != NULL) {
@@ -309,7 +333,7 @@ parser_func(ff_compilerp __compiler, struct node **__node) {
 	} else
 		flags = _func_exr;
 
-	ast_func(__compiler, __node, name->p, block, flags);
+	ast_func(__compiler, __node, name->p, block, flags, var_pond);
 	ffly_map_put(&__compiler->env, name->p, ffly_str_len((char*)name->p), *__node);
 _end:
 	retok;

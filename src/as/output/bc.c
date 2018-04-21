@@ -266,7 +266,6 @@ void emit_ldb(insp __ins) {
 	op_ld(__ins->op, 1, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
 }
 
-
 void emit_stb(insp __ins) {
 	op_st(__ins->op, 1, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
 }
@@ -503,7 +502,6 @@ struct ins *bc[] = {
 	&(struct ins){"movb", NULL, emit_movb, NULL, NULL, _op_mov},
 	&(struct ins){"movw", NULL, emit_movw, NULL, NULL, _op_mov},
 	&(struct ins){"movd", NULL, emit_movd, NULL, NULL, _op_mov},
-	&(struct ins){"movq", NULL, emit_movq, NULL, NULL, _op_mov},
 	&(struct ins){"movq", NULL, emit_movq, NULL, NULL, _op_mov},
 	&(struct ins){"call", NULL, emit_call, NULL, NULL, _op_call},
 	&(struct ins){"ret", NULL, emit_ret, NULL, NULL, _op_ret},

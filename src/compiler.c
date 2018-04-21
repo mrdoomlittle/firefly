@@ -707,6 +707,7 @@ ff_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 		errmsg("failed to initialize map.\n");
 		_ret;
 	}
+	__compiler->var_pond = NULL;
 	__compiler->ret_type = NULL;
 	retok;
 }

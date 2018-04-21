@@ -159,7 +159,7 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 	ff_err_t err;
 
 	__asm__("_next:\n\t");
-	ffly_printf("next op.\n");
+//	ffly_printf("next op.\n");
 	{
 	__bci->ip_off = 0;
 	ff_u8_t opno;	
@@ -167,7 +167,7 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 		//ffly_errmsg("opno invalid, got: %u\n", opno);
 		return FFLY_FAILURE;
 	}
-	ffly_nanosleep(0, 100000000); // <- debug
+	ffly_nanosleep(0, 1000000); // <- debug
 	jmpto(op[opno]);
 
 	__asm__("_arm:\n\t");
@@ -323,6 +323,7 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 		ff_u8_t l = get_8l(__bci, &err);
 		ff_addr_t src = get_addr(__bci, &err);
 		ff_addr_t dst = get_addr(__bci, &err);
+
 		ff_u8_t tmp[8];
 		stack_get(__bci, tmp, l, src);
 		stack_put(__bci, tmp, l, dst);
