@@ -65,6 +65,7 @@ void pop(ff_compilerp __compiler, ff_u8_t __l) {
 void static
 emit_as(ff_compilerp __compiler, struct node *__node) {
 	out_s(__compiler, __node->p);
+	__ffly_mem_free(__node->p);
 }
 
 void static

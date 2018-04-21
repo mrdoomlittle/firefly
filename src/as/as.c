@@ -185,10 +185,10 @@ assemble(char *__p, char *__end) {
 					printf("-->symbol: %s\n", sy->next->p);
 				} else if (!strcmp(sy->p, "segment")) {
 					segmentp sg = (segmentp)_alloca(sizeof(struct segment));
-					sg->name = sy->next->p;
+		//			sg->name = sy->next->p;
 					sg->next = curseg;
 					sg->size = 0;
-					sg->addr = stackadr();
+					sg->adr = stackadr();
 					sg->offset = 0;
 					sg->fresh = sg->buf;
 					curseg = sg;
@@ -267,7 +267,9 @@ void outsegs() {
 	segmentp cur = curseg;
 	while(cur != NULL) {
 		cur->offset = offset;
-		oust(cur->buf, cur->fresh-cur->buf);
+		ff_uint_t size = cur->fresh-cur->buf;
+		if (size>0)
+			oust(cur->buf, size);
 		cur = cur->next;
 	}
 }
@@ -350,7 +352,7 @@ void finalize(void) {
 		segmentp sg = curseg;
 		while(sg != NULL) {
 			struct ffef_seg_hdr seg;
-			seg.adr = sg->addr;
+			seg.adr = sg->adr;
 			seg.offset = sg->offset;
 			seg.sz = sg->size;
 			oust((ff_u8_t*)&seg, ffef_seg_hdrsz);

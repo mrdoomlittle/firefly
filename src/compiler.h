@@ -6,7 +6,8 @@
 # include "system/map.h"
 # include "data/pair.h"
 # include "system/lat.h"
-
+# include "lexer.h"
+# include "linux/limits.h"
 # ifdef __ffly_script
 # ifndef ffc_final
 # define ffc_final(__compiler, __top, __stack) \
@@ -55,7 +56,6 @@ enum {
 */
 typedef struct ffly_compiler_file {
 	ff_byte_t *p, *end;
-	ff_off_t off;
 	char *path;
 	ff_uint_t line, lo;
 } *ffly_compiler_filep;
@@ -80,14 +80,11 @@ typedef struct ffly_compiler {
     struct ffly_map typedefs; 
 	struct ffly_buff sbuf;
     struct ffly_vec to_free;
-    // rename
-	struct ffly_buff iject_buff;
 
-	/*
-		keywords
-	*/
 	ff_u8_t lang;
+	char curdir[PATH_MAX];
 
+	struct ff_lexer lexer;
 
 	void(*out)(void*, ff_uint_t);
 	struct ffly_lat keywd;
@@ -105,13 +102,6 @@ typedef struct keywd {
 
 # include "system/err.h"
 # define errmsg(...) ffly_errmsg(__VA_ARGS__)
-# define _tok_ident 0
-# define _tok_keywd 1
-# define _tok_no 2
-# define _tok_null 3
-# define _tok_str 4
-# define _tok_newline 5
-# define _tok_chr 6
 
 # define ring_parser_func_call(__compiler, ...) \
 	ringup(ff_err_t, __compiler, _parser_func_call, __VA_ARGS__)
@@ -126,59 +116,6 @@ ff_u64_t _ringup(struct ffly_compiler*, ff_u8_t, ...);
 enum {
 	_parser_func_call,
 	_parser_decl_spec
-};
-
-enum {
-    _astrisk,
-    _l_arrow,
-    _r_arrow,
-    _comma,
-    _colon,
-    _eqeq,
-	_eq,
-    _neq,
-    _gt,
-    _lt,
-    _ampersand,
-    _percent,
-    _period,
-	_semicolon,
-	_l_paren,
-	_r_paren,
-    _l_brace,
-    _r_brace,
-    _k_var,
-	_k_print,
-	_k_uint_t,
-	_k_int_t,
-	_k_u64_t,
-	_k_i64_t,
-	_k_u32_t,
-	_k_i32_t,
-	_k_u16_t,
-	_k_i16_t,
-	_k_u8_t,
-	_k_i8_t,
-    _k_void,
-    _k_if,
-    _k_fn,
-	_k_as,
-	_k_out,
-    _k_extern,
-    _k_struct,
-    _k_exit,
-    _k_while,
-    _k_match,
-    _incr,
-    _decr,
-    _k_else,
-    _k_float,
-    _k_typedef,
-    _k_ret,
-    _k_brk,
-    _ellipsis,
-    _plus,
-    _minus
 };
 
 enum {
@@ -261,14 +198,6 @@ struct node {
 	struct ffly_vec fields;
 };
 
-struct token {
-	void *p;
-	ff_u8_t kind, id;
-    ff_uint_t line;
-    ff_off_t off, lo;
-    ff_u8_t is_float, is_hex;
-};
-
 struct type {
 	ff_u8_t kind;
 	ff_uint_t size;
@@ -290,13 +219,8 @@ ff_bool_t is_keyword(struct token*, ff_u8_t);
 ff_bool_t expect_token(struct ffly_compiler*, ff_u8_t, ff_u8_t);
 struct token* next_token(struct ffly_compiler*);
 struct token* peek_token(struct ffly_compiler*);
-// change to lex & ulex without 'ffly_'
-struct token* ffly_lex(struct ffly_compiler*, ff_err_t*);
-void ffly_ulex(struct ffly_compiler*, struct token*);
-
 
 ff_bool_t maybe_keyword(struct ffly_compiler*, struct token*);
-ff_bool_t at_eof(struct ffly_compiler*);
 void pr_tok(struct token*);
 void vec_cleanup(struct ffly_compiler*, struct ffly_vec*);
 void map_cleanup(struct ffly_compiler*, struct ffly_map*);

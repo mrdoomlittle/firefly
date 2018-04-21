@@ -40,10 +40,9 @@ typedef struct label {
 } *labelp;
 
 typedef struct segment {
-	char const *name;
 	struct segment *next;
 	ff_u64_t offset;
-	ff_u64_t addr;
+	ff_u64_t adr;
 	ff_uint_t size;
 	ff_u8_t buf[200];
 	ff_u8_t *fresh;

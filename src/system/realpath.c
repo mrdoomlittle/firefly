@@ -15,7 +15,7 @@ char *ffly_realpath(char const *__path) {
 	if (*p != '.') {
 
 	} else {
-		_again:
+	_again:
 		while(*p != '/') {
 			if (*p == '.') {
 				if (*(p++) == '.') {

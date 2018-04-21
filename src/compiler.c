@@ -13,7 +13,7 @@
 # include "system/nanosleep.h"
 # include "dep/str_cpy.h"
 # include "system/realpath.h"
-
+# include "linux/unistd.h"
 # ifndef __ffc_no_script
 ff_err_t ffc_script_final(struct ffly_compiler*, void**, ff_byte_t**);
 ff_err_t ffc_script_build(struct ffly_compiler*, void**, ff_byte_t**);
@@ -76,9 +76,19 @@ ffly_compiler_ld(struct ffly_compiler *__compiler, char const *__file) {
 	struct ffly_stat st;
 	ffly_fstat(__file, &st);
 
-	__compiler->file->p = (ff_byte_t*)__ffly_mem_alloc(st.size);
-	__compiler->file->end = __compiler->file->p+st.size;
-	ffly_fread(f, __compiler->file->p, st.size);
+	ff_byte_t *p = (ff_byte_t*)__ffly_mem_alloc(st.size);
+	ff_byte_t *end = p+st.size;
+	ffly_compiler_filep file = __compiler->file;
+	ff_lexerp lexer = &__compiler->lexer;
+
+	file->p = p;
+	file->end = end;
+	lexer->p = p;
+	lexer->end = end;
+	lexer->bed = p;
+	lexer->line = &file->line;
+	lexer->lo = &file->lo;
+	ffly_fread(f, p, st.size);
 	ffly_fclose(f);
 	return FFLY_SUCCESS;
 }
@@ -208,7 +218,7 @@ ff_bool_t next_token_is(struct ffly_compiler *__compiler, ff_u8_t __kind, ff_u8_
 	if (!tok) return 0;
 	if (tok->kind == __kind && tok->id == __id)
 		return 1;
-	ffly_ulex(__compiler, tok);
+	ffly_ulex(&__compiler->lexer, tok);
 	return 0;
 }
 
@@ -307,6 +317,9 @@ ff_err_t ffly_compiler_free(struct ffly_compiler *__compiler) {
 	}
 
 	ffly_lat_free(&__compiler->keywd);
+
+	ffly_lexer_cleanup(&__compiler->lexer);
+
 	ff_vec *vec;
 	___ffly_vec_nonempty(&__compiler->vecs) {
 		vec = (ffly_vecp)ffly_vec_begin(&__compiler->vecs);
@@ -341,10 +354,6 @@ ff_err_t ffly_compiler_free(struct ffly_compiler *__compiler) {
 		errmsg("failed to de-init vector.\n");
 	}
 
-	if (_err(err = ffly_buff_de_init(&__compiler->iject_buff))) {
-		errmsg("failed to de-init buffer.\n");
-	}
-
 	void **p;
 	___ffly_vec_nonempty(&__compiler->to_free) {
 		p = (void**)ffly_vec_begin(&__compiler->to_free);
@@ -375,19 +384,19 @@ ff_err_t ffly_compiler_free(struct ffly_compiler *__compiler) {
 
 struct token* peek_token(struct ffly_compiler *__compiler) {
 	struct token *tok = next_token(__compiler);
-	ffly_ulex(__compiler, tok);
+	ffly_ulex(&__compiler->lexer, tok);
 	return tok;
 }
 
 ff_bool_t next_tok_nl(struct ffly_compiler *__compiler) {
 	ff_err_t err;
-	struct token *tok = ffly_lex(__compiler, &err);
+	struct token *tok = ffly_lex(&__compiler->lexer, &err);
 	if (tok != NULL) {
 		if (tok->kind == _tok_newline) {
-			__ffly_mem_free(tok);
+			ff_lexer_free(&__compiler->lexer, tok);
 			return 1;
 		}
-		ffly_ulex(__compiler, tok);
+		ffly_ulex(&__compiler->lexer, tok);
 	}
 	return 0;
 }
@@ -401,7 +410,7 @@ void read_define(struct ffly_compiler *__compiler) {
 		ffly_vec_init(toks, sizeof(struct token*));
 		p = toks;
 		struct token **tok;
-		_next:
+	_next:
 		ffly_vec_push_back(toks, (void**)&tok);
 		*tok = next_token(__compiler); 
  
@@ -416,7 +425,7 @@ void read_define(struct ffly_compiler *__compiler) {
 ff_bool_t is_endif(struct ffly_compiler *__compiler, struct token *__tok) {
 	if (is_keyword(__tok, _percent)) {
 		ff_err_t err;
-		struct token *tok = ffly_lex(__compiler, &err);
+		struct token *tok = ffly_lex(&__compiler->lexer, &err);
 		return !ffly_str_cmp(tok->p, "endif");
 	}
 	return 0;
@@ -427,11 +436,11 @@ skip_until_endif(struct ffly_compiler *__compiler) {
 	ff_err_t err;
 	struct token *tok = NULL;
 	for(;;) {
-		if (!(tok = ffly_lex(__compiler, &err))) break;
+		if (!(tok = ffly_lex(&__compiler->lexer, &err))) break;
 		if (_err(err)) break;
 		if (is_endif(__compiler, tok)) break;
 		if (tok->kind == _tok_newline)
-			__ffly_mem_free(tok);
+			ff_lexer_free(&__compiler->lexer, tok);
 	}
 }
 
@@ -454,19 +463,23 @@ read_ifndef(struct ffly_compiler *__compiler) {
 # include "linux/unistd.h"
 void static
 read_include(struct ffly_compiler *__compiler) {
-	struct token *file = next_token(__compiler);
-	ffly_printf("include: %s\n", (char*)file->p);
-	if (access((char*)file->p, F_OK) == -1) {
-		errmsg("file{%s} doesen't exist or access to it has been denied.\n", file->p);
+	struct token *path = next_token(__compiler);
+	ffly_printf("include: %s\n", (char*)path->p);
+
+	if (access((char*)path->p, F_OK) == -1) {
+		errmsg("file{%s} doesen't exist or access to it has been denied.\n", path->p);
 		return;
 	}
 
-	__compiler->file++;
+	ff_lexerp lexer = &__compiler->lexer;
 
-	__compiler->file->line = 0;
-	__compiler->file->lo = 0;
-	__compiler->file->off = 0;
-	ffly_compiler_ld(__compiler, (char*)file->p);  
+	ff_off_t off = lexer->p-lexer->bed;
+	ffly_compiler_filep file;
+	file = ++__compiler->file;
+
+	file->line = 0;
+	file->lo = 0;
+	ffly_compiler_ld(__compiler, (char*)path->p);  
 	switch(__compiler->lang) {
 # ifndef __ffc_no_ff
 		case _ffc_ff:
@@ -480,9 +493,15 @@ read_include(struct ffly_compiler *__compiler) {
 # endif
 	}
 
-	__ffly_mem_free(__compiler->file->path);
-	__ffly_mem_free(__compiler->file->p);
-	__compiler->file--;
+	__ffly_mem_free(file->path);
+	__ffly_mem_free(file->p);
+	file = --__compiler->file;
+
+	lexer->p = file->p+off;
+	lexer->end = file->end;
+	lexer->bed = file->p;
+	lexer->line = &file->line;
+	lexer->lo = &file->lo;
 }
 
 void read_macro(struct ffly_compiler *__compiler) {
@@ -501,18 +520,18 @@ void read_macro(struct ffly_compiler *__compiler) {
 struct token* next_token(struct ffly_compiler *__compiler) {
 	ff_err_t err;
 	struct token *tok;
-	_back:
-	tok = ffly_lex(__compiler, &err);
+_bk:
+	tok = ffly_lex(&__compiler->lexer, &err);
 	if (!tok) return NULL;
 
 	if (tok->kind == _tok_newline) {
-		__ffly_mem_free(tok);
-		goto _back;
+		ff_lexer_free(&__compiler->lexer, tok);
+		goto _bk;
 	}
 
 	if (is_keyword(tok, _percent)) {
 		read_macro(__compiler);
-		goto _back;
+		goto _bk;
 	}
 
 	if (tok->kind == _tok_ident) {
@@ -520,7 +539,7 @@ struct token* next_token(struct ffly_compiler *__compiler) {
 		if (toks != NULL && _ok(err)) {
 			struct token **p = (struct token**)ffly_vec_end(toks);
 			while(p >= (struct token**)ffly_vec_begin(toks))
-				ffly_ulex(__compiler, *(p--)); 
+				ffly_ulex(&__compiler->lexer, *(p--)); 
 			tok = next_token(__compiler);
 		}
 	}
@@ -633,6 +652,8 @@ ff_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 
 	ffly_lat_prepare(&__compiler->keywd);
 
+	ffly_lexer_init(&__compiler->lexer);
+
 	if (!(__compiler->file = (struct ffly_compiler_file*)__ffly_mem_alloc(12*sizeof(struct ffly_compiler_file)))) {
 		errmsg("memory allocation failure.\n");
 		reterr;
@@ -667,11 +688,6 @@ ff_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 		_ret;
 	}
 
-	if (_err(err = ffly_buff_init(&__compiler->iject_buff, 100, sizeof(struct token*)))) {
-		errmsg("failed to initialize buffer.\n");
-		_ret;
-	}
-
 	if (_err(err = ffly_map_init(&__compiler->env, _ffly_map_127))) {
 		errmsg("failed to initialize map.\n");
 		_ret;
@@ -682,7 +698,6 @@ ff_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 		_ret;
 	}
 	__compiler->brkp = __compiler->brk;
-	__compiler->file->off = 0;
 	__compiler->file->line = 0;
 	__compiler->file->lo = 0;
 	__compiler->local = NULL;
@@ -732,10 +747,6 @@ ff_err_t ffc_ff_build(struct ffly_compiler *__compiler) {
 	ffc_ff_final(__compiler);
 }
 # endif
-
-ff_bool_t at_eof(struct ffly_compiler *__compiler) {
-	return (__compiler->file->p+__compiler->file->off) >= __compiler->file->end;
-}
 
 ff_uint_t curl(struct ffly_compiler *__compiler) {
 	return __compiler->file->line;

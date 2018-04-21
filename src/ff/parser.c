@@ -102,7 +102,7 @@ parser_primary_expr(ff_compilerp __compiler, struct node **__node) {
 			
 		break;
 		default:
-			ffly_ulex(__compiler, tok);
+			ffly_ulex(&__compiler->lexer, tok);
 	}
 	retok;
 }
@@ -194,17 +194,34 @@ parser_as_stmt(ff_compilerp __compiler, struct node **__node) {
 
 	}
 
-	struct token *as;
-	as = next_token(__compiler);
-	ast_as(__compiler, __node, (char const*)as->p);
-	if (!expect_token(__compiler, _tok_keywd, _r_paren)) {
+	char *p;
+	ff_uint_t l = 0;
+	struct token *buf[24];
+	struct token **cur = buf;
+	struct token *tok;
+_again:
+	*(cur++) = (tok = next_token(__compiler));
+	l+=tok->l;
+	if (!next_token_is(__compiler, _tok_keywd, _r_paren))
+		goto _again;
+	*cur = NULL;
 
+	p = (char*)__ffly_mem_alloc(l+1);
+	cur = buf;
+	char *end = p;
+	ff_lexerp lexer = &__compiler->lexer;
+	while((tok = *cur) != NULL) {
+		end+=ffly_str_cpy(end, tok->p);
+		ff_lexer_free(lexer, tok->p);
+		ff_lexer_free(lexer, tok);
+		cur++;
 	}
-
 
 	if (!expect_token(__compiler, _tok_keywd, _semicolon)) {
 
 	}
+
+	ast_as(__compiler, __node, (char const*)p);
 
 	retok;
 }
@@ -343,11 +360,11 @@ is_func(ff_compilerp __compiler) {
 	if (!(l_paren = next_token(__compiler)))
 		goto _r0;
 	res = (type->kind == _tok_keywd && name->kind == _tok_ident && (l_paren->kind == _tok_keywd && l_paren->id == _l_paren));
-	ffly_ulex(__compiler, l_paren);
+	ffly_ulex(&__compiler->lexer, l_paren);
 _r0:
-	ffly_ulex(__compiler, name);
+	ffly_ulex(&__compiler->lexer, name);
 _r1:
-	ffly_ulex(__compiler, type);
+	ffly_ulex(&__compiler->lexer, type);
 _r2:
 	return res;
 }
@@ -361,9 +378,9 @@ is_func_call(ff_compilerp __compiler) {
 	if (!(l_paren = next_token(__compiler)))
 		goto _r0;
 	res = (name->kind == _tok_ident && (l_paren->kind == _tok_keywd && l_paren->id == _l_paren));
-	ffly_ulex(__compiler, l_paren);
+	ffly_ulex(&__compiler->lexer, l_paren);
 _r0:
-	ffly_ulex(__compiler, name);
+	ffly_ulex(&__compiler->lexer, name);
 _r1:
 	return res;
 }
@@ -371,7 +388,7 @@ _r1:
 ff_err_t
 ffly_ff_parse(ff_compilerp __compiler) {
 	ff_err_t err = FFLY_SUCCESS;
-	while(!at_eof(__compiler)) {
+	while(!at_eof(&__compiler->lexer)) {
 		struct token *tok;
 
 		struct node *nod = NULL;

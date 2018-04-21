@@ -428,7 +428,7 @@ parser_primary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 		break;
 		default:
 			*__node = NULL;
-			ffly_ulex(__compiler, tok);
+			ffly_ulex(&__compiler->lexer, tok);
 	}
 	retok;
 }
@@ -461,7 +461,7 @@ parser_conditional_expr(struct ffly_compiler *__compiler, struct node **__node) 
 		retok;
 	}
 
-	ffly_ulex(__compiler, tok);
+	ffly_ulex(&__compiler->lexer, tok);
 	retok;
 }
 
@@ -490,7 +490,7 @@ parser_unary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 			case _ampersand: parser_unary_addrof(__compiler, __node); goto _end;
 		}
 
-		ffly_ulex(__compiler, tok);
+		ffly_ulex(&__compiler->lexer, tok);
 	}
 
 _end:
@@ -584,7 +584,7 @@ parser_cast_expr(struct ffly_compiler *__compiler, struct node **__node) {
 		retok; 
 	}
 
-	ffly_ulex(__compiler, tok);
+	ffly_ulex(&__compiler->lexer, tok);
 	retok;
 }
 
@@ -600,7 +600,7 @@ parser_binary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	} else if (is_keyword(tok, _minus)) {
 		op = _opr_sub;
 	} else {
-		ffly_ulex(__compiler, tok);
+		ffly_ulex(&__compiler->lexer, tok);
 		retok;
 	}
 	
@@ -1165,9 +1165,9 @@ is_func_call(struct ffly_compiler *__compiler) {
 	if (!(l_paren = next_token(__compiler)))
 		goto _r1;
 	res = !(name->kind != _tok_ident || !is_keyword(l_paren, _l_paren));
-	ffly_ulex(__compiler, l_paren);
+	ffly_ulex(&__compiler->lexer, l_paren);
 _r1:
-	ffly_ulex(__compiler, name);
+	ffly_ulex(&__compiler->lexer, name);
 _r0:
 	return res;
 }
@@ -1259,7 +1259,7 @@ parser_call(struct ffly_compiler *__compiler, struct node **__node) {
 ff_err_t
 ffly_script_parse(struct ffly_compiler *__compiler) {
 	ff_err_t err = FFLY_SUCCESS;
-	while(!at_eof(__compiler)) {
+	while(!at_eof(&__compiler->lexer)) {
 		struct token *tok;
 		if (!(tok = peek_token(__compiler))) {
 			errmsg("got dead token.\n");
