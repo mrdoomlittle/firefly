@@ -1,9 +1,9 @@
 %ifndef __ffly__lib__ff
 %define __ffly__lib__ff
-%include "../scripts/types.ff"
-%include "../scripts/limits.ff"
-%include "../scripts/err.ff"
-%include "../scripts/io.ff"
+%include "types.ff"
+%include "limits.ff"
+%include "err.ff"
+%include "io.ff"
 %define FFLY_MUTEX_INIT 0x0
 fn ffly_nanosleep(u64_t __sec, u64_t __nsec)->void{
     :1<-{

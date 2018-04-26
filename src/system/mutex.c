@@ -1,19 +1,19 @@
 # include "mutex.h"
 void ffly_mutex_lock(ff_mlock_t *__lock) {
 	__asm__("mov %0, %%rdi\n\t"
-        "call __ffly_mutex_lock" : : "r"(__lock));
+        "call __ffly_mutex_lock" : : "r"(__lock) : "rdi");
 }
 
 void ffly_mutex_unlock(ff_mlock_t *__lock) {
     __asm__("mov %0, %%rdi\n\t" 
-        "call __ffly_mutex_unlock" : : "r"(__lock));
+        "call __ffly_mutex_unlock" : : "r"(__lock) : "rdi");
 }
 
 ff_err_t ffly_mutex_trylock(ff_mlock_t *__lock) {
     ff_err_t ret;
     __asm__("mov %1, %%rdi\n\r"
         "call __ffly_mutex_trylock\n\t" 
-        "mov %%bl, %0" : "=r"(ret) : "r"(__lock));
+        "mov %%bl, %0" : "=r"(ret) : "r"(__lock) : "rdi", "rbx");
     return ret;
 }
 

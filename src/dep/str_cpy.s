@@ -23,10 +23,10 @@ __ffly_str_cpy:
 	movq %rdi, %rcx
 	add %rax, %rcx
 	inc %rbx
-	movb $0x0, (%rcx)
 
 	movq %rax, %rbx
 	call __ffly_mem_cpy
+	movb $0x0, (%rcx)
 	pop %rax
 	pop %rcx
 	pop %rbx

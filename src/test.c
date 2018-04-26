@@ -51,6 +51,7 @@ __asm__("restore:mov $15,%rax\n\t"
 # include "maths/sin.h"
 # include "maths/cos.h"
 # include "system/errno.h"
+# include "linux/limits.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 //	p = malloc(200);
 //	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&pot);
@@ -87,5 +88,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	wait4(pid, NULL, __WALL, NULL);
 	ffly_printf("report: %s\n", strerror(errno));
 */
+	char buf[PATH_MAX];
+	getcwd(buf, PATH_MAX);
+	ffly_printf("dir: %s\n", buf);
 	ffly_arstat();
 }

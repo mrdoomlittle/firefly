@@ -56,7 +56,8 @@ enum {
 */
 typedef struct ffly_compiler_file {
 	ff_byte_t *p, *end;
-	char *path;
+	char const *path;
+	char dir[PATH_MAX];
 	ff_uint_t line, lo;
 } *ffly_compiler_filep;
 
@@ -81,6 +82,7 @@ typedef struct ffly_compiler {
     struct ffly_map typedefs; 
 	struct ffly_buff sbuf;
     struct ffly_vec to_free;
+	char *dir;
 
 	ff_u8_t lang;
 	struct ff_lexer lexer;

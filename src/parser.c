@@ -3,6 +3,7 @@
 # include "compiler.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
+# include "dep/str_len.h"
 void 
 ffc_build_node(struct ffly_compiler *__compiler, struct node **__node, struct node *__tmpl) {
 	*__node = (struct node*)__ffly_mem_alloc(sizeof(struct node));
@@ -21,4 +22,9 @@ ffc_build_type(struct ffly_compiler *__compiler, struct type **__type, struct ty
 ffly_mapp
 ffc_get_env(struct ffly_compiler *__compiler) {
 	return __compiler->local != NULL?__compiler->local:&__compiler->env;
+}
+
+struct type*
+ffc_get_typedef(struct ffly_compiler *__compiler, char *__name, ff_err_t *__err) {
+	return (struct type*)ffly_map_get(&__compiler->typedefs, __name, ffly_str_len(__name), __err);
 }

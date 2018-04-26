@@ -11,6 +11,7 @@
 ffly_mapp ffc_get_env(struct ffly_compiler*);
 void ffc_build_node(struct ffly_compiler*, struct node**, struct node*);
 void ffc_build_type(struct ffly_compiler*, struct type**, struct type*);
+struct type* ffc_get_typedef(struct ffly_compiler*, char*, ff_err_t*);
 
 struct type static *float_t = &(struct type){.kind=_float, .size=sizeof(double)};
 
@@ -196,16 +197,11 @@ mk_ptr_type(struct ffly_compiler *__compiler, struct type **__type, struct type 
 	(*__type)->ptr = __ptr;
 }
 
-struct type static*
-get_typedef(struct ffly_compiler *__compiler, char *__name, ff_err_t *__err) {
-	return (struct type*)ffly_map_get(&__compiler->typedefs, __name, ffly_str_len(__name), __err);
-}
-
 ff_bool_t static
 is_type(struct ffly_compiler *__compiler, struct token *__tok) {
 	ff_err_t err;
 	if (__tok->kind == _tok_ident) { 
-		struct type *_type = get_typedef(__compiler, (char*)__tok->p, &err);
+		struct type *_type = ffc_get_typedef(__compiler, (char*)__tok->p, &err);
 		if (_ok(err) && _type != NULL) return 1;
 		return 0;
 	}
@@ -340,7 +336,7 @@ ff_err_t
 parser_decl_spec(struct ffly_compiler *__compiler, struct token *__tok, struct type **__type) {
 	if (__tok->kind == _tok_ident) {
 		ff_err_t err;
-		struct type *_type = get_typedef(__compiler, (char*)__tok->p, &err);
+		struct type *_type = ffc_get_typedef(__compiler, (char*)__tok->p, &err);
 		if (_ok(err) && _type != NULL) {
 			ffc_build_type(__compiler, __type, _type);
 			retok;

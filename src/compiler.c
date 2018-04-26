@@ -8,6 +8,7 @@
 # include "dep/mem_cpy.h"
 # include "dep/mem_set.h"
 # include "dep/str_len.h"
+# include "dep/str_dup.h"
 # include "system/errno.h"
 # include "dep/bcopy.h"
 # include "system/nanosleep.h"
@@ -67,14 +68,83 @@ ffc_ldlang(ffly_compilerp __compiler, ff_u8_t __no) {
 	__compiler->lang = __no;
 }
 
+char static*
+getdir(char *__buf, char const *__file) {
+	char *buf = __buf;
+	char *end = buf;
+	while(*end != '\0') end++;
+
+	char const *p = __file;
+	if (*p == '.') {
+	_again:
+		while(*p != '/') {
+			if (*p == '.') {
+				if (*(++p) == '.') {
+					while(*(--end) != '/');
+				}
+				p++;
+			}
+		}
+
+		if (*(p+1) == '.') {
+			p++;
+			goto _again;
+		}
+		p++;
+	}
+
+	char *br;
+_bk:
+	*(br = end++) = '/';
+	while(*p != '\0') {
+		if (*p == '/') {
+			p++;
+			goto _bk;
+		}
+		*(end++) = *(p++);
+	}
+
+	*br ='\0';
+	return br;
+}
+
+void static
+getpath(char *__dir, char *__buf, char const *__file) {
+	char *p = __buf;
+	ffly_str_cpy(p, __dir);
+	p=getdir(p, __file);
+
+	char const *br = __file;
+	while(*__file != '\0') {
+		if (*__file == '/')
+			br = __file+1;
+		__file++;
+	}
+
+	*(p++) = '/';
+	ffly_str_cpy(p, br);
+}
+
 ff_err_t
 ffly_compiler_ld(struct ffly_compiler *__compiler, char const *__file) {
 	ff_err_t err;
-	FF_FILE *f = ffly_fopen(__file, FF_O_RDONLY, 0, &err);
-	__compiler->file->path = ffly_realpath(__file);
+	char path[PATH_MAX];
+	getpath(__compiler->dir, path, __file);
+
+	ffly_printf("dir: %s\n", __compiler->dir);
+	ffly_printf("path: %s\n", path);
+	if (access(path, F_OK) == -1) {
+		errmsg("file doesen't exist or access to it has been denied.\n");
+		reterr;
+	}
+
+	FF_FILE *f = ffly_fopen(path, FF_O_RDONLY, 0, &err);
+	getdir(__compiler->dir, __file);
+	ffly_printf("dir: %s\n", __compiler->dir);
+	__compiler->file->path = ffly_str_dup(path);
 
 	struct ffly_stat st;
-	ffly_fstat(__file, &st);
+	ffly_fstat(path, &st);
 
 	ff_byte_t *p = (ff_byte_t*)__ffly_mem_alloc(st.size);
 	ff_byte_t *end = p+st.size;
@@ -460,16 +530,10 @@ read_ifndef(struct ffly_compiler *__compiler) {
 	if (_ok(err)) skip_until_endif(__compiler);
 }
 
-# include "linux/unistd.h"
 void static
 read_include(struct ffly_compiler *__compiler) {
 	struct token *path = next_token(__compiler);
 	ffly_printf("include: %s\n", (char*)path->p);
-
-	if (access((char*)path->p, F_OK) == -1) {
-		errmsg("file{%s} doesen't exist or access to it has been denied.\n", path->p);
-		return;
-	}
 
 	ff_lexerp lexer = &__compiler->lexer;
 
@@ -477,13 +541,17 @@ read_include(struct ffly_compiler *__compiler) {
 	ffly_compiler_filep file;
 	file = ++__compiler->file;
 
+	ffly_str_cpy(file->dir, (file-1)->dir);
+
+	__compiler->dir = file->dir;
 	file->line = 0;
 	file->lo = 0;
-	ffly_compiler_ld(__compiler, (char*)path->p);  
+	if (_err(ffly_compiler_ld(__compiler, (char*)path->p)))
+		goto _sk;
 	switch(__compiler->lang) {
 # ifndef __ffc_no_ff
 		case _ffc_ff:
-
+			ffly_ff_parse(__compiler);
 		break;
 # endif
 # ifndef __ffc_no_script
@@ -495,7 +563,10 @@ read_include(struct ffly_compiler *__compiler) {
 
 	__ffly_mem_free(file->path);
 	__ffly_mem_free(file->p);
+_sk:
 	file = --__compiler->file;
+
+	__compiler->dir = file->dir;
 
 	lexer->p = file->p+off;
 	lexer->end = file->end;
@@ -709,6 +780,8 @@ ff_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 	}
 	__compiler->var_pond = NULL;
 	__compiler->ret_type = NULL;
+	getcwd(__compiler->file->dir, PATH_MAX);
+	__compiler->dir = __compiler->file->dir;
 	retok;
 }
 
