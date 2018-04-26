@@ -84,10 +84,10 @@ regionp *rindx;
 # define PAGE_SIZE (1<<PAGE_SHIFT)
 void **map = NULL;
 
-void static *tf[100];
+void static *tf[267];
 void static **fresh = tf;
 void static to_free(void *__p) {
-	if (fresh-tf >= 100) {
+	if (fresh-tf >= 267) {
 		printf("error overflow.\n");
 	}
 	*(fresh++) = __p;

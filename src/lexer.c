@@ -214,7 +214,7 @@ read_chr(ff_lexerp __lexer) {
 
 # define register_line(__lexer) \
 	(*__lexer->line)++; \
-	(*__lexer->lo) = (__lexer->p-__lexer->bed)-1;
+	(*__lexer->lo) = __lexer->p-__lexer->bed;
 
 struct token static*
 read_token(ff_lexerp __lexer) {
@@ -369,7 +369,7 @@ read_token(ff_lexerp __lexer) {
 		}
 	}
 	
-	tok->line = (*__lexer->line)-1;
+	tok->line = *__lexer->line;
 	tok->off = (__lexer->p-__lexer->bed)-1;
 	tok->lo = *__lexer->lo;
 	return tok;

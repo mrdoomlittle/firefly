@@ -22,8 +22,8 @@ struct type static *u8_t = &(struct type){.kind=_u8_t, .size=1};
 struct type static *i8_t = &(struct type){.kind=_i8_t, .size=1};
 
 void static
-ast_decl(struct ffly_compiler *__compiler, struct node **__node, struct node *__var) {
-	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_decl, .var=__var, ._type=NULL});
+ast_decl(struct ffly_compiler *__compiler, struct node **__node, struct node *__var, struct node *__init) {
+	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_decl, .var=__var, .init=__init, ._type=NULL});
 }
 
 void static
@@ -147,11 +147,20 @@ parser_decl_spec(ff_compilerp __compiler, struct token *__tok, struct type **__t
 }
 
 ff_err_t
+parser_decl_init(ff_compilerp __compiler, struct node **__node) {
+	parser_expr(__compiler, __node);
+}
+
+ff_err_t
 parser_decl(ff_compilerp __compiler, struct node **__node) {
 	struct type *_type;
+	struct node *init = NULL;
 	parser_decl_spec(__compiler, next_token(__compiler), &_type);
 
 	struct token *name = next_token(__compiler);	
+
+	if (next_token_is(__compiler, _tok_keywd, _eq))
+		parser_decl_init(__compiler, &init);
 
 	if (!expect_token(__compiler, _tok_keywd, _semicolon)) {
 
@@ -167,7 +176,7 @@ parser_decl(ff_compilerp __compiler, struct node **__node) {
 		*p = var;
 	}
 
-	ast_decl(__compiler, __node, var);
+	ast_decl(__compiler, __node, var, init);
 }
 
 ff_err_t 
@@ -328,6 +337,7 @@ parser_func(ff_compilerp __compiler, struct node **__node) {
 		if ((nod = (struct node*)ffly_map_get(&__compiler->env, name->p, ffly_str_len((char*)name->p), &err)) != NULL) {
 			nod->_block = block;
 			nod->flags = flags;
+			nod->var_pond = var_pond;
 			goto _end;
 		}
 	} else

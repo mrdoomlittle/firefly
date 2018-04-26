@@ -3,32 +3,46 @@ void ts0();
 void ts1();
 void ts2();
 void ts3();
+void ts4();
+void ts5();
 
 void main() {
-	as("asb %ll, 21\n");
+	u8_t n = 21;
+	out(n);
 	ts0();
-	return;
 }
 
 void ts0() {
-	as("outb %ll\n");
+	u8_t n = 0;
+	out(n);
 	ts1();
-	return;
 }
 
 void ts1() {
-	as("outb %ll\n");
+	u8_t n = 1;
+	out(n);
 	ts2();
-	return;
 }
 
 void ts2() {
-	as("outb %ll\n");
+	u8_t n = 2;
+	out(n);
 	ts3();
-	return;
 }
 
 void ts3() {
-	as("outb %ll\n");
-	return;
+	u8_t n = 3;
+	out(n);
+	ts4();
+}
+
+void ts4() {
+	u8_t n = 4;
+	out(n);
+	ts5();
+}
+
+void ts5() {
+	u8_t n = 5;
+	out(n);
 }

@@ -110,15 +110,16 @@ emit_func(ff_compilerp __compiler, struct node *__node) {
 			op(__compiler, "subq", "%sp", "%rlx", "%sp");
 		}
 
-		if (__node->_block != NULL) {
+		ffly_vecp block = __node->_block;
+		if (block != NULL) {
 			struct node **itr;
-			___ffly_vec_nonempty(__node->_block) {
-				itr = (struct node**)ffly_vec_begin(__node->_block);
-				while(itr <= (struct node**)ffly_vec_end(__node->_block))
+			___ffly_vec_nonempty(block) {
+				itr = (struct node**)ffly_vec_beg(block);
+				while(itr <= (struct node**)ffly_vec_end(block))
 					emit(__compiler, *(itr++));
 			}
-			ffly_vec_de_init(__node->_block);
-			__ffly_mem_free(__node->_block);
+			ffly_vec_de_init(block);
+			__ffly_mem_free(block);
 		}
 		out_s(__compiler, "movq %bp, %sp\n");
 		pop(__compiler, "%bp", 8);
@@ -144,18 +145,13 @@ emit_func_call(ff_compilerp __compiler, struct node *__node) {
 	__compiler->out(buf, (p-buf)+1);
 }
 
-void emit_decl(ff_compilerp __compiler, struct node *__node) {
-	s_off_inc(__node->var->_type->size);
-	__node->var->s_off = s_off;
-}
 
-void emit_assign(ff_compilerp __compiler, struct node *__node) {
-	emit(__compiler, __node->r);
+void emit_load(ff_compilerp __compiler, ff_uint_t __off, ff_u8_t __l) {	
 	char buf[128];
-	ffly_nots(__node->l->s_off, buf);
+	ffly_nots(__off, buf);
 	op(__compiler, "asq", "%rlx", buf, NULL);
 	op(__compiler, "subq", "%bp", "%rlx", "%rlx");
-	switch(__node->r->_type->size) {
+	switch(__l) {
 		case 1:
 			op(__compiler, "ldb", "%rlx", "%al", NULL);
 		break;
@@ -169,6 +165,23 @@ void emit_assign(ff_compilerp __compiler, struct node *__node) {
 			op(__compiler, "ldq", "%rlx", "%rax", NULL);
 		break;
 	}
+}
+
+void emit_decl_init(ff_compilerp __compiler, struct node *__node, ff_uint_t __off) {
+	emit(__compiler, __node);
+	emit_load(__compiler, __off, __node->_type->size);
+}
+
+void emit_decl(ff_compilerp __compiler, struct node *__node) {
+	s_off_inc(__node->var->_type->size);
+	__node->var->s_off = s_off;
+	if (__node->init != NULL)
+		emit_decl_init(__compiler, __node->init, s_off);
+}
+
+void emit_assign(ff_compilerp __compiler, struct node *__node) {
+	emit(__compiler, __node->r);
+	emit_load(__compiler, __node->l->s_off, __node->l->_type->size);
 }
 
 void emit_literal(ff_compilerp __compiler, struct node *__node) {

@@ -1,5 +1,0 @@
-as(	".extern main\n"
-	"_start:\n"
-	"rin 0\n"
-	"call $main\n"
-	"exit %ll\n");

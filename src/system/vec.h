@@ -21,6 +21,7 @@
 
 # define vec_at_deadstop(__p, __end) ((void*)__p > (void*)__end)
 # define vec_deadstop(__p, __vec) ((void*)__p > ffly_vec_end(__vec))
+# define ffly_vec_beg ffly_vec_begin
 /*
     needs testing - 'VEC_NONCONTINUOUS'
 	TODO:

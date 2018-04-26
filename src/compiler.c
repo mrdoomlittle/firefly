@@ -237,7 +237,7 @@ void print_line(struct ffly_compiler *__compiler, ff_uint_t __off) {
 }
 
 # define expectmsg(__s) \
-	ffly_fprintf(ffly_out, "%s:%u;%u: %s, got %s.\n", __compiler->file->path, tokl(tok), tokcol(tok), __s, tokid_str(tok->id))
+	ffly_fprintf(ffly_out, "%s:%u;%u: %s, got %s.\n", __compiler->file->path, tokl(tok)+1, tokcol(tok), __s, tokid_str(tok->id))
 ff_bool_t expect_token(struct ffly_compiler *__compiler, ff_u8_t __kind, ff_u8_t __id) {
 	struct token *tok = next_token(__compiler);
 	if (!tok) {
@@ -274,7 +274,7 @@ ff_bool_t expect_token(struct ffly_compiler *__compiler, ff_u8_t __kind, ff_u8_t
 					expectmsg("expected right arrow");
 				break;
 			}
-			print_line(__compiler, tok->lo);
+			print_line(__compiler, tok->lo+1);
 			ff_uint_t pad = tok->off-toklo(tok);
 			while(pad != 0) {
 				ffly_printf(" ");
