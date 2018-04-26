@@ -1,1 +1,4 @@
-%include "../abc.ff"
+%ifndef __ffly_types__ff
+%define __ffly_types__ff
+typedef u8_t char;
+%endif /*__ffly_types__ff*/

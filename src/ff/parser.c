@@ -448,7 +448,7 @@ ffly_ff_parse(ff_compilerp __compiler) {
 
 		if (is_func(__compiler)) {
 			parser_func(__compiler, &nod);
-		} else if (is_type(__compiler, tok)) {
+		} else if (is_type(__compiler, tok) || tok->id == _k_typedef) {
 			parser_decl(__compiler, &nod);
 		} else if (tok->kind == _tok_keywd) {
 			parser_stmt(__compiler, &nod);

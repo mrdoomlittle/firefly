@@ -15,6 +15,7 @@ char const static *keywords[] = {
 	"ret",
 	"u8_t",
 	"out",
+	"typedef",
 	NULL
 };
 

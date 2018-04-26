@@ -5,12 +5,12 @@
 # include "../string.h"
 # include "../system/lat.h"
 # include "../system/util/hash.h"
-mdl_u8_t *p = NULL, *end = NULL;
+ff_u8_t *p = NULL, *end = NULL;
 int src, dst;
 
 struct ffly_lat defines;
 
-mdl_u8_t at_eof() {
+ff_u8_t at_eof() {
 	return p >= end;
 }
 
@@ -18,16 +18,16 @@ mdl_u8_t at_eof() {
 
 typedef struct def {
 	struct def *next;
-	mdl_u8_t *beg, *end;	
+	ff_u8_t *beg, *end;	
 	char *name;
 } *defp;
 
 struct {
-	mdl_u8_t bed[OBUFSZ];
-	mdl_u8_t *p, *end;
+	ff_u8_t bed[OBUFSZ];
+	ff_u8_t *p, *end;
 } obuf;
 
-void oust(mdl_u8_t __val) {
+void oust(ff_u8_t __val) {
 	if (obuf.p >= obuf.end) {
 		obuf.p = obuf.bed;
 		write(dst, obuf.bed, OBUFSZ);
@@ -41,7 +41,7 @@ void flushbuf() {
 		write(dst, obuf.bed, obuf.p-obuf.bed);
 }
 
-mdl_u8_t* getp() {
+ff_u8_t* getp() {
 	return p;
 }
 
@@ -55,7 +55,7 @@ void sk_endif() {
 	}
 }
 
-void define(char *__name, mdl_u64_t __key, mdl_u8_t *__beg, mdl_u8_t *__end) {
+void define(char *__name, ff_u64_t __key, ff_u8_t *__beg, ff_u8_t *__end) {
 	defp df = (defp)malloc(sizeof(struct def));
 	df->name = strdup(__name);
 	df->beg = __beg;
@@ -79,7 +79,7 @@ void prossess() {
 				printf("error.\n");
 				break;
 			}
-			mdl_u8_t dir;
+			ff_u8_t dir;
 			if (!strcmp(p->p, "define"))
 				dir = _define;
 			else if (!strcmp(p->p, "ifdef"))
@@ -103,7 +103,7 @@ void prossess() {
 			ulex(p);
 
 			*bufp = '\0';
-			mdl_u64_t sum = ffly_hash(buf, bufp-buf);
+			ff_u64_t sum = ffly_hash(buf, bufp-buf);
 			printf("key: %lu\n", sum);
 			if (dir == _ifdef || dir == _ifndef) {
 				defp df = (defp)ffly_lat_get(&defines, sum);
@@ -128,7 +128,7 @@ void prossess() {
 				continue;
 			}
 
-			mdl_u8_t *beg, *end;
+			ff_u8_t *beg, *end;
 /*
 			beg = getp();
 			while((p = lex()) != NULL)

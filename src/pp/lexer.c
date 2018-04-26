@@ -2,9 +2,9 @@
 # include "../malloc.h"
 
 bucketp static bk = NULL;
-mdl_u8_t static buf[128];
+ff_u8_t static buf[128];
 
-mdl_u8_t static
+ff_u8_t static
 is_space() {
 	return (*p == ' ' || *p == '\t');
 }
@@ -43,7 +43,7 @@ bucketp lex() {
 		sk_space();
 		ret->sort = _ident;
 		ret->p = buf;
-		mdl_u8_t *bufp = buf;
+		ff_u8_t *bufp = buf;
 		while((*p >= 'a' && *p <= 'z') || *p == '_')
 			*(bufp++) = *(p++);
 		*bufp = '\0';

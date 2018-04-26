@@ -208,7 +208,7 @@ is_type(struct ffly_compiler *__compiler, struct token *__tok) {
 
 	if (__tok->kind != _tok_keywd) return 0;
 	return ((__tok->id >= _k_uint_t && __tok->id <= _k_i8_t) || __tok->id == _k_struct
-		|| __tok->id == _k_var || __tok->id == _k_float || __tok->id == _k_typedef);
+		|| __tok->id == _k_var || __tok->id == _k_float);
 }
 	
 ff_bool_t static
@@ -685,7 +685,7 @@ _again:
 		goto _end;
 	}
 
-	if (is_type(__compiler, tok)) {
+	if (is_type(__compiler, tok) || tok->id == _k_typedef) {
 		if (_err(err = parser_decl(__compiler, &_node))) {
 			errmsg("failed to read decl.\n");
 			goto _end;
@@ -1263,7 +1263,7 @@ ffly_script_parse(struct ffly_compiler *__compiler) {
 		}
 
 		struct node *nod = NULL; 
-		if (is_type(__compiler, tok)) {
+		if (is_type(__compiler, tok) || tok->id == _k_typedef) {
 			if (_err(err = parser_decl(__compiler, &nod))) {
 				errmsg("failed to read decl.\n");
 				break;

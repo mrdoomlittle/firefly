@@ -1,4 +1,4 @@
-# include "../types/err_t.h"
+# include "../types.h"
 # include "pp.h"
 # include "../linux/unistd.h"
 # include "../string.h"
@@ -8,7 +8,7 @@
 # include "../linux/fcntl.h"
 # include "../stdio.h"
 # include "../system/util/hash.h"
-ffly_err_t ffmain(int __argc, char const *__argv[]) {
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	char const **arg = __argv;
 	char const **last = arg+__argc;
 
@@ -37,11 +37,11 @@ ffly_err_t ffmain(int __argc, char const *__argv[]) {
 		reterr;
 	}
 	
-	mdl_u8_t *bed;
+	ff_u8_t *bed;
 
 	struct stat st;
 	fstat(src, &st);
-	p = (mdl_u8_t*)malloc(st.st_size);
+	p = (ff_u8_t*)malloc(st.st_size);
 	bed = p;
 	read(src, p, st.st_size);
 	end = p+st.st_size;
