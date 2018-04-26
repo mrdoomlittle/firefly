@@ -164,6 +164,7 @@ assemble(char *__p, char *__end) {
 
 				symbolp s = syt(sy->p, NULL);
 				putsymbol(s);
+				la->sy = s;
 				s->sort = SY_LABEL;
 				s->type = FF_SY_LCA;
 				printf("label\n");
@@ -209,6 +210,11 @@ assemble(char *__p, char *__end) {
 					la->flags = LA_LOOSE;
 					la->s = (char const*)_memdup(sy->next->p, sy->next->len+1);
 					hash_put(&env, sy->next->p, sy->next->len, la);
+					symbolp s = syt(sy->next->p, NULL);
+					putsymbol(s);
+					la->sy = s;
+					s->type = FF_SY_IND;
+					s->sort = 0;
 					printf("extern %s\n", sy->next->p);
 					*(extrn++) = sy->next->p;
 				}
@@ -244,16 +250,16 @@ assemble(char *__p, char *__end) {
 	}
 }
 
-void reloc(ff_u64_t __offset, ff_u8_t __l, labelp __label) {
+void reloc(ff_u64_t __offset, ff_u8_t __l, symbolp *__sy) {
 	relocatep rl = (relocatep)_alloca(sizeof(struct relocate));
 	rl->offset = __offset;
 	rl->l = __l;
-	rl->la = __label;
+	rl->sy = __sy;
 	rl->next = rel;
 	rel = rl;
 }
 
-void hook(ff_u64_t __offset, ff_u8_t __l, labelp __to) {
+void hook(ff_u64_t __offset, ff_u8_t __l, symbolp *__to) {
 	hookp hk = (hookp)_alloca(sizeof(struct hook));
 
 	hk->offset = __offset;
@@ -311,19 +317,15 @@ void finalize(void) {
 		cur = extrn;
 		while(*(--cur) != NULL) {
 			printf("extern: %s\n", *cur);
-			ff_u16_t off;
-			symbolp sy = syt(*cur, &off);
-			sy->type = FF_SY_IND;
-			sy->sort = 0;
 			hookp hk = hok;
 
 			while(hk != NULL) {
-				printf("label: %p\n", hk->to);
-				if (!strcmp(hk->to->s, *cur)) {
+				printf("symbol: %p\n", hk->to);
+				if (!strcmp((*hk->to)->p, *cur)) {
 					struct ffef_hok hok;
 					hok.offset = hk->offset;
 					hok.l = hk->l;
-					hok.to = off;
+					hok.to = (*hk->to)->off;
 					oust((ff_u8_t*)&hok, ffef_hoksz);
 				}
 				hk = hk->next;
@@ -339,8 +341,8 @@ void finalize(void) {
 			struct ffef_rel rel;
 			rel.offset = rl->offset;
 			rel.l = rl->l;
-			printf("reloc: %s\n", rl->la->s);
-			rel.sy = getsymbol(rl->la->s)->off;
+			printf("reloc: %s\n", (*rl->sy)->p);
+			rel.sy = (*rl->sy)->off;
 			oust((ff_u8_t*)&rel, ffef_relsz);
 			rl = rl->next;
 			hdr.nrl++;

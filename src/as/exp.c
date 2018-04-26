@@ -11,6 +11,7 @@ symbolp eval(char *__s) {
 	if (*p == '\n' || *p == '\0' || *p == ';') return NULL;
 	symbolp head = _alloca(sizeof(struct symbol));
 	symbolp cur = head;
+	cur->flags = 0x0;
 
 	char buf[128];
 	char *bufp;
@@ -19,6 +20,13 @@ symbolp eval(char *__s) {
 		while(*p == ' ') p++;
 		if (*p == '\0') break;
 		switch(*p) {
+			case '(':
+				p++;
+				cur->flags |= S_ADR;
+			break;	
+			case ')':
+				p++;
+			break;
 			case '%': {
 				p++;
 				ff_uint_t l;
@@ -52,6 +60,7 @@ symbolp eval(char *__s) {
 				p++;
 				cur->next = _alloca(sizeof(struct symbol));
 				cur = cur->next;
+				cur->flags = 0x0;
 				break;
 			}
 			default:

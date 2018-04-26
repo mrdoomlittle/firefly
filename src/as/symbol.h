@@ -42,7 +42,7 @@ struct hash extern symbols;
 void putsymbol(symbolp);
 symbolp getsymbol(char const*);
 symbolp syt(char const*, ff_u16_t*);
-void syt_store();
-void syt_drop();
-void syt_gut();
+void syt_store(void);
+void syt_drop(void);
+void syt_gut(void);
 # endif /*__ffly__as__symbol__h*/

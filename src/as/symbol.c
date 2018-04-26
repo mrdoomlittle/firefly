@@ -30,7 +30,7 @@ symbolp getsymbol(char const *__s) {
 
 struct ffef_reg_hdr static reg;
 ff_u64_t static dst;
-void syt_store() {
+void syt_store(void) {
 	reg.name = dst;
 	reg.l = 4;
 	reg.type = FF_RG_SYT;
@@ -39,12 +39,12 @@ void syt_store() {
 	write(out, &reg, ffef_reg_hdrsz);
 }
 
-void syt_drop() {
+void syt_drop(void) {
 	dst = offset;
 	offset+=4+ffef_reg_hdrsz;
 }
 
-void syt_gut() {
+void syt_gut(void) {
 	reg.beg = offset;
 	symbolp cur = head;
 	while(cur != NULL) {

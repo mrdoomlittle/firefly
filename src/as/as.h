@@ -12,6 +12,7 @@ int extern in;
 # define HOOK 0x1
 # define RELOCATE 0x2
 # define SIGNED 0x1
+# define S_ADR 0x2
 # define _of_null 0xff
 enum {
 	_of_ffef
@@ -36,6 +37,7 @@ typedef struct label {
 	ff_uint_t offset, s_adr, adr;
 	ff_u8_t flags;
 	char const *s;
+	symbolp sy;
 	regionp reg;
 } *labelp;
 
@@ -59,14 +61,14 @@ typedef struct relocate {
 	struct relocate *next;
 	ff_u64_t offset;
 	ff_u8_t l;
-	labelp la;
+	symbolp *sy;
 } *relocatep;
 
 typedef struct hook {
 	struct hook *next;
 	ff_u64_t offset;
 	ff_u8_t l;
-	labelp to;
+	symbolp *to;
 } *hookp;
 
 segmentp extern curseg;
@@ -101,8 +103,8 @@ void oust_64l(ff_u64_t);
 ff_uint_t stt(char const*, ff_uint_t);
 ff_u64_t stt_drop();
 
-void reloc(ff_u64_t, ff_u8_t, labelp);
-void hook(ff_u64_t, ff_u8_t, labelp);
+void reloc(ff_u64_t, ff_u8_t, symbolp*);
+void hook(ff_u64_t, ff_u8_t, symbolp*);
 void finalize(void);
 void ffas_init(void);
 void ffas_de_init(void);

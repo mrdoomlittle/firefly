@@ -299,12 +299,10 @@ emit_jmp(insp __ins) {
 
 	rgasw(rgname, adr);
 
-	ff_uint_t off = offset-sizeof(ff_addr_t);
-	if (is_flag(la->flags, LA_LOOSE))
-		hook(off, 2, la);
-	else
-		reloc(off, 2, la);
+	void(*p)(ff_u64_t, ff_u8_t, symbolp*) = 
+		is_flag(la->flags, LA_LOOSE)?hook:reloc;
 
+	p(offset-sizeof(ff_addr_t), 2, &la->sy);
 	oustbyte(__ins->op);
 	oust_addr(getreg(rgname)->addr);
 }
@@ -413,11 +411,10 @@ emit_cjmp(insp __ins) {
 
 	rgasw(rgname, adr);
 
-	ff_uint_t off = offset-sizeof(ff_addr_t);
-	if (is_flag(la->flags, LA_LOOSE))
-		hook(off, 2, la);
-	else
-		reloc(off, 2, la);
+	void(*p)(ff_u64_t, ff_u8_t, symbolp*) = 
+		is_flag(la->flags, LA_LOOSE)?hook:reloc;
+	
+	p(offset-sizeof(ff_addr_t), 2, &la->sy);
 	oustbyte(__ins->op);
 	oust_addr(getreg(rgname)->addr);
 	oust_addr(*(ff_addr_t*)__ins->r->p);
@@ -454,11 +451,10 @@ emit_call(insp __ins) {
 
 	rgasw(rgname, adr);
 
-	ff_uint_t off = offset-sizeof(ff_addr_t);
-	if (is_flag(la->flags, LA_LOOSE))
-		hook(off, 2, la);
-	else
-		reloc(off, 2, la);
+	void(*p)(ff_u64_t, ff_u8_t, symbolp*) = 
+		is_flag(la->flags, LA_LOOSE)?hook:reloc;
+
+	p(offset-sizeof(ff_addr_t), 2, &la->sy);
 	op_call(__ins->op, getreg(rgname)->addr);
 }
 
