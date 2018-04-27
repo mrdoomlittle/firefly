@@ -1,12 +1,12 @@
 # ifndef __ffly__alloc__pixelmap__h
 # define __ffly__alloc__pixelmap__h
-# include <mdlint.h>
+# include "../ffint.h"
 # include "../types/pixelmap_t.h"
 
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_1d_pm_t ffly_alloc_pixelmap(mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_u8_t);
+ffly_1d_pm_t ffly_alloc_pixelmap(ff_uint_t, ff_uint_t, ff_uint_t, ff_u8_t);
 # ifdef __cplusplus
 }
 # include "../types/dsize_t.hpp"

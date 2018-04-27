@@ -1,7 +1,7 @@
 # ifndef __ffly__no__t__h
 # define __ffly__no__t__h
-# include <mdlint.h>
-typedef mdl_uint_t ffly_no_t;
+# include "../ffint.h"
+typedef ff_uint_t ffly_no_t;
 # ifdef __cplusplus
 namespace mdl {
 namespace firefly {

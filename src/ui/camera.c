@@ -1,13 +1,12 @@
 # include "camera.h"
 # include "../system/errno.h"
-# include "../types/byte_t.h"
 # include "../system/io.h"
 # include "../memory/mem_alloc.h"
-# include "../data/mem_set.h"
-# include "../data/bcopy.h"
-ffly_err_t ffly_camera_init(ffly_camerap __camera, mdl_uint_t __width, mdl_uint_t __height) {
-    mdl_uint_t size;
-    __camera->pixels = (ffly_byte_t*)__ffly_mem_alloc((size = (__width*__height*4)));
+# include "../dep/mem_set.h"
+# include "../dep/bcopy.h"
+ff_err_t ffly_camera_init(ffly_camerap __camera, ff_uint_t __width, ff_uint_t __height) {
+    ff_uint_t size;
+    __camera->pixels = (ff_byte_t*)__ffly_mem_alloc((size = (__width*__height*4)));
     __camera->width = __width;
     __camera->height = __height;
     __camera->x = 0;
@@ -17,15 +16,15 @@ ffly_err_t ffly_camera_init(ffly_camerap __camera, mdl_uint_t __width, mdl_uint_
     return FFLY_SUCCESS;
 }
 
-void static print_pixel(ffly_byte_t *__pixel) {
-    mdl_u8_t gray = (__pixel[0]+__pixel[1]+__pixel[2])/3;
+void static print_pixel(ff_byte_t *__pixel) {
+    ff_u8_t gray = (__pixel[0]+__pixel[1]+__pixel[2])/3;
     char c[] = {'-', '+', '=', '#'};
     double max = 255.0/sizeof(c);
-    ffly_printf("%c", c[(mdl_u8_t)(gray/max)]);
+    ffly_printf("%c", c[(ff_u8_t)(gray/max)]);
 }
 
-ffly_err_t ffly_camera_print(ffly_camerap __camera) {
-    mdl_uint_t x, y = 0;
+ff_err_t ffly_camera_print(ffly_camerap __camera) {
+    ff_uint_t x, y = 0;
     while(y != __camera->height) {
         x = 0;
         while(x != __camera->width) {
@@ -42,9 +41,9 @@ ffly_err_t ffly_camera_print(ffly_camerap __camera) {
 # ifndef __ffly_testing
 #   include "../graphics/draw.h"
 # endif
-ffly_err_t ffly_camera_draw(ffly_camerap __camera, ffly_byte_t *__dst, mdl_uint_t __width, mdl_uint_t __height, mdl_uint_t __x, mdl_uint_t __y) {
+ff_err_t ffly_camera_draw(ffly_camerap __camera, ff_byte_t *__dst, ff_uint_t __width, ff_uint_t __height, ff_uint_t __x, ff_uint_t __y) {
 # ifdef __ffly_testing
-    mdl_uint_t x, y = 0;
+    ff_uint_t x, y = 0;
     while(y != __camera->height) {
         x = 0;
         while(x != __camera->width) {
@@ -58,11 +57,11 @@ ffly_err_t ffly_camera_draw(ffly_camerap __camera, ffly_byte_t *__dst, mdl_uint_
 # endif
 }
 
-ffly_err_t ffly_camera_handle(ffly_camerap __camera) {
+ff_err_t ffly_camera_handle(ffly_camerap __camera) {
     ffly_mem_set(__camera->pixels, 0, __camera->width*__camera->height*4);
     ffly_uni_frame(__camera->uni, __camera->pixels, __camera->width, __camera->height, 1, __camera->x, __camera->y, 0);
 }
 
-ffly_err_t ffly_camera_bind(ffly_camerap __camera, ffly_unip __uni) {
+ff_err_t ffly_camera_bind(ffly_camerap __camera, ffly_unip __uni) {
     __camera->uni = __uni;
 }

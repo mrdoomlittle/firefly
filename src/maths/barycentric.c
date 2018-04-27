@@ -1,6 +1,6 @@
 # include "barycentric.h"
 # include "dot.h"
-void ffly_barycentric(mdl_int_t __x, mdl_int_t __y, mdl_int_t __z, ffly_vertexp __a, ffly_vertexp __b, ffly_vertexp __c, float *__alpha, float *__beta, float *__gamma) {
+void ffly_barycentric(ff_int_t __x, ff_int_t __y, ff_int_t __z, ffly_vertexp __a, ffly_vertexp __b, ffly_vertexp __c, float *__alpha, float *__beta, float *__gamma) {
     ffly_vertex v0 = {
         .x=__b->x-__a->x,
         .y=__b->y-__a->y,

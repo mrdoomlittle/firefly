@@ -1,7 +1,7 @@
 DEFINES=-I../eint_t/inc -D__DEBUG_ENABLED -D__WITH_MEM_TRACKER
 nasm_flags="-I${PWD}/system/asm/"
 dst_dir=${PWD}
-cc_flags=-O0 -Wall -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr -D__ffly_source -D__fflib
+cc_flags=-O0 -Wall -fno-builtin -D__ffly_testing -D__ffly_no_task_pool -D__ffly_use_allocr -D__ffly_source -D__fflib
 ffly_objs=$(shell export dst_dir=$(dst_dir);export root_dir=${PWD};. ./compile.sh;echo $$ffly_objs)
 lexer: clean
 	gcc $(cc_flags) -Wall -o main lexer.c $(ffly_objs) -nostdlib
@@ -90,9 +90,7 @@ uni: clean
 	gcc $(cc_flags) -c maths/barycentric.c
 	gcc $(cc_flags) -c polygon.c
 	gcc $(cc_flags) -c maths/rotate.c
-	nasm -f elf64 $(nasm_flags) -o round.o.0 maths/asm/round.asm
-	gcc $(cc_flags) -c -o round.o.1 maths/round.c
-	gcc $(cc_flags) main.c cache.o round.o.0 round.o.1 rotate.o polygon.o max.o barycentric.o min.o lot.o obj_manager.o obj_pool.o camera.o obj.o alloc_pixelmap.o uni.o chunk.o chunk_manager.o $(ffly_objs) -nostdlib
+	gcc $(cc_flags) main.c cache.o rotate.o polygon.o max.o barycentric.o min.o lot.o obj_manager.o obj_pool.o camera.o obj.o alloc_pixelmap.o uni.o chunk.o chunk_manager.o $(ffly_objs) -nostdlib
 all:
 	rm -f *.o
 	nasm -f elf64 $(nasm_flags) -o mutex.o system/asm/mutex.asm

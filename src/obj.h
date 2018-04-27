@@ -1,6 +1,6 @@
 # ifndef __ffly__obj__h
 # define __ffly__obj__h
-# include "types/err_t.h" 
+# include "types.h" 
 # include "graphics/image.h"
 # include "types/pixelmap_t.h"
 # include "system/vec.h"
@@ -34,8 +34,8 @@ typedef struct ffly_lot* ffly_lotp;
 struct ffly_obj {
     ffly_polygon shape;
     ffly_pixelmap_t texture;
-    mdl_uint_t xl, yl, zl;
-    mdl_uint_t x, y, z;
+    ff_uint_t xl, yl, zl;
+    ff_uint_t x, y, z;
     ffscriptp script;
     /* cleanup
     */
@@ -59,15 +59,15 @@ typedef ffly_objpp* ffly_objppp;
 extern "C" {
 # endif
 void ffly_obj_rotate(ffly_objp, float);
-ffly_err_t ffly_obj_draw(ffly_objp, ffly_byte_t*, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t);
-ffly_objp ffly_obj_alloc(ffly_err_t*);
-ffly_err_t ffly_obj_free(ffly_objp);
-ffly_err_t ffly_obj_handle(ffly_objp);
-ffly_err_t ffly_obj_prepare(ffly_objp);
-ffly_err_t ffly_obj_cleanup();
+ff_err_t ffly_obj_draw(ffly_objp, ff_byte_t*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
+ffly_objp ffly_obj_alloc(ff_err_t*);
+ff_err_t ffly_obj_free(ffly_objp);
+ff_err_t ffly_obj_handle(ffly_objp);
+ff_err_t ffly_obj_prepare(ffly_objp);
+ff_err_t ffly_obj_cleanup();
 # ifdef __cplusplus
 }
-namespace mdl {
+namespace ff_ {
 namespace firefly {
 typedef ffly_objp objp;
 typedef ffly_objpp objpp;
@@ -85,7 +85,7 @@ struct obj {
         this->raw = ffly_obj_alloc(&err);
         return err;
     }
-    void vertex(mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z) {
+    void vertex(ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
         ffly_obj_vertex(this->raw, __x, __y, __z);
     }
     void setx(uint_t __x){ffly_set_objx(this->raw, __x);}
@@ -113,7 +113,7 @@ struct obj {
     types::err_t handle() {
         return ffly_obj_handle(this->raw);
     }
-    void set_texture(ffly_byte_t *__texture) {
+    void set_texture(ff_byte_t *__texture) {
         this->raw->texture = __texture;
     }
     uint_t getx(){return ffly_get_objx(this->raw);}

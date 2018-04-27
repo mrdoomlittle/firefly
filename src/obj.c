@@ -3,9 +3,8 @@
 # include "memory/mem_alloc.h"
 # include "system/errno.h"
 # include "system/io.h"
-# include "types/byte_t.h"
-# include "data/bcopy.h"
-# include "data/bzero.h"
+# include "dep/bcopy.h"
+# include "dep/bzero.h"
 /*
     using malloc for allocation is fine for now.
     it's only going to be slow when creating and destroying objs repeatedly.
@@ -21,14 +20,14 @@ void ffly_obj_rotate(ffly_objp __obj, float __angle) {
     __obj->angle = __angle;
 }
 
-ffly_err_t ffly_obj_prepare(ffly_objp __obj) {
+ff_err_t ffly_obj_prepare(ffly_objp __obj) {
     __obj->angle = 0.0;
     __obj->lot = NULL;
     __obj->script = NULL;
     ffly_bzero(&__obj->shape, sizeof(ffly_polygon));
 }
 
-ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
+ffly_objp ffly_obj_alloc(ff_err_t *__err) {
     *__err = FFLY_SUCCESS;
     /*
         should have its own memory allocation region for this later,
@@ -58,11 +57,11 @@ ffly_objp ffly_obj_alloc(ffly_err_t *__err) {
     return obj;
 }
 
-ffly_err_t ffly_obj_draw(ffly_objp __obj, ffly_byte_t *__frame, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z, mdl_uint_t __width, mdl_uint_t __height, mdl_uint_t __xmax, mdl_uint_t __ymax) {
+ff_err_t ffly_obj_draw(ffly_objp __obj, ff_byte_t *__frame, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z, ff_uint_t __width, ff_uint_t __height, ff_uint_t __xmax, ff_uint_t __ymax) {
     ffly_draw_polygon(&__obj->shape, __frame, __obj->texture, __obj->xl, __x, __y, __z, __width, __height, __xmax, __ymax, __obj->angle);
 }
 
-ffly_err_t ffly_obj_free(ffly_objp __obj) {
+ff_err_t ffly_obj_free(ffly_objp __obj) {
     ffly_fprintf(ffly_log, "freed object %u.\n", __obj->no);
     if (__obj == top) {
         top = __obj->next;
@@ -85,7 +84,7 @@ ffly_err_t ffly_obj_free(ffly_objp __obj) {
     return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_obj_cleanup() {
+ff_err_t ffly_obj_cleanup() {
     ffly_fprintf(ffly_log, "cleaning up objects.\n");
     ffly_objp obj = top, prev = NULL;
     while(obj != NULL) {
@@ -113,6 +112,6 @@ ffly_err_t ffly_obj_cleanup() {
     fast = fastpool;
 }
 
-ffly_err_t ffly_obj_handle(ffly_objp __obj) {
+ff_err_t ffly_obj_handle(ffly_objp __obj) {
 
 }

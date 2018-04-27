@@ -1,10 +1,8 @@
 # ifndef __ffly__uni__h
 # define __ffly__uni__h
-# include <mdlint.h>
+# include "ffint.h"
+# include "types.h"
 # include "chunk_manager.h"
-# include "types/err_t.h"
-# include "types/off_t.h"
-# include "types/bool_t.h"
 # define ffly_uni_chunk_xal(__uni) \
     (1<<__uni->splice)
 # define ffly_uni_chunk_yal(__uni) \
@@ -33,26 +31,26 @@ enum {
 };
 
 struct ffly_uni {
-    mdl_uint_t splice;
-    mdl_uint_t xcnk_c, ycnk_c, zcnk_c;
+    ff_uint_t splice;
+    ff_uint_t xcnk_c, ycnk_c, zcnk_c;
     struct ffly_cnk_man chunk_man;
-    ffly_id_t *chunks;
-    mdl_uint_t xl, yl, zl;
-    mdl_uint_t chunk_c;
+    ff_id_t *chunks;
+    ff_uint_t xl, yl, zl;
+    ff_uint_t chunk_c;
 };
 
 typedef struct ffly_uni* ffly_unip;
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_uni_attach_obj(ffly_unip, ffly_objp);
-ffly_err_t ffly_uni_detach_obj(ffly_unip, ffly_objp);
-ffly_err_t ffly_uni_obj_move(ffly_unip, ffly_objp, mdl_uint_t, mdl_uint_t, mdl_uint_t);
+ff_err_t ffly_uni_attach_obj(ffly_unip, ffly_objp);
+ff_err_t ffly_uni_detach_obj(ffly_unip, ffly_objp);
+ff_err_t ffly_uni_obj_move(ffly_unip, ffly_objp, ff_uint_t, ff_uint_t, ff_uint_t);
 /* capture frame */
-ffly_err_t ffly_uni_frame(ffly_unip, ffly_byte_t*, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_uint_t);
-ffly_id_t ffly_uni_chunk(ffly_unip, ffly_off_t, ffly_off_t, ffly_off_t);
-ffly_err_t ffly_uni_build(ffly_unip, mdl_uint_t, mdl_uint_t, mdl_uint_t, mdl_u8_t, mdl_u8_t);
-ffly_err_t ffly_uni_free(ffly_unip);
+ff_err_t ffly_uni_frame(ffly_unip, ff_byte_t*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
+ff_id_t ffly_uni_chunk(ffly_unip, ff_off_t, ff_off_t, ff_off_t);
+ff_err_t ffly_uni_build(ffly_unip, ff_uint_t, ff_uint_t, ff_uint_t, ff_u8_t, ff_u8_t);
+ff_err_t ffly_uni_free(ffly_unip);
 # ifdef __cplusplus
 }
 # include "obj.h"

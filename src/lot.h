@@ -1,7 +1,12 @@
 # ifndef __ffly__lot__h
 # define __ffly__lot__h
 # include "obj.h"
-# include <mdlint.h> 
+# include "ffint.h"
+
+/*
+	x*x*x sized block where objects are grouped into a nice package
+	so we dont need to look a large area for it.
+*/
 enum {
     _ffly_lotsize_8 = 3,
     _ffly_lotsize_16,
@@ -14,8 +19,8 @@ struct ffly_lot {
     ffly_objpp top;
     ffly_objpp end;
     ffly_objppp objs;
-    mdl_uint_t xl, yl, zl;
-    mdl_uint_t x, y, z;
+    ff_uint_t xl, yl, zl;
+    ff_uint_t x, y, z;
     /*
         cleanup
     */
@@ -30,8 +35,8 @@ extern "C" {
 void ffly_lot_add(ffly_lotp, ffly_objp);
 void ffly_lot_rm(ffly_lotp, ffly_objp);
 ffly_objpp ffly_lot_obj(ffly_lotp, ffly_objp);
-void ffly_lot_prepare(ffly_lotp, mdl_uint_t, mdl_uint_t, mdl_uint_t);
-ffly_lotp ffly_alloc_lot(mdl_uint_t, mdl_uint_t, mdl_uint_t);
+void ffly_lot_prepare(ffly_lotp, ff_uint_t, ff_uint_t, ff_uint_t);
+ffly_lotp ffly_alloc_lot(ff_uint_t, ff_uint_t, ff_uint_t);
 void ffly_lot_cleanup();
 void ffly_free_lot(ffly_lotp);
 # ifdef __cplusplus

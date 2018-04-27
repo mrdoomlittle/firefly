@@ -1,8 +1,8 @@
 # ifndef __ffly__vertex__h
 # define __ffly__vertex__h
-# include <mdlint.h>
+# include "ffint.h"
 typedef struct {
-    mdl_int_t x, y, z;
+   ff_int_t x, y, z;
 } ffly_vertex;
 
 typedef ffly_vertex* ffly_vertexp;

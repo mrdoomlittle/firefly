@@ -10,21 +10,21 @@
 
 static ffly_chunkp top = NULL;
 static ffly_chunkp end = NULL;
-ffly_lotpp ffly_fetch_lot(ffly_chunkp __chunk, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z) {
-	mdl_uint_t x = lotsplice(__x-__chunk->x, __chunk->lotsize);
-	mdl_uint_t y = lotsplice(__y-__chunk->y, __chunk->lotsize);
-	mdl_uint_t z = lotsplice(__z-__chunk->z, __chunk->lotsize);
+ffly_lotpp ffly_fetch_lot(ffly_chunkp __chunk, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
+	ff_uint_t x = lotsplice(__x-__chunk->x, __chunk->lotsize);
+	ff_uint_t y = lotsplice(__y-__chunk->y, __chunk->lotsize);
+	ff_uint_t z = lotsplice(__z-__chunk->z, __chunk->lotsize);
 //	  ffly_fprintf(ffly_log, "fetching lot at %ux%ux%u or %ux%ux%u, lotsize: %u, chunk: %ux%ux%u\n", x, y, z, __xa, __ya, __za, 1<<__chunk->lotsize, __chunk->xa, __chunk->ya, __chunk->za);
 	return __chunk->lots+x+(y*__chunk->lotx)+(z*(__chunk->loty*__chunk->lotx));
 }
 
-void ffly_chunk_prepare(ffly_chunkp __chunk, mdl_uint_t __x, mdl_uint_t __y, mdl_uint_t __z) {
+void ffly_chunk_prepare(ffly_chunkp __chunk, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 	__chunk->x = __x;
 	__chunk->y = __y;
 	__chunk->z = __z;
 }
 
-ffly_chunkp ffly_alloc_chunk(mdl_uint_t __xl, mdl_uint_t __yl, mdl_uint_t __zl, mdl_u8_t __lotsize) {
+ffly_chunkp ffly_alloc_chunk(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_u8_t __lotsize) {
 	if (!workable_lotsize(1<<__lotsize)) {
 		ffly_fprintf(ffly_err, "lotsize not workable, %u\n", 1<<__lotsize);
 		return NULL;
@@ -67,7 +67,7 @@ ffly_chunkp ffly_alloc_chunk(mdl_uint_t __xl, mdl_uint_t __yl, mdl_uint_t __zl, 
 	chunk->lotz = lotsplice(__zl, __lotsize);
 
 	chunk->lots = (ffly_lotpp)__ffly_mem_alloc((chunk->lotx*chunk->loty*chunk->lotz)*sizeof(ffly_lotp));
-	mdl_uint_t x, y, z = 0;
+	ff_uint_t x, y, z = 0;
 	ffly_fprintf(ffly_log, "new chunk, %u-%u-%u\n", __xl, __yl, __zl);
 	while(z != chunk->lotz) {
 		y = 0;

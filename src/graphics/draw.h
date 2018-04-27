@@ -1,8 +1,7 @@
 # ifndef __ffly__graphics__draw__h
 # define __ffly__graphics__draw__h
-# include <mdlint.h>
-# include "../types/err_t.h"
-# include "../types/byte_t.h"
+# include "../ffint.h"
+# include "../types.h"
 # ifdef __cplusplus
 # ifndef __NVCC__
 #	include "pipe.h"
@@ -21,8 +20,8 @@ types::err_t static pixeldraw(uint_t __x, uint_t __y, types::byte_t *__dst, uint
 }
 extern "C" {
 # endif
-ffly_err_t ffly_pixeldraw(mdl_uint_t, mdl_uint_t, ffly_byte_t*, mdl_uint_t, ffly_byte_t*, mdl_uint_t, mdl_uint_t);
-ffly_err_t ffly_pixdraw(mdl_uint_t, mdl_uint_t, ffly_byte_t*, mdl_uint_t, ffly_byte_t*, mdl_uint_t, mdl_uint_t);
+ff_err_t ffly_pixeldraw(ff_uint_t, ff_uint_t, ff_byte_t*, ff_uint_t, ff_byte_t*, ff_uint_t, ff_uint_t);
+ff_err_t ffly_pixdraw(ff_uint_t, ff_uint_t, ff_byte_t*, ff_uint_t, ff_byte_t*, ff_uint_t, ff_uint_t);
 # ifdef __cplusplus
 }
 # endif
