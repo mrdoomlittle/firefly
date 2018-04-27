@@ -11,6 +11,7 @@
 # include "linux/time.h"
 # include "linux/input-event-codes.h"
 # include "linux/input.h"
+# define __ffly_debug_enabled
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "dep/mem_set.h"
@@ -114,22 +115,22 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_uni_attach_obj(&uni, obj);
 */
-/*
+
 	int fd;
-	if ((fd = open("/dev/input/event2", O_RDONLY|O_NONBLOCK, 0)) == -1) {
+	if ((fd = open("input", O_RDONLY|O_NONBLOCK|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR)) == -1) {
 		ffly_printf("failed to open.\n");
 		return -1;
 	} 
-*/
-/*
+
 	ff_u64_t update = 200000, i = 0;
 
 	float r = 0.0;
 	ff_i8_t dir = -1;
 	ff_uint_t cam_x = 0, cam_y = 0, x = ffly_obj_man_get(&obj_man, obj0)->x, y = ffly_obj_man_get(&obj_man, obj0)->y;
 	while(1) {
-		struct input_event event;
-		if (read(fd, &event, sizeof(struct input_event)) < 0) goto _sk;
+		char c;
+		if (read(fd, &c, 1) < 0) goto _sk;
+		/*
 		if (event.type == EV_KEY) {
 			switch(event.code) {
 				case KEY_SPACE:
@@ -171,18 +172,33 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 				}
 				
 			}
-		}
+		}*/
 
+		switch(c) {
+			case '!':
+				goto _exit;
+			case 'w':
+				if (cam_y>0) cam_y--;
+			break;
+			case 's':
+				cam_y++;
+			break;
+			case 'a':
+				if (cam_x>0) cam_x--;
+			break;
+			case 'd':
+				cam_x++;
+			break;
+		}
 		ffly_set_camerax(camera, cam_x);
 		ffly_set_cameray(camera, cam_y);
-		_sk:
+	_sk:
 
 		if (x == 0)
 			dir = 1;
 		if (x == 20)
 			dir = -1;
 		x+=dir;
-
 
 		if (y == 0)
 			dir = 1;
@@ -191,25 +207,22 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		y+=dir;
 		ffly_uni_obj_move(&uni, ffly_obj_man_get(&obj_man, obj0), x, y, 0); 
 		if (i > update) {
- //			  if (r >= 360) r = 0.0;
-   //		  ffly_obj_rotate(obj, r);
-	 //		  r+= 1;		 
+ 			if (r >= 360) r = 0.0;
+			ffly_obj_rotate(obj, r);
+			r+= 1;		 
 			ffly_camera_handle(&camera);
-			ffly_printf("-------------- x: %u:%u, y: %u:%u -------------\n", x, cam_x, y, cam_y);
+			ffly_printf("\e[2J-------------- x: %u:%u, y: %u:%u ------------- memusage: %u\n", x, cam_x, y, cam_y, ffly_mem_alloc_bc-ffly_mem_free_bc);
 			ffly_camera_print(&camera);
 			i = 0;
 		} else
 			i++;
 	}
 
-*/
-	ffly_camera_handle(&camera);
-	ffly_camera_print(&camera);
 _exit:
 	ffly_chunk_cleanup();
 	ffly_obj_cleanup();
 	ffly_lot_cleanup();
 	ffly_uni_free(&uni);
-//	close(fd);
+	close(fd);
 //	ffly_cache_free();
 }
