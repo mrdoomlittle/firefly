@@ -267,6 +267,7 @@ void absorb_relocate(ffef_relp __rel) {
 	currel = rel;
 	rel->offset = bot+__rel->offset;
 	rel->l = __rel->l;
+	rel->addto = __rel->addto;
 	rel->sy = *(syt-__rel->sy);
 	printf("reloc: symbol, %s\n", rel->sy->name);
 }
@@ -380,7 +381,8 @@ void latch_hooks() {
 void reloc() {
 	relocatep cur = currel;
 	while(cur != NULL) {
-		bond_write(cur->offset, &cur->sy->loc, cur->l);	
+		ff_u64_t loc = cur->sy->loc+cur->addto;
+		bond_write(cur->offset, &loc, cur->l);	
 		cur = cur->next;
 	}
 }

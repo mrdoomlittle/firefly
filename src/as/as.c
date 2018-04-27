@@ -23,6 +23,8 @@ segmentp curseg = NULL;
 regionp curreg = NULL;
 relocatep rel = NULL;
 hookp hok = NULL;
+
+labelp curlabel = NULL;
 ff_u64_t offset = 0;
 ff_u32_t adr = 0;
 
@@ -167,6 +169,7 @@ assemble(char *__p, char *__end) {
 				la->sy = s;
 				s->sort = SY_LABEL;
 				s->type = FF_SY_LCA;
+				curlabel = la;
 				printf("label\n");
 			} else if (is_sydir(sy)) {
 				printf("directive, %s\n", sy->p);
@@ -217,10 +220,21 @@ assemble(char *__p, char *__end) {
 					s->sort = 0;
 					printf("extern %s\n", sy->next->p);
 					*(extrn++) = sy->next->p;
+				} else if (*(char*)sy->p == 'l') {
+					local_labelp ll = (local_labelp)hash_get(&env, sy->next->p, sy->next->len);	
+					ff_i8_t exist = !ll?-1:0;
+					ffly_printf("---> %d, %s\n", exist, sy->next->p);
+					if (exist == -1) {
+						ll = (local_labelp)_alloca(sizeof(struct local_label));
+						hash_put(&env, sy->next->p, sy->next->len, ll);
+					}
+
+					ll->adr = curadr();
 				}
 			} else {
+				ffly_printf("--| %s\n", sy->p);
 				insp ins;
-				if ((ins = (insp)hash_get(&env, sy->p, sy->len))) {
+				if ((ins = (insp)hash_get(&env, sy->p, sy->len)) != NULL) {
 					symbolp cur = sy->next;
 					while(cur != NULL) {
 						adaptreg(cur);
@@ -229,7 +243,12 @@ assemble(char *__p, char *__end) {
 
 					ins->l = sy->next;
 					if (sy->next != NULL) {
-						if (is_sylabel(sy->next)) {
+						if (is_syll(sy->next)) {
+							void *p;
+							if (!(p = hash_get(&env, sy->next->p, ffly_str_len(sy->next->p))))
+								hash_put(&env, sy->next->p, sy->next->len, p = _alloca(sizeof(struct local_label)));
+							sy->next->p = p;
+						} else if (is_sylabel(sy->next)) {
 							void *p;
 							if (!(p = hash_get(&env, sy->next->p, ffly_str_len(sy->next->p))))
 								hash_put(&env, sy->next->p, sy->next->len, p = _alloca(sizeof(struct label)));
@@ -250,16 +269,17 @@ assemble(char *__p, char *__end) {
 	}
 }
 
-void reloc(ff_u64_t __offset, ff_u8_t __l, symbolp *__sy) {
+void reloc(ff_u64_t __offset, ff_u8_t __l, symbolp *__sy, local_labelp __ll) {
 	relocatep rl = (relocatep)_alloca(sizeof(struct relocate));
 	rl->offset = __offset;
 	rl->l = __l;
 	rl->sy = __sy;
 	rl->next = rel;
+	rl->ll = __ll;
 	rel = rl;
 }
 
-void hook(ff_u64_t __offset, ff_u8_t __l, symbolp *__to) {
+void hook(ff_u64_t __offset, ff_u8_t __l, symbolp *__to, local_labelp __ll) {
 	hookp hk = (hookp)_alloca(sizeof(struct hook));
 
 	hk->offset = __offset;
@@ -341,6 +361,7 @@ void finalize(void) {
 			struct ffef_rel rel;
 			rel.offset = rl->offset;
 			rel.l = rl->l;
+			rel.addto = !rl->ll?0:(rl->ll->adr-(*rl->ll->p_adr));
 			printf("reloc: %s\n", (*rl->sy)->p);
 			rel.sy = (*rl->sy)->off;
 			oust((ff_u8_t*)&rel, ffef_relsz);

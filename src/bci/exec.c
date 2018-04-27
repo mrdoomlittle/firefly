@@ -57,6 +57,6 @@ void ffbci_exec(void *__bin, void *__end, void(*__prep)(void*, void*), void *__h
 		__prep(__hdr, (void*)&ctx);
 	ff_err_t exit_code;
 	ffly_bci_exec(&ctx, &exit_code);
-	printf("exit code: %u\n", exit_code);
+	printf("exit code: %d\n", exit_code);
 	ffly_bci_de_init(&ctx);
 }

@@ -41,6 +41,11 @@ typedef struct label {
 	regionp reg;
 } *labelp;
 
+typedef struct local_label {
+	ff_uint_t adr;
+	ff_uint_t *p_adr;
+} *local_labelp;
+
 typedef struct segment {
 	struct segment *next;
 	ff_u64_t offset;
@@ -62,6 +67,7 @@ typedef struct relocate {
 	ff_u64_t offset;
 	ff_u8_t l;
 	symbolp *sy;
+	local_labelp ll;
 } *relocatep;
 
 typedef struct hook {
@@ -103,8 +109,8 @@ void oust_64l(ff_u64_t);
 ff_uint_t stt(char const*, ff_uint_t);
 ff_u64_t stt_drop();
 
-void reloc(ff_u64_t, ff_u8_t, symbolp*);
-void hook(ff_u64_t, ff_u8_t, symbolp*);
+void reloc(ff_u64_t, ff_u8_t, symbolp*, local_labelp);
+void hook(ff_u64_t, ff_u8_t, symbolp*, local_labelp);
 void finalize(void);
 void ffas_init(void);
 void ffas_de_init(void);

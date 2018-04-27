@@ -666,6 +666,7 @@ char const static *keywords[] = {
 	"brk",
 	"as",
 	"out",
+	"goto",
 	NULL
 };
 
@@ -697,6 +698,7 @@ ff_u8_t static keyword_ids[] = {
 	_k_brk,
 	_k_as,
 	_k_out,
+	_k_goto,
 	0
 };
 

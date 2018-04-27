@@ -2,6 +2,7 @@
 # include "../../ffly_def.h"
 # include "../../stdio.h"
 
+labelp extern curlabel;
 // bed of stack
 ff_uint_t static bed = 0;
 
@@ -29,6 +30,10 @@ typedef struct {
 # define el_rg 0xc
 # define ae_rg 0xd
 
+# define xes_rg 0xe 
+# define els_rg 0xf
+# define ls_rg 0x10
+# define xs_rg 0x11
 void oust_addr(ff_addr_t __addr) {
 	oust((ff_u8_t*)&__addr, sizeof(ff_addr_t));
 }
@@ -39,6 +44,7 @@ reginfo reg[] = {
 	{"rax", 8, 16},	{"eax", 4, 16},	{"ax", 2, 16},	{"al", 1, 16},
 	{"rlx", 8, 24},	{"elx", 4, 24},	{"lx", 2, 24},	{"ll", 1, 24},
 	{"rel", 8, 32},	{"ael", 4, 32},	{"el", 2, 32},	{"ae", 1, 32},
+	{"xes", 8, 40}, {"els", 4, 40}, {"ls", 2, 40},  {"xs", 1, 40},
 };
 
 /*
@@ -59,6 +65,10 @@ reginfo reg[] = {
 	ael	=	10100111	= 229
 	el	=	11100111	= 231
 	ae	=	10101111	= 245
+	xes	=				= 211
+	els	=				= 199
+	ls	=				= 207
+	xs	=				= 219
 	sp	=	11111111	= 95
 	bp	=	11111111	= 63
 */
@@ -114,6 +124,10 @@ getreg(char const *__name) {
 		case 229:	return reg+ael_rg;
 		case 231:	return reg+el_rg;
 		case 245:	return reg+ae_rg;
+		case 211:	return reg+xes_rg;
+		case 199:	return reg+els_rg;
+		case 207:	return reg+ls_rg;
+		case 219:	return reg+xs_rg;
 		case 95:	return reg+sp_rg;
 		case 63:	return reg+bp_rg;
 	}
@@ -125,7 +139,7 @@ ff_addr_t rgadr(char const *__reg) {
 	return getreg(__reg)->addr;
 }
 
-# define POSTST 40//registers
+# define POSTST 48//registers
 void prepstack(void) {
 	bed+=POSTST;		
 }
@@ -258,12 +272,20 @@ void op_st(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt) {
 	oust_addr(__rt);
 }
 
-void emit_ldq(insp __ins) {
-	op_ld(__ins->op, 8, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
-}
-
 void emit_ldb(insp __ins) {
 	op_ld(__ins->op, 1, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+}
+
+void emit_ldw(insp __ins) {
+	op_ld(__ins->op, 2, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+}
+
+void emit_ldd(insp __ins) {
+	op_ld(__ins->op, 4, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+}
+
+void emit_ldq(insp __ins) {
+	op_ld(__ins->op, 8, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
 }
 
 void emit_stb(insp __ins) {
@@ -282,27 +304,48 @@ void emit_stq(insp __ins) {
 	op_st(__ins->op, 8, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
 }
 
+void op_out(ff_u8_t __op, ff_u8_t __l, ff_addr_t __adr) {
+	oustbyte(__op);
+	oustbyte(__l);
+	oust_addr(__adr);
+}
+
+void emit_outq(insp __ins) {
+	op_out(__ins->op, 8, *(ff_addr_t*)__ins->l->p);
+}
+
+void emit_outd(insp __ins) {
+	op_out(__ins->op, 4, *(ff_addr_t*)__ins->l->p);
+}
+
+void emit_outw(insp __ins) {
+	op_out(__ins->op, 2, *(ff_addr_t*)__ins->l->p);
+}
+
 void emit_outb(insp __ins) {
-	oustbyte(__ins->op);
-	oustbyte(1);
-	oust_addr(*(ff_addr_t*)__ins->l->p);
+	op_out(__ins->op, 1, *(ff_addr_t*)__ins->l->p);
 }
 
 void static
 emit_jmp(insp __ins) {
 	char const *rgname = rbl(sizeof(ff_addr_t));
 	symbolp l = __ins->l;
-	ff_uint_t adr;
+	local_labelp ll = NULL;
 
-	labelp la = (labelp)l->p;
-	adr = la->adr;
+	labelp la;
+	if (is_syll(l)) {
+		la = curlabel;
+		ll = (local_labelp)l->p;
+		ll->p_adr = &curlabel->adr; 
+	} else
+		la = (labelp)l->p;
 
-	rgasw(rgname, adr);
+	rgasw(rgname, 0);
 
-	void(*p)(ff_u64_t, ff_u8_t, symbolp*) = 
+	void(*p)(ff_u64_t, ff_u8_t, symbolp*, local_labelp) = 
 		is_flag(la->flags, LA_LOOSE)?hook:reloc;
 
-	p(offset-sizeof(ff_addr_t), 2, &la->sy);
+	p(offset-sizeof(ff_addr_t), 2, &la->sy, ll);
 	oustbyte(__ins->op);
 	oust_addr(getreg(rgname)->addr);
 }
@@ -401,20 +444,43 @@ emit_cmpb(insp __ins) {
 }
 
 void static
+emit_cmpw(insp __ins) {
+	op_cmp(__ins->op, 2, *(ff_addr_t*)__ins->l->p,
+		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
+}
+
+void static
+emit_cmpd(insp __ins) {
+	op_cmp(__ins->op, 4, *(ff_addr_t*)__ins->l->p,
+		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
+}
+
+void static
+emit_cmpq(insp __ins) {
+	op_cmp(__ins->op, 8, *(ff_addr_t*)__ins->l->p,
+		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
+}
+
+void static
 emit_cjmp(insp __ins) {
 	char const *rgname = rbl(sizeof(ff_addr_t));
 	symbolp l = __ins->l;
-	ff_uint_t adr;
+	local_labelp ll = NULL;
 
-	labelp la = (labelp)l->p;
-	adr = la->adr;
+	labelp la;
+	if (is_syll(l)) {
+		la = curlabel;
+		ll = (local_labelp)l->p;
+		ll->p_adr = &curlabel->adr;
+	} else 
+		la = (labelp)l->p;
 
-	rgasw(rgname, adr);
+	rgasw(rgname, 0);
 
-	void(*p)(ff_u64_t, ff_u8_t, symbolp*) = 
+	void(*p)(ff_u64_t, ff_u8_t, symbolp*, local_labelp) = 
 		is_flag(la->flags, LA_LOOSE)?hook:reloc;
 	
-	p(offset-sizeof(ff_addr_t), 2, &la->sy);
+	p(offset-sizeof(ff_addr_t), 2, &la->sy, ll);
 	oustbyte(__ins->op);
 	oust_addr(getreg(rgname)->addr);
 	oust_addr(*(ff_addr_t*)__ins->r->p);
@@ -444,17 +510,14 @@ void static
 emit_call(insp __ins) {
 	char const *rgname = rbl(sizeof(ff_addr_t));
 	symbolp l = __ins->l;
-	ff_uint_t adr;
-
 	labelp la = (labelp)l->p;
-	adr = la->adr;
 
-	rgasw(rgname, adr);
+	rgasw(rgname, 0);
 
-	void(*p)(ff_u64_t, ff_u8_t, symbolp*) = 
+	void(*p)(ff_u64_t, ff_u8_t, symbolp*, local_labelp) = 
 		is_flag(la->flags, LA_LOOSE)?hook:reloc;
 
-	p(offset-sizeof(ff_addr_t), 2, &la->sy);
+	p(offset-sizeof(ff_addr_t), 2, &la->sy, NULL);
 	op_call(__ins->op, getreg(rgname)->addr);
 }
 
@@ -469,13 +532,18 @@ struct ins *bc[] = {
 	&(struct ins){"asw", NULL, emit_asw, NULL, NULL, _op_as},
 	&(struct ins){"asd", NULL, emit_asd, NULL, NULL, _op_as},
 	&(struct ins){"asq", NULL, emit_asq, NULL, NULL, _op_as},
-	&(struct ins){"ldq", NULL, emit_ldq, NULL, NULL, _op_ld},
 	&(struct ins){"ldb", NULL, emit_ldb, NULL, NULL, _op_ld},
+	&(struct ins){"ldw", NULL, emit_ldw, NULL, NULL, _op_ld},
+	&(struct ins){"ldd", NULL, emit_ldd, NULL, NULL, _op_ld},
+	&(struct ins){"ldq", NULL, emit_ldq, NULL, NULL, _op_ld},
 	&(struct ins){"stb", NULL, emit_stb, NULL, NULL, _op_st},
 	&(struct ins){"stw", NULL, emit_stb, NULL, NULL, _op_st},
-	&(struct ins){"std", NULL, emit_stb, NULL, NULL, _op_st},
+	&(struct ins){"std", NULL, emit_stb, NULL, NULL, _op_st},	
 	&(struct ins){"stq", NULL, emit_stq, NULL, NULL, _op_st},
 	&(struct ins){"outb", NULL, emit_outb, NULL, NULL, _op_out},
+	&(struct ins){"outw", NULL, emit_outw, NULL, NULL, _op_out},
+	&(struct ins){"outd", NULL, emit_outd, NULL, NULL, _op_out},
+	&(struct ins){"outq", NULL, emit_outq, NULL, NULL, _op_out},
 	&(struct ins){"jmp", NULL, emit_jmp, NULL, NULL, _op_jmp},
 	&(struct ins){"rin", NULL, emit_rin, NULL, NULL, _op_rin},
 	&(struct ins){"divb", NULL, emit_armb, NULL, NULL, _op_div},
@@ -491,6 +559,9 @@ struct ins *bc[] = {
 	&(struct ins){"incb", NULL, emit_incb, NULL, NULL, _op_inc},
 	&(struct ins){"decb", NULL, emit_decb, NULL, NULL, _op_dec},
 	&(struct ins){"cmpb", NULL, emit_cmpb, NULL, NULL, _op_cmp},
+	&(struct ins){"cmpw", NULL, emit_cmpw, NULL, NULL, _op_cmp},
+	&(struct ins){"cmpd", NULL, emit_cmpd, NULL, NULL, _op_cmp},
+	&(struct ins){"cmpq", NULL, emit_cmpq, NULL, NULL, _op_cmp},
 	&(struct ins){"je", NULL, emit_cjmp, NULL, NULL, _op_je},
 	&(struct ins){"jne", NULL, emit_cjmp, NULL, NULL, _op_jne},
 	&(struct ins){"jg", NULL, emit_cjmp, NULL, NULL, _op_jg},

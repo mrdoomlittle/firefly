@@ -9,7 +9,7 @@
 # define SY_DIR 0x6
 # define SY_REG 0x7
 # define SY_UNKNOWN 0x8
-
+# define SY_LL 0x9
 # define is_syreg(__st) \
 	((__sy)->sort==SY_REG)
 # define is_symac(__sy) \
@@ -21,10 +21,11 @@
 # define is_syint(__sy) \
     ((__sy)->sort==SY_INT)
 # define is_sylabel(__sy) \
-    ((__sy)->sort==SY_LABEL)
+	((__sy)->sort==SY_LABEL)
 # define is_sydir(__sy) \
-    ((__sy)->sort==SY_DIR)
-
+	((__sy)->sort==SY_DIR)
+# define is_syll(__sy) \
+	((__sy)->sort==SY_LL)
 typedef struct symbol {
 	void *p;
 	

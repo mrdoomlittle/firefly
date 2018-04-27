@@ -1115,7 +1115,6 @@ parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
 				goto _next;
 			}
 		}
-
 	_sk:
 		if (!expect_token(__compiler, _tok_keywd, _r_paren)) {
 			errmsg("expect error.\n");

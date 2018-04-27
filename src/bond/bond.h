@@ -45,6 +45,7 @@ typedef struct relocate {
 	struct relocate *next;
 	ff_u64_t offset;
 	ff_u8_t l;
+	ff_u16_t addto;
 	symbolp sy;
 } *relocatep;
 

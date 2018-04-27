@@ -164,7 +164,7 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 	__bci->ip_off = 0;
 	ff_u8_t opno;	
 	if ((opno = get_8l(__bci, &err)) >= NOOP) {
-		//ffly_errmsg("opno invalid, got: %u\n", opno);
+		ffly_printf("opno invalid, got: %u\n", opno);
 		return FFLY_FAILURE;
 	}
 	ffly_nanosleep(0, 1000000); // <- debug
@@ -201,6 +201,7 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 				dst = lt+rt;
 			break;
 		}
+
 		stack_put(__bci, (ff_u8_t*)&dst, l, dst_adr);
 	}
 	fi;
@@ -230,7 +231,7 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 		stack_get(__bci, (ff_u8_t*)&lv, l, la);
 		stack_get(__bci, (ff_u8_t*)&rv, l, ra);
 
-		ff_u8_t flags = 0;
+		ff_u8_t flags = 0x0;
 		if (lv>rv) flags |= _gt;
 		if (lv<rv) flags |= _lt;
 		if (lv==rv) flags |= _eq;

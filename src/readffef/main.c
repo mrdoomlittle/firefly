@@ -76,7 +76,7 @@ void prhok(ffef_hokp __hok, ff_uint_t __no) {
 }
 
 void prrel(ffef_relp __rel, ff_uint_t __no) {
-	printf("%u: relocate,\toffset: %u,\tlength: %u,\tsymbol: %u\n", __no, __rel->offset, __rel->l, __rel->sy);
+	printf("%u: relocate,\toffset: %u,\tlength: %u,\tsymbol: %u,\taddto: %u\n", __no, __rel->offset, __rel->l, __rel->sy, __rel->addto);
 }
 
 int main(int __argc, char const *__argv[]) {

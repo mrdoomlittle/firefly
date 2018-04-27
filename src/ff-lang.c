@@ -14,8 +14,14 @@ char const static *keywords[] = {
 	"void",
 	"ret",
 	"u8_t",
+	"u16_t",
+	"u32_t",
+	"u64_t",
 	"out",
 	"typedef",
+	"exit",
+	"goto",
+	"if",
 	NULL
 };
 

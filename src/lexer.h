@@ -86,7 +86,8 @@ enum {
     _k_brk,
     _ellipsis,
     _plus,
-    _minus
+    _minus,
+	_k_goto
 };
 
 # endif /*__ffly__lexer__h*/

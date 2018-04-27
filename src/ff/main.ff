@@ -1,5 +1,6 @@
 %include "lib/types.ff"
 %define return ret
+/*
 void ts0();
 void ts1();
 void ts2();
@@ -46,4 +47,20 @@ void ts4() {
 void ts5() {
 	char n = 5;
 	out(n);
+}
+*/
+void abort(u8_t __code) {
+	exit __code;
+}
+
+void ts0(u8_t __a, u16_t __b, u32_t __c, u64_t __d) {
+	out(__a);
+	out(__b);
+	out(__c);
+	out(__d);
+}
+
+u8_t main() {
+	u8_t a = 21;
+	ts0(a, 4, 6, 8);	
 }

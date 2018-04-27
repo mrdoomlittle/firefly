@@ -1,1 +1,14 @@
-%include "lib/types.ff"
+as(	"_start:\n"
+	"rin 0\n"
+	"call $main\n"
+	"exit %al\n");
+
+void main() {
+	u8_t a = 0;
+bk:
+	out(a);
+	if (a != 21) {
+		a = a+1;
+		goto bk;
+	}
+}

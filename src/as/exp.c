@@ -20,6 +20,19 @@ symbolp eval(char *__s) {
 		while(*p == ' ') p++;
 		if (*p == '\0') break;
 		switch(*p) {
+			case '#': {
+				p++;
+				ff_uint_t l;
+				bufp = buf;
+				while((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'z'))
+					*(bufp++) = *(p++);
+				*bufp = '\0';
+				l = bufp-buf;
+				cur->p = _memdup(buf, l+1);
+				cur->sort = SY_LL;
+				cur->len = l;
+				break;
+			}
 			case '(':
 				p++;
 				cur->flags |= S_ADR;

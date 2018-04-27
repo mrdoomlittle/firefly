@@ -150,7 +150,9 @@ enum {
     _op_mul,
     _op_div,
 	_ast_as,
-	_ast_out
+	_ast_out,
+	_ast_label,
+	_ast_jmpto
 };
 
 enum {
@@ -186,16 +188,16 @@ struct node {
     ff_byte_t val[sizeof(ff_u64_t)];
     struct node *init, *var, *arg;
     struct obj *_obj, **jmp;
-    struct node *l, *r, *operand, *no, *ret;
+    struct node *l, *r, *operand, *no, *ret, *code;
     struct node *cond, *call, *_struct;
     struct ffly_vec block, args, params;
     struct ffly_vec _else, _do;
     ffly_pair pair;
     void *p;
     ff_bool_t va;
-	ffly_vecp _block;
 	ff_u8_t flags;
-	ff_uint_t s_off;
+	ff_int_t s_off;
+	struct node *rtv;
 	struct ffly_vec var_pond;
 	struct ffly_vec fields;
 };
