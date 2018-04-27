@@ -1,1 +1,25 @@
 I'm only working on this engine because i just enjoy making shit.
+compile & run:
+- src/main.c -
+this is for testing object, universe, camera.
+cd src && make uni
+
+execute: ./a.out 
+
+- src/ff-lang.c -
+firefly language.
+cd src && make ffc
+
+execute: ./ffc
+
+- src/script.c -
+firefly script
+cd src && make script
+
+execute: ./main
+
+look for compile.sh as i use it to compile src/as, src/bond, etc
+
+mechine: x86_64
+OS: GNU/Linux - debian
+version: Debian 4.9.82-1+deb9u3
