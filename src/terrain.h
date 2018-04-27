@@ -2,6 +2,8 @@
 # define __ffly__terrain__h
 # include "ffint.h"
 # include "types.h"
+
+
 typedef struct ffly_terrain {
 		ff_uint_t x_stretch;
 		ff_uint_t y_stretch;
