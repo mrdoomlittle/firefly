@@ -1,4 +1,4 @@
-cc_flags="-D__ffly_use_x11 -D__ffly_bridge"
+cc_flags="-D__ffly_use_x11 -D__ffly_bridge -D__ffly_source"
 rm -f *.o
 gcc $cc_flags -c ../system/file.c
 gcc $cc_flags -c window.c

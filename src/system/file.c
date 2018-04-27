@@ -16,7 +16,6 @@
 
 # ifndef __fflib
 # include <string.h>
-typedef ff_s32_t __linux_off_t;
 # define is_flag(__flags, __flag) \
 	(((__flags)&(__flag))==(__flag))
 char const static* mode_str(ff_u32_t __flags) {

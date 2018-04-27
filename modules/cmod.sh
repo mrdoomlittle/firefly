@@ -1,6 +1,6 @@
 cc_flags="-D__fflib -D__ffly_source -D__ffly_module -fno-builtin"
 
-gcc $cc_flags -c main.c
+gcc $cc_flags -c start.c
 gcc $cc_flags -c ../src/mod/printf.c
 gcc $cc_flags -c ../src/mod/malloc.c
 gcc $cc_flags -c ../src/system/string.c
@@ -37,4 +37,4 @@ sys_shmctl.o.0 sys_shmctl.o.1 sys_shmget.o.0 sys_shmget.o.1 sys_shmat.o.0 sys_sh
 sys_shmdt.o.0 sys_shmdt.o.1 io.o mode.o ring.o mod_pipe.o copy.o mutex.o.0 mutex.o.1 \
 errno.o"
 
-gcc $cc_flags main.o $ffly_objs $1 -nostdlib
+gcc $cc_flags start.o $ffly_objs $1 -nostdlib

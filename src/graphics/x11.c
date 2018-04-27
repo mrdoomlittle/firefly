@@ -9,7 +9,7 @@ int unsigned static keycodes[] = {
     _ffly_key_d
 };
 
-mdl_u8_t ffly_x11_convert_btnno(int unsigned __btn) {
+ff_u8_t ffly_x11_convert_btnno(int unsigned __btn) {
 	return __btn;
 }
 
@@ -20,10 +20,10 @@ ffly_keycode_t ffly_x11_convert_keycode(int unsigned __keycode) {
 		case 39: return _ffly_key_s;
 		case 40: return _ffly_key_d;
 	}
-	return 0xFF;
+	return 0xff;
 }
 
-ffly_err_t ffly_x11_query_pointer(struct ffly_x11_wd *__wd, mdl_i16_t *__root_xa, mdl_i16_t *__root_ya, mdl_i16_t *__wd_xa, mdl_i16_t *__wd_ya) {
+ff_err_t ffly_x11_query_pointer(struct ffly_x11_wd *__wd, ff_i16_t *__root_xa, ff_i16_t *__root_ya, ff_i16_t *__wd_xa, ff_i16_t *__wd_ya) {
     Window root, child; // not needed for now
     int root_xa, root_ya, wd_xa, wd_ya;
     int unsigned mask;

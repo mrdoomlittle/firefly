@@ -1,7 +1,8 @@
 # ifndef __ffly__wd__ed__t__h
 # define __ffly__wd__ed__t__h
+# include "../ffint.h"
 typedef struct {
-	mdl_uint_t code;
+	ff_uint_t code;
 } ffly_wd_ed_t;
 # ifdef __cplusplus
 namespace mdl {

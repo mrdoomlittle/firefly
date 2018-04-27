@@ -4,9 +4,9 @@
 # include "errno.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_realloc.h"
-# include "../data/mem_cpy.h"
+# include "../dep/mem_cpy.h"
 # include "../memory/mem_free.h"
-ffly_err_t ffly_queue_init(ffly_queuep __queue, mdl_uint_t __blk_size) {
+ff_err_t ffly_queue_init(ffly_queuep __queue, ff_uint_t __blk_size) {
 	__queue->page_c = 0;
 	if ((__queue->p = (void**)__ffly_mem_alloc((++__queue->page_c)*sizeof(void*))) == NULL) {
 		ffly_fprintf(ffly_err, "queue: failed to alloc memory.\n");
@@ -23,7 +23,7 @@ ffly_err_t ffly_queue_init(ffly_queuep __queue, mdl_uint_t __blk_size) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_queue_de_init(ffly_queuep __queue) {
+ff_err_t ffly_queue_de_init(ffly_queuep __queue) {
 	void **itr = __queue->p;
 	while(itr != __queue->p+__queue->page_c) {
 		if (*itr != NULL) {
@@ -38,8 +38,8 @@ ffly_err_t ffly_queue_de_init(ffly_queuep __queue) {
 	return FFLY_SUCCESS;
 }
 
-ffly_size_t ffly_queue_size(ffly_queuep __queue) {
-	ffly_size_t size = 0;
+ff_size_t ffly_queue_size(ffly_queuep __queue) {
+	ff_size_t size = 0;
 	if (__queue->end < __queue->top)
 		size = __queue->end+((__queue->page_c*QUEUE_PAGE_SIZE)-__queue->top);
 	else if (__queue->end > __queue->top)
@@ -47,7 +47,7 @@ ffly_size_t ffly_queue_size(ffly_queuep __queue) {
 	return size;
 }
 
-ffly_err_t ffly_queue_push(ffly_queuep __queue, void *__p) {
+ff_err_t ffly_queue_push(ffly_queuep __queue, void *__p) {
 	if (__queue->end+1 == __queue->top) {
 		ffly_fprintf(ffly_err, "queue: overflow.\n");
 		return FFLY_NOP;
@@ -79,7 +79,7 @@ ffly_err_t ffly_queue_push(ffly_queuep __queue, void *__p) {
 	_sk_init_page:
 	if (__queue->top>>QUEUE_PAGE_SHIFT > 0 && __queue->end == __queue->page_c*QUEUE_PAGE_SIZE && __queue->end <= QUEUE_PAGE_SIZE*QUEUE_MAX_PAGE_C)
 		__queue->end = 0;
-	mdl_uint_t page = __queue->end>>QUEUE_PAGE_SHIFT;
+	ff_uint_t page = __queue->end>>QUEUE_PAGE_SHIFT;
 	if (!*(__queue->p+page)) {
 		if ((*(__queue->p+page) = (void*)__ffly_mem_alloc(QUEUE_PAGE_SIZE*__queue->blk_size)) == NULL) {
 			ffly_fprintf(ffly_err, "queue: failed to alloc memory.\n");
@@ -87,12 +87,12 @@ ffly_err_t ffly_queue_push(ffly_queuep __queue, void *__p) {
 		}
 	}
 
-	ffly_mem_cpy((void*)(((mdl_u8_t*)*(__queue->p+page))+((__queue->end++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __p, __queue->blk_size);
+	ffly_mem_cpy((void*)(((ff_u8_t*)*(__queue->p+page))+((__queue->end++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __p, __queue->blk_size);
 	return FFLY_SUCCESS;
 }
 
 
-ffly_err_t ffly_queue_pop(ffly_queuep __queue, void *__p) {
+ff_err_t ffly_queue_pop(ffly_queuep __queue, void *__p) {
 	if (__queue->top == __queue->end) {
 		ffly_fprintf(ffly_err, "queue: underflow.\n");
 		return FFLY_FAILURE;
@@ -100,8 +100,8 @@ ffly_err_t ffly_queue_pop(ffly_queuep __queue, void *__p) {
 
 	if (__queue->end < __queue->top && __queue->top+1 == __queue->page_c*QUEUE_PAGE_SIZE && __queue->top <= QUEUE_PAGE_SIZE*QUEUE_MAX_PAGE_C)
 		__queue->top = 0;
-	mdl_uint_t page = __queue->top>>QUEUE_PAGE_SHIFT;
-	ffly_mem_cpy(__p, (void*)(((mdl_u8_t*)*(__queue->p+page))+((__queue->top++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __queue->blk_size);
+	ff_uint_t page = __queue->top>>QUEUE_PAGE_SHIFT;
+	ffly_mem_cpy(__p, (void*)(((ff_u8_t*)*(__queue->p+page))+((__queue->top++)-(page*QUEUE_PAGE_SIZE))*__queue->blk_size), __queue->blk_size);
 	if (__queue->top>>QUEUE_PAGE_SHIFT > page) {
 		__ffly_mem_free(*(__queue->p+page));
 		*(__queue->p+page) = NULL;
@@ -110,6 +110,6 @@ ffly_err_t ffly_queue_pop(ffly_queuep __queue, void *__p) {
 }
 
 void* ffly_queue_front(ffly_queuep __queue) {
-	return (void*)((mdl_u8_t*)(*(__queue->p+(__queue->top>>QUEUE_PAGE_SHIFT)))+((__queue->top-((__queue->top>>QUEUE_PAGE_SHIFT)*QUEUE_PAGE_SIZE))*__queue->blk_size));}
+	return (void*)((ff_u8_t*)(*(__queue->p+(__queue->top>>QUEUE_PAGE_SHIFT)))+((__queue->top-((__queue->top>>QUEUE_PAGE_SHIFT)*QUEUE_PAGE_SIZE))*__queue->blk_size));}
 void* ffly_queue_back(ffly_queuep __queue) {
-	return (void*)((mdl_u8_t*)(*(__queue->p+(__queue->end>>QUEUE_PAGE_SHIFT)))+(((__queue->end-((__queue->end>>QUEUE_PAGE_SHIFT)*QUEUE_PAGE_SIZE))-1)*__queue->blk_size));}
+	return (void*)((ff_u8_t*)(*(__queue->p+(__queue->end>>QUEUE_PAGE_SHIFT)))+(((__queue->end-((__queue->end>>QUEUE_PAGE_SHIFT)*QUEUE_PAGE_SIZE))-1)*__queue->blk_size));}

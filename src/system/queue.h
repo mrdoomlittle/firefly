@@ -1,9 +1,7 @@
 # ifndef __ffly__queue__h
 # define __ffly__queue__h
-# include <mdlint.h>
-# include "../types/err_t.h"
-# include "../types/off_t.h"
-# include "../types/size_t.h"
+# include "../ffint.h"
+# include "../types.h"
 # include "err.h"
 /*
 	page shift
@@ -20,20 +18,20 @@
 # define QUEUE_MAX_PAGE_C 32
 struct ffly_queue {
 	void **p;
-	mdl_uint_t page_c;
-	ffly_size_t blk_size;
-	ffly_off_t top, end;
+	ff_uint_t page_c;
+	ff_size_t blk_size;
+	ff_off_t top, end;
 };
 
 typedef struct ffly_queue* ffly_queuep;
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_queue_init(ffly_queuep, mdl_uint_t);
-ffly_err_t ffly_queue_de_init(ffly_queuep);
-ffly_size_t ffly_queue_size(ffly_queuep);
-ffly_err_t ffly_queue_push(ffly_queuep, void*);
-ffly_err_t ffly_queue_pop(ffly_queuep, void*);
+ff_err_t ffly_queue_init(ffly_queuep, ff_uint_t);
+ff_err_t ffly_queue_de_init(ffly_queuep);
+ff_size_t ffly_queue_size(ffly_queuep);
+ff_err_t ffly_queue_push(ffly_queuep, void*);
+ff_err_t ffly_queue_pop(ffly_queuep, void*);
 void* ffly_queue_front(ffly_queuep);
 void* ffly_queue_back(ffly_queuep);
 # ifdef __cplusplus

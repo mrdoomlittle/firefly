@@ -4,7 +4,10 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../data/str_len.h"
-ffly_err_t ffly_xcb_wd_init(struct ffly_xcb_wd *__wd, mdl_u16_t __width, mdl_u16_t __height, char const *__title) {
+ff_err_t
+ffly_xcb_wd_init(struct ffly_xcb_wd *__wd, ff_u16_t __width,
+	ff_u16_t __height, char const *__title)
+{
 	ffly_mem_set(__wd, 0x0, sizeof(struct ffly_xcb_wd));
 	__wd->title = __title;
 	__wd->width = __width;
@@ -16,7 +19,7 @@ ffly_err_t ffly_xcb_wd_init(struct ffly_xcb_wd *__wd, mdl_u16_t __width, mdl_u16
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_xcb_wd_open(struct ffly_xcb_wd *__wd) {
+ff_err_t ffly_xcb_wd_open(struct ffly_xcb_wd *__wd) {
 	if (!(__wd->d = XOpenDisplay(NULL))) {
 		ffly_fprintf(ffly_err, "failed to open display.\n");
 		return FFLY_FAILURE;
@@ -59,9 +62,9 @@ ffly_err_t ffly_xcb_wd_open(struct ffly_xcb_wd *__wd) {
 
 	xcb_colormap_t colour_map = xcb_generate_id(__wd->conn);
 	xcb_create_colormap(__wd->conn, XCB_COLORMAP_ALLOC_NONE, colour_map, __wd->screen->root, visual);
-	mdl_u32_t event_mask = XCB_EVENT_MASK_EXPOSURE|XCB_EVENT_MASK_KEY_PRESS|XCB_EVENT_MASK_KEY_RELEASE|XCB_EVENT_MASK_BUTTON_PRESS|XCB_EVENT_MASK_BUTTON_RELEASE;
-	mdl_u32_t values[] = {event_mask, colour_map, XCB_EVENT_MASK_EXPOSURE, 0};
-	mdl_u32_t mask = XCB_CW_EVENT_MASK|XCB_CW_COLORMAP;
+	ff_u32_t event_mask = XCB_EVENT_MASK_EXPOSURE|XCB_EVENT_MASK_KEY_PRESS|XCB_EVENT_MASK_KEY_RELEASE|XCB_EVENT_MASK_BUTTON_PRESS|XCB_EVENT_MASK_BUTTON_RELEASE;
+	ff_u32_t values[] = {event_mask, colour_map, XCB_EVENT_MASK_EXPOSURE, 0};
+	ff_u32_t mask = XCB_CW_EVENT_MASK|XCB_CW_COLORMAP;
 
 	xcb_create_window(__wd->conn, __wd->screen->root_depth, __wd->w, __wd->screen->root, 0, 0, __wd->width, __wd->height, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, visual, mask, values);
 
@@ -95,7 +98,7 @@ ffly_err_t ffly_xcb_wd_open(struct ffly_xcb_wd *__wd) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_xcb_wd_close(struct ffly_xcb_wd *__wd) {
+ff_err_t ffly_xcb_wd_close(struct ffly_xcb_wd *__wd) {
 	xcb_destroy_window(__wd->conn, __wd->w);
 	glXDestroyContext(__wd->d, __wd->glx_ct);
 	glXDestroyWindow(__wd->d, __wd->glx_window);
@@ -103,7 +106,7 @@ ffly_err_t ffly_xcb_wd_close(struct ffly_xcb_wd *__wd) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_xcb_wd_cleanup(struct ffly_xcb_wd *__wd) {
+ff_err_t ffly_xcb_wd_cleanup(struct ffly_xcb_wd *__wd) {
 	__ffly_mem_free(__wd->frame_buff);
 	return FFLY_SUCCESS;
 }

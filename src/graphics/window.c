@@ -4,20 +4,20 @@
 # include "../types/wd_ed_t.h"
 # include "wd_flags.h"
 # include "../system/nanosleep.h"
-# include "../data/mem_set.h"
+# include "../dep/mem_set.h"
 # include "../system/event_kind.h"
 # include "../system/event_field.h"
 # include "../system/event.h"
 # include "../types/wd_event_t.h"
-ffly_byte_t* ffly_wd_frame_buff(struct ffly_wd *__wd) {
+ff_byte_t* ffly_wd_frame_buff(struct ffly_wd *__wd) {
 	return __wd->raw.frame_buff;
 }
-ffly_flag_t* ffly_wd_flags(struct ffly_wd *__wd) {
+ff_flag_t* ffly_wd_flags(struct ffly_wd *__wd) {
 	return &__wd->flags;
 }
 
-ffly_err_t ffly_wd_query_pointer(struct ffly_wd *__wd, mdl_i16_t *__root_xa, mdl_i16_t *__root_ya, mdl_i16_t *__wd_xa, mdl_i16_t *__wd_ya) {
-    ffly_err_t err;
+ff_err_t ffly_wd_query_pointer(struct ffly_wd *__wd, ff_i16_t *__root_xa, ff_i16_t *__root_ya, ff_i16_t *__wd_xa, ff_i16_t *__wd_ya) {
+    ff_err_t err;
 # ifdef __ffly_use_x11
     err = ffly_x11_query_pointer(&__wd->raw, __root_xa, __root_ya, __wd_xa, __wd_ya);
 # endif
@@ -31,8 +31,8 @@ ffly_err_t ffly_wd_query_pointer(struct ffly_wd *__wd, mdl_i16_t *__root_xa, mdl
     return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_wd_open(struct ffly_wd *__wd) {
-	ffly_err_t err;
+ff_err_t ffly_wd_open(struct ffly_wd *__wd) {
+	ff_err_t err;
 # ifdef __ffly_use_x11
 	err = ffly_x11_wd_open(&__wd->raw);
 # elif __ffly_use_xcb
@@ -45,8 +45,8 @@ ffly_err_t ffly_wd_open(struct ffly_wd *__wd) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_wd_close(struct ffly_wd *__wd) {
-	ffly_err_t err;
+ff_err_t ffly_wd_close(struct ffly_wd *__wd) {
+	ff_err_t err;
 # ifdef __ffly_use_x11
 	err = ffly_x11_wd_close(&__wd->raw);
 # elif __ffly_use_xcb
@@ -59,9 +59,9 @@ ffly_err_t ffly_wd_close(struct ffly_wd *__wd) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_wd_init(struct ffly_wd *__wd, mdl_u16_t __width, mdl_u16_t __height, char const *__title) {
+ff_err_t ffly_wd_init(struct ffly_wd *__wd, ff_u16_t __width, ff_u16_t __height, char const *__title) {
 	ffly_mem_set(__wd, 0x0, sizeof(struct ffly_wd));
-	ffly_err_t err;
+	ff_err_t err;
 # ifdef __ffly_use_x11
 	err = ffly_x11_wd_init(&__wd->raw, __width, __height, __title);
 # elif __ffly_use_xcb
@@ -76,8 +76,8 @@ ffly_err_t ffly_wd_init(struct ffly_wd *__wd, mdl_u16_t __width, mdl_u16_t __hei
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_wd_cleanup(struct ffly_wd *__wd) {
-	ffly_err_t err;
+ff_err_t ffly_wd_cleanup(struct ffly_wd *__wd) {
+	ff_err_t err;
 # ifdef __ffly_use_x11
 	err = ffly_x11_wd_cleanup(&__wd->raw);
 # elif __ffly_use_xcb
@@ -91,7 +91,7 @@ ffly_err_t ffly_wd_cleanup(struct ffly_wd *__wd) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_wd_display(struct ffly_wd *__wd) {
+ff_err_t ffly_wd_display(struct ffly_wd *__wd) {
 	glDrawPixels(__wd->raw.width, __wd->raw.height, GL_RGBA, GL_UNSIGNED_BYTE, __wd->raw.frame_buff);
 # ifdef __ffly_use_x11
 	glXSwapBuffers(__wd->raw.d, __wd->raw.w);
@@ -106,8 +106,8 @@ void static mk_event(ffly_event_t **__event, ffly_event_t __tmpl) {
 }
 
 # ifdef __ffly_use_x11
-ffly_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
-	ffly_err_t err;
+ff_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
+	ff_err_t err;
 	XEvent event;
 	if (XPending(__wd->raw.d) > 0) {
 		*__event = ffly_alloc_event(&err);
@@ -144,8 +144,8 @@ ffly_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) 
 }
 # endif
 # ifdef __ffly_use_xcb
-ffly_err_t ffly_xcb_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
-    ffly_err_t err;
+ff_err_t ffly_xcb_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
+    ff_err_t err;
 	xcb_generic_event_t *event;
 	if ((event = xcb_poll_for_event(__wd->raw.conn)) != NULL) {
 		*__event = ffly_alloc_event(&err);
@@ -168,7 +168,7 @@ ffly_err_t ffly_xcb_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) 
 }
 # endif
 
-ffly_event_t* ffly_wd_poll_event(struct ffly_wd *__wd, ffly_err_t *__err) {
+ffly_event_t* ffly_wd_poll_event(struct ffly_wd *__wd, ff_err_t *__err) {
 	ffly_event_t *event = NULL;
 # ifdef __ffly_use_x11
 	*__err = ffly_x11_wd_poll_event(__wd, &event);
@@ -183,7 +183,7 @@ ffly_event_t* ffly_wd_poll_event(struct ffly_wd *__wd, ffly_err_t *__err) {
 	return event;
 }
 
-ffly_err_t ffly_wd_free_event(struct ffly_wd *__wd, ffly_event_t *__event) {
+ff_err_t ffly_wd_free_event(struct ffly_wd *__wd, ffly_event_t *__event) {
 	if (__event->kind  == _ffly_wd_ek_key_press || __event->kind == _ffly_wd_ek_key_release
         || __event->kind == _ffly_wd_ek_btn_press || __event->kind == _ffly_wd_ek_btn_release) {
 		ffly_pool_free(&__wd->events, __event->data);

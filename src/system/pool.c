@@ -10,12 +10,12 @@
 	move to memory/pool.h
 */
 
-ffly_err_t ffly_pool_init(struct ffly_pool *__pool, ffly_size_t __size, ffly_size_t __slice_size) {
+ff_err_t ffly_pool_init(struct ffly_pool *__pool, ff_size_t __size, ff_size_t __slice_size) {
 	if ((__pool->p = (void*)__ffly_mem_alloc(__size*__slice_size)) == NULL) {
 		ffly_fprintf(ffly_err, "pool: failed to allocate memory.\n");
 		return FFLY_FAILURE;
 	}
-	__pool->m = FFLY_MUTEX_INIT;
+	__pool->lock = FFLY_MUTEX_INIT;
 	__pool->off = 0;
 	__pool->size = __size;
 	__pool->slice_size = __slice_size;
@@ -24,8 +24,8 @@ ffly_err_t ffly_pool_init(struct ffly_pool *__pool, ffly_size_t __size, ffly_siz
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_pool_de_init(struct ffly_pool *__pool) {
-	ffly_err_t err;
+ff_err_t ffly_pool_de_init(struct ffly_pool *__pool) {
+	ff_err_t err;
 	if (_err(err = __ffly_mem_free(__pool->p))) {
 		ffly_fprintf(ffly_err, "pool: failed to free.\n");
 		return err;
@@ -40,20 +40,20 @@ ffly_err_t ffly_pool_de_init(struct ffly_pool *__pool) {
 	return FFLY_SUCCESS;
 }
 
-ffly_bool_t ffly_pool_full(struct ffly_pool *__pool) {
+ff_bool_t ffly_pool_full(struct ffly_pool *__pool) {
 	return ((__pool->off == __pool->size-1)&&!__pool->uu_slice_c);
 }
 
-void* ffly_pool_get(struct ffly_pool *__pool, mdl_uint_t __off) {
-	return ((mdl_u8_t*)__pool->p+(__off*__pool->slice_size));
+void* ffly_pool_get(struct ffly_pool *__pool, ff_uint_t __off) {
+	return ((ff_u8_t*)__pool->p+(__off*__pool->slice_size));
 }
 
 void* ffly_pool_alloc(struct ffly_pool *__pool) {
 	if (!__pool->uu_slice_c && __pool->off == __pool->size-1) return NULL;
 	void *ret;
-	ffly_mutex_lock(&__pool->m);
+	ffly_mutex_lock(&__pool->lock);
 	if (__pool->uu_slice_c > 0) {
-		ret = *(void**)((mdl_u8_t*)__pool->uu_slices+((__pool->uu_slice_c-1)*sizeof(void*)));
+		ret = *(void**)((ff_u8_t*)__pool->uu_slices+((__pool->uu_slice_c-1)*sizeof(void*)));
 		if (!(__pool->uu_slice_c-1)) {
 			if (_err(__ffly_mem_free(__pool->uu_slices))) {
 				ffly_fprintf(ffly_err, "pool: failed to free.\n");
@@ -67,20 +67,20 @@ void* ffly_pool_alloc(struct ffly_pool *__pool) {
 				goto _fatal;
 			}
 		}
-		ffly_mutex_unlock(&__pool->m);
+		ffly_mutex_unlock(&__pool->lock);
 		return ret;
 	}
-	ret = (void*)((mdl_u8_t*)__pool->p+((__pool->off++)*__pool->slice_size));
-	ffly_mutex_unlock(&__pool->m);
+	ret = (void*)((ff_u8_t*)__pool->p+((__pool->off++)*__pool->slice_size));
+	ffly_mutex_unlock(&__pool->lock);
 	return ret;
-	_fatal:
-	ffly_mutex_unlock(&__pool->m);
+_fatal:
+	ffly_mutex_unlock(&__pool->lock);
 	return NULL;
 }
 
-ffly_err_t ffly_pool_free(struct ffly_pool *__pool, void *__p) {
-	ffly_err_t err = FFLY_SUCCESS;
-	ffly_mutex_lock(&__pool->m);
+ff_err_t ffly_pool_free(struct ffly_pool *__pool, void *__p) {
+	ff_err_t err = FFLY_SUCCESS;
+	ffly_mutex_lock(&__pool->lock);
 	if (!__pool->uu_slice_c) {
 		if ((__pool->uu_slices = (void*)__ffly_mem_alloc(sizeof(void*))) == NULL) {
 			ffly_fprintf(ffly_err, "pool: failed to allocate memory.\n");
@@ -95,8 +95,8 @@ ffly_err_t ffly_pool_free(struct ffly_pool *__pool, void *__p) {
 			goto _end;
 		}
 	}
-	*(void**)((mdl_u8_t*)__pool->uu_slices+((__pool->uu_slice_c-1)*sizeof(void*))) = __p;
-	_end:
-	ffly_mutex_unlock(&__pool->m);
+	*(void**)((ff_u8_t*)__pool->uu_slices+((__pool->uu_slice_c-1)*sizeof(void*))) = __p;
+_end:
+	ffly_mutex_unlock(&__pool->lock);
 	return err;
 }

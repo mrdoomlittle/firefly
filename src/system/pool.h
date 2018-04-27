@@ -1,30 +1,27 @@
 # ifndef __ffly__pool__h
 # define __ffly__pool__h
-# include <mdlint.h>
-# include "../types/err_t.h"
-# include "../types/bool_t.h"
-# include "../types/mutex_t.h"
-# include "../types/off_t.h"
-# include "../types/size_t.h"
-
-// move to memory
+# include "../ffint.h"
+# include "../types.h"
+/*
+	move to /memory as it has nothing to do with /system
+*/
 struct ffly_pool {
 	void *p, *uu_slices;
-	ffly_size_t size, slice_size;
-	ffly_off_t off;
-	mdl_uint_t uu_slice_c;
-	ffly_mutex_t m;
+	ff_size_t size, slice_size;
+	ff_off_t off;
+	ff_uint_t uu_slice_c;
+	ff_mlock_t lock;
 };
 
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_pool_init(struct ffly_pool*, ffly_size_t, ffly_size_t);
-ffly_err_t ffly_pool_de_init(struct ffly_pool*);
-void* ffly_pool_get(struct ffly_pool*, mdl_uint_t);
+ff_err_t ffly_pool_init(struct ffly_pool*, ff_size_t, ff_size_t);
+ff_err_t ffly_pool_de_init(struct ffly_pool*);
+void* ffly_pool_get(struct ffly_pool*, ff_uint_t);
 void* ffly_pool_alloc(struct ffly_pool*);
-ffly_err_t ffly_pool_free(struct ffly_pool*, void*);
-ffly_bool_t ffly_pool_full(struct ffly_pool*);
+ff_err_t ffly_pool_free(struct ffly_pool*, void*);
+ff_bool_t ffly_pool_full(struct ffly_pool*);
 # ifdef __cplusplus
 }
 # endif

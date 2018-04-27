@@ -6,10 +6,11 @@
 # include "../system/event_kind.h"
 # include "../system/event_field.h"
 # include "../system/nanosleep.h"
-# include "../data/mem_set.h"
-# include "../data/str_len.h"
-# include "../data/mem_dupe.h"
-int static ffly_x11_err_handle(Display *__d, XErrorEvent *__e) {
+# include "../dep/mem_set.h"
+# include "../dep/str_len.h"
+# include "../dep/mem_dup.h"
+int static
+x11_err(Display *__d, XErrorEvent *__e) {
 	printf("err code: %u\n", __e->error_code);
 	switch(__e->error_code) {
 		case BadAccess:
@@ -39,8 +40,11 @@ int static ffly_x11_err_handle(Display *__d, XErrorEvent *__e) {
 	}
 }
 
-ffly_err_t ffly_x11_wd_init(struct ffly_x11_wd *__wd, mdl_u16_t __width, mdl_u16_t __height, char const *__title) {
-	XSetErrorHandler(ffly_x11_err_handle);
+ff_err_t
+ffly_x11_wd_init(struct ffly_x11_wd *__wd, ff_u16_t __width,
+	ff_u16_t __height, char const *__title)
+{
+	XSetErrorHandler(x11_err);
 	ffly_mem_set(__wd, 0x0, sizeof(struct ffly_x11_wd));
 	__wd->width = __width;
 	__wd->height = __height;
@@ -52,7 +56,7 @@ ffly_err_t ffly_x11_wd_init(struct ffly_x11_wd *__wd, mdl_u16_t __width, mdl_u16
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_x11_wd_open(struct ffly_x11_wd *__wd) {
+ff_err_t ffly_x11_wd_open(struct ffly_x11_wd *__wd) {
 	if (!(__wd->d = XOpenDisplay(NULL))) {
 		ffly_fprintf(ffly_err, "failed to open display.\n");
 		return FFLY_FAILURE;
@@ -105,14 +109,14 @@ ffly_err_t ffly_x11_wd_open(struct ffly_x11_wd *__wd) {
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_x11_wd_close(struct ffly_x11_wd *__wd) {
+ff_err_t ffly_x11_wd_close(struct ffly_x11_wd *__wd) {
 	XSetCloseDownMode(__wd->d, DestroyAll);
 	XDestroyWindow(__wd->d, __wd->w);
 	XCloseDisplay(__wd->d);
 	return FFLY_SUCCESS;
 }
 
-ffly_err_t ffly_x11_wd_cleanup(struct ffly_x11_wd *__wd) {
+ff_err_t ffly_x11_wd_cleanup(struct ffly_x11_wd *__wd) {
 	__ffly_mem_free(__wd->frame_buff);
 	return FFLY_SUCCESS;
 }

@@ -1,14 +1,14 @@
 # include "window.h"
 # include <unistd.h>
 # include "../system/pipe.h"
-# include "../types/err_t.h"
+# include "../types.h"
 # include "../system/io.h"
 int main() {
 	ffly_io_init();
-	ffly_err_t err;
-	mdl_uint_t pipe;
+	ff_err_t err;
+	ff_uint_t pipe;
 	pipe = ffly_pipe(8, FF_PIPE_CREAT, 0, &err);
-	mdl_uint_t shm_id = ffly_pipe_get_shmid(pipe);
+	ff_uint_t shm_id = ffly_pipe_get_shmid(pipe);
 	ffly_printf("shmid: %u\n", shm_id);
 
 	struct ffly_wd window;
