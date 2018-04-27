@@ -46,18 +46,16 @@ ffly_chunkp ffly_alloc_chunk(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_
 	}	 
 
 	ffly_chunkp chunk = (ffly_chunkp)__ffly_mem_alloc(sizeof(struct ffly_chunk));
-	chunk->next = NULL;
-	chunk->prev = NULL;
 	if (!top) {
 		top = chunk;
 		chunk->no = 0;
 	}
 
+	chunk->prev = end;
+	chunk->next = NULL;
 	if (end != NULL) {
 		end->next = chunk;
-		chunk->prev = end;
-		end = chunk;
-		chunk->no = chunk->prev->no+1;
+		chunk->no = end->no+1;
 	}
 
 	end = chunk;
@@ -95,15 +93,11 @@ void ffly_free_chunk(ffly_chunkp __chunk) {
 
 void ffly_chunk_cleanup() {
 	ffly_fprintf(ffly_log, "cleaning up chunks.\n");
-	ffly_chunkp chunk = top, prev = NULL;
-	while(chunk != NULL) {
-		if (prev != NULL)
-			__ffly_mem_free(prev);
-		ffly_free_chunk(chunk);
-		prev = chunk;
-		chunk = chunk->next;
+	ffly_chunkp cur = top, bk = NULL;
+	while(cur != NULL) {
+		bk = cur;
+		cur = cur->next;
+		ffly_free_chunk(bk);
+		__ffly_mem_free(bk);
 	}
-
-	if (end != NULL)
-		 __ffly_mem_free(end);
 }
