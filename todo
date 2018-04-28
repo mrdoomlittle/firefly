@@ -79,3 +79,4 @@ until we can do somthing about that.
 -. c++ crap is out of date <- fix
 -. parser and lexer should have own structure
 -. fix line counting for compiler
+-. replace window frame buffer with somthing less direct
