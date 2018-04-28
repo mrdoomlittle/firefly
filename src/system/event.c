@@ -111,19 +111,21 @@ ff_err_t ffly_free_event(ffly_event_t *__event) {
 		if ((free_events = (ffly_event_t**)__ffly_mem_alloc(FAST_EVENTS*sizeof(ffly_event_t*))) == NULL) {
             return FFLY_FAILURE;
         }
-		ffly_event_t **itr = free_events;
-		while(itr != free_events+FAST_EVENTS) *(itr++) = NULL;
 		next_free = free_events;
 	}
 
 	ffly_fprintf(ffly_log, "freed event.\n");
-    if ((__event < events || __event >= events+FAST_EVENTS) && next_free >= free_events+FAST_EVENTS) {
+    if (__event < events && __event >= events+FAST_EVENTS) {
         __ffly_mem_free(__event);
     } else {
         if (__event == fresh_event-1)
             fresh_event--;
-        else
+        else {
+			if (next_free >= free_events+FAST_EVENTS) {
+				ffly_fprintf(ffly_err, "error.\n");
+			}
             *(next_free++) = __event;
+		}
     }
     return FFLY_SUCCESS;
 }

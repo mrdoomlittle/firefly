@@ -30,16 +30,15 @@ enum {
     _ffly_splice_128,
 };
 
-struct ffly_uni {
+typedef struct ffly_uni {
     ff_uint_t splice;
     ff_uint_t xcnk_c, ycnk_c, zcnk_c;
     struct ffly_cnk_man chunk_man;
     ff_id_t *chunks;
     ff_uint_t xl, yl, zl;
     ff_uint_t chunk_c;
-};
+} *ffly_unip;
 
-typedef struct ffly_uni* ffly_unip;
 # ifdef __cplusplus
 extern "C" {
 # endif

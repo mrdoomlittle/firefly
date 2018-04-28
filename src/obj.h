@@ -37,17 +37,30 @@ struct ffly_obj {
     ff_uint_t xl, yl, zl;
     ff_uint_t x, y, z;
     ffscriptp script;
-    /* cleanup
-    */
+  
+  	// debug
     ffly_no_t no;
+
+	ff_uint_t velocity;
+	ff_uint_t mass;
+
+	ff_u8_t dir;
+
     float angle;
+
+	/*
+	*	what lot is this object within.
+	*/
     ffly_lotp lot;
+	float light;
 
     // later - main events
     void(*create)(void*);
     void(*destroy)(void*);
     void(*free)(void*);
     void(*init)(void*);
+
+	// cleanup
     struct ffly_obj *prev, *next;
 };
 

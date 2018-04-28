@@ -5,6 +5,7 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "dep/mem_set.h"
+# include "physics/light.h"
 # define is_sliceable(__no, __by) \
 	!(__no-((__no>>__by)*(1<<__by)))
 
@@ -33,7 +34,13 @@ ff_err_t ffly_uni_obj_move(ffly_unip __uni, ffly_objp __obj, ff_uint_t __x, ff_u
 	ffly_uni_attach_obj(__uni, __obj);
 }
 
-ff_err_t ffly_uni_frame(ffly_unip __uni, ff_byte_t *__dst, ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
+/* should to rename to copy or somthing along that line. 
+*/
+ff_err_t
+ffly_uni_frame(ffly_unip __uni, ff_byte_t *__dst,
+	ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl,
+	ff_uint_t __x, ff_uint_t __y, ff_uint_t __z)
+{
 	ff_uint_t cnk_xl = ffly_uni_chunk_xal(__uni);
 	ff_uint_t cnk_yl = ffly_uni_chunk_yal(__uni);
 	ff_uint_t cnk_zl = ffly_uni_chunk_zal(__uni);
@@ -54,6 +61,7 @@ ff_err_t ffly_uni_frame(ffly_unip __uni, ff_byte_t *__dst, ff_uint_t __xl, ff_ui
 						obj = *itr;
 						if ((obj->x < __x+__xl && obj->x >= __x) && (obj->y < __y+__yl && obj->y >= __y) && (obj->z < __z+__zl && obj->z >= __z)) {
 							ffly_obj_draw(obj, __dst, obj->x-__x, obj->y-__y, 0, __xl, __yl, __x+__xl, __y+__yl);
+							ffly_light_emit(__dst, __xl, __yl, obj->x-__x, obj->y-__y, 0, obj->light);
 						}
 						itr++;
 					}

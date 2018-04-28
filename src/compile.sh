@@ -36,6 +36,20 @@ ffly_objs="$ffly_objs $(
 	echo "$ffly_objs"
 )"
 
+ffly_objs="$ffly_objs $(
+	dst_dir=$PWD/graphics
+	root_dir=graphics
+	. ./graphics/compile.sh
+	echo "$ffly_objs"
+)"
+
+ffly_objs="$ffly_objs $(
+	dst_dir=$PWD/physics
+	root_dir=physics
+	. ./physics/compile.sh
+	echo "$ffly_objs"
+)"
+
 dst_dir=$PWD
 root_dir=.
 $ffly_cc $cc_flags -c -o $dst_dir/rat.o $root_dir/rat.c
