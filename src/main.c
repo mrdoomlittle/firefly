@@ -34,6 +34,8 @@
 # include "maths/round.h"
 # include "system/pipe.h"
 # include "obj_pool.h"
+# include "physics/body.h"
+# include "physics/direction.h"
 ffly_frame_buffp fb;
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 //	ffly_cache_prepare(20);
@@ -88,8 +90,9 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_objp obj = ffly_obj_man_get(&obj_man, obj0);
 	ffly_obj_pool_add(&pool, obj);
-	obj->angle = 0.0;
-	obj->light = 100;
+	ffly_obj_prepare(obj);
+	obj->phy_body = ffly_physical_body(&obj->puppet);
+
 	ff_byte_t *texture = (ff_byte_t*)__ffly_mem_alloc(20*20*4);
 	ffly_mem_set(texture, 0xff, 20*20*4);
 
@@ -123,7 +126,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_uni_attach_obj(&uni, obj);
 */
-
+	ffly_set_velocity(obj->phy_body, 1);
 	int fd;
 	if ((fd = open("input", O_RDONLY|O_NONBLOCK|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR)) == -1) {
 		ffly_printf("failed to open.\n");
@@ -214,14 +217,19 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		if (y == 20)
 			dir = -1;
 		y+=dir;
-		ffly_uni_obj_move(&uni, ffly_obj_man_get(&obj_man, obj0), x, y, 0); 
+		if (obj->x == 20)
+			ffly_set_direction(obj->phy_body, _ff_dir_a3);
+		else if (!obj->x)
+			ffly_set_direction(obj->phy_body, _ff_dir_a1);
+		ffly_obj_pool_handle(&uni, &pool);
+
+	//	ffly_uni_obj_move(&uni, ffly_obj_man_get(&obj_man, obj0), x, y, 0); 
 		if (i > update) {
 			/*
  			if (r >= 360) r = 0.0;
 			ffly_obj_rotate(obj, r);
 			r+= 1;
 			*/
-			ffly_obj_pool_handle(&pool);
 			ffly_camera_handle(&camera);
 			ffly_printf("\e[2J-------------- x: %u:%u, y: %u:%u ------------- memusage: %u\n", x, cam_x, y, cam_y, ffly_mem_alloc_bc-ffly_mem_free_bc);
 			ffly_camera_draw(&camera, ffly_frame(fb), WIDTH, HEIGHT, 0, 0);
@@ -240,8 +248,12 @@ _exit:
 	ffly_obj_cleanup();
 	ffly_lot_cleanup();
 	ffly_uni_free(&uni);
+
+	ffly_camera_de_init(&camera);
+	ffly_obj_man_free(&obj_man);
 	close(fd);
 	ffly_frame_buff_del(fb);
 	ffly_pipe_close(pipe);
+	__ffly_mem_free(texture);
 //	ffly_cache_free();
 }

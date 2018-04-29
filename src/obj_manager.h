@@ -3,9 +3,11 @@
 # include "obj.h"
 # include "ffint.h"
 # include "types.h"
+# include "system/barrel.h"
 struct ffly_obj_man {
     ffly_objpp top, end;
     ff_uint_t off, page_c;
+	ffly_barrelp barrel;
 };
 
 typedef struct ffly_obj_man* ffly_obj_manp;

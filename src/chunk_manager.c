@@ -11,9 +11,18 @@ ff_err_t ffly_cnk_man_init(struct ffly_cnk_man *__cnk_man, ff_uint_t __xal, ff_u
     __cnk_man->chunks = NULL;
     __cnk_man->off = 0;
     __cnk_man->no_chunks = 0;
+	__cnk_man->barrel = NULL;
 }
 
 ff_err_t ffly_cnk_man_de_init(struct ffly_cnk_man *__cnk_man) {
+	ffly_barrelp barrel = __cnk_man->barrel, bk;
+	while(barrel != NULL) {
+		bk = barrel;
+		barrel = barrel->link;
+		ffly_barrel_de_init(bk);
+		__ffly_mem_free(bk);
+	}
+
     if (__cnk_man->chunks != NULL)
         __ffly_mem_free(__cnk_man->chunks);
 }
@@ -31,9 +40,29 @@ ff_err_t ffly_cnk_man_create(struct ffly_cnk_man *__cnk_man, ff_id_t *__id, ff_u
         ffly_fprintf(ffly_err, "chunk failed to allocate.\n");
     }
     ffly_chunk_prepare(chunk, __xa, __ya, __za);
-    *__id = (ff_id_t)__ffly_mem_alloc(sizeof(__ff_id_t)); 
-    **__id = __cnk_man->off++;
 
+	if (!__cnk_man->barrel) {
+		__cnk_man->barrel = (ffly_barrelp)__ffly_mem_alloc(sizeof(struct ffly_barrel));
+		ffly_barrel_init(__cnk_man->barrel, sizeof(__ff_id_t));
+	}
+
+	ffly_barrelp barrel = __cnk_man->barrel;
+_bk:
+	if (ffly_barrel_full(barrel)) {
+		if (barrel->link != NULL) {
+			barrel = barrel->link;
+			goto _bk;
+		}
+
+		ffly_barrelp rep = (ffly_barrelp)__ffly_mem_alloc(sizeof(struct ffly_barrel));
+		ffly_barrel_init(rep, sizeof(__ff_id_t));
+		ffly_barrel_link(rep, __cnk_man->barrel);
+		__cnk_man->barrel = rep;
+		barrel = __cnk_man->barrel;
+	}
+
+	*__id = (ff_id_t)ffly_barrel_alloc(barrel);
+	**__id = __cnk_man->off++;
     return FFLY_SUCCESS;
 }
 

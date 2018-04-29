@@ -2,6 +2,7 @@
 # include "../system/errno.h"
 # include "../system/io.h"
 # include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
 # include "../dep/mem_set.h"
 # include "../dep/bcopy.h"
 ff_err_t ffly_camera_init(ffly_camerap __camera, ff_uint_t __width, ff_uint_t __height) {
@@ -14,6 +15,10 @@ ff_err_t ffly_camera_init(ffly_camerap __camera, ff_uint_t __width, ff_uint_t __
     __camera->z = 0;
     ffly_mem_set(__camera->pixels, 0x0, size);
     return FFLY_SUCCESS;
+}
+
+void ffly_camera_de_init(ffly_camerap __camera) {
+	__ffly_mem_free(__camera->pixels);
 }
 
 void static print_pixel(ff_byte_t *__pixel) {

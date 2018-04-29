@@ -22,6 +22,7 @@ $ffly_cc -c $cc_flags -o $dst_dir/flags.o $root_dir/flags.c
 $ffly_cc -c $cc_flags -o $dst_dir/hash.o $root_dir/util/hash.c
 $ffly_cc -c $cc_flags -o $dst_dir/lat.o $root_dir/lat.c
 $ffly_cc -c $cc_flags -o $dst_dir/dict.o $root_dir/dict.c
+$ffly_cc -c $cc_flags -o $dst_dir/barrel.o $root_dir/barrel.c
 
 nasm -f elf64 $as_inc -o $dst_dir/atomic_op.o.0 $root_dir/asm/atomic_op.asm
 $ffly_cc -c $cc_flags -o $dst_dir/atomic_op.o.1 $root_dir/atomic_op.c
@@ -220,4 +221,5 @@ $dst_dir/sys_setsockopt.o.0 $dst_dir/sys_setsockopt.o.1 \
 $dst_dir/sys_getsockopt.o.0 $dst_dir/sys_getsockopt.o.1 \
 $dst_dir/sys_ftruncate.o.0  $dst_dir/sys_ftruncate.o.1 \
 $dst_dir/sys_clock_gettime.o.0 $dst_dir/sys_clock_gettime.o.1 \
-$dst_dir/sys_rt_sigaction.o.0 $dst_dir/sys_rt_sigaction.o.1"
+$dst_dir/sys_rt_sigaction.o.0 $dst_dir/sys_rt_sigaction.o.1 \
+$dst_dir/barrel.o"

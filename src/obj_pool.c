@@ -30,10 +30,10 @@ ffly_objp ffly_obj_pool_get(ffly_obj_poolp __pool, ff_id_t __id) {
     return *(__pool->top+*__id);
 }
 
-void ffly_obj_pool_handle(ffly_obj_poolp __pool) {
+void ffly_obj_pool_handle(ffly_unip __uni, ffly_obj_poolp __pool) {
     ffly_objpp itr = __pool->top;
     while(itr != __pool->end) {
-        ffly_obj_handle(*itr);
+        ffly_obj_handle(__uni, *itr);
         itr++;
     }
 }

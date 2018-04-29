@@ -9,24 +9,29 @@
 # define is_sliceable(__no, __by) \
 	!(__no-((__no>>__by)*(1<<__by)))
 
-ff_uint_t static get_cnk_off(ffly_unip __uni, ff_uint_t __cnk_no) {
+ff_uint_t static
+get_cnk_off(ffly_unip __uni, ff_uint_t __cnk_no) {
 	return __cnk_no*(1<<__uni->splice);
 }
 
-ff_uint_t static get_cnk_no(ffly_unip __uni, ff_uint_t __off) {
+ff_uint_t static
+get_cnk_no(ffly_unip __uni, ff_uint_t __off) {
 	return __off>>__uni->splice;
 }
 
-ffly_chunkp static get_chunk(ffly_unip __uni, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
+ffly_chunkp static
+get_chunk(ffly_unip __uni, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 	return ffly_cnk_man_fetch(&__uni->chunk_man, ffly_uni_chunk(__uni, __x, __y, __z));
 }
 
-ffly_lotpp static get_lot(ffly_unip __uni, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
+ffly_lotpp static
+get_lot(ffly_unip __uni, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 	ffly_chunkp chunk = get_chunk(__uni, __x, __y, __z);
 	return ffly_fetch_lot(chunk, __x, __y, __z);
 }
 
-ff_err_t ffly_uni_obj_move(ffly_unip __uni, ffly_objp __obj, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
+ff_err_t
+ffly_uni_obj_move(ffly_unip __uni, ffly_objp __obj, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 	ffly_uni_detach_obj(__uni, __obj);
 	__obj->x = __x;
 	__obj->y = __y;
@@ -61,7 +66,7 @@ ffly_uni_frame(ffly_unip __uni, ff_byte_t *__dst,
 						obj = *itr;
 						if ((obj->x < __x+__xl && obj->x >= __x) && (obj->y < __y+__yl && obj->y >= __y) && (obj->z < __z+__zl && obj->z >= __z)) {
 							ffly_obj_draw(obj, __dst, obj->x-__x, obj->y-__y, 0, __xl, __yl, __x+__xl, __y+__yl);
-							ffly_light_emit(__dst, __xl, __yl, obj->x-__x, obj->y-__y, 0, obj->light);
+							//ffly_light_emit(__dst, __xl, __yl, obj->x-__x, obj->y-__y, 0, obj->light);
 						}
 						itr++;
 					}
@@ -83,7 +88,8 @@ ff_err_t ffly_uni_free(ffly_unip __uni) {
 	__ffly_mem_free(__uni->chunks);
 }
 
-ff_err_t ffly_uni_attach_obj(ffly_unip __uni, ffly_objp __obj) {
+ff_err_t
+ffly_uni_attach_obj(ffly_unip __uni, ffly_objp __obj) {
 	ffly_lotpp lot = get_lot(__uni, __obj->x, __obj->y, __obj->z);
 	if (!*lot) {
 		ffly_fprintf(ffly_log, "new lot.\n");
@@ -99,7 +105,7 @@ ff_err_t ffly_uni_attach_obj(ffly_unip __uni, ffly_objp __obj) {
 	
 ff_err_t ffly_uni_detach_obj(ffly_unip __uni, ffly_objp __obj) {
 	if (!__uni || !__obj) {
-		ffly_fprintf(ffly_err, "object detach failed.\n");
+		ffly_fprintf(ffly_err, "failed to detatch object.\n");
 		return FFLY_FAILURE;
 	}
 	ffly_lot_rm(__obj->lot, __obj);

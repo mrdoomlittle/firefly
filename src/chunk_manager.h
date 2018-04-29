@@ -3,9 +3,12 @@
 # include "ffint.h"
 # include "types.h"
 # include "chunk.h"
+# include "system/barrel.h"
 struct ffly_cnk_man {
     ff_uint_t xal, yal, zal; 
     struct ffly_chunk **chunks;
+
+	ffly_barrelp barrel;
     ff_off_t off;
     ff_uint_t no_chunks;
 };

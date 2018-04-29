@@ -6,7 +6,9 @@
 # include "system/vec.h"
 # include "script.h"
 # include "polygon.h"
+# include "puppet.h"
 # include "types/no_t.h"
+
 # define ffly_set_objx(__obj, __x) \
     (__obj)->x = __x;    
 # define ffly_set_objy(__obj, __y) \
@@ -31,21 +33,18 @@
     ffly_vertex3(&(__obj)->shape, __x, __y, __z)
 
 typedef struct ffly_lot* ffly_lotp;
+typedef struct ffly_uni* ffly_unip;
 struct ffly_obj {
     ffly_polygon shape;
-    ffly_pixelmap_t texture;
+	ffly_pixelmap_t texture;
     ff_uint_t xl, yl, zl;
     ff_uint_t x, y, z;
+	struct ffly_puppet puppet;
     ffscriptp script;
   
+  	ff_uint_t phy_body;
   	// debug
     ffly_no_t no;
-
-	ff_uint_t velocity;
-	ff_uint_t mass;
-
-	ff_u8_t dir;
-
     float angle;
 
 	/*
@@ -75,7 +74,7 @@ void ffly_obj_rotate(ffly_objp, float);
 ff_err_t ffly_obj_draw(ffly_objp, ff_byte_t*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
 ffly_objp ffly_obj_alloc(ff_err_t*);
 ff_err_t ffly_obj_free(ffly_objp);
-ff_err_t ffly_obj_handle(ffly_objp);
+ff_err_t ffly_obj_handle(ffly_unip, ffly_objp);
 ff_err_t ffly_obj_prepare(ffly_objp);
 ff_err_t ffly_obj_cleanup();
 # ifdef __cplusplus

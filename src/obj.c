@@ -24,6 +24,9 @@ ff_err_t ffly_obj_prepare(ffly_objp __obj) {
 	__obj->angle = 0.0;
 	__obj->lot = NULL;
 	__obj->script = NULL;
+	__obj->puppet.x = &__obj->x;
+	__obj->puppet.y = &__obj->y;
+	__obj->puppet.z = &__obj->z;
 	ffly_bzero(&__obj->shape, sizeof(ffly_polygon));
 }
 
@@ -85,13 +88,12 @@ _sk:
 
 ff_err_t ffly_obj_cleanup() {
 	ffly_fprintf(ffly_log, "cleaning up objects.\n");
-	ffly_objp cur = top, bk = NULL;
+	ffly_objp cur = top, bk;
 	while(cur != NULL) {
 		bk = cur;
 		cur = cur->next;
 
-		if (bk != NULL)
-			__ffly_mem_free(bk);
+		__ffly_mem_free(bk);
 	}
 
 	top = NULL;
@@ -106,7 +108,9 @@ ff_err_t ffly_obj_cleanup() {
 	}
 	fast = fastpool;
 }
-
-ff_err_t ffly_obj_handle(ffly_objp __obj) {
-
+# include "physics/body.h"
+ff_err_t ffly_obj_handle(ffly_unip __uni, ffly_objp __obj) {
+	ffly_uni_detach_obj(__uni, __obj);
+	ffly_physical_body_update(__obj->phy_body);
+	ffly_uni_attach_obj(__uni, __obj);
 }

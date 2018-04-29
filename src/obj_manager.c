@@ -9,6 +9,7 @@ ff_err_t ffly_obj_man_prepare(ffly_obj_manp __obj_man) {
     __obj_man->end = NULL;
     __obj_man->off = 0;
     __obj_man->page_c = 0;
+	__obj_man->barrel = NULL;
 }
 
 ff_id_t ffly_obj_man_add(ffly_obj_manp __obj_man, ffly_objp __obj) {
@@ -23,7 +24,27 @@ ff_id_t ffly_obj_man_add(ffly_obj_manp __obj_man, ffly_objp __obj) {
         }
     }
 
-    ff_id_t id = (ff_id_t)__ffly_mem_alloc(sizeof(__ff_id_t));
+	if (!__obj_man->barrel) {
+		__obj_man->barrel = (ffly_barrelp)__ffly_mem_alloc(sizeof(struct ffly_barrel));
+		ffly_barrel_init(__obj_man->barrel, sizeof(__ff_id_t));
+	}
+
+	ffly_barrelp barrel = __obj_man->barrel;
+_bk:
+	if (ffly_barrel_full(barrel)) {
+		if (barrel->link != NULL) {
+			barrel = barrel->link;
+			goto _bk;
+		}
+
+		ffly_barrelp rep = (ffly_barrelp)__ffly_mem_alloc(sizeof(struct ffly_barrel));
+		ffly_barrel_init(rep, sizeof(__ff_id_t));
+		ffly_barrel_link(rep, __obj_man->barrel);
+		__obj_man->barrel = rep;
+		barrel = __obj_man->barrel;
+	}
+
+    ff_id_t id = (ff_id_t)ffly_barrel_alloc(barrel);
     *id = __obj_man->off;
     ffly_fprintf(ffly_log, "added object, id: %u\n", *id);
     *(__obj_man->top+__obj_man->off) = __obj;
@@ -39,6 +60,14 @@ ff_err_t ffly_obj_man_rm(ffly_obj_manp __obj_man, ff_id_t __id) {
 }
 
 ff_err_t ffly_obj_man_free(ffly_obj_manp __obj_man) {
-    if (__obj_man->top != NULL)
+	ffly_barrelp barrel = __obj_man->barrel, bk;
+	while(barrel != NULL) {
+		bk = barrel;
+		barrel = barrel->link;
+		ffly_barrel_de_init(bk);
+		__ffly_mem_free(bk);
+	}
+
+	if (__obj_man->top != NULL)
         __ffly_mem_free(__obj_man->top);
 }

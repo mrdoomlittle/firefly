@@ -69,7 +69,7 @@ void ffly_free_lot(ffly_lotp __lot) {
 }
 
 void ffly_lot_cleanup() {
-	ffly_lotp cur = top, bk = NULL;
+	ffly_lotp cur = top, bk;
 	while(cur != NULL) {
 		bk = cur;
 		cur = cur->next;

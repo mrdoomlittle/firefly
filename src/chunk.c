@@ -93,8 +93,9 @@ void ffly_free_chunk(ffly_chunkp __chunk) {
 
 void ffly_chunk_cleanup() {
 	ffly_fprintf(ffly_log, "cleaning up chunks.\n");
-	ffly_chunkp cur = top, bk = NULL;
+	ffly_chunkp cur = top, bk;
 	while(cur != NULL) {
+		ffly_fprintf(ffly_log, "chunk %u cleanup\n", cur->no);
 		bk = cur;
 		cur = cur->next;
 		ffly_free_chunk(bk);
