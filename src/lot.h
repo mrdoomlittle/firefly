@@ -1,8 +1,7 @@
 # ifndef __ffly__lot__h
 # define __ffly__lot__h
-# include "obj.h"
 # include "ffint.h"
-
+# include "obj.h"
 /*
 	x*x*x sized block where objects are grouped into a nice package
 	so we dont need to look a large area for it.
@@ -29,6 +28,7 @@ struct ffly_lot {
 
 typedef struct ffly_lot* ffly_lotp;
 typedef ffly_lotp* ffly_lotpp;
+
 # ifdef __cplusplus
 extern "C" {
 # endif

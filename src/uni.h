@@ -2,6 +2,8 @@
 # define __ffly__uni__h
 # include "ffint.h"
 # include "types.h"
+# include "lot.h"
+# include "obj.h"
 # include "chunk_manager.h"
 # define ffly_uni_chunk_xal(__uni) \
     (1<<__uni->splice)
@@ -9,6 +11,7 @@
     (1<<__uni->splice)
 # define ffly_uni_chunk_zal(__uni) \
     (1<<__uni->splice)
+
 enum {
     _ffly_uni_8 = 8,
     _ffly_uni_16 = 16,
