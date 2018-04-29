@@ -1,0 +1,22 @@
+src/system/buff.h:
+
+c-style
+{
+	struct ffly_buff buff;
+	ffly_buff_init(&buff, <element count>, <element size>);
+
+	ff_uint_t val = 21299;
+	ffly_buff_put(&buff, &val);
+
+	ffly_buff_incr(&buff);	-	increment forward to next element
+
+	ff_uint_t out;
+
+	ffly_buff_decr(&buff);	-	decrement back
+	ffly_buff_get(&buff, &out);
+
+	ffly_printf("%u\n", out);	->	21299
+
+	ffly_buff_de_init(&buff);
+}
+

@@ -1,0 +1,11 @@
+ff_err_t	-	8-bit signed
+to store error status value, and addition infomation about the error.
+
+ff_byte_t	-	8-bit unsigned
+ff_addr_t	-	16-bit unsigned
+ff_off_t	-	32-bit unsigned
+ff_size_t	-	32-bit unsigned
+ff_ssize_t	-	32-bit signed
+ff_bool_t	-	8-bit unsigned
+
+ff_mlock_t	-	mutex lock 8-bit unsigned

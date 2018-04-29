@@ -1,0 +1,23 @@
+src/memory/allocr.h:
+
+this is low level and all memory allocations
+should be made thru the intended way.
+
+c-style
+{
+	ffly_alloc(<memory region size>);
+
+	ffly_free(<memory pointer>);
+
+	ffly_realloc(<old pointer>, <new size>);
+
+	should be used to trim a small amount off
+	ffly_arsh(<pointer>, <new size>);	-	shrink memory block
+	ffly_argr(<pointer>, <new size>);	-	grow memory block
+
+	ffly_arbl(<pointer>);	-	get infomation on a block
+
+	shoud only be used when pot and sub pots are empty, as
+	it will lead to memory leakages.
+	ffly_araxe(<pot pointer>);	-	kill off pot and sub pots
+}

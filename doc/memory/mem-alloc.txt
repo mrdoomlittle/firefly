@@ -1,0 +1,13 @@
+src/memory/mem_alloc.h:
+
+c-style
+{
+	main one to use for c
+	__ffly_mem_alloc(<memory region size>);
+	
+	or if '__ffly_mal_track' is defined
+	ffly_mem_alloc(<memory region size>, <bypass memory allocation tracker>)
+
+	else
+	ffly_mem_alloc(<memory region size>);
+}

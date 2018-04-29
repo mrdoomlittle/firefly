@@ -1,0 +1,34 @@
+src/system/vec.h:
+
+c style
+{
+	struct ffly_vec vec;
+	ffly_vec_clear_flags(&vec);
+	ffly_vec_init(&vec, <element size>);
+
+	ffly_vec_resize(&vec, <element count>);
+
+	ff_uint_t *p;
+	ffly_vec_push_back(&vec, &p);	-	push back and save pointer from before push
+	*p = 21299;
+
+
+	ff_uint_t no;
+	ffly_vec_pop_back(&vec, &no);	-	pop back
+	ffly_printf("%u\n", no);	->	21299
+
+	ffly_vec_de_init(&vec);
+}
+
+c++ style
+{
+	mdl::firefly::system::vec<mdl::uint_t> vec;
+	vec.resize(<element count>);
+
+	vec.push_back(21299);
+
+	ff_uint_t val;
+	vec.pop_back(val);
+
+	mdl::firefly::system::io::printf("%u\n", val); -> 21299
+}

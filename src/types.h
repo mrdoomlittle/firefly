@@ -19,7 +19,8 @@ typedef ff_u8_t ff_byte_t;
 typedef ff_u16_t ff_addr_t;
 typedef ff_u32_t ff_off_t;
 typedef ff_u32_t ff_size_t;
-typedef ff_u32_t ff_bool_t;
+typedef ff_s32_t ff_ssize_t;
+typedef ff_u8_t ff_bool_t;
 
 // id
 typedef ff_uint_t _ff_id_t;
@@ -28,9 +29,6 @@ typedef ff_uint_t* ff_id_t;
 
 typedef __ff_id_t ff_tid_t;
 
-
-typedef ff_u32_t ff_size_t;
-typedef ff_s32_t ff_ssize_t;
 // atomic
 typedef ff_u64_t ff_atomic_u64_t;
 typedef ff_u64_t ff_atomic_u32_t;

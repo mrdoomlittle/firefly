@@ -1,0 +1,13 @@
+src/memory/mem_free.h:
+
+c-style
+{
+	main one to use for c
+	__ffly_mem_free(<memory pointer>);
+	
+	or if '__ffly_mal_track' is defined
+	ffly_mem_free(<memory pointer>, <bypass memory allocation tracker>)
+
+	else
+	ffly_mem_free(<memory pointer>);
+}

@@ -1,0 +1,13 @@
+src/memory/mem_realloc.h:
+
+c-style
+{
+	main one to use for c
+	__ffly_mem_realloc(<old pointer>, <new size>);
+	
+	or if '__ffly_mal_track' is defined
+	ffly_mem_realloc(<old pointer>, <new size>, <bypass memory allocation tracker>)
+
+	else
+	ffly_mem_realloc(<old pointer>, <new size>);
+}

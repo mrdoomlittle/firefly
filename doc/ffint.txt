@@ -1,0 +1,20 @@
+ff_u8_t		-	unsigned 8-bit integer
+ff_u16_t	-	unsigned 16-bit integer
+ff_u32_t	-	unsigned 32-bit integer
+ff_u64_t	-	unsigned 64-bit integer
+
+ff_i8_t     -   signed 8-bit integer
+ff_i16_t    -   signed 16-bit integer
+ff_i32_t    -   signed 32-bit integer
+ff_i64_t    -   signed 64-bit integer
+
+ff_s8_t     -   signed 8-bit integer
+ff_s16_t    -   signed 16-bit integer
+ff_s32_t    -   signed 32-bit integer
+ff_s64_t    -   signed 64-bit integer
+
+
+to set the size define __ff8, __ff16, __ff32, __ff64 or leave undefined and it will be set to 32-bit
+
+ff_uint_t	-	unsigned integer
+ff_int_t	-	signed integer

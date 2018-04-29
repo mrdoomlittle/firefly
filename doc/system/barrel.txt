@@ -1,0 +1,31 @@
+src/system/barrel.h:
+
+barrel size is fixed to 'FFLY_BARREL_SIZE'
+
+all memory given out by 'ffly_barrel_alloc' is freed upon de-init
+
+c-style
+{
+	struct ffly_barrel barrel, extra;
+	ffly_barrel_init(&barrel, <allocation size>);
+	ffly_barrel_init(&extra, <allocation size>);
+
+	link main barrel to an extra one
+	ffly_barrel_link(&barrel, &extra);
+
+	ffly_barrelp cur = &barrel
+
+	if barrel go to the next one in the link, even if memory from
+	another barrel is freed using another barrels instance it wont cause any issues
+	if (ffly_barrel_full(cur)) {
+		cur = cur->link;
+	}
+
+	void *p = ffly_barrel_alloc(cur);	-	allocation piece of memory
+
+	ffly_barrel_free(cur, p);	-	free previously allocated memory
+
+
+	ffly_barrel_de_init(&extra;
+	ffly_barrel_de_init(&barrel);
+}
