@@ -56,73 +56,52 @@ void *dir[] = {
 };
 
 void static
-move(ffly_phy_bodyp __body) {
+move(ffly_phy_bodyp __body, ff_uint_t __delta) {
 	ff_uint_t velocity = __body->velocity;
 
-	ff_i8_t *x = &__body->xx;
-	ff_i8_t *y = &__body->yy;
-	ff_i8_t *z = &__body->zz;
+	ff_uint_t *x = __body->x;
+	ff_uint_t *y = __body->y;
+	ff_uint_t *z = __body->z;
+
+	ff_uint_t ang = (ff_uint_t)ffly_round((((float)(__delta>>1))*(__body->angle/TIME_PERIOD))*10.0);
 
 	if (__body->dir == 26) return;
 	__asm__("jmp *%0" : : "r"(dir[__body->dir]));
 
 	__asm__("_move_a0:\n\t");
 	*y-=velocity;
-	*x = (ff_i8_t)(((float)*x)+ffly_round((__body->angle/TIME_PERIOD)*10.0));
+	*x = *x+ang;
 
-	__asm__("jmp _end\n\t");
+	__asm__("jmp _end");
 	__asm__("_move_a1:\n\t");
 	*x+=velocity;
-	*y = (ff_i8_t)(((float)*y)+ffly_round((__body->angle/TIME_PERIOD)*10.0));
+	*y = *y+ang;
 
-	__asm__("jmp _end\n\t");
+	__asm__("jmp _end");
 	__asm__("_move_a2:\n\t");
 	*y+=velocity;
-	*x = (ff_i8_t)(((float)*x)-ffly_round((__body->angle/TIME_PERIOD)*10.0));
+	*x = *x-ang;
 
-	__asm__("jmp _end\n\t");
+	__asm__("jmp _end");
 	__asm__("_move_a3:\n\t");
 	*x-=velocity;
-	*y = (ff_i8_t)(((float)*y)-ffly_round((__body->angle/TIME_PERIOD)*10.0));
+	*y = *y-ang;
 
-	__asm__("jmp _end\n\t");
+	__asm__("jmp _end");
 	__asm__("_move_a4:\n\t");
 	*z+=velocity;
 
-	__asm__("jmp _end\n\t");
+	__asm__("jmp _end");
 	__asm__("_move_a5:\n\t");
 	*z-=velocity;
 
 	__asm__("_end:\n\t");
-	if (*x >= 10) {
-		(*__body->x)++;
-		*x = 0;
-	} else if (*x <= -10) {
-		(*__body->x)--;
-		*x = 0;
-	}
-
-	if (*y >= 10) {
-		(*__body->y)++;
-		*y = 0;
-	 } else if (*y <= -10) {
-		(*__body->y)--;
-		*y = 0;
-	}
-
-	if (*z >= 10) {
-		(*__body->z)++;
-		*z = 0;
-	} else if (*z <= -10) {
-		(*__body->z)--;
-		*z = 0;
-	}
 }
 
-void ffly_physical_body_update(ffly_unip __uni, ff_uint_t __id) {
+void ffly_physical_body_update(ffly_unip __uni, ff_uint_t __delta, ff_uint_t __id) {
 	ffly_phy_bodyp body = get_body(__id);
 	ffly_uni_detach_body(__uni, body);
-	move(body);
+	move(body, __delta);
 	ffly_uni_attach_body(__uni, body);
 }
 

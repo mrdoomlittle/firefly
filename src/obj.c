@@ -101,6 +101,6 @@ ff_err_t ffly_obj_cleanup() {
 	fast = fastpool;
 }
 # include "physics/body.h"
-ff_err_t ffly_obj_handle(ffly_unip __uni, ffly_objp __obj) {
-	ffly_physical_body_update(__uni, __obj->phy_body);
+ff_err_t ffly_obj_handle(ffly_unip __uni, ff_uint_t __delta, ffly_objp __obj) {
+	ffly_physical_body_update(__uni, __delta, __obj->phy_body);
 }

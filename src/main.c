@@ -124,7 +124,10 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_set_mass(obj0->phy_body, 10);
 
+	ff_uint_t delta = 0, start = 0;
 	while(1) {
+		delta = clock-start;
+		start = clock;
 		char c;
 		if (read(fd, &c, 1) < 0) goto _sk;
 		if (c == '!')
@@ -134,15 +137,15 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 			ffly_set_direction(obj0->phy_body, _ff_dir_a3);
 		else if (!obj0->x)
 			ffly_set_direction(obj0->phy_body, _ff_dir_a1);
-		ffly_obj_handle(&uni, obj0);
-		ffly_printf("\e[2J-------------- x: %u:%u, y: %u:%u ------------- memusage: %u\n",
-			obj0->x, obj1->x, obj0->y, obj1->y, ffly_mem_alloc_bc-ffly_mem_free_bc);
+		ffly_obj_handle(&uni, delta, obj0);
+		ffly_printf("\e[2J-------------- x: %u:%u, y: %u:%u ------------- memusage: %u, clock: %u\n",
+			obj0->x, obj1->x, obj0->y, obj1->y, ffly_mem_alloc_bc-ffly_mem_free_bc, clock);
 		ffly_camera_handle(&camera);
 		ffly_camera_draw(&camera, ffly_frame(__frame_buff__), WIDTH, HEIGHT, 0, 0);
 		ffly_pipe_wr8l(0x0, pipe);
 		ffly_pipe_write(ffly_frame(__frame_buff__), (WIDTH*HEIGHT)*4, pipe);
 		ffly_nanosleep(0, 100000000);
-		//ffly_clock_tick();
+		ffly_clock_tick();
 	}	
 _end:
 	__ffly_mem_free(texture);

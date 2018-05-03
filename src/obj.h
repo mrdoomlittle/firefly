@@ -65,7 +65,7 @@ extern "C" {
 void ffly_obj_rotate(ffly_objp, float);
 ffly_objp ffly_obj_alloc(ff_err_t*);
 ff_err_t ffly_obj_free(ffly_objp);
-ff_err_t ffly_obj_handle(ffly_unip, ffly_objp);
+ff_err_t ffly_obj_handle(ffly_unip, ff_uint_t, ffly_objp);
 ff_err_t ffly_obj_prepare(ffly_objp);
 ff_err_t ffly_obj_cleanup();
 # ifdef __cplusplus

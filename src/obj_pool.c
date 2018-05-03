@@ -33,7 +33,7 @@ ffly_objp ffly_obj_pool_get(ffly_obj_poolp __pool, ff_id_t __id) {
 void ffly_obj_pool_handle(ffly_unip __uni, ffly_obj_poolp __pool) {
     ffly_objpp itr = __pool->top;
     while(itr != __pool->end) {
-        ffly_obj_handle(__uni, *itr);
+        ffly_obj_handle(__uni, 0, *itr);
         itr++;
     }
 }
