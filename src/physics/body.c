@@ -61,7 +61,7 @@ move(ffly_phys_bodyp __body) {
 	__asm__("jmp _end\n\t");
 	__asm__("_move_a1:\n\t");
 	*x+=velocity;
-	*y = (ff_i8_t)(((float)*y)-ffly_round((__body->angle/TIME_PERIOD)*10.0));
+	*y = (ff_i8_t)(((float)*y)+ffly_round((__body->angle/TIME_PERIOD)*10.0));
 
 	__asm__("jmp _end\n\t");
 	__asm__("_move_a2:\n\t");
@@ -71,7 +71,7 @@ move(ffly_phys_bodyp __body) {
 	__asm__("jmp _end\n\t");
 	__asm__("_move_a3:\n\t");
 	*x-=velocity;
-	*y = (ff_i8_t)(((float)*y)+ffly_round((__body->angle/TIME_PERIOD)*10.0));
+	*y = (ff_i8_t)(((float)*y)-ffly_round((__body->angle/TIME_PERIOD)*10.0));
 
 	__asm__("jmp _end\n\t");
 	__asm__("_move_a4:\n\t");
