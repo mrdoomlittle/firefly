@@ -80,3 +80,5 @@ until we can do somthing about that.
 -. parser and lexer should have own structure
 -. fix line counting for compiler
 -. replace window frame buffer with somthing less direct
+-. start moving c++ namespaces mdl::system to ff:: and also removeing mdl:: for ff::
+-. use c++ as the icing and c as the cake

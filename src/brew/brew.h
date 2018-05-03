@@ -18,7 +18,8 @@ enum {
 	_op_exit,
 	_op_jump,
 	_op_echo,
-	_op_end
+	_op_end,
+	_op_shell
 };
 
 typedef struct obj {

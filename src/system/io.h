@@ -36,12 +36,9 @@ ffly_size_t ffly_read(ffly_fd_t, void*, ffly_size_t, ff_err_t*);
 
 # ifdef __cplusplus
 # define ffly_endl '\n'
-namespace mdl {
-namespace firefly {
-namespace system {
-namespace io {
-static ff::err_t(*fprintf)(FF_FILE*, char const*, ...) = &ffly_fprintf;
-static ff::err_t(*printf)(char const*, ...) = &ffly_printf;
+namespace ff {
+static err_t(*fprintf)(FF_FILE*, char const*, ...) = &ffly_fprintf;
+static err_t(*printf)(char const*, ...) = &ffly_printf;
 struct _cout {
 	_cout& operator<<(char const *__s) {
 		printf(__s);
@@ -75,9 +72,6 @@ struct _cout {
 
 };
 _cout static cout;
-}
-}
-}
 }
 # endif
 # endif /*__ffly__io__h*/

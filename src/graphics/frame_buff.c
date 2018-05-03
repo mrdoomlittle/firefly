@@ -21,8 +21,9 @@ ffly_frame_buff_init(ffly_frame_buffp __fb, ff_uint_t __width, ff_uint_t __heigh
 	__fb->height = __height;
 }
 
-
 ff_err_t
 ffly_frame_buff_de_init(ffly_frame_buffp __fb) {
 	__ffly_mem_free(__fb->frame);
 }
+
+ffly_frame_buffp __frame_buff__;

@@ -32,15 +32,15 @@ void ffly_vec_attach(ffly_vecp __vec) {
 
 void ffly_vec_detach(ffly_vecp __vec) {
 	if (__vec == top) {
-		top = __vec->next;
-		if (top != NULL)
+		if ((top = __vec->next) != NULL)
 			top->prev = NULL;
-	} else {
-		if (__vec->prev != NULL)
-			__vec->prev->next = __vec->next;
-		if (__vec->next != NULL)
-			__vec->next->prev = __vec->prev;
-	}
+		return;
+	} 
+
+	if (__vec->prev != NULL)
+		__vec->prev->next = __vec->next;
+	if (__vec->next != NULL)
+		__vec->next->prev = __vec->prev;
 }
 
 ffly_vecp ffly_vec(ff_size_t __blk_size, ff_flag_t __flags, ff_err_t *__err) { 

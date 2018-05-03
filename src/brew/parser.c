@@ -95,6 +95,17 @@ ff_err_t parser_echo(bucketp *__node) {
 	retok;
 }
 
+ff_err_t parser_shell(bucketp *__node) {
+	if (!expect_token(_keywd, _circumflex)) {
+		reterr;
+	}
+
+	bucketp p = (*__node = alloc_node);
+	p->sort = _shell;
+	p->p = (char*)nexttok()->p;
+	retok;
+}
+
 // entry point designation
 ff_i8_t static epdeg = -1;
 void parse(bucketp *__p) {
@@ -106,8 +117,7 @@ void parse(bucketp *__p) {
 
 		if (tok->sort == _keywd) {
 			if (tok->val == _circumflex) {
-				p = alloc_node;
-				p->sort = _shell;
+				parser_shell(&p);
 			} else if (tok->val == _period) {
 				bucketp dir;
 				if ((dir = nexttok())->sort != _keywd) {

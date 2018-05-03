@@ -76,13 +76,20 @@ emit_echo(bucketp __p) {
 	o->p = __p->p;
 }
 
+void static 
+emit_shell(bucketp __p) {
+	objp o = nextobj();
+	o->opcode = _op_shell;
+	o->p = __p->p;
+}
+
 static void(*emit[])(bucketp) = {
 	emit_label,
 	emit_cp,
 	emit_exit,
 	emit_end,
 	emit_jump,
-	NULL,
+	emit_shell,
 	emit_echo
 };
 

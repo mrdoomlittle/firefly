@@ -35,9 +35,7 @@ void* ffly_mem_alloc(ff_uint_t);
 # ifdef __cplusplus
 # include "../system/errno.h"
 
-namespace mdl {
-namespace firefly {
-namespace memory {
+namespace ff {
 # ifdef __ffly_use_opencl
 extern cl_mem_flags __cl_mem_flags__;
 cl_mem gpu_mem_alloc(void*& __p, uint_t __bc, cl_mem_flags __mem_flags, cl_context __context, types::err_t& __any_err);
@@ -46,11 +44,11 @@ cl_mem __inline__ gpu_mem_alloc(void*& __p, uint_t __bc, types::err_t& __any_err
 	return gpu_mem_alloc(__p, __bc, __cl_mem_flags__, __opencl_helper__.context, __any_err);}
 
 # else
-types::err_t gpu_mem_alloc(void** __p, uint_t __bc);
+//types::err_t gpu_mem_alloc(void** __p, uint_t __bc);
 # endif
 
 # ifdef __ffly_mal_track
-void __inline__* mem_alloc(uint_t __bc, types::bool_t __track_bypass) {
+void __inline__* mem_alloc(uint_t __bc, bool_t __track_bypass) {
 	return ffly_mem_alloc(__bc, __track_bypass);
 }
 
@@ -61,8 +59,6 @@ void __inline__* mem_alloc(uint_t __bc) {
 # else
 static void*(*mem_alloc)(uint_t) = &ffly_mem_alloc;
 # endif /*__ffly_mal_track*/
-}
-}
 }
 # endif
 # if defined(__ffly_mal_track)

@@ -24,7 +24,7 @@
 #	define ffly_false 0
 # endif
 
-# define force_inline __attribute__((always_inline)) inline
+# define __force_inline__ __attribute__((always_inline)) inline
 # ifndef retnull
 #	define retnull return (void*)0;
 # endif

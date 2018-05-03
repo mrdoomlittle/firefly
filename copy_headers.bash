@@ -7,7 +7,7 @@ while [[ i -lt ${#dirs[@]} ]]; do
 	src_dir=$ffly_root_dir/src/${dirs[i]}
 	for e in ${header_ext[@]}; do
 		if [ $USE_CP -eq 1 ]; then
-			cp $src_dir/*$e $dst_dir 2> /dev/null
+			cp $src_dir/*.$e $dst_dir 2> /dev/null
 		else
 			files=($(find $src_dir -maxdepth 1 -name "*.$e" | sed -e 's/^\.\///' | tr '\n' ' '))
 			for f in ${files[@]}; do

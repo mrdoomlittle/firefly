@@ -100,13 +100,15 @@ ff_err_t ffly_wd_display(struct ffly_wd *__wd) {
 # endif
 }
 
-void static mk_event(ffly_event_t **__event, ffly_event_t __tmpl) {
+void static
+mk_event(ffly_event_t **__event, ffly_event_t __tmpl) {
 	**__event = __tmpl;
 	(*__event)->field = _ffly_ef_wd;
 }
 
 # ifdef __ffly_use_x11
-ff_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
+ff_err_t 
+ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
 	ff_err_t err;
 	XEvent event;
 	if (XPending(__wd->raw.d) > 0) {
@@ -144,7 +146,8 @@ ff_err_t ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
 }
 # endif
 # ifdef __ffly_use_xcb
-ff_err_t ffly_xcb_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
+ff_err_t
+ffly_xcb_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
     ff_err_t err;
 	xcb_generic_event_t *event;
 	if ((event = xcb_poll_for_event(__wd->raw.conn)) != NULL) {
@@ -168,7 +171,8 @@ ff_err_t ffly_xcb_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
 }
 # endif
 
-ffly_event_t* ffly_wd_poll_event(struct ffly_wd *__wd, ff_err_t *__err) {
+ffly_event_t*
+ffly_wd_poll_event(struct ffly_wd *__wd, ff_err_t *__err) {
 	ffly_event_t *event = NULL;
 # ifdef __ffly_use_x11
 	*__err = ffly_x11_wd_poll_event(__wd, &event);

@@ -50,8 +50,25 @@ ffly_objs="$ffly_objs $(
 	echo "$ffly_objs"
 )"
 
+ffly_objs="$ffly_objs $(
+	dst_dir=$PWD/data
+	root_dir=data
+	. ./data/compile.sh
+	echo "$ffly_objs"
+)"
+
 dst_dir=$PWD
 root_dir=.
+$ffly_cc $cc_flags -c -o $dst_dir/graphics.o $root_dir/graphics.c
+$ffly_cc $cc_flags -c -o $dst_dir/lot.o $root_dir/lot.c
+$ffly_cc $cc_flags -c -o $dst_dir/chunk_manager.o $root_dir/chunk_manager.c
+$ffly_cc $cc_flags -c -o $dst_dir/uni.o $root_dir/uni.c
+$ffly_cc $cc_flags -c -o $dst_dir/chunk.o $root_dir/chunk.c
+$ffly_cc $cc_flags -c -o $dst_dir/obj.o $root_dir/obj.c
+$ffly_cc $cc_flags -c -o $dst_dir/obj_pool.o $root_dir/obj_pool.c
+$ffly_cc $cc_flags -c -o $dst_dir/obj_manager.o $root_dir/obj_manager.c
+$ffly_cc $cc_flags -c -o $dst_dir/polygon.o $root_dir/polygon.c
+$ffly_cc $cc_flags -D__ffly_testing -c -o $dst_dir/ui/camera.o $root_dir/ui/camera.c
 $ffly_cc $cc_flags -c -o $dst_dir/rat.o $root_dir/rat.c
 $ffly_cc $cc_flags -c -o $dst_dir/hatch.o $root_dir/hatch.c
 $ffly_cc $cc_flags -c -o $dst_dir/signal.o $root_dir/signal.c
@@ -85,4 +102,7 @@ $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  
 $dst_dir/arcs.o $dst_dir/call.o $dst_dir/rand.o $dst_dir/lib.o $dst_dir/mod.o $dst_dir/mod/pipe.o \
 $dst_dir/net.o $dst_dir/crypto.o $dst_dir/in.o $dst_dir/inet_addr.o $dst_dir/init.o \
 $dst_dir/opt.o $dst_dir/depart.o $dst_dir/bcd.o $dst_dir/pellet.o $dst_dir/crypto/frazzle.o \
-$dst_dir/signal.o $dst_dir/hatch.o $dst_dir/rat.o"
+$dst_dir/signal.o $dst_dir/hatch.o $dst_dir/rat.o \
+$dst_dir/lot.o $dst_dir/chunk_manager.o $dst_dir/uni.o $dst_dir/chunk.o \
+$dst_dir/obj.o $dst_dir/obj_pool.o $dst_dir/obj_manager.o $dst_dir/polygon.o \
+$dst_dir/ui/camera.o $dst_dir/graphics.o"

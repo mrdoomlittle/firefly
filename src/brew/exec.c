@@ -1,6 +1,14 @@
 # include "brew.h"
 # include "../stdio.h"
 # include "../ffly_def.h"
+# include "linux/mman.h"
+# include "linux/sched.h"
+# include "linux/unistd.h"
+# include "linux/stat.h"
+# include "linux/types.h"
+# include "linux/signal.h"
+# include "../string.h"
+// return buffer
 # define RTBUF_SIZE 20
 
 objp rtbuf[RTBUF_SIZE];
@@ -32,12 +40,19 @@ op_end(objp *__p) {
 	*__p = *(--retto);
 }
 
+void static
+op_shell(objp *__p) {
+	objp p = *__p;
+
+}
+
 static void(*op[])(objp*) = {
 	op_cp,
 	NULL,
 	op_jump,
 	op_echo,
-	op_end
+	op_end,
+	op_shell
 };
 
 void brew_exec(objp __top) {

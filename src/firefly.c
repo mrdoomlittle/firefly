@@ -107,7 +107,7 @@ fini() {
 	ffly_alloca_cleanup();
 //	pr();
 //	pf();
-	ffly_printf("memory not freed: %u\n", ffly_mem_alloc_bc-ffly_mem_free_bc);
+	ffly_printf("memory not freed: %u-bytes\n", ffly_mem_alloc_bc-ffly_mem_free_bc);
 	ffly_io_closeup();
 	ffly_ar_cleanup();
 }

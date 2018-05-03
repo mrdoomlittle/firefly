@@ -1,12 +1,12 @@
 # include "mem_swp.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
-# include "mem_cpy.h"
-void ffly_mem_swp(void *__p1, void *__p2, mdl_uint_t __bc) {
+# include "../dep/mem_cpy.h"
+void ffly_mem_swp(void *__p1, void *__p2, ff_uint_t __bc) {
 	void *tmp;
-	mdl_u8_t fast[sizeof(mdl_u64_t)];
-	mdl_u8_t alloced;
-	if (__bc > sizeof(mdl_u64_t)) {
+	ff_u8_t fast[sizeof(ff_u64_t)];
+	ff_u8_t alloced;
+	if (__bc > sizeof(ff_u64_t)) {
 		tmp = __ffly_mem_alloc(__bc);
 		alloced = 1;
 	} else {

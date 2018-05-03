@@ -47,31 +47,29 @@ ff_bool_t static __inline__ ffly_buff_empty(struct ffly_buff *__buff) {return !_
 ff_off_t static __inline__ ffly_buff_off(struct ffly_buff *__buff){return __buff->off;}
 ff_uint_t static __inline__ ffly_buff_size(struct ffly_buff *__buff){return __buff->blk_c;}
 # ifdef __cplusplus
-namespace mdl {
-namespace firefly {
-namespace system {
-static types::err_t(*buff_init)(ffly_buffp, uint_t, types::size_t) = &ffly_buff_init;
-static types::err_t(*buff_put)(ffly_buffp, void*) = &ffly_buff_put;
-static types::err_t(*buff_get)(ffly_buffp, void*) = &ffly_buff_get;
-static types::err_t(*buff_resize)(ffly_buffp, uint_t) = &ffly_buff_resize;
-static types::err_t(*buff_de_init)(ffly_buffp) = &ffly_buff_de_init;
-types::err_t static __inline__ buff_incr(struct ffly_buff *__buff) {return ffly_buff_incr(__buff);}
-types::err_t static __inline__ buff_decr(struct ffly_buff *__buff) {return ffly_buff_decr(__buff);}
+namespace ff {
+static err_t(*buff_init)(ffly_buffp, uint_t, size_t) = &ffly_buff_init;
+static err_t(*buff_put)(ffly_buffp, void*) = &ffly_buff_put;
+static err_t(*buff_get)(ffly_buffp, void*) = &ffly_buff_get;
+static err_t(*buff_resize)(ffly_buffp, uint_t) = &ffly_buff_resize;
+static err_t(*buff_de_init)(ffly_buffp) = &ffly_buff_de_init;
+err_t static __inline__ buff_incr(struct ffly_buff *__buff) {return ffly_buff_incr(__buff);}
+err_t static __inline__ buff_decr(struct ffly_buff *__buff) {return ffly_buff_decr(__buff);}
 void static __inline__ buff_off_reset(struct ffly_buff *__buff) {ffly_buff_off_reset(__buff);}
 void static __inline__* buff_begin(struct ffly_buff *__buff) {return ffly_buff_begin(__buff);}
 void static __inline__* buff_end(struct ffly_buff *__buff) {return ffly_buff_end(__buff);}
-static types::err_t(*buff_reset)(ffly_buffp) = &ffly_buff_reset;
+static err_t(*buff_reset)(ffly_buffp) = &ffly_buff_reset;
 
 template<typename _T>
 struct buff {
 	buff(uint_t __size) {
 		if (this->init(__size) != FFLY_SUCCESS)
-			io::fprintf(ffly_err, "buff: failed to init.\n");}
+			fprintf(ffly_err, "buff: failed to init.\n");}
 	~buff() {
 		if (this->de_init() != FFLY_SUCCESS)
-			io::fprintf(ffly_err, "buff: failed to de_init.\n");}
-	types::err_t init(types::size_t __size) {buff_init(&this->raw, __size, sizeof(_T));}
-	types::err_t de_init() {buff_de_init(&this->raw);}
+			fprintf(ffly_err, "buff: failed to de_init.\n");}
+	err_t init(size_t __size) {buff_init(&this->raw, __size, sizeof(_T));}
+	err_t de_init() {buff_de_init(&this->raw);}
 
 	_T* begin() {return buff_begin(&this->raw);}
 	_T* end() {return buff_end(&this->raw);}
@@ -83,7 +81,7 @@ struct buff {
 		return ret;
 	}
 
-	types::err_t resize(types::size_t __size) {return buff_resize(&this->raw, __size);}
+	err_t resize(size_t __size) {return buff_resize(&this->raw, __size);}
 	void reset_off() {buff_off_reset(&this->raw);}
 	void reset() {buff_reset(&this->raw);}
 	void incr() {buff_incr(&this->raw);}
@@ -96,8 +94,6 @@ struct buff {
 	}
 	struct ffly_buff raw;
 };
-}
-}
 }
 # endif
 # endif /*__buff__h*/

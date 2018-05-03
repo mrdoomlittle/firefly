@@ -30,25 +30,21 @@ ff_err_t ffly_mem_free(void*);
 }
 # endif
 # ifdef __cplusplus
-namespace mdl {
-namespace firefly {
-namespace memory {
-types::err_t gpu_mem_free(void *__p);
+namespace ff {
+//types::err_t gpu_mem_free(void *__p);
 
 # ifdef __ffly_mal_track
-types::err_t __inline__ mem_free(void *__p, types::bool_t __track_bypass) {
+err_t __inline__ mem_free(void *__p, bool_t __track_bypass) {
 	return ffly_mem_free(__p, __track_bypass);
 }
 
-types::err_t __inline__ mem_free(void *__p) {
+err_t __inline__ mem_free(void *__p) {
 	return mem_free(__p, ffly_false);
 }
 
 # else
-static types::err_t(*mem_free)(void*) = &ffly_mem_free;
+static err_t(*mem_free)(void*) = &ffly_mem_free;
 # endif /*__ffly_mal_track*/
-}
-}
 }
 # endif
 # if defined(__ffly_mal_track)

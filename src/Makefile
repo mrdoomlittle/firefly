@@ -74,23 +74,10 @@ ca: clean
 	gcc -c memory/mem_free.c
 	gcc -c memory/mem_realloc.c
 	gcc cache.c mem_alloc.o mem_free.o mem_realloc.o
+main: clean
+	g++ $(cc_flags) main.c $(ffly_objs) -nostdlib
 uni: clean
-	gcc $(cc_flags) -c cache.c
-	gcc $(cc_flags) -c lot.c
-	gcc $(cc_flags) -c chunk_manager.c
-	gcc $(cc_flags) -c memory/alloc_pixelmap.c
-	gcc $(cc_flags) -c uni.c
-	gcc $(cc_flags) -c chunk.c
-	gcc $(cc_flags) -c obj.c
-	gcc $(cc_flags) -c obj_pool.c
-	gcc $(cc_flags) -c obj_manager.c
-	gcc $(cc_flags) -c ui/camera.c
-	gcc $(cc_flags) -c maths/min.c
-	gcc $(cc_flags) -c maths/max.c
-	gcc $(cc_flags) -c maths/barycentric.c
-	gcc $(cc_flags) -c polygon.c
-	gcc $(cc_flags) -c maths/rotate.c
-	gcc $(cc_flags) main.c cache.o rotate.o polygon.o max.o barycentric.o min.o lot.o obj_manager.o obj_pool.o camera.o obj.o alloc_pixelmap.o uni.o chunk.o chunk_manager.o $(ffly_objs) -nostdlib
+	gcc $(cc_flags) main.c $(ffly_objs) -nostdlib
 all:
 	rm -f *.o
 	nasm -f elf64 $(nasm_flags) -o mutex.o system/asm/mutex.asm

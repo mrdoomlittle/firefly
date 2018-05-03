@@ -19,4 +19,6 @@ ffly_frame_buffp ffly_frame_buff_creat(ff_uint_t, ff_uint_t, ff_u8_t, ff_err_t*)
 ff_err_t ffly_frame_buff_del(ffly_frame_buffp);
 ff_err_t ffly_frame_buff_init(ffly_frame_buffp, ff_uint_t, ff_uint_t, ff_u8_t);
 ff_err_t ffly_frame_buff_de_init(ffly_frame_buffp);
+
+extern ffly_frame_buffp __frame_buff__;
 # endif /*__ffly__frame__buff__h*/

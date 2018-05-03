@@ -26,11 +26,9 @@ void* ffly_mem_realloc(void*, ff_uint_t);
 }
 # endif
 # ifdef __cplusplus
-namespace mdl {
-namespace firefly {
-namespace memory {
+namespace ff {
 # ifdef __ffly_mal_track
-void __inline__* mem_realloc(void *__p, uint_t __bc, types::bool_t __track_bypass) {
+void __inline__* mem_realloc(void *__p, uint_t __bc, bool_t __track_bypass) {
 	return ffly_mem_realloc(__p, __bc, __track_bypass);
 }
 
@@ -40,8 +38,6 @@ void __inline__* mem_realloc(void *__p, uint_t __bc) {
 # else
 static void*(*mem_realloc)(void*, uint_t) = &ffly_mem_realloc;
 # endif
-}
-}
 }
 # endif
 # if defined(__ffly_mal_track)

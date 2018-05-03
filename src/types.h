@@ -49,8 +49,12 @@ typedef ff_u8_t ff_cond_lock_t;
 namespace ff {
 typedef ff_err_t err_t;
 typedef ff_byte_t byte_t;
-typedef ff_addr_t addr_t;
 typedef ff_off_t off_t;
+typedef ff_addr_t addr_t;
+typedef ff_size_t size_t;
+typedef ff_ssize_t ssize_t;
+typedef ff_bool_t bool_t;
+
 # ifdef __ffly_use_opencl
 typedef cl_int cl_err_t;
 # endif

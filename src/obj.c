@@ -5,6 +5,9 @@
 # include "system/io.h"
 # include "dep/bcopy.h"
 # include "dep/bzero.h"
+
+ff_err_t ffly_uni_attach_obj(ffly_unip, ffly_objp);
+ff_err_t ffly_uni_detach_obj(ffly_unip, ffly_objp);
 /*
 	using malloc for allocation is fine for now.
 	it's only going to be slow when creating and destroying objs repeatedly.
