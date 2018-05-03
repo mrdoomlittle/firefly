@@ -4,6 +4,10 @@ compile & run:
 this is for testing object, universe, camera.
 cd src && make uni
 
+note: 
+you will need to graphics
+and sh bridge.sh then ./a.out before ^below^
+
 execute: ./a.out 
 
 - src/ff-lang.c -
