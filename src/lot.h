@@ -1,7 +1,7 @@
 # ifndef __ffly__lot__h
 # define __ffly__lot__h
 # include "ffint.h"
-# include "obj.h"
+# include "physics/body.h"
 /*
 	x*x*x sized block where objects are grouped into a nice package
 	so we dont need to look a large area for it.
@@ -15,9 +15,9 @@ enum {
 };
 
 struct ffly_lot {
-    ffly_objpp top;
-    ffly_objpp end;
-    ffly_objppp objs;
+    ffly_phy_bodypp top;
+    ffly_phy_bodypp end;
+    ffly_phy_bodyppp objs;
     ff_uint_t xl, yl, zl;
     ff_uint_t x, y, z;
     /*
@@ -32,9 +32,9 @@ typedef ffly_lotp* ffly_lotpp;
 # ifdef __cplusplus
 extern "C" {
 # endif
-void ffly_lot_add(ffly_lotp, ffly_objp);
-void ffly_lot_rm(ffly_lotp, ffly_objp);
-ffly_objpp ffly_lot_obj(ffly_lotp, ffly_objp);
+void ffly_lot_add(ffly_lotp, ffly_phy_bodyp);
+void ffly_lot_rm(ffly_lotp, ffly_phy_bodyp);
+ffly_phy_bodypp ffly_lot_obj(ffly_lotp, ffly_phy_bodyp);
 void ffly_lot_prepare(ffly_lotp, ff_uint_t, ff_uint_t, ff_uint_t);
 ffly_lotp ffly_alloc_lot(ff_uint_t, ff_uint_t, ff_uint_t);
 void ffly_lot_cleanup();

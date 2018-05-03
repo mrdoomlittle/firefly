@@ -6,33 +6,33 @@
 static ffly_lotp top = NULL;
 static ffly_lotp end = NULL;
 
-void ffly_lot_add(ffly_lotp __lot, ffly_objp __obj) {
-	ff_uint_t xoff = __obj->x-__lot->x;
-	ff_uint_t yoff = __obj->y-__lot->y;
-	ff_uint_t zoff = __obj->z-__lot->z;
-	*(*(__lot->objs+xoff+(yoff*__lot->xl)+(zoff*(__lot->yl*__lot->xl))) = __lot->end++) = __obj;
+void ffly_lot_add(ffly_lotp __lot, ffly_phy_bodyp __body) {
+	ff_uint_t xoff = *__body->x-__lot->x;
+	ff_uint_t yoff = *__body->y-__lot->y;
+	ff_uint_t zoff = *__body->z-__lot->z;
+	*(*(__lot->objs+xoff+(yoff*__lot->xl)+(zoff*(__lot->yl*__lot->xl))) = __lot->end++) = __body;
 }
 
-void ffly_lot_rm(ffly_lotp __lot, ffly_objp __obj) {
-	if (!__lot || !__obj) {
+void ffly_lot_rm(ffly_lotp __lot, ffly_phy_bodyp __body) {
+	if (!__lot || !__body) {
 		ffly_fprintf(ffly_err, "failed to remove from lot.\n");
 		return;
 	}
 
-	ff_uint_t xoff = __obj->x-__lot->x;
-	ff_uint_t yoff = __obj->y-__lot->y;
-	ff_uint_t zoff = __obj->z-__lot->z;
-	ffly_objppp obj = __lot->objs+xoff+(yoff*__lot->xl)+(zoff*(__lot->yl*__lot->xl)); 
+	ff_uint_t xoff = *__body->x-__lot->x;
+	ff_uint_t yoff = *__body->y-__lot->y;
+	ff_uint_t zoff = *__body->z-__lot->z;
+	ffly_phy_bodyppp obj = __lot->objs+xoff+(yoff*__lot->xl)+(zoff*(__lot->yl*__lot->xl)); 
 	if (*obj == __lot->end-1)
 		__lot->end--;
 	else
 		**obj = *(--__lot->end);
 }
 
-ffly_objpp ffly_lot_obj(ffly_lotp __lot, ffly_objp __obj) {
-	ff_uint_t xoff = __obj->x-__lot->x;
-	ff_uint_t yoff = __obj->y-__lot->y;
-	ff_uint_t zoff = __obj->z-__lot->z;
+ffly_phy_bodypp ffly_lot_obj(ffly_lotp __lot, ffly_phy_bodyp __body) {
+	ff_uint_t xoff = *__body->x-__lot->x;
+	ff_uint_t yoff = *__body->y-__lot->y;
+	ff_uint_t zoff = *__body->z-__lot->z;
 	return *(__lot->objs+xoff+(yoff*__lot->xl)+(zoff*(__lot->yl*__lot->xl)));
 }
 
@@ -54,11 +54,11 @@ ffly_lotp ffly_alloc_lot(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
 	end = lot;
 
 	ff_uint_t size = (lot->xl = __xl)*(lot->yl = __yl)*(lot->zl = __zl);
-	lot->top = (ffly_objpp)__ffly_mem_alloc(size*sizeof(ffly_objp));
+	lot->top = (ffly_phy_bodypp)__ffly_mem_alloc(size*sizeof(ffly_phy_bodyp));
 	lot->end = lot->top;
 
-	lot->objs = (ffly_objppp)__ffly_mem_alloc(size*sizeof(ffly_objpp));
-	ffly_objppp itr = lot->objs;
+	lot->objs = (ffly_phy_bodyppp)__ffly_mem_alloc(size*sizeof(ffly_phy_bodypp));
+	ffly_phy_bodyppp itr = lot->objs;
 	while(itr != lot->objs+size) *(itr++) = NULL;
 	return lot;
 }

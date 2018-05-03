@@ -6,8 +6,6 @@
 # include "dep/bcopy.h"
 # include "dep/bzero.h"
 
-ff_err_t ffly_uni_attach_obj(ffly_unip, ffly_objp);
-ff_err_t ffly_uni_detach_obj(ffly_unip, ffly_objp);
 /*
 	using malloc for allocation is fine for now.
 	it's only going to be slow when creating and destroying objs repeatedly.
@@ -25,12 +23,7 @@ void ffly_obj_rotate(ffly_objp __obj, float __angle) {
 
 ff_err_t ffly_obj_prepare(ffly_objp __obj) {
 	__obj->angle = 0.0;
-	__obj->lot = NULL;
 	__obj->script = NULL;
-	__obj->puppet.x = &__obj->x;
-	__obj->puppet.y = &__obj->y;
-	__obj->puppet.z = &__obj->z;
-	ffly_bzero(&__obj->shape, sizeof(ffly_polygon));
 }
 
 ffly_objp ffly_obj_alloc(ff_err_t *__err) {
@@ -59,10 +52,6 @@ ffly_objp ffly_obj_alloc(ff_err_t *__err) {
 	}
 	end = obj;
 	return obj;
-}
-
-ff_err_t ffly_obj_draw(ffly_objp __obj, ff_byte_t *__frame, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z, ff_uint_t __width, ff_uint_t __height, ff_uint_t __xmax, ff_uint_t __ymax) {
-	ffly_draw_polygon(&__obj->shape, __frame, __obj->texture, __obj->xl, __x, __y, __z, __width, __height, __xmax, __ymax, __obj->angle);
 }
 
 ff_err_t ffly_obj_free(ffly_objp __obj) {
@@ -113,7 +102,5 @@ ff_err_t ffly_obj_cleanup() {
 }
 # include "physics/body.h"
 ff_err_t ffly_obj_handle(ffly_unip __uni, ffly_objp __obj) {
-	ffly_uni_detach_obj(__uni, __obj);
-	ffly_physical_body_update(__obj->phy_body);
-	ffly_uni_attach_obj(__uni, __obj);
+	ffly_physical_body_update(__uni, __obj->phy_body);
 }

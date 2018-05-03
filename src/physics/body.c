@@ -3,20 +3,32 @@
 # include "clock.h"
 # include "../maths/abs.h"
 # include "../system/io.h"
-static struct ffly_phys_body bodies[20];
-ffly_phys_bodyp static fresh = bodies;
+
+ff_err_t ffly_uni_attach_body(ffly_unip, ffly_phy_bodyp);
+ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
+
+// change this
+static struct ffly_phy_body bodies[20];
+ffly_phy_bodyp static fresh = bodies;
 
 # define get_body(__id) \
 	(bodies+__id)
 
-ff_uint_t ffly_physical_body(ffly_puppetp __puppet) {
-	ffly_phys_bodyp body = fresh;
+ffly_phy_bodyp ffly_get_phy_body(ff_uint_t __id) {
+	return get_body(__id);
+}
+
+ff_uint_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z) {
+	ffly_phy_bodyp body = fresh;
 	body->velocity = 0;
 	body->dir = 26;
-	body->x = 0;
-	body->y = 0;
-	body->z = 0;
-	body->puppet = __puppet;
+	body->x = __x;
+	body->y = __y;
+	body->z = __z;
+	body->xx = 0;
+	body->yy = 0;
+	body->zz = 0;
+	body->lot = NULL;
 	return (fresh++)-bodies;
 }
 
@@ -44,12 +56,12 @@ void *dir[] = {
 };
 
 void static
-move(ffly_phys_bodyp __body) {
+move(ffly_phy_bodyp __body) {
 	ff_uint_t velocity = __body->velocity;
 
-	ff_i8_t *x = &__body->x;
-	ff_i8_t *y = &__body->y;
-	ff_i8_t *z = &__body->z;
+	ff_i8_t *x = &__body->xx;
+	ff_i8_t *y = &__body->yy;
+	ff_i8_t *z = &__body->zz;
 
 	if (__body->dir == 26) return;
 	__asm__("jmp *%0" : : "r"(dir[__body->dir]));
@@ -83,33 +95,35 @@ move(ffly_phys_bodyp __body) {
 
 	__asm__("_end:\n\t");
 	if (*x >= 10) {
-		(*__body->puppet->x)++;
+		(*__body->x)++;
 		*x = 0;
 	} else if (*x <= -10) {
-		(*__body->puppet->x)--;
+		(*__body->x)--;
 		*x = 0;
 	}
 
 	if (*y >= 10) {
-		(*__body->puppet->y)++;
+		(*__body->y)++;
 		*y = 0;
 	 } else if (*y <= -10) {
-		(*__body->puppet->y)--;
+		(*__body->y)--;
 		*y = 0;
 	}
 
 	if (*z >= 10) {
-		(*__body->puppet->z)++;
+		(*__body->z)++;
 		*z = 0;
 	} else if (*z <= -10) {
-		(*__body->puppet->z)--;
+		(*__body->z)--;
 		*z = 0;
 	}
 }
 
-void ffly_physical_body_update(ff_uint_t __id) {
-	ffly_phys_bodyp body = get_body(__id);
+void ffly_physical_body_update(ffly_unip __uni, ff_uint_t __id) {
+	ffly_phy_bodyp body = get_body(__id);
+	ffly_uni_detach_body(__uni, body);
 	move(body);
+	ffly_uni_attach_body(__uni, body);
 }
 
 void ffly_set_direction(ff_uint_t __id, ff_u8_t __dir) {

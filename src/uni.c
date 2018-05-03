@@ -31,12 +31,12 @@ get_lot(ffly_unip __uni, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 }
 
 ff_err_t
-ffly_uni_obj_move(ffly_unip __uni, ffly_objp __obj, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
-	ffly_uni_detach_obj(__uni, __obj);
-	__obj->x = __x;
-	__obj->y = __y;
-	__obj->z = __z;
-	ffly_uni_attach_obj(__uni, __obj);
+ffly_uni_body_move(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
+	ffly_uni_detach_body(__uni, __body);
+	*__body->x = __x;
+	*__body->y = __y;
+	*__body->z = __z;
+	ffly_uni_attach_body(__uni, __body);
 }
 
 /* should to rename to copy or somthing along that line. 
@@ -60,13 +60,13 @@ ffly_uni_frame(ffly_unip __uni, ff_byte_t *__dst,
 				chunk = get_chunk(__uni, x, y, z);
 				ffly_lotp lot = *ffly_fetch_lot(chunk, x, y, z);
 				if (lot != NULL) {
-					ffly_objpp itr = lot->top;
-					ffly_objp obj;
+					ffly_phy_bodypp itr = lot->top;
+					ffly_phy_bodyp body;
 					while(itr != lot->end) {
-						obj = *itr;
-						if ((obj->x < __x+__xl && obj->x >= __x) && (obj->y < __y+__yl && obj->y >= __y) && (obj->z < __z+__zl && obj->z >= __z)) {
-							ffly_obj_draw(obj, __dst, obj->x-__x, obj->y-__y, 0, __xl, __yl, __x+__xl, __y+__yl);
-							//ffly_light_emit(__dst, __xl, __yl, obj->x-__x, obj->y-__y, 0, obj->light);
+						body = *itr;
+						if ((*body->x < __x+__xl && *body->x >= __x) && (*body->y < __y+__yl && *body->y >= __y) && (*body->z < __z+__zl && *body->z >= __z)) {
+							ffly_draw_polygon(&body->shape, __dst, body->texture, body->xl, *body->x-__x, *body->y-__y, 0, __xl, __yl, __x+__xl, __y+__yl, 0.0);
+							//ffly_light_emit(__dst, __xl, __yl, *body->x-__x, *body->y-__y, 0, *body->light);
 						}
 						itr++;
 					}
@@ -89,26 +89,29 @@ ff_err_t ffly_uni_free(ffly_unip __uni) {
 }
 
 ff_err_t
-ffly_uni_attach_obj(ffly_unip __uni, ffly_objp __obj) {
-	ffly_lotpp lot = get_lot(__uni, __obj->x, __obj->y, __obj->z);
+ffly_uni_attach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
+	ff_uint_t x = *__body->x;
+	ff_uint_t y = *__body->y;
+	ff_uint_t z = *__body->z;
+	ffly_lotpp lot = get_lot(__uni, x, y, z);
 	if (!*lot) {
 		ffly_fprintf(ffly_log, "new lot.\n");
-		ffly_chunkp chunk = get_chunk(__uni, __obj->x, __obj->y, __obj->z);
+		ffly_chunkp chunk = get_chunk(__uni, x, y, z);
 		*lot = ffly_alloc_lot(1<<chunk->lotsize, 1<<chunk->lotsize, 1<<chunk->lotsize);
-		ffly_lot_prepare(*lot, (__obj->x>>chunk->lotsize)*(1<<chunk->lotsize), (__obj->y>>chunk->lotsize)*(1<<chunk->lotsize), (__obj->z>>chunk->lotsize)*(1<<chunk->lotsize));
+		ffly_lot_prepare(*lot, (x>>chunk->lotsize)*(1<<chunk->lotsize), (y>>chunk->lotsize)*(1<<chunk->lotsize), (z>>chunk->lotsize)*(1<<chunk->lotsize));
 	}
 
 //	  ffly_fprintf(ffly_log, "added to lot.\n");
-	ffly_lot_add(*lot, __obj);
-	__obj->lot = *lot;
+	ffly_lot_add(*lot, __body);
+	__body->lot = *lot;
 }
 	
-ff_err_t ffly_uni_detach_obj(ffly_unip __uni, ffly_objp __obj) {
-	if (!__uni || !__obj) {
+ff_err_t ffly_uni_detach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
+	if (!__uni || !__body) {
 		ffly_fprintf(ffly_err, "failed to detatch object.\n");
 		return FFLY_FAILURE;
 	}
-	ffly_lot_rm(__obj->lot, __obj);
+	ffly_lot_rm(__body->lot, __body);
 }
 
 ff_err_t ffly_uni_build(ffly_unip __uni, ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_u8_t __splice, ff_u8_t __lotsize) {

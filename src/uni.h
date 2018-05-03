@@ -3,7 +3,7 @@
 # include "ffint.h"
 # include "types.h"
 # include "lot.h"
-# include "obj.h"
+# include "physics/body.h"
 # include "chunk_manager.h"
 # define ffly_uni_chunk_xal(__uni) \
     (1<<__uni->splice)
@@ -45,9 +45,9 @@ typedef struct ffly_uni {
 # ifdef __cplusplus
 extern "C" {
 # endif
-ff_err_t ffly_uni_attach_obj(ffly_unip, ffly_objp);
-ff_err_t ffly_uni_detach_obj(ffly_unip, ffly_objp);
-ff_err_t ffly_uni_obj_move(ffly_unip, ffly_objp, ff_uint_t, ff_uint_t, ff_uint_t);
+ff_err_t ffly_uni_attach_body(ffly_unip, ffly_phy_bodyp);
+ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
+ff_err_t ffly_uni_body_move(ffly_unip, ffly_phy_bodyp, ff_uint_t, ff_uint_t, ff_uint_t);
 /* capture frame */
 ff_err_t ffly_uni_frame(ffly_unip, ff_byte_t*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
 ff_id_t ffly_uni_chunk(ffly_unip, ff_off_t, ff_off_t, ff_off_t);
@@ -55,6 +55,7 @@ ff_err_t ffly_uni_build(ffly_unip, ff_uint_t, ff_uint_t, ff_uint_t, ff_u8_t, ff_
 ff_err_t ffly_uni_free(ffly_unip);
 # ifdef __cplusplus
 }
+/*
 # include "obj.h"
 namespace mdl {
 namespace firefly {
@@ -87,5 +88,6 @@ struct uni {
 };
 }
 }
+*/
 # endif
 # endif /*__ffly__uni__h*/

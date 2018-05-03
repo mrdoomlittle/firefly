@@ -67,35 +67,62 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	// bind camera to universe
 	ffly_camera_bind(&camera, &uni);
 
-	// create object
-	ffly_objp obj = ffly_obj_alloc(&err);
-	ffly_obj_prepare(obj);
+	// create objects
+	ffly_objp obj0 = ffly_obj_alloc(&err);
+	ffly_objp obj1 = ffly_obj_alloc(&err);
+	ffly_obj_prepare(obj0);
+	ffly_obj_prepare(obj1);
 
-	// give object a physical body
-	obj->phy_body = ffly_physical_body(&obj->puppet);
+	// give objects a physical body
+	obj0->phy_body = ffly_physical_body(&obj0->x, &obj0->y, &obj0->z);
+	obj1->phy_body = ffly_physical_body(&obj1->x, &obj1->y, &obj1->z);
+
+	ffly_phy_bodyp body0 = ffly_get_phy_body(obj0->phy_body);
+	ffly_phy_bodyp body1 = ffly_get_phy_body(obj1->phy_body);
+
+	ffly_uni_attach_body(&uni, body1);
 
 	ff_byte_t *texture = (ff_byte_t*)__ffly_mem_alloc(20*20*4);
 	ffly_mem_set(texture, 0xff, 20*20*4);
 
-	ffly_bzero(&obj->shape, sizeof(ffly_polygon));
-	ffly_obj_vertex(obj, -10, -10, 0);
-	ffly_obj_vertex(obj, 10, -10, 0);
-	ffly_obj_vertex(obj, 10, 10, 0);
-	obj->texture = texture;
-	obj->xl = 20;
-	obj->yl = 20;
-	obj->zl = 1;
-	obj->x = 0;
-	obj->y = 50;
-	obj->z = 0;
+	ffly_bzero(&body0->shape, sizeof(ffly_polygon));
+	ffly_obj_vertex(body0, -10, -10, 0);
+	ffly_obj_vertex(body0, 10, -10, 0);
+	ffly_obj_vertex(body0, 10, 10, 0);
+	body0->texture = texture;
+	body0->xl = 20;
+	body0->yl = 20;
+	body0->zl = 1;
 
-	// set velocity of object to 1
-	ffly_set_velocity(obj->phy_body, 0.5);
+	obj0->x = 0;
+	obj0->y = 50;
+	obj0->z = 0;
+
+	ffly_bzero(&body1->shape, sizeof(ffly_polygon));
+	ffly_obj_vertex(body1, -10, -10, 0);
+	ffly_obj_vertex(body1, 10, -10, 0);
+	ffly_obj_vertex(body1, 10, 10, 0);
+	body1->texture = texture;
+	body1->xl = 20;
+	body1->yl = 20;
+	body1->zl = 1;
+
+	obj1->x = 50;
+	obj1->y = 50;
+	obj1->z = 0;
+
+	// set velocity of object to ...
+	ffly_set_velocity(obj0->phy_body, 0.5);
+	ffly_set_velocity(obj1->phy_body, 0.5);
 
 	// set direction to a1 or right
-	ffly_set_direction(obj->phy_body, _ff_dir_a1);
+	ffly_set_direction(obj0->phy_body, _ff_dir_a1);
+	ffly_set_direction(obj1->phy_body, _ff_dir_a1);
 
-	ffly_set_angle(obj->phy_body, -0.1);
+	ffly_set_angle(obj0->phy_body, 0.1);
+	ffly_set_angle(obj1->phy_body, 0.1);
+
+	ffly_set_mass(obj0->phy_body, 10);
 
 	while(1) {
 		char c;
@@ -103,13 +130,13 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		if (c == '!')
 			goto _end;
 	_sk:
-		if (obj->x == 50)
-			ffly_set_direction(obj->phy_body, _ff_dir_a3);
-		else if (!obj->x)
-			ffly_set_direction(obj->phy_body, _ff_dir_a1);
-		ffly_obj_handle(&uni, obj);
-		ffly_printf("\e[2J-------------- x: %u, y: %u ------------- memusage: %u\n",
-			obj->x, obj->y, ffly_mem_alloc_bc-ffly_mem_free_bc);
+		if (obj0->x == 50)
+			ffly_set_direction(obj0->phy_body, _ff_dir_a3);
+		else if (!obj0->x)
+			ffly_set_direction(obj0->phy_body, _ff_dir_a1);
+		ffly_obj_handle(&uni, obj0);
+		ffly_printf("\e[2J-------------- x: %u:%u, y: %u:%u ------------- memusage: %u\n",
+			obj0->x, obj1->x, obj0->y, obj1->y, ffly_mem_alloc_bc-ffly_mem_free_bc);
 		ffly_camera_handle(&camera);
 		ffly_camera_draw(&camera, ffly_frame(__frame_buff__), WIDTH, HEIGHT, 0, 0);
 		ffly_pipe_wr8l(0x0, pipe);
