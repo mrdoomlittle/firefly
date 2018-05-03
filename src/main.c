@@ -19,6 +19,7 @@
 # include "memory/mem_free.h"
 # include "dep/bzero.h"
 # include "physics/clock.h"
+# include "gravity.h"
 # define WIDTH 400
 # define HEIGHT 400
 
@@ -63,6 +64,18 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		build universe
 	*/
 	ffly_uni_build(&uni, _ffly_uni_128, _ffly_uni_128, _ffly_uni_64, 3, _ffly_lotsize_8);
+
+	ffly_gravity_init(_ffly_uni_128, _ffly_uni_128, _ffly_uni_64);
+
+	ff_uint_t x, y = 0;
+	while(y != 32) {
+		x = 0;
+		while(x != 32) {
+			ffly_gravity_add(0.01*(x*y), x, y, 0);
+			x++;
+		}
+		y++;
+	}
 
 	// bind camera to universe
 	ffly_camera_bind(&camera, &uni);
@@ -125,6 +138,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_set_mass(obj0->phy_body, 10);
 
 	ff_uint_t delta = 0, start = 0;
+	ff_int_t old_x, old_y;
 	while(1) {
 		delta = clock-start;
 		start = clock;
@@ -133,13 +147,17 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		if (c == '!')
 			goto _end;
 	_sk:
-		if (obj0->x == 50)
+		old_x = obj0->x;
+		old_y = obj0->y;
+		if (obj0->x >= 50)
 			ffly_set_direction(obj0->phy_body, _ff_dir_a3);
 		else if (!obj0->x)
 			ffly_set_direction(obj0->phy_body, _ff_dir_a1);
+		ffly_uni_update(&uni, delta);
 		ffly_obj_handle(&uni, delta, obj0);
-		ffly_printf("\e[2J-------------- x: %u:%u, y: %u:%u ------------- memusage: %u, clock: %u\n",
-			obj0->x, obj1->x, obj0->y, obj1->y, ffly_mem_alloc_bc-ffly_mem_free_bc, clock);
+		ffly_printf("-------------- x: %u{%d}:%u, y: %u{%d}:%u ------------- memusage: %u, clock: %u\n",
+			obj0->x, (ff_int_t)obj0->x-old_x, obj1->x,
+			obj0->y, (ff_int_t)obj0->y-old_y, obj1->y, ffly_mem_alloc_bc-ffly_mem_free_bc, clock);
 		ffly_camera_handle(&camera);
 		ffly_camera_draw(&camera, ffly_frame(__frame_buff__), WIDTH, HEIGHT, 0, 0);
 		ffly_pipe_wr8l(0x0, pipe);
@@ -157,5 +175,6 @@ _end:
 	ffly_obj_cleanup();
 	ffly_lot_cleanup();
 	ffly_uni_free(&uni);
+	ffly_gravity_cleanup();
 	ffly_camera_de_init(&camera);
 }

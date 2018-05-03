@@ -59,6 +59,7 @@ ffly_objs="$ffly_objs $(
 
 dst_dir=$PWD
 root_dir=.
+$ffly_cc $cc_flags -c -o $dst_dir/gravity.o $root_dir/gravity.c
 $ffly_cc $cc_flags -c -o $dst_dir/graphics.o $root_dir/graphics.c
 $ffly_cc $cc_flags -c -o $dst_dir/lot.o $root_dir/lot.c
 $ffly_cc $cc_flags -c -o $dst_dir/chunk_manager.o $root_dir/chunk_manager.c
@@ -105,4 +106,4 @@ $dst_dir/opt.o $dst_dir/depart.o $dst_dir/bcd.o $dst_dir/pellet.o $dst_dir/crypt
 $dst_dir/signal.o $dst_dir/hatch.o $dst_dir/rat.o \
 $dst_dir/lot.o $dst_dir/chunk_manager.o $dst_dir/uni.o $dst_dir/chunk.o \
 $dst_dir/obj.o $dst_dir/obj_pool.o $dst_dir/obj_manager.o $dst_dir/polygon.o \
-$dst_dir/ui/camera.o $dst_dir/graphics.o"
+$dst_dir/ui/camera.o $dst_dir/graphics.o $dst_dir/gravity.o"

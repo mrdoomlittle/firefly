@@ -30,6 +30,10 @@ get_lot(ffly_unip __uni, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 	return ffly_fetch_lot(chunk, __x, __y, __z);
 }
 
+ffly_lotp ffly_uni_get_lot(ffly_unip __uni, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
+	return *get_lot(__uni, __x, __y, __z);
+}
+
 ff_err_t
 ffly_uni_body_move(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 	ffly_uni_detach_body(__uni, __body);
@@ -114,7 +118,18 @@ ff_err_t ffly_uni_detach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 	ffly_lot_rm(__body->lot, __body);
 }
 
-ff_err_t ffly_uni_build(ffly_unip __uni, ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_u8_t __splice, ff_u8_t __lotsize) {
+# include "gravity.h"
+void
+ffly_uni_update(ffly_unip __uni, ff_uint_t __delta) {
+	ffly_phy_bodyp itr = ffly_phy_body_top();
+	while(itr < ffly_phy_body_end()) {
+		ffly_gravity_apply(__uni, itr, __delta);
+		itr++;
+	}
+}
+
+ff_err_t
+ffly_uni_build(ffly_unip __uni, ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_u8_t __splice, ff_u8_t __lotsize) {
 	if (!is_sliceable(__xl, __splice)) {
 		ffly_fprintf(ffly_err, "length of x not sliceable by %u.\n", 1<<__splice);
 		return FFLY_FAILURE;

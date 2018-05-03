@@ -22,8 +22,6 @@ typedef struct ffly_phy_body {
 
 	ff_u8_t velocity;
 	ff_uint_t *x, *y, *z;
-	ff_i8_t xx, yy, zz;
-
 	float angle;
 
 	ffly_lotp lot;
@@ -34,6 +32,9 @@ typedef struct ffly_phy_body {
 
 typedef ffly_phy_bodyp* ffly_phy_bodypp;
 typedef ffly_phy_bodypp* ffly_phy_bodyppp;
+
+ffly_phy_bodyp ffly_phy_body_top();
+ffly_phy_bodyp ffly_phy_body_end();
 
 ffly_phy_bodyp ffly_get_phy_body(ff_uint_t);
 ff_uint_t ffly_physical_body(ff_uint_t*, ff_uint_t*, ff_uint_t*);

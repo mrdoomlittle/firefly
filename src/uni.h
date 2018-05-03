@@ -45,6 +45,8 @@ typedef struct ffly_uni {
 # ifdef __cplusplus
 extern "C" {
 # endif
+void ffly_uni_update(ffly_unip, ff_uint_t);
+ffly_lotp ffly_uni_get_lot(ffly_unip, ff_uint_t, ff_uint_t, ff_uint_t);
 ff_err_t ffly_uni_attach_body(ffly_unip, ffly_phy_bodyp);
 ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
 ff_err_t ffly_uni_body_move(ffly_unip, ffly_phy_bodyp, ff_uint_t, ff_uint_t, ff_uint_t);

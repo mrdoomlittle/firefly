@@ -3,7 +3,6 @@
 # include "clock.h"
 # include "../maths/abs.h"
 # include "../system/io.h"
-
 ff_err_t ffly_uni_attach_body(ffly_unip, ffly_phy_bodyp);
 ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
 
@@ -18,6 +17,14 @@ ffly_phy_bodyp ffly_get_phy_body(ff_uint_t __id) {
 	return get_body(__id);
 }
 
+ffly_phy_bodyp ffly_phy_body_top() {
+	return bodies;
+}
+
+ffly_phy_bodyp ffly_phy_body_end() {
+	return fresh;
+}
+
 ff_uint_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z) {
 	ffly_phy_bodyp body = fresh;
 	body->velocity = 0;
@@ -25,9 +32,6 @@ ff_uint_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z) {
 	body->x = __x;
 	body->y = __y;
 	body->z = __z;
-	body->xx = 0;
-	body->yy = 0;
-	body->zz = 0;
 	body->lot = NULL;
 	return (fresh++)-bodies;
 }
@@ -63,7 +67,7 @@ move(ffly_phy_bodyp __body, ff_uint_t __delta) {
 	ff_uint_t *y = __body->y;
 	ff_uint_t *z = __body->z;
 
-	ff_uint_t ang = (ff_uint_t)ffly_round((((float)(__delta>>1))*(__body->angle/TIME_PERIOD))*10.0);
+	ff_uint_t ang = (ff_uint_t)ffly_round(((((float)(__delta>>1))*0.2)*(__body->angle/TIME_PERIOD))*10.0);
 
 	if (__body->dir == 26) return;
 	__asm__("jmp *%0" : : "r"(dir[__body->dir]));
