@@ -82,3 +82,6 @@ until we can do somthing about that.
 -. replace window frame buffer with somthing less direct
 -. start moving c++ namespaces mdl::system to ff:: and also removeing mdl:: for ff::
 -. use c++ as the icing and c as the cake
+-. find new names for things
+-. a lot of security holes a lot! need fixed later as i don't care about it for now
+-. fix asm labels and add name infront of each

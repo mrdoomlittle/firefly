@@ -64,12 +64,11 @@ void *dir[] = {
 void static
 move(ffly_phy_bodyp __body, ff_uint_t __delta) {
 	ff_uint_t velocity = __body->velocity;
-
 	ff_uint_t *x = __body->x;
 	ff_uint_t *y = __body->y;
 	ff_uint_t *z = __body->z;
 
-	ff_uint_t ang = (ff_uint_t)ffly_round(((((float)__delta)*0.2)*(__body->angle/TIME_PERIOD))*10.0);
+	ff_uint_t ang = (ff_uint_t)ffly_round(((((float)__delta)*0.2)*(__body->angular_velocity/TIME_PERIOD))*10.0);
 
 	if (__body->dir == 26) return;
 	__asm__("jmp *%0" : : "r"(dir[__body->dir]));
@@ -131,6 +130,6 @@ void ffly_set_mass(ff_uint_t __id, ff_uint_t __mass) {
 	get_body(__id)->mass = __mass;
 }
 
-void ffly_set_angle(ff_uint_t __id, float __angle) {
-	get_body(__id)->angle = __angle;
+void ffly_set_angular_velocity(ff_uint_t __id, float __velocity) {
+	get_body(__id)->angular_velocity = __velocity;
 }

@@ -4,11 +4,15 @@ compile & run:
 this is for testing object, universe, camera.
 cd src && make uni
 
-note: 
-you will need to graphics
-and sh bridge.sh then ./a.out before ^below^
-
 execute: ./a.out 
+
+then go to /src/graphics
+do sh bridge.sh
+
+and then ./a.out and a window should pop up
+to exit click any where with mouse
+
+NOTE: this is only for debugging until everything is done
 
 - src/ff-lang.c -
 firefly language.

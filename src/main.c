@@ -20,6 +20,7 @@
 # include "dep/bzero.h"
 # include "physics/clock.h"
 # include "gravity.h"
+# include "duct.h"
 # define WIDTH 400
 # define HEIGHT 400
 
@@ -27,7 +28,6 @@
 	only for testing
 */
 
-ff_uint_t pipe;
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_err_t err;
 
@@ -43,12 +43,12 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_set_frame_size(WIDTH, HEIGHT);
 	ff_graphics_init();
 
-	pipe = ffly_pipe(8, FF_PIPE_SHMM, 0, &err);
+	ff_duct_open(FF_PIPE_CREAT);
 
 	// clear frame buffer
 	ffly_mem_set(ffly_frame(__frame_buff__), 0, (WIDTH*HEIGHT)*4);
 
-	ffly_pipe_connect(pipe);
+	ff_duct_listen();
 
 	struct ffly_camera camera;
 	ffly_camera_init(&camera, 100, 100);
@@ -63,7 +63,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	/*
 		build universe
 	*/
-	ffly_uni_build(&uni, _ffly_uni_128, _ffly_uni_128, _ffly_uni_64, 3, _ffly_lotsize_8);
+	ffly_uni_build(&uni, _ffly_uni_128, _ffly_uni_128, _ffly_uni_64, 4, _ffly_lotsize_8);
 
 	ffly_gravity_init(_ffly_uni_128, _ffly_uni_128, _ffly_uni_64);
 /*
@@ -86,22 +86,23 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_obj_prepare(obj0);
 	ffly_obj_prepare(obj1);
 
-	// give objects a physical body
+	// give objects a physical bodies
 	obj0->phy_body = ffly_physical_body(&obj0->x, &obj0->y, &obj0->z);
 	obj1->phy_body = ffly_physical_body(&obj1->x, &obj1->y, &obj1->z);
 
 	ffly_phy_bodyp body0 = ffly_get_phy_body(obj0->phy_body);
 	ffly_phy_bodyp body1 = ffly_get_phy_body(obj1->phy_body);
 
+	ffly_uni_attach_body(&uni, body0);
 	ffly_uni_attach_body(&uni, body1);
 
 	ff_byte_t *texture = (ff_byte_t*)__ffly_mem_alloc(20*20*4);
 	ffly_mem_set(texture, 0xff, 20*20*4);
 
 	ffly_bzero(&body0->shape, sizeof(ffly_polygon));
-	ffly_obj_vertex(body0, -10, -10, 0);
-	ffly_obj_vertex(body0, 10, -10, 0);
-	ffly_obj_vertex(body0, 10, 10, 0);
+	ffly_body_vertex(body0, -10, -10, 0);
+	ffly_body_vertex(body0, 10, -10, 0);
+	ffly_body_vertex(body0, 10, 10, 0);
 	body0->texture = texture;
 	body0->xl = 20;
 	body0->yl = 20;
@@ -112,9 +113,9 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	obj0->z = 0;
 
 	ffly_bzero(&body1->shape, sizeof(ffly_polygon));
-	ffly_obj_vertex(body1, -10, -10, 0);
-	ffly_obj_vertex(body1, 10, -10, 0);
-	ffly_obj_vertex(body1, 10, 10, 0);
+	ffly_body_vertex(body1, -10, -10, 0);
+	ffly_body_vertex(body1, 10, -10, 0);
+	ffly_body_vertex(body1, 10, 10, 0);
 	body1->texture = texture;
 	body1->xl = 20;
 	body1->yl = 20;
@@ -132,8 +133,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_set_direction(obj0->phy_body, _ff_dir_a1);
 	ffly_set_direction(obj1->phy_body, _ff_dir_a1);
 
-	ffly_set_angle(obj0->phy_body, 0.0);
-	ffly_set_angle(obj1->phy_body, 0.0);
+	ffly_set_angular_velocity(obj0->phy_body, 0.0);
+	ffly_set_angular_velocity(obj1->phy_body, 0.0);
 
 	ffly_set_mass(obj0->phy_body, 800000);
 
@@ -161,16 +162,15 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 			obj0->y, (ff_int_t)obj0->y-old_y, obj1->y, ffly_mem_alloc_bc-ffly_mem_free_bc, clock);
 		ffly_camera_handle(&camera);
 		ffly_camera_draw(&camera, ffly_frame(__frame_buff__), WIDTH, HEIGHT, 0, 0);
-		ffly_pipe_wr8l(0x0, pipe);
-		ffly_pipe_write(ffly_frame(__frame_buff__), (WIDTH*HEIGHT)*4, pipe);
+		if (!ff_duct_serve())
+			goto _end;
 		ffly_nanosleep(0, 100000000);
 		ffly_clock_tick();
 	}	
 _end:
 	__ffly_mem_free(texture);
-	ffly_pipe_wr8l(0x1, pipe);
 	close(fd);
-	ffly_pipe_close(pipe);
+	ff_duct_close();
 	ff_graphics_de_init();
 	ffly_chunk_cleanup();
 	ffly_obj_cleanup();

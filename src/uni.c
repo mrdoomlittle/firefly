@@ -97,6 +97,14 @@ ffly_uni_attach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 	ff_uint_t x = *__body->x;
 	ff_uint_t y = *__body->y;
 	ff_uint_t z = *__body->z;
+	if (x>=__uni->xl || y>=__uni->yl || z>=__uni->zl) {
+		ffly_fprintf(ffly_err, "body is out of bounds, can't be attached.\n");
+		return -1;
+	}
+
+	/*
+		later we will deallocate lots that are not in use
+	*/
 	ffly_lotpp lot = get_lot(__uni, x, y, z);
 	if (!*lot) {
 		ffly_fprintf(ffly_log, "new lot.\n");

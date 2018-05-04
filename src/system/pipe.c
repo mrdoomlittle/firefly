@@ -19,7 +19,8 @@
 // needs testing
 /*
 	NOTE: cleanup
-
+	TODO:
+		add timeout
 */
 
 typedef struct hdr {

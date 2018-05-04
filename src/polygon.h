@@ -5,7 +5,7 @@
 # include "types.h"
 # ifndef ffly_vertex3
 #   define ffly_vertex3(__poly, __x, __y, __z) \
-        *((__poly)->vertexs+((__poly)->vertex_c++)) = (ffly_vertex){.x=__x, .y=__y, .z=__z}
+        *((__poly)->vertices+((__poly)->vertex_c++)) = (ffly_vertex){.x=__x, .y=__y, .z=__z}
 # endif
 # ifndef ffly_polygon_begin
 
@@ -14,7 +14,7 @@
 # endif
 
 typedef struct {
-    ffly_vertex vertexs[20];
+	ffly_vertex vertices[20];
     ff_uint_t vertex_c;
 } ffly_polygon;
 

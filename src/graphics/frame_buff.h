@@ -11,7 +11,7 @@
 
 typedef struct ffly_frame_buff {
 	ff_uint_t width, height;
-
+	ff_u8_t chn_c;
 	ff_byte_t *frame;
 } *ffly_frame_buffp;
 

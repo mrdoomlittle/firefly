@@ -19,6 +19,7 @@ ffly_frame_buff_init(ffly_frame_buffp __fb, ff_uint_t __width, ff_uint_t __heigh
 	__fb->frame = (ff_byte_t*)__ffly_mem_alloc((__width*__height)*__chn_c);
 	__fb->width = __width;
 	__fb->height = __height;
+	__fb->chn_c = __chn_c;
 }
 
 ff_err_t

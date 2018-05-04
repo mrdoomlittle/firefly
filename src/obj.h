@@ -28,8 +28,6 @@
 	(__obj)->yl = __yl;
 # define ffly_set_objzl(__obj, __zl) \
 	(__obj)->zl = __zl;
-# define ffly_obj_vertex(__obj, __x, __y, __z) \
-	ffly_vertex3(&(__obj)->shape, __x, __y, __z)
 
 struct ffly_obj {
 	ff_uint_t x, y, z;

@@ -24,6 +24,7 @@ void ffly_lot_rm(ffly_lotp __lot, ffly_phy_bodyp __body) {
 	ff_uint_t zoff = *__body->z-__lot->z;
 	ffly_phy_bodyppp body = __lot->bodies+xoff+(yoff*__lot->xl)+(zoff*(__lot->yl*__lot->xl)); 
 	if (!*body) {
+		ffly_fprintf(ffly_err, "body is not apart of lot.\n");
 		return;
 	}
 

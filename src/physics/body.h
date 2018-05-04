@@ -7,6 +7,9 @@
 	0.0-0.9
 */
 
+# define ffly_body_vertex(__body, __x, __y, __z) \
+	ffly_vertex3(&(__body)->shape, __x, __y, __z)
+
 typedef struct ffly_uni* ffly_unip;
 typedef struct ffly_lot* ffly_lotp;
 /*
@@ -22,9 +25,10 @@ typedef struct ffly_phy_body {
 
 	ff_u8_t velocity;
 	ff_uint_t *x, *y, *z;
-	float angle;
+	float angular_velocity;
 	float gravity;
 
+	// help locate what lot this body is in
 	ffly_lotp lot;
 
 	// direction
@@ -43,5 +47,5 @@ void ffly_physical_body_update(ffly_unip, ff_uint_t, ff_uint_t);
 void ffly_set_direction(ff_uint_t, ff_u8_t);
 void ffly_set_velocity(ff_uint_t, float);
 void ffly_set_mass(ff_uint_t, ff_uint_t);
-void ffly_set_angle(ff_uint_t, float);
+void ffly_set_angular_velocity(ff_uint_t, float);
 # endif /*__ffly__physics__body__h*/

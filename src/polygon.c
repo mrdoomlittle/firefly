@@ -23,9 +23,9 @@ ffly_draw_polygon(ffly_polygonp __poly, ff_byte_t *__frame, ff_byte_t *__texture
 	ff_uint_t __x, ff_uint_t __y, ff_uint_t __z, ff_uint_t __width, ff_uint_t __height,
 	ff_uint_t __xmax, ff_uint_t __ymax, float __angle)
 {
-	ffly_vertex v0 = *__poly->vertexs;
-	ffly_vertex v1 = *(__poly->vertexs+1);
-	ffly_vertex v2 = *(__poly->vertexs+2);
+	ffly_vertex v0 = *__poly->vertices;
+	ffly_vertex v1 = *(__poly->vertices+1);
+	ffly_vertex v2 = *(__poly->vertices+2);
 
 	rotate_vertex(&v0, 0, 0, __angle);
 	rotate_vertex(&v1, 0, 0, __angle);
