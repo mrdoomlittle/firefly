@@ -23,6 +23,7 @@ typedef struct ffly_phy_body {
 	ff_u8_t velocity;
 	ff_uint_t *x, *y, *z;
 	float angle;
+	float gravity;
 
 	ffly_lotp lot;
 

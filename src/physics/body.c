@@ -3,6 +3,7 @@
 # include "clock.h"
 # include "../maths/abs.h"
 # include "../system/io.h"
+# include "../gravity.h"
 ff_err_t ffly_uni_attach_body(ffly_unip, ffly_phy_bodyp);
 ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
 
@@ -28,6 +29,7 @@ ffly_phy_bodyp ffly_phy_body_end() {
 ff_uint_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z) {
 	ffly_phy_bodyp body = fresh;
 	body->velocity = 0;
+	body->gravity = 0.0;
 	body->dir = 26;
 	body->x = __x;
 	body->y = __y;
@@ -67,7 +69,7 @@ move(ffly_phy_bodyp __body, ff_uint_t __delta) {
 	ff_uint_t *y = __body->y;
 	ff_uint_t *z = __body->z;
 
-	ff_uint_t ang = (ff_uint_t)ffly_round(((((float)(__delta>>1))*0.2)*(__body->angle/TIME_PERIOD))*10.0);
+	ff_uint_t ang = (ff_uint_t)ffly_round(((((float)__delta)*0.2)*(__body->angle/TIME_PERIOD))*10.0);
 
 	if (__body->dir == 26) return;
 	__asm__("jmp *%0" : : "r"(dir[__body->dir]));
@@ -104,8 +106,16 @@ move(ffly_phy_bodyp __body, ff_uint_t __delta) {
 
 void ffly_physical_body_update(ffly_unip __uni, ff_uint_t __delta, ff_uint_t __id) {
 	ffly_phy_bodyp body = get_body(__id);
+	ff_uint_t *x = body->x;
+	ff_uint_t *y = body->y;
+	ff_uint_t *z = body->z;
 	ffly_uni_detach_body(__uni, body);
+	ffly_gravity_sub(body->gravity, *x, *y, *z);
+
 	move(body, __delta);
+	body->gravity = ((float)body->mass)*0.04;
+
+	ffly_gravity_add(body->gravity, *x, *y, *z);
 	ffly_uni_attach_body(__uni, body);
 }
 
