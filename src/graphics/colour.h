@@ -1,15 +1,15 @@
-# ifndef __colour__t__h
-# define __colour__t__h
-# include "byte_t.h"
+# ifndef __ffly__colour__h
+# define __ffly__colour__h
+# include "../types.h"
 /*
 	// shoud pack structures
 */
 typedef struct {
-	ffly_byte_t r, g, b, a;
+	ff_byte_t r, g, b, a;
 } ffly_colour_t;
 
 typedef struct {
-    ffly_byte_t *r, *g, *b, *a;
+    ff_byte_t *r, *g, *b, *a;
 } ffly_colourp_t;
 
 
@@ -29,5 +29,5 @@ typedef struct {
 }
 }
 }
-# endif // __cplusplus
-# endif /*__colour__t__h*/
+# endif
+# endif /*__ffly__colour__h*/

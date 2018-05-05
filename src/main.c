@@ -21,6 +21,7 @@
 # include "physics/clock.h"
 # include "gravity.h"
 # include "duct.h"
+# include "graphics/pipe.h"
 # define WIDTH 400
 # define HEIGHT 400
 
@@ -30,6 +31,7 @@
 
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_err_t err;
+	ffly_grp_prepare(&__ffly_grp__, 20);
 
 	int fd;
 	/*
@@ -162,6 +164,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 			obj0->y, (ff_int_t)obj0->y-old_y, obj1->y, ffly_mem_alloc_bc-ffly_mem_free_bc, clock);
 		ffly_camera_handle(&camera);
 		ffly_camera_draw(&camera, ffly_frame(__frame_buff__), WIDTH, HEIGHT, 0, 0);
+		ffly_grp_unload(&__ffly_grp__);
 		if (!ff_duct_serve())
 			goto _end;
 		ffly_nanosleep(0, 100000000);
@@ -176,6 +179,8 @@ _end:
 	ffly_obj_cleanup();
 	ffly_lot_cleanup();
 	ffly_uni_free(&uni);
+	ffly_body_cleanup();
 	ffly_gravity_cleanup();
 	ffly_camera_de_init(&camera);
+	ffly_grp_cleanup(&__ffly_grp__);
 }

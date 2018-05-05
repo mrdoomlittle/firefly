@@ -22,11 +22,13 @@ _again:
 	while(1) {
 		event = ffly_wd_poll_event(&window, &err);
 		if (!event) break;
-		if (event->kind == _ffly_wd_ek_btn_press) {
+		if (event->kind == _ffly_wd_ek_closed) {
 			ffly_wd_free_event(&window, event);
 			ffly_free_event(event);
 			ff_duct_exit();
 			goto _end;
+		} else if (event->kind == _ffly_wd_ek_key_press) {
+			
 		}
 
 		ffly_wd_free_event(&window, event);

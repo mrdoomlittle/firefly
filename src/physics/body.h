@@ -33,19 +33,23 @@ typedef struct ffly_phy_body {
 
 	// direction
 	ff_u8_t dir;
+
+	struct ffly_phy_body *prev, *next;
 } *ffly_phy_bodyp;
 
 typedef ffly_phy_bodyp* ffly_phy_bodypp;
 typedef ffly_phy_bodypp* ffly_phy_bodyppp;
 
 ffly_phy_bodyp ffly_phy_body_top();
+void ffly_phy_body_fd(ffly_phy_bodyp*);
 ffly_phy_bodyp ffly_phy_body_end();
 
-ffly_phy_bodyp ffly_get_phy_body(ff_uint_t);
-ff_uint_t ffly_physical_body(ff_uint_t*, ff_uint_t*, ff_uint_t*);
-void ffly_physical_body_update(ffly_unip, ff_uint_t, ff_uint_t);
-void ffly_set_direction(ff_uint_t, ff_u8_t);
-void ffly_set_velocity(ff_uint_t, float);
-void ffly_set_mass(ff_uint_t, ff_uint_t);
-void ffly_set_angular_velocity(ff_uint_t, float);
+ffly_phy_bodyp ffly_get_phy_body(ff_u32_t);
+ff_u32_t ffly_physical_body(ff_uint_t*, ff_uint_t*, ff_uint_t*);
+void ffly_body_cleanup();
+void ffly_physical_body_update(ffly_unip, ff_uint_t, ff_u32_t);
+void ffly_set_direction(ff_u32_t, ff_u8_t);
+void ffly_set_velocity(ff_u32_t, float);
+void ffly_set_mass(ff_u32_t, ff_uint_t);
+void ffly_set_angular_velocity(ff_u32_t, float);
 # endif /*__ffly__physics__body__h*/

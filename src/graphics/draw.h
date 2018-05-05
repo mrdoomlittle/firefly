@@ -20,8 +20,9 @@ types::err_t static pixeldraw(uint_t __x, uint_t __y, types::byte_t *__dst, uint
 }
 extern "C" {
 # endif
-ff_err_t ffly_pixeldraw(ff_uint_t, ff_uint_t, ff_byte_t*, ff_uint_t, ff_byte_t*, ff_uint_t, ff_uint_t);
+//ff_err_t ffly_pixeldraw(ff_uint_t, ff_uint_t, ff_byte_t*, ff_uint_t, ff_byte_t*, ff_uint_t, ff_uint_t);
 ff_err_t ffly_pixdraw(ff_uint_t, ff_uint_t, ff_byte_t*, ff_uint_t, ff_byte_t*, ff_uint_t, ff_uint_t);
+ff_err_t __ffly_pixdraw(ff_uint_t, ff_uint_t, ff_byte_t*, ff_uint_t, ff_byte_t*, ff_uint_t, ff_uint_t);
 # ifdef __cplusplus
 }
 # endif

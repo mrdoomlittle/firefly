@@ -4,30 +4,69 @@
 # include "../maths/abs.h"
 # include "../system/io.h"
 # include "../gravity.h"
+# include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
+# include "../memory/mem_realloc.h"
+# define PAGE_SHIFT 4
+# define PAGE_SIZE (1<<PAGE_SHIFT)
+
 ff_err_t ffly_uni_attach_body(ffly_unip, ffly_phy_bodyp);
 ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
 
 // change this
-static struct ffly_phy_body bodies[20];
-ffly_phy_bodyp static fresh = bodies;
+static ffly_phy_bodyp *bodies = NULL;
+ff_u64_t static off = 0;
+ff_uint_t static page_c = 0;
 
+static ffly_phy_bodyp top = NULL;
+static ffly_phy_bodyp end = NULL;
 # define get_body(__id) \
-	(bodies+__id)
+	((*(bodies+(__id&0xfff)))+((__id>>12)&0xfffff))
 
-ffly_phy_bodyp ffly_get_phy_body(ff_uint_t __id) {
+ffly_phy_bodyp ffly_get_phy_body(ff_u32_t __id) {
 	return get_body(__id);
 }
 
 ffly_phy_bodyp ffly_phy_body_top() {
-	return bodies;
+	return top;
+}
+
+void ffly_phy_body_fd(ffly_phy_bodyp *__p) {
+	*__p = (*__p)->next;
 }
 
 ffly_phy_bodyp ffly_phy_body_end() {
-	return fresh;
+	return end;
 }
 
-ff_uint_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z) {
-	ffly_phy_bodyp body = fresh;
+ff_u32_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z) {
+	ffly_phy_bodyp body;
+
+	ff_uint_t page = off>>PAGE_SHIFT;
+	ff_uint_t pg_off;
+	if (!bodies) {
+		bodies = (ffly_phy_bodyp*)__ffly_mem_alloc(sizeof(ffly_phy_bodyp));	
+		page_c++;
+	} else {
+		if (page>page_c-1)
+			bodies = (ffly_phy_bodyp*)__ffly_mem_realloc(bodies, (++page_c)*sizeof(ffly_phy_bodyp));
+		else
+			goto _sk;
+	}
+
+	*(bodies+page) = (ffly_phy_bodyp)__ffly_mem_alloc(PAGE_SIZE*sizeof(struct ffly_phy_body));
+_sk:
+	pg_off = (off++)-(page*PAGE_SIZE);
+	body = (*(bodies+page))+pg_off;
+	if (!top)
+		top = body;
+	
+	body->prev = end;
+	body->next = NULL;
+	if (end != NULL)
+		end->next = body;
+	end = body;
+
 	body->velocity = 0;
 	body->gravity = 0.0;
 	body->dir = 26;
@@ -35,7 +74,7 @@ ff_uint_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z) {
 	body->y = __y;
 	body->z = __z;
 	body->lot = NULL;
-	return (fresh++)-bodies;
+	return (page&0xfff)|((pg_off&0xfffff)<<12);
 }
 
 /*
@@ -45,6 +84,7 @@ ff_uint_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z) {
 	and thus more time being taken up.
 */
 
+// not all directions
 void _move_a0();
 void _move_a1();
 void _move_a2();
@@ -103,7 +143,7 @@ move(ffly_phy_bodyp __body, ff_uint_t __delta) {
 	__asm__("_end:\n\t");
 }
 
-void ffly_physical_body_update(ffly_unip __uni, ff_uint_t __delta, ff_uint_t __id) {
+void ffly_physical_body_update(ffly_unip __uni, ff_uint_t __delta, ff_u32_t __id) {
 	ffly_phy_bodyp body = get_body(__id);
 	ff_uint_t *x = body->x;
 	ff_uint_t *y = body->y;
@@ -118,18 +158,27 @@ void ffly_physical_body_update(ffly_unip __uni, ff_uint_t __delta, ff_uint_t __i
 	ffly_uni_attach_body(__uni, body);
 }
 
-void ffly_set_direction(ff_uint_t __id, ff_u8_t __dir) {
+void ffly_body_cleanup() {
+	ffly_phy_bodyp *page = bodies;
+	while(page != bodies+page_c) {
+		__ffly_mem_free(*page);
+		page++;
+	}
+	__ffly_mem_free(bodies);
+}
+
+void ffly_set_direction(ff_u32_t __id, ff_u8_t __dir) {
 	get_body(__id)->dir = __dir;
 }
 
-void ffly_set_velocity(ff_uint_t __id, float __velocity) {
+void ffly_set_velocity(ff_u32_t __id, float __velocity) {
 	get_body(__id)->velocity = __velocity*10;
 }
 
-void ffly_set_mass(ff_uint_t __id, ff_uint_t __mass) { 
+void ffly_set_mass(ff_u32_t __id, ff_uint_t __mass) { 
 	get_body(__id)->mass = __mass;
 }
 
-void ffly_set_angular_velocity(ff_uint_t __id, float __velocity) {
+void ffly_set_angular_velocity(ff_u32_t __id, float __velocity) {
 	get_body(__id)->angular_velocity = __velocity;
 }

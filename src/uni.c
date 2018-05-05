@@ -84,7 +84,8 @@ ffly_uni_frame(ffly_unip __uni, ff_byte_t *__dst,
 }
 
 ff_id_t ffly_uni_chunk(ffly_unip __uni, ff_off_t __x, ff_off_t __y, ff_off_t __z) {
-	return *(__uni->chunks+(__x>>__uni->splice)+((__y>>__uni->splice)*__uni->xcnk_c)+((__z>>__uni->splice)*(__uni->ycnk_c*__uni->xcnk_c)));
+	return *(__uni->chunks+(__x>>__uni->splice)+((__y>>__uni->splice)
+		*__uni->xcnk_c)+((__z>>__uni->splice)*(__uni->ycnk_c*__uni->xcnk_c)));
 }
 
 ff_err_t ffly_uni_free(ffly_unip __uni) {
@@ -110,7 +111,9 @@ ffly_uni_attach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 		ffly_fprintf(ffly_log, "new lot.\n");
 		ffly_chunkp chunk = get_chunk(__uni, x, y, z);
 		*lot = ffly_alloc_lot(1<<chunk->lotsize, 1<<chunk->lotsize, 1<<chunk->lotsize);
-		ffly_lot_prepare(*lot, (x>>chunk->lotsize)*(1<<chunk->lotsize), (y>>chunk->lotsize)*(1<<chunk->lotsize), (z>>chunk->lotsize)*(1<<chunk->lotsize));
+		ffly_lot_prepare(*lot, (x>>chunk->lotsize)*(1<<chunk->lotsize),
+			(y>>chunk->lotsize)*(1<<chunk->lotsize),
+			(z>>chunk->lotsize)*(1<<chunk->lotsize));
 	}
 
 //	  ffly_fprintf(ffly_log, "added to lot.\n");
@@ -129,10 +132,10 @@ ff_err_t ffly_uni_detach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 # include "gravity.h"
 void
 ffly_uni_update(ffly_unip __uni, ff_uint_t __delta) {
-	ffly_phy_bodyp itr = ffly_phy_body_top();
-	while(itr < ffly_phy_body_end()) {
-		ffly_gravity_apply(__uni, itr, __delta);
-		itr++;
+	ffly_phy_bodyp cur = ffly_phy_body_top();
+	while(cur != NULL) {
+		ffly_gravity_apply(__uni, cur, __delta);
+		ffly_phy_body_fd(&cur);
 	}
 }
 

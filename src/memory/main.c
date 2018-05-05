@@ -319,6 +319,7 @@ void copy(void *__dst, void *__src, ff_uint_t __bc);
 # include "mem_free.h"
 # include "mem_realloc.h"
 # include "../rat.h"
+# include "plate.h"
 void _start() {
 	ffly_ar_init();
 	ffly_io_init();
@@ -404,6 +405,7 @@ void _start() {
 
 	ffly_printf("%luns\n", nsec/c);
 */
+/*
 	void *p0, *p1, *p2, *p3;
 
 	p0 = ffly_alloc(12);
@@ -418,11 +420,27 @@ void _start() {
 
 	if (!ffly_argr(p2, 14))
 		ffly_printf("failed.\n");
+*/
+	ff_u8_t i = 0;
+	void *list[200];
+	while(i != 2) {
+		void **cur = list;
+		while(cur != list+200) {
+			*(cur++) = ffly_plate_alloc();
+		}
 
-	pr();
-	pf();
+		while(cur != list) {
+			ffly_plate_free(*((cur--)-1));
+		}
+
+		i++;
+	}
+
+	ffly_plate_cleanup();
+
+	 pr();
+	 pf();
 	ffly_arstat();
-
 	ffly_io_closeup();
 	ffly_ar_cleanup();
 	exit(0);

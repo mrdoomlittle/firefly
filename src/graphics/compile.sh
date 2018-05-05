@@ -1,3 +1,8 @@
 #!/bin/sh
 $ffly_cc $cc_flags -c -o $dst_dir/frame_buff.o $root_dir/frame_buff.c
-export ffly_objs="$dst_dir/frame_buff.o"
+$ffly_cc $cc_flags -c -o $dst_dir/job.o $root_dir/job.c
+$ffly_cc $cc_flags -c -o $dst_dir/pipe.o $root_dir/pipe.c
+$ffly_cc $cc_flags -c -o $dst_dir/draw.o $root_dir/draw.c
+$ffly_cc $cc_flags -c -o $dst_dir/copy.o $root_dir/copy.c
+$ffly_cc $cc_flags -c -o $dst_dir/fill.o $root_dir/fill.c
+export ffly_objs="$dst_dir/frame_buff.o $dst_dir/job.o $dst_dir/pipe.o $dst_dir/draw.o $dst_dir/copy.o $dst_dir/fill.o"

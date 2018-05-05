@@ -43,23 +43,9 @@ ff_err_t ffly_camera_print(ffly_camerap __camera) {
     return FFLY_SUCCESS;
 }
 
-# ifndef __ffly_testing
-#   include "../graphics/draw.h"
-# endif
+# include "../graphics/draw.h"
 ff_err_t ffly_camera_draw(ffly_camerap __camera, ff_byte_t *__dst, ff_uint_t __width, ff_uint_t __height, ff_uint_t __x, ff_uint_t __y) {
-# ifdef __ffly_testing
-    ff_uint_t x, y = 0;
-    while(y != __camera->height) {
-        x = 0;
-        while(x != __camera->width) {
-            ffly_bcopy(__dst+(((x+__x)+((y+__y)*__width))*4), __camera->pixels+((x+(y*__camera->width))*4), 4);
-            x++;
-        }
-        y++;
-    }
-# else
-    ffly_pixeldraw(0, 0, __dst, __width, __camera->pixels, __camera->width, __camera->height);
-# endif
+	ffly_pixdraw(0, 0, __dst, __width, __camera->pixels, __camera->width, __camera->height);
 }
 
 ff_err_t ffly_camera_handle(ffly_camerap __camera) {

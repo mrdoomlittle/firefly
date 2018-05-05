@@ -114,11 +114,12 @@ all: clean
 	gcc $(ccflags) -c ../system/err.c
 	gcc $(ccflags) -c ../rand.c
 	gcc $(ccflags) -c ../mode.c
+	gcc $(ccflags) -c plate.c
 	gcc $(ccflags) -D__ffly_no_sysconf -D__ffly_no_task_pool -D__ffly_no_thread -c ../ffly_system.c
 #	gcc -D__ffly_no_sysconf -D__ffly_use_allocr -c ../system/thread.c
 	gcc $(ccflags) -c ../system/buff.c
 	#gcc $(objs) -o libmain.so
-	gcc $(ccflags) -o main main.c $(objs) -nostdlib
+	gcc $(ccflags) -o main main.c $(objs) plate.o -nostdlib
 ts0: cl
 	gcc -o ts0 ts0.c $(objs)
 ts1: cl

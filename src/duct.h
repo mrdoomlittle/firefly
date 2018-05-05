@@ -11,4 +11,6 @@ ff_i8_t ff_duct_serve();
 void ff_duct_get_frame(void*, ff_uint_t, ff_uint_t, ff_u8_t);
 void ff_duct_exit();
 void ff_duct_done();
+void ff_duct_read(void*, ff_uint_t, ff_uint_t, ff_uint_t);
+void ff_duct_write(void*, ff_uint_t, ff_uint_t, ff_uint_t);
 # endif /*__ffly__duct__h*/

@@ -1,7 +1,8 @@
 # ifndef __ffly__graphics__job__h
 # define __ffly__graphics__job__h
-# include "../types/err_t.h"
-# include <mdlint.h>
+# include "../ffint.h"
+# include "../types.h"
+# include "colour.h"
 
 enum {
     _grj_pixfill,
@@ -10,15 +11,19 @@ enum {
 };
 
 struct ffly_grj {
-	mdl_u8_t kind;
-	void *par;
+	ff_u8_t kind;
+	void *p;
+	void *par[20];
 };
 
 # ifdef __cplusplus
 extern "C" {
 # endif
-struct ffly_grj* ffly_grj_mk(mdl_u8_t, void*);
-ffly_err_t ffly_grj_prosess(struct ffly_grj*);
+struct ffly_grj* ffly_grj_mk(ff_u8_t, void*);
+struct ffly_grj* ffly_grj_pixfill(ff_byte_t*, ff_uint_t, ffly_colour_t);
+struct ffly_grj* ffly_grj_pixdraw(ff_uint_t, ff_uint_t, ff_byte_t*, ff_uint_t, ff_byte_t*, ff_uint_t, ff_uint_t);
+struct ffly_grj* ffly_grj_pixcopy(ff_byte_t*, ff_byte_t*, ff_uint_t);
+ff_err_t ffly_grj_prosess(struct ffly_grj*);
 
 # ifdef __cplusplus
 }

@@ -21,6 +21,7 @@
 	NOTE: cleanup
 	TODO:
 		add timeout
+		add delay in loops to reduce cpu load
 */
 
 typedef struct hdr {

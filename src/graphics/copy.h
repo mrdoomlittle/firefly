@@ -1,10 +1,7 @@
 # ifndef __ffly__copy__h
 # define __ffly__copy__h
-# include <mdlint.h>
-# include "../types/byte_t.h"
-# include "../types/err_t.h"
-# include "../types/pixelmap_t.h"
-# include "../types/off_t.h"
+# include "../ffint.h"
+# include "../types.h"
 # ifdef __cplusplus
 # ifndef __NVCC__
 #	include "pipe.h"
@@ -23,7 +20,8 @@ types::err_t static pixelcopy(types::pixelmap_t __dst, types::pixelmap_t __src, 
 }
 extern "C" {
 # endif
-ffly_err_t ffly_pixcopy(ffly_byte_t*, ffly_byte_t*, mdl_uint_t);
+ff_err_t ffly_pixcopy(ff_byte_t*, ff_byte_t*, ff_uint_t);
+ff_err_t __ffly_pixcopy(ff_byte_t*, ff_byte_t*, ff_uint_t);
 # ifdef __cplusplus
 }
 # endif

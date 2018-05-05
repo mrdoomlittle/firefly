@@ -41,6 +41,7 @@ stack_get(ffly_bcip __bci, ff_u8_t *__dst, ff_uint_t __bc, ff_addr_t __addr) {
 	return FFLY_SUCCESS;
 }
 
+// fix
 void ffly_bci_sst(ffly_bcip __bci, void *__p, ff_addr_t __adr, ff_uint_t __n) {
 	ffly_mem_cpy(__bci->stack+__adr, __p, __n);
 }

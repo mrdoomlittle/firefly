@@ -1,10 +1,7 @@
 # ifndef __ffly__fill__h
 # define __ffly__fill__h
-# include <mdlint.h>
-# include "../types/pixelmap_t.h"
-# include "../types/byte_t.h"
-# include "../types/colour_t.h"
-# include "../types/err_t.h"
+# include "../ffint.h"
+# include "colour.h"
 # ifdef __cplusplus
 # ifndef __NVCC__
 #	include "pipe.h"
@@ -23,7 +20,8 @@ types::err_t static pixelfill(types::pixelmap_t __dst, mdl_uint_t __nopix, types
 }
 extern "C" {
 # endif
-ffly_err_t ffly_pixfill(ffly_byte_t*, mdl_uint_t, ffly_colour_t);
+ff_err_t ffly_pixfill(ff_byte_t*, ff_uint_t, ffly_colour_t);
+ff_err_t __ffly_pixfill(ff_byte_t*, ff_uint_t, ffly_colour_t);
 # ifdef __cplusplus
 }
 # endif

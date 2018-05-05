@@ -10,6 +10,7 @@
 	using malloc for allocation is fine for now.
 	it's only going to be slow when creating and destroying objs repeatedly.
 */
+// TODO: update
 # define FASTSIZE 88
 // needs testing
 ffly_objp fastpool[FASTSIZE];
