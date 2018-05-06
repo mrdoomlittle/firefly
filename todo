@@ -75,7 +75,6 @@ until we can do somthing about that.
 	or allign it before printf calles but the problem might
 	pop up when using double precision floats if movaps happens to be used - need to be fixed.
 
-
 -. c++ crap is out of date <- fix
 -. parser and lexer should have own structure
 -. fix line counting for compiler

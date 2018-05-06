@@ -14,7 +14,7 @@
 # endif
 # define PAGE_SIZE 4
 # define UU_PAGE_SIZE 26
-# define DSS 0xffff
+# define DSS 262144
 # define TLS 0xff
 # include "../ffly_system.h"
 # ifndef __ffly_no_sysconf
@@ -149,7 +149,7 @@ prox() {
 
 	thr->exit = 0;
 	ffly_thread_del(thr->tid);
-	exit(SIGKILL);
+	exit(0);
 }
 
 ff_err_t ffly_thread_kill(ff_tid_t __tid) {

@@ -7,6 +7,7 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../linux/unistd.h"
+# include "mutex.h"
 ff_err_t ffly_printf(char const *__format, ...) {
 	va_list args;
 	va_start(args, __format);
@@ -85,6 +86,7 @@ ff_uint_t ffly_sprintf(char *__buf, char const *__format, ...) {
 	return l;
 }
 
+ff_mlock_t static lock = FFLY_MUTEX_INIT;
 ff_err_t ffly_vsfprintf(FF_FILE *__file, ff_size_t __n, char const *__format, va_list __args) {
 # ifdef __ffly_debug
 	char buf[2048];
@@ -92,7 +94,9 @@ ff_err_t ffly_vsfprintf(FF_FILE *__file, ff_size_t __n, char const *__format, va
 	char *buf = (char*)__ffly_mem_alloc(1024);
 # endif
 	ff_uint_t l = gen(buf, __n, __format, __args);
+	ffly_mutex_lock(&lock);
 	write(ffly_fileno(__file), buf, l);
+	ffly_mutex_unlock(&lock);
 # ifndef __ffly_debug
 	__ffly_mem_free(buf);
 # endif

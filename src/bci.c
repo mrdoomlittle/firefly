@@ -335,7 +335,8 @@ ff_err_t ffly_bci_exec(ffly_bcip __bci, ff_err_t *__exit_code) {
 	__asm__("_rin:\n\t");
 	{
 		ff_u8_t no = get_8l(__bci, &err);
-		__bci->rin(no, NULL);
+		ff_addr_t adr = get_addr(__bci, &err);
+		__bci->rin(no, ffly_bci_resolv_adr(__bci, adr));
 	}
 	fi;
 

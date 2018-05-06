@@ -13,6 +13,11 @@
 ff_err_t ffly_uni_attach_body(ffly_unip, ffly_phy_bodyp);
 ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
 
+/*				page offset				page no.
+		|							|				|
+	ID:   0000 0000 0000 0000 0000    0000 0000 0000
+*/
+
 // change this
 static ffly_phy_bodyp *bodies = NULL;
 ff_u64_t static off = 0;
@@ -101,6 +106,49 @@ void *dir[] = {
 	_move_a5
 };
 
+/*
+	mid section: 1x1x1
+	|----|	|----|	|----|
+	|    |	| a0 |	|    |
+	|----|	|----|	|----|
+
+	|----|			|----|
+	| a3 |			| a1 |
+	|----|			|----|
+
+	|----|	|----|	|----|
+	|    |	| a2 |	|    |
+	|----|	|----|	|----|
+
+
+	front: 0x0x0
+	|----|	|----|	|----|
+	|    |	|    |	|    |
+	|----|	|----|	|----|
+
+	|----|	|----|	|----|
+	|    |	| a5 |	|    |
+	|----|	|----|	|----|
+
+	|----|	|----|	|----|
+	|    |	|    |	|    |
+	|----|	|----|	|----|
+
+
+	back: 2x2x2
+	|----|	|----|	|----|
+	|    |	|    |	|    |
+	|----|	|----|	|----|
+
+	|----|	|----|	|----|
+	|    |	| a4 |	|    |
+	|----|	|----|	|----|
+
+	|----|	|----|	|----|
+	|    |	|    |	|    |
+	|----|	|----|	|----|
+*/
+
 void static
 move(ffly_phy_bodyp __body, ff_uint_t __delta) {
 	ff_uint_t velocity = __body->velocity;
@@ -152,7 +200,7 @@ void ffly_physical_body_update(ffly_unip __uni, ff_uint_t __delta, ff_u32_t __id
 	ffly_gravity_sub(body->gravity, *x, *y, *z);
 
 	move(body, __delta);
-	body->gravity = ((float)body->mass)*0.04;
+	body->gravity = ((float)body->mass)*0.01;
 
 	ffly_gravity_add(body->gravity, *x, *y, *z);
 	ffly_uni_attach_body(__uni, body);

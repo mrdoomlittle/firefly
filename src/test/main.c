@@ -1,44 +1,33 @@
-# include "xf86drm.h"
+# include "../drm.h"
 # include <stdio.h>
 # include <errno.h>
 # include <string.h>
-# include <sys/types.h>
-# include <sys/stat.h>
-# include <fcntl.h>
-# include <unistd.h>
+# include "xf86drm.h"
+# include <sys/ioctl.h>
 int main() {
-/*
-    drmDevicePtr list[20]; 
-    int c = drmGetDevices(list, 20);
-    int i = 0;
-    while(i != c) {
-        drmDevicePtr dev = list[i];
-        printf("bus: %u\n", dev->businfo.pci->bus);
-        printf("vendor-id: %u\n", dev->deviceinfo.pci->vendor_id);
-        printf("device-id: %u\n", dev->deviceinfo.pci->device_id); 
-
-        i++;
-    } 
-*/
-    int fd = open("/dev/dri/card0", O_RDONLY);
-//  int fd = drmOpen(NULL, "pci:0000:1f:00.0");
-    if (fd == -1) {
-        fprintf(stdout, "failed to open, err: %s\n", strerror(errno));
-        return -1;
-    }
-
-    drmDevicePtr dev;
-    drmGetDevice(fd, &dev);
-
-    printf("bus: %u\n", dev->businfo.pci->bus);
-    printf("vendor-id: %u\n", dev->deviceinfo.pci->vendor_id);
-    printf("device-id: %u\n", dev->deviceinfo.pci->device_id);
-
-
-
-    drmFreeDevice(&dev);
-//  drmClose(fd);
-    close(fd);
-  //  drmFreeDevices(list, c);
-    return 0;
+	int fd;
+	fd = ffly_drm_open("/dev/dri/card0");
+	if (ioctl(fd, DRM_IOCTL_SET_MASTER, 0) == -1) {
+		printf("failed to set master.\n");
+	}
+//	struct drm_device dev;
+//	ffly_drm_pci_dev(&dev, 226, 0);
+//	printf("vendor-id: %u\n", dev.devinfo.pci.vendor_id);
+//	printf("device-id: %u\n", dev.devinfo.pci.device_id);
+	/*
+	drm_context_t context;
+	if (!ffly_drm_create_context(fd, &context)) {
+		if (ffly_drm_destroy_context(fd, context) == -1) {
+			printf("failed to destory context.\n");
+		}
+	} else
+		printf("failed to create context, %s\n", strerror(errno));
+	*/
+	drm_context_t handle;
+	if (drmCreateContext(fd, &handle)) {
+		printf("failed.\n");
+	} else
+		drmDestroyContext(fd, handle);
+	ioctl(fd, DRM_IOCTL_DROP_MASTER, 0);
+	ffly_drm_close(fd);
 }

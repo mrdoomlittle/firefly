@@ -11,3 +11,4 @@ daemon
 terminal
 hatch
 ffc
+drm.*

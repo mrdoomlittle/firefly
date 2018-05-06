@@ -44,6 +44,12 @@ void restore();
 __asm__("restore:mov $15,%rax\n\t"
 		"syscall");
 */
+
+ff_i8_t test(void *__arg_p) {
+	ffly_printf("....\n");
+	//ffly_nanosleep(1, 0);
+	return -1;
+}
 # include "signal.h"
 # include "maths/round.h"
 # include "maths/floor.h"
@@ -52,7 +58,22 @@ __asm__("restore:mov $15,%rax\n\t"
 # include "maths/cos.h"
 # include "system/errno.h"
 # include "linux/limits.h"
+# include "system/sched.h"
+# include "linux/time.h"
+# include "system/servant.h"
+# include "system/task_pool.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	struct ffly_task_pool pool;
+	ffly_task_pool_init(&pool, 4);
+
+	ff_u8_t i = 0;
+
+	while(i++ != 20) {
+		ffly_task_pool_add(&pool, test, NULL);
+	}
+	ffly_nanosleep(1, 0);
+
+	ffly_task_pool_cleanup(&pool);
 //	p = malloc(200);
 //	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&pot);
 //	ffly_tid_t id;
@@ -88,8 +109,22 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	wait4(pid, NULL, __WALL, NULL);
 	ffly_printf("report: %s\n", strerror(errno));
 */
+/*
 	char buf[PATH_MAX];
 	getcwd(buf, PATH_MAX);
 	ffly_printf("dir: %s\n", buf);
+*/
+/*
+	ffly_schedule(test, NULL, 1000);
+	ff_uint_t i = 0;
+
+	while(i++ != 10000) {
+		ffly_sched_clock_tick(1);
+		ffly_scheduler_tick();
+		ffly_nanosleep(0, 1000000);
+	}
+
+	ffly_scheduler_de_init();
+*/
 	ffly_arstat();
 }

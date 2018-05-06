@@ -1,4 +1,8 @@
 # include "flags.h"
+/*
+	move to asm
+*/
+
 ff_bool_t ffly_is_flag(ff_flag_t __flags, ff_flag_t __flag) {
 	return (__flags&__flag) == __flag;
 }

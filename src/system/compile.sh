@@ -161,12 +161,17 @@ $ffly_cc $cc_flags -c -o $dst_dir/sys_clone.o.1 $root_dir/sys_clone.c
 nasm -f elf64 $as_inc -o $dst_dir/sys_fstat.o.0 $root_dir/asm/sys_fstat.asm
 $ffly_cc $cc_flags -c -o $dst_dir/sys_fstat.o.1 $root_dir/sys_fstat.c
 
+$ffly_cc -c $cc_flags -o $dst_dir/sched.o $root_dir/sched.c
+
 $ffly_cc -c $cc_flags -o $dst_dir/send.o $root_dir/send.c
 $ffly_cc -c $cc_flags -o $dst_dir/recv.o $root_dir/recv.c
 
 $ffly_cc -c $cc_flags -D__ffly_debug -o $dst_dir/printf.o $root_dir/printf.c
 $ffly_cc -c $cc_flags -o $dst_dir/string.o $root_dir/string.c
 $ffly_cc -c $cc_flags -o $dst_dir/file.o $root_dir/file.c
+
+$ffly_cc -c $cc_flags -o $dst_dir/servant.o $root_dir/servant.c
+$ffly_cc -c $cc_flags -o $dst_dir/task_pool.o $root_dir/task_pool.c
 
 # $dst_dir/task_worker.o $dst_dir/task.o $dst_dir/task_pool.o $dst_dir/time.o
 export ffly_objs="$dst_dir/sys_fcntl.o.0 $dst_dir/sys_fcntl.o.1 \
@@ -222,4 +227,4 @@ $dst_dir/sys_getsockopt.o.0 $dst_dir/sys_getsockopt.o.1 \
 $dst_dir/sys_ftruncate.o.0  $dst_dir/sys_ftruncate.o.1 \
 $dst_dir/sys_clock_gettime.o.0 $dst_dir/sys_clock_gettime.o.1 \
 $dst_dir/sys_rt_sigaction.o.0 $dst_dir/sys_rt_sigaction.o.1 \
-$dst_dir/barrel.o"
+$dst_dir/barrel.o $dst_dir/sched.o $dst_dir/task_pool.o $dst_dir/servant.o"

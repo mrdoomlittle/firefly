@@ -354,6 +354,7 @@ void static
 emit_rin(insp __ins) {
 	oustbyte(__ins->op);
 	oustbyte(*(ff_u8_t*)__ins->l->p);
+	oust_addr(*(ff_addr_t*)__ins->r->p);
 }
 
 void static

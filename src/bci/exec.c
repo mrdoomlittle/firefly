@@ -28,12 +28,26 @@ set_ip(ff_addr_t __to) {
 }
 
 struct ffly_bci ctx;
-void* ring(ff_u8_t __no, void *__argp) {
+void* ring(ff_u8_t __no, void *__arg_p) {
 	switch(__no) {
-		case 0: {// set stack pointer
+		case 0x0: {// set stack pointer
 			ff_u64_t sp = ctx.stack_size;
 			ffly_bci_sst(&ctx, &sp, 0, sizeof(ff_u64_t));
 			break;
+		}
+		case 0x1: {
+			// read	
+			break;
+		}
+		case 0x2: {
+			// write
+			break;
+		}
+		case 0x3: {
+			// mmap
+		}
+		case 0x4: {
+			//munmap
 		}
 	}
 	printf("ring ring hello?\n");

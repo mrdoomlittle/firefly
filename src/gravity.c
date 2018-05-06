@@ -13,10 +13,16 @@
 
 ff_err_t ffly_uni_attach_body(ffly_unip, ffly_phy_bodyp);
 ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
+
 /*
-	to reduce memory
+	0	1	2	3	4	5	6	- shift
+	|	|	|	|	|	|	|
+	1,	2,	4,	8,	16,	32,	64	- length (X*X)
+
+	default: 16x16
 */
 # define ZONE_SHIFT 4
+
 # define ZONE_LENGTH (1<<ZONE_SHIFT)
 # define at(__x, __y, __z) \
 	(map+(((__x)>>ZONE_SHIFT)+(((__y)>>ZONE_SHIFT)*xl)+(((__z)>>ZONE_SHIFT)*(xl*yl))))
@@ -81,15 +87,11 @@ void ffly_gravity_apply(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __delt
 		float dist = (*__body->y)-((y-1)*ZONE_LENGTH);
 		dist+=ZONE_LENGTH/2;
 		float force = z1;
-/*
-		force-=ZONE_LENGTH*(z0*GRAVITY_CONST);
-		force-=ZONE_LENGTH*(z2*GRAVITY_CONST);
-		force-=ZONE_LENGTH*(z3*GRAVITY_CONST);
-		force-=ZONE_LENGTH*(z4*GRAVITY_CONST);
-		force-=(ZONE_LENGTH*2)*(z5*GRAVITY_CONST);
-		force-=(ZONE_LENGTH*2)*(z6*GRAVITY_CONST);
-		force-=(ZONE_LENGTH*2)*(z7*GRAVITY_CONST);
-*/
+
+		force-=z3/ZONE_LENGTH;
+		force-=z4/ZONE_LENGTH;
+		force-=z6/(ZONE_LENGTH*2);
+
 		ff_uint_t a = (ff_uint_t)ffly_round((((float)__delta)*0.2)*(((force/dist)*GRAVITY_CONST)/TIME_PERIOD));
 		ffly_printf("-----: %u :\n", a);
 		*__body->y-=a;
@@ -99,6 +101,10 @@ void ffly_gravity_apply(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __delt
 		float dist = (*__body->x)-((x-1)*ZONE_LENGTH);
 		dist+=ZONE_LENGTH/2;
 		float force = z3;
+
+		force-=z1/ZONE_LENGTH;
+		force-=z4/(ZONE_LENGTH*2);
+		force-=z6/ZONE_LENGTH;
 
 		ff_uint_t a = (ff_uint_t)ffly_round((((float)__delta)*0.2)*(((force/dist)*GRAVITY_CONST)/TIME_PERIOD));
 		ffly_printf("-----: %u :\n", a);
@@ -110,7 +116,11 @@ void ffly_gravity_apply(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __delt
 		float dist = ((x+1)*ZONE_LENGTH)-(*__body->x);
 		dist+=ZONE_LENGTH/2;
 		float force = z4;
-		
+	
+		force-=z1/ZONE_LENGTH;
+		force-=z3/(ZONE_LENGTH*2);
+		force-=z6/ZONE_LENGTH;
+
 		ff_uint_t a = (ff_uint_t)ffly_round((((float)__delta)*0.2)*(((force/dist)*GRAVITY_CONST)/TIME_PERIOD));
 		ffly_printf("-----: %u - %u :\n", a, (ff_uint_t)dist); 
 		*__body->x+=a;
@@ -120,6 +130,10 @@ void ffly_gravity_apply(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __delt
 		float dist = ((y+1)*ZONE_LENGTH)-(*__body->y);
 		dist+=ZONE_LENGTH/2;
 		float force = z6;
+
+		force-=z1/(ZONE_LENGTH*2);
+		force-=z3/ZONE_LENGTH;
+		force-=z4/ZONE_LENGTH;
 
 		ff_uint_t a = (ff_uint_t)ffly_round((((float)__delta)*0.2)*(((force/dist)*GRAVITY_CONST)/TIME_PERIOD));
 		ffly_printf("-----: %u :\n", a);
