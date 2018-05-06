@@ -71,6 +71,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	finalize();
 
 	free(file);
+	ffas_de_init();
 	close(in);
 	close(out);
 	_cleanup();

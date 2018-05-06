@@ -73,7 +73,9 @@ op_mov(ff_u8_t **__p) {
 void static
 op_rin(ff_u8_t **__p) {
 	ffly_printf("rin,\t\t");
-	ffly_printf("no{%x}\n", *(ff_u8_t*)((*__p)++));
+	ffly_printf("no{%x},\t\t", *(ff_u8_t*)((*__p)++));
+	ffly_printf("adr{%x}\n", *(ff_addr_t*)*__p);
+	(*__p)+=sizeof(ff_addr_t);
 }
 
 void static

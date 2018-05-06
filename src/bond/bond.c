@@ -180,6 +180,7 @@ void absorb_symbol(ffef_syp __sy, symbolp *__stp) {
 	}
 
 	p = (symbolp)malloc(sizeof(struct symbol));
+	to_free(p);
 	p->next = cursy;
 	cursy = p;
 	hash_put(&symbols, name, __sy->l-1, p);
@@ -193,6 +194,7 @@ _sk:
 
 void absorb_hook(ffef_hokp __hook) {
 	hookp p = (hookp)malloc(sizeof(struct hook));
+	to_free(p);
 	p->next = curhok;
 	curhok = p;
 
@@ -238,6 +240,7 @@ void absorb_region(ffef_reg_hdrp __reg) {
 	}
 
 	regionp reg = (regionp)malloc(sizeof(struct region));
+	to_free(reg);
 	reg->beg = __reg->beg;
 	reg->end = __reg->end;
 	if (__reg->type == FF_RG_PROG) {
@@ -263,6 +266,7 @@ void absorb_region(ffef_reg_hdrp __reg) {
 
 void absorb_relocate(ffef_relp __rel) {
 	relocatep rel = (relocatep)malloc(sizeof(struct relocate));
+	to_free(rel);
 	rel->next = currel;
 	currel = rel;
 	rel->offset = bot+__rel->offset;

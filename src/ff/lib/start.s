@@ -1,5 +1,5 @@
-	.extern main
 	.region text
+	.extern main
 ; entry point
 _start:
 	rin 0, 0; set stack pointer register - %sp

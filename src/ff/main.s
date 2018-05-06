@@ -7,11 +7,12 @@ ldq %sp, %bp
 movq %sp, %bp
 asq %rlx, 8
 subq %sp, %rlx, %sp
-asq %rax, 0
+asq %rel, 0
 asq %rlx, 8
 subq %bp, %rlx, %rlx
-stb %rlx, %al
-exit %al
+stb %rlx, %ae
+exit %ae
+.l l0
 movq %bp, %sp
 stq %sp, %bp
 asq %rlx, 8
@@ -25,26 +26,27 @@ ldq %sp, %bp
 movq %sp, %bp
 asq %rlx, 32
 subq %sp, %rlx, %sp
-asq %rax, 0
+asq %rel, 0
 asq %rlx, 8
 subq %bp, %rlx, %rlx
-stb %rlx, %al
-outb %al
-asq %rax, 0
+stb %rlx, %ae
+outb %ae
+asq %rel, 0
 asq %rlx, 16
 subq %bp, %rlx, %rlx
-stw %rlx, %ax
-outw %ax
-asq %rax, 0
+stw %rlx, %el
+outw %el
+asq %rel, 0
 asq %rlx, 24
 subq %bp, %rlx, %rlx
-std %rlx, %eax
-outd %eax
-asq %rax, 0
+std %rlx, %ael
+outd %ael
+asq %rel, 0
 asq %rlx, 32
 subq %bp, %rlx, %rlx
-stq %rlx, %rax
-outq %rax
+stq %rlx, %rel
+outq %rel
+.l l1
 movq %bp, %sp
 stq %sp, %bp
 asq %rlx, 8
@@ -58,34 +60,35 @@ ldq %sp, %bp
 movq %sp, %bp
 asq %rlx, 1
 subq %sp, %rlx, %sp
-asq %rax, 0
-asb %al, 21
+asq %rel, 0
+asb %ae, 21
 asq %rlx, 1
 subq %bp, %rlx, %rlx
-ldb %rlx, %al
-asq %rax, 0
+ldb %rlx, %ae
+asq %rel, 0
 asq %rlx, 1
 subq %bp, %rlx, %rlx
-stb %rlx, %al
+stb %rlx, %ae
 asq %rlx, 17
 subq %bp, %rlx, %rlx
-ldb %rlx, %al
-asq %rax, 0
-asb %al, 4
+ldb %rlx, %ae
+asq %rel, 0
+asb %ae, 4
 asq %rlx, 25
 subq %bp, %rlx, %rlx
-ldw %rlx, %ax
-asq %rax, 0
-asb %al, 6
+ldw %rlx, %el
+asq %rel, 0
+asb %ae, 6
 asq %rlx, 33
 subq %bp, %rlx, %rlx
-ldd %rlx, %eax
-asq %rax, 0
-asb %al, 8
+ldd %rlx, %ael
+asq %rel, 0
+asb %ae, 8
 asq %rlx, 41
 subq %bp, %rlx, %rlx
-ldq %rlx, %rax
+ldq %rlx, %rel
 call $ts0
+.l l2
 movq %bp, %sp
 stq %sp, %bp
 asq %rlx, 8

@@ -84,3 +84,5 @@ until we can do somthing about that.
 -. find new names for things
 -. a lot of security holes a lot! need fixed later as i don't care about it for now
 -. fix asm labels and add name infront of each
+-. work needs to be done on memory management as /bond/as/etc... are quite bad
+and it has to be done at some point, i dont realy care too much about it but its quite a mess.

@@ -137,8 +137,18 @@ assemble(char *__p, char *__end) {
 	char *p = __p;
 	ff_uint_t len;
 	while(p < __end) {
+	_bk:
 		while ((*p == ' ' | *p == '\t' | *p == '\n') && p < __end) p++;
 		if (*p == '\0') break;
+
+		if (*p == ';') {
+			while(*p != '\n') {
+				if (*p == '\0')
+					break;
+				p++;
+			}
+			goto _bk;
+		}
 
 		p = copyln(buf, p, __end, &len)+1;
 		*(buf+len) = '\0';

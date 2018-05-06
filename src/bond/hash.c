@@ -31,6 +31,7 @@ hash_destroy(hashp __hash) {
 			free_chain(*p);
 		p++;
 	}
+	free(__hash->table);
 }
 
 void
