@@ -5,14 +5,15 @@ global __ffly_mutex_trylock
 section .text
 __ffly_mutex_lock:
 	push rax
+_again:
 	mov al, [rdi]
 	cmp al, 1
-	je __ffly_mutex_lock
+	je _again
 
 	mov al, 1
 	lock xchg [rdi], al
 	cmp al, 0
-	jne __ffly_mutex_lock
+	jne _again
 	pop rax
 	ret
 __ffly_mutex_unlock:
