@@ -86,3 +86,21 @@ until we can do somthing about that.
 -. fix asm labels and add name infront of each
 -. work needs to be done on memory management as /bond/as/etc... are quite bad
 and it has to be done at some point, i dont realy care too much about it but its quite a mess.
+-. lexer need its own allocator for the allocation of tokens also parser and nodes
+-. start work on compactor
+-. cleanup script/parser also the management of memory needs to be improved upon
+-. system/string.c function should be passed thru as a pram to allocate new segment of memory
+else pass the buffer size and error out.
+-. start working on assembler as ive been using bci for testing
+-. bond and as need to support ELF
+-. rename ffef.h
+-. work on terrain
+-. rename system/task_pool.*
+-. cleanup /data
+-. get data/scale_pixelmap up and working
+-. /crypto add sha, and others to
+-. system/util/hash needs better hasher
+-. parser needs its own structure
+-. mod.c should use call.c
+-. two choices make use raw audio connection or remake pulse, alsa librarys else pipe it
+-. jpeg and png librarys will have to be remade or user uses the librarys and send the raw pixel data to the engine

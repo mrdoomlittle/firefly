@@ -1,4 +1,6 @@
-I'm only working on this engine because i just enjoy making shit.
+I'm only working on this engine because i just enjoy making shit,
+also the reason why im not using libc or other librarys is because its
+more enjoyable attempting to remake them.
 compile & run:
 - src/main.c -
 this is for testing object, universe, camera.
@@ -27,6 +29,8 @@ cd src && make script
 execute: ./main
 
 look for compile.sh as i use it to compile src/as, src/bond, etc
+
+system:
 
 mechine: x86_64
 OS: GNU/Linux - debian
