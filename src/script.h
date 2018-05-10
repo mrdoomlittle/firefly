@@ -1,7 +1,9 @@
 # ifndef __ffly__script__h
 # define __ffly__script__h
+# define __ffly_compiler_internal
 # include "types.h"
 # include "compiler.h"
+# include "system/map.h"
 # ifdef __ffly_script_internal
 enum {
 	_64l_u,
@@ -56,12 +58,23 @@ typedef struct {
 	void *arg_p;
 	// id, arg_p, params that where passed thru. max 12
 	void*(*call)(ff_u8_t, void*, void**);
+	struct ffly_map symbols;
 } ffscript, *ffscriptp;
 
-struct ffly_script {
+struct ffly_script {	
 	//compiler context
 	struct ffly_compiler c_ctx;
 };
+
+struct obj;
+typedef struct symbol {
+	// function
+	struct obj **start, **end;	
+
+	ff_u8_t type;
+	struct symbol *next;
+} *symbolp;
+
 /* clean this up */
 struct obj {
 	ff_u32_t off;
@@ -83,7 +96,7 @@ ff_err_t ffly_script_free(struct ffly_script*);
 
 ff_err_t ffscript_init(ffscriptp, ff_uint_t);
 ff_err_t ffscript_exec(ffscriptp, void*(*)(ff_u8_t, void*, void**), void*, void*, void*);
-void* ffscript_call(ffscriptp, void*);
+void* ffscript_call(ffscriptp, char const*);
 ff_err_t ffscript_free(ffscriptp);
 ff_err_t ffly_script_free(struct ffly_script*);
 # endif /*__ffly__script__h*/

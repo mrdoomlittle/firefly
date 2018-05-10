@@ -9,7 +9,7 @@
 # include "../dep/mem_set.h"
 # include "../system/nanosleep.h"
 # include "../dep/bcopy.h"
-
+# include "mm.h"
 char const static* 
 opst(ff_u8_t __op) {
 	switch(__op) {
@@ -194,10 +194,24 @@ mutex_unlock(struct obj ***__params) {
     ffly_mutex_unlock(mutex);
 }
 
-static struct ffly_buff buffers[20];
-static ffly_buffp fresh_buff = buffers;
-static ffly_buffp free_buffs[20];
-static ffly_buffp *next_buff = free_buffs;
+ff_uint_t static mid = 0;
+ff_uint_t static uu_ids[20];
+ff_uint_t static *uu_next = uu_ids;
+
+ff_uint_t obtain_id() {
+	if (uu_next>uu_ids)
+		return *(--uu_next);
+	return mid++;
+}
+
+void discard_id(ff_uint_t __id) {
+	if (__id == mid-1)
+		mid--;
+	else
+		*(uu_next++) = __id;
+}
+
+void *m_plate[20];
 
 void static 
 creat_buff(struct obj ***__params) {
@@ -205,61 +219,81 @@ creat_buff(struct obj ***__params) {
     ff_uint_t size = *(ff_uint_t*)(**(__params++))->p;
     ff_uint_t blk_size = *(ff_uint_t*)(**__params)->p;
 
-    ffly_buffp buff = fresh_buff++;
-    *id = buff-buffers;
+    ffly_buffp buff = ffs_mmap(sizeof(struct ffly_buff));
+    *id = obtain_id();
+	m_plate[*id] = buff;
     ffly_buff_init(buff, size, blk_size); 
 }
 
 void static 
 del_buff(struct obj ***__params) {
     ff_uint_t id = *(ff_uint_t*)(**__params)->p;    
-    ffly_buff_de_init(buffers+id);
+	ffly_buffp buff = (ffly_buffp)m_plate[id];
+    ffly_buff_de_init(buff);
+	ffs_munmap(buff);
+	discard_id(id);
 }
 
 void static 
 buff_incr(struct obj ***__params) {
     ff_uint_t id = *(ff_uint_t*)(**__params)->p;
-    ffly_buff_incr(buffers+id);
+    ffly_buff_incr((ffly_buffp)m_plate[id]);
 }
 
 void static 
 buff_decr(struct obj ***__params) {
     ff_uint_t id = *(ff_uint_t*)(**__params)->p;
-    ffly_buff_decr(buffers+id);
+    ffly_buff_decr((ffly_buffp)m_plate[id]);
 }
 
 void static 
 buff_off(struct obj ***__params) {
     ff_uint_t id = *(ff_uint_t*)(**(__params++))->p;
     ff_uint_t *off = (ff_uint_t*)(*((struct obj**)(**__params)->p))->p;
-    *off = ffly_buff_off(buffers+id);
+    *off = ffly_buff_off((ffly_buffp)m_plate[id]);
 }
 
 void static 
 buff_resize(struct obj ***__params) {
     ff_uint_t id = *(ff_uint_t*)(**(__params++))->p;
     ff_uint_t size = *(ff_uint_t*)(**__params)->p;
-    ffly_buff_resize(buffers+id, size);
+    ffly_buff_resize((ffly_buffp)m_plate[id], size);
 }
 
 void static 
 buff_size(struct obj ***__params) {
     ff_uint_t id = *(ff_uint_t*)(**(__params++))->p;
     ff_uint_t *size = (ff_uint_t*)(*((struct obj**)(**__params)->p))->p;
-    *size = ffly_buff_size(buffers+id);
+    *size = ffly_buff_size((ffly_buffp)m_plate[id]);
+}
+
+void static
+buff_put(struct obj ***__params) {
+	ff_uint_t id = *(ff_uint_t*)(**(__params++))->p;
+	void *src = (*((struct obj**)(**__params)->p))->p;
+	ffly_buff_put((ffly_buffp)m_plate[id], src);
+}
+
+void static
+buff_get(struct obj ***__params) {
+	ff_uint_t id = *(ff_uint_t*)(**(__params++))->p;
+	void *dst = (*((struct obj**)(**__params)->p))->p;
+	ffly_buff_get((ffly_buffp)m_plate[id], dst);
 }
 
 void static(*call[])(struct obj***) = {
-    &nanosleep,
-    &mutex_lock,
-    &mutex_unlock,
-    &creat_buff,
-    &del_buff,
-    &buff_incr,
-    &buff_decr,
-    &buff_off,
-    &buff_resize,
-    &buff_size
+    nanosleep,
+    mutex_lock,
+    mutex_unlock,
+    creat_buff,
+    del_buff,
+    buff_incr,
+    buff_decr,
+    buff_off,
+    buff_resize,
+    buff_size,
+	buff_put,
+	buff_get
 };
 
 void static 

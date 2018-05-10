@@ -345,7 +345,7 @@ _again:
 	while((tok = *cur) != NULL) {
 		end+=ffly_str_cpy(end, tok->p);
 		ff_lexer_free(lexer, tok->p);
-		ff_lexer_free(lexer, tok);
+		ff_token_free(tok);
 		cur++;
 	}
 

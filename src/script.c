@@ -4,6 +4,7 @@
 # include "memory/mem_free.h"
 # include "ffly_def.h"
 # include "system/io.h"
+# include "dep/str_len.h"
 /* enabled keywords
 */
 char const static *keywords[] = {
@@ -27,6 +28,7 @@ char const static *keywords[] = {
 	"typedef",
 	"ret",
 	"brk",
+	"SYPUT",
 	NULL
 };
 
@@ -51,11 +53,16 @@ ff_err_t ffly_script_prepare(struct ffly_script *__script) {
 	return ret;
 }
 
-void* ffscript_call(ffscriptp __script, void *__func) {
-	ffly_pair *func = *(ffly_pair**)__func;
-	ffscript_exec(__script, NULL, NULL, *(struct obj**)func->p0, *(struct obj**)func->p1);
+void* ffscript_call(ffscriptp __script, char const *__name) {
+	ff_err_t err;
+	symbolp sy = (symbolp)ffly_map_get(&__script->symbols, __name, ffly_str_len(__name), &err);
+	if (!sy || _err(err))
+		return NULL;
+	ffscript_exec(__script, NULL, NULL, *sy->start, *sy->end);
 	retnull;
 }
+
+symbolp static sy_top = NULL;
 
 ff_err_t ffscript_free(ffscriptp __script) {
 	struct obj *_obj = (struct obj*)__script->top, *prev = NULL;
@@ -69,23 +76,49 @@ ff_err_t ffscript_free(ffscriptp __script) {
 	if (!null(prev))
 		__ffly_mem_free(prev);
 	__ffly_mem_free(__script->stack);
+	ffly_map_de_init(&__script->symbols);
+
+	symbolp sy = sy_top, bk;
+	while(sy != NULL) {
+		bk = sy;
+		sy = sy->next;
+		__ffly_mem_free(bk);
+	}
 	retok;
 }
+
+ffly_mapp static symbols;
 
 ff_err_t ffscript_init(ffscriptp __script, ff_uint_t __stack_size) {
 	__script->stack = (ff_byte_t*)__ffly_mem_alloc(__stack_size);
 	__script->fresh = __script->stack;
+	ffly_map_init(&__script->symbols, _ffly_map_127);
+	symbols = &__script->symbols;
 	retok;
 }
-			
+
+void static syput(void *__p, char const *__name, ff_u8_t __type) {
+	ffly_printf("symbol: %p, %s\n", __p, __name);
+	symbolp sy = (symbolp)__ffly_mem_alloc(sizeof(struct symbol));
+	sy->next = sy_top;
+	sy_top = sy;
+
+	struct exec_reg *reg = (struct exec_reg*)__p;
+	sy->start = reg->start;
+	sy->end = reg->end;
+	sy->type = __type;
+	ffly_map_put(symbols, __name, ffly_str_len(__name), sy);
+}
+
 ff_err_t ffly_script_build(struct ffly_script *__script, void **__top, ff_byte_t **__stack) {
-	ffc_build(&__script->c_ctx, __top, __stack);
+	ffc_build(&__script->c_ctx, __top, __stack, syput);
 }
 
 ff_err_t ffly_script_free(struct ffly_script *__script) {
 	ffly_compiler_free(&__script->c_ctx);
 }
 
+// ignore this, only going to be used for reference for later
 /*
 ff_err_t ffly_script_save_bin(struct ffly_compiler *__compiler, char *__file) {
 
@@ -275,6 +308,7 @@ ff_err_t ffmain(int __argc, char const **__argv) {
 
 	ffly_script_free(&script);
 
+	ffscript_call(&ff, "test");
 	ffly_printf("executing script.\n");
 	ffscript_exec(&ff, NULL, NULL, NULL, NULL);
 	ffly_printf("stack used: %lu\n", ff.fresh-ff.stack);

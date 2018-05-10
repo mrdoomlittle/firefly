@@ -10,20 +10,20 @@
 # include "linux/limits.h"
 # ifdef __ffly_script
 # ifndef ffc_final
-# define ffc_final(__compiler, __top, __stack) \
-	((ff_err_t(*)(struct ffly_compiler*, void**, ff_byte_t**))_ffc_final)(__compiler, __top, __stack)
+# define ffc_final(__compiler, __top, __stack, __syput) \
+	((ff_err_t(*)(struct ffly_compiler*, void**, ff_byte_t**, void(*)(void*, char const*, ff_u8_t)))_ffc_final)(__compiler, __top, __stack, __syput)
 # endif /*ffc_final*/
 # ifndef ffc_build
-# define ffc_build(__compiler, __top, __stack) \
-	((ff_err_t(*)(struct ffly_compiler*, void**, ff_byte_t**))_ffc_build)(__compiler, __top, __stack)
+# define ffc_build(__compiler, __top, __stack, __syput) \
+	((ff_err_t(*)(struct ffly_compiler*, void**, ff_byte_t**, void(*)(void*, char const*, ff_u8_t)))_ffc_build)(__compiler, __top, __stack, __syput)
 # endif /*ffc_build*/
 # ifndef ffc_parse
 # define ffc_parse(__compiler) \
 	((ff_err_t(*)(struct ffly_compiler*))_ffc_parse)(__compiler, __top, __stack)
 # endif /*ffc_parse*/
 # ifndef ffc_gen
-# define ffc_gen(__compiler, __top, __stack) \
-	((ff_err_t(*)(struct ffly_compiler*, void**, ff_byte_t**))_ffc_gen)(__compiler, __top, __stack)
+# define ffc_gen(__compiler, __top, __stack, __syput) \
+	((ff_err_t(*)(struct ffly_compiler*, void**, ff_byte_t**, void(*)(void*, char const*, ff_u8_t)))_ffc_gen)(__compiler, __top, __stack, __syput)
 # endif /*ffc_gen*/
 # elif defined(__ffly_ff)
 # ifndef ffc_final
@@ -67,21 +67,21 @@ struct keywd;
 
 typedef struct ffly_compiler {
 	void *ret_type;
-    struct ffly_map env, macros;
-    ffly_mapp local;
+	struct ffly_map env, macros;
+	ffly_mapp local;
 	ffly_vecp var_pond;
-    void *frame, *ret_to;
-    void *brk[20], **brkp;
+	void *frame, *ret_to;
+	void *brk[20], **brkp;
 
-    struct ffly_compiler_file *file;
+	struct ffly_compiler_file *file;
 
-    struct ffly_vec nodes;
-    struct ffly_vec vecs;
-    struct ffly_vec maps;
+	struct ffly_vec nodes;
+	struct ffly_vec vecs;
+	struct ffly_vec maps;
    
-    struct ffly_map typedefs; 
+	struct ffly_map typedefs; 
 	struct ffly_buff sbuf;
-    struct ffly_vec to_free;
+	struct ffly_vec to_free;
 	char *dir;
 
 	ff_u8_t lang;
@@ -120,35 +120,36 @@ enum {
 };
 
 enum {
-    _ast_ret,
-    _ast_if,
+	_ast_syput,
+	_ast_ret,
+	_ast_if,
 	_ast_decl,
 	_ast_assign,
 	_ast_print,
 	_ast_literal,
 	_ast_print_call,
-    _ast_var,
-    _op_eq,
-    _op_neq,
-    _op_gt,
-    _op_lt,
-    _ast_func,
-    _ast_func_call,
-    _ast_struct_ref,
-    _ast_exit,
-    _ast_while,
-    _ast_incr,
-    _ast_decr,
-    _ast_match,
-    _ast_call,
-    _ast_addrof,
-    _ast_conv,
-    _op_cast,
-    _ast_brk,
-    _op_add,
-    _op_sub,
-    _op_mul,
-    _op_div,
+	_ast_var,
+	_op_eq,
+	_op_neq,
+	_op_gt,
+	_op_lt,
+	_ast_func,
+	_ast_func_call,
+	_ast_struct_ref,
+	_ast_exit,
+	_ast_while,
+	_ast_incr,
+	_ast_decr,
+	_ast_match,
+	_ast_call,
+	_ast_addrof,
+	_ast_conv,
+	_op_cast,
+	_ast_brk,
+	_op_add,
+	_op_sub,
+	_op_mul,
+	_op_div,
 	_ast_as,
 	_ast_out,
 	_ast_label,
@@ -157,19 +158,19 @@ enum {
 
 enum {
 	_uint_t,
-    _u64_t,
-    _u32_t,
-    _u16_t,
-    _u8_t,
+	_u64_t,
+	_u32_t,
+	_u16_t,
+	_u8_t,
 	_int_t,
 	_i64_t,
 	_i32_t,
 	_i16_t,
 	_i8_t,
-    _void,
-    _float,
-    _struct,
-    _unknown
+	_void,
+	_float,
+	_struct,
+	_unknown
 };
 
 # define _flg_neq 0x1
@@ -182,19 +183,28 @@ enum {
 # define _func_lca 0x4
 # define _func_def 0x8
 // clean up
+
+struct exec_reg {
+	struct obj **start;
+	struct obj **end;
+};
+
 struct node {
-    ff_u8_t kind, op;
-    struct type *_type, *to;
-    ff_byte_t val[sizeof(ff_u64_t)];
-    struct node *init, *var, *arg;
-    struct obj *_obj, **jmp;
-    struct node *l, *r, *operand, *no, *ret, *code;
-    struct node *cond, *call, *_struct;
-    struct ffly_vec block, args, params;
-    struct ffly_vec _else, _do;
-    ffly_pair pair;
-    void *p;
-    ff_bool_t va;
+	ff_u8_t kind, op;
+
+	struct type *_type, *to; 
+	ff_byte_t val[sizeof(ff_u64_t)];
+	struct node *init, *var, *arg;
+	struct obj *_obj, **jmp;
+	struct node *l, *r, *operand, *no, *ret, *code;
+	struct node *cond, *call, *_struct;
+	struct ffly_vec block, args, params;
+	struct ffly_vec _else, _do;
+	// exec region
+	struct exec_reg er;
+	char const *name;
+	void *p;
+	ff_bool_t va;
 	ff_u8_t flags;
 	ff_int_t s_off;
 	struct node *rtv;
@@ -205,9 +215,9 @@ struct node {
 struct type {
 	ff_u8_t kind;
 	ff_uint_t size;
-    ff_off_t off;
-    struct ffly_map fields;
-    struct type *ptr;
+	ff_off_t off;
+	struct ffly_map fields;
+	struct type *ptr;
 };
 
 char const* tokk_str(ff_u8_t);

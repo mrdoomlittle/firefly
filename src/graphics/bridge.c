@@ -9,7 +9,10 @@
 int main() {
 	ffly_io_init();
 	ff_err_t err;
-	ff_duct_open(FF_PIPE_SHMM);
+	err = ff_duct_open(FF_PIPE_SHMM);
+	if (err != FFLY_SUCCESS) {
+		goto _fail;	
+	}
 
 	ffly_event_t *event;
 	struct ffly_wd window;
@@ -44,5 +47,6 @@ _end:
 	ffly_wd_cleanup(&window);
 
 	ff_duct_close();
+_fail:
 	ffly_io_closeup();
 }

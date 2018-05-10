@@ -2,13 +2,9 @@
 # define __ffly__terrain__h
 # include "ffint.h"
 # include "types.h"
-
-
+# include "physics/body.h"
 typedef struct ffly_terrain {
-		ff_uint_t x_stretch;
-		ff_uint_t y_stretch;
-		ff_uint_t z_stretch;
-
+		ff_uint_t phy_body;
 		ff_uint_t x, y, z;
 
 		// cleanup

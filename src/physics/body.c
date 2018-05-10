@@ -207,12 +207,14 @@ void ffly_physical_body_update(ffly_unip __uni, ff_uint_t __delta, ff_u32_t __id
 }
 
 void ffly_body_cleanup() {
-	ffly_phy_bodyp *page = bodies;
-	while(page != bodies+page_c) {
-		__ffly_mem_free(*page);
-		page++;
+	if (bodies != NULL) {
+		ffly_phy_bodyp *page = bodies;
+		while(page != bodies+page_c) {
+			__ffly_mem_free(*page);
+			page++;
+		}
+		__ffly_mem_free(bodies);
 	}
-	__ffly_mem_free(bodies);
 }
 
 void ffly_set_direction(ff_u32_t __id, ff_u8_t __dir) {

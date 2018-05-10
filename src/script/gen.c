@@ -77,6 +77,7 @@ convtk(ff_u8_t __kind) {
 	return 0;
 }
 
+// template
 struct obj obj_tmpl = {
 	.off = 0, .opno = 0, .cond = 0,
 	.p = NULL, .to = NULL, .from = NULL,
@@ -451,7 +452,7 @@ void static
 emit_func(struct ffly_compiler *__compiler, struct node *__node) {
 	struct obj *jmp = next_obj(__compiler, mk_op_jump());
 	__node->jmp = &end->next;
-	__node->pair.p0 = &end->next;
+	__node->er.start = &end->next;
 	struct obj *frame = create_frame(__compiler);
 	__compiler->frame = frame;
 	struct node **itr = NULL;
@@ -479,12 +480,12 @@ emit_func(struct ffly_compiler *__compiler, struct node *__node) {
 	}
 
 	free_frame(__compiler, frame);
+	__node->er.end = &end->next;
 	struct obj *ret = next_obj(__compiler, mk_op_jump());
 	ret->jmp = (struct obj***)ret_to;
 
 	struct obj **p = &end->next;
 	jmp->jmp = (struct obj***)stack_push(&p, sizeof(struct obj**));
-	__node->pair.p1 = *jmp->jmp; 
 }
 
 void static
@@ -562,11 +563,12 @@ emit_call(struct ffly_compiler *__compiler, struct node *__node) {
 	while((*(param++) = params[i++]) != NULL);
 }
 
+// another way?
 void static
 emit_addrof(struct ffly_compiler *__compiler, struct node *__node) {
 	void *p;
 	if (__node->operand->kind == _ast_func)
-		p = &__node->operand->pair;
+		p = &__node->operand->er;
 	else
 		p = __node->operand->_obj;
 	p = stack_push(&p, sizeof(void*));
@@ -584,7 +586,7 @@ emit_ret(struct ffly_compiler *__compiler, struct node *__node) {
 
 		next_obj(__compiler, mk_op_copy(__node->_type->size, objpp(reg), from));
 		push(__compiler, reg);
-	}
+	} 
 
 	free_frame(__compiler, (struct obj*)__compiler->frame);
 	struct obj *ret = next_obj(__compiler, mk_op_jump());
@@ -595,6 +597,14 @@ void static
 emit_brk(struct ffly_compiler *__compiler, struct node *__node) {
 	free_frame(__compiler, (struct obj*)__compiler->frame);    
 	*(__compiler->brkp++) = (void*)next_obj(__compiler, mk_op_jump());
+}
+
+static void(*syput)(void*, char const*, ff_u8_t);
+
+void static
+emit_syput(struct ffly_compiler *__compiler, struct node *__node) {
+	struct exec_reg *reg = &((struct node*)__node->p)->er;
+	syput(reg, __node->name, 0);
 }
 
 void emit(struct ffly_compiler *__compiler, struct node *__node) {
@@ -656,14 +666,18 @@ void emit(struct ffly_compiler *__compiler, struct node *__node) {
 		case _ast_brk:
 			emit_brk(__compiler, __node);
 		break;
+		case _ast_syput:
+			emit_syput(__compiler, __node);
+		break;
 		default:
 			emit_binop(__compiler, __node);
 	}
 }
 
 ff_err_t
-ffly_script_gen(struct ffly_compiler *__compiler, void **__top, ff_byte_t **__stack) {
+ffly_script_gen(struct ffly_compiler *__compiler, void **__top, ff_byte_t **__stack, void(*__syput)(void*, char const*, ff_u8_t)) {
 	if (!ffly_vec_size(&__compiler->nodes)) return FFLY_FAILURE;
+	syput = __syput;
 	stack = __stack;
 	rg_8l_u = __fresh(__compiler, 1);
 	rg_8l_u->_type = _8l_u;

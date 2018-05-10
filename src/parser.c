@@ -4,6 +4,26 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "dep/str_len.h"
+
+static struct node *fast[20];
+static struct node **next = fast;
+
+struct node*
+ffc_node_alloc() {
+	if (next>fast)
+		return *(--next);
+	return __ffly_mem_alloc(sizeof(struct node));
+}
+
+void
+ffc_node_free(struct node *__node) {
+	if (next != fast+20) {
+		*(next++) = __node;
+		return;
+	}
+	__ffly_mem_free(__node);
+}
+
 void 
 ffc_build_node(struct ffly_compiler *__compiler, struct node **__node, struct node *__tmpl) {
 	*__node = (struct node*)__ffly_mem_alloc(sizeof(struct node));

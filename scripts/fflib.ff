@@ -5,27 +5,39 @@
 %include "err.ff"
 %include "io.ff"
 %define FFLY_MUTEX_INIT 0x0
+%define CALL_NANOSLEEP 1
+%define CALL_MUTEX_LOCK 2
+%define CALL_MUTEX_UNLOCK 3
+%define CALL_BUFF_CREAT 4
+%define CALL_BUFF_DEL 5
+%define CALL_BUFF_INCR 6
+%define CALL_BUFF_DECR 7
+%define CALL_BUFF_OFF 8
+%define CALL_BUFF_RESIZE 9
+%define CALL_BUFF_SIZE 10
+%define CALL_BUFF_PUT 11
+%define CALL_BUFF_GET 12
 fn ffly_nanosleep(u64_t __sec, u64_t __nsec)->void{
-    :1<-{
+    :CALL_NANOSLEEP<-{
         __sec, __nsec
     };
 }
 
 fn ffly_mutex_lock(ffly_mutex_t *__mutex)->void{
-    :2<-{
+    :CALL_MUTEX_LOCK<-{
         __mutex
     };
 }
 
 fn ffly_mutex_unlock(ffly_mutex_t *__mutex)->void{
-    :3<-{
+    :CALL_MUTEX_UNLOCK<-{
         __mutex
     };
 }
 
 fn ffly_buff_creat(uint_t __size, uint_t __blk_size)->uint_t{
     uint_t id;
-    :4<-{
+    :CALL_BUFF_CREAT<-{
         &id,
         __size,
         __blk_size
@@ -34,34 +46,48 @@ fn ffly_buff_creat(uint_t __size, uint_t __blk_size)->uint_t{
 }
 
 fn ffly_buff_del(uint_t __id)->void{
-    :5<-{
+    :CALL_BUFF_DEL<-{
         __id
     };
 }
 
 fn ffly_buff_incr(uint_t __id)->void{
-    :6<-{
+    :CALL_BUFF_INCR<-{
         __id
     };
 }
 
 fn ffly_buff_decr(uint_t __id)->void{
-    :7<-{
+    :CALL_BUFF_DECR<-{
         __id
     };
 }
 
 fn ffly_buff_off(uint_t __id)->uint_t{
     uint_t off;
-    :8<-{
+    :CALL_BUFF_OFF<-{
         __id,
         &off
     };
     ret off;
 }
 
+fn ffly_buff_put(uint_t __id, u8_t *__src)->void{
+	:CALL_BUFF_PUT<-{
+		__id,
+		__src
+	};
+}
+
+fn ffly_buff_get(uint_t __id, u8_t *__dst)->void{
+	:CALL_BUFF_GET<-{
+		__id,
+		__dst
+	};
+}
+
 fn ffly_buff_resize(uint_t __id, uint_t __size)->void{
-    :9<-{
+    :CALL_BUFF_RESIZE<-{
         __id,
         __size
     };
@@ -69,7 +95,7 @@ fn ffly_buff_resize(uint_t __id, uint_t __size)->void{
 
 fn ffly_buff_size(uint_t __id)->uint_t{
     uint_t size;
-    :10<-{
+    :CALL_BUFF_SIZE<-{
         __id,
         &size
     };

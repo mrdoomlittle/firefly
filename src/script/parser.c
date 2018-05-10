@@ -32,7 +32,7 @@ struct type static *i8_t = &(struct type){.kind=_i8_t, .size=1};
 
 struct type static *ptr = &(struct type){.kind=_u64_t, .size=8};
 void static
-mk_notype(struct ffly_compiler *__compiler, struct type **__type, ff_u8_t __id) {
+mk_notype(ffly_compilerp __compiler, struct type **__type, ff_u8_t __id) {
 	struct type *tmpl;
 	switch(__id) {
 		case _k_float:
@@ -189,6 +189,14 @@ ast_binop(struct ffly_compiler *__compiler, struct node **__node,
 	ff_u8_t __op, struct type *__type, struct node *__l, struct node *__r)
 {
 	ffc_build_node(__compiler, __node, &(struct node){.kind=__op, ._type=__type, .l=__l, .r=__r});
+}
+
+void static
+ast_syput(struct ffly_compiler *__compiler, struct node **__node,
+	struct node *__p, char const *__name)
+{
+	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_syput, .name=__name});
+	(*__node)->p = __p;
 }
 
 void static
@@ -1146,6 +1154,7 @@ parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
    
 	vec_cleanup(__compiler, &block);
 	ast_func(__compiler, __node, &args, &block, ret_type, va);
+	ffly_printf("func: %s, %p\n", name->p, *__node);
 	ffly_map_put(__compiler->local != NULL?__compiler->local:&__compiler->env, name->p, ffly_str_len((char*)name->p), *__node);
 	return FFLY_SUCCESS;
 }
@@ -1252,6 +1261,39 @@ parser_call(struct ffly_compiler *__compiler, struct node **__node) {
 }
 
 ff_err_t
+parser_syput(struct ffly_compiler *__compiler, struct node **__node) {
+	sktok(__compiler);
+	struct node *nod;
+	struct token *name;
+	ff_err_t err;
+	if (!expect_token(__compiler, _tok_keywd, _l_paren)) {
+		reterr;
+	}
+
+	if (_err(err = parser_expr(__compiler, &nod))) {
+		errmsg("failed to read expression.\n");
+		return err;
+	}
+
+	ffly_printf("syput: %p\n", nod);
+
+	if (!expect_token(__compiler, _tok_keywd, _comma)) {
+
+	}
+
+	name = next_token(__compiler);
+
+	if (!expect_token(__compiler, _tok_keywd, _r_paren)) {
+		reterr;
+	}
+	if (!expect_token(__compiler, _tok_keywd, _semicolon)) {
+		reterr;
+	}
+	ast_syput(__compiler, __node, nod, name->p);
+	retok;
+}
+
+ff_err_t
 ffly_script_parse(struct ffly_compiler *__compiler) {
 	ff_err_t err = FFLY_SUCCESS;
 	while(!at_eof(&__compiler->lexer)) {
@@ -1281,6 +1323,11 @@ ffly_script_parse(struct ffly_compiler *__compiler) {
 			} else if (tok->id == _colon) {
 				if (_err(err = parser_call(__compiler, &nod))) {
 					errmsg("failed to read call.\n");
+					break;
+				}
+			} else if (tok->id == _k_syput) {
+				if (_err(err = parser_syput(__compiler, &nod))) {
+					errmsg("failed to syput call.\n");
 					break;
 				}
 			} else {

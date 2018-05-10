@@ -1,5 +1,7 @@
 # include "errno.h"
 # include "../types.h"
+// rename to error.h
+
 # ifndef __ffly__err__h
 # define __ffly__err__h
 ff_err_t extern ffly_errval;

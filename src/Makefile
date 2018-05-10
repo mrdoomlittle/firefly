@@ -141,13 +141,14 @@ ffc: clean
 script: clean
 	gcc $(cc_flags) -c -o script/parser.o script/parser.c
 	gcc $(cc_flags) -c -o script/gen.o script/gen.c
+	gcc $(cc_flags) -c -o script/mm.o script/mm.c
 	gcc $(cc_flags) -c parser.c
 	gcc $(cc_flags) -c lexer.c
 #	gcc $(cc_flags) -c gen.c
 	gcc $(cc_flags) -o script/exec.o -c script/exec.c
 #	gcc $(cc_flags) -c data/mem_swp.c
 	gcc $(cc_flags) -D__ffc_no_ff -c compiler.c
-	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) script/exec.o script/parser.o script/gen.o parser.o lexer.o -nostdlib
+	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) script/exec.o script/mm.o script/parser.o script/gen.o parser.o lexer.o -nostdlib
 clean:
 	rm -f main
 	cd ../ && make clean && cd src

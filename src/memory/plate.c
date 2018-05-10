@@ -80,9 +80,11 @@ void ffly_plate_free(void *__plate) {
 }
 
 void ffly_plate_cleanup() {
-	platep *cur = plates;
-	platep *end = cur+page_c;
-	while(cur != end)
-		__ffly_mem_free(*(cur++));
-	__ffly_mem_free(plates);
+	if (plates != NULL) {
+		platep *cur = plates;
+		platep *end = cur+page_c;
+		while(cur != end)
+			__ffly_mem_free(*(cur++));
+		__ffly_mem_free(plates);
+	}
 }

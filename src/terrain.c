@@ -43,6 +43,7 @@ ff_err_t ffly_terrain_destroy(ffly_terrainp __terrain) {
 }
 
 ffly_terrainp ffly_terrain_mapout(ffly_terrainp __terrain, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
+/*
 	ff_uint_t x_stretch = __terrain->x_stretch;
 	ff_uint_t y_stretch = __terrain->y_stretch;
 	ff_uint_t z_stretch = __terrain->z_stretch;
@@ -58,6 +59,7 @@ ffly_terrainp ffly_terrain_mapout(ffly_terrainp __terrain, ff_uint_t __x, ff_uin
 	__terrain->x = __x;
 	__terrain->y = __y;
 	__terrain->z = __z;
+*/
 }
 
 ffly_terrainp ffly_terrain_unmap(ffly_terrainp __terrain) {

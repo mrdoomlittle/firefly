@@ -16,11 +16,10 @@
 # include "system/realpath.h"
 # include "linux/unistd.h"
 # ifndef __ffc_no_script
-ff_err_t ffc_script_final(struct ffly_compiler*, void**, ff_byte_t**);
-ff_err_t ffc_script_build(struct ffly_compiler*, void**, ff_byte_t**);
-
+ff_err_t ffc_script_final(struct ffly_compiler*, void**, ff_byte_t**, void(*)(void*, char const*, ff_u8_t));
+ff_err_t ffc_script_build(struct ffly_compiler*, void**, ff_byte_t**, void(*)(void*, char const*, ff_u8_t));
 ff_err_t ffly_script_parse(struct ffly_compiler*);
-ff_err_t ffly_script_gen(struct ffly_compiler*, void**, ff_byte_t**);
+ff_err_t ffly_script_gen(struct ffly_compiler*, void**, ff_byte_t**, void(*)(void*, char const*, ff_u8_t));
 # endif
 # ifndef __ffc_no_ff
 ff_err_t ffc_ff_final(struct ffly_compiler*);
@@ -463,7 +462,7 @@ ff_bool_t next_tok_nl(struct ffly_compiler *__compiler) {
 	struct token *tok = ffly_lex(&__compiler->lexer, &err);
 	if (tok != NULL) {
 		if (tok->kind == _tok_newline) {
-			ff_lexer_free(&__compiler->lexer, tok);
+			ff_token_free(tok);
 			return 1;
 		}
 		ffly_ulex(&__compiler->lexer, tok);
@@ -510,7 +509,7 @@ skip_until_endif(struct ffly_compiler *__compiler) {
 		if (_err(err)) break;
 		if (is_endif(__compiler, tok)) break;
 		if (tok->kind == _tok_newline)
-			ff_lexer_free(&__compiler->lexer, tok);
+			ff_token_free(tok);
 	}
 }
 
@@ -596,7 +595,7 @@ _bk:
 	if (!tok) return NULL;
 
 	if (tok->kind == _tok_newline) {
-		ff_lexer_free(&__compiler->lexer, tok);
+		ff_token_free(tok);
 		goto _bk;
 	}
 
@@ -667,6 +666,7 @@ char const static *keywords[] = {
 	"as",
 	"out",
 	"goto",
+	"SYPUT",
 	NULL
 };
 
@@ -699,6 +699,7 @@ ff_u8_t static keyword_ids[] = {
 	_k_as,
 	_k_out,
 	_k_goto,
+	_k_syput,
 	0
 };
 
@@ -788,23 +789,23 @@ ff_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 }
 
 # ifndef __ffc_no_script
-ff_err_t ffc_script_final(struct ffly_compiler *__compiler, void **__top, ff_byte_t **__stack) {
+ff_err_t ffc_script_final(struct ffly_compiler *__compiler, void **__top, ff_byte_t **__stack, void(*__syput)(void*, char const*, ff_u8_t)) {
 	ff_err_t err;
-	if (_err(err = ffly_script_gen(__compiler, __top, __stack))) {
+	if (_err(err = ffly_script_gen(__compiler, __top, __stack, __syput))) {
 		errmsg("an error has occurred in the generative process.\n");
 		_ret;
 	}
 	retok;
 }
 
-ff_err_t ffc_script_build(struct ffly_compiler *__compiler, void ** __top, ff_byte_t **__stack) {
+ff_err_t ffc_script_build(struct ffly_compiler *__compiler, void ** __top, ff_byte_t **__stack, void(*__syput)(void*, char const*, ff_u8_t)) {
 	ff_err_t err;
 	if (_err(err = ffly_script_parse(__compiler))) {
 		errmsg("an error has occurred in the parsing process.\n");
 		_ret;
 	}
 
-	if (_err(err = ffc_script_final(__compiler, __top, __stack))) {
+	if (_err(err = ffc_script_final(__compiler, __top, __stack, __syput))) {
 		errmsg("failed to finalize.\n");
 		_ret;
 	}

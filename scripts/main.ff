@@ -1,9 +1,33 @@
 %include "fflib.ff"
 
+fn test()->void{
+	print(101987);
+}
+
+/* put symbol
+* only functions for now
+* ffscript_call();
+*/
+SYPUT(test, "test");
+
 u8_t i = 0;
 while(i != 5) {
 	print(21299);
 	i++;
 }
 
+uint_t buff = ffly_buff_creat(10, 1);
+
+u8_t val;
+
+val = 21;
+ffly_buff_put(buff, &val);
+ffly_buff_incr(buff);
+
+ffly_buff_decr(buff);
+
+ffly_buff_get(buff, &val);
+print(val);
+
+ffly_buff_del(buff);
 exit;

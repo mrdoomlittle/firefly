@@ -12,17 +12,25 @@ typedef struct ff_lexer {
 	void *top;
 } *ff_lexerp;
 
-struct token {
+# define token ff_token
+typedef struct ff_token {
+	ff_uint_t page, pg_off;
 	void *p;
 	ff_u8_t kind, id;
 	ff_uint_t line, l;
 	ff_off_t off, lo;
 	ff_u8_t is_float, is_hex;
-};
+
+	struct token *fd;
+} *ff_tokenp;
 
 void ffly_lexer_init(ff_lexerp);
 void ffly_lexer_cleanup(ff_lexerp);
 void ff_lexer_free(ff_lexerp, void*);
+ff_tokenp ff_token_alloc();
+void ff_token_free(ff_tokenp);
+void ff_token_cleanup(ff_tokenp);
+void ff_token_destroy(ff_tokenp);
 
 struct token* ffly_lex(ff_lexerp, ff_err_t*);
 void ffly_ulex(ff_lexerp, struct token*);
@@ -87,7 +95,8 @@ enum {
     _ellipsis,
     _plus,
     _minus,
-	_k_goto
+	_k_goto,
+	_k_syput
 };
 
 # endif /*__ffly__lexer__h*/

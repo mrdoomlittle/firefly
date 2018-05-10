@@ -7,6 +7,9 @@
 # include "dep/mem_cpy.h"
 # include "dep/str_len.h"
 # include "system/string.h"
+# include "memory/mem_alloc.h"
+# include "memory/mem_realloc.h"
+# include "memory/mem_free.h"
 
 # define hdrsize sizeof(struct hdr)
 typedef struct hdr {
@@ -45,6 +48,79 @@ void ff_lexer_free(ff_lexerp __lexer, void *__p) {
 		h->prev->next = h->next;
 _end:														
 	__ffly_mem_free(p);
+}
+
+# define PAGE_SHIFT 4
+# define PAGE_SIZE (1<<PAGE_SHIFT)
+
+ff_tokenp static *tokens = NULL;
+ff_uint_t static t_off = 0;
+ff_uint_t static t_page_c = 0;
+
+ff_tokenp free_toks = NULL;
+
+ff_tokenp ff_token_alloc() {
+	if (free_toks != NULL) {
+		ff_tokenp ret = free_toks;
+		free_toks = free_toks->fd;
+		return ret;
+	}
+
+	ff_uint_t page = t_off>>PAGE_SHIFT;
+	ff_uint_t pg_off;
+	if (!tokens) {
+		tokens = __ffly_mem_alloc(sizeof(ff_tokenp));
+		t_page_c = 1;
+	} else {
+		if (page>t_page_c-1)
+			tokens = (ff_tokenp*)__ffly_mem_realloc(tokens, (++t_page_c)*sizeof(ff_tokenp));
+		else
+			goto _sk;
+	}
+	*(tokens+page) = (ff_tokenp)__ffly_mem_alloc(PAGE_SIZE*sizeof(struct token));
+_sk:
+	pg_off = ((t_off++)-(page*PAGE_SIZE));
+	ff_tokenp ret = (*(tokens+page))+pg_off;
+	ret->page = page;
+	ret->pg_off = pg_off;
+	return ret;
+}
+
+void ff_token_free(ff_tokenp __tok) {
+	if (__tok->pg_off+(__tok->page*PAGE_SIZE) == t_off-1) {
+		t_off--;
+		ff_uint_t page = t_off>>PAGE_SHIFT;
+		if (page < t_page_c-1 && t_page_c>1) {
+			__ffly_mem_free(*(tokens+(page+1)));
+			tokens = (ff_tokenp*)__ffly_mem_realloc(tokens, (--t_page_c)*sizeof(ff_tokenp));
+		}
+		return;
+	} else {
+		__tok->fd = free_toks;
+		free_toks = __tok;
+	}
+}
+
+void ff_token_cleanup(ff_tokenp __tok) {
+	ff_u8_t kind = __tok->kind;
+	if (kind == _tok_ident) {
+
+	} else if (kind == _tok_keywd) {
+
+	} else if (kind == _tok_no) {
+
+	} else if (kind == _tok_str) {
+
+	} else if (kind == _tok_newline) {
+
+	} else if (kind == _tok_chr) {
+
+	}
+}
+
+void ff_token_destroy(ff_tokenp __tok) {
+	ff_token_cleanup(__tok);
+	ff_token_free(__tok);
 }
 
 # define incp \
@@ -219,7 +295,7 @@ read_chr(ff_lexerp __lexer) {
 struct token static*
 read_token(ff_lexerp __lexer) {
 	struct token *tok;
-	if (!(tok = (struct token*)ff_lexer_alloc(__lexer, sizeof(struct token)))) {
+	if (!(tok = ff_token_alloc())) {
 		// memory allocation failure
 	}
 
@@ -396,6 +472,13 @@ void ffly_lexer_cleanup(ff_lexerp __lexer) {
 		bk = cur;
 		cur = cur->next;
 		ff_lexer_free(__lexer, bk->p);
+	}
+
+	if (tokens != NULL) {
+		ff_tokenp *page = tokens;
+		while(page != tokens+t_page_c)
+			__ffly_mem_free(*(page++));
+		__ffly_mem_free(tokens);
 	}
 }
 
