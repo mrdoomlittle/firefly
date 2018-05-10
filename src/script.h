@@ -77,7 +77,7 @@ typedef struct symbol {
 
 /* clean this up */
 struct obj {
-	ff_u32_t off;
+	ff_uint_t off;
 	ff_u8_t opno, cond;
 	void *p;
 	ff_uint_t size;

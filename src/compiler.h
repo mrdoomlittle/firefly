@@ -153,7 +153,8 @@ enum {
 	_ast_as,
 	_ast_out,
 	_ast_label,
-	_ast_jmpto
+	_ast_jmpto,
+	_ast_va_args
 };
 
 enum {
@@ -170,7 +171,8 @@ enum {
 	_void,
 	_float,
 	_struct,
-	_unknown
+	_unknown,
+	_array
 };
 
 # define _flg_neq 0x1
@@ -207,6 +209,7 @@ struct node {
 	ff_bool_t va;
 	ff_u8_t flags;
 	ff_int_t s_off;
+	struct node **va_param;
 	struct node *rtv;
 	struct ffly_vec var_pond;
 	struct ffly_vec fields;
@@ -214,7 +217,7 @@ struct node {
 
 struct type {
 	ff_u8_t kind;
-	ff_uint_t size;
+	ff_uint_t size, len;
 	ff_off_t off;
 	struct ffly_map fields;
 	struct type *ptr;

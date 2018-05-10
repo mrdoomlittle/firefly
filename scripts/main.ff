@@ -11,12 +11,13 @@ fn test()->void{
 SYPUT(test, "test");
 
 u8_t i = 0;
-while(i != 5) {
-	print(21299);
+while(i != 20) {
+	ffly_printf("i: %b\n", i);
 	i++;
 }
 
 uint_t buff = ffly_buff_creat(10, 1);
+ffly_printf("buffer id: %u\n", buff);
 
 u8_t val;
 

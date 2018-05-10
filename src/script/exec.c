@@ -38,12 +38,12 @@ op_fresh(ffscriptp __script, struct obj *__obj) {
 
 void static 
 op_assign(ffscriptp __script, struct obj *__obj) {
-	ffly_mem_cpy((*__obj->to)->p, __obj->p, __obj->size);
+	ffly_mem_cpy(((ff_u8_t*)(*__obj->to)->p)+__obj->off, __obj->p, __obj->size);
 }
 
 void static 
 op_copy(ffscriptp __script, struct obj *__obj) {
-	ffly_mem_cpy((*__obj->to)->p, (*__obj->from)->p, __obj->size);
+	ffly_mem_cpy(((ff_u8_t*)(*__obj->to)->p)+__obj->off, (*__obj->from)->p, __obj->size);
 }
 
 void static 
@@ -281,6 +281,35 @@ buff_get(struct obj ***__params) {
 	ffly_buff_get((ffly_buffp)m_plate[id], dst);
 }
 
+# include "../system/string.h"
+void static
+printf(struct obj ***__params) {
+	char *format = (char*)(*((struct obj**)(**(__params++))->p))->p;
+	char *p = format;
+	char out[1024];
+	char *op = out;
+
+	ff_u8_t *arg = (ff_u8_t*)(*((struct obj**)(**__params)->p))->p;
+	while(*p != '\0') {
+		if (*p == '%') {
+			switch(*(++p)) {
+				case 'b':
+					op+=ffly_nots(*(ff_u8_t*)arg, op);
+					arg++;
+				break;
+				case 'u':
+					op+=ffly_nots(*(ff_uint_t*)arg, op);
+					arg+=sizeof(ff_uint_t);
+				break;
+			}
+			p++;
+		} else
+			*(op++) = *(p++);
+	}
+	*op = '\0';
+	ffly_printf("%s", out);
+}
+
 void static(*call[])(struct obj***) = {
     nanosleep,
     mutex_lock,
@@ -293,7 +322,8 @@ void static(*call[])(struct obj***) = {
     buff_resize,
     buff_size,
 	buff_put,
-	buff_get
+	buff_get,
+	printf
 };
 
 void static 

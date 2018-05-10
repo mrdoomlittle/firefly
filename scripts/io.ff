@@ -1,7 +1,11 @@
 %ifndef __ffly__io__ff
 %define __ffly__io__ff
 %include "../scripts/types.ff"
-fn ffly_printf(u8_t __s, ...)->void{
-
+%define CALL_PRINTF 13
+fn ffly_printf(char *__format, ...)->void{
+	:CALL_PRINTF<-{
+		__format,
+		va_args
+	};
 }
 %endif /*__ffly__io__ff*/

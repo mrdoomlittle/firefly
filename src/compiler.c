@@ -285,8 +285,10 @@ ff_off_t curlo(struct ffly_compiler *__compiler) {
 ff_bool_t next_token_is(struct ffly_compiler *__compiler, ff_u8_t __kind, ff_u8_t __id) {
 	struct token *tok = next_token(__compiler);
 	if (!tok) return 0;
-	if (tok->kind == __kind && tok->id == __id)
+	if (tok->kind == __kind && tok->id == __id) {
+		ff_token_free(tok);
 		return 1;
+	}
 	ffly_ulex(&__compiler->lexer, tok);
 	return 0;
 }
@@ -353,6 +355,7 @@ ff_bool_t expect_token(struct ffly_compiler *__compiler, ff_u8_t __kind, ff_u8_t
 			ffly_printf("^\n");
 		}
 	}
+	ff_token_free(tok);
 	return ret;
 }
 
@@ -667,6 +670,7 @@ char const static *keywords[] = {
 	"out",
 	"goto",
 	"SYPUT",
+	"va_args",
 	NULL
 };
 
@@ -700,6 +704,7 @@ ff_u8_t static keyword_ids[] = {
 	_k_out,
 	_k_goto,
 	_k_syput,
+	_k_va_args,
 	0
 };
 
@@ -830,5 +835,5 @@ ff_uint_t curl(struct ffly_compiler *__compiler) {
 }
 
 void sktok(ffly_compilerp __compiler) {
-	next_token(__compiler);
+	ff_token_free(next_token(__compiler));
 }

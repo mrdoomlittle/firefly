@@ -86,11 +86,12 @@ struct obj obj_tmpl = {
 };
 
 struct obj static
-mk_op_copy(ff_uint_t __size, struct obj **__to, struct obj **__from) {
+mk_op_copy(ff_uint_t __size, struct obj **__to, struct obj **__from, ff_uint_t __off) {
 	struct obj _obj = obj_tmpl;
 	_obj.opno = _op_copy_;
 	_obj.size = __size;
 	_obj.to = __to;
+	_obj.off = __off;
 	_obj.from = __from;
 	return _obj;
 }
@@ -119,10 +120,11 @@ mk_exit() {
 }
 
 struct obj static
-mk_op_assign(void *__p, ff_uint_t __size, struct obj **__to) {
+mk_op_assign(void *__p, ff_uint_t __size, ff_uint_t __off, struct obj **__to) {
 	struct obj _obj = obj_tmpl;
 	_obj.opno = _op_assign_;
 	_obj.p = __p;
+	_obj.off = __off;
 	_obj.size = __size;
 	_obj.to = __to;
 	return _obj;
@@ -299,7 +301,7 @@ emit_decl_init(struct ffly_compiler *__compiler, struct node *__node, struct obj
 	emit(__compiler, __node->init);
 	struct obj **from;
 	pop(__compiler, &from);
-	next_obj(__compiler, mk_op_copy(__node->init->_type->size, objpp(__to), from));
+	next_obj(__compiler, mk_op_copy(__node->init->_type->size, objpp(__to), from, 0));
 }
 
 void static
@@ -330,16 +332,24 @@ emit_assign(struct ffly_compiler *__compiler, struct node *__node) {
 	struct obj **l, **r;
 	pop(__compiler, &r);
 	pop(__compiler, &l);
-	next_obj(__compiler, mk_op_copy(__node->_type->size, l, r));
+	next_obj(__compiler, mk_op_copy(__node->_type->size, l, r, 0));
 }
 
 void static
 emit_literal(struct ffly_compiler *__compiler, struct node *__node) {
 	struct obj *m = __fresh(__compiler, __node->_type->size);
-	void *p = stack_push(__node->val, __node->_type->size);
-	next_obj(__compiler, mk_op_assign(p, __node->_type->size, objpp(m)));
-	m->_type = convtk(__node->_type->kind);
-	push(__compiler, m);
+	if (__node->_type->kind != _array) {
+		void *p = stack_push(__node->val, __node->_type->size);
+		next_obj(__compiler, mk_op_assign(p, __node->_type->size, 0, objpp(m)));
+		m->_type = convtk(__node->_type->kind);
+		push(__compiler, m);
+	} else {
+		next_obj(__compiler, mk_op_assign(stack_push(__node->p, __node->_type->size), __node->_type->size, 0, objpp(m)));
+		void *p = m;
+		p = stack_push(&p, sizeof(void*));
+		next_obj(__compiler, mk_op_assign(p, rg_64l_u->size, 0, objpp(rg_64l_u)));
+		push(__compiler, rg_64l_u);
+	}
 }
 
 void static
@@ -448,6 +458,8 @@ emit_binop(struct ffly_compiler *__compiler, struct node *__node) {
 		next_obj(__compiler, mk_op_compare(rg_8l_u, l, r));
 }
 
+static struct obj **va_args;
+
 void static
 emit_func(struct ffly_compiler *__compiler, struct node *__node) {
 	struct obj *jmp = next_obj(__compiler, mk_op_jump());
@@ -455,6 +467,8 @@ emit_func(struct ffly_compiler *__compiler, struct node *__node) {
 	__node->er.start = &end->next;
 	struct obj *frame = create_frame(__compiler);
 	__compiler->frame = frame;
+
+	pop(__compiler, &va_args);
 	struct node **itr = NULL;
 	___ffly_vec_nonempty(&__node->args) {
 		itr = (struct node**)ffly_vec_end(&__node->args);
@@ -464,7 +478,7 @@ emit_func(struct ffly_compiler *__compiler, struct node *__node) {
 			struct obj **to, **from;
 			pop(__compiler, &to);
 			pop(__compiler, &from);
-			next_obj(__compiler, mk_op_copy((*itr)->var->_type->size, to, from));
+			next_obj(__compiler, mk_op_copy((*itr)->var->_type->size, to, from, 0));
 			itr--;
 		}
 	}
@@ -494,11 +508,32 @@ emit_func_call(struct ffly_compiler *__compiler, struct node *__node) {
 	struct node **param = NULL;
 	struct obj *ret = push(__compiler, NULL);
 
+	ff_uint_t va_size = 0;
 	___ffly_vec_nonempty(&__node->params) {
 		param = (struct node**)ffly_vec_begin(&__node->params);
 		while(!vec_deadstop(param, &__node->params)) {
+			if (__node->va_param != NULL) {
+				if (param >= __node->va_param)
+					va_size+=(*param)->_type->size;
+			}
 			emit(__compiler, *param); 
 			param++;
+		}
+
+		ff_uint_t off = va_size;
+		if (__node->va_param != NULL) {
+			ffly_printf("has va params, %p, %p\n", __node->va_param, param);
+			struct obj *m = __fresh(__compiler, va_size);
+			while(param-- != __node->va_param) {
+				struct obj **src;
+				pop(__compiler, &src);
+				off-=(*param)->_type->size;
+				next_obj(__compiler, mk_op_copy((*param)->_type->size, objpp(m), src, off));
+			}
+			push(__compiler, m);
+		} else {
+			push(__compiler, rg_8l_u);
+			ffly_printf("no va params\n");
 		}
 	}
 
@@ -508,6 +543,13 @@ emit_func_call(struct ffly_compiler *__compiler, struct node *__node) {
 	jmp->jmp = (struct obj***)stack_push(&p, sizeof(struct obj**));
 	ret->_obj = (struct obj*)&end->next;
 	free_frame(__compiler, frame);
+}
+
+void static
+emit_va_args(struct ffly_compiler *__compiler, struct node *__node) {
+	struct obj *m = rg_64l_u;
+	next_obj(__compiler, mk_op_assign(va_args, rg_64l_u->size, 0, objpp(rg_64l_u)));
+	push(__compiler, m);
 }
 
 void static
@@ -572,7 +614,7 @@ emit_addrof(struct ffly_compiler *__compiler, struct node *__node) {
 	else
 		p = __node->operand->_obj;
 	p = stack_push(&p, sizeof(void*));
-	next_obj(__compiler, mk_op_assign(p, rg_64l_u->size, objpp(rg_64l_u)));
+	next_obj(__compiler, mk_op_assign(p, rg_64l_u->size, 0, objpp(rg_64l_u)));
 	push(__compiler, rg_64l_u);
 }
 
@@ -584,7 +626,7 @@ emit_ret(struct ffly_compiler *__compiler, struct node *__node) {
 		struct obj **from;
 		pop(__compiler, &from);
 
-		next_obj(__compiler, mk_op_copy(__node->_type->size, objpp(reg), from));
+		next_obj(__compiler, mk_op_copy(__node->_type->size, objpp(reg), from, 0));
 		push(__compiler, reg);
 	} 
 
@@ -668,6 +710,9 @@ void emit(struct ffly_compiler *__compiler, struct node *__node) {
 		break;
 		case _ast_syput:
 			emit_syput(__compiler, __node);
+		break;
+		case _ast_va_args:
+			emit_va_args(__compiler, __node);
 		break;
 		default:
 			emit_binop(__compiler, __node);

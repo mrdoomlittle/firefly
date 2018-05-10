@@ -29,6 +29,7 @@ char const static *keywords[] = {
 	"ret",
 	"brk",
 	"SYPUT",
+	"va_args",
 	NULL
 };
 

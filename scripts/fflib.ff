@@ -2,9 +2,10 @@
 %define __ffly__lib__ff
 %include "types.ff"
 %include "limits.ff"
-%include "err.ff"
+%include "error.ff"
 %include "io.ff"
 %define FFLY_MUTEX_INIT 0x0
+
 %define CALL_NANOSLEEP 1
 %define CALL_MUTEX_LOCK 2
 %define CALL_MUTEX_UNLOCK 3
@@ -17,6 +18,7 @@
 %define CALL_BUFF_SIZE 10
 %define CALL_BUFF_PUT 11
 %define CALL_BUFF_GET 12
+
 fn ffly_nanosleep(u64_t __sec, u64_t __nsec)->void{
     :CALL_NANOSLEEP<-{
         __sec, __nsec
@@ -101,4 +103,5 @@ fn ffly_buff_size(uint_t __id)->uint_t{
     };
     ret size;
 }
+
 %endif /*__ffly__lib__ff*/
