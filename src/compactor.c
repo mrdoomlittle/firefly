@@ -16,6 +16,7 @@ void prb(ff_u8_t __v) {
 ff_u16_t buf[1024];
 void static
 bit_put(ff_compactorp __com, ff_u8_t __bits, ff_u8_t __n) {
+	__bits &= 0xff>>(8-__n);
 	if (!__com->left) {
 		__com->left = 8;
 		__com->put(__com->buf);
@@ -74,10 +75,10 @@ void ff_compact(ff_compactorp __com) {
 		ff_u8_t tmp = __com->get();
 		ff_u8_t val = prior^tmp;
 		prior = tmp;
-		ff_u8_t bits = 0;
-		while(val>>bits != 0x0) {
-			bits++;
-		}
+		ff_u8_t l = 0;
+		while(!((val>>(7-l))&0x1) && l<8)
+			l++;
+		ff_u8_t bits = 8-l;
 
 		bit_put(__com, bits, 4);
 		bit_put(__com, val, bits);
@@ -89,15 +90,13 @@ void ff_decompact(ff_compactorp __com) {
 	__com->left = 0;
 	__com->buf = 0x0;
 	ff_u8_t prior = __com->get();
-	printf("%c\n", prior);
 	__com->put(prior);
 	while(__com->at_eof() == -1) {
-		ff_u8_t a = bit_get(__com, 4);
-		ff_u8_t b = bit_get(__com, a);
+		ff_u8_t bits = bit_get(__com, 4);
+		ff_u8_t b = bit_get(__com, bits);
 		ff_u8_t tmp = b;
 		b = prior^b;
 		prior = b;
-	//	printf("%c\n", b);
 		__com->put(b);
 	}
 }
