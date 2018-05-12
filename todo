@@ -92,7 +92,7 @@ and it has to be done at some point, i dont realy care too much about it but its
 -. system/string.c function should be passed thru as a pram to allocate new segment of memory
 else pass the buffer size and error out.
 -. start working on assembler as ive been using bci for testing
--. bond and as need to support ELF
+-. 'bond' and 'as' need to support ELF
 -. rename ffef.h
 -. work on terrain
 -. rename system/task_pool.*
@@ -105,3 +105,6 @@ else pass the buffer size and error out.
 -. two choices make use raw audio connection or remake pulse, alsa librarys else pipe it
 -. jpeg and png librarys will have to be remade or user uses the librarys and send the raw pixel data to the engine
 -. ffly_alloc_lot should be ffly_lot_alloc
+-. as, bond, etc read full file and dumps it into memory,
+its quite bad but okay for now but later we will pass a 'get' function pointer thru
+to get the next chunk of data;

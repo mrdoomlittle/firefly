@@ -548,8 +548,10 @@ read_include(struct ffly_compiler *__compiler) {
 	__compiler->dir = file->dir;
 	file->line = 0;
 	file->lo = 0;
-	if (_err(ffly_compiler_ld(__compiler, (char*)path->p)))
+	if (_err(ffly_compiler_ld(__compiler, (char*)path->p))) {
+		ffly_printf("failed to load.\n");
 		goto _sk;
+	}
 	switch(__compiler->lang) {
 # ifndef __ffc_no_ff
 		case _ffc_ff:

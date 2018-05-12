@@ -1,1 +1,3 @@
 -. theres still alot to do and lots needs fixing.
+-. for subprograms like as, bond, etc that are external entities
+all with ffly_* should be avoided e.g. ffly_mem_cpy should be memcpy from src/string.h not src/dep/mem_cpy.h

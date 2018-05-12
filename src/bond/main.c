@@ -26,7 +26,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	}
 
 	printf("src: %s, dst: %s\n", s, d);
-	bond(s, d);
+	ff_bond(s, d);
 
 	ffly_depart(NULL);
 	retok;

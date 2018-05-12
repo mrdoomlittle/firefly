@@ -6,10 +6,10 @@
 	(*(__p+1) == __c)
 
 # define nextc(__p) (*(__p+1))
-symbolp eval(char *__s) {
+symbolp ff_as_eval(char *__s) {
 	char *p = __s;
 	if (*p == '\n' || *p == '\0' || *p == ';') return NULL;
-	symbolp head = _alloca(sizeof(struct symbol));
+	symbolp head = ff_as_al(sizeof(struct symbol));
 	symbolp cur = head;
 	cur->flags = 0x0;
 
@@ -28,7 +28,7 @@ symbolp eval(char *__s) {
 					*(bufp++) = *(p++);
 				*bufp = '\0';
 				l = bufp-buf;
-				cur->p = _memdup(buf, l+1);
+				cur->p = ff_as_memdup(buf, l+1);
 				cur->sort = SY_LL;
 				cur->len = l;
 				break;
@@ -48,7 +48,7 @@ symbolp eval(char *__s) {
 					*(bufp++) = *(p++);
 				*bufp = '\0';
 				l = bufp-buf;
-				cur->p = _memdup(buf, l+1);
+				cur->p = ff_as_memdup(buf, l+1);
 				cur->sort = SY_REG;
 				cur->len = l;
 				break;
@@ -62,7 +62,7 @@ symbolp eval(char *__s) {
 						*(bufp++) = *(p++);
 					*bufp = '\0';
 					l = bufp-buf;
-					cur->p = _memdup(buf, l+1);
+					cur->p = ff_as_memdup(buf, l+1);
 					cur->sort = SY_LABEL;
 					cur->len = l;
 				} else if (isno(nextc(p))) {
@@ -71,7 +71,7 @@ symbolp eval(char *__s) {
 			break;
 			case ',': {
 				p++;
-				cur->next = _alloca(sizeof(struct symbol));
+				cur->next = ff_as_al(sizeof(struct symbol));
 				cur = cur->next;
 				cur->flags = 0x0;
 				break;
@@ -80,8 +80,8 @@ symbolp eval(char *__s) {
 				if (isno(*p)) _no: {
 					ff_uint_t l;
 					ff_u8_t sign;
-					cur->p = _alloca(sizeof(ff_u64_t));
-					*(ff_u64_t*)cur->p = read_no(p, &l, &sign);
+					cur->p = ff_as_al(sizeof(ff_u64_t));
+					*(ff_u64_t*)cur->p = ff_as_read_no(p, &l, &sign);
 					p+=l;
 					cur->sort = SY_INT;
 					if (sign)
@@ -94,7 +94,7 @@ symbolp eval(char *__s) {
 						*(bufp++) = *(p++);
 					*bufp = '\0';
 					l = bufp-buf;
-					cur->p = _memdup(buf, l+1);
+					cur->p = ff_as_memdup(buf, l+1);
 					cur->sort = SY_UNKNOWN;
 					cur->len = l;
 				}

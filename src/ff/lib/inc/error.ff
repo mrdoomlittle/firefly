@@ -1,0 +1,5 @@
+%ifndef __ffly__error__h
+%define __ffly__error__h
+%define FF_ABORT 0
+void abort();
+%endif /*__ffly__error__h*/

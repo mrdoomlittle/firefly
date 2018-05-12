@@ -1,5 +1,7 @@
 %include "lib/types.ff"
+%include "lib/inc/error.ff"
 %define return ret
+//Hello
 /*
 void ts0();
 void ts1();
@@ -49,18 +51,16 @@ void ts5() {
 	out(n);
 }
 */
-void abort(u8_t __code) {
-	exit __code;
-}
 
 void ts0(u8_t __a, u16_t __b, u32_t __c, u64_t __d) {
 	out(__a);
 	out(__b);
 	out(__c);
 	out(__d);
+	abort();
 }
 
 u8_t main() {
 	u8_t a = 21;
-	ts0(a, 4, 6, 8);	
+	ts0(a, 4, 6, 8);
 }

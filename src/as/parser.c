@@ -1,7 +1,7 @@
 # include "as.h"
 # include "../stdio.h"
 # include "../dep/str_cmp.h"
-symbolp parse(char *__s) {
+symbolp ff_as_parse(char *__s) {
 	char *p = __s;
 
 	ff_u8_t dir = 0;
@@ -11,7 +11,7 @@ symbolp parse(char *__s) {
 	bufp = buf;
 	char *s = NULL;
 
-	symbolp sy = _alloca(sizeof(struct symbol)), cur;
+	symbolp sy = ff_as_al(sizeof(struct symbol)), cur;
 	cur = sy;
 	if (*p == '.') {
 		dir = 1;
@@ -21,8 +21,8 @@ symbolp parse(char *__s) {
 		*bufp = '\0';
 
 		cur->sort = SY_DIR;
-		cur->p = _memdup(buf, (cur->len = (bufp-buf))+1);
-		cur->next = _alloca(sizeof(struct symbol));
+		cur->p = ff_as_memdup(buf, (cur->len = (bufp-buf))+1);
+		cur->next = ff_as_al(sizeof(struct symbol));
 		cur = cur->next;
 	} else if (*p == '%') {
 		p++;
@@ -35,7 +35,7 @@ symbolp parse(char *__s) {
 		while((*p >= 'a' && *p <= 'z') || *p == '_' || (*p >= '0' && *p <= '9'))
 			*(bufp++) = *(p++);
 		*bufp = '\0';
-		s = _memdup(buf, (len = (bufp-buf))+1);
+		s = ff_as_memdup(buf, (len = (bufp-buf))+1);
 		cur->sort = SY_DIR;
 		cur->p = s;
 		cur->len = len;
@@ -47,7 +47,7 @@ symbolp parse(char *__s) {
 		*(bufp++) = *(p++);
 	*bufp = '\0';
 
-	cur->p = _memdup(buf, (len = (bufp-buf))+1);
+	cur->p = ff_as_memdup(buf, (len = (bufp-buf))+1);
 	cur->len = len;
 
 	if (*p == ':') {
@@ -57,7 +57,7 @@ symbolp parse(char *__s) {
 	} else
 		cur->sort = SY_STR;	
 
-	cur->next = eval(p);
+	cur->next = ff_as_eval(p);
 /*
 	cur = sy;
 	while(cur != NULL) {

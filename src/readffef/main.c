@@ -43,7 +43,10 @@ void prhdr(ffef_hdrp __hdr) {
 		printf("%c, ", *(i++));
 	printf("%c\n", *i);	
 
-	printf("entry, at: %u\n", __hdr->routine);
+	if (__hdr->routine == FF_EF_NULL)
+		printf("no entry point.\n");
+	else
+		printf("entry, at: %u\n", __hdr->routine);
 }
 
 void prsy(ffef_reg_hdrp __sttr, ffef_syp __sy, ff_uint_t __no) {

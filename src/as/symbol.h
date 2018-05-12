@@ -40,10 +40,10 @@ typedef struct symbol {
 } *symbolp;
 
 struct hash extern symbols;
-void putsymbol(symbolp);
-symbolp getsymbol(char const*);
-symbolp syt(char const*, ff_u16_t*);
-void syt_store(void);
-void syt_drop(void);
-void syt_gut(void);
+void ff_as_putsymbol(symbolp);
+symbolp ff_as_getsymbol(char const*);
+symbolp ff_as_syt(char const*, ff_u16_t*);
+void ff_as_syt_store(void);
+void ff_as_syt_drop(void);
+void ff_as_syt_gut(void);
 # endif /*__ffly__as__symbol__h*/

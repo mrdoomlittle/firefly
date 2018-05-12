@@ -1,0 +1,4 @@
+%include "inc/error.ff"
+void abort() {
+	exit FF_ABORT;
+}

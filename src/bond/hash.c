@@ -3,7 +3,7 @@
 # include "../malloc.h"
 # include "../system/util/hash.h"
 void
-hash_init(hashp __hash) {
+ff_bond_hash_init(hashp __hash) {
 	__hash->table = (struct hash_entry**)malloc(0x100*sizeof(struct hash_entry*));
 	struct hash_entry **p = __hash->table;
 	struct hash_entry **end = p+0x100;
@@ -23,7 +23,7 @@ free_chain(struct hash_entry *__top) {
 }
 
 void
-hash_destroy(hashp __hash) {
+ff_bond_hash_destroy(hashp __hash) {
 	struct hash_entry **p = __hash->table;
 	struct hash_entry **end = p+0x100;
 	while(p != end) {
@@ -35,7 +35,7 @@ hash_destroy(hashp __hash) {
 }
 
 void
-hash_put(hashp __hash, ff_u8_t const *__key, ff_uint_t __len, void *__p) {
+ff_bond_hash_put(hashp __hash, ff_u8_t const *__key, ff_uint_t __len, void *__p) {
 	ff_u64_t sum = ffly_hash(__key, __len);
 	struct hash_entry *entry = (struct hash_entry*)malloc(sizeof(struct hash_entry));
 	struct hash_entry **table = __hash->table+(sum&0xff);
@@ -49,7 +49,7 @@ hash_put(hashp __hash, ff_u8_t const *__key, ff_uint_t __len, void *__p) {
 }
 
 void* const
-hash_get(hashp __hash, ff_u8_t const *__key, ff_uint_t __len) {
+ff_bond_hash_get(hashp __hash, ff_u8_t const *__key, ff_uint_t __len) {
 	ff_u64_t sum = ffly_hash(__key, __len);
 	struct hash_entry *cur = *(__hash->table+(sum&0xff));
 	while(cur != NULL) {

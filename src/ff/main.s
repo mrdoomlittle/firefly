@@ -1,23 +1,5 @@
 .region text
-.globl abort
-abort:
-asq %rlx, 8
-subq %sp, %rlx, %sp
-ldq %sp, %bp
-movq %sp, %bp
-asq %rlx, 8
-subq %sp, %rlx, %sp
-asq %rel, 0
-asq %rlx, 8
-subq %bp, %rlx, %rlx
-stb %rlx, %ae
-exit %ae
-.l l0
-movq %bp, %sp
-stq %sp, %bp
-asq %rlx, 8
-addq %sp, %rlx, %sp
-ret
+.extern abort
 .globl ts0
 ts0:
 asq %rlx, 8
@@ -46,7 +28,8 @@ asq %rlx, 32
 subq %bp, %rlx, %rlx
 stq %rlx, %rel
 outq %rel
-.l l1
+call $abort
+.l l0
 movq %bp, %sp
 stq %sp, %bp
 asq %rlx, 8
@@ -88,7 +71,7 @@ asq %rlx, 41
 subq %bp, %rlx, %rlx
 ldq %rlx, %rel
 call $ts0
-.l l2
+.l l1
 movq %bp, %sp
 stq %sp, %bp
 asq %rlx, 8

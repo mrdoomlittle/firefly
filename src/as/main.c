@@ -17,7 +17,7 @@ struct ins extern* x86[];
 struct ins extern* bc[];
 ff_u64_t extern offset;
 
-extern void prepstack(void);
+void ff_as_prepstack(void);
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffoe_prep();
 	char const *infile = NULL;
@@ -53,27 +53,28 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		return -1;
 	}
 
-	ffas_init();
+	ff_as_init();
 
-	load(bc);
+	ff_as_load(bc);
 
 	struct stat st;
 	stat(infile, &st);
 
+	// 
 	char buf[256];
 	char *file = (char*)malloc(st.st_size); 
 	char *p = file;
 	char *end = p+st.st_size;
 	read(in, p, st.st_size);
 
-	prepstack();
-	assemble(p, end);
-	finalize();
+	ff_as_prepstack();
+	ff_as(p, end);
+	ff_as_final();
 
 	free(file);
-	ffas_de_init();
+	ff_as_de_init();
 	close(in);
 	close(out);
-	_cleanup();
+	ff_as_al_cu();
 	ffly_depart(NULL);
 }

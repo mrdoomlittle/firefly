@@ -4,16 +4,17 @@
 # include "../ffly_def.h"
 # include "../malloc.h"
 # include "../stdio.h"
-void out_seg(segmentp __seg) {
+void static
+out_seg(segmentp __seg) {
 	struct ffef_seg_hdr seg;
 	seg.type = __seg->type;
 	seg.offset = __seg->offset;
 	seg.adr = __seg->addr;
 	seg.sz = __seg->size;
-	oust(&seg, ffef_seg_hdrsz);
+	ff_bond_oust(&seg, ffef_seg_hdrsz);
 }
 
-void output(ffef_hdrp __hdr) {
+void ff_bond_output(ffef_hdrp __hdr) {
 	regionp cur = curbin, bk;
 	segmentp seg;
 	while(cur != NULL) {
@@ -25,7 +26,7 @@ void output(ffef_hdrp __hdr) {
 		seg->size = (cur->end-cur->beg);
 		seg->addr = cur->adr;
 		seg->p = (ff_u8_t*)malloc(seg->size);
-		bond_read(cur->beg, seg->p, seg->size);
+		ff_bond_read(cur->beg, seg->p, seg->size);
 		cur = cur->next;
 	}
 

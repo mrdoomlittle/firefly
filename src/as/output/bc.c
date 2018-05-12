@@ -34,8 +34,9 @@ typedef struct {
 # define els_rg 0xf
 # define ls_rg 0x10
 # define xs_rg 0x11
-void oust_addr(ff_addr_t __addr) {
-	oust((ff_u8_t*)&__addr, sizeof(ff_addr_t));
+void static
+oust_addr(ff_addr_t __addr) {
+	ff_as_oust((ff_u8_t*)&__addr, sizeof(ff_addr_t));
 }
 
 
@@ -140,73 +141,73 @@ ff_addr_t rgadr(char const *__reg) {
 }
 
 # define POSTST 48//registers
-void prepstack(void) {
+void ff_as_prepstack(void) {
 	bed+=POSTST;		
 }
 
-ff_uint_t stackadr() {
+ff_uint_t ff_as_stackadr() {
 	return bed;
 }
 
-void isa(ff_uint_t __by) {
+void ff_as_isa(ff_uint_t __by) {
 	bed+=__by;
 }
 
 void op_exit(ff_u8_t __op, ff_addr_t __exit) {
-	oustbyte(__op);
+	ff_as_oustbyte(__op);
 	oust_addr(__exit);
 }
 
 void op_asb(ff_u8_t __op, ff_addr_t __dst, ff_u8_t __val) {
-	oustbyte(__op);
-	oustbyte(1);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(1);
 	oust_addr(__dst);
-	oustbyte(__val);
+	ff_as_oustbyte(__val);
 }
 
 void op_asw(ff_u8_t __op, ff_addr_t __dst, ff_u16_t __val) {
-	oustbyte(__op);
-	oustbyte(2);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(2);
 	oust_addr(__dst);
-	oust_16l(__val);
+	ff_as_oust_16l(__val);
 }
 
 void op_asd(ff_u8_t __op, ff_addr_t __dst, ff_u32_t __val) {
-	oustbyte(__op);
-	oustbyte(4);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(4);
 	oust_addr(__dst);
-	oust_32l(__val);
+	ff_as_oust_32l(__val);
 }
 
 void op_asq(ff_u8_t __op, ff_addr_t __dst, ff_u64_t __val) {
-	oustbyte(__op);
-	oustbyte(8);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(8);
 	oust_addr(__dst);
-	oust_64l(__val);
+	ff_as_oust_64l(__val);
 }
 
 void op_mov(ff_u8_t __op, ff_u8_t __l, ff_addr_t __src, ff_addr_t __dst) {
-	oustbyte(__op);
-	oustbyte(__l);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(__l);
 	oust_addr(__src);
 	oust_addr(__dst);
 }
 
 void op_inc(ff_u8_t __op, ff_u8_t __l, ff_addr_t __adr) {
-	oustbyte(__op);
-	oustbyte(__l);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(__l);
 	oust_addr(__adr);
 }
 
 void op_dec(ff_u8_t __op, ff_u8_t __l, ff_addr_t __adr) {
-	oustbyte(__op);
-	oustbyte(__l);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(__l);
 	oust_addr(__adr);
 }
 
 void op_cmp(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
-	oustbyte(__op);
-	oustbyte(__l);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(__l);
 	oust_addr(__lt);
 	oust_addr(__rt);
 	oust_addr(__dst);
@@ -259,15 +260,15 @@ void emit_asq(insp __ins) {
 }
 
 void op_ld(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt) {
-	oustbyte(__op);
-	oustbyte(__l);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(__l);
 	oust_addr(__lt);
 	oust_addr(__rt);
 }
 
 void op_st(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt) {
-	oustbyte(__op);
-	oustbyte(__l);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(__l);
 	oust_addr(__lt);
 	oust_addr(__rt);
 }
@@ -305,8 +306,8 @@ void emit_stq(insp __ins) {
 }
 
 void op_out(ff_u8_t __op, ff_u8_t __l, ff_addr_t __adr) {
-	oustbyte(__op);
-	oustbyte(__l);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(__l);
 	oust_addr(__adr);
 }
 
@@ -343,24 +344,24 @@ emit_jmp(insp __ins) {
 	rgasw(rgname, 0);
 
 	void(*p)(ff_u64_t, ff_u8_t, symbolp*, local_labelp) = 
-		is_flag(la->flags, LA_LOOSE)?hook:reloc;
+		is_flag(la->flags, LA_LOOSE)?ff_as_hook:ff_as_reloc;
 
 	p(offset-sizeof(ff_addr_t), 2, &la->sy, ll);
-	oustbyte(__ins->op);
+	ff_as_oustbyte(__ins->op);
 	oust_addr(getreg(rgname)->addr);
 }
 
 void static
 emit_rin(insp __ins) {
-	oustbyte(__ins->op);
-	oustbyte(*(ff_u8_t*)__ins->l->p);
+	ff_as_oustbyte(__ins->op);
+	ff_as_oustbyte(*(ff_u8_t*)__ins->l->p);
 	oust_addr(*(ff_addr_t*)__ins->r->p);
 }
 
 void static
 op_arm(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
-	oustbyte(__op);
-	oustbyte(__l);
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(__l);
 	oust_addr(__lt);
 	oust_addr(__rt);
 	oust_addr(__dst);
@@ -368,13 +369,13 @@ op_arm(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __ds
 
 void static
 op_call(ff_u8_t __op, ff_addr_t __adr) {
-	oustbyte(__op);
+	ff_as_oustbyte(__op);
 	oust_addr(__adr);
 }
 
 void static
 op_ret(ff_u8_t __op) {
-	oustbyte(__op);
+	ff_as_oustbyte(__op);
 }
 
 void static
@@ -479,10 +480,10 @@ emit_cjmp(insp __ins) {
 	rgasw(rgname, 0);
 
 	void(*p)(ff_u64_t, ff_u8_t, symbolp*, local_labelp) = 
-		is_flag(la->flags, LA_LOOSE)?hook:reloc;
+		is_flag(la->flags, LA_LOOSE)?ff_as_hook:ff_as_reloc;
 	
 	p(offset-sizeof(ff_addr_t), 2, &la->sy, ll);
-	oustbyte(__ins->op);
+	ff_as_oustbyte(__ins->op);
 	oust_addr(getreg(rgname)->addr);
 	oust_addr(*(ff_addr_t*)__ins->r->p);
 }
@@ -516,7 +517,7 @@ emit_call(insp __ins) {
 	rgasw(rgname, 0);
 
 	void(*p)(ff_u64_t, ff_u8_t, symbolp*, local_labelp) = 
-		is_flag(la->flags, LA_LOOSE)?hook:reloc;
+		is_flag(la->flags, LA_LOOSE)?ff_as_hook:ff_as_reloc;
 
 	p(offset-sizeof(ff_addr_t), 2, &la->sy, NULL);
 	op_call(__ins->op, getreg(rgname)->addr);

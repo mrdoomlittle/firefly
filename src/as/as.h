@@ -91,37 +91,43 @@ struct hash {
 	struct hash_entry **table;
 };
 
-void assemble(char*, char*);
-void* _memdup(void*, ff_uint_t);
-symbolp eval(char*);
-void* _memdup(void*, ff_uint_t);
-struct hash extern env;
-void _cleanup();
-void* _alloca(ff_uint_t);
-void oust(ff_u8_t*, ff_u8_t);
-void oustbyte(ff_u8_t);
-void oust_16l(ff_u16_t);
-void oust_32l(ff_u32_t);
-void oust_64l(ff_u64_t);
+// alloca.c
+// cleanup
+void ff_as_al_cu();
+// allocate
+void *ff_as_al(ff_uint_t);
 
+// as.c
+void ff_as(char*, char*);
+void* ff_as_memdup(void*, ff_uint_t);
+
+// exp.c
+symbolp ff_as_eval(char*);
+struct hash extern env;
+
+void ff_as_oust(ff_u8_t*, ff_u8_t);
+void ff_as_oustbyte(ff_u8_t);
+void ff_as_oust_16l(ff_u16_t);
+void ff_as_oust_32l(ff_u32_t);
+void ff_as_oust_64l(ff_u64_t);
 
 // stt.c
-ff_uint_t stt(char const*, ff_uint_t);
-ff_u64_t stt_drop();
+ff_uint_t ff_as_stt(char const*, ff_uint_t);
+ff_u64_t ff_as_stt_drop();
 
-void reloc(ff_u64_t, ff_u8_t, symbolp*, local_labelp);
-void hook(ff_u64_t, ff_u8_t, symbolp*, local_labelp);
-void finalize(void);
-void ffas_init(void);
-void ffas_de_init(void);
-symbolp parse(char*);
-ff_u64_t read_no(char*, ff_uint_t*, ff_u8_t*);
-void hash_init(struct hash*);
-void hash_put(struct hash*, ff_u8_t const*, ff_uint_t, void*);
-void* hash_get(struct hash*, ff_u8_t const*, ff_uint_t);
-void load(insp*);
-ff_uint_t stackadr();
-void isa(ff_uint_t);
+void ff_as_reloc(ff_u64_t, ff_u8_t, symbolp*, local_labelp);
+void ff_as_hook(ff_u64_t, ff_u8_t, symbolp*, local_labelp);
+void ff_as_final(void);
+void ff_as_init(void);
+void ff_as_de_init(void);
+symbolp ff_as_parse(char*);
+ff_u64_t ff_as_read_no(char*, ff_uint_t*, ff_u8_t*);
+void ff_as_hash_init(struct hash*);
+void ff_as_hash_put(struct hash*, ff_u8_t const*, ff_uint_t, void*);
+void* ff_as_hash_get(struct hash*, ff_u8_t const*, ff_uint_t);
+void ff_as_load(insp*);
+ff_uint_t ff_as_stackadr();
+void ff_as_isa(ff_uint_t);
 
 //void ffef(symbolp);
 # endif /*__ffly__as__h*/

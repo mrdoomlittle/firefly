@@ -8,7 +8,7 @@ typedef struct hdr {
 hdrp static top = NULL;
 # define hdrsize sizeof(struct hdr)
 
-void _cleanup() {
+void ff_as_al_cu() {
 	if (!top) return;
 	hdrp cur = top, bk;
 	while(cur != NULL) {
@@ -18,10 +18,9 @@ void _cleanup() {
 	}
 }
 
-void* _alloca(ff_uint_t __size) {
+void *ff_as_al(ff_uint_t __size) {
 	ff_u8_t *p = (ff_u8_t*)malloc(hdrsize+__size);
 	hdrp hdr = (hdrp)p;
-
 	hdr->next = top;
 	top = hdr;
 	return p+hdrsize;

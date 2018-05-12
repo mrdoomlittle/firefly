@@ -8,14 +8,16 @@ int static s;
 int d;
 
 ff_u32_t adr = 0;
-void iadr(ff_uint_t __by) {
+void static
+iadr(ff_uint_t __by) {
 	adr+=__by;
 }
 
-ff_u32_t curadr() {return adr;}
+ff_u32_t static curadr() {return adr;}
 struct hash symbols;
 
-char const *extsrcfl(char const **__p) {
+char const static*
+extsrcfl(char const **__p) {
 	char static buf[128];
 	char *bufp = buf;
 
@@ -33,7 +35,8 @@ char const *extsrcfl(char const **__p) {
 	return (char const*)buf;
 }
 
-ff_i8_t validate(ffef_hdrp __hdr) {
+ff_i8_t static
+validate(ffef_hdrp __hdr) {
 	if (*__hdr->ident != FF_EF_MAG0) {
 		printf("mag0 corrupted\n");
 		return -1;
@@ -59,11 +62,13 @@ ff_i8_t validate(ffef_hdrp __hdr) {
 # include "../malloc.h"
 # include "../dep/bzero.h"
 ff_uint_t offset = ffef_hdr_size;
-ff_uint_t get_offset() {
+ff_uint_t static
+get_offset() {
 	return offset;
 }
 
-void incr_offset(ff_uint_t __by) {
+void static
+incr_offset(ff_uint_t __by) {
 	offset+=__by;
 }
 
@@ -82,7 +87,7 @@ relocatep currel = NULL;
 regionp *rindx;
 # define PAGE_SHIFT 2
 # define PAGE_SIZE (1<<PAGE_SHIFT)
-void **map = NULL;
+void static **map = NULL;
 
 void static *tf[267];
 void static **fresh = tf;
@@ -96,7 +101,7 @@ void static to_free(void *__p) {
 ff_u64_t bot = 0;
 ff_u64_t rise = 0;
 
-void bond_write(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
+void ff_bond_write(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 	ff_u8_t *p = (ff_u8_t*)__buf;
 	ff_u8_t *end = p+__size;
 	ff_u64_t offset;
@@ -116,7 +121,7 @@ void bond_write(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 	}
 }
 
-void bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
+void ff_bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
 	ff_uint_t page = __offset>>PAGE_SHIFT;
 	ff_uint_t pg_off = __offset-(page*PAGE_SIZE);
 	ff_u64_t end_off = __size+__offset;
@@ -140,7 +145,7 @@ void bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
 	}
 }
 
-void bond_read(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
+void ff_bond_read(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 	ff_u8_t *p = (ff_u8_t*)__buf;
 	ff_u8_t *end = p+__size;
 
@@ -160,7 +165,8 @@ void bond_read(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 	}
 }
 
-void oust(void *__p, ff_uint_t __size) {
+void
+ff_bond_oust(void *__p, ff_uint_t __size) {
 	lseek(d, offset, SEEK_SET);
 	write(d, __p, __size);
 	offset+=__size;
@@ -168,13 +174,14 @@ void oust(void *__p, ff_uint_t __size) {
 
 char const *stt, *stte;
 
-void absorb_symbol(ffef_syp __sy, symbolp *__stp) {
+void static
+absorb_symbol(ffef_syp __sy, symbolp *__stp) {
 	char name[128];
 	memcpy(name, stte-__sy->name, __sy->l);
 	printf("symbol: %s\n", name);
 
 	symbolp p;
-	if ((p = (symbolp)hash_get(&symbols, name, __sy->l-1)) != NULL) {
+	if ((p = (symbolp)ff_bond_hash_get(&symbols, name, __sy->l-1)) != NULL) {
 		printf("symbol already exists.\n");
 		goto _sk;
 	}
@@ -183,7 +190,7 @@ void absorb_symbol(ffef_syp __sy, symbolp *__stp) {
 	to_free(p);
 	p->next = cursy;
 	cursy = p;
-	hash_put(&symbols, name, __sy->l-1, p);
+	ff_bond_hash_put(&symbols, name, __sy->l-1, p);
 	p->name = strdup(name);
 _sk:
 	p->loc = curadr()+__sy->loc;
@@ -192,7 +199,8 @@ _sk:
 	*__stp = p;
 }
 
-void absorb_hook(ffef_hokp __hook) {
+void static 
+absorb_hook(ffef_hokp __hook) {
 	hookp p = (hookp)malloc(sizeof(struct hook));
 	to_free(p);
 	p->next = curhok;
@@ -203,7 +211,8 @@ void absorb_hook(ffef_hokp __hook) {
 	p->l = __hook->l;
 }
 
-void absorb_segment(ffef_seg_hdrp __seg) {
+void static
+absorb_segment(ffef_seg_hdrp __seg) {
 	segmentp seg = (segmentp)malloc(sizeof(struct segment));	
 	seg->next = curseg;
 	curseg = seg;
@@ -214,7 +223,8 @@ void absorb_segment(ffef_seg_hdrp __seg) {
 	read(d, seg->p, __seg->sz);
 }
 
-void absorb_region(ffef_reg_hdrp __reg) {
+void static
+absorb_region(ffef_reg_hdrp __reg) {
 	char name[128];
 	lseek(s, __reg->name, SEEK_SET);
 	read(s, name, __reg->l);
@@ -257,14 +267,15 @@ void absorb_region(ffef_reg_hdrp __reg) {
 	}
 
 	if (__reg->type == FF_RG_PROG) {
-		bond_mapout(reg->beg, size);
-		bond_write(reg->beg, buf, size);
+		ff_bond_mapout(reg->beg, size);
+		ff_bond_write(reg->beg, buf, size);
 	}
 
 	free(buf);
 }
 
-void absorb_relocate(ffef_relp __rel) {
+void static
+absorb_relocate(ffef_relp __rel) {
 	relocatep rel = (relocatep)malloc(sizeof(struct relocate));
 	to_free(rel);
 	rel->next = currel;
@@ -276,7 +287,9 @@ void absorb_relocate(ffef_relp __rel) {
 	printf("reloc: symbol, %s\n", rel->sy->name);
 }
 
-void ldstt(ffef_hdrp __hdr) {
+// load string table
+void static
+ldstt(ffef_hdrp __hdr) {
 	struct ffef_reg_hdr reg;
 	lseek(s, __hdr->sttr, SEEK_SET);
 	read(s, &reg, ffef_reg_hdrsz);
@@ -289,7 +302,8 @@ void ldstt(ffef_hdrp __hdr) {
 }
 
 ff_i8_t static epdeg = -1;
-void process_srcfl(char const *__file, ffef_hdrp __dhdr) {
+void static
+process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 	if ((s = open(__file, O_RDONLY, 0)) == -1) {
 		printf("failed to open source file.\n");
 		return;
@@ -373,7 +387,7 @@ void latch_hooks() {
 			printf("cant hook onto a symbol that doesen't exist.\n");
 		else {		
 			if (cur->to->type == FF_SY_GBL) {
-				bond_write(cur->offset, &cur->to->loc, cur->l);	
+				ff_bond_write(cur->offset, &cur->to->loc, cur->l);	
 				printf("hooking at: %u\n", cur->offset);
 			} else
 				printf("symbol hasen't been defined.\n");
@@ -386,7 +400,7 @@ void reloc() {
 	relocatep cur = currel;
 	while(cur != NULL) {
 		ff_u64_t loc = cur->sy->loc+cur->addto;
-		bond_write(cur->offset, &loc, cur->l);	
+		ff_bond_write(cur->offset, &loc, cur->l);	
 		cur = cur->next;
 	}
 }
@@ -401,7 +415,7 @@ cleanup() {
 		free(map);
 }
 
-void bond(char const *__s, char const *__dst) {
+void ff_bond(char const *__s, char const *__dst) {
 /*
 	printf("pagesize: %u\n", PAGE_SIZE);
 	char const *text = "1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20";
@@ -416,7 +430,7 @@ void bond(char const *__s, char const *__dst) {
 	cleanup();
 return;
 */
-	hash_init(&symbols);
+	ff_bond_hash_init(&symbols);
 	char const *p = __s;
 
 	if ((d = open(__dst, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU)) == -1) {
@@ -453,8 +467,8 @@ return;
 	latch_hooks();
 	reloc();
 	offset+=bot;
-	output(&dhdr);
+	ff_bond_output(&dhdr);
 	cleanup();
 	close(d);
-	hash_destroy(&symbols);
+	ff_bond_hash_destroy(&symbols);
 }
