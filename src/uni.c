@@ -1,7 +1,7 @@
 # include "uni.h"
 # include "system/errno.h"
 # include "system/io.h"
-# include "system/errno.h"
+# include "system/error.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "dep/mem_set.h"
@@ -99,8 +99,8 @@ ffly_uni_attach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 	ff_uint_t y = *__body->y;
 	ff_uint_t z = *__body->z;
 	if (x>=__uni->xl || y>=__uni->yl || z>=__uni->zl) {
-		ffly_fprintf(ffly_err, "body is out of bounds, can't be attached.\n");
-		return -1;
+		ffly_fprintf(ffly_err, "body is out of bounds, can't attach.\n");
+		reterr;
 	}
 
 	/*
@@ -110,7 +110,7 @@ ffly_uni_attach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 	if (!*lot) {
 		ffly_fprintf(ffly_log, "new lot.\n");
 		ffly_chunkp chunk = get_chunk(__uni, x, y, z);
-		*lot = ffly_alloc_lot(1<<chunk->lotsize, 1<<chunk->lotsize, 1<<chunk->lotsize);
+		*lot = ffly_lot_alloc(1<<chunk->lotsize, 1<<chunk->lotsize, 1<<chunk->lotsize);
 		ffly_lot_prepare(*lot, (x>>chunk->lotsize)*(1<<chunk->lotsize),
 			(y>>chunk->lotsize)*(1<<chunk->lotsize),
 			(z>>chunk->lotsize)*(1<<chunk->lotsize));
@@ -119,14 +119,16 @@ ffly_uni_attach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 //	  ffly_fprintf(ffly_log, "added to lot.\n");
 	ffly_lot_add(*lot, __body);
 	__body->lot = *lot;
+	retok;
 }
 	
 ff_err_t ffly_uni_detach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 	if (!__uni || !__body) {
-		ffly_fprintf(ffly_err, "failed to detatch object.\n");
-		return FFLY_FAILURE;
+		ffly_fprintf(ffly_err, "failed to detatch body.\n");
+		reterr;
 	}
 	ffly_lot_rm(__body->lot, __body);
+	retok;
 }
 
 # include "gravity.h"

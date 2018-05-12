@@ -6,7 +6,7 @@
 # include "memory/plate.h"
 /*
 	access all parts of engine from one point,
-	diffrent from hatch as that for debugging
+	diffrent from hatch as that for debugging lower level parts
 */
 
 ff_uint_t static pipe;

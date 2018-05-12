@@ -3,8 +3,8 @@ nasm_flags="-I${PWD}/system/asm/"
 dst_dir=${PWD}
 cc_flags=-O0 -Wall -fno-builtin -D__ffly_testing -D__ffly_no_task_pool -D__ffly_use_allocr -D__ffly_source -D__fflib
 ffly_objs=$(shell export dst_dir=$(dst_dir);export root_dir=${PWD};. ./compile.sh;echo $$ffly_objs)
-comp:
-	gcc compactor.c
+comp: clean
+	gcc $(cc_flags) -D__ffly_compactor_bin -Wall -o main compactor.c $(ffly_objs) -nostdlib
 lexer: clean
 	gcc $(cc_flags) -Wall -o main lexer.c $(ffly_objs) -nostdlib
 test: clean

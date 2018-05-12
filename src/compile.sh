@@ -59,6 +59,7 @@ ffly_objs="$ffly_objs $(
 
 dst_dir=$PWD
 root_dir=.
+$ffly_cc $cc_flags -c -o $dst_dir/compactor.o $root_dir/compactor.c
 $ffly_cc $cc_flags -c -o $dst_dir/terrain.o $root_dir/terrain.c
 $ffly_cc $cc_flags -c -o $dst_dir/duct.o $root_dir/duct.c
 $ffly_cc $cc_flags -c -o $dst_dir/gravity.o $root_dir/gravity.c
@@ -100,6 +101,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/bci.o $root_dir/bci.c
 $ffly_cc $cc_flags -c -o $dst_dir/mod/pipe.o $root_dir/mod/pipe.c
 $ffly_cc $cc_flags -c -o $dst_dir/call.o $root_dir/call.c
 $ffly_cc $cc_flags -c -o $dst_dir/mod.o $root_dir/mod.c
+#$ffly_cc $cc_flags -c -o $dst_dir/layer.o $root_dir/layer.c
 export ffly_objs="$ffly_objs $dst_dir/bci.o $dst_dir/exec.o $dst_dir/bci/exec.o $dst_dir/mode.o \
 $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  $dst_dir/get_bit.o \
 $dst_dir/arcs.o $dst_dir/call.o $dst_dir/rand.o $dst_dir/lib.o $dst_dir/mod.o $dst_dir/mod/pipe.o \
@@ -108,4 +110,5 @@ $dst_dir/opt.o $dst_dir/depart.o $dst_dir/bcd.o $dst_dir/pellet.o $dst_dir/crypt
 $dst_dir/signal.o $dst_dir/hatch.o $dst_dir/rat.o \
 $dst_dir/lot.o $dst_dir/chunk_manager.o $dst_dir/uni.o $dst_dir/chunk.o \
 $dst_dir/obj.o $dst_dir/obj_pool.o $dst_dir/obj_manager.o $dst_dir/polygon.o \
-$dst_dir/ui/camera.o $dst_dir/graphics.o $dst_dir/gravity.o $dst_dir/duct.o $dst_dir/terrain.o"
+$dst_dir/ui/camera.o $dst_dir/graphics.o $dst_dir/gravity.o $dst_dir/duct.o \
+$dst_dir/terrain.o $dst_dir/compactor.o"

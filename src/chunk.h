@@ -24,8 +24,8 @@ extern "C" {
 void ffly_chunk_cleanup();
 ffly_lotpp ffly_fetch_lot(ffly_chunkp, ff_uint_t, ff_uint_t, ff_uint_t);
 void ffly_chunk_prepare(ffly_chunkp, ff_uint_t, ff_uint_t, ff_uint_t);
-ffly_chunkp ffly_alloc_chunk(ff_uint_t, ff_uint_t, ff_uint_t, ff_u8_t);
-void ffly_free_chunk(ffly_chunkp);
+ffly_chunkp ffly_chunk_alloc(ff_uint_t, ff_uint_t, ff_uint_t, ff_u8_t);
+void ffly_chunk_free(ffly_chunkp);
 # ifdef __cplusplus
 }
 # endif

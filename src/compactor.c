@@ -1,19 +1,21 @@
 # include "compactor.h"
-# include <stdio.h>
-# include <fcntl.h>
-# include <unistd.h>
-# include <sys/stat.h>
+# include "system/io.h"
+# include "linux/fcntl.h"
+# include "linux/unistd.h"
+# include "linux/stat.h"
+# include "opt.h"
+# include "depart.h"
 
+# ifndef __ffly_compactor_bin
 void prb(ff_u8_t __v) {
 	ff_u8_t i = 0;
 	while(i != 8) {
-		printf("%u", __v>>(7-i)&0x1);
+		ffly_printf("%u", __v>>(7-i)&0x1);
 		i++;
 	}
-	printf("\n");
+	ffly_printf("\n");
 }
 
-ff_u16_t buf[1024];
 void static
 bit_put(ff_compactorp __com, ff_u8_t __bits, ff_u8_t __n) {
 	__bits &= 0xff>>(8-__n);
@@ -118,10 +120,11 @@ void ff_decompact(ff_compactorp __com) {
 		__com->put(b);
 	}
 }
-
-int unsigned in_off = 0, in_size = 0;
-int in;
-int out;
+# endif
+# ifdef __ffly_compactor_bin
+int unsigned static in_off = 0, in_size = 0;
+int static in;
+int static out;
 
 void put(ff_u8_t __byte) {
 	write(out, &__byte, 1);
@@ -144,23 +147,45 @@ void reset() {
 	in_off = 0;
 }
 
-# include <string.h>
-int main(int __argc, char const *__argv[]) {
+# include "compactor.h"
+# include "dep/str_cmp.h"
+ff_err_t ffmain(int __argc, char const *__argv[]) {
+	char const *method = NULL;
+	char const *infile = NULL, *outfile = NULL;
+	ffoe_prep();
+	struct ffpcll pcl;
+	pcl.cur = __argv+1;
+	pcl.end = __argv+__argc;
+	ffoe(ffoe_pcll, (void*)&pcl);
+	method = ffoptval(ffoe_get("m"));
+	infile = ffoptval(ffoe_get("i"));
+	outfile = ffoptval(ffoe_get("o"));
+	ffoe_end();
+
+	if (!method || !infile || !outfile) {
+		ffly_printf("usage: ./ -m <method{c, d}> -i <input> -o <output>");
+		return -1;
+	}
+
 	struct ff_compactor com;
 	com.put = put;
 	com.get = get;
 	com.at_eof = at_eof;
 	com.reset = reset;
-	in = open("in", O_RDONLY);
+	in = open(infile, O_RDONLY, 0);
 	struct stat st;
 	fstat(in, &st);
 	in_size = st.st_size;
-	out = open("out", O_WRONLY|O_TRUNC|O_CREAT, S_IRUSR|S_IWUSR);
-	if (!strcmp(__argv[1], "de"))
+	out = open(outfile, O_WRONLY|O_TRUNC|O_CREAT, S_IRUSR|S_IWUSR);
+	if (!ffly_str_cmp(method, "d"))
 		ff_decompact(&com);
-	else
+	else if (!ffly_str_cmp(method, "c"))
 		ff_compact(&com);
-
+	else {
+		ffly_printf("unknown method.\n");
+	}
 	close(in);
 	close(out);
+	ffly_depart(NULL);
 }
+# endif

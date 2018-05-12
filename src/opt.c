@@ -14,7 +14,7 @@ void ffoe_prep() {
 void ffoe_end() {
 	void const *cur = ffly_map_beg(&opt);
 	void const *end = ffly_map_end(&opt);
-	while(cur != end) {
+	while(cur != NULL) {
 		ffoptp p = (ffoptp)ffly_map_getp(cur);
 //		__ffly_mem_free((void*)p->val);
 		if (p->val != NULL)

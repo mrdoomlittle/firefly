@@ -1,20 +1,19 @@
 # ifndef __ffly__btn__h
 # define __ffly__btn__h
-# include <mdlint.h>
-# include "../types/pixelmap_t.h"
-# include "../types/bool_t.h"
-# include "../types/err_t.h"
-# include "../types/event_t.h"
-# include "../data/bzero.h"
+# include "../ffint.h"
+# include "../types.h"
+# include "../dep/bzero.h"
 # include "../ffly_def.h"
 struct ffly_gui_btn {
 	ffly_pixelmap_t texture;
-	ffly_bool_t pressed;
-	ffly_bool_t hovering;
-    mdl_u16_t xa, ya;
-    mdl_u16_t width, height;
-    mdl_i16_t *pt_xa, *pt_ya;
-    ffly_bool_t enabled;
+	ff_bool_t pressed;
+	ff_bool_t hovering;
+    ff_u16_t xa, ya;
+    ff_u16_t width, height;
+
+	// if using events is not an option
+    ff_i16_t *pt_xa, *pt_ya;
+    ff_bool_t enabled;
 // for later
     void *arg_p;
     void(*press_call)(struct ffly_gui_btn*, void*);
@@ -25,11 +24,11 @@ typedef struct ffly_gui_btn* ffly_gui_btnp;
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_err_t ffly_gui_btn_draw(ffly_gui_btnp, ffly_pixelmap_t, mdl_u16_t, mdl_u16_t);
-ffly_err_t ffly_gui_btn_enable_ir(ffly_gui_btnp);
-ffly_err_t ffly_gui_btn_handle(ffly_gui_btnp, ffly_event_t*);
-ffly_bool_t ffly_gui_btn_hovering(ffly_gui_btnp);
-ffly_bool_t ffly_gui_btn_pressed(ffly_gui_btnp);
+ff_err_t ffly_gui_btn_draw(ffly_gui_btnp, ffly_pixelmap_t, ff_u16_t, ff_u16_t);
+ff_err_t ffly_gui_btn_enable_ir(ffly_gui_btnp);
+ff_err_t ffly_gui_btn_handle(ffly_gui_btnp, ffly_event_t*);
+ff_bool_t ffly_gui_btn_hovering(ffly_gui_btnp);
+ff_bool_t ffly_gui_btn_pressed(ffly_gui_btnp);
 # ifdef __cplusplus
 }
 namespace mdl {

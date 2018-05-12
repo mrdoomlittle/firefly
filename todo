@@ -104,3 +104,4 @@ else pass the buffer size and error out.
 -. mod.c should use call.c
 -. two choices make use raw audio connection or remake pulse, alsa librarys else pipe it
 -. jpeg and png librarys will have to be remade or user uses the librarys and send the raw pixel data to the engine
+-. ffly_alloc_lot should be ffly_lot_alloc

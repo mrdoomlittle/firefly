@@ -35,7 +35,7 @@ ff_err_t ffly_cnk_man_create(struct ffly_cnk_man *__cnk_man, ff_id_t *__id, ff_u
     } else
         __cnk_man->chunks = (struct ffly_chunk**)__ffly_mem_realloc(__cnk_man->chunks, (++__cnk_man->no_chunks)*sizeof(struct ffly_chunk*));
 
-    struct ffly_chunk *chunk = (*(__cnk_man->chunks+__cnk_man->off) = ffly_alloc_chunk(__cnk_man->xal, __cnk_man->yal, __cnk_man->zal, __lotsize));
+    struct ffly_chunk *chunk = (*(__cnk_man->chunks+__cnk_man->off) = ffly_chunk_alloc(__cnk_man->xal, __cnk_man->yal, __cnk_man->zal, __lotsize));
     if (!chunk) {
         ffly_fprintf(ffly_err, "chunk failed to allocate.\n");
     }

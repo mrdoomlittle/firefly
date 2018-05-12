@@ -159,7 +159,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		ffly_uni_update(&uni, delta);
 		ffly_obj_handle(&uni, delta, obj0);
 		ffly_obj_handle(&uni, delta, obj1);
-		ffly_printf("-------------- x: %u{%d}:%u, y: %u{%d}:%u ------------- memusage: %u, clock: %u\n",
+		ffly_printf("-------------- x: %u{%d}:%u, y: %u{%d}:%u ------------- memusage: %u, clock pulse: %u\n",
 			obj0->x, (ff_int_t)obj0->x-old_x, obj1->x,
 			obj0->y, (ff_int_t)obj0->y-old_y, obj1->y, ffly_mem_alloc_bc-ffly_mem_free_bc, clock);
 		ffly_camera_handle(&camera);

@@ -1,7 +1,7 @@
 # ifndef __ffly__compactor__h
 # define __ffly__compactor__h
 # include "ffint.h"
-
+# include "types.h"
 typedef struct ff_compactor {
 	void(*put)(ff_u8_t);
 	ff_u8_t(*get)();

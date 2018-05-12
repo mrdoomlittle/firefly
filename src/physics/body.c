@@ -7,6 +7,7 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../memory/mem_realloc.h"
+# include "../system/error.h"
 # define PAGE_SHIFT 4
 # define PAGE_SIZE (1<<PAGE_SHIFT)
 
@@ -196,14 +197,18 @@ void ffly_physical_body_update(ffly_unip __uni, ff_uint_t __delta, ff_u32_t __id
 	ff_uint_t *x = body->x;
 	ff_uint_t *y = body->y;
 	ff_uint_t *z = body->z;
-	ffly_uni_detach_body(__uni, body);
+	if (_err(ffly_uni_detach_body(__uni, body))) {
+		ffly_printf("failed to detach body.\n");
+	}
 	ffly_gravity_sub(body->gravity, *x, *y, *z);
 
 	move(body, __delta);
 	body->gravity = ((float)body->mass)*0.01;
 
 	ffly_gravity_add(body->gravity, *x, *y, *z);
-	ffly_uni_attach_body(__uni, body);
+	if (_err(ffly_uni_attach_body(__uni, body))) {
+		ffly_printf("failed to attach body.\n");
+	}
 }
 
 void ffly_body_cleanup() {

@@ -50,7 +50,7 @@ void ffly_lot_prepare(ffly_lotp __lot, ff_uint_t __x, ff_uint_t __y, ff_uint_t _
 	__lot->z = __z;
 }
 
-ffly_lotp ffly_alloc_lot(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
+ffly_lotp ffly_lot_alloc(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
 	ffly_lotp lot = (ffly_lotp)__ffly_mem_alloc(sizeof(struct ffly_lot));
 	if (!top)
 		top = lot;
@@ -72,7 +72,7 @@ ffly_lotp ffly_alloc_lot(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
 	return lot;
 }
 
-void ffly_free_lot(ffly_lotp __lot) {
+void ffly_lot_free(ffly_lotp __lot) {
 	__ffly_mem_free(__lot->top);
 	__ffly_mem_free(__lot->bodies);
 }
@@ -82,7 +82,7 @@ void ffly_lot_cleanup() {
 	while(cur != NULL) {
 		bk = cur;
 		cur = cur->next;
-		ffly_free_lot(bk);
+		ffly_lot_free(bk);
 		__ffly_mem_free(bk);
 	}
 }

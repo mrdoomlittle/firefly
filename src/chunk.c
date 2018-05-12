@@ -24,7 +24,7 @@ void ffly_chunk_prepare(ffly_chunkp __chunk, ff_uint_t __x, ff_uint_t __y, ff_ui
 	__chunk->z = __z;
 }
 
-ffly_chunkp ffly_alloc_chunk(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_u8_t __lotsize) {
+ffly_chunkp ffly_chunk_alloc(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_u8_t __lotsize) {
 	if (!workable_lotsize(1<<__lotsize)) {
 		ffly_fprintf(ffly_err, "lotsize not workable, %u\n", 1<<__lotsize);
 		return NULL;
@@ -87,7 +87,7 @@ ffly_chunkp ffly_alloc_chunk(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_
 	return chunk; 
 }
 
-void ffly_free_chunk(ffly_chunkp __chunk) {
+void ffly_chunk_free(ffly_chunkp __chunk) {
 	__ffly_mem_free(__chunk->lots);
 }
 
@@ -98,7 +98,7 @@ void ffly_chunk_cleanup() {
 		ffly_fprintf(ffly_log, "chunk %u cleanup\n", cur->no);
 		bk = cur;
 		cur = cur->next;
-		ffly_free_chunk(bk);
+		ffly_chunk_free(bk);
 		__ffly_mem_free(bk);
 	}
 }

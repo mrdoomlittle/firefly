@@ -1,9 +1,17 @@
 # ifndef __ffly__colour__h
 # define __ffly__colour__h
+# include "../ffint.h"
 # include "../types.h"
-/*
-	// shoud pack structures
-*/
+
+enum {
+	_ff_rbg,
+	_ff_rbga
+};
+
+typedef ff_u8_t ff_colour_format_t;
+
+void ff_get_chn_c(ff_colour_format_t);
+
 typedef struct {
 	ff_byte_t r, g, b, a;
 } ffly_colour_t;

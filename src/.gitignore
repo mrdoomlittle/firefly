@@ -12,3 +12,5 @@ terminal
 hatch
 ffc
 drm.*
+sector.c
+sector.h
