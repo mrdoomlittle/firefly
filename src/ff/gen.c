@@ -105,6 +105,7 @@ emit_func(ff_compilerp __compiler, struct node *__node) {
 		*p = '\n';
 		__compiler->out(buf, (p-buf)+1);
 
+		out_s(__compiler, ";save %bp\n");
 		push(__compiler, "%bp", 8);
 		out_s(__compiler, "movq %sp, %bp\n");
 		s_off = 0;
@@ -158,6 +159,7 @@ emit_func(ff_compilerp __compiler, struct node *__node) {
 		__compiler->out(buf, (p-buf)+1);
 
 		out_s(__compiler, "movq %bp, %sp\n");
+		out_s(__compiler, ";reset %bp\n");
 		pop(__compiler, "%bp", 8);
 		out_s(__compiler, "ret\n");
 
@@ -380,6 +382,13 @@ void emit_if(ff_compilerp __compiler, struct node *__node) {
 	__ffly_mem_free(end);
 }
 
+void emit_addrof(ff_compilerp __compiler, struct node *__node) {
+	char buf[128];
+	ffly_nots(__node->operand->s_off, buf);
+//	op(__compiler, "asq", "%rel", buf, NULL);
+//	op(__compiler, "subq", "%bp", "%rel", "%rel");
+}
+
 void emit_binop(ff_compilerp __compiler, struct node *__node) {
 	emit(__compiler, __node->l);
 	push(__compiler, "%rel", 8);
@@ -447,6 +456,9 @@ void emit(ff_compilerp __compiler, struct node *__node) {
 		break;
 		case _ast_conv:
 			emit_conv(__compiler, __node);
+		break;
+		case _ast_addrof:
+			emit_addrof(__compiler, __node);
 		break;
 		default:
 			emit_binop(__compiler, __node);

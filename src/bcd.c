@@ -170,9 +170,10 @@ void static(*out[])(ff_u8_t**) = {
 void ffly_bcd(ff_u8_t *__p, ff_u8_t *__end) {
 	ff_u8_t *p = __p;
 	ff_u8_t *end = __end;
+	ff_uint_t i = 0;
 	while(p != end) {
 		ff_u8_t op;
-		ffly_printf("%u:\t", p-__p);
+		ffly_printf("%u-%u:\t", i++, p-__p);
 		if ((op = *(p++)) > MAX-1) {
 			ffly_printf("error malformed opno, got{%u}\n", op);
 			break;

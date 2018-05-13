@@ -1,6 +1,7 @@
 .region text
 .globl abort
 abort:
+;save %bp
 asq %rlx, 8
 subq %sp, %rlx, %sp
 ldq %sp, %bp
@@ -10,6 +11,7 @@ asb %ae, 0
 exit %ae
 .l l0
 movq %bp, %sp
+;reset %bp
 stq %sp, %bp
 asq %rlx, 8
 addq %sp, %rlx, %sp

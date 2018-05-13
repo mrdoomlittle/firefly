@@ -1,4 +1,3 @@
-# include "../ffint.h"
 # include "../bci.h"
 # include "../stdio.h"
 # include "../linux/unistd.h"
@@ -29,6 +28,7 @@ set_ip(ff_addr_t __to) {
 
 struct ffly_bci ctx;
 void* ring(ff_u8_t __no, void *__arg_p) {
+	ff_u8_t *arg = (ff_u8_t*)__arg_p;
 	switch(__no) {
 		case 0x0: {// set stack pointer
 			ff_u64_t sp = ctx.stack_size;
@@ -36,18 +36,20 @@ void* ring(ff_u8_t __no, void *__arg_p) {
 			break;
 		}
 		case 0x1: {
-			// read	
+			// mem_read	
 			break;
 		}
 		case 0x2: {
-			// write
+			// mem_write
 			break;
 		}
 		case 0x3: {
-			// mmap
+			// mem_mmap
+			break;
 		}
 		case 0x4: {
-			//munmap
+			// mem_munmap
+			break;
 		}
 	}
 	printf("ring ring hello?\n");

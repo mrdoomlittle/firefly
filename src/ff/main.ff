@@ -51,16 +51,16 @@ void ts5() {
 	out(n);
 }
 */
-
-void ts0(u8_t __a, u16_t __b, u32_t __c, u64_t __d) {
-	out(__a);
-	out(__b);
-	out(__c);
-	out(__d);
-	abort();
-}
+//void ts0(u8_t __a, u16_t __b, u32_t __c, u64_t __d) {
+//	out(__a);
+//	out(__b);
+//	out(__c);
+//	out(__d);
+//	abort();
+//}
 
 u8_t main() {
-	u8_t a = 21;
-	ts0(a, 4, 6, 8);
+//	u64_t a = 21;
+//	ts0(a, 4, 6, 8);
+//	out(&a);
 }

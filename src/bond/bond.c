@@ -124,24 +124,33 @@ void ff_bond_write(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 void ff_bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
 	ff_uint_t page = __offset>>PAGE_SHIFT;
 	ff_uint_t pg_off = __offset-(page*PAGE_SIZE);
-	ff_u64_t end_off = __size+__offset;
-	ff_uint_t pg_c = ((end_off>>PAGE_SHIFT)+((end_off-((end_off>>PAGE_SHIFT)*PAGE_SIZE))>0));
+	ff_u64_t end = __size+__offset;
+	ff_uint_t pg_c = ((end>>PAGE_SHIFT)+((end-((end>>PAGE_SHIFT)*PAGE_SIZE))>0));
 
 	ff_uint_t static crest = 0;
 	if (!map) {
 		map = (void**)malloc(pg_c*sizeof(void*));
+		ff_uint_t cur = 0;
+		while(cur != page)
+			map[cur++] = NULL;
 		crest = pg_c;
 	} else {
 		if (pg_c>crest) {
 			map = (void**)realloc(map, pg_c*sizeof(void*));
+			ff_uint_t cur = crest;
+			while(cur != pg_c)
+				map[cur++] = NULL;
 			crest = pg_c;
 		}
 	}
 
 	printf("pg_c: %u\n", pg_c);
 	while(page != pg_c) {
-		printf("page, alloc, %u\n", page);
-		to_free(map[page++] = malloc(PAGE_SIZE));
+		if (!map[page]) {
+			printf("page, alloc, %u\n", page);
+			to_free(map[page] = malloc(PAGE_SIZE));
+		}
+		page++;
 	}
 }
 
@@ -223,6 +232,7 @@ absorb_segment(ffef_seg_hdrp __seg) {
 	read(d, seg->p, __seg->sz);
 }
 
+# include "../bcd.h"
 void static
 absorb_region(ffef_reg_hdrp __reg) {
 	char name[128];
@@ -260,7 +270,8 @@ absorb_region(ffef_reg_hdrp __reg) {
 		reg->end+=bot;
 		rise+=__reg->end-__reg->beg;
 		printf("region placed at: %u\n", reg->beg);
-		reg->adr = curadr();
+		reg->adr = __reg->adr+curadr();
+		ffly_bcd(buf, buf+size);
 	} else {
 		reg->next = curreg;
 		curreg = reg;

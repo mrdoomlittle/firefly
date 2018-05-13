@@ -60,6 +60,7 @@ typedef struct region {
 	struct region *next;
 	ff_u64_t beg, end;
 	ff_u16_t no;
+	ff_u64_t adr;
 } *regionp;
 
 typedef struct relocate {

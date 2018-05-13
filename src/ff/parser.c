@@ -25,6 +25,8 @@ struct type static *i16_t = &(struct type){.kind=_i16_t, .size=2};
 struct type static *u8_t = &(struct type){.kind=_u8_t, .size=1};
 struct type static *i8_t = &(struct type){.kind=_i8_t, .size=1};
 
+struct type static *ptr = &(struct type){.kind=_u64_t, .size=8};
+
 void static
 ast_decl(struct ffly_compiler *__compiler, struct node **__node, struct node *__var, struct node *__init) {
 	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_decl, .var=__var, .init=__init, ._type=NULL});
@@ -33,6 +35,11 @@ ast_decl(struct ffly_compiler *__compiler, struct node **__node, struct node *__
 void static
 ast_out(struct ffly_compiler *__compiler, struct node **__node, struct node *__var) {
 	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_out, .var=__var, ._type=NULL});
+}
+
+void static
+ast_uop(struct ffly_compiler *__compiler, struct node **__node, ff_u8_t __kind, struct node *__operand, struct type *__type) {
+	ffc_build_node(__compiler, __node, &(struct node){.kind=__kind, .operand=__operand, ._type=__type});
 }
 
 void static
@@ -104,6 +111,12 @@ ast_if(ffly_compilerp __compiler, struct node **__node, struct node *__cond, ffl
 void static
 ast_binop(ffly_compilerp __compiler, struct node **__node, ff_u8_t __op, struct type *__type, struct node *__l, struct node *__r) {
 	ffc_build_node(__compiler, __node, &(struct node){.kind=__op, ._type=__type, .l=__l, .r=__r});
+}
+
+void static
+mk_ptr_type(struct ffly_compiler *__compiler, struct type **__type, struct type *__ptr) {
+	ffc_build_type(__compiler, __type, ptr);
+	(*__type)->ptr = __ptr;
 }
 
 ff_err_t static
@@ -225,11 +238,33 @@ parser_conditional_expr(ff_compilerp __compiler, struct node **__node) {
 }
 
 ff_err_t
+parser_unary_addrof(ffly_compilerp __compiler, struct node **__node) {
+	struct node *_node;
+	parser_expr(__compiler, &_node);
+
+	struct type *_type;
+	mk_ptr_type(__compiler, &_type, (*__node)->_type);
+	ast_uop(__compiler, __node, _ast_addrof, _node, _type);
+}
+
+ff_err_t
+parser_unary_expr(ff_compilerp __compiler, struct node **__node) {
+	struct token *tok = next_token(__compiler);
+	switch(tok->id) {
+		case _ampersand: parser_unary_addrof(__compiler, __node); goto _sk;
+	}
+	ffly_ulex(&__compiler->lexer, tok);
+_sk:
+	retok;
+}
+
+ff_err_t
 parser_expr(ff_compilerp __compiler, struct node **__node) {
 	parser_primary_expr(__compiler, __node);
 	parser_postfix_expr(__compiler, __node);
 	parser_additive_expr(__compiler, __node);
 	parser_conditional_expr(__compiler, __node);
+	parser_unary_expr(__compiler, __node);
 	parser_assign_expr(__compiler, __node);
 	retok;
 }
@@ -268,6 +303,15 @@ parser_decl_spec(ff_compilerp __compiler, struct token *__tok, struct type **__t
 }
 
 ff_err_t
+parser_declarator(ffly_compilerp __compiler, struct type **__type, struct type *__base_type) {
+	if (next_token_is(__compiler, _tok_keywd, _astrisk)) {
+		mk_ptr_type(__compiler, __type, __base_type);
+		parser_declarator(__compiler, __type, *__type);
+	} else
+		*__type = __base_type;
+}
+
+ff_err_t
 parser_decl_init(ff_compilerp __compiler, struct node **__node) {
 	parser_expr(__compiler, __node);
 }
@@ -279,6 +323,7 @@ parser_decl(ff_compilerp __compiler, struct node **__node) {
 	ff_u8_t is_typedef = next_token_is(__compiler, _tok_keywd, _k_typedef);
 
 	parser_decl_spec(__compiler, next_token(__compiler), &_type);
+	parser_declarator(__compiler, &_type, _type);
 
 	struct token *name = next_token(__compiler);	
 
@@ -584,6 +629,7 @@ parser_func_def(ff_compilerp __compiler, struct node **__node) {
 			struct node *decl, *var;
 
 			parser_decl_spec(__compiler, next_token(__compiler), &_type);
+			parser_declarator(__compiler, &_type, _type);
 			struct token *name = next_token(__compiler);
 
 			ast_var(__compiler, &var, _type);

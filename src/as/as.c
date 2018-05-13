@@ -229,6 +229,7 @@ ff_as(char *__p, char *__end) {
 					rg->name = sy->next->p;
 					rg->next = curreg;
 					rg->beg = offset;
+					rg->adr = curadr();
 					if (!curreg)
 						rg->no = 1;
 					else
@@ -424,7 +425,7 @@ void ff_as_final(void) {
 			ff_as_oust(rg->name, reg.l);
 			reg.beg = rg->beg;
 			reg.end = rg->end;
-
+			reg.adr = rg->adr;
 			if (!strcmp(rg->name, "text"))
 				reg.type = FF_RG_PROG;
 			else

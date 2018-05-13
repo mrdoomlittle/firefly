@@ -45,6 +45,7 @@ typedef struct ffef_reg_hdr {
 	ff_u8_t l;
 	ff_u8_t type;
 	ff_u64_t beg, end;
+	ff_u64_t adr;
 } *ffef_reg_hdrp;
 
 typedef struct ffef_seg_hdr {

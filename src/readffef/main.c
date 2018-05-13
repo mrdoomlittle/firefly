@@ -70,8 +70,8 @@ void prreg(ffef_reg_hdrp __reg, ff_uint_t __no) {
 	lseek(fd, __reg->name, SEEK_SET);
 	read(fd, name, __reg->l);
 
-	printf("%u: region,\tname: %s,\tbeg: %u,\tend: %u,\ttype: %s,\t%s\n", __no, name, __reg->beg,
-		__reg->end, regtype_s(__reg->type), __reg->beg==__reg->end?"empty":"not empty");
+	printf("%u: region,\tname: %s,\tbeg: %u,\tend: %u,\tsize: %u\ttype: %s,\t%s\n", __no, name, __reg->beg,
+		__reg->end, __reg->end-__reg->beg, regtype_s(__reg->type), __reg->beg==__reg->end?"empty":"not empty");
 }
 
 void prhok(ffef_hokp __hok, ff_uint_t __no) {
