@@ -31,6 +31,7 @@ char const static *keywords[] = {
 	"SYPUT",
 	"va_args",
 	"sizeof",
+	"struct",
 	NULL
 };
 

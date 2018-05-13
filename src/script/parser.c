@@ -865,6 +865,9 @@ parser_decl(struct ffly_compiler *__compiler, struct node **__node) {
 	} 
 	ff_token_free(tok);
 
+	if(next_token_is(__compiler, _tok_keywd, _semicolon))
+		retok;
+
 	char *name;
 	if (_err(err = parser_declarator(__compiler, &_type, _type, &name))) {
 		errmsg("failed to read declarator.\n");
