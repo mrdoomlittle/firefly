@@ -162,12 +162,18 @@ op_incr(ffscriptp __script, struct obj *__obj) {
             (*(ff_u64_t*)val)++;
     }
 
-    ffly_mem_cpy((*__obj->val)->p, val, (*__obj->val)->size);
+	ffly_mem_cpy((*__obj->val)->p, val, (*__obj->val)->size);
 }
 
 void static 
 op_decr(ffscriptp __script, struct obj *__obj) {
-       
+	ff_u8_t val[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+	ff_u8_t size = (*__obj->val)->size;
+	ffly_mem_cpy(val, (*__obj->val)->p, size);
+	ff_u8_t type = (*__obj->val)->_type;
+	if (type >= _64l_u && type <= _8l_u)
+		(*(ff_u64_t*)val)--;
+	ffly_mem_cpy((*__obj->val)->p, val, (*__obj->val)->size);
 }
 
 void static 
@@ -281,10 +287,48 @@ buff_get(struct obj ***__params) {
 	ffly_buff_get((ffly_buffp)m_plate[id], dst);
 }
 
+void static
+mem_alloc(struct obj ***__params) {
+	ff_uint_t *id = (ff_uint_t*)(*((struct obj**)(**(__params++))->p))->p;
+	ff_uint_t size = *(ff_uint_t*)(**(__params++))->p;
+	*id = obtain_id();
+	m_plate[*id] = ffs_mmap(size);
+	ffly_printf("mem_alloc, id: %u, size: %u\n", *id, size);
+}
+
+void static
+mem_free(struct obj ***__params) {
+	ff_uint_t id = *(ff_uint_t*)(**(__params++))->p;
+	ffs_munmap(m_plate[id]);
+	discard_id(id);
+	ffly_printf("mem_free, id: %u\n", id);
+}
+
+void static
+mem_load(struct obj ***__params) {
+	ff_uint_t id = *(ff_uint_t*)(**(__params++))->p;
+	void *src = (*((struct obj**)(**(__params++))->p))->p;
+	ff_uint_t size = *(ff_uint_t*)(**(__params++))->p;
+	ff_uint_t off = *(ff_uint_t*)(**__params)->p;
+	ffly_mem_cpy(((ff_u8_t*)m_plate[id])+off, src, size);
+}
+
+void static
+mem_store(struct obj ***__params) {
+	ff_uint_t id = *(ff_uint_t*)(**(__params++))->p;
+	void *dst = (*((struct obj**)(**(__params++))->p))->p;
+	ff_uint_t size = *(ff_uint_t*)(**(__params++))->p;
+	ff_uint_t off = *(ff_uint_t*)(**__params)->p;
+
+	ffly_mem_cpy(dst, ((ff_u8_t*)m_plate[id])+off, size);
+}
+
+# include "../dep/str_cpy.h"
 # include "../system/string.h"
 void static
 printf(struct obj ***__params) {
 	char *format = (char*)(*((struct obj**)(**(__params++))->p))->p;
+
 	char *p = format;
 	char out[1024];
 	char *op = out;
@@ -300,6 +344,14 @@ printf(struct obj ***__params) {
 				case 'u':
 					op+=ffly_nots(*(ff_uint_t*)arg, op);
 					arg+=sizeof(ff_uint_t);
+				break;
+				case 'c':
+					*(op++) = *(char*)arg;
+					arg++;
+				break;
+				case 's':
+					op+=ffly_str_cpy(op, (*(struct obj**)arg)->p);
+					arg+=sizeof(void*);
 				break;
 			}
 			p++;
@@ -323,7 +375,11 @@ void static(*call[])(struct obj***) = {
     buff_size,
 	buff_put,
 	buff_get,
-	printf
+	printf,
+	mem_alloc,
+	mem_free,
+	mem_load,
+	mem_store
 };
 
 void static 

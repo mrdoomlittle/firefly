@@ -4,6 +4,7 @@
 %include "limits.ff"
 %include "error.ff"
 %include "io.ff"
+%include "memory.ff"
 %define FFLY_MUTEX_INIT 0x0
 
 %define CALL_NANOSLEEP 1

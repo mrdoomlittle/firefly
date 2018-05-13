@@ -69,6 +69,7 @@ mk_notype(ffly_compilerp __compiler, struct type **__type, ff_u8_t __id) {
 			tmpl = i8_t;
 		break;
 		default:
+			ffly_printf("unknown...\n");
 			return;
 	}
 	ffc_build_type(__compiler, __type, tmpl);
@@ -418,6 +419,7 @@ read_no(struct ffly_compiler *__compiler, struct node **__node, char *__s, ff_u8
 		*(ff_u64_t*)val = sign?-no:no;
 	}
 
+	ffc_build_type(__compiler, &_type, _type);
 	ast_int_type(__compiler, __node, _type, val);
 }
 
@@ -449,9 +451,12 @@ parser_primary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 		case _tok_no:
 			read_no(__compiler, __node, (char*)tok->p, tok->is_hex, tok->is_float);
 		break;
-		case _tok_chr:
-			ast_int_type(__compiler, __node, u8_t, tok->p);
-		break;
+		case _tok_chr: {
+			struct type *_type;
+			ffc_build_type(__compiler, &_type, u8_t);
+			ast_int_type(__compiler, __node, _type, tok->p);
+			break;
+		}
 		default:
 			*__node = NULL;
 			ffly_ulex(&__compiler->lexer, tok);
@@ -509,6 +514,49 @@ parser_unary_addrof(struct ffly_compiler *__compiler, struct node **__node) {
 }
 
 ff_err_t
+parser_sizeof_operand(struct ffly_compiler *__compiler, struct node **__node) {
+	ff_u8_t size = 0;
+
+	if (!expect_token(__compiler, _tok_keywd, _l_paren)) {
+		reterr;
+	}
+
+	struct token *tok = next_token(__compiler);
+	if (tok->kind != _tok_keywd) {
+		// error
+	}
+
+	switch(tok->id) {
+		case _k_uint_t:
+			size = sizeof(ff_uint_t);
+		break;
+		case _k_u64_t:
+			size = 8;
+		break;
+		case _k_u32_t:
+			size = 4;
+		break;
+		case _k_u16_t:
+			size = 2;
+		break;
+		case _k_u8_t:
+			size = 1;
+		break;
+		default:
+			ffly_printf("error, unknown type, got: %u\n", tok->id);
+	}
+
+	ff_token_free(tok);
+	if (!expect_token(__compiler, _tok_keywd, _r_paren)) {
+		reterr;
+	}
+
+	struct type *_type;
+	ffc_build_type(__compiler, &_type, u8_t);
+	ast_int_type(__compiler, __node, _type, &size);
+}
+
+ff_err_t
 parser_unary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	if (next_token_is(__compiler, _tok_keywd, _incr))
 		ast_uop(__compiler, __node, _ast_incr, *__node, (*__node)->_type);
@@ -517,6 +565,7 @@ parser_unary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	else {
 		struct token *tok = next_token(__compiler);
 		switch(tok->id) {
+			case _k_sizeof: parser_sizeof_operand(__compiler, __node); goto _sk;
 			case _ampersand: parser_unary_addrof(__compiler, __node); goto _sk;
 		}
 
@@ -560,6 +609,8 @@ parser_assign_expr(struct ffly_compiler *__compiler, struct node **__node) {
 			errmsg("failed to read expression.\n");
 			_ret;
 		}
+		if (l->_type->kind != r->_type->kind)
+			conv(__compiler, &r, r, l->_type);
 		ast_assign(__compiler, __node, l, r, l->_type);  
 	}
 	retok;
@@ -1075,11 +1126,17 @@ parser_func_call(struct ffly_compiler *__compiler, struct node **__node, struct 
 				errmsg("failed to read expression.\n");
 				return err;
 			}	 
+	
+			if (param->_type->kind == _array) {
+				struct type *_type;
+				ffc_build_type(__compiler, &_type, ptr);
+				conv(__compiler, &param, param, _type);
+			}
 
 			if (arg <= (struct node**)ffly_vec_end(&__call->args)) {
 				if (param->_type->kind != (*arg)->var->_type->kind)
 					conv(__compiler, &param, param, (*arg)->var->_type);
-			}
+			}	
  
 			struct node **p;
 			ffly_vec_push_back(&params, (void**)&p);

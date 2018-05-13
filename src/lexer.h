@@ -97,7 +97,8 @@ enum {
     _minus,
 	_k_goto,
 	_k_syput,
-	_k_va_args
+	_k_va_args,
+	_k_sizeof
 };
 
 # endif /*__ffly__lexer__h*/

@@ -1,0 +1,41 @@
+%ifndef __ffly__memory__ff
+%define __ffly__memory__ff
+%define CALL_MEM_ALLOC 14
+%define CALL_MEM_FREE 15
+%define CALL_MEM_LOAD 16
+%define CALL_MEM_STORE 17
+
+
+fn ffly_mem_alloc(uint_t __size)->uint_t{
+	uint_t id;
+	:CALL_MEM_ALLOC<-{
+		&id,
+		__size
+	};
+	ret id;
+}
+
+fn ffly_mem_free(uint_t __id)->void{
+	:CALL_MEM_FREE<-{
+		__id
+	};
+}
+
+fn ffly_mem_load(uint_t __id, u8_t *__src, uint_t __size, uint_t __off)->void{
+	:CALL_MEM_LOAD<-{
+		__id,
+		__src,
+		__size,
+		__off
+	};
+}
+
+fn ffly_mem_store(uint_t __id, u8_t *__dst, uint_t __size, uint_t __off)->void{
+	:CALL_MEM_STORE<-{
+		__id,
+		__dst,
+		__size,
+		__off
+	};
+}
+%endif /*__ffly__memory__ff*/

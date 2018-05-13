@@ -9,11 +9,12 @@ fn test()->void{
 * ffscript_call();
 */
 SYPUT(test, "test");
-
-u8_t i = 0;
-while(i != 20) {
+/*
+u8_t i = 10;
+while(i != 0) {
 	ffly_printf("i: %b\n", i);
-	i++;
+	ffly_nanosleep(0, 100000000);
+	i--;
 }
 
 uint_t buff = ffly_buff_creat(10, 1);
@@ -31,4 +32,17 @@ ffly_buff_get(buff, &val);
 print(val);
 
 ffly_buff_del(buff);
+*/
+
+uint_t a;
+a = ffly_mem_alloc(sizeof(uint_t));
+uint_t data = 21;
+
+ffly_mem_load(a, &data, sizeof(uint_t), 0);
+data = 0;
+
+ffly_mem_store(a, &data, sizeof(uint_t), 0);
+
+ffly_printf("data: %u\n", data);
+ffly_mem_free(a);
 exit;

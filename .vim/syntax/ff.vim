@@ -6,8 +6,10 @@ syn sync fromstart
 syn match ffmacro "^\s*%\s*\(include\|define\|ifndef\|ifdef\|endif\)\>"hs=s+1
 syn region ffstring start=+"+hs=s+1 end=+"+he=e-1
 syn keyword fftype uint_t int_t u8_t i8_t u16_t i16_t u32_t i32_t u64_t i64_t void float char struct
+syn keyword fftype ff_u8_t ff_i8_t ff_u16_t ff_i16_t ff_u32_t ff_i32_t ff_u64_t ff_i64_t ff_uint_t ff_int_t
+syn keyword fftype uint8_t int8_t uint16_t int16_t uint32_t int32_t uint64_t int64_t
 syn keyword ffbuiltin print exit typedef
-syn keyword ffstatment if while fn ret brk return break
+syn keyword ffstatment if while fn ret brk return break sizeof
 syn region ffchar start=+'+hs=s+1 end=+'+he=e-1
 syn keyword ffconstant I8_MIN I8_MAX U8_MAX U16_MAX U32_MAX U64_MAX FFLY_SUCCESS FFLY_FAILURE FFLY_MUTEX_INIT
 syn match ffcaps /[A-Z]/

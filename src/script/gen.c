@@ -287,7 +287,8 @@ conv(struct ffly_compiler *__compiler, ff_u8_t __to, ff_uint_t __size) {
 void static
 emit_conv(struct ffly_compiler *__compiler, struct node *__node) {
 	emit(__compiler, __node->operand);
-	conv(__compiler, convtk(__node->_type->kind), __node->_type->size);
+	if (__node->operand->_type->kind != _array)
+		conv(__compiler, convtk(__node->_type->kind), __node->_type->size);
 }
 
 void static
@@ -337,18 +338,21 @@ emit_assign(struct ffly_compiler *__compiler, struct node *__node) {
 
 void static
 emit_literal(struct ffly_compiler *__compiler, struct node *__node) {
-	struct obj *m = __fresh(__compiler, __node->_type->size);
 	if (__node->_type->kind != _array) {
+		struct obj *m = __fresh(__compiler, __node->_type->size);
 		void *p = stack_push(__node->val, __node->_type->size);
 		next_obj(__compiler, mk_op_assign(p, __node->_type->size, 0, objpp(m)));
 		m->_type = convtk(__node->_type->kind);
 		push(__compiler, m);
 	} else {
-		next_obj(__compiler, mk_op_assign(stack_push(__node->p, __node->_type->size), __node->_type->size, 0, objpp(m)));
+		struct type *_type = __node->_type;
+		struct obj *m = __fresh(__compiler, _type->size);
+		next_obj(__compiler, mk_op_assign(stack_push(__node->p, _type->size), _type->size, 0, objpp(m)));
 		void *p = m;
 		p = stack_push(&p, sizeof(void*));
-		next_obj(__compiler, mk_op_assign(p, rg_64l_u->size, 0, objpp(rg_64l_u)));
-		push(__compiler, rg_64l_u);
+		struct obj *ptr = __fresh(__compiler, sizeof(void*));
+		next_obj(__compiler, mk_op_assign(p, sizeof(void*), 0, objpp(ptr)));
+		push(__compiler, ptr);
 	}
 }
 
@@ -527,7 +531,7 @@ emit_func_call(struct ffly_compiler *__compiler, struct node *__node) {
 			while(param-- != __node->va_param) {
 				struct obj **src;
 				pop(__compiler, &src);
-				off-=(*param)->_type->size;
+				off-=(*param)->_type->size;;
 				next_obj(__compiler, mk_op_copy((*param)->_type->size, objpp(m), src, off));
 			}
 			push(__compiler, m);
@@ -609,13 +613,15 @@ emit_call(struct ffly_compiler *__compiler, struct node *__node) {
 void static
 emit_addrof(struct ffly_compiler *__compiler, struct node *__node) {
 	void *p;
+	// shoud save to node and keep track so we dont do the same thing more then once
 	if (__node->operand->kind == _ast_func)
 		p = &__node->operand->er;
 	else
 		p = __node->operand->_obj;
 	p = stack_push(&p, sizeof(void*));
-	next_obj(__compiler, mk_op_assign(p, rg_64l_u->size, 0, objpp(rg_64l_u)));
-	push(__compiler, rg_64l_u);
+	struct obj *ptr = __fresh(__compiler, sizeof(void*));
+	next_obj(__compiler, mk_op_assign(p, sizeof(void*), 0, objpp(ptr)));
+	push(__compiler, ptr);
 }
 
 void static

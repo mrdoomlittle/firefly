@@ -673,6 +673,7 @@ char const static *keywords[] = {
 	"goto",
 	"SYPUT",
 	"va_args",
+	"sizeof",
 	NULL
 };
 
@@ -707,6 +708,7 @@ ff_u8_t static keyword_ids[] = {
 	_k_goto,
 	_k_syput,
 	_k_va_args,
+	_k_sizeof,
 	0
 };
 

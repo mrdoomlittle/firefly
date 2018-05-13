@@ -30,6 +30,7 @@ char const static *keywords[] = {
 	"brk",
 	"SYPUT",
 	"va_args",
+	"sizeof",
 	NULL
 };
 
@@ -57,8 +58,10 @@ ff_err_t ffly_script_prepare(struct ffly_script *__script) {
 void* ffscript_call(ffscriptp __script, char const *__name) {
 	ff_err_t err;
 	symbolp sy = (symbolp)ffly_map_get(&__script->symbols, __name, ffly_str_len(__name), &err);
-	if (!sy || _err(err))
+	if (!sy || _err(err)) {
+		ffly_printf("no symbol by the name of %s\n", __name);
 		return NULL;
+	}
 	ffscript_exec(__script, NULL, NULL, *sy->start, *sy->end);
 	retnull;
 }
@@ -307,9 +310,9 @@ ff_err_t ffmain(int __argc, char const **__argv) {
 		return -1;
 	}
 
+	ffscript_call(&ff, "test");
 	ffly_script_free(&script);
 
-	ffscript_call(&ff, "test");
 	ffly_printf("executing script.\n");
 	ffscript_exec(&ff, NULL, NULL, NULL, NULL);
 	ffly_printf("stack used: %lu\n", ff.fresh-ff.stack);
