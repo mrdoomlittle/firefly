@@ -45,4 +45,5 @@ ffly_mem_store(a, &data, sizeof(uint_t), 0);
 
 ffly_printf("data: %u\n", data);
 ffly_mem_free(a);
+
 exit;

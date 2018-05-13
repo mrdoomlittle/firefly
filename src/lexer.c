@@ -309,6 +309,14 @@ read_token(ff_lexerp __lexer) {
 
 	char c;
 	switch(c = fetchc(__lexer)) {
+		case '[':
+			mk_keywd(tok, _l_bracket);
+			incp;
+		break;
+		case ']':
+			mk_keywd(tok, _r_bracket);
+			incp;
+		break;
 		case '&':
 			mk_keywd(tok, _ampersand);
 			incp;

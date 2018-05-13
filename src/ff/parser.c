@@ -28,6 +28,11 @@ struct type static *i8_t = &(struct type){.kind=_i8_t, .size=1};
 struct type static *ptr = &(struct type){.kind=_u64_t, .size=8};
 
 void static
+mk_arrtype(ffly_compilerp __compiler, struct type **__type, struct type *__base, ff_uint_t __len) {
+	ffc_build_type(__compiler, __type, &(struct type){.kind=_array, .ptr=__base, .size=(__len*__base->size), .len=__len});
+}
+
+void static
 ast_decl(struct ffly_compiler *__compiler, struct node **__node, struct node *__var, struct node *__init) {
 	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_decl, .var=__var, .init=__init, ._type=NULL});
 }
@@ -48,20 +53,20 @@ ast_var(struct ffly_compiler *__compiler, struct node **__node, struct type *__t
 }
 
 void static
-ast_func(ff_compilerp __compiler, struct node **__node, char const *__name, ffly_vecp __block, ff_u8_t __flags, ffly_vecp __var_pond, ffly_vecp __args, struct type *__type) {
-	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_func, .block=*__block, .flags=__flags, .var_pond=*__var_pond, .args=*__args, ._type=__type});
+ast_func(ff_compilerp __compiler, struct node **__node, char const *__name, ffly_vecp __block, ff_u8_t __flags, ffly_vecp __var_pond, ffly_vecp __params, struct type *__type) {
+	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_func, .block=*__block, .flags=__flags, .var_pond=*__var_pond, .params=*__params, ._type=__type});
 	(*__node)->p = (void*)__name;
 }
 
 void static
-ast_func_call(ff_compilerp __compiler, struct node **__node, char const *__to, ffly_vecp __params, struct type *__type) {
-	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_func_call, .params=*__params, ._type=__type});
+ast_func_call(ff_compilerp __compiler, struct node **__node, char const *__to, ffly_vecp __args, struct type *__type) {
+	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_func_call, .args=*__args, ._type=__type});
 	(*__node)->p = (void*)__to;
 }
 
 void static
-ast_as(ff_compilerp __compiler, struct node **__node, char const *__code) {
-	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_as});
+ast_as(ff_compilerp __compiler, struct node **__node, char const *__code, void **__input, void **__output) {
+	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_as, .input=__input, .output=__output});
 	(*__node)->p = (void*)__code;
 }
 
@@ -115,13 +120,14 @@ ast_binop(ffly_compilerp __compiler, struct node **__node, ff_u8_t __op, struct 
 
 void static
 mk_ptr_type(struct ffly_compiler *__compiler, struct type **__type, struct type *__ptr) {
-	ffc_build_type(__compiler, __type, ptr);
-	(*__type)->ptr = __ptr;
+	ffc_build_type(__compiler, __type, &(struct type){.kind=_u64_t, .ptr=__ptr, .size=8, .len=0});
 }
 
 ff_err_t static
 conv(ffly_compilerp __compiler, struct node **__node, struct node *__operand, struct type *__to) {
-	ast_conv(__compiler, __node, __to, __operand);
+	struct type *_type;
+	ffc_build_type(__compiler, &_type, __to);
+	ast_conv(__compiler, __node, _type, __operand);
 	retok;
 }
 
@@ -199,8 +205,11 @@ parser_assign_expr(ff_compilerp __compiler, struct node **__node) {
 		struct node *l = *__node;
 		struct node *r = NULL;
 		parser_expr(__compiler, &r);
-		conv(__compiler, &r, r, l->_type);
-		
+		if (l->_type->kind != r->_type->kind) {
+			ffly_printf("---------- conv. %u, %u\n", l->_type->kind, r->_type->kind);
+			conv(__compiler, &r, r, l->_type);
+		}
+
 		ast_assign(__compiler, __node, l, r, l->_type);
 	}
 	retok;
@@ -210,9 +219,23 @@ ff_err_t parser_func_call(ff_compilerp, struct node**, struct node*);
 
 ff_err_t
 parser_postfix_expr(ff_compilerp __compiler, struct node **__node) {
-	struct token *tok = peek_token(__compiler);
-	if (tok->kind == _tok_keywd && tok->id == _l_paren) {
+	if (next_token_is(__compiler, _tok_keywd, _l_paren)) {
 		parser_func_call(__compiler, __node, *__node);
+		return;
+	}
+
+	if (next_token_is(__compiler, _tok_keywd, _l_bracket)) {
+		struct node *arr = *__node;
+		struct node *offset;
+		parser_expr(__compiler, &offset);
+		struct type *_type;
+
+		mk_ptr_type(__compiler, &_type, arr->_type->ptr);
+		conv(__compiler, &offset, offset, _type);
+
+		ast_binop(__compiler, __node, _op_add, _type, arr, offset);
+		ast_uop(__compiler, __node, _ast_deref, *__node, _type->ptr);
+		if (!expect_token(__compiler, _tok_keywd, _r_bracket)) {}
 	}
 }
 
@@ -240,11 +263,19 @@ parser_conditional_expr(ff_compilerp __compiler, struct node **__node) {
 ff_err_t
 parser_unary_addrof(ffly_compilerp __compiler, struct node **__node) {
 	struct node *_node;
-	parser_expr(__compiler, &_node);
+	parser_primary_expr(__compiler, &_node);
 
 	struct type *_type;
-	mk_ptr_type(__compiler, &_type, (*__node)->_type);
+	mk_ptr_type(__compiler, &_type, _node->_type);
 	ast_uop(__compiler, __node, _ast_addrof, _node, _type);
+}
+
+ff_err_t
+parser_unary_deref(ff_compilerp __compiler, struct node **__node) {
+	struct node *_node;
+	parser_primary_expr(__compiler, &_node);
+	ast_uop(__compiler, __node, _ast_deref, _node, _node->_type->ptr);
+	ffly_printf(": %u\n", (*__node)->_type->kind);
 }
 
 ff_err_t
@@ -252,6 +283,7 @@ parser_unary_expr(ff_compilerp __compiler, struct node **__node) {
 	struct token *tok = next_token(__compiler);
 	switch(tok->id) {
 		case _ampersand: parser_unary_addrof(__compiler, __node); goto _sk;
+		case _astrisk: parser_unary_deref(__compiler, __node); goto _sk;
 	}
 	ffly_ulex(&__compiler->lexer, tok);
 _sk:
@@ -302,11 +334,45 @@ parser_decl_spec(ff_compilerp __compiler, struct token *__tok, struct type **__t
 	retok;
 }
 
+ff_u64_t
+parser_int_expr(ffly_compilerp __compiler) {
+	ff_u64_t ret_val;
+	struct token *tok = next_token(__compiler);
+	ret_val = ffly_stno(tok->p);
+	ff_token_free(tok);
+	return ret_val;
+}
+
 ff_err_t
-parser_declarator(ffly_compilerp __compiler, struct type **__type, struct type *__base_type) {
+parser_array_declarator(ffly_compilerp __compiler, struct type **__type, struct type *__base_type) {
+	ff_uint_t l = 0;
+	l = parser_int_expr(__compiler);
+	if (!expect_token(__compiler, _tok_keywd, _r_bracket)) {
+	}
+
+	mk_arrtype(__compiler, __type, __base_type, l);
+}
+
+ff_err_t
+parser_declarator(ffly_compilerp __compiler, struct type **__type, struct type *__base_type, char **__name) {
 	if (next_token_is(__compiler, _tok_keywd, _astrisk)) {
-		mk_ptr_type(__compiler, __type, __base_type);
-		parser_declarator(__compiler, __type, *__type);
+		struct type *_type;
+		mk_ptr_type(__compiler, &_type, __base_type);
+		parser_declarator(__compiler, __type, _type, __name);
+		return;
+	}
+	
+	if (__name != NULL) {
+		struct token *tok = next_token(__compiler);
+		if (tok->kind == _tok_ident) {
+			*__name = tok->p;
+			ff_token_free(tok);
+		} else
+			ffly_ulex(&__compiler->lexer, tok);
+	}
+
+	if (next_token_is(__compiler, _tok_keywd, _l_bracket)) {
+		parser_array_declarator(__compiler, __type, __base_type);
 	} else
 		*__type = __base_type;
 }
@@ -322,20 +388,19 @@ parser_decl(ff_compilerp __compiler, struct node **__node) {
 	struct node *init = NULL;
 	ff_u8_t is_typedef = next_token_is(__compiler, _tok_keywd, _k_typedef);
 
+	char *name;
 	parser_decl_spec(__compiler, next_token(__compiler), &_type);
-	parser_declarator(__compiler, &_type, _type);
-
-	struct token *name = next_token(__compiler);	
+	parser_declarator(__compiler, &_type, _type, &name);
 
 	if (is_typedef)
-		ffly_map_put(&__compiler->typedefs, name->p, ffly_str_len((char*)name->p), _type);
+		ffly_map_put(&__compiler->typedefs, name, ffly_str_len(name), _type);
 	else {
 		if (next_token_is(__compiler, _tok_keywd, _eq))
 			parser_decl_init(__compiler, &init);
 
 		struct node *var = NULL;
 		ast_var(__compiler, &var, _type);
-		ffly_map_put(ffc_get_env(__compiler), name->p, ffly_str_len((char*)name->p), var);
+		ffly_map_put(ffc_get_env(__compiler), name, ffly_str_len(name), var);
 
 		if (__compiler->var_pond != NULL) {
 			struct node **p;
@@ -344,8 +409,9 @@ parser_decl(ff_compilerp __compiler, struct node **__node) {
 		}
 
 		ast_decl(__compiler, __node, var, init);
+	
+		ffly_printf("%s: %u\n", name, var->_type->kind);
 	}
-
 	if (!expect_token(__compiler, _tok_keywd, _semicolon)) {
 	}
 }
@@ -376,11 +442,41 @@ parser_as_stmt(ff_compilerp __compiler, struct node **__node) {
 	struct token *buf[24];
 	struct token **cur = buf;
 	struct token *tok;
+	void **input = NULL;
+	void **output = NULL;
 _again:
 	*(cur++) = (tok = next_token(__compiler));
 	l+=tok->l;
-	if (!next_token_is(__compiler, _tok_keywd, _r_paren))
-		goto _again;
+
+	if (next_token_is(__compiler, _tok_keywd, _colon)) {
+		input = (void**)__ffly_mem_alloc(12*sizeof(void*));
+		*(input++) = NULL;
+		void **p = input;
+	_next:
+		{
+			*(p++) = next_token(__compiler)->p;
+			if (!expect_token(__compiler, _tok_keywd, _comma)) {
+			}
+
+
+			struct node *nod;
+			parser_expr(__compiler, &nod);
+	
+			*(p++) = nod;
+			ffly_printf("................................\n");
+			if (next_token_is(__compiler, _tok_keywd, _comma)) {
+				goto _next;
+			}
+
+			if (!expect_token(__compiler, _tok_keywd, _r_paren)) {
+
+			}
+		}
+		input = p;
+	} else {
+		if (!next_token_is(__compiler, _tok_keywd, _r_paren))
+			goto _again;
+	}
 	*cur = NULL;
 
 	p = (char*)__ffly_mem_alloc(l+1);
@@ -398,8 +494,7 @@ _again:
 
 	}
 
-	ast_as(__compiler, __node, (char const*)p);
-
+	ast_as(__compiler, __node, (char const*)p, input, output);
 	retok;
 }
 
@@ -587,16 +682,39 @@ ff_err_t parser_func_decl(ff_compilerp __compiler, struct node **__node) {
 
 	}
 
-	if (!expect_token(__compiler, _tok_keywd, _r_paren)) {
+	struct ffly_vec params;
+	ffly_vec_set_flags(&params, VEC_AUTO_RESIZE);
+	ffly_vec_init(&params, sizeof(struct node*));
+	if (!next_token_is(__compiler, _tok_keywd, _r_paren)) {
+	_next:
+		{
+			struct type *_type;
+			parser_decl_spec(__compiler, next_token(__compiler), &_type);
+			parser_declarator(__compiler, &_type, _type, NULL);
 
+			struct node *var;
+			ast_var(__compiler, &var, _type);
+
+			struct node **p;
+			ffly_vec_push_back(&params, (void**)&p);
+			*p = var;
+
+			if (next_token_is(__compiler, _tok_keywd, _comma)) {
+				goto _next;
+			}
+
+			if (!expect_token(__compiler, _tok_keywd, _r_paren)) {
+
+			}
+		}
 	}
 
 	if (!expect_token(__compiler, _tok_keywd, _semicolon)) {
 
 	}
 
-	struct ffly_vec block, var_pond, args; // dummy
-	ast_func(__compiler, __node, name->p, &block, _func_exr, &var_pond, &args, ret_type);
+	struct ffly_vec block, var_pond; // dummy
+	ast_func(__compiler, __node, name->p, &block, _func_exr, &var_pond, &params, ret_type);
 	ffly_map_put(&__compiler->env, name->p, ffly_str_len((char*)name->p), *__node);
 }
 
@@ -613,9 +731,9 @@ parser_func_def(ff_compilerp __compiler, struct node **__node) {
 	}
 
 	ff_u8_t flags = _func_gbl|_func_def;
-	struct ffly_vec args, var_pond;
-	ffly_vec_set_flags(&args, VEC_AUTO_RESIZE);
-	ffly_vec_init(&args, sizeof(struct node*));
+	struct ffly_vec params, var_pond;
+	ffly_vec_set_flags(&params, VEC_AUTO_RESIZE);
+	ffly_vec_init(&params, sizeof(struct node*));
 
 	struct ffly_map local, *pre_local;
 	ffly_map_init(&local, _ffly_map_127);
@@ -627,20 +745,18 @@ parser_func_def(ff_compilerp __compiler, struct node **__node) {
 		{
 			struct type *_type;
 			struct node *decl, *var;
+			char *name;
 
 			parser_decl_spec(__compiler, next_token(__compiler), &_type);
-			parser_declarator(__compiler, &_type, _type);
-			struct token *name = next_token(__compiler);
+			parser_declarator(__compiler, &_type, _type, &name);
 
 			ast_var(__compiler, &var, _type);
 
-			ffly_map_put(&local, name->p, ffly_str_len((char*)name->p), var);
-
-			ast_decl(__compiler, &decl, var, NULL);
+			ffly_map_put(&local, name, ffly_str_len(name), var);
 
 			struct node **p;
-			ffly_vec_push_back(&args, (void**)&p);
-			*p = decl;
+			ffly_vec_push_back(&params, (void**)&p);
+			*p = var;
 
 			if (next_token_is(__compiler, _tok_keywd, _comma)) {
 				goto _next;
@@ -668,14 +784,15 @@ parser_func_def(ff_compilerp __compiler, struct node **__node) {
 	struct node *nod;
 	ff_err_t err;
 	if ((nod = (struct node*)ffly_map_get(&__compiler->env, name->p, ffly_str_len((char*)name->p), &err)) != NULL) {
+		ffly_vec_de_init(&nod->params);// for now
 		nod->block = block;
 		nod->flags = flags;
 		nod->var_pond = var_pond;
-		nod->args = args;
+		nod->params = params;
 		goto _end;
 	}
 
-	ast_func(__compiler, __node, name->p, &block, flags, &var_pond, &args, ret_type);
+	ast_func(__compiler, __node, name->p, &block, flags, &var_pond, &params, ret_type);
 	ffly_map_put(&__compiler->env, name->p, ffly_str_len((char*)name->p), *__node);
 _end:
 	retok;
@@ -689,9 +806,9 @@ parser_func_call(ff_compilerp __compiler, struct node **__node, struct node *__f
 	if (!expect_token(__compiler, _tok_keywd, _l_paren)) {
 	}
 
-	 struct ffly_vec params;
-	ffly_vec_set_flags(&params, VEC_AUTO_RESIZE);
-	ffly_vec_init(&params, sizeof(struct node*));
+	struct ffly_vec args;
+	ffly_vec_set_flags(&args, VEC_AUTO_RESIZE);
+	ffly_vec_init(&args, sizeof(struct node*));
 
 	if (!next_token_is(__compiler, _tok_keywd, _r_paren)) {
 	_next:
@@ -700,7 +817,7 @@ parser_func_call(ff_compilerp __compiler, struct node **__node, struct node *__f
 			parser_expr(__compiler, &nod);
 
 			struct node **p;
-			ffly_vec_push_back(&params, (void**)&p);
+			ffly_vec_push_back(&args, (void**)&p);
 			*p = nod;
 
 			if (next_token_is(__compiler, _tok_keywd, _comma))
@@ -711,18 +828,18 @@ parser_func_call(ff_compilerp __compiler, struct node **__node, struct node *__f
 		}
 	}
 
-	struct node **arg = (struct node**)ffly_vec_beg(&__func->args);
-	struct node **itr, *param;
-	___ffly_vec_nonempty(&params) {
-		itr = (struct node**)ffly_vec_beg(&params);
-		while(itr <= (struct node**)ffly_vec_end(&params)) {
-			param = *(itr++);
-			conv(__compiler, itr-1, param, (*arg)->var->_type);
-			arg++;
+	struct node **param = (struct node**)ffly_vec_beg(&__func->params);
+	struct node **itr, *arg;
+	___ffly_vec_nonempty(&args) {
+		itr = (struct node**)ffly_vec_beg(&args);
+		while(itr <= (struct node**)ffly_vec_end(&args)) {
+			arg = *(itr++);
+			conv(__compiler, itr-1, arg, (*param)->_type);
+			param++;
 		}
 	}
 
-	ast_func_call(__compiler, __node, name, &params, __func->_type);
+	ast_func_call(__compiler, __node, name, &args, __func->_type);
 	retok;
 }
 

@@ -88,11 +88,12 @@ regionp *rindx;
 # define PAGE_SHIFT 2
 # define PAGE_SIZE (1<<PAGE_SHIFT)
 void static **map = NULL;
+ff_uint_t page_c = 0;
 
-void static *tf[267];
+void static *tf[1024];
 void static **fresh = tf;
 void static to_free(void *__p) {
-	if (fresh-tf >= 267) {
+	if (fresh-tf >= 1024) {
 		printf("error overflow.\n");
 	}
 	*(fresh++) = __p;
@@ -116,6 +117,11 @@ void ff_bond_write(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 		if (shred>left)
 			shred = left;
 
+		if (!map[page]) {
+			printf("error null page.\n");
+			return;
+		}
+
 		memcpy(map[page]+pg_off, p, shred);
 		p+=shred;
 	}
@@ -127,20 +133,19 @@ void ff_bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
 	ff_u64_t end = __size+__offset;
 	ff_uint_t pg_c = ((end>>PAGE_SHIFT)+((end-((end>>PAGE_SHIFT)*PAGE_SIZE))>0));
 
-	ff_uint_t static crest = 0;
 	if (!map) {
 		map = (void**)malloc(pg_c*sizeof(void*));
 		ff_uint_t cur = 0;
 		while(cur != page)
 			map[cur++] = NULL;
-		crest = pg_c;
+		page_c = pg_c;
 	} else {
-		if (pg_c>crest) {
+		if (pg_c>page_c) {
 			map = (void**)realloc(map, pg_c*sizeof(void*));
-			ff_uint_t cur = crest;
+			ff_uint_t cur = page_c;
 			while(cur != pg_c)
 				map[cur++] = NULL;
-			crest = pg_c;
+			page_c = pg_c;
 		}
 	}
 
@@ -148,7 +153,7 @@ void ff_bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
 	while(page != pg_c) {
 		if (!map[page]) {
 			printf("page, alloc, %u\n", page);
-			to_free(map[page] = malloc(PAGE_SIZE));
+			map[page] = malloc(PAGE_SIZE);
 		}
 		page++;
 	}
@@ -169,6 +174,10 @@ void ff_bond_read(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 		ff_uint_t shred = PAGE_SIZE-pg_off;
 		if (shred>left)
 			shred = left;
+		if (!map[page]) {
+			printf("error null page.\n");
+			return;
+		}
 		memcpy(p, map[page]+pg_off, shred);
 		p+=shred;
 	}
@@ -422,8 +431,15 @@ cleanup() {
 	void **cur = tf;
 	while(cur != fresh)
 		free(*(cur++));
-	if (map != NULL)
+	if (map != NULL) {
+		void **page = map;
+		while(page != map+page_c) {
+			if (*page != NULL)
+				free(*page);
+			page++;
+		}
 		free(map);
+	}
 }
 
 void ff_bond(char const *__s, char const *__dst) {

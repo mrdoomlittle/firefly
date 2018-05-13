@@ -242,6 +242,8 @@ char const* tokid_str(ff_u8_t __id) {
 		case _k_while: return "while";
 		case _k_exit: return "exit";
 		case _k_typedef: return "typedef";
+		case _l_bracket: return "left bracket";
+		case _r_bracket: return "right bracket";
 	}
 	return "unknown";
 }

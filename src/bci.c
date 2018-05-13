@@ -15,7 +15,7 @@ stack_put(ffly_bcip __bci, ff_u8_t *__src, ff_uint_t __bc, ff_addr_t __addr) {
 
 	while(p != end) {
 		if ((dst = __addr+(p-__src)) >= __bci->stack_size) {
-			// err
+			ffly_printf("error.\n");
 			return FFLY_FAILURE;
 		}
 
@@ -32,7 +32,7 @@ stack_get(ffly_bcip __bci, ff_u8_t *__dst, ff_uint_t __bc, ff_addr_t __addr) {
 
 	while(p != end) {
 		if ((src = __addr+(p-__dst)) >= __bci->stack_size) {
-			// err
+			ffly_printf("error.\n");
 			return FFLY_FAILURE;
 		}
 

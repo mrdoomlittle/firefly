@@ -154,7 +154,8 @@ enum {
 	_ast_out,
 	_ast_label,
 	_ast_jmpto,
-	_ast_va_args
+	_ast_va_args,
+	_ast_deref
 };
 
 enum {
@@ -209,10 +210,12 @@ struct node {
 	ff_bool_t va;
 	ff_u8_t flags;
 	ff_int_t s_off;
-	struct node **va_param;
+	struct node **va_arg;
 	struct node *rtv;
 	struct ffly_vec var_pond;
 	struct ffly_vec fields;
+
+	void **input, **output;
 };
 
 struct type {

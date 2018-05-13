@@ -1,0 +1,7 @@
+%ifndef __ffly__memory__ff
+%define __ffly__memory__ff
+u8_t* ffly_mem_alloc(u32_t);
+void ffly_mem_free(u8_t*);
+void ffly_mem_read(u8_t*, u32_t);
+void ffly_mem_write(u8_t*, u32_t);
+%endif __ffly__memory__ff

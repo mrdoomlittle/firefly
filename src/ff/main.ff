@@ -1,6 +1,6 @@
-%include "lib/types.ff"
-%include "lib/inc/error.ff"
-%define return ret
+//%include "lib/types.ff"
+//%include "lib/inc/error.ff"
+//%define return ret
 //Hello
 /*
 void ts0();
@@ -60,7 +60,8 @@ void ts5() {
 //}
 
 u8_t main() {
-//	u64_t a = 21;
+//	test(21);
+//	u8_t a = 21;
 //	ts0(a, 4, 6, 8);
-//	out(&a);
+//	test(a);
 }

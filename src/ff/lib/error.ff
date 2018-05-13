@@ -1,4 +1,9 @@
 %include "inc/error.ff"
+
+void test(u8_t __a) {
+	out(__a);
+}
+
 void abort() {
 	exit FF_ABORT;
 }

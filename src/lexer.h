@@ -63,6 +63,8 @@ enum {
 	_r_paren,
 	_l_brace,
 	_r_brace,
+	_l_bracket,
+	_r_bracket,
 	_k_var,
 	_k_print,
 	_k_uint_t,

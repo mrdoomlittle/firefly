@@ -78,6 +78,28 @@ void pop(ff_compilerp __compiler, char const *__dst, ff_u8_t __l) {
 
 void static
 emit_as(ff_compilerp __compiler, struct node *__node) {
+	if (__node->input != NULL) {
+		while(*(--__node->input) != NULL) {
+			struct node *nod = (struct node*)*(__node->input--);
+			char *reg = (char*)*__node->input;
+			emit(__compiler, nod);
+			switch(nod->_type->size) {
+				case 1:
+					op(__compiler, "movb", "%ea", reg, NULL);
+				break;
+				case 2:
+					op(__compiler, "movw", "%el", reg, NULL);
+				break;
+				case 4:
+					op(__compiler, "movd", "%ael", reg, NULL);
+				break;
+				case 8:
+					op(__compiler, "movq", "%rel", reg, NULL);
+				break;
+			}
+		}
+		__ffly_mem_free(__node->input);
+	}
 	out_s(__compiler, __node->p);
 	__ffly_mem_free(__node->p);
 }
@@ -121,25 +143,25 @@ emit_func(ff_compilerp __compiler, struct node *__node) {
 
 		ffly_vec_de_init(var_pond);
 
-		ffly_vecp args = &__node->args;
-		___ffly_vec_nonempty(args) {
-			itr = (struct node**)ffly_vec_beg(args);
-			while(itr <= (struct node**)ffly_vec_end(args)) {
+		ffly_vecp params = &__node->params;
+		___ffly_vec_nonempty(params) {
+			itr = (struct node**)ffly_vec_beg(params);
+			while(itr <= (struct node**)ffly_vec_end(params)) {
 				mass+=8;
-				s_off_inc(8-((*itr)->var->_type->size));
-				emit(__compiler, *(itr++));
+				s_off_inc(8-((*itr)->_type->size));
+				s_off_inc((*itr)->_type->size);
+				(*itr)->s_off = s_off;
+				itr++;
 			}
 		}
 		
-		ffly_vec_de_init(args);
+		ffly_vec_de_init(params);
 
 		if (mass>0) {
 			ffly_nots(mass, buf);
 			op(__compiler, "asq", "%rlx", buf, NULL);
 			op(__compiler, "subq", "%sp", "%rlx", "%sp");
 		}
-
-		ffly_vec_de_init(args);
 		
 		func_end = label();
 		ffly_vecp block = &__node->block;
@@ -164,7 +186,8 @@ emit_func(ff_compilerp __compiler, struct node *__node) {
 		out_s(__compiler, "ret\n");
 
 		__ffly_mem_free(func_end);
-	}
+	} else
+		ffly_vec_de_init(&__node->params);
 }
 
 void static
@@ -185,12 +208,12 @@ emit_func_call(ff_compilerp __compiler, struct node *__node) {
 	char buf[128];
 	char *p = buf;
 
-	ffly_vecp params = &__node->params;
+	ffly_vecp args = &__node->args;
 	struct node **itr;
 	ff_uint_t off = s_off+8;
-	___ffly_vec_nonempty(params) {
-		itr = (struct node**)ffly_vec_beg(params);
-		while(itr <= (struct node**)ffly_vec_end(params)) {
+	___ffly_vec_nonempty(args) {
+		itr = (struct node**)ffly_vec_beg(args);
+		while(itr <= (struct node**)ffly_vec_end(args)) {
 			struct node *nod = *itr;
 			emit(__compiler, *(itr++));
 			off+=8;
@@ -248,7 +271,29 @@ void emit_decl(ff_compilerp __compiler, struct node *__node) {
 
 void emit_assign(ff_compilerp __compiler, struct node *__node) {
 	emit(__compiler, __node->r);
-	emit_load(__compiler, __node->l->s_off, __node->l->_type->size);
+
+	if (__node->l->kind == _ast_deref) {
+		push(__compiler, "%rel", 8);
+		emit(__compiler, __node->l->operand);
+		out_s(__compiler, "movq %rel, %xes\n");
+		pop(__compiler, "%rel", 8);
+
+		switch(__node->l->_type->size) {
+			case 1:
+				out_s(__compiler, "ldb %xes, %ea\n");
+			break;
+			case 2:
+				out_s(__compiler, "ldw %xes, %el\n");
+			break;
+			case 4:
+				out_s(__compiler, "ldd %xes, %ael\n");
+			break;
+			case 8:
+				out_s(__compiler, "ldq %xes, %rel\n");
+			break;
+		}
+	} else
+		emit_load(__compiler, __node->l->s_off, __node->l->_type->size);
 }
 
 void emit_literal(ff_compilerp __compiler, struct node *__node) {
@@ -292,6 +337,12 @@ void emit_var(ff_compilerp __compiler, struct node *__node) {
 	char buf[128];
 	ffly_nots(__node->s_off, buf);
 	op(__compiler, "asq", "%rlx", buf, NULL);
+
+	if (__node->_type->kind == _array) {
+		op(__compiler, "subq", "%bp", "%rlx", "%rel");
+		return;
+	} 
+
 	op(__compiler, "subq", "%bp", "%rlx", "%rlx");
 	switch(__node->_type->size) {
 		case 1:
@@ -315,6 +366,7 @@ void emit_exit(ff_compilerp __compiler, struct node *__node) {
 }
 
 void emit_conv(ff_compilerp __compiler, struct node *__node) {
+	out_s(__compiler, "asq %rel, 0\n");
 	emit(__compiler, __node->operand);
 }
 
@@ -385,13 +437,15 @@ void emit_if(ff_compilerp __compiler, struct node *__node) {
 void emit_addrof(ff_compilerp __compiler, struct node *__node) {
 	char buf[128];
 	ffly_nots(__node->operand->s_off, buf);
-//	op(__compiler, "asq", "%rel", buf, NULL);
-//	op(__compiler, "subq", "%bp", "%rel", "%rel");
+	op(__compiler, "asq", "%rel", buf, NULL);
+	op(__compiler, "subq", "%bp", "%rel", "%rel");
 }
 
 void emit_binop(ff_compilerp __compiler, struct node *__node) {
+	out_s(__compiler, "asq %rel, 0\n");
 	emit(__compiler, __node->l);
 	push(__compiler, "%rel", 8);
+	out_s(__compiler, "asq %rel, 0\n");
 	emit(__compiler, __node->r);
 	out_s(__compiler, "movq %rel, %xes\n");
 	pop(__compiler, "%rel", 8);
@@ -410,6 +464,24 @@ void emit_binop(ff_compilerp __compiler, struct node *__node) {
 			default:
 				ffly_printf("unknown op, got: %u\n", op);
 		}
+	}
+}
+
+void emit_deref(ff_compilerp __compiler, struct node *__node) {
+	emit(__compiler, __node->operand);
+	switch(__node->_type->size) {
+		case 1:
+			out_s(__compiler, "stb %rel, %ae\n");
+		break;
+		case 2:
+			out_s(__compiler, "stw %rel, %el\n");
+		break;
+		case 4:
+			out_s(__compiler, "std %rel, %ael\n");
+		break;
+		case 8:
+			out_s(__compiler, "stq %rel, %rel\n");
+		break;
 	}
 }
 
@@ -459,6 +531,9 @@ void emit(ff_compilerp __compiler, struct node *__node) {
 		break;
 		case _ast_addrof:
 			emit_addrof(__compiler, __node);
+		break;
+		case _ast_deref:
+			emit_deref(__compiler, __node);
 		break;
 		default:
 			emit_binop(__compiler, __node);

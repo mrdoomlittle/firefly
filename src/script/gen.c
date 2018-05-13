@@ -474,9 +474,9 @@ emit_func(struct ffly_compiler *__compiler, struct node *__node) {
 
 	pop(__compiler, &va_args);
 	struct node **itr = NULL;
-	___ffly_vec_nonempty(&__node->args) {
-		itr = (struct node**)ffly_vec_end(&__node->args);
-		while(itr >= (struct node**)ffly_vec_begin(&__node->args)) {
+	___ffly_vec_nonempty(&__node->params) {
+		itr = (struct node**)ffly_vec_end(&__node->params);
+		while(itr >= (struct node**)ffly_vec_begin(&__node->params)) {
 			emit(__compiler, *itr);
 			emit(__compiler, (*itr)->var);
 			struct obj **to, **from;
@@ -509,30 +509,30 @@ emit_func(struct ffly_compiler *__compiler, struct node *__node) {
 void static
 emit_func_call(struct ffly_compiler *__compiler, struct node *__node) {
 	struct obj *frame = create_frame(__compiler);
-	struct node **param = NULL;
+	struct node **arg = NULL;
 	struct obj *ret = push(__compiler, NULL);
 
 	ff_uint_t va_size = 0;
-	___ffly_vec_nonempty(&__node->params) {
-		param = (struct node**)ffly_vec_begin(&__node->params);
-		while(!vec_deadstop(param, &__node->params)) {
-			if (__node->va_param != NULL) {
-				if (param >= __node->va_param)
-					va_size+=(*param)->_type->size;
+	___ffly_vec_nonempty(&__node->args) {
+		arg = (struct node**)ffly_vec_begin(&__node->args);
+		while(!vec_deadstop(arg, &__node->args)) {
+			if (__node->va_arg != NULL) {
+				if (arg >= __node->va_arg)
+					va_size+=(*arg)->_type->size;
 			}
-			emit(__compiler, *param); 
-			param++;
+			emit(__compiler, *arg); 
+			arg++;
 		}
 
 		ff_uint_t off = va_size;
-		if (__node->va_param != NULL) {
-			ffly_printf("has va params, %p, %p\n", __node->va_param, param);
+		if (__node->va_arg != NULL) {
+			ffly_printf("has va args, %p, %p\n", __node->va_arg, arg);
 			struct obj *m = __fresh(__compiler, va_size);
-			while(param-- != __node->va_param) {
+			while(arg-- != __node->va_arg) {
 				struct obj **src;
 				pop(__compiler, &src);
-				off-=(*param)->_type->size;;
-				next_obj(__compiler, mk_op_copy((*param)->_type->size, objpp(m), src, off));
+				off-=(*arg)->_type->size;;
+				next_obj(__compiler, mk_op_copy((*arg)->_type->size, objpp(m), src, off));
 			}
 			push(__compiler, m);
 		} else {
