@@ -71,26 +71,37 @@ bit_flush(ff_compactorp __com) {
 void ff_compact(ff_compactorp __com) {
 	__com->left = 8;
 	__com->buf = 0x0;
-	// prior input
 	ff_u8_t prior = __com->get();
-	// past output
 	ff_u8_t past = 0;
 	__com->put(prior);
+	ff_u8_t tmp, val, l, bits;
+	ff_u8_t i;
 	while(__com->at_eof() == -1) {
-		ff_u8_t tmp = __com->get();
-		ff_u8_t val = prior^tmp;
+		tmp = __com->get();
+		val = prior^tmp;
+	_bk:
 		prior = tmp;
-		ff_u8_t l = 0;
+		l = 0;
 		while(!((val>>(7-l))&0x1) && l<8)
 			l++;
-		ff_u8_t bits = 8-l;
+		bits = 8-l;
 
-		ff_u8_t sk = val==past;
-		bit_put(__com, sk, 1);
-		if (!sk) {
-			bit_put(__com, bits, 4);
-			bit_put(__com, val, bits);
+		i = 0;
+		if (val == past) {
+			bit_put(__com, 1, 1);
+		_again:
+			tmp = __com->get();
+			if ((val = (prior^tmp)) != past || i > 2) {
+				bit_put(__com, i, 2);
+				goto _bk;
+			}
+			prior = tmp;
+			i++;
+			goto _again;
 		}
+		bit_put(__com, 0, 1);
+		bit_put(__com, bits, 4);
+		bit_put(__com, val, bits);
 		past = val;
 	}
 	bit_flush(__com);
@@ -99,9 +110,7 @@ void ff_compact(ff_compactorp __com) {
 void ff_decompact(ff_compactorp __com) {
 	__com->left = 0;
 	__com->buf = 0x0;
-	// prior input
 	ff_u8_t prior = __com->get();
-	// past output
 	ff_u8_t past = 0;
 	__com->put(prior);
 	while(__com->at_eof() == -1) {
@@ -112,8 +121,17 @@ void ff_decompact(ff_compactorp __com) {
 			ff_u8_t bits = bit_get(__com, 4);
 			b = bit_get(__com, bits);
 			tmp = b;
-		} else 
-			b = past;
+		} else {
+			ff_u8_t i;
+			i = bit_get(__com, 2);
+		_again:
+			__com->put(prior = (prior^past));
+			if (i>0) {
+				i--;
+				goto _again;
+			}
+			continue;
+		}
 		b = prior^b;
 		prior = b;
 		past = tmp;
