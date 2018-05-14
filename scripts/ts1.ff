@@ -1,5 +1,14 @@
+%include "fflib.ff"
+%ifndef ts0 && ts2
+%ifndef ts1
+%define ts1
+%endif
 u8_t i = 0;
+ffly_printf("{--- ts~1 ---}\n");
 while(i < 20) {
-    print(i);
-    i++;
+	ffly_printf("no. %b\n", i);
+	i++;
 }
+%else
+ffly_printf("ts1 can't be included, is 'ts0.ff' or 'ts2.ff' included?.\n");
+%endif

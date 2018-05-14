@@ -318,7 +318,11 @@ read_token(ff_lexerp __lexer) {
 			incp;
 		break;
 		case '&':
-			mk_keywd(tok, _ampersand);
+			if (is_next(__lexer, '&')) {
+				mk_keywd(tok, _and);
+				incp;
+			} else
+				mk_keywd(tok, _ampersand);
 			incp;
 		break;
 		case '\x27':

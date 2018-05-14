@@ -3,7 +3,7 @@ if exists("b:current_syntax")
 endif
 syn sync fromstart
 
-syn match ffmacro "^\s*%\s*\(include\|define\|ifndef\|ifdef\|endif\)\>"hs=s+1
+syn match ffmacro "^\s*%\s*\(include\|define\|ifndef\|ifdef\|endif\|else\)\>"hs=s+1
 syn region ffstring start=+"+hs=s+1 end=+"+he=e-1
 syn keyword fftype uint_t int_t u8_t i8_t u16_t i16_t u32_t i32_t u64_t i64_t void float char struct
 syn keyword fftype ff_u8_t ff_i8_t ff_u16_t ff_i16_t ff_u32_t ff_i32_t ff_u64_t ff_i64_t ff_uint_t ff_int_t

@@ -500,18 +500,56 @@ ff_bool_t is_endif(struct ffly_compiler *__compiler, struct token *__tok) {
 	if (is_keyword(__tok, _percent)) {
 		ff_err_t err;
 		struct token *tok = ffly_lex(&__compiler->lexer, &err);
-		return !ffly_str_cmp(tok->p, "endif");
+		ff_u8_t res = !ffly_str_cmp(tok->p, "endif");
+		if (!res)
+			ffly_ulex(&__compiler->lexer, tok);
+		return res;
 	}
 	return 0;
 }
 
+ff_bool_t is_else(struct ffly_compiler *__compiler, struct token *__tok) {
+	if (is_keyword(__tok, _percent)) {
+		ff_err_t err;
+		struct token *tok = ffly_lex(&__compiler->lexer, &err);
+		ff_u8_t res = !ffly_str_cmp(tok->p, "else");
+		if (!res)
+			ffly_ulex(&__compiler->lexer, tok);
+		return res;
+	}
+	return 0;
+}
+
+
+/*
+	shoud just pass function pointer to is_***
+*/
 void static
-skip_until_endif(struct ffly_compiler *__compiler) {
+sk_to_else(struct ffly_compiler *__compiler) {
 	ff_err_t err;
 	struct token *tok = NULL;
 	for(;;) {
 		if (!(tok = ffly_lex(&__compiler->lexer, &err))) break;
-		if (_err(err)) break;
+		if (_err(err)) {
+			errmsg("lexer failure.\n");
+			break;
+		}
+		if (is_else(__compiler, tok)) break;
+		if (tok->kind == _tok_newline)
+			ff_token_free(tok);
+	}
+}
+
+void static
+sk_to_endif(struct ffly_compiler *__compiler) {
+	ff_err_t err;
+	struct token *tok = NULL;
+	for(;;) {
+		if (!(tok = ffly_lex(&__compiler->lexer, &err))) break;
+		if (_err(err)) {
+			errmsg("lexer failure.\n");
+			break;
+		}
 		if (is_endif(__compiler, tok)) break;
 		if (tok->kind == _tok_newline)
 			ff_token_free(tok);
@@ -520,18 +558,34 @@ skip_until_endif(struct ffly_compiler *__compiler) {
 
 void static
 read_ifdef(struct ffly_compiler *__compiler) {
-	struct token *name = next_token(__compiler);
+	struct token *name;
 	ff_err_t err;
+_again:
+	name = next_token(__compiler);
 	ffly_map_get(&__compiler->macros, name->p, ffly_str_len((char*)name->p), &err);
-	if (_err(err)) skip_until_endif(__compiler);
+	if (_err(err)) {
+		sk_to_else(__compiler);
+		return;
+	}
+
+	if (next_token_is(__compiler, _tok_keywd, _and))
+		goto _again;
 }
 
 void static
 read_ifndef(struct ffly_compiler *__compiler) {
-	struct token *name = next_token(__compiler);
+	struct token *name;
 	ff_err_t err;
+_again:
+	name = next_token(__compiler);
 	ffly_map_get(&__compiler->macros, name->p, ffly_str_len((char*)name->p), &err);
-	if (_ok(err)) skip_until_endif(__compiler);
+	if (_ok(err)) {
+		sk_to_else(__compiler);
+		return;
+	}
+
+	if (next_token_is(__compiler, _tok_keywd, _and))
+		goto _again;
 }
 
 void static
@@ -582,8 +636,13 @@ _sk:
 }
 
 void read_macro(struct ffly_compiler *__compiler) {
-	struct token *tok = next_token(__compiler);
-	if (tok->kind != _tok_ident) return;
+	ff_err_t err;
+	struct token *tok = ffly_lex(&__compiler->lexer, &err);
+	if (tok->kind != _tok_ident) {
+		ffly_printf("what is this? need ident not this.\n");
+		return;
+	}
+
 	if (!ffly_str_cmp(tok->p, "define"))
 		read_define(__compiler);
 	else if (!ffly_str_cmp(tok->p, "ifdef"))
@@ -592,6 +651,11 @@ void read_macro(struct ffly_compiler *__compiler) {
 		read_ifndef(__compiler);
 	else if (!ffly_str_cmp(tok->p, "include"))
 		read_include(__compiler);
+	else if (!ffly_str_cmp(tok->p, "else"))
+		sk_to_endif(__compiler);
+	else {
+		ffly_printf("unknown macro: %s\n", tok->p);
+	}
 }
 
 struct token* next_token(struct ffly_compiler *__compiler) {

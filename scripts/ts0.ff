@@ -1,18 +1,25 @@
+%include "fflib.ff"
+%ifndef ts1 && ts2
+%ifndef ts0
+%define ts0
+%endif
+
+ffly_printf("{--- ts~0 ---}\n");
 fn a(u8_t __lhs, u8_t __rhs)->void{
-	print(__lhs);
-	print(__rhs);
+	ffly_printf("a() ' lhs: %b, rhs: %b\n", __lhs, __rhs);
 }
 
 fn b(u8_t __lhs, u8_t __rhs)->void{
-	print(__lhs);
-	print(__rhs);
+	ffly_printf("b() ' lhs: %b, rhs: %b\n", __lhs, __rhs);
 }
 
 fn c(u8_t __lhs, u8_t __rhs)->void{
-	print(__lhs);
-	print(__rhs);
+	ffly_printf("c() ' lhs: %b, rhs: %b\n", __lhs, __rhs);
 }
 
 a(0, 1);
 b(2, 3);
 c(4, 5);
+%else
+ffly_printf("ts0 can't be included, is 'ts1.ff' or 'ts2.ff' included?.\n");
+%endif
