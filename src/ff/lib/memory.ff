@@ -1,9 +1,9 @@
 u8_t* ffly_mem_alloc(u32_t __size) {
-	as("rin 3, %ael\n", "ael", &__size);
+	as("rin 3, %ael\n" : "ael", __size);
 }
 
 void ffly_mem_free(u8_t *__p) {
-	as("rin 4, %rel\n", "rel", &__p);
+	as("rin 4, %rel\n" : "rel", __p);
 }
 
 void ffly_mem_read(u8_t *__p, u32_t __size) {

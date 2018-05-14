@@ -219,7 +219,8 @@ ff_err_t parser_func_call(ff_compilerp, struct node**, struct node*);
 
 ff_err_t
 parser_postfix_expr(ff_compilerp __compiler, struct node **__node) {
-	if (next_token_is(__compiler, _tok_keywd, _l_paren)) {
+	struct token *tok = peek_token(__compiler);
+	if (tok->kind == _tok_keywd && tok->id == _l_paren) {
 		parser_func_call(__compiler, __node, *__node);
 		return;
 	}
@@ -674,6 +675,7 @@ _r: // retreat
 ff_err_t parser_func_decl(ff_compilerp __compiler, struct node **__node) {
 	struct type *ret_type;
 	parser_decl_spec(__compiler, next_token(__compiler), &ret_type);
+	parser_declarator(__compiler, &ret_type, ret_type, NULL);
 
 	struct token *name;
 	name = next_token(__compiler);
@@ -722,6 +724,7 @@ ff_err_t
 parser_func_def(ff_compilerp __compiler, struct node **__node) {
 	struct type *ret_type;
 	parser_decl_spec(__compiler, next_token(__compiler), &ret_type);
+	parser_declarator(__compiler, &ret_type, ret_type, NULL);
 
 	struct token *name;
 	name = next_token(__compiler);
@@ -845,10 +848,20 @@ parser_func_call(ff_compilerp __compiler, struct node **__node, struct node *__f
 
 ff_bool_t static
 is_func(ff_compilerp __compiler) {
+	struct token *buf[20];
+	struct token **p = buf;
+	struct token *tok;
 	struct token *type, *name, *l_paren;
 	ff_u8_t res = 0;
 	if(!(type = next_token(__compiler)))
 		goto _r2;
+_again:
+	tok = (*(p++) = next_token(__compiler));
+	if (tok->kind == _tok_keywd && tok->id == _astrisk)
+		goto _again;
+	else
+		ffly_ulex(&__compiler->lexer, *(--p));
+
 	if (!(name = next_token(__compiler)))
 		goto _r1;
 	if (!(l_paren = next_token(__compiler)))
@@ -858,6 +871,8 @@ is_func(ff_compilerp __compiler) {
 _r0:
 	ffly_ulex(&__compiler->lexer, name);
 _r1:
+	while(p != buf)
+		ffly_ulex(&__compiler->lexer, *(--p));
 	ffly_ulex(&__compiler->lexer, type);
 _r2:
 	return res;

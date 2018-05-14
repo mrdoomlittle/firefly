@@ -220,6 +220,8 @@ emit_func_call(ff_compilerp __compiler, struct node *__node) {
 			emit_load(__compiler, off, nod->_type->size);
 		}
 	}
+	
+	ffly_vec_de_init(args);
 
 	p+=ffly_str_cpy(p, "call");
 	*(p++) = ' ';
