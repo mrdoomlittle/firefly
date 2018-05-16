@@ -146,11 +146,8 @@ static __thread potp temp = NULL;
 	as it will take of less space in the header.
 */
 
-
-# define PAD 8
 // keep packed as we want the header to be as small as possible
 typedef struct blkd {
-	ff_u8_t __pad0[PAD];
 	ar_off_t prev, next, fd, bk;
 	ar_size_t size; // total size, without blkd
 	/*
@@ -162,7 +159,6 @@ typedef struct blkd {
 	ar_uint_t pad;
 	ar_off_t off, end;
 	ff_u8_t flags;
-	ff_u8_t __pad1[PAD];
 } __attribute__((packed)) *blkdp;
 
 # define pot_size sizeof(struct pot)
@@ -534,6 +530,51 @@ _next:
 
 
 void free_pot(potp);
+
+void ffly_arhang(void) {
+	potp p;
+	if (!(p = arena)) {
+		ffly_printf("dead pot.\n");
+		return;
+	}
+
+	potp bk;
+	while(p != NULL) {
+		bk = p;
+		lkpot(p);
+		p = p->fd;
+		if (bk->off>0) {
+			if (bk == arena) {
+				potp prev = arena->previous;
+				potp next = arena->next;
+				if ((arena = bk->fd) != NULL) {
+					arena->bk = NULL;
+					if (prev != NULL) {
+						lkpot(prev);
+						prev->next = arena;	
+						ulpot(prev);
+					}
+
+					if (next != NULL) {
+						lkpot(next);
+						next->previous = arena;
+						ulpot(next);
+					}
+				}
+			}
+
+			if (bk->fd != NULL)
+				bk->fd->bk = bk->bk;
+			if (bk->bk != NULL)
+				bk->bk->fd = bk->fd;
+			bk->fd = NULL;
+			bk->bk = NULL;
+		}
+		ulpot(bk);
+	}
+
+}
+
 void ffly_araxe(void) {
 	potp p;
 	if (!(p = arena)) {
@@ -541,8 +582,9 @@ void ffly_araxe(void) {
 		return;
 	}
 	rfr(p);
+	potp bk;
 	while(p != NULL) {
-		potp bk = p;
+		bk = p;
 		p = p->fd;
 		rfr(bk);
 		free_pot(bk);
@@ -1119,10 +1161,12 @@ _bk:
 	_ffly_free(p, __p);
 	// free pot as we don't need it
 	lkpot(p);
-	if (!p->off && p != arena && !r) {
-		lkpot(p->bk);
-		p->bk->fd = p->fd;
-		ulpot(p->bk);
+	if (!p->off && p != arena) {
+		if (p->bk != NULL) {
+			lkpot(p->bk);
+			p->bk->fd = p->fd;
+			ulpot(p->bk);
+		}
 		if (p->fd != NULL) {
 			lkpot(p->fd);
 			p->fd->bk = p->bk;

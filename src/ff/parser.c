@@ -123,6 +123,11 @@ mk_ptr_type(struct ffly_compiler *__compiler, struct type **__type, struct type 
 	ffc_build_type(__compiler, __type, &(struct type){.kind=_u64_t, .ptr=__ptr, .size=8, .len=0});
 }
 
+ff_err_t
+parser_struct_spec(struct ffly_compiler *__compiler, struct type **__type) {
+
+}
+
 ff_err_t static
 conv(ffly_compilerp __compiler, struct node **__node, struct node *__operand, struct type *__to) {
 	struct type *_type;

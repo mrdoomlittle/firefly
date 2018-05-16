@@ -6,7 +6,7 @@
 # include "../dep/mem_set.h"
 void pr();
 void pf();
-
+/*
 void t0() {
 	void *p0, *p1, *p2, *p3;
 	p0 = ffly_alloc(10);
@@ -23,7 +23,7 @@ void t0() {
 	p0 = ffly_alloc(200);
 	p1 = ffly_alloc(200);
 }
-
+*/
 void ts1() {
 	void *list[20];
 	ff_u8_t i = 0;
@@ -320,6 +320,19 @@ void copy(void *__dst, void *__src, ff_uint_t __bc);
 # include "mem_realloc.h"
 # include "../rat.h"
 # include "plate.h"
+
+void *pt0;
+void t0(void *__p) {
+	pt0 = __ffly_mem_alloc(2000);
+	ffly_arhang(); // hang all pots that arnt empty
+}
+
+void *pt1;
+void t1(void *__p) {
+	pt1 = __ffly_mem_alloc(2000);
+	ffly_arhang();
+}
+
 void _start() {
 	ffly_ar_init();
 	ffly_io_init();
@@ -421,6 +434,7 @@ void _start() {
 	if (!ffly_argr(p2, 14))
 		ffly_printf("failed.\n");
 */
+/*
 	ff_u8_t i = 0;
 	void *list[200];
 	while(i != 2) {
@@ -435,8 +449,18 @@ void _start() {
 
 		i++;
 	}
+*/
+	ff_tid_t id0, id1;
 
+	ffly_thread_create(&id0, t0, NULL);
+	ffly_thread_create(&id1, t1, NULL);
+	ffly_thread_wait(id0);
+	ffly_thread_wait(id1);
+	ffly_thread_cleanup();	
 	ffly_plate_cleanup();
+
+	__ffly_mem_free(pt0);
+	__ffly_mem_free(pt1);
 
 	 pr();
 	 pf();

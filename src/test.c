@@ -63,17 +63,17 @@ ff_i8_t test(void *__arg_p) {
 # include "system/servant.h"
 # include "system/task_pool.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
-	struct ffly_task_pool pool;
-	ffly_task_pool_init(&pool, 4);
+//	struct ffly_task_pool pool;
+//	ffly_task_pool_init(&pool, 4);
 
-	ff_u8_t i = 0;
+//	ff_u8_t i = 0;
 
-	while(i++ != 20) {
-		ffly_task_pool_add(&pool, test, NULL);
-	}
-	ffly_nanosleep(1, 0);
+//	while(i++ != 20) {
+//		ffly_task_pool_add(&pool, test, NULL);
+//	}
+//	ffly_nanosleep(1, 0);
 
-	ffly_task_pool_cleanup(&pool);
+//	ffly_task_pool_cleanup(&pool);
 //	p = malloc(200);
 //	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&pot);
 //	ffly_tid_t id;

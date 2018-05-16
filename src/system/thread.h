@@ -1,5 +1,6 @@
 # ifndef __ffly__thread__h
 # define __ffly__thread__h
+# include "../ffint.h"
 # include "../types.h"
 # include "../system/errno.h"
 # include "../memory/mem_alloc.h"

@@ -41,15 +41,13 @@ ff_db_add_key(ff_dbdp __d, ff_u8_t *__key) {
 	n->key = (ff_u8_t*)__ffly_mem_alloc(KEY_SIZE);
 	ffly_mem_cpy(n->key, __key, KEY_SIZE);
 	n->next = NULL;
- 
+
 	void **p = __d->list+(keysum(__key)&0xff);
 	if (!*p)
 		*p = (void*)n;
 	else {
-		nodep end = (nodep)*p;
-		while(end->next != NULL)
-			end = end->next;
-		end->next = n;
+		n->next = (nodep)*p;
+		*p = n;
 	}
 	ffly_mutex_unlock(&lock);
 }

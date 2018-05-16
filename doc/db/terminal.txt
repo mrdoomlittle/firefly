@@ -1,0 +1,27 @@
+commands:
+
+. shutdown
+. connect <address> <port> <encryption key>
+. dsconnect
+. login <id> <password>
+. logout
+. creatpile
+. delpile <pile>
+. creatrecord <pile> <size>
+. delrecord <pile> <record>
+. write <pile> <record> <offset> <size>
+. read <pile> <record> <offset> <size>
+. recordalloc <record>
+. recordfree <record>
+. rivet <rivetno> <slotno>
+. rivetto <rivetno> <slotno>
+. bind <rivetno> <slotno> <type{record, pile}>
+. acquireslot
+. scrapslot <slotno>
+. bufal <size>
+. buffr
+. bufld <file>
+. showbuf
+. exist <rivetno>
+. help
+. exit

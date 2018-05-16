@@ -13,7 +13,7 @@ enum {
 ff_err_t ffly_ar_init(void);
 ff_err_t ffly_ar_cleanup(void);
 void ffly_arctl(ff_u8_t, ff_u64_t);
-
+void ffly_arhang(void);
 void ffly_arstat(void);
 void* ffly_alloc(ff_uint_t);
 void ffly_free(void*);

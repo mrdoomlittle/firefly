@@ -83,9 +83,11 @@ ff_db_login(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp *__user, ff_db_err *__er
 	goto _succ;
 
 _fail:
+	ffly_printf("login failure.\n");
 	ff_db_snd_err(__sock, FFLY_FAILURE); 
 	reterr;
 _succ:
+	ffly_printf("login success.\n");
 	ff_db_snd_err(__sock, FFLY_SUCCESS);
 	*__err = _ff_err_null;
 	ff_db_keygen(__key);
@@ -848,6 +850,10 @@ ff_dbd_start(char const *__file, ff_u16_t __port) {
 	ffdb_init(&daemon.db);
 	ffdb_open(&daemon.db, __file);
 	daemon.list = (void**)__ffly_mem_alloc(0x100*sizeof(void*));
+	void **cur = daemon.list;
+	while(cur != daemon.list+0x100)
+		*(cur++) = NULL;
+
 	ffly_map_init(&daemon.users, _ffly_map_127);
 
 	def_users(&daemon);
@@ -889,11 +895,12 @@ _again:
 	ffly_pellet_puti(pel, (void**)&peer, sizeof(FF_SOCKET*));
 	p = &daemon;
 	ffly_pellet_puti(pel, (void**)&p, sizeof(ff_dbdp));
-	ff_db_client(peer, pel);
-	goto _again;
+//	ff_db_client(peer, pel);
+	ff_db_serve(pel);
+//	goto _again;
 _end:
-	ffly_printf("waiting for theads.\n");
-	while(live>0);
+//	ffly_printf("waiting for theads.\n");
+//	while(live>0);
 	ff_net_close(sock);
 	cleanup(&daemon);
 	ffly_map_de_init(&daemon.users);

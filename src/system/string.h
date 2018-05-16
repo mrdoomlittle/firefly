@@ -10,11 +10,14 @@ extern "C" {
 # endif
 ff_u64_t ffly_stno(char*);
 ff_uint_t ffly_nots(ff_u64_t, char*);
+ff_uint_t _ffly_nots(ff_u64_t, ff_u16_t*, ff_u8_t*, void(*)(ff_u8_t*, ff_u16_t, ff_u16_t, ff_u8_t));
 double ffly_stfloat(char*);
 ff_uint_t ffly_floatts(double, char*);
+ff_uint_t _ffly_floatts(double, ff_u16_t*, ff_u8_t*, void(*)(ff_u8_t*, ff_u16_t, ff_u16_t, ff_u8_t));
 char ffly_tolow(char);
 ff_u64_t ffly_htint(char*);
 ff_uint_t ffly_noths(ff_u64_t, char*);
+ff_uint_t _ffly_noths(ff_u64_t, ff_u16_t*, ff_u8_t*, void(*)(ff_u8_t*, ff_u16_t, ff_u16_t, ff_u8_t));
 ff_i8_t ffly_islen(char*, ff_uint_t);
 # ifdef __cplusplus
 }

@@ -15,6 +15,10 @@
 # include <stdio.h>
 # endif
 
+/*
+	TODO:
+		work more on this, write buffer, etc.
+*/
 # define ffly_fileno(__file) \
     (__file)->fd
 
@@ -24,7 +28,6 @@ struct ffly_file {
 # ifndef __fflib
 	FILE *libc_fp;
 # endif
-//	ff_u8_t wbuf[], rbuf[];
 };
 
 #define FF_O_TRUNC O_TRUNC

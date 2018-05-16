@@ -6,13 +6,7 @@
 # include "errno.h"
 # include "../dep/str_len.h"
 # include "../dep/mem_dup.h"
-# include "err.h"
-
-/*
-	TODO:
-	add buffer to read and write
-
-*/
+# include "error.h"
 
 # ifndef __fflib
 # include <string.h>
