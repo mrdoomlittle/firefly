@@ -11,6 +11,15 @@ struct amdgpu_dev {
 };
 
 struct amdgpu_info {
+	// mhz
+	ff_u32_t gfx_sclk;
+	ff_u32_t gfx_mclk;
+
+	// temperature in millidegrees
+	ff_u32_t temp;
+
+	ff_u32_t load;
+
 	// watts
 	ff_i32_t avg_power;
 };

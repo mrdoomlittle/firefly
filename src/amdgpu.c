@@ -5,11 +5,33 @@ int ffly_amdgpu_info(int __fd, struct amdgpu_info *__info) {
 	info.ret_p = (ff_u64_t)&r;
 	info.ret_size = 8;
 	info.query = AMDGPU_INFO_SENSOR;
-	info.sensor_info.type = AMDGPU_INFO_SENSOR_GPU_AVG_POWER;
+	
 	int ret;
+	ff_u32_t *sensor_type = &info.sensor_info.type;
+
+	*sensor_type = AMDGPU_INFO_SENSOR_GFX_SCLK;
 	if ((ret = drm_ioctl(__fd, DRM_IOCTL_AMDGPU_INFO, &info)) == -1)
 		return -1;
+	__info->gfx_sclk = r;
 
+	*sensor_type = AMDGPU_INFO_SENSOR_GFX_MCLK;
+	if ((ret = drm_ioctl(__fd, DRM_IOCTL_AMDGPU_INFO, &info)) == -1)
+		return -1;
+	__info->gfx_mclk = r;
+
+	*sensor_type = AMDGPU_INFO_SENSOR_GPU_TEMP;
+	if ((ret = drm_ioctl(__fd, DRM_IOCTL_AMDGPU_INFO, &info)) == -1)
+		return -1;
+	__info->temp = r;
+
+	*sensor_type = AMDGPU_INFO_SENSOR_GPU_LOAD;
+	if ((ret = drm_ioctl(__fd, DRM_IOCTL_AMDGPU_INFO, &info)) == -1)
+		return -1;
+	__info->load = r;
+
+	*sensor_type = AMDGPU_INFO_SENSOR_GPU_AVG_POWER;
+	if ((ret = drm_ioctl(__fd, DRM_IOCTL_AMDGPU_INFO, &info)) == -1)
+		return -1;
 	__info->avg_power = r;
 	return ret;
 }

@@ -49,6 +49,10 @@ int main() {
 	if (ffly_amdgpu_info(fd, &info) == -1) {
 		printf("failed to get info.\n");
 	}
+	printf("gfx sclk: %u\n", info.gfx_sclk);
+	printf("gfx mclk: %u\n", info.gfx_mclk);
+	printf("temp: %f-degree\n", ((float)info.temp)*0.001);
+	printf("load: %u%%\n", info.load);
 	printf("power: %ld-watts\n", info.avg_power);
 /*
 	struct amdgpu_ctx ctx;
