@@ -39,5 +39,6 @@ ff_err_t ff_db_ctr_bind(ff_db_ctrp, ff_u16_t, ff_uint_t, ff_u8_t);
 ff_err_t ff_db_ctr_acquire_slot(ff_db_ctrp, ff_uint_t*);
 ff_err_t ff_db_ctr_scrap_slot(ff_db_ctrp, ff_uint_t);
 ff_i8_t ff_db_ctr_exist(ff_db_ctrp, ff_u16_t, ff_err_t*);
+ff_err_t ff_db_ctr_record_stat(ff_db_ctrp, ff_uint_t, ffdb_recstatp);
 # endif
 # endif /*__ffly__db__connect__h*/

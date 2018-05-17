@@ -268,6 +268,7 @@ ff_db_write(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err
 	void *buf = __ffly_mem_alloc(size);
 	ff_net_recv(__sock, buf, size, &err);
 
+	ffly_printf("offset: %u, size: %u\n", offset, size);
 	ffdb_write(&__d->db, pile, rec, offset, buf, size);	
 
 	__ffly_mem_free(buf);	
@@ -305,6 +306,8 @@ ff_db_read(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err,
 	ff_net_recv(__sock, &size, sizeof(ff_uint_t), &err);
 
 	void *buf = __ffly_mem_alloc(size);
+
+	ffly_printf("offset: %u, size: %u\n", offset, size);
 	ffdb_read(&__d->db, pile, rec, offset, buf, size);
 
 	ff_net_send(__sock, buf, size, &err);
@@ -533,6 +536,33 @@ _fail:
 	reterr;
 }
 
+ff_err_t static
+ff_db_record_stat(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__err, ff_u8_t *__key) {
+	ffly_printf("record stat.\n");
+	ff_err_t err;
+	if (ratifykey(__sock, __user, __err, &err, __key) == -1) {
+		if (_err(err))
+			_ret;
+		ffly_printf("can't permit action.\n");
+		goto _fail;
+	}
+
+	ff_db_snd_err(__sock, FFLY_SUCCESS);
+	ff_uint_t slotno;
+	ffdb_recordp rec;
+	ff_net_recv(__sock, &slotno, sizeof(ff_uint_t), &err);
+
+	rec = (ffdb_recordp)slotget(slotno);
+
+	struct ffdb_recstat st;
+	ffdb_record_stat(&__d->db, rec, &st);
+	ff_net_send(__sock, &st, sizeof(struct ffdb_recstat), &err);
+	retok;
+_fail:
+	ff_db_snd_err(__sock, FFLY_FAILURE);
+	reterr;
+}
+
 # include "../system/util/hash.h"
 ff_u8_t cmdauth[] = {
 	_ff_db_auth_null,	//login
@@ -555,7 +585,8 @@ ff_u8_t cmdauth[] = {
 	_ff_db_auth_root,	//bind
 	_ff_db_auth_root,	//acquire_slot
 	_ff_db_auth_root,	//scrap_slot
-	_ff_db_auth_root	//exist
+	_ff_db_auth_root,	//exist
+	_ff_db_auth_root
 };
 
 ff_u8_t static
@@ -587,6 +618,7 @@ void _ff_bind();
 void _ff_acquire_slot();
 void _ff_scrap_slot();
 void _ff_exist();
+void _ff_recstat();
 
 void *jmp[] = {
 	_ff_login,
@@ -609,7 +641,8 @@ void *jmp[] = {
 	_ff_bind,
 	_ff_acquire_slot,
 	_ff_scrap_slot,
-	_ff_exist
+	_ff_exist,
+	_ff_recstat
 };
 
 char const *msgstr(ff_u8_t __kind) {
@@ -635,6 +668,7 @@ char const *msgstr(ff_u8_t __kind) {
 		case _ff_db_msg_acquire_slot:	return "acquire slot";
 		case _ff_db_msg_scrap_slot:	return "scrap slot";
 		case _ff_db_msg_exist:		return "exist";
+		case _ff_db_msg_recstat:	return "record stat";
 	}
 	return "unknown";
 }
@@ -699,7 +733,7 @@ ff_db_serve(void *__arg_p) {
 			jmpexit;
 		}
 
-		if (msg.kind > _ff_db_msg_exist) {
+		if (msg.kind > _ff_db_msg_recstat) {
 			jmpexit;
 		}
 
@@ -779,6 +813,11 @@ ff_db_serve(void *__arg_p) {
 
 		__asm__("_ff_exist:\n\t"); {
 			ff_db_exist(daemon, peer, user, &ern, key);
+		}
+		jmpend;
+
+		__asm__("_ff_recstat:\n\t"); {
+			ff_db_record_stat(daemon, peer, user, &ern, key);
 		}
 		jmpend;
 
@@ -897,7 +936,8 @@ _again:
 	ffly_pellet_puti(pel, (void**)&p, sizeof(ff_dbdp));
 //	ff_db_client(peer, pel);
 	ff_db_serve(pel);
-//	goto _again;
+	if (to_shut == -1)
+		goto _again;
 _end:
 //	ffly_printf("waiting for theads.\n");
 //	while(live>0);

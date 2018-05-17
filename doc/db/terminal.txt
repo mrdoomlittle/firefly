@@ -2,7 +2,7 @@ commands:
 
 . shutdown
 . connect <address> <port> <encryption key>
-. dsconnect
+. disconnect
 . login <id> <password>
 . logout
 . creatpile

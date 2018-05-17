@@ -378,6 +378,10 @@ void ffdb_read(ffdbp __db, ffdb_pilep __pile, ffdb_recordp __rec,
 	ffly_fread(__db->file, __buf, __size);
 }
 
+void ffdb_record_stat(ffdbp __db, ffdb_recordp __rec, ffdb_recstatp __stat) {
+	__stat->size = __rec->size;
+}
+
 void ffdb_record_alias(ffdbp __db, ffdb_pilep __pile, char const *__name, ffdb_recordp __p) {
 	ffly_map_put(&__pile->map, (ff_u8_t const*)__name, ffly_str_len(__name), __p);
 }

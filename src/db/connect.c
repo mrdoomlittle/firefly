@@ -31,6 +31,7 @@ ff_err_t static ff_db_bind(FF_SOCKET*, ff_u8_t*, ff_u64_t, ff_u16_t, ff_uint_t, 
 ff_err_t static ff_db_acquire_slot(FF_SOCKET*, ff_u8_t*, ff_u64_t, ff_uint_t*);
 ff_err_t static ff_db_scrap_slot(FF_SOCKET*, ff_u8_t*, ff_u64_t, ff_uint_t);
 ff_i8_t static ff_db_exist(FF_SOCKET*, ff_u8_t*, ff_u64_t, ff_u16_t, ff_err_t*);
+ff_err_t static ff_db_record_stat(FF_SOCKET*, ff_u8_t*, ff_u64_t, ff_uint_t, ffdb_recstatp);
 
 ff_db_ctrp
 ff_db_ctr(ff_u64_t __enckey, char const *__ip_adr, ff_u16_t __port, ff_err_t *__err) {
@@ -57,7 +58,7 @@ ff_db_ctr(ff_u64_t __enckey, char const *__ip_adr, ff_u16_t __port, ff_err_t *__
 }
 
 void ff_db_ctr_destroy(ff_db_ctrp __ctr) {
-	ffly_nanosleep(1, 0); // change me
+	ffly_sock_shutdown(__ctr->sock, SHUT_RDWR);
 	ff_net_close(__ctr->sock);
 	__ffly_mem_free(__ctr);
 }
@@ -155,6 +156,11 @@ ff_db_ctr_scrap_slot(ff_db_ctrp __ctr, ff_uint_t __slotno) {
 ff_i8_t
 ff_db_ctr_exist(ff_db_ctrp __ctr, ff_u16_t __rivetno, ff_err_t *__err) {
 	return ff_db_exist(__ctr->sock, __ctr->key, __ctr->enckey, __rivetno, __err);
+}
+
+ff_err_t
+ff_db_ctr_record_stat(ff_db_ctrp __ctr, ff_uint_t __rec, ffdb_recstatp __st) {
+	return ff_db_record_stat(__ctr->sock, __ctr->key, __ctr->enckey, __rec, __st);
 }
 
 ff_i8_t static
@@ -426,6 +432,9 @@ ff_db_write(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey, ff_uint_t __pi
 	ff_err_t err;
 	if (_err(err = ff_db_sndmsg(__sock, &msg))) {}
 
+	ff_err_t fault;
+	if (_err(err = ff_db_rcv_err(__sock, &fault))) {}
+
 	if (ratifykey(__sock, __key, __enckey) == -1) {
 		ffly_printf("key was rejected.\n");
 		reterr;
@@ -678,4 +687,27 @@ ff_db_exist(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey,
 	ff_i8_t ret;
 	ff_net_recv(__sock, &ret, sizeof(ff_u8_t), &err);
 	return ret;
+}
+
+ff_err_t
+ff_db_record_stat(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey,
+	ff_uint_t __rec, ffdb_recstatp __st)
+{
+	struct ff_db_msg msg = {
+		.kind = _ff_db_msg_recstat
+	};
+
+	ff_err_t err;
+	if (_err(err = ff_db_sndmsg(__sock, &msg))) {}
+
+	ff_err_t fault;
+	if (_err(err = ff_db_rcv_err(__sock, &fault))) {}
+
+	if (ratifykey(__sock, __key, __enckey) == -1) {
+		ffly_printf("key was rejected.\n");
+		reterr;
+	}
+
+	ff_net_send(__sock, &__rec, sizeof(ff_uint_t), &err);
+	ff_net_recv(__sock, __st, sizeof(struct ffdb_recstat), &err);
 }

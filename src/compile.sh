@@ -59,6 +59,9 @@ ffly_objs="$ffly_objs $(
 
 dst_dir=$PWD
 root_dir=.
+$ffly_cc $cc_flags -c -o $dst_dir/db.o $root_dir/db.c
+$ffly_cc $cc_flags -c -o $dst_dir/db/connect.o $root_dir/db/connect.c
+$ffly_cc $cc_flags -c -o $dst_dir/stores.o $root_dir/stores.c
 $ffly_cc $cc_flags -c -o $dst_dir/compactor.o $root_dir/compactor.c
 $ffly_cc $cc_flags -c -o $dst_dir/terrain.o $root_dir/terrain.c
 $ffly_cc $cc_flags -c -o $dst_dir/duct.o $root_dir/duct.c
@@ -111,4 +114,4 @@ $dst_dir/signal.o $dst_dir/hatch.o $dst_dir/rat.o \
 $dst_dir/lot.o $dst_dir/chunk_manager.o $dst_dir/uni.o $dst_dir/chunk.o \
 $dst_dir/obj.o $dst_dir/obj_pool.o $dst_dir/obj_manager.o $dst_dir/polygon.o \
 $dst_dir/ui/camera.o $dst_dir/graphics.o $dst_dir/gravity.o $dst_dir/duct.o \
-$dst_dir/terrain.o $dst_dir/compactor.o"
+$dst_dir/terrain.o $dst_dir/compactor.o $dst_dir/stores.o $dst_dir/db.o $dst_dir/db/connect.o"

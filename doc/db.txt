@@ -1,0 +1,10 @@
+ffdb_creat_pile(<db>)						- create pile
+ffdb_del_pile(<db>, <pile>) 				- delete pile
+ffdb_creat_record(<db>, <pile>, <size>)		- create record
+ffdb_del_record(<db>, <pile>, <record>)		- delete record
+ffdb_record_alloc(<db>, <record>)			- allocate memory for record
+ffdb_record_free(<db>, <record>)			- free memory for record
+ffdb_rivet(<number>, <pile, record>)		- allow us to store pile or record at a number and will say the same even if database is shutdown and restarted 
+ffdb_derivet(<number>)						- 
+ffdb_rivetto(<number>)						- what the rivet has riveted	
+ffdb_bind(<pile, record>, <rivet>)			- shoud be rivet then bind

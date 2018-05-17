@@ -52,18 +52,16 @@ mul: clean
 #	gcc -Wall -o daemon crypto.o db/daemon.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
 ##	gcc -Wall -o main db/key.c $(ffly_objs)
 db_term: clean
-	gcc $(cc_flags) -c db.c
-	gcc $(cc_flags) -c db/connect.c
-	gcc $(cc_flags) -o terminal db/terminal.c db.o connect.o $(ffly_objs) -nostdlib
+	gcc $(cc_flags) -o terminal db/terminal.c $(ffly_objs) -nostdlib
 db: clean
-	gcc $(cc_flags) -c db.c #$(ffly_objs) -nostdlib
+	gcc $(cc_flags) -o main $(ffly_objs) -nostdlib
+db_daemon: clean
 	gcc $(cc_flags) -c db/client.c
 	gcc $(cc_flags) -c db/user.c
 	gcc $(cc_flags) -c db/key.c
 	gcc $(cc_flags) -c db/slot.c
-	gcc $(cc_flags) -c db/connect.c
-	gcc $(cc_flags) -o client db/test.c $(ffly_objs) connect.o db.o user.o key.o -nostdlib
-	gcc $(cc_flags) -o daemon db/daemon.c $(ffly_objs) client.o db.o user.o key.o slot.o -nostdlib
+#	gcc $(cc_flags) -o client db/test.c $(ffly_objs) connect.o db.o user.o key.o -nostdlib
+	gcc $(cc_flags) -o daemon db/daemon.c $(ffly_objs) client.o user.o key.o slot.o -nostdlib
 net: clean
 	gcc -Wall -c network/sock.c
 	gcc -Wall -c network/input.c

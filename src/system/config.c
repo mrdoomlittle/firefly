@@ -100,6 +100,44 @@ ld_inil(ffconf *__cf) {
 	}
 }
 
+void static
+ld_db(void const *__db) {
+	void const *ip_addr;
+	void const *port;
+	void const *enckey;
+	void const *user;
+	void const *passwd;
+
+	if ((ip_addr = ffly_conf_struc_get(__db, "ip_addr")) != NULL) {
+		__ffly_sysconf__.db.ip_addr =  (char const*)ffly_str_dupe(ffly_conf_str(ip_addr));
+		ffly_printf("ip addr: %s\n", __ffly_sysconf__.db.ip_addr);
+	} else
+		__ffly_sysconf__.db.ip_addr = NULL;
+
+	if ((port = ffly_conf_struc_get(__db, "port")) != NULL) {
+		__ffly_sysconf__.db.port = ffly_conf_16l_u(port);
+		ffly_printf("port: %u\n", __ffly_sysconf__.db.port);
+	}
+
+	if ((enckey = ffly_conf_struc_get(__db, "enckey")) != NULL) {
+		__ffly_sysconf__.db.enckey = (char const*)ffly_str_dupe(ffly_conf_str(enckey));
+		ffly_printf("enckey: %s\n", __ffly_sysconf__.db.enckey);
+	} else
+		__ffly_sysconf__.db.enckey = NULL;
+
+	if ((user = ffly_conf_struc_get(__db, "user")) != NULL) {
+		__ffly_sysconf__.db.user = (char const*)ffly_str_dupe(ffly_conf_str(user));
+		ffly_printf("user: %s\n", __ffly_sysconf__.db.user);
+	} else
+		__ffly_sysconf__.db.user = NULL;
+
+	if ((passwd = ffly_conf_struc_get(__db, "passwd")) != NULL) {
+		__ffly_sysconf__.db.passwd = (char const*)ffly_str_dupe(ffly_conf_str(passwd));
+		ffly_printf("password: %s\n", __ffly_sysconf__.db.passwd);
+	} else
+		__ffly_sysconf__.db.passwd = NULL;
+}
+
 ff_err_t ffly_ld_sysconf(char const *__path) {
 	struct ffly_conf conf;
 	ff_err_t err = FFLY_SUCCESS;
@@ -125,14 +163,18 @@ ff_err_t ffly_ld_sysconf(char const *__path) {
 	if (!ffly_conf_is_str(version)) {
 		ffly_fprintf(ffly_err, "can't read version as type does not match.\n");
 		err = FFLY_FAILURE;
-		goto _failure;
+		goto _fail;
 	}
 
 	void const *root_dir = ffly_conf_get(&cf, "root_dir");
 	if (!ffly_conf_is_str(root_dir)) {
 
 	}
-	
+
+	void const *db = ffly_conf_get(&cf, "db");
+	if (db != NULL)
+		ld_db(db);
+
 	ld_max_threads(&cf);
 	ld_alssize(&cf);
 	ld_moddir(&cf);
@@ -143,7 +185,7 @@ ff_err_t ffly_ld_sysconf(char const *__path) {
 	__ffly_sysconf__.version = (char const*)ffly_str_dupe(ffly_conf_str(version));
 	__ffly_sysconf__.root_dir = (char const*)ffly_str_dupe(ffly_conf_str(root_dir));
 
-	_failure:
+_fail:
 	if (_err(err = ffly_conf_free(&conf))) {
 		ffly_fprintf(ffly_err, "failed to free config:0.\n");
 		return err;
@@ -163,6 +205,11 @@ void ffly_free_sysconf() {
 	__ffly_finn(__ffly_sysconf__.root_dir);
 	__ffly_finn(__ffly_sysconf__.moddir);
 	__ffly_finn(__ffly_sysconf__.inidir);
+
+	__ffly_finn(__ffly_sysconf__.db.ip_addr);
+	__ffly_finn(__ffly_sysconf__.db.enckey);
+	__ffly_finn(__ffly_sysconf__.db.user);
+	__ffly_finn(__ffly_sysconf__.db.passwd);
 
 	char const **mod;
 	if ((mod = __ffly_sysconf__.modl) != NULL) {

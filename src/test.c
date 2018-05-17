@@ -62,6 +62,7 @@ ff_i8_t test(void *__arg_p) {
 # include "linux/time.h"
 # include "system/servant.h"
 # include "system/task_pool.h"
+# include "stores.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 //	struct ffly_task_pool pool;
 //	ffly_task_pool_init(&pool, 4);
@@ -126,5 +127,13 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_scheduler_de_init();
 */
+	ff_stores_connect();
+	ff_stores_login();
+	char *motd = (char*)ff_stores_get(_ff_stores_motd);
+	ffly_printf("motd: %s\n", motd);
+	__ffly_mem_free(motd);
+	ff_stores_logout();
+	ff_stores_disconnect();
+	
 	ffly_arstat();
 }

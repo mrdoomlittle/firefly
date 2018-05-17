@@ -40,7 +40,8 @@ enum {
 	_ff_db_msg_bind,
 	_ff_db_msg_acquire_slot,
 	_ff_db_msg_scrap_slot,
-	_ff_db_msg_exist
+	_ff_db_msg_exist,
+	_ff_db_msg_recstat
 };
 
 /*
@@ -128,6 +129,10 @@ typedef struct ffdb_record {
 	ff_u16_t no;
 } *ffdb_recordp;
 
+typedef struct ffdb_recstat {
+	ff_uint_t size;
+} *ffdb_recstatp;
+
 typedef struct ffdb_blkd* ffdb_blkdp;
 
 typedef struct ffdb* ffdbp;
@@ -158,6 +163,7 @@ ffdb_recordp ffdb_fetch_record(ffdbp, char const*, char const*);
 void ffdb_del_record(ffdbp, ffdb_pilep, ffdb_recordp);
 void ffdb_record_alloc(ffdbp, ffdb_recordp);
 void ffdb_record_free(ffdbp, ffdb_recordp);
+void ffdb_record_stat(ffdbp, ffdb_recordp, ffdb_recstatp);
 ff_i8_t ffdb_exist(ff_u16_t);
 
 void ffdb_write(ffdbp, ffdb_pilep, ffdb_recordp, ff_off_t, void*, ff_uint_t);

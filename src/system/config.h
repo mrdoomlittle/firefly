@@ -10,6 +10,13 @@ struct ffly_sysconf {
 	char const *moddir, *inidir;
 	char const **modl, **inil;
 	ff_uint_t alssize;
+	struct {
+		char const *ip_addr;
+		ff_u16_t port;
+		char const *enckey;
+		char const *user;
+		char const *passwd;
+	} db;
 };
 
 # ifdef __cplusplus
