@@ -25,13 +25,21 @@
 	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_16l_s)
 # define ffly_conf_is_8l_s(__p) \
 	(((struct ffly_conf_val*)__p)->kind == _ffly_conf_8l_s)
+
+enum {
+	_ffly_conf_val,
+	_ffly_conf_var,
+	_ffly_conf_arr,
+	_ffly_conf_struct
+};
+
 struct ffly_conf_val {
 	ff_u8_t kind;
 	ff_byte_t *p;
 };
 
 struct ffly_conf_var {
-	struct ffly_conf_val val;
+	struct ffly_conf_val *val;
 	char *name;
 };
 
@@ -41,10 +49,20 @@ struct ffly_conf_arr {
 	ff_uint_t l;
 };
 
+struct ffly_conf_struct {
+	struct ffly_map fields;
+	char *name;
+};
+
+struct ffly_conf_entity {
+	ff_u8_t kind;
+	void *p;
+};
+
 // config bare
 // all in one
 typedef struct {
-	struct ffly_vec arrs;
+	struct ffly_vec entities;
 	struct ffly_vec free;
 	struct ffly_map env;
 } ffconf;
@@ -58,7 +76,7 @@ struct ffly_conf {
 	struct ffly_vec toks;
 	struct ffly_buff iject_buff;
 
-	struct ffly_vec arrs;
+	struct ffly_vec entities;
 	struct ffly_vec free;
 	struct ffly_map env;
 };
@@ -100,4 +118,5 @@ ff_i32_t ffly_conf_32l_s(void const*);
 ff_i16_t ffly_conf_16l_s(void const*);
 ff_i8_t ffly_conf_8l_s(void const*);
 ff_i64_t ffly_conf_int_s(void const*);
+void const* ffly_conf_struc_get(void const*, char const*);
 # endif /*__ffly__config__h*/

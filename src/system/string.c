@@ -25,12 +25,19 @@ ff_u64_t static powof10[] = {
 	100000000000000000,
 	1000000000000000000
 };
-//# include <string.h>
+# ifndef __fflib
+# include <string.h>
+# else
 # include "../dep/mem_cpy.h"
+# endif
 static __thread ff_u8_t *buf;
 void static
 drain(ff_u8_t *__p, ff_u16_t __size, ff_u16_t __cut, ff_u8_t __off) {
+# ifndef __fflib
+	memcpy(buf+(__cut*CUT_SIZE)+__off, __p, __size);
+# else
 	ffly_mem_cpy(buf+(__cut*CUT_SIZE)+__off, __p, __size);
+# endif
 }
 
 ff_uint_t ffly_nots(ff_u64_t __no, char *__buf) {

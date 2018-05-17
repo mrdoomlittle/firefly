@@ -19,7 +19,9 @@ enum {
 	_colon,
 	_comma,
 	_l_bracket,
-	_r_bracket
+	_r_bracket,
+	_l_brace,
+	_r_brace
 };
 
 ff_bool_t static is_space(char __c) {
@@ -54,7 +56,7 @@ ff_i8_t ffly_conf_8l_s(void const *__p) {
 	deposit all into ffconf
 */
 void ffly_conf_depos(struct ffly_conf *__conf, ffconfp __d) {
-	__d->arrs = __conf->arrs;
+	__d->entities = __conf->entities;
 	__d->free = __conf->free;
 	__d->env = __conf->env;
 }
@@ -62,6 +64,12 @@ void ffly_conf_depos(struct ffly_conf *__conf, ffconfp __d) {
 void const* ffly_conf_get(ffconfp __conf, char const *__name) {
 	ff_err_t err;
 	return ffly_map_get(&__conf->env, (ff_u8_t const*)__name, ffly_str_len(__name), &err);
+}
+
+void const* ffly_conf_struc_get(void const *__p, char const *__name) {
+	ff_err_t err;
+	struct ffly_conf_struct *p = (struct ffly_conf_struct*)__p;
+	return ffly_map_get(&_p->fields, (ff_u8_t const*)__name, ffly_str_len(__name), &err);
 }
 
 void const* ffly_conf_arr_elem(void const *__p, ff_uint_t __no) {
@@ -112,10 +120,11 @@ ff_err_t static push_free(struct ffly_conf *__conf, void *__p) {
 	*p = __p;
 }
 
-ff_err_t static push_arr(struct ffly_conf *__conf, struct ffly_conf_arr *__arr) {
-	struct ffly_conf_arr **p;
-	ffly_vec_push_back(&__conf->arrs, (void**)&p);
-	*p = __arr;
+ff_err_t static
+push_entity(struct ffly_conf *__conf, struct ffly_conf_entity *__entity) {
+	struct ffly_conf_entity **p;
+	ffly_vec_push_back(&__conf->entities, (void**)&p);
+	*(*p = __ffly_mem_alloc(sizeof(struct ffly_conf_entity))) = *__entity;
 }
 
 ff_bool_t static is_eof(struct ffly_conf *__conf) {
@@ -226,7 +235,7 @@ read_token(struct ffly_conf *__conf, ff_err_t *__err) {
 		return tok;
 	}
 
-	_again:
+_again:
 	while(is_space(fetchc(__conf)) && !is_eof(__conf)) __conf->off++;
 	if (fetchc(__conf) == '#' && !is_eof(__conf)) {
 		while(fetchc(__conf) != '\n') {
@@ -251,6 +260,14 @@ read_token(struct ffly_conf *__conf, ff_err_t *__err) {
 	switch(fetchc(__conf)) {
 		case '~':
 			mk_keyword(tok, _tilde);
+			__conf->off++;
+		break;
+		case '{':
+			mk_keyword(tok, _l_brace);
+			__conf->off++;
+		break;
+		case '}':
+			mk_keyword(tok, _r_brace);
 			__conf->off++;
 		break;
 		case '"':
@@ -340,22 +357,22 @@ read_literal(struct ffly_conf *__conf, ff_u8_t *__kind, ff_err_t *__err) {
 		}
 
 		if (no >= 0 && no <= (ff_u8_t)~0) {
-			_8l:
+		_8l:
 			*(ff_u8_t*)(p = __ffly_mem_alloc(sizeof(ff_u8_t))) = no;
 			*__kind = neg?_ffly_conf_8l_s:_ffly_conf_8l_u;
 			return (ff_byte_t*)p;
 		} else if (no > (ff_u8_t)~0 && no <= (ff_u16_t)~0) {
-			_16l:
+		_16l:
 			*(ff_u16_t*)(p = __ffly_mem_alloc(sizeof(ff_u16_t))) = no;
 			*__kind = neg?_ffly_conf_16l_s:_ffly_conf_16l_u;
 			return (ff_byte_t*)p;
 		} else if (no > (ff_u16_t)~0 && no <= (ff_u32_t)~0) {
-			_32l:
+		_32l:
 			*(ff_u32_t*)(p = __ffly_mem_alloc(sizeof(ff_u32_t))) = no;
 			*__kind = neg?_ffly_conf_32l_s:_ffly_conf_32l_u;
 			return (ff_byte_t*)p;
 		} else if (no > (ff_u32_t)~0 && no <= ~(ff_u64_t)0) {
-			_64l:
+		_64l:
 			*(ff_u64_t*)(p = __ffly_mem_alloc(sizeof(ff_u64_t))) = no;
 			*__kind = neg?_ffly_conf_64l_s:_ffly_conf_64l_u;
 			return (ff_byte_t*)p;
@@ -371,16 +388,17 @@ read_literal(struct ffly_conf *__conf, ff_u8_t *__kind, ff_err_t *__err) {
 }
 
 ff_err_t static
-read_val(struct ffly_conf *__conf, struct ffly_conf_val *__val) {
+read_val(struct ffly_conf *__conf, struct ffly_conf_val **__val) {
+	struct ffly_conf_val *val = (struct ffly_conf_val*)__ffly_mem_alloc(sizeof(struct ffly_conf_val));
 	ff_err_t err = FFLY_SUCCESS;
-	__val->p = read_literal(__conf, &__val->kind, &err);
-	if (!__val->p) {
+	val->p = read_literal(__conf, &val->kind, &err);
+	if (!val->p) {
 		ffly_fprintf(ffly_err, "got null.\n");
 		return FFLY_FAILURE;
 	}
 
-	push_free(__conf, __val->p);
 	if (_err(err)) return err;
+	*__val = val;
 	return FFLY_SUCCESS;
 }
 
@@ -404,7 +422,13 @@ read_arr(struct ffly_conf *__conf, struct ffly_vec *__data, ff_uint_t *__l) {
 			ffly_errmsg("failed to process sub array.\n");
 			return err;
 		}
-		push_arr(__conf, *arr);
+
+		struct ffly_conf_entity ent = {
+			.kind = _ffly_conf_val,
+			.p = arr
+		};
+		
+		push_entity(__conf, &ent);
 		goto _again;
 	}
 
@@ -412,12 +436,17 @@ read_arr(struct ffly_conf *__conf, struct ffly_vec *__data, ff_uint_t *__l) {
 		struct token *tok = peek_token(__conf, &err);
 		struct ffly_conf_val **val;
 		ffly_vec_push_back(__data, (void**)&val);
-		*val = (struct ffly_conf_val*)__ffly_mem_alloc(sizeof(struct ffly_conf_val));
-		push_free(__conf, *val);
-		if (_err(err = read_val(__conf, *val))) {
+		if (_err(err = read_val(__conf, val))) {
 			ffly_fprintf(ffly_out, "failed to read value.\n");
 			return err;
 		}
+
+		struct ffly_conf_entity ent = {
+			.kind = _ffly_conf_val,
+			.p = val
+		};
+
+		push_entity(__conf, &ent);
 	}
 
 	if (next_token_is(__conf, _tok_keyword, _comma, &err)) {	
@@ -428,17 +457,58 @@ read_arr(struct ffly_conf *__conf, struct ffly_vec *__data, ff_uint_t *__l) {
 		ffly_errmsg("missing right hand bracket on array.\n");
 		return FFLY_FAILURE;
 	}
-/*
-	if (!expect_token(__conf, _tok_keyword, _comma, &err)) {
-		ffly_errmsg("expect error.\n");
-		return FFLY_FAILURE;
-	}
-*/
+
 	if (_err(err)) {
 		ffly_errmsg("error has occurred while processing array.\n");
 		return err;
 	}
 	return FFLY_SUCCESS;
+}
+
+ff_err_t static
+read_struct(struct ffly_conf *__conf, ffly_mapp __fields) {
+	ff_err_t err;
+	ffly_map_init(__fields, _ffly_map_127);
+	if (!next_token_is(__conf, _tok_keyword, _r_brace, &err)) {
+	_again:
+		{
+			struct token *name = read_token(__conf, &err);
+			if (!expect_token(__conf, _tok_keyword, _colon, &err)) {
+			
+			}
+			struct ffly_conf_val *val;
+			read_val(__conf, &val);
+
+			struct ffly_conf_entity ent;
+			ent = (struct ffly_conf_entity) {
+				.kind = _ffly_conf_val,
+				.p = val
+			};
+
+			push_entity(__conf, &ent);
+
+			struct ffly_conf_var *var = (struct ffly_conf_var*)__ffly_mem_alloc(sizeof(struct ffly_conf_var));
+			*var = (struct ffly_conf_var) {
+				.val = val,
+				.name = name->p
+			};
+
+			ent = (struct ffly_conf_entity){
+				.kind = _ffly_conf_var,
+				.p = var
+			};
+
+			push_entity(__conf, &ent);
+			ffly_map_put(__fields, (ff_u8_t*)name->p, ffly_str_len((char*)name->p), val);
+		}		
+
+		if (!expect_token(__conf, _tok_keyword, _comma, &err)) {
+
+		}
+
+		if (!next_token_is(__conf, _tok_keyword, _r_brace, &err))
+			goto _again;
+	}
 }
 
 ff_err_t static
@@ -464,13 +534,36 @@ read_decl(struct ffly_conf *__conf) {
 
 		arr->name = (char*)name->p;
 		p = (void*)arr;
-		push_arr(__conf, arr);
+		struct ffly_conf_entity ent = {
+			.kind = _ffly_conf_arr,
+			.p = arr
+		};
+
+		push_entity(__conf, &ent);
+	} else if (next_token_is(__conf, _tok_keyword, _l_brace, &err)) {
+		struct ffly_conf_struct *struc = (struct ffly_conf_struct*)__ffly_mem_alloc(sizeof(struct ffly_conf_struct));
+		read_struct(__conf, &struc->fields);
+		struct ffly_conf_entity ent = {
+			.kind = _ffly_conf_struct,
+			.p = struc
+		};
+
+		p = (void*)struc;
+		push_entity(__conf, &ent);
 	} else {
-		struct ffly_conf_val val;
+		struct ffly_conf_val *val;
 		if (_err(err = read_val(__conf, &val))) {
 			ffly_fprintf(ffly_err, "failed to read value.\n");
 			return err;
 		}
+
+		struct ffly_conf_entity ent;
+		ent = (struct ffly_conf_entity){
+			.kind = _ffly_conf_val,
+			.p = val
+		};
+
+		push_entity(__conf, &ent);
 
 		struct ffly_conf_var *var = (struct ffly_conf_var*)__ffly_mem_alloc(sizeof(struct ffly_conf_var));
 		*var = (struct ffly_conf_var) {
@@ -478,8 +571,13 @@ read_decl(struct ffly_conf *__conf) {
 			.name = (char*)name->p
 		};
 
-		p = (void*)var;
-		push_free(__conf, p);
+		p = (void*)val;
+		ent = (struct ffly_conf_entity){
+			.kind = _ffly_conf_var,
+			.p = var
+		};
+		
+		push_entity(__conf, &ent);
 	}
 
 	ffly_map_put(&__conf->env, (ff_u8_t*)name->p, ffly_str_len((char*)name->p), p);
@@ -509,8 +607,8 @@ ffly_conf_init(struct ffly_conf *__conf) {
 		return err;
 	}
 
-	ffly_vec_set_flags(&__conf->arrs, VEC_AUTO_RESIZE);
-	if (_err(err = ffly_vec_init(&__conf->arrs, sizeof(struct ffly_conf_arr*)))) {
+	ffly_vec_set_flags(&__conf->entities, VEC_AUTO_RESIZE);
+	if (_err(err = ffly_vec_init(&__conf->entities, sizeof(struct ffly_conf_entity*)))) {
 		ffly_fprintf(ffly_err, "failed to init vec.\n");
 		return err;
 	}
@@ -581,16 +679,31 @@ ffly_conf_ld(struct ffly_conf *__conf, char const *__file) {
 ff_err_t
 ffconf_free(ffconfp __conf) {
 	ff_err_t err;
-	if (ffly_vec_size(&__conf->arrs)>0) {
-		struct ffly_conf_arr **itr = (struct ffly_conf_arr**)ffly_vec_begin(&__conf->arrs);
-		while(itr <= (struct ffly_conf_arr**)ffly_vec_end(&__conf->arrs)) {
-			ffly_vec_de_init(&(*itr)->data);
-			__ffly_mem_free(*itr);
+	if (ffly_vec_size(&__conf->entities)>0) {
+		struct ffly_conf_entity **itr = (struct ffly_conf_entity**)ffly_vec_begin(&__conf->entities);
+		struct ffly_conf_entity *ent;
+		while(itr <= (struct ffly_conf_entity**)ffly_vec_end(&__conf->entities)) {
+			ent = *itr;
+			switch(ent->kind) {
+				case _ffly_conf_val:
+					__ffly_mem_free(((struct ffly_conf_val*)ent->p)->p);
+				break;
+				case _ffly_conf_var:
+				break;
+				case _ffly_conf_arr:
+					ffly_vec_de_init(&((struct ffly_conf_arr*)ent->p)->data);
+				break;
+				case _ffly_conf_struct:
+					ffly_map_de_init(&((struct ffly_conf_struct*)ent->p)->fields);
+				break;
+			}
+			__ffly_mem_free(ent->p);
+			__ffly_mem_free(ent);
 			itr++;
 		}
 	}
 
-	if (_err(err = ffly_vec_de_init(&__conf->arrs))) {
+	if (_err(err = ffly_vec_de_init(&__conf->entities))) {
 		ffly_fprintf(ffly_err, "failed to de-init vec.\n");
 		return err;
 	}
@@ -702,12 +815,14 @@ void static print_val(struct ffly_conf_val *__val) {
 		ffly_printf("%d\n", *(ff_i16_t*)__val->p);
 	else if (__val->kind == _ffly_conf_8l_s)
 		ffly_printf("%d\n", *(ff_i8_t*)__val->p);
+	else
+		ffly_printf("unknown.\n");
 }
 
 //# define DEBUG
 # ifdef DEBUG
-int main() {
-	ffly_io_init();
+
+ff_err_t ffmain(int __argc, char const *__argv[]) {
 	struct ffly_conf conf;
 	ffly_conf_init(&conf);
 	ffly_conf_ld(&conf, "test.conf");
@@ -723,7 +838,7 @@ int main() {
 
 	void const *no = ffly_conf_get(&cf, "no");
 
-	printf("val: %u\n", ffly_conf_int_u(no));
+	ffly_printf("val: %u\n", ffly_conf_int_u(no));
 
 	print_val((struct ffly_conf_val*)info);
 //	  print_val((struct ffly_conf_val*)no);
@@ -735,6 +850,5 @@ int main() {
 
 	ffly_conf_free(&conf);
 	ffconf_free(&cf);	 
-	ffly_io_closeup();
 }
 # endif

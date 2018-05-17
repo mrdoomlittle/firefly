@@ -1,0 +1,3 @@
+src/lexer is only to be used under certain circumstances,
+the lexer should be rewriten this is to allow for more flexibility
+when working on things without breaking others this applys to other things as well.
