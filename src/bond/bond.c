@@ -241,7 +241,7 @@ absorb_segment(ffef_seg_hdrp __seg) {
 	read(d, seg->p, __seg->sz);
 }
 
-# include "../bcd.h"
+# include "../rdm.h"
 void static
 absorb_region(ffef_reg_hdrp __reg) {
 	char name[128];
@@ -280,7 +280,7 @@ absorb_region(ffef_reg_hdrp __reg) {
 		rise+=__reg->end-__reg->beg;
 		printf("region placed at: %u\n", reg->beg);
 		reg->adr = __reg->adr+curadr();
-		ffly_bcd(buf, buf+size);
+		ffly_rdm(buf, buf+size);
 	} else {
 		reg->next = curreg;
 		curreg = reg;

@@ -1,4 +1,4 @@
-# include "../bci.h"
+# include "../resin.h"
 # include "../stdio.h"
 # include "../linux/unistd.h"
 # include "../linux/stat.h"
@@ -26,13 +26,13 @@ set_ip(ff_addr_t __to) {
 	ip = __to;
 }
 
-struct ffly_bci ctx;
+struct ffly_resin ctx;
 void* ring(ff_u8_t __no, void *__arg_p) {
 	ff_u8_t *arg = (ff_u8_t*)__arg_p;
 	switch(__no) {
 		case 0x0: {// set stack pointer
 			ff_u64_t sp = ctx.stack_size;
-			ffly_bci_sst(&ctx, &sp, 0, sizeof(ff_u64_t));
+			ff_resin_sst(&ctx, &sp, 0, sizeof(ff_u64_t));
 			break;
 		}
 		case 0x1: {
@@ -55,7 +55,7 @@ void* ring(ff_u8_t __no, void *__arg_p) {
 	printf("ring ring hello?\n");
 }
 
-struct ffly_bci ctx = {
+struct ffly_resin ctx = {
 	.stack_size = 200,
 	.fetch_byte = fetch_byte,
 	.ip_incr = ip_incr,
@@ -64,15 +64,15 @@ struct ffly_bci ctx = {
 	.rin = ring
 };
 
-void ffbci_exec(void *__bin, void *__end, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
+void ffres_exec(void *__bin, void *__end, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
 	bin = (ff_u8_t*)__bin;
 	end = (ff_u8_t*)__end;
 	ip = __entry;
-	ffly_bci_init(&ctx);
+	ff_resin_init(&ctx);
 	if (__prep != NULL)
 		__prep(__hdr, (void*)&ctx);
 	ff_err_t exit_code;
-	ffly_bci_exec(&ctx, &exit_code);
+	ff_resin_exec(&ctx, &exit_code);
 	printf("exit code: %d\n", exit_code);
-	ffly_bci_de_init(&ctx);
+	ff_resin_de_init(&ctx);
 }

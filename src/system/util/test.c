@@ -7,15 +7,15 @@
 # define NONFF
 # include "../../tools/printbin.c"
 void ts0() {
-	mdl_u64_t const n = 20000;
-	mdl_u64_t table[8] = {
+	ff_u64_t const n = 20000;
+	ff_u64_t table[8] = {
 		0, 0, 0, 0, 0, 0, 0, 0
 	};
 
-	mdl_u64_t i = 0;
+	ff_u64_t i = 0;
 	while(i != n) {
-		mdl_u64_t val, in = i;
-		val = ffly_hash((mdl_u8_t const*)&in, sizeof(mdl_u64_t));
+		ff_u64_t val, in = i;
+		val = ffly_hash((ff_u8_t const*)&in, sizeof(ff_u64_t));
 		table[0]+=val&0xff;
 		table[1]+=val>>8&0xff;
 		table[2]+=val>>16&0xff;
@@ -37,21 +37,21 @@ void ts0() {
 	printf("6: %lu\n", table[6]);
 	printf("7: %lu\n", table[7]);
 }
-
+# include <unistd.h>
 # include <pthread.h>
 # define SLAVES 2
-mdl_u64_t err = 0;
+ff_u64_t error = 0;
 pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 struct job {
-	mdl_u64_t *beg, *end;
-	mdl_u64_t locate;
+	ff_u64_t *beg, *end;
+	ff_u64_t locate;
 };
 
 struct job *inbound = NULL;
 
 void *slave(void *__arg_p) {
-	mdl_u64_t *cur, *end;
-	mdl_u64_t locate;
+	ff_u64_t *cur, *end;
+	ff_u64_t locate;
 _bk:
 	pthread_mutex_lock(&lock);
 	if (inbound != NULL) {
@@ -65,10 +65,11 @@ _bk:
 	}
 	pthread_mutex_unlock(&lock);
 	goto _bk;
+	usleep(10000);
 _sk:
 	while(cur != end) {
 		if (*cur == locate) {
-			__asm__("lock incq %0\n\t" : "=m"(err));
+			__asm__("lock incq %0\n\t" : "=m"(error));
 		}
 		cur++;
 	}
@@ -79,9 +80,9 @@ _sk:
 # include <signal.h>
 # include <stdlib.h>
 void ts1() {
-	mdl_u64_t const n = 100000;
-	mdl_u64_t *map = (mdl_u64_t*)malloc(n*sizeof(mdl_u64_t));
-	mdl_u64_t *cur = map;
+	ff_u64_t const n = 100000;
+	ff_u64_t *map = (ff_u64_t*)malloc(n*sizeof(ff_u64_t));
+	ff_u64_t *cur = map;
 	while(cur != map+n)
 		*(cur++) = 0;
 
@@ -89,10 +90,10 @@ void ts1() {
 	double one = 100.0/(double)n;
 	double v;
 
-	mdl_u64_t mul = 2584193;//rand()%20000;
+	ff_u64_t mul = 1;
 	pthread_t slaves[SLAVES];
 
-	mdl_u64_t i = 0;
+	ff_u64_t i = 0;
 	while(i != SLAVES) {
 		pthread_create(&slaves[i], NULL, slave, NULL);
 		i++;
@@ -100,8 +101,9 @@ void ts1() {
 
 	i = 0;
 	while(i != n) {
-		mdl_u64_t val, in = i*mul;
-		val = ffly_hash((mdl_u8_t const*)&in, sizeof(mdl_u64_t));
+		ff_u64_t val;
+		ff_u8_t in[] = {i*mul, 'd', 'a', 'n', 'i', 'e', 'l'};
+		val = ffly_hash((ff_u8_t const*)&in, sizeof(in));
 
 		struct job static j;
 		j.beg = map;
@@ -113,15 +115,16 @@ void ts1() {
 		inbound = &j;
 
 		if ((v = ((double)i*one)-ground)>1.0) {
-			printf("%lf done.\n", i*one);
+			printf("%lf done, %lu error/s\n", i*one, error);
 			ground+=v;
 		}
 
 		*(map+i) = val;
 		i++;
+		mul+=rand()%27;
 	}
 
-	printf("%lu error/s\n", err);
+	printf("%lu error/s\n", error);
 	while(inbound != NULL) {
 		usleep(10);
 	}

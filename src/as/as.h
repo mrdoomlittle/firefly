@@ -3,7 +3,7 @@
 # include "symbol.h"
 int extern out;
 int extern in;
-# include "../bci.h"
+# include "../resin.h"
 # include "../ffint.h"
 # define inssize struct(ins)
 # define is_flag(__flags, __flag) \

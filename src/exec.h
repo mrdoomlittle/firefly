@@ -1,7 +1,7 @@
 # ifndef __ffly__exec__h
 # define __ffly__exec__h
 # include "ffint.h"
-# include "bci/exec.h"
+# include "resin/exec.h"
 enum {
 	_ffexec_bc,
 	_ffexec_script

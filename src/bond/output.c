@@ -14,7 +14,7 @@ out_seg(segmentp __seg) {
 	ff_bond_oust(&seg, ffef_seg_hdrsz);
 }
 
-# include "../bcd.h"
+# include "../rdm.h"
 void ff_bond_output(ffef_hdrp __hdr) {
 	regionp cur = curbin, bk;
 	segmentp seg;
@@ -28,7 +28,7 @@ void ff_bond_output(ffef_hdrp __hdr) {
 		seg->addr = cur->adr;
 		seg->p = (ff_u8_t*)malloc(seg->size);
 		ff_bond_read(cur->beg, seg->p, seg->size);
-		ffly_bcd(seg->p, seg->p+seg->size);
+		ffly_rdm(seg->p, seg->p+seg->size);
 		cur = cur->next;
 	}
 

@@ -1,5 +1,5 @@
-# ifndef __ffly__bci__h
-# define __ffly__bci__h
+# ifndef __ffly__resin__h
+# define __ffly__resin__h
 # include "types.h"
 # include "ffint.h"
 # include "get_bit.h"
@@ -28,7 +28,9 @@
 # define _gt 0x1
 # define _lt 0x2
 # define _eq 0x4
-typedef struct ffly_bci {
+// resin byte code interp
+
+typedef struct ffly_resin {
 	struct ffly_getbit bit;
 	ff_uint_t stack_size;
 	ff_u8_t *stack;
@@ -40,11 +42,12 @@ typedef struct ffly_bci {
 	void*(*rin)(ff_u8_t, void*);
 	ff_addr_t rtbuf[22];//return buffer
 	ff_addr_t *retto;
-} *ffly_bcip;
+} *ffly_resinp;
 
-void ffly_bci_sst(ffly_bcip, void*, ff_addr_t, ff_uint_t);
-void ffly_bci_sld(ffly_bcip, ff_addr_t, void*, ff_uint_t);
-ff_err_t ffly_bci_init(ffly_bcip);
-ff_err_t ffly_bci_de_init(ffly_bcip);
-ff_err_t ffly_bci_exec(ffly_bcip, ff_err_t*);
-# endif /*__ffly__bci__h*/
+void* ff_resin_resolv_adr(ffly_resinp, ff_addr_t);
+void ff_resin_sst(ffly_resinp, void*, ff_addr_t, ff_uint_t);
+void ff_resin_sld(ffly_resinp, ff_addr_t, void*, ff_uint_t);
+ff_err_t ff_resin_init(ffly_resinp);
+ff_err_t ff_resin_de_init(ffly_resinp);
+ff_err_t ff_resin_exec(ffly_resinp, ff_err_t*);
+# endif /*__ffly__resin__h*/

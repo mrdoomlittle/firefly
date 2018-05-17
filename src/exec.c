@@ -2,7 +2,7 @@
 void ffexec(void *__p, void *__end, ff_u8_t __format, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
 	switch(__format) {
 		case _ffexec_bc:
-			ffbci_exec(__p, __end, __prep, __hdr, __entry);
+			ffres_exec(__p, __end, __prep, __hdr, __entry);
 		break;
 	}
 }
@@ -18,8 +18,8 @@ void ffexec(void *__p, void *__end, ff_u8_t __format, void(*__prep)(void*, void*
 # include "memory/mem_free.h"
 # include "ffef.h"
 # include "system/io.h"
-# include "bci.h"
-# include "bcd.h"
+# include "resin.h"
+# include "rdm.h"
 # include "system/nanosleep.h"
 int static fd;
 typedef struct segment {
@@ -33,7 +33,7 @@ static segmentp ss = NULL;
 void static
 prep(void *__hdr, void *__ctx) {
 	ffef_hdrp hdr = (ffef_hdrp)__hdr;
-	ffly_bcip ctx = (ffly_bcip)__ctx;
+	ffly_resinp ctx = (ffly_resinp)__ctx;
 
 	if (ss != NULL)
 		ffly_printf("loading stack segment/s.\n");
@@ -50,7 +50,7 @@ prep(void *__hdr, void *__ctx) {
 		lseek(fd, cur->hdr.offset, SEEK_SET);
 		read(fd, seg, cur->hdr.sz);
 
-		ffly_bci_sst(ctx, seg, cur->hdr.adr, cur->hdr.sz);	
+		ff_resin_sst(ctx, seg, cur->hdr.adr, cur->hdr.sz);	
 		__ffly_mem_free(seg);
 		bk = cur;
 		cur = cur->next;
@@ -138,7 +138,7 @@ void ffexecf(char const *__file) {
 
 	end = bin+size;
 
-	ffly_bcd(bin, end);
+	ffly_rdm(bin, end);
 	ffly_printf("routine at: %u\n", hdr.routine);
 	ffly_printf("exec, in 3\n");
 	ffly_nanosleep(1, 0);

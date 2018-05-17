@@ -1,8 +1,8 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/io.h"
-# include "bci.h"
-# include "bcd.h"
+# include "resin.h"
+# include "rdm.h"
 # include "string.h"
 # define MAX 21
 void static
@@ -167,7 +167,7 @@ void static(*out[])(ff_u8_t**) = {
 	op_ret
 };
 
-void ffly_bcd(ff_u8_t *__p, ff_u8_t *__end) {
+void ffly_rdm(ff_u8_t *__p, ff_u8_t *__end) {
 	ff_u8_t *p = __p;
 	ff_u8_t *end = __end;
 	ff_uint_t i = 0;
@@ -185,7 +185,7 @@ void ffly_bcd(ff_u8_t *__p, ff_u8_t *__end) {
 # include "linux/unistd.h"
 # include "linux/fcntl.h"
 # include "linux/stat.h"
-void ffly_bcdf(char const *__file) {
+void ffly_rdmf(char const *__file) {
 	int fd;
 	if ((fd = open(__file, O_RDONLY, 0)) < 0) {
 		ffly_fprintf(ffly_out, "failed to open file\n");
@@ -198,6 +198,6 @@ void ffly_bcdf(char const *__file) {
 	ff_u8_t *p = (ff_u8_t*)__ffly_mem_alloc(st.st_size);
 	read(fd, p, st.st_size);
 	close(fd);
-	ffly_bcd(p, p+st.st_size);
+	ffly_rdm(p, p+st.st_size);
 	__ffly_mem_free(p);
 }
