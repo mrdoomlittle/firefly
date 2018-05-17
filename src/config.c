@@ -69,7 +69,7 @@ void const* ffly_conf_get(ffconfp __conf, char const *__name) {
 void const* ffly_conf_struc_get(void const *__p, char const *__name) {
 	ff_err_t err;
 	struct ffly_conf_struct *p = (struct ffly_conf_struct*)__p;
-	return ffly_map_get(&_p->fields, (ff_u8_t const*)__name, ffly_str_len(__name), &err);
+	return ffly_map_get(&p->fields, (ff_u8_t const*)__name, ffly_str_len(__name), &err);
 }
 
 void const* ffly_conf_arr_elem(void const *__p, ff_uint_t __no) {

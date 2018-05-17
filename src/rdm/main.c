@@ -1,7 +1,7 @@
 # include "../opt.h"
 # include "../system/string.h"
 # include "../ffly_def.h"
-# include "../bcd.h"
+# include "../rdm.h"
 # include "../linux/unistd.h"
 # include "../linux/fcntl.h"
 # include "../linux/stat.h"
@@ -49,7 +49,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	close(fd);
 
 	printf("beg, %u, size, %u\n", beg, size);
-	ffly_bcd(p, p+size);
+	ffly_rdm(p, p+size);
 	free(p);
 	ffly_depart(NULL);
 	retok;
