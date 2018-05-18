@@ -490,7 +490,7 @@ return;
 			break;
 		process_srcfl(file, &dhdr);
 	}
-
+	
 	latch_hooks();
 	reloc();
 	offset+=bot;

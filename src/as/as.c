@@ -371,21 +371,21 @@ void ff_as_final(void) {
 			hookp hk = hok;
 
 			while(hk != NULL) {
-				printf("symbol: %p\n", hk->to);
+				printf("symbol: %p, len: %u\n", hk->to, hk->l);
 				if (!strcmp((*hk->to)->p, *cur)) {
 					struct ffef_hok hok;
 					hok.offset = hk->offset;
 					hok.l = hk->l;
 					hok.to = (*hk->to)->off;
 					ff_as_oust((ff_u8_t*)&hok, ffef_hoksz);
+					hdr.nhk++;
 				}
 				hk = hk->next;
-				hdr.nhk++;
 			}
+		}
 
-			if (hok != NULL)
-				hdr.hk = offset-ffef_hoksz;
-		}	
+		if (hok != NULL)
+			hdr.hk = offset-ffef_hoksz;	
 
 		relocatep rl = rel;
 		while(rl != NULL) {

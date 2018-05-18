@@ -1,14 +1,32 @@
-u8_t* ffly_mem_alloc(u32_t __size) {
-	as("rin 3, %ael\n" : "ael", __size);
+struct arg_s {
+    u64_t p;
+	u64_t src;
+	u32_t size;
+};
+
+u64_t ffly_mem_alloc(u32_t __size) {
+	struct arg_s arg;
+	arg.size = __size;
+	as("rin 3, %rel\n" : "rel", &arg);
+	ret arg.p;
 }
 
-void ffly_mem_free(u8_t *__p) {
+void ffly_mem_free(u64_t __p) {
 	as("rin 4, %rel\n" : "rel", __p);
 }
 
-void ffly_mem_read(u8_t *__p, u32_t __size) {
+void ffly_mem_read(u64_t __p, u8_t *__src, u32_t __size) {
+	struct arg_s arg;
+	arg.p = __p;
+	arg.size = __size;
+	arg.src = __src;
+	as("rin 1, %rel\n" : "rel", &arg);
 }
 
-void ffly_mem_write(u8_t *__p, u32_t __size) {
-
+void ffly_mem_write(u64_t __p, u8_t *__src, u32_t __size) {
+	struct arg_s arg;
+	arg.p = __p;
+	arg.size = __size;
+	arg.src = __src;
+	as("rin 2, %rel\n" : "rel", &arg);
 }

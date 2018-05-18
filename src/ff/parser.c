@@ -119,13 +119,85 @@ ast_binop(ffly_compilerp __compiler, struct node **__node, ff_u8_t __op, struct 
 }
 
 void static
+ast_struct_ref(struct ffly_compiler *__compiler, struct node **__node, struct node *__struct, struct type *__type) {
+	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_struct_ref, ._struct=__struct, ._type=__type});
+}
+
+void static
 mk_ptr_type(struct ffly_compiler *__compiler, struct type **__type, struct type *__ptr) {
 	ffc_build_type(__compiler, __type, &(struct type){.kind=_u64_t, .ptr=__ptr, .size=8, .len=0});
 }
 
+ff_err_t parser_decl_spec(ff_compilerp, struct token*, struct type**);
+ff_err_t parser_declarator(ffly_compilerp, struct type**, struct type*, char**);
+ff_err_t
+parser_struct_decl(struct ffly_compiler *__compiler, struct ffly_map *__fields, ff_uint_t *__size) {
+	if (!expect_token(__compiler, _tok_keywd, _l_brace)) {
+
+	}
+
+	ff_off_t off = 0;
+	ff_err_t err;
+	if (!next_token_is(__compiler, _tok_keywd, _r_brace)) {
+	_next:
+		{
+			struct token *tok = next_token(__compiler);
+			struct type *_type;
+
+			char *name;
+			parser_decl_spec(__compiler, tok, &_type);
+			parser_declarator(__compiler, &_type, _type, &name);
+			(*__size)+=_type->size;
+			_type->off = off;
+			off+=_type->size;
+			ffly_printf("field name: %s\n", name);
+			ffly_map_put(__fields, name, ffly_str_len((char*)name), _type);
+			if (!expect_token(__compiler, _tok_keywd, _semicolon)) {
+
+			}
+
+			if (!next_token_is(__compiler, _tok_keywd, _r_brace)) {
+				goto _next;
+			}
+		}
+	}
+	retok;
+}
+
 ff_err_t
 parser_struct_spec(struct ffly_compiler *__compiler, struct type **__type) {
+	struct token *name = next_token(__compiler);
+	ffly_printf("struct name: %s\n", name->p);
 
+	ff_err_t err;
+	*__type = (struct type*)ffly_map_get(&__compiler->env, name->p, ffly_str_len((char*)name->p), &err);
+	if (_ok(err) && *__type != NULL) retok;
+
+	struct ffly_map fields;
+	ffly_map_init(&fields, _ffly_map_127);
+	ff_uint_t size = 0;
+	if (_err(err = parser_struct_decl(__compiler, &fields, &size))) {
+		reterr;
+	}
+	ffly_printf("struct size: %u\n", size);
+	
+	ffc_build_type(__compiler, __type, &(struct type){.kind=_struct, .size=size, .len=0, .fields=fields});
+	ffly_map_put(&__compiler->env, name->p, ffly_str_len((char*)name->p), *__type);
+	retok;
+}
+
+ff_err_t
+parser_struct_field(struct ffly_compiler *__compiler, struct node **__node, struct node *__struct) {
+	struct token *name = next_token(__compiler);
+	ff_err_t err;
+	struct type *_type = (struct type*)ffly_map_get(&__struct->_type->fields, name->p, ffly_str_len((char*)name->p), &err);
+	if (!_type) {
+		errmsg("structure field doesen't exist.\n");
+		reterr;
+	}
+
+	ast_struct_ref(__compiler, __node, __struct, _type);
+	retok;
 }
 
 ff_err_t static
@@ -227,7 +299,12 @@ parser_postfix_expr(ff_compilerp __compiler, struct node **__node) {
 	struct token *tok = peek_token(__compiler);
 	if (tok->kind == _tok_keywd && tok->id == _l_paren) {
 		parser_func_call(__compiler, __node, *__node);
-		return;
+		retok;
+	}
+
+	if (next_token_is(__compiler, _tok_keywd, _period)) {
+		parser_struct_field(__compiler, __node, *__node);
+		retok;
 	}
 
 	if (next_token_is(__compiler, _tok_keywd, _l_bracket)) {
@@ -336,6 +413,8 @@ parser_decl_spec(ff_compilerp __compiler, struct token *__tok, struct type **__t
 		mk_notype(__compiler, __type, __tok->id);	
 	} else if (__tok->id == _k_void) {
 		*__type = NULL;
+	} else if (__tok->id == _k_struct) {
+		parser_struct_spec(__compiler, __type);
 	}
 	retok;
 }
@@ -396,6 +475,9 @@ parser_decl(ff_compilerp __compiler, struct node **__node) {
 
 	char *name;
 	parser_decl_spec(__compiler, next_token(__compiler), &_type);
+	if (next_token_is(__compiler, _tok_keywd, _semicolon))
+		retok;
+
 	parser_declarator(__compiler, &_type, _type, &name);
 
 	if (is_typedef)
@@ -622,7 +704,7 @@ _again:
 		goto _end;
 	}
 
-	if (is_type(__compiler, tok))
+	if (is_type(__compiler, tok) || tok->id == _k_struct)
 		parser_decl(__compiler, &nod);
 	else if (is_stmt(__compiler))
 		parser_stmt(__compiler, &nod);
@@ -916,7 +998,7 @@ ffly_ff_parse(ff_compilerp __compiler) {
 				parser_func_decl(__compiler, &nod);
 			else
 				parser_func_def(__compiler, &nod);
-		} else if (is_type(__compiler, tok) || tok->id == _k_typedef) {
+		} else if (is_type(__compiler, tok) || tok->id == _k_typedef || tok->id == _k_struct) {
 			parser_decl(__compiler, &nod);
 		} else if (is_stmt(__compiler)) {
 			parser_stmt(__compiler, &nod);

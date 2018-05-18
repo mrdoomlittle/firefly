@@ -3,6 +3,7 @@
 # include "../linux/unistd.h"
 # include "../linux/stat.h"
 # include "../ffef.h"
+# include "mm.h"
 ff_u8_t static *bin = NULL, *end = NULL;
 ff_u32_t static ip;
 ff_u8_t static
@@ -26,6 +27,13 @@ set_ip(ff_addr_t __to) {
 	ip = __to;
 }
 
+struct arg_s {
+	void *p;
+	ff_u64_t src;
+	ff_u32_t size;
+} __attribute__((packed));
+
+# include "../dep/mem_cpy.h"
 struct ffly_resin ctx;
 void* ring(ff_u8_t __no, void *__arg_p) {
 	ff_u8_t *arg = (ff_u8_t*)__arg_p;
@@ -36,18 +44,26 @@ void* ring(ff_u8_t __no, void *__arg_p) {
 			break;
 		}
 		case 0x1: {
-			// mem_read	
+			// mem_read
+			struct arg_s *p = (struct arg_s*)ff_resin_resolv_adr(&ctx, *(ff_addr_t*)arg);
+			ffly_mem_cpy(ff_resin_resolv_adr(&ctx, p->src), p->p, p->size);
 			break;
 		}
 		case 0x2: {
 			// mem_write
+			struct arg_s *p = (struct arg_s*)ff_resin_resolv_adr(&ctx, *(ff_addr_t*)arg);
+			ffly_mem_cpy(p->p, ff_resin_resolv_adr(&ctx, p->src), p->size);
 			break;
 		}
 		case 0x3: {
 			// mem_mmap
+			struct arg_s *p = (struct arg_s*)ff_resin_resolv_adr(&ctx, *(ff_addr_t*)arg);
+			ffly_printf("size: %u, %u\n", p->size, *(ff_addr_t*)arg);
+			p->p = ff_resin_mmap(p->size);	
 			break;
 		}
 		case 0x4: {
+			ff_resin_munmap(*(void**)arg);
 			// mem_munmap
 			break;
 		}
@@ -56,7 +72,7 @@ void* ring(ff_u8_t __no, void *__arg_p) {
 }
 
 struct ffly_resin ctx = {
-	.stack_size = 200,
+	.stack_size = 700,
 	.fetch_byte = fetch_byte,
 	.ip_incr = ip_incr,
 	.get_ip = get_ip,

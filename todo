@@ -108,3 +108,8 @@ else pass the buffer size and error out.
 -. as, bond, etc read full file and dumps it into memory,
 its quite bad but okay for now but later we will pass a 'get' function pointer thru
 to get the next chunk of data
+-. cleanup bond, as, ...
+-. large number passed thru printf causes nots to loop over and over
+-. work on sound as whats going to happen is we are not going to be using 
+any librarys as all, soo the user will have pulse and alsa and the engine will be independent
+user gives the engine data and it will be stored in a custom format <- for image files.

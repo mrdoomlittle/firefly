@@ -15,4 +15,4 @@ gcc $cc_flags -c as.c
 gcc $cc_flags -c ffef.c
 gcc $cc_flags -c hash.c
 gcc $cc_flags -c -o output.o output.c
-gcc $cc_flags -o as main.c $ffly_objs -nostdlib
+gcc $cc_flags -o ffas main.c $ffly_objs -nostdlib

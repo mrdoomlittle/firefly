@@ -1,8 +1,9 @@
 %include "lib/types.ff"
 %include "lib/inc/error.ff"
+%include "lib/inc/memory.ff"
 %define return ret
 //Hello
-
+/*
 void ts0();
 void ts1();
 void ts2();
@@ -44,7 +45,14 @@ void ts5() {
 	char n = 5;
 	out(n);
 }
-
+*/
+/*
+struct nop {
+	u8_t a;
+	u8_t b;
+	u8_t c;
+};
+*/
 //void ts0(u8_t __a, u16_t __b, u32_t __c, u64_t __d) {
 //	out(__a);
 //	out(__b);
@@ -54,5 +62,5 @@ void ts5() {
 //}
 
 u8_t main() {
-	ts0();
+
 }

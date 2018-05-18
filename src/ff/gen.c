@@ -81,7 +81,11 @@ emit_as(ff_compilerp __compiler, struct node *__node) {
 	if (__node->input != NULL) {
 		while(*(--__node->input) != NULL) {
 			struct node *nod = (struct node*)*(__node->input--);
-			char *reg = (char*)*__node->input;
+			char reg[16];
+
+			*reg = '%';
+			ffly_str_cpy(reg+1, (char*)*__node->input);
+
 			emit(__compiler, nod);
 			switch(nod->_type->size) {
 				case 1:
@@ -273,14 +277,14 @@ void emit_decl(ff_compilerp __compiler, struct node *__node) {
 
 void emit_assign(ff_compilerp __compiler, struct node *__node) {
 	emit(__compiler, __node->r);
-
-	if (__node->l->kind == _ast_deref) {
+	struct node *l = __node->l;
+	if (l->kind == _ast_deref) {
 		push(__compiler, "%rel", 8);
-		emit(__compiler, __node->l->operand);
+		emit(__compiler, l->operand);
 		out_s(__compiler, "movq %rel, %xes\n");
 		pop(__compiler, "%rel", 8);
 
-		switch(__node->l->_type->size) {
+		switch(l->_type->size) {
 			case 1:
 				out_s(__compiler, "ldb %xes, %ea\n");
 			break;
@@ -294,8 +298,29 @@ void emit_assign(ff_compilerp __compiler, struct node *__node) {
 				out_s(__compiler, "ldq %xes, %rel\n");
 			break;
 		}
+	} else if (l->kind == _ast_struct_ref) {
+		char buf[128];
+
+		ffly_nots(l->_struct->s_off-l->_type->off, buf);
+		op(__compiler, "asq", "%rlx", buf, NULL);
+		op(__compiler, "subq", "%bp", "%rlx", "%rlx");
+
+		switch(l->_type->size) {
+			case 1:
+				out_s(__compiler, "ldb %rlx, %ae\n");
+			break;
+			case 2:
+				out_s(__compiler, "ldw %rlx, %el\n");
+			break;
+			case 4:
+				out_s(__compiler, "ldd %rlx, %ael\n");
+			break;
+			case 8:
+				out_s(__compiler, "ldq %rlx, %rel\n");
+			break;
+		}
 	} else
-		emit_load(__compiler, __node->l->s_off, __node->l->_type->size);
+		emit_load(__compiler, l->s_off, l->_type->size);
 }
 
 void emit_literal(ff_compilerp __compiler, struct node *__node) {
@@ -487,6 +512,28 @@ void emit_deref(ff_compilerp __compiler, struct node *__node) {
 	}
 }
 
+void emit_struct_ref(ff_compilerp __compiler, struct node *__node) {
+	out_s(__compiler, "asq %rel, 0\n");
+	char buf[128];
+	ffly_nots(__node->_struct->s_off-__node->_type->off, buf);
+	op(__compiler, "asq", "%rlx", buf, NULL);
+	op(__compiler, "subq", "%bp", "%rlx", "%rlx");
+	switch(__node->_type->size) {
+		case 1:
+			out_s(__compiler, "stb %rlx, %ae\n");
+		break;
+		case 2:
+			out_s(__compiler, "stw %rlx, %el\n");
+		break;
+		case 4:
+			out_s(__compiler, "std %rlx, %ael\n");
+		break;
+		case 8:
+			out_s(__compiler, "stq %rlx, %rel\n");
+		break;
+	}
+}
+
 void emit(ff_compilerp __compiler, struct node *__node) {
 	switch(__node->kind) {
 		case _ast_if:
@@ -536,6 +583,9 @@ void emit(ff_compilerp __compiler, struct node *__node) {
 		break;
 		case _ast_deref:
 			emit_deref(__compiler, __node);
+		break;
+		case _ast_struct_ref:
+			emit_struct_ref(__compiler, __node);
 		break;
 		default:
 			emit_binop(__compiler, __node);
