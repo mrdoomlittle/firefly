@@ -113,3 +113,4 @@ to get the next chunk of data
 -. work on sound as whats going to happen is we are not going to be using 
 any librarys as all, soo the user will have pulse and alsa and the engine will be independent
 user gives the engine data and it will be stored in a custom format <- for image files.
+-. src/system/thread.c clone thread local storage wrong
