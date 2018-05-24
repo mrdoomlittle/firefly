@@ -20,7 +20,7 @@ void _start(void) {
 	ff_u32_t band = PORT_BAND;
 	ffly_port_send(MOD_LISTEN, &band, sizeof(ff_u32_t), ffmod_portno());
 
-	//main();
+	main();
 	//pr();
 	//pf();
 	setmalopt(FF_MAL_O_LOC);

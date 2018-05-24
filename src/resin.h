@@ -4,6 +4,12 @@
 # include "ffint.h"
 # include "get_bit.h"
 # include "ffly_def.h"
+/*
+	_op_asb
+	_op_asw
+	...
+*/
+
 # define _op_exit 0x0
 # define _op_as 0x1
 # define _op_jmp 0x2

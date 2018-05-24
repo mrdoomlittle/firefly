@@ -38,7 +38,7 @@ static ff_u8_t *buf;
 void 
 ffly_string_init() {
 # ifdef __fflib
-	buf_tls = ffly_tls_alloc();
+//	buf_tls = ffly_tls_alloc();
 # endif
 }
 

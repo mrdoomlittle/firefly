@@ -245,7 +245,7 @@ _again:
 		ffly_printf("working on band: %u\n", m->band);
 
 		ffly_port_recv(m->band, &no, 1, ffmod_portno());
-/*
+
 		if (no != 0xff) {
 			if (no <= _ffcal_mod_scp) {
 				process[no](m->band);
@@ -258,7 +258,7 @@ _again:
 				*cur = *(--mod);
 			}
 		}
-*/
+
 		if (no == 0xff) {
 			ffly_printf("got terminator, band: %u\n", m->band);
 			ffly_printf("waiting for prossess to finish, %u\n", m->pid);

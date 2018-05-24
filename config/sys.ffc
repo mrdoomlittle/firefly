@@ -4,7 +4,7 @@ max_threads:20~_64l_u,
 # alloca stack size
 alssize:400~_64l_u,
 # list of modules to execute
-modl:["a.mod", "b.mod"],
+modl:["a.mod"],
 # list of scripts for init - not finished
 inil:[],
 # directory from root dir
@@ -16,6 +16,6 @@ db:{
 	ip_addr:"127.0.0.1",
 	port:21299~_16l_u,
 	enckey:"firefly",
-#	user:"root",
-#	passwd:"none",
+	user:"root",
+	passwd:"none",
 },

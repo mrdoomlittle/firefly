@@ -7,3 +7,5 @@ log
 err
 main
 a.out
+*.mod
+
