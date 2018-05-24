@@ -171,9 +171,9 @@ ff_err_t ffly_ld_sysconf(char const *__path) {
 
 	}
 
-	void const *db = ffly_conf_get(&cf, "db");
-	if (db != NULL)
-		ld_db(db);
+//	void const *db = ffly_conf_get(&cf, "db");
+//	if (db != NULL)
+//		ld_db(db);
 
 	ld_max_threads(&cf);
 	ld_alssize(&cf);

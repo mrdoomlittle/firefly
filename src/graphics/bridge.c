@@ -3,7 +3,6 @@
 # include "../system/pipe.h"
 # include "../types.h"
 # include "../system/io.h"
-# include "../system/event_kind.h"
 # include "../system/event.h"
 # include "../duct.h"
 int main() {
@@ -27,15 +26,15 @@ _again:
 		if (!event) break;
 		if (event->kind == _ffly_wd_ek_closed) {
 			ffly_wd_free_event(&window, event);
-			ffly_free_event(event);
+			ff_event_free(event);
 			ff_duct_exit();
 			goto _end;
-		} else if (event->kind == _ffly_wd_ek_key_press) {
-			
+		} else if (event->kind == _ffly_wd_ek_btn_press) {
+			ff_duct_event(event);
 		}
 
 		ffly_wd_free_event(&window, event);
-		ffly_free_event(event);
+		ff_event_free(event);
 	}
 
 	ff_duct_get_frame(window.raw.frame_buff, 400, 400, 4);

@@ -11,6 +11,15 @@
 #define DRM_IOW(nr, type) _IOW(DRM_IOCTL_BASE, nr, type)
 #define DRM_IOWR(nr, type) _IOWR(DRM_IOCTL_BASE, nr, type)
 
+#define DRM_IOCTL_GEM_CLOSE DRM_IOW (0x09, struct drm_gem_close)
+#define DRM_IOCTL_ADD_CTX DRM_IOWR(0x20, struct drm_context)
+#define DRM_IOCTL_RM_CTX DRM_IOWR(0x21, struct drm_context)
+
+struct drm_gem_close {
+	ff_u32_t handle;
+	ff_u32_t __pad;
+};
+
 struct drm_pci_dev_info {
 	ff_u16_t vendor_id;
 	ff_u16_t device_id;

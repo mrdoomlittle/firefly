@@ -1,24 +1,24 @@
 # include "ring.h"
 # include "../call.h"
-# include "pipe.h"
-# include "../system/pipe.h"
+# include "port.h"
+# include "../system/port.h"
 # include "../ffly_def.h"
 # include "../types.h"
 void static
 ring_printf(void *__ret, void *__params) {
-	ffly_pipe_wr64l(*(ff_u64_t*)__params, ffmod_pipeno());
+	ffly_port_send(PORT_BAND, __params, sizeof(ff_u64_t), ffmod_portno());
 }
 
 void static
 ring_malloc(void *__ret, void *__params) {
 	ff_err_t err;
-	ffly_pipe_write(__params, sizeof(ff_uint_t), ffmod_pipeno());
-	*(void**)__ret = (void*)ffly_pipe_rd64l(ffmod_pipeno(), &err); 
+	ffly_port_send(PORT_BAND, __params, sizeof(ff_uint_t), ffmod_portno());
+	ffly_port_recv(PORT_BAND, __ret, sizeof(void*), ffmod_portno());
 }
 
 void static
 ring_free(void *__ret, void *__params) {
-	ffly_pipe_wr64l(*(ff_u64_t*)__params, ffmod_pipeno());
+	ffly_port_send(PORT_BAND, __params, sizeof(void*), ffmod_portno());
 }
 
 
@@ -28,9 +28,9 @@ ring_dcp(void *__ret, void *__params) {
 	void *src = *(void**)((ff_u8_t*)__params+8);
 	ff_uint_t *n = (ff_uint_t*)((ff_u8_t*)__params+16);
 
-	ffly_pipe_wr64l((ff_u64_t)src, ffmod_pipeno());
-	ffly_pipe_write(n, sizeof(ff_uint_t), ffmod_pipeno());
-	ffly_pipe_read(dst, *n, ffmod_pipeno());
+	ffly_port_send(PORT_BAND, (void*)&src, sizeof(void*), ffmod_portno());
+	ffly_port_send(PORT_BAND, n, sizeof(ff_uint_t), ffmod_portno());
+	ffly_port_recv(PORT_BAND, dst, *n, ffmod_portno());
 }
 
 void static
@@ -39,9 +39,9 @@ ring_scp(void *__ret, void *__params) {
 	void *src = *(void**)((ff_u8_t*)__params+8);
 	ff_uint_t *n = (ff_uint_t*)((ff_u8_t*)__params+16);
 
-	ffly_pipe_wr64l((ff_u64_t)dst, ffmod_pipeno());
-	ffly_pipe_write(n, sizeof(ff_uint_t), ffmod_pipeno());
-	ffly_pipe_write(src, *n, ffmod_pipeno());	
+	ffly_port_send(PORT_BAND, (void*)&dst, sizeof(void*), ffmod_portno());
+	ffly_port_send(PORT_BAND, n, sizeof(ff_uint_t), ffmod_portno());
+	ffly_port_send(PORT_BAND, src, *n, ffmod_portno());
 }
 
 static void(*ring[])(void*, void*) = {
@@ -55,6 +55,6 @@ static void(*ring[])(void*, void*) = {
 };
 
 void ffmod_ring(ff_u8_t __no, void *__ret, void *__params) {
-	ffly_pipe_wr8l(__no, ffmod_pipeno());
+	ffly_port_send(PORT_BAND, &__no, 1, ffmod_portno());
 	ring[__no](__ret, __params);
 }

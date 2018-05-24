@@ -26,7 +26,8 @@ gcc $cc_flags -c ../memory/mem_realloc.c
 
 gcc $cc_flags -c ../duct.c
 gcc $cc_flags -c ../system/pool.c
-gcc $cc_flags -c ../system/event.c
+gcc $cc_flags -c -o event.o.0 ../system/event.c
+gcc $cc_flags -c -o event.o.1 ../event.c
 gcc $cc_flags -c ../system/queue.c
 gcc $cc_flags -c ../system/pipe.c
 gcc $cc_flags -c ../system/shm.c
@@ -34,6 +35,6 @@ gcc $cc_flags -c ../mode.c
 
 objs="window.o io.o x11.o x11_wd.o file.o mem_dup.o mem_set.o str_len.o mem_cpy.o \
 mutex.o.0 mutex.o.1 atomic_op.o.0 atomic_op.o.1 \
-mem_alloc.o mem_free.o mem_realloc.o pool.o event.o queue.o \
+mem_alloc.o mem_free.o mem_realloc.o pool.o event.o.0 event.o.1 queue.o \
 pipe.o shm.o mode.o bcopy.o duct.o"
 gcc $cc_flags bridge.c $objs -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm 

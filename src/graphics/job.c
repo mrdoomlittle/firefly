@@ -84,7 +84,7 @@ ffly_grj_pixdraw(ff_uint_t __x, ff_uint_t __y, ff_byte_t *__dst, ff_uint_t __dst
 	ff_byte_t **pixels;
 	ff_uint_t *width;
 	ff_uint_t *height;
-	
+
 	put(x, p, ff_uint_t*);
 	inc(p, ff_uint_t);
 	*(par++) = x;
@@ -106,7 +106,7 @@ ffly_grj_pixdraw(ff_uint_t __x, ff_uint_t __y, ff_byte_t *__dst, ff_uint_t __dst
 	*(par++) = pixels;
 
 	put(width, p, ff_uint_t*);
-	inc(p, ff_uint_t*);
+	inc(p, ff_uint_t);
 	*(par++) = width;
 
 	put(height, p, ff_uint_t*);
@@ -165,7 +165,7 @@ ff_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 			dst = *(ff_byte_t**)*(par++);
 			npix = *(ff_uint_t*)*(par++);
 			colour = *(ffly_colour_t*)*par;
-
+	
 			if (_err(err = __ffly_pixfill(dst, npix, colour))) {
 				ffly_fprintf(ffly_err, "failed to fill with pixels.\n");
 			}

@@ -78,6 +78,8 @@ main: clean
 	g++ $(cc_flags) main.c $(ffly_objs) -nostdlib
 uni: clean
 	gcc $(cc_flags) main.c $(ffly_objs) -nostdlib
+workshop: clean
+	gcc $(cc_flags) workshop.c $(ffly_objs) -nostdlib
 all:
 	rm -f *.o
 	nasm -f elf64 $(nasm_flags) -o mutex.o system/asm/mutex.asm

@@ -12,4 +12,6 @@ typedef struct ffly_task_pool {
 void ffly_task_pool_init(ffly_task_poolp, ff_uint_t);
 void ffly_task_pool_cleanup(ffly_task_poolp);
 ff_err_t ffly_task_pool_add(ffly_task_poolp, ff_i8_t(*)(void*), void*);
+
+extern struct ffly_task_pool __ffly_task_pool__;
 # endif /*__ffly__task__pool__h*/

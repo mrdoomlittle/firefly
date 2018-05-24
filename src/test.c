@@ -63,7 +63,30 @@ ff_i8_t test(void *__arg_p) {
 # include "system/servant.h"
 # include "system/task_pool.h"
 # include "stores.h"
+# include "system/tls.h"
+# include "linux/prctl.h"
+void showfsreg() {
+	void *p = NULL;
+	if (arch_prctl(ARCH_GET_GS, &p) == -1) {
+		ffly_printf("error, %s\n", strerror(errno));	
+	}
+	ffly_printf("fs: %p\n", p);
+}
+ff_uint_t tls_test;
+# include "linux/mman.h"
+# include "system/thread.h"
+void *tls;
+void* th(void *__arg) {
+}
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+
+//tls = p;
+//	ff_tid_t id;
+//	ffly_thread_create(&id, th, NULL);
+//	ffly_thread_wait(id);
+//ls_test = ffly_tls_alloc(sizeof(ff_uint_t));
+
+
 //	struct ffly_task_pool pool;
 //	ffly_task_pool_init(&pool, 4);
 
@@ -127,13 +150,13 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_scheduler_de_init();
 */
-	ff_stores_connect();
-	ff_stores_login();
-	char *motd = (char*)ff_stores_get(_ff_stores_motd);
-	ffly_printf("motd: %s\n", motd);
-	__ffly_mem_free(motd);
-	ff_stores_logout();
-	ff_stores_disconnect();
+//	ff_stores_connect();
+//	ff_stores_login();
+//	char *motd = (char*)ff_stores_get(_ff_stores_motd);
+//	ffly_printf("motd: %s\n", motd);
+//	__ffly_mem_free(motd);
+//	ff_stores_logout();
+//	ff_stores_disconnect();
 	
 	ffly_arstat();
 }

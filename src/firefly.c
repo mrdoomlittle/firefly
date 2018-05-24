@@ -77,8 +77,10 @@ char const static *by = "mrdoomlittle";
 # include "dep/str_cpy.h"
 # include "mod.h"
 
+# include "system/tls.h"
 void static
 init() {
+	ffly_tls_new();
 	ffly_ar_init();
 	ffly_io_init();
 	ffly_arcs_init();
@@ -95,13 +97,15 @@ prep() {
 	ffly_arcs_tun("info");
 	ffly_arcs_creatrec("created-by", NULL, _ffly_rec_def, 0);
 	ffly_arcs_bk();
-
-	ffly_modld();
 	ffly_init();
+	ff_mod_init();
+	ff_mod_handle();
+	ffly_mod();
 }
 
 void static
 fini() {
+	ff_mod_de_init();
 	ffly_thread_cleanup();
 	ffly_arcs_de_init();
 	ffly_alloca_cleanup();
@@ -110,6 +114,7 @@ fini() {
 	ffly_printf("memory not freed: %u-bytes\n", ffly_mem_alloc_bc-ffly_mem_free_bc);
 	ffly_io_closeup();
 	ffly_ar_cleanup();
+	ffly_tls_destroy();
 }
 
 void _start(void) {

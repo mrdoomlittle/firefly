@@ -27,10 +27,21 @@ ff_u64_t static powof10[] = {
 };
 # ifndef __fflib
 # include <string.h>
+static __thread ff_u8_t *buf;
 # else
 # include "../dep/mem_cpy.h"
+# include "tls.h"
+static ff_uint_t buf_tls;
+static ff_u8_t *buf;
 # endif
-static __thread ff_u8_t *buf;
+
+void 
+ffly_string_init() {
+# ifdef __fflib
+	buf_tls = ffly_tls_alloc();
+# endif
+}
+
 void static
 drain(ff_u8_t *__p, ff_u16_t __size, ff_u16_t __cut, ff_u8_t __off) {
 # ifndef __fflib

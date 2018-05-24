@@ -67,3 +67,5 @@ void ffly_task_pool_cleanup(ffly_task_poolp __pool) {
 		ffly_servant_kill(*(cur++));
 	__ffly_mem_free(__pool->servants);
 }
+
+struct ffly_task_pool __ffly_task_pool__;

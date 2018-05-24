@@ -10,6 +10,8 @@ enum {
 	_ar_getpot
 };
 
+// rename
+void ffly_process_prep(void);
 ff_err_t ffly_ar_init(void);
 ff_err_t ffly_ar_cleanup(void);
 void ffly_arctl(ff_u8_t, ff_u64_t);

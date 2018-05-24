@@ -14,8 +14,8 @@
 # endif
 # define PAGE_SIZE 4
 # define UU_PAGE_SIZE 26
-# define DSS 262144
-# define TLS 0xff
+# define DSS 872144
+# define TLS_SIZE 8024
 # include "../ffly_system.h"
 # ifndef __ffly_no_sysconf
 #	include "config.h"
@@ -44,6 +44,7 @@ ffly_potp static pot = NULL;
 # include "../linux/sched.h"
 # include "../linux/unistd.h"
 # include "../linux/wait.h"
+# include "tls.h"
 
 struct {
 	ff_tid_t *p;
@@ -131,8 +132,10 @@ prox() {
 	void *arg_p;
 	__asm__("movq -8(%%rbp), %%rdi\n\t"
 			"movq %%rdi, %0": "=m"(arg_p) : : "rdi");
+	ffly_tls_init();
+	ffly_process_prep();
 	ffly_threadp thr = (ffly_threadp)arg_p;
-
+/*
 	ff_setpid();
 	thr->pid = ff_getpid();
 	id = thr->tid;
@@ -140,14 +143,16 @@ prox() {
 	ffly_fprintf(ffly_out, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
 	ffly_atomic_incr(&active_threads);
 	ffly_cond_lock_signal(&thr->lock);
-	thr->alive = 1;
+	thr->alive = 1;*/
+	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&thr->pot);
+	ffly_fprintf(ffly_out, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
 	thr->routine(thr->arg_p);
-	thr->alive = 0;
-	ffly_atomic_decr(&active_threads);
-
-	ffly_mal_axe;
+//	thr->alive = 0;
+//	ffly_atomic_decr(&active_threads);
 
 	thr->exit = 0;
+
+	ffly_mal_axe;
 	ffly_thread_del(thr->tid);
 	exit(0);
 }
@@ -207,7 +212,7 @@ _exec:
 		*thr = (struct ffly_thread) {
 			.tid = *__tid,
 			.sp = (ff_byte_t*)__ffly_mem_alloc(DSS),
-			.tls = (ff_byte_t*)__ffly_mem_alloc(TLS),
+			.tls = (ff_byte_t*)__ffly_mem_alloc(TLS_SIZE),
 			.arg_p = __arg_p,
 			.routine = __p
 		};
@@ -218,13 +223,13 @@ _exec:
 
 	__linux_pid_t pid;
 	if ((pid = clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD|CLONE_SETTLS,
-		(ff_u64_t)(thr->sp+(DSS-8)), NULL, NULL, (ff_u64_t)(thr->tls+TLS))) == (__linux_pid_t)-1)
+		(ff_u64_t)(thr->sp+(DSS-8)), NULL, NULL, (ff_u64_t)thr->tls)) == (__linux_pid_t)-1)
 	{
 		ffly_fprintf(ffly_err, "thread, failed to create.\n");
 		return FFLY_FAILURE;
 	}
 
-	ffly_cond_lock_wait(&thr->lock);
+//	ffly_cond_lock_wait(&thr->lock);
 	}
 	return FFLY_SUCCESS;
 
@@ -269,14 +274,19 @@ ff_err_t ffly_thread_cleanup() {
 	ffly_threadp *end = threads+off;
 	ffly_printf("thread shutdown, stage 0.\n");
 	while(itr != end) {
+		ffly_printf("thread with id: %u, cleaning.\n", itr-threads);
 		cur = *(itr++);
 //		if (cur->alive)
 //			ffly_thread_kill(cur->tid); // bad - rethink
 		ffly_thread_wait(cur->tid);
-		if (cur->sp != NULL)
+		if (cur->sp != NULL) {
+			ffly_printf("\t.- stack release.\n");
 			__ffly_mem_free(cur->sp);
-		if (cur->tls != NULL)
+		}
+		if (cur->tls != NULL) {
+			ffly_printf("\t.- tls release.\n");
 			__ffly_mem_free(cur->tls);
+		}
 		if (cur->exit == -1) { // if exit was a not a success and has been forced to stop
 			ffly_ctl(ffly_malc, _ar_setpot, (ff_u64_t)cur->pot);
 			ffly_araxe();	

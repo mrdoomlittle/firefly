@@ -36,6 +36,53 @@ int ffly_amdgpu_info(int __fd, struct amdgpu_info *__info) {
 	return ret;
 }
 
+int ffly_amdgpu_memory_info(int __fd, struct drm_amdgpu_memory_info *__info) {
+	struct drm_amdgpu_info info;
+	info.ret_p = (ff_u64_t)__info;
+	info.ret_size = sizeof(struct drm_amdgpu_memory_info);
+	info.query = AMDGPU_INFO_MEMORY;
+	
+	if (drm_ioctl(__fd, DRM_IOCTL_AMDGPU_INFO, &info) == -1) 
+		return -1;
+	return 0;
+}
+
+int ffly_amdgpu_gem_mmap(int __fd, struct amdgpu_bo *__bo, void **__p) {
+	union drm_amdgpu_gem_mmap args;
+
+	args.in.handle = __bo->handle;
+	int ret;
+	if ((ret = drm_ioctl(__fd, DRM_IOCTL_AMDGPU_GEM_MMAP, &args)) == -1)
+		return -1;
+	*__p = (void*)args.out.addr_ptr;
+	return 0;
+}
+
+int
+ffly_amdgpu_gem_object_create(int __fd, ff_u64_t __size, ff_u64_t __alignment,
+	ff_u64_t __domains, ff_u64_t __flags, struct amdgpu_bo *__bo)
+{
+	union drm_amdgpu_gem_create args;
+
+	args.in.bo_size = __size;
+	args.in.domains = __domains;
+	args.in.domain_flags = __flags;
+	args.in.alignment = __alignment;
+
+	int ret;
+	if ((ret = drm_ioctl(__fd, DRM_IOCTL_AMDGPU_GEM_CREATE, &args)) == -1)
+		return -1;
+	__bo->handle = args.out.handle;
+	return 0;
+}
+
+int ffly_amdgpu_gem_object_free(int __fd, struct amdgpu_bo *__bo) {
+	struct drm_gem_close args;
+	args.handle = __bo->handle;
+	drm_ioctl(__fd, DRM_IOCTL_GEM_CLOSE, &args);
+	return 0;
+}
+
 int ffly_amdgpu_ctx_alloc(int __fd, struct amdgpu_ctx *__ctx) {
 	union drm_amdgpu_ctx ctx;
 	ctx.in.op = AMDGPU_CTX_OP_ALLOC_CTX;

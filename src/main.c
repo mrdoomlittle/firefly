@@ -22,6 +22,7 @@
 # include "gravity.h"
 # include "duct.h"
 # include "graphics/pipe.h"
+# include "memory/plate.h"
 # define WIDTH 400
 # define HEIGHT 400
 
@@ -142,6 +143,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ff_uint_t delta = 0, start = 0;
 	ff_int_t old_x, old_y;
+	ffly_queue_init(&ffly_event_queue, sizeof(ff_eventp));
 	while(1) {
 		delta = clock-start;
 		start = clock;
@@ -169,8 +171,15 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 			goto _end;
 		ffly_nanosleep(0, 100000000);
 		ffly_clock_tick();
+		ff_eventp event;
+		while(!ff_event_poll(&event)) {
+			ffly_printf("got event.\n");
+			ff_event_del(event);
+		}
 	}	
 _end:
+	ffly_queue_de_init(&ffly_event_queue);
+	ff_event_cleanup();
 	__ffly_mem_free(texture);
 	close(fd);
 	ff_duct_close();
@@ -183,4 +192,5 @@ _end:
 	ffly_gravity_cleanup();
 	ffly_camera_de_init(&camera);
 	ffly_grp_cleanup(&__ffly_grp__);
+	ffly_plate_cleanup();
 }

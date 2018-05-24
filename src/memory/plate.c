@@ -79,7 +79,7 @@ void ffly_plate_free(void *__plate) {
 	}
 }
 
-void ffly_plate_cleanup() {
+void ffly_plate_cleanup(void) {
 	if (plates != NULL) {
 		platep *cur = plates;
 		platep *end = cur+page_c;

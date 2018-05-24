@@ -14,7 +14,7 @@
 int out, in;
 
 struct ins extern* x86[];
-struct ins extern* bc[];
+struct ins extern* resin[];
 ff_u64_t extern offset;
 
 void ff_as_prepstack(void);
@@ -55,7 +55,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ff_as_init();
 
-	ff_as_load(bc);
+	ff_as_load(resin);
 
 	struct stat st;
 	stat(infile, &st);

@@ -2,10 +2,40 @@
 # define __ffly__amdgpu__drm__h
 # include "ffint.h"
 # include "drm.h"
+#define DRM_AMDGPU_GEM_CREATE 0x00
+#define DRM_AMDGPU_GEM_MMAP     0x01
 #define DRM_AMDGPU_CTX 0x02
 #define DRM_AMDGPU_INFO 0x05
+
+
+#define DRM_IOCTL_AMDGPU_GEM_CREATE DRM_IOWR(DRM_COMMAND_BASE+DRM_AMDGPU_GEM_CREATE, union drm_amdgpu_gem_create)
+#define DRM_IOCTL_AMDGPU_GEM_MMAP DRM_IOWR(DRM_COMMAND_BASE+DRM_AMDGPU_GEM_MMAP, union drm_amdgpu_gem_mmap)
 #define DRM_IOCTL_AMDGPU_CTX DRM_IOWR(DRM_COMMAND_BASE+DRM_AMDGPU_CTX, union drm_amdgpu_ctx)
 #define DRM_IOCTL_AMDGPU_INFO DRM_IOW(DRM_COMMAND_BASE+DRM_AMDGPU_INFO, struct drm_amdgpu_info)
+
+#define AMDGPU_GEM_DOMAIN_CPU 0x1
+#define AMDGPU_GEM_DOMAIN_GTT 0x2
+#define AMDGPU_GEM_DOMAIN_VRAM 0x4
+#define AMDGPU_GEM_DOMAIN_GDS 0x8
+#define AMDGPU_GEM_DOMAIN_GWS 0x10
+#define AMDGPU_GEM_DOMAIN_OA 0x20
+
+/* Flag that CPU access will be required for the case of VRAM domain */
+#define AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED (1<<0)
+/* Flag that CPU access will not work, this VRAM domain is invisible */
+#define AMDGPU_GEM_CREATE_NO_CPU_ACCESS (1<<1)
+/* Flag that USWC attributes should be used for GTT */
+#define AMDGPU_GEM_CREATE_CPU_GTT_USWC (1<<2)
+/* Flag that the memory should be in VRAM and cleared */
+#define AMDGPU_GEM_CREATE_VRAM_CLEARED (1<<3)
+/* Flag that create shadow bo(GTT) while allocating vram bo */
+#define AMDGPU_GEM_CREATE_SHADOW (1<<4)
+/* Flag that allocating the BO should use linear VRAM */
+#define AMDGPU_GEM_CREATE_VRAM_CONTIGUOUS (1<<5)
+/* Flag that BO is always valid in this VM */
+#define AMDGPU_GEM_CREATE_VM_ALWAYS_VALID (1<<6)
+/* Flag that BO sharing will be explicitly synchronized */
+#define AMDGPU_GEM_CREATE_EXPLICIT_SYNC (1<<7)
 
 struct drm_amdgpu_ctx_in {
 	ff_u32_t op;
@@ -39,6 +69,19 @@ struct drm_amdgpu_query_fw {
 	ff_u32_t ip_inst;
 	ff_u32_t index;
 	ff_u32_t __pad;
+};
+
+struct drm_amdgpu_heap_info {
+	ff_u64_t total_heap_size;
+	ff_u64_t usable_heap_size;
+	ff_u64_t heap_usage;
+	ff_u64_t max_allocation;
+};
+
+struct drm_amdgpu_memory_info {
+	struct drm_amdgpu_heap_info vram;
+	struct drm_amdgpu_heap_info cpu_accessible_vram;
+	struct drm_amdgpu_heap_info gtt;
 };
 
 struct drm_amdgpu_info {
@@ -83,6 +126,37 @@ union drm_amdgpu_ctx {
 
 union drm_amdgpu_sched {
 	struct drm_amdgpu_sched_in in;
+};
+
+struct drm_amdgpu_gem_create_in  {
+	ff_u64_t bo_size;
+	ff_u64_t alignment;
+	ff_u64_t domains;
+	ff_u64_t domain_flags;
+};
+
+struct drm_amdgpu_gem_create_out  {
+	ff_u32_t handle;
+	ff_u32_t __pad;
+};
+
+union drm_amdgpu_gem_create {
+	struct drm_amdgpu_gem_create_in in;
+	struct drm_amdgpu_gem_create_out out;
+};
+
+struct drm_amdgpu_gem_mmap_in {
+	ff_u32_t handle;
+	ff_u32_t __pad;
+};
+
+struct drm_amdgpu_gem_mmap_out {
+	ff_u64_t addr_ptr;
+};
+
+union drm_amdgpu_gem_mmap {
+	struct drm_amdgpu_gem_mmap_in in;
+	struct drm_amdgpu_gem_mmap_out out;
 };
 
 // context operations

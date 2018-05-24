@@ -5,9 +5,6 @@
 # include "wd_flags.h"
 # include "../system/nanosleep.h"
 # include "../dep/mem_set.h"
-# include "../system/event_kind.h"
-# include "../system/event_field.h"
-# include "../system/event.h"
 # include "../types/wd_event_t.h"
 ff_byte_t* ffly_wd_frame_buff(struct ffly_wd *__wd) {
 	return __wd->raw.frame_buff;
@@ -112,7 +109,7 @@ ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
 	ff_err_t err;
 	XEvent event;
 	if (XPending(__wd->raw.d) > 0) {
-		*__event = ffly_alloc_event(&err);
+		*__event = ff_event_alloc(&err);
 		if (_err(err)) {
 			ffly_fprintf(ffly_err, "failed to allocate event.\n");
 			return err;
@@ -123,7 +120,7 @@ ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
 				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_closed});
 			break;
             case ButtonPress: case ButtonRelease:
-                mk_event(__event, (ffly_event_t){.kind=event.type == ButtonPress?_ffly_wd_ek_btn_press:_ffly_wd_ek_btn_release, .data=ffly_pool_alloc(&__wd->events)});
+                mk_event(__event, (ffly_event_t){.kind=event.type == ButtonPress?_ffly_wd_ek_btn_press:_ffly_wd_ek_btn_release, .data=ffly_pool_alloc(&__wd->events), .size=sizeof(ffly_wd_event_t)});
                 *((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
                     .btn = ffly_x11_convert_btnno(event.xbutton.button),
                     .x = event.xbutton.x,
@@ -131,7 +128,7 @@ ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
                 };
             break;
 			case KeyPress: case KeyRelease:
-				mk_event(__event, (ffly_event_t){.kind=event.type == KeyPress?_ffly_wd_ek_key_press:_ffly_wd_ek_key_release, .data=ffly_pool_alloc(&__wd->events)});
+				mk_event(__event, (ffly_event_t){.kind=event.type == KeyPress?_ffly_wd_ek_key_press:_ffly_wd_ek_key_release, .data=ffly_pool_alloc(&__wd->events), .size=sizeof(ffly_wd_event_t)});
 				*((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
                     .keycode = ffly_x11_convert_keycode(event.xkey.keycode),
                     .x = event.xkey.x,
@@ -151,7 +148,7 @@ ffly_xcb_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
     ff_err_t err;
 	xcb_generic_event_t *event;
 	if ((event = xcb_poll_for_event(__wd->raw.conn)) != NULL) {
-		*__event = ffly_alloc_event(&err);
+		*__event = ff_event_alloc(&err);
         if (_err(err)) {
             free(event);
             ffly_fprintf(ffly_err, "failed to allocate event.\n");

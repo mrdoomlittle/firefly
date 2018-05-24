@@ -5,7 +5,7 @@
 # include "../system/flags.h"
 # include "../system/pool.h"
 # include "../system/mutex.h"
-# include "../types/event_t.h"
+# include "../event.h"
 # ifdef __ffly_use_x11
 #	include "x11_wd.h"
 #	include "x11.h"

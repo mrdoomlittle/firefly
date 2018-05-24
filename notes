@@ -1,3 +1,7 @@
 -. theres still alot to do and lots needs fixing.
 -. for subprograms like as, bond, etc that are external entities
 all with ffly_* should be avoided e.g. ffly_mem_cpy should be memcpy from src/string.h not src/dep/mem_cpy.h
+
+pixel format:
+	we should work in only r,b,g,a, but when needed to work in another we will just convert it but
+	that should be left for higher level functions.

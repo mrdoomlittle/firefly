@@ -424,7 +424,7 @@ read_arr(struct ffly_conf *__conf, struct ffly_vec *__data, ff_uint_t *__l) {
 		}
 
 		struct ffly_conf_entity ent = {
-			.kind = _ffly_conf_val,
+			.kind = _ffly_conf_arr,
 			.p = arr
 		};
 		
@@ -434,12 +434,15 @@ read_arr(struct ffly_conf *__conf, struct ffly_vec *__data, ff_uint_t *__l) {
 
 	{
 		struct token *tok = peek_token(__conf, &err);
-		struct ffly_conf_val **val;
-		ffly_vec_push_back(__data, (void**)&val);
-		if (_err(err = read_val(__conf, val))) {
+		struct ffly_conf_val *val;
+		if (_err(err = read_val(__conf, &val))) {
 			ffly_fprintf(ffly_out, "failed to read value.\n");
 			return err;
 		}
+
+		void **p;
+		ffly_vec_push_back(__data, (void**)&p);
+		*p = val;
 
 		struct ffly_conf_entity ent = {
 			.kind = _ffly_conf_val,
@@ -499,6 +502,7 @@ read_struct(struct ffly_conf *__conf, ffly_mapp __fields) {
 			};
 
 			push_entity(__conf, &ent);
+			ffly_printf("struct field: %s:%u\n", name->p, ffly_str_len((char*)name->p));
 			ffly_map_put(__fields, (ff_u8_t*)name->p, ffly_str_len((char*)name->p), val);
 		}		
 

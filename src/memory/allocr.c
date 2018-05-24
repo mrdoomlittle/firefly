@@ -7,6 +7,7 @@
 # include "../system/mutex.h"
 # include "../mode.h"
 # include "../rat.h"
+# include "../system/tls.h"
 ff_err_t ffly_printf(char*, ...);
 //	might want to keep track of mmaps
 
@@ -24,6 +25,8 @@ typedef ff_u32_t ar_size_t;
 typedef ff_u32_t ar_uint_t;
 typedef ff_s32_t ar_int_t;
 
+/* recycle old spots
+*/
 # ifndef NULL
 #	define NULL ((void*)0)
 # endif
@@ -139,8 +142,10 @@ rodp rods[64] = {
 
 static struct pot main_pot;
 
-static __thread potp arena = NULL;
-static __thread potp temp = NULL;
+static void *spot[30];
+
+static ff_uint_t arena_tls;
+static ff_uint_t temp_tls;
 /*
 	dont use pointers when we can use offsets to where the block is located 
 	as it will take of less space in the header.
@@ -166,13 +171,31 @@ typedef struct blkd {
 void static* _ffly_alloc(potp, ff_uint_t);
 void static _ffly_free(potp, void*);
 
+# define cur_arena \
+	((potp)*(spot+ffly_tls_get(arena_tls)))
 void static
 abort(void) {
 	ffly_printf("ar, abort.\n");
 	exit(SIGKILL);
 }
 
+ff_uint_t static spot_id = 0;
+
+ff_mlock_t static plock = FFLY_MUTEX_INIT;
+void ffly_process_prep(void) {
+	ffly_mutex_lock(&plock);
+	ffly_tls_set(spot_id++, arena_tls);
+	ffly_tls_set(spot_id++, temp_tls);
+	*(spot+(spot_id-1)) = NULL;
+	*(spot+(spot_id-2)) = NULL;
+	ffly_mutex_unlock(&plock);
+}
+
 void ffly_arctl(ff_u8_t __req, ff_u64_t __val) {
+	void **arena_spot = spot+ffly_tls_get(arena_tls);
+	void **temp_spot = spot+ffly_tls_get(temp_tls);
+	potp arena = (potp)*arena_spot;
+	potp temp = (potp)*temp_spot;
 	switch(__req) {
 		case _ar_unset:
 			arena = temp;
@@ -185,6 +208,9 @@ void ffly_arctl(ff_u8_t __req, ff_u64_t __val) {
 			*(potp*)__val = arena;
 		break;
 	}
+
+	*arena_spot = arena;
+	*temp_spot = temp;
 }
 
 // add to rod
@@ -338,6 +364,7 @@ ffly_arburied(potp __pot) {
 
 # include "../system/nanosleep.h"
 void ffly_arstat(void) {
+	potp arena = cur_arena;
 	ff_uint_t no = 0;
 	rodp r = *rods;
 	potp cur = &main_pot;
@@ -381,7 +408,17 @@ ff_err_t init_pot(potp __pot) {
 		*(bin++) = AR_NULL;
 }
 
+void static tls_init(void) {
+	ffly_tls_set(0, arena_tls);
+	ffly_tls_set(0, temp_tls);
+}
+
 ff_err_t ffly_ar_init(void) {
+	arena_tls = ffly_tls_alloc();
+	temp_tls = ffly_tls_alloc();
+	ffly_tls_toinit(tls_init);
+	tls_init();
+	ffly_process_prep();
 	init_pot(&main_pot);
 	main_pot.end = brk((void*)0);
 	main_pot.top = main_pot.end;
@@ -478,6 +515,7 @@ void ffly_arbl(void *__p) {
 }
 
 void pr(void) {
+	potp arena = cur_arena;
 	ffly_printf("\n**** all ****\n");
 	rodp r = *rods;
 	potp p = &main_pot;
@@ -504,6 +542,7 @@ _next:
 }
 
 void pf(void) {
+	potp arena = cur_arena;
 	ffly_printf("\n**** free ****\n");
 	rodp r = *rods;
 	potp p = &main_pot;
@@ -532,6 +571,8 @@ _next:
 void free_pot(potp);
 
 void ffly_arhang(void) {
+	void **arena_spot = spot+ffly_tls_get(arena_tls);
+	potp arena = (potp)*arena_spot;
 	potp p;
 	if (!(p = arena)) {
 		ffly_printf("dead pot.\n");
@@ -572,15 +613,19 @@ void ffly_arhang(void) {
 		}
 		ulpot(bk);
 	}
-
+	*arena_spot = arena;
 }
 
 void ffly_araxe(void) {
+	void **arena_spot = spot+ffly_tls_get(arena_tls);
+	potp arena = (potp)*arena_spot;
+
 	potp p;
 	if (!(p = arena)) {
 		ffly_printf("ar, pot has already been axed, or has been like this from the start.\n");
 		return;
 	}
+
 	rfr(p);
 	potp bk;
 	while(p != NULL) {
@@ -590,6 +635,7 @@ void ffly_araxe(void) {
 		free_pot(bk);
 	}
 	arena = NULL;
+	*arena_spot = arena;
 }
 
 /*
@@ -767,6 +813,7 @@ _r:
 // user level
 void*
 ffly_arsh(void *__p, ff_uint_t __to) {
+	potp arena = cur_arena;
 	blkdp blk = (blkdp)((ff_u8_t*)__p-blkd_size);
 	potp p = arena, bk;
 	lkpot(p);
@@ -781,11 +828,15 @@ ffly_arsh(void *__p, ff_uint_t __to) {
 		lkpot(p);
 	}
 	ulpot(p);
-	return shrink_blk(p, blk, __to);
+	void *ret;
+	
+	ret = shrink_blk(p, blk, __to);
+	return ret;
 }
 
 void*
 ffly_argr(void *__p, ff_uint_t __to) {
+	potp arena = cur_arena;
 	blkdp blk = (blkdp)((ff_u8_t*)__p-blkd_size);
 	potp p = arena, bk;
 	lkpot(p);
@@ -800,7 +851,10 @@ ffly_argr(void *__p, ff_uint_t __to) {
 		lkpot(p);
 	}
 	ulpot(p);
-	return grow_blk(p, blk, __to);
+	void *ret; 
+	
+	ret = grow_blk(p, blk, __to);
+	return ret;
 }
 
 potp alloc_pot(ff_uint_t __size) {
@@ -927,6 +981,8 @@ _bk:
 # include "../dep/bzero.h"
 void*
 ffly_alloc(ff_uint_t __bc) {
+	void **arena_spot = spot+ffly_tls_get(arena_tls);
+	potp arena = (potp)*arena_spot;
 	if (!__bc) return NULL;
 	if (__bc+blkd_size >= POT_SIZE) {
 		void *p;
@@ -976,6 +1032,7 @@ _again:
 		goto _again;  
 	}	
 
+	*arena_spot = arena;
 	return ret;
 }
 
@@ -1087,6 +1144,8 @@ _end:
 
 void
 ffly_free(void *__p) {
+	void **arena_spot = spot+ffly_tls_get(arena_tls);
+	potp arena = (potp)*arena_spot;
 	if (!__p) {
 		ffly_errmsg("error: got null ptr.\n");
 		return;
@@ -1161,7 +1220,7 @@ _bk:
 	_ffly_free(p, __p);
 	// free pot as we don't need it
 	lkpot(p);
-	if (!p->off && p != arena) {
+	if (!p->off && p != arena && !r) {
 		if (p->bk != NULL) {
 			lkpot(p->bk);
 			p->bk->fd = p->fd;
@@ -1179,6 +1238,7 @@ _bk:
 		return;
 	}
 	ulpot(p);
+	*arena_spot = arena;
 }
 
 void*

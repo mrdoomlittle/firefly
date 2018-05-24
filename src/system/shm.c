@@ -16,9 +16,10 @@
 # endif
 # include "../ffly_def.h"
 # include "mutex.h"
-# include "err.h"
+# include "error.h"
+# include "errno.h"
 // needs testing
-# define BASE 21299
+# define BASE 212
 # define MAX 20
 # define get_obj(__id) (objs+__id)
 # define get_key(__id) *(keys+__id)
@@ -63,9 +64,9 @@ void* ffly_shmget(ff_uint_t *__id, ff_uint_t __size, int __flags, ff_u8_t __opts
 		*__id = id;
 	}
 	struct obj *o = get_obj(id);
-	ffly_printf("using key: %u, id: %u\n", BASE+key, id);
+	ffly_printf("using key: %u, id: %u, size: %u\n", BASE+key, id, __size);
 	if ((o->seg_id = shmget(BASE+key, __size, __flags)) == -1) {
-		ffly_fprintf(ffly_out, "shmget() failure.\n");
+		ffly_fprintf(ffly_out, "shmget() failure, %s\n", strerror(errno));
 		ffly_shm_cleanup(id); 
 		return NULL;
 	}

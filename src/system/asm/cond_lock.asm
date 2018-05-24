@@ -14,13 +14,13 @@ __ffly_cond_lock_wait:
 
 	jmp _sk_sleep
 
-	_re_check:
+_re_check:
 	mov rdi, 0
 
 	mov rsi, 1000
 	call __ffly_nanosleep
 
-	_sk_sleep:
+_sk_sleep:
 	mov rdi, QWORD[rbp-8]
 	mov al, BYTE[rdi]
 	and al, 0x1

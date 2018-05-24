@@ -32,6 +32,9 @@ $ffly_cc -c $cc_flags -o $dst_dir/shm.o $root_dir/shm.c
 $ffly_cc -c $cc_flags -o $dst_dir/errno.o $root_dir/errno.c
 $ffly_cc -c $cc_flags -o $dst_dir/io.o $root_dir/io.c
 
+nasm -f elf64 $as_inc -o $dst_dir/sys_arch_prctl.o.0 $root_dir/asm/sys_arch_prctl.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_arch_prctl.o.1 $root_dir/sys_arch_prctl.c
+
 nasm -f elf64 $as_inc -o $dst_dir/sys_rt_sigaction.o.0 $root_dir/asm/sys_rt_sigaction.asm
 $ffly_cc -c $cc_flags -o $dst_dir/sys_rt_sigaction.o.1 $root_dir/sys_rt_sigaction.c
 
@@ -173,6 +176,11 @@ $ffly_cc -c $cc_flags -o $dst_dir/file.o $root_dir/file.c
 $ffly_cc -c $cc_flags -o $dst_dir/servant.o $root_dir/servant.c
 $ffly_cc -c $cc_flags -o $dst_dir/task_pool.o $root_dir/task_pool.c
 
+$ffly_cc -c $cc_flags -o $dst_dir/event.o $root_dir/event.c
+$ffly_cc -c $cc_flags -o $dst_dir/queue.o $root_dir/queue.c
+$ffly_cc -c $cc_flags -o $dst_dir/port.o $root_dir/port.c
+$ffly_cc -c $cc_flags -o $dst_dir/tls.o $root_dir/tls.c
+
 # $dst_dir/task_worker.o $dst_dir/task.o $dst_dir/task_pool.o $dst_dir/time.o
 export ffly_objs="$dst_dir/sys_fcntl.o.0 $dst_dir/sys_fcntl.o.1 \
 $dst_dir/sys_open.o.0 $dst_dir/sys_open.o.1 \
@@ -227,4 +235,5 @@ $dst_dir/sys_getsockopt.o.0 $dst_dir/sys_getsockopt.o.1 \
 $dst_dir/sys_ftruncate.o.0  $dst_dir/sys_ftruncate.o.1 \
 $dst_dir/sys_clock_gettime.o.0 $dst_dir/sys_clock_gettime.o.1 \
 $dst_dir/sys_rt_sigaction.o.0 $dst_dir/sys_rt_sigaction.o.1 \
-$dst_dir/barrel.o $dst_dir/sched.o $dst_dir/task_pool.o $dst_dir/servant.o"
+$dst_dir/barrel.o $dst_dir/sched.o $dst_dir/task_pool.o $dst_dir/servant.o \
+$dst_dir/event.o $dst_dir/queue.o $dst_dir/port.o $dst_dir/tls.o $dst_dir/sys_arch_prctl.o.0 $dst_dir/sys_arch_prctl.o.1"

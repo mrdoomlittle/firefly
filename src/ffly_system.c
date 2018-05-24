@@ -39,6 +39,8 @@ ff_err_t ffly_system_de_init() {
     return FFLY_SUCCESS;
 }
 
+// update
+/* cant use __thread */
 static __linux_pid_t ppid;
 static __thread __linux_pid_t pid;
 void ff_set_ppid(__linux_pid_t __id) {

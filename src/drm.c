@@ -8,9 +8,6 @@
 # include "drm.h"
 # include "system/string.h"
 # include "linux/limits.h"
-#define DRM_IOCTL_ADD_CTX DRM_IOWR(0x20, struct drm_context)
-#define DRM_IOCTL_RM_CTX DRM_IOWR(0x21, struct drm_context)
-
 int ffly_drm_open(char const *__file) {
 	int fd;
 	if ((fd = open(__file, O_RDWR)) == -1) {

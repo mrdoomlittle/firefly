@@ -528,7 +528,7 @@ emit_ret(insp __ins) {
 	op_ret(__ins->op);
 }
 
-struct ins *bc[] = {
+struct ins *resin[] = {
 	&(struct ins){"exit", NULL, emit_exit, NULL, NULL, _op_exit},
 	&(struct ins){"asb", NULL, emit_asb, NULL, NULL, _op_as},
 	&(struct ins){"asw", NULL, emit_asw, NULL, NULL, _op_as},

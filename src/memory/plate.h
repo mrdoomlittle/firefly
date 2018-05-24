@@ -15,5 +15,5 @@ void ffly_plate_store(void*, void**);
 void ffly_plate_load(void*, void*);
 void* ffly_plate_alloc(void);
 void ffly_plate_free(void*);
-void ffly_plate_cleanup();
+void ffly_plate_cleanup(void);
 # endif /*__ffly__plate__h*/
