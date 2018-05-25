@@ -8,12 +8,14 @@
 typedef struct sched_entity {
 	ff_u64_t interval;
 	ff_u64_t elapsed;
-	void(*func)(void*);
+	ff_i8_t(*func)(void*);
 	void *arg_p;
 	struct sched_entity *prev, *next;
+	struct sched_entity *fd;
 } *sched_entityp;
 
-void ffly_schedule(void(*)(void*), void*, ff_u64_t);
+void ffly_sched_rm(ff_u32_t);
+ff_u32_t ffly_schedule(ff_i8_t(*)(void*), void*, ff_u64_t);
 void ffly_sched_clock_tick(ff_u64_t);
 void ffly_scheduler_tick();
 void ffly_scheduler_init();

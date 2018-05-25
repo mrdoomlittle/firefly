@@ -12,8 +12,10 @@ ff_eventp ff_event_creat(ff_u8_t __kind, ff_u8_t __field, void *__data, ff_uint_
 }
 
 ff_err_t ff_event_del(ff_eventp __event) {
-	if (__event->data != NULL)
+	if (__event->data != NULL) {
+		ffly_fprintf(ffly_log, "event data freed.\n");
 		__ffly_mem_free(__event->data);
+	}
 	ff_event_free(__event);
 }
 
@@ -43,7 +45,7 @@ ff_eventp ff_event_alloc(ff_err_t *__err) {
 	if (next_free > free_events)
 		return *(--next_free);
 	if (fresh_event >= events+FAST_EVENTS) {
-		ffly_printf("fast full.\n");
+		ffly_printf("fast full, pure alloc.\n");
 		return (ffly_event_t*)__ffly_mem_alloc(sizeof(ffly_event_t));
 	}
 	return fresh_event++;

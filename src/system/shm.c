@@ -3,10 +3,13 @@
 # include "../linux/ipc/shm.h"
 # include "../linux/stat.h"
 # include "../linux/unistd.h"
+# include "errno.h"
 # else
 # include <sys/shm.h>
 # include <sys/stat.h>
 # include <unistd.h>
+# include <errno.h>
+# include <string.h>
 # endif
 
 # ifndef __ffly_module
@@ -17,7 +20,6 @@
 # include "../ffly_def.h"
 # include "mutex.h"
 # include "error.h"
-# include "errno.h"
 // needs testing
 # define BASE 212
 # define MAX 20

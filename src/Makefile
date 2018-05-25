@@ -113,13 +113,13 @@ brew: clean
 	gcc $(cc_flags) -Wall -o main brew/main.c $(ffly_objs) brew/parser.o brew/gen.o brew/exec.o brew/brew.o brew/lexer.o -nostdlib
 ffc: clean
 	gcc $(cc_flags) -c -o ff/parser.o ff/parser.c
-	gcc $(cc_flags) -c -o ff/gen.o ff/gen.c
+	gcc $(cc_flags) -c -o ff/output/resin.o ff/output/resin.c
 	gcc $(cc_flags) -c parser.c
 	gcc $(cc_flags) -c lexer.c
 #	gcc $(cc_flags) -c gen.c
 #	gcc $(cc_flags) -c data/mem_swp.c
 	gcc $(cc_flags) -D__ffc_no_script -c compiler.c
-	gcc $(cc_flags) -Wall -o ffc ff-lang.c compiler.o $(ffly_objs) parser.o lexer.o ff/parser.o ff/gen.o -nostdlib
+	gcc $(cc_flags) -Wall -o ffc ff-lang.c compiler.o $(ffly_objs) parser.o lexer.o ff/parser.o ff/resin/resin.o -nostdlib
 script: clean
 	gcc $(cc_flags) -c -o script/parser.o script/parser.c
 	gcc $(cc_flags) -c -o script/gen.o script/gen.c

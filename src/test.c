@@ -65,6 +65,7 @@ ff_i8_t test(void *__arg_p) {
 # include "stores.h"
 # include "system/tls.h"
 # include "linux/prctl.h"
+# include "system/queue.h"
 void showfsreg() {
 	void *p = NULL;
 	if (arch_prctl(ARCH_GET_GS, &p) == -1) {
@@ -79,7 +80,18 @@ void *tls;
 void* th(void *__arg) {
 }
 ff_err_t ffmain(int __argc, char const *__argv[]) {
-
+	struct ffly_queue queue;
+	ffly_queue_init(&queue, 1);
+	ff_u8_t a;
+	ffly_queue_push(&queue,&a);
+	ffly_queue_push(&queue,&a);
+	ffly_queue_push(&queue,&a);
+	ffly_queue_push(&queue,&a);
+	ffly_queue_pop(&queue,&a);
+	ffly_queue_pop(&queue,&a);
+	ffly_queue_pop(&queue,&a);
+	ffly_queue_pop(&queue,&a);
+	ffly_queue_de_init(&queue);
 //tls = p;
 //	ff_tid_t id;
 //	ffly_thread_create(&id, th, NULL);

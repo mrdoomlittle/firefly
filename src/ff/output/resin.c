@@ -1,12 +1,12 @@
 # define __ffly_compiler_internal
 # define __ffly_generator
-# include "../compiler.h"
-# include "../dep/str_len.h"
-# include "../dep/mem_cpy.h"
-# include "../dep/str_cpy.h"
-# include "../memory/mem_free.h"
-# include "../system/string.h"
-# include "../dep/mem_dup.h"
+# include "../../compiler.h"
+# include "../../dep/str_len.h"
+# include "../../dep/mem_cpy.h"
+# include "../../dep/str_cpy.h"
+# include "../../memory/mem_free.h"
+# include "../../system/string.h"
+# include "../../dep/mem_dup.h"
 # define align_to(__no, __to)(((__no)+((__to)-1))&((~(__to))+1))
 void emit(ff_compilerp, struct node*);
 void emit_load(ff_compilerp, ff_int_t, ff_u8_t);
@@ -534,6 +534,7 @@ void emit_struct_ref(ff_compilerp __compiler, struct node *__node) {
 	}
 }
 
+// move ../
 void emit(ff_compilerp __compiler, struct node *__node) {
 	switch(__node->kind) {
 		case _ast_if:
@@ -592,7 +593,6 @@ void emit(ff_compilerp __compiler, struct node *__node) {
 	}
 }
 
-
 ff_err_t
 ffly_ff_gen(ff_compilerp __compiler) {
 	if (!ffly_vec_size(&__compiler->nodes)) return FFLY_FAILURE;
@@ -606,3 +606,4 @@ ffly_ff_gen(ff_compilerp __compiler) {
 	out_s(__compiler, ".endof\n");
 	retok;
 }
+// end

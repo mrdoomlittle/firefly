@@ -1,5 +1,6 @@
-./as -f ffef -i test.asm -o test.o
-#../bond/bond -s test.o -d a.out
+./ffas -f ffef -i test.asm -o test.o
+../bond/ffbond -s test.o -d a.out
+../exec/ffexec a.out
 #../exec/exec a.out
 #./as -f ffef -i main.asm -o main.o && xxd main.o
 #./as -f ffef -i ts0.asm -o ts0.o && xxd ts0.o

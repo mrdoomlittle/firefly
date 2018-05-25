@@ -58,14 +58,14 @@ void* ffly_mal() {
 # endif
 	register ff_uint_t bc __asm__("r9") = 0;
 	__asm__(
-# if (!defined(__arc32) && !defined(__arc64)) || defined(__arc32)
+# if (!defined(__ff32) && !defined(__ff64)) || defined(__ff32)
 		"movl 16(%%rbp), %%eax\n\t"
 		"movl %%eax, %0\n\t"
 # ifdef __ffly_mal_track
 		"movb 20(%%rbp), %%bl\n\t"
 # endif
 # else
-# ifdef __arc64
+# ifdef __ff64
 		"movq 16(%%rbp), %%rax\n\t"
 		"movq %%rax, %0\n\t"
 # ifdef __ffly_mal_track

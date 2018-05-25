@@ -16,14 +16,19 @@ char const static *kstr(ff_u8_t __kind) {
 	return "unknown";
 }
 
+static struct ffly_grj *top = NULL;
 struct ffly_grj* ffly_grj_mk(ff_u8_t __kind, void *__p) {
 	struct ffly_grj *job = (struct ffly_grj*)__ffly_mem_alloc(sizeof(struct ffly_grj));
 	if (job != NULL) {
+		if (top != NULL)
+			top->prev = job;
 		*job = (struct ffly_grj) {
 			.kind = __kind,
 			.p = __p,
-			.par = NULL
+			.prev = NULL,
+			.next = top
 		};
+		top = job;
 	}
 	return job;
 }
@@ -149,6 +154,31 @@ ffly_grj_pixcopy(ff_byte_t *__dst, ff_byte_t *__src, ff_uint_t __npix) {
 	return ret;
 }
 
+void static
+job_free(struct ffly_grj *__job) {
+	if (__job == top) {
+		if ((top = __job->next) != NULL)
+			top->prev = NULL;
+	} else {
+		if (__job->prev != NULL)
+			__job->prev->next = __job->next;
+		if (__job->next != NULL)
+			__job->next->prev = __job->prev;
+	}
+	__ffly_mem_free(__job->p);
+	__ffly_mem_free(__job);
+}
+
+void ffly_grj_cleanup() {
+	struct ffly_grj *cur = top, *bk;
+	while(cur != NULL) {
+		ffly_printf("job cleaning, %s\n", kstr(cur->kind));
+		bk = cur;
+		cur = cur->next;
+		job_free(bk);
+	}
+}
+
 # include "fill.h"
 # include "copy.h"
 # include "draw.h"
@@ -215,8 +245,7 @@ ff_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 			err = FFLY_FAILURE;
 	}
 
-	__ffly_mem_free(__job->p);
-	__ffly_mem_free(__job);
+	job_free(__job);
 	if (_err(err)) {
 		ffly_fprintf(ffly_err, "job failure.\n");
 		return err;

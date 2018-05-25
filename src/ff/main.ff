@@ -3,7 +3,7 @@
 %include "lib/inc/memory.ff"
 %define return ret
 //Hello
-/*
+
 void ts0();
 void ts1();
 void ts2();
@@ -45,7 +45,7 @@ void ts5() {
 	char n = 5;
 	out(n);
 }
-*/
+
 /*
 struct nop {
 	u8_t a;
@@ -62,5 +62,5 @@ struct nop {
 //}
 
 u8_t main() {
-
+	ts0();
 }

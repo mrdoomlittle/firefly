@@ -14,6 +14,7 @@ struct ffly_grj {
 	ff_u8_t kind;
 	void *p;
 	void *par[20];
+	struct ffly_grj *prev, *next;
 };
 
 # ifdef __cplusplus
@@ -24,7 +25,7 @@ struct ffly_grj* ffly_grj_pixfill(ff_byte_t*, ff_uint_t, ffly_colour_t);
 struct ffly_grj* ffly_grj_pixdraw(ff_uint_t, ff_uint_t, ff_byte_t*, ff_uint_t, ff_byte_t*, ff_uint_t, ff_uint_t);
 struct ffly_grj* ffly_grj_pixcopy(ff_byte_t*, ff_byte_t*, ff_uint_t);
 ff_err_t ffly_grj_prosess(struct ffly_grj*);
-
+void ffly_grj_cleanup();
 # ifdef __cplusplus
 }
 # include "../memory/mem_alloc.h"

@@ -12,23 +12,27 @@ struct ffly_gui_btn {
     ff_u16_t x, y;
     ff_u16_t width, height;
 
-	// if using events is not an option
     ff_i16_t *pt_x, *pt_y;
-    ff_bool_t enabled;
-// for later
+	ff_i8_t *pt_state;
+    ff_i8_t enabled;
+	ff_u32_t sched_id;
     void *arg_p;
     void(*press)(struct ffly_gui_btn*, void*);
+	void(*release)(struct ffly_gui_btn*, void*);
     void(*hover)(struct ffly_gui_btn*, void*);
+	struct ffly_gui_btn *prev, *next;
 };
 
 typedef struct ffly_gui_btn* ffly_gui_btnp;
 # ifdef __cplusplus
 extern "C" {
 # endif
+ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t*, ff_u16_t, ff_u16_t, ff_u16_t, ff_u16_t);
+void ffly_gui_btn_destroy(ffly_gui_btnp);
 void ffly_gui_btn_init(ffly_gui_btnp, ff_u8_t*, ff_u16_t, ff_u16_t, ff_u16_t, ff_u16_t);
 ff_err_t ffly_gui_btn_draw(ffly_gui_btnp, ff_u8_t*, ff_u16_t, ff_u16_t);
 ff_err_t ffly_gui_btn_enable_ir(ffly_gui_btnp);
-ff_err_t ffly_gui_btn_handle(ffly_gui_btnp, ffly_event_t*);
+ff_i8_t ffly_gui_btn_handle(void*);
 ff_i8_t ffly_gui_btn_hovering(ffly_gui_btnp);
 ff_i8_t ffly_gui_btn_pressed(ffly_gui_btnp);
 # ifdef __cplusplus

@@ -70,7 +70,7 @@ ff_err_t ffly_event_pop(ffly_event_t **__event) {
 		return FFLY_FAILURE;
 	}
 
-	ffly_fprintf(ffly_log, "poped event from queue.\n");
+	ffly_fprintf(ffly_log, "popped event from queue.\n");
 	return FFLY_SUCCESS;
 }
 

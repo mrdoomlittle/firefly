@@ -70,13 +70,13 @@ ff_err_t ffly_queue_push(ffly_queuep __queue, void *__p) {
 	}
 
 	goto _sk_init_page;
-	_init_page:
+_init_page:
 	if ((*(__queue->p+(__queue->page_c-1)) = (void*)__ffly_mem_alloc(QUEUE_PAGE_SIZE*__queue->blk_size)) == NULL) {
 		ffly_fprintf(ffly_err, "queue: failed to init page.\n");
 		return FFLY_FAILURE;
 	}
 
-	_sk_init_page:
+_sk_init_page:
 	if (__queue->top>>QUEUE_PAGE_SHIFT > 0 && __queue->end == __queue->page_c*QUEUE_PAGE_SIZE && __queue->end <= QUEUE_PAGE_SIZE*QUEUE_MAX_PAGE_C)
 		__queue->end = 0;
 	ff_uint_t page = __queue->end>>QUEUE_PAGE_SHIFT;

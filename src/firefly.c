@@ -98,14 +98,14 @@ prep() {
 	ffly_arcs_creatrec("created-by", NULL, _ffly_rec_def, 0);
 	ffly_arcs_bk();
 	ffly_init();
-	ff_mod_init();
-	ff_mod_handle();
-	ffly_mod();
+//	ff_mod_init();
+//	ff_mod_handle();
+//	ffly_mod();
 }
 
 void static
 fini() {
-	ff_mod_de_init();
+//	ff_mod_de_init();
 	ffly_thread_cleanup();
 	ffly_arcs_de_init();
 	ffly_alloca_cleanup();

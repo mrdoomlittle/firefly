@@ -160,83 +160,89 @@ void op_exit(ff_u8_t __op, ff_addr_t __exit) {
 
 void op_asb(ff_u8_t __op, ff_addr_t __dst, ff_u8_t __val) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(1);
 	oust_addr(__dst);
 	ff_as_oustbyte(__val);
 }
 
 void op_asw(ff_u8_t __op, ff_addr_t __dst, ff_u16_t __val) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(2);
 	oust_addr(__dst);
 	ff_as_oust_16l(__val);
 }
 
 void op_asd(ff_u8_t __op, ff_addr_t __dst, ff_u32_t __val) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(4);
 	oust_addr(__dst);
 	ff_as_oust_32l(__val);
 }
 
 void op_asq(ff_u8_t __op, ff_addr_t __dst, ff_u64_t __val) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(8);
 	oust_addr(__dst);
 	ff_as_oust_64l(__val);
 }
 
-void op_mov(ff_u8_t __op, ff_u8_t __l, ff_addr_t __src, ff_addr_t __dst) {
+void op_mov(ff_u8_t __op, ff_addr_t __src, ff_addr_t __dst) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(__l);
 	oust_addr(__src);
 	oust_addr(__dst);
 }
 
-void op_inc(ff_u8_t __op, ff_u8_t __l, ff_addr_t __adr) {
+void op_inc(ff_u8_t __op, ff_addr_t __adr) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(__l);
 	oust_addr(__adr);
 }
 
-void op_dec(ff_u8_t __op, ff_u8_t __l, ff_addr_t __adr) {
+void op_dec(ff_u8_t __op, ff_addr_t __adr) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(__l);
 	oust_addr(__adr);
 }
 
-void op_cmp(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
+void op_cmp(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(__l);
 	oust_addr(__lt);
 	oust_addr(__rt);
 	oust_addr(__dst);
 }
 
 void rgasb(char const *__reg, ff_u8_t __to) {
-	op_asb(_op_as, getreg(__reg)->addr, __to);
+	op_asb(_op_asb, getreg(__reg)->addr, __to);
 }
 
 void rgasw(char const *__reg, ff_u16_t __to) {
-	op_asw(_op_as, getreg(__reg)->addr, __to);
+	op_asw(_op_asw, getreg(__reg)->addr, __to);
 }
 
 void rgasd(char const *__reg, ff_u32_t __to) {
-	op_asd(_op_as, getreg(__reg)->addr, __to);
+	op_asd(_op_asd, getreg(__reg)->addr, __to);
 }
 
 void rgasq(char const *__reg, ff_u64_t __to) {
-	op_asq(_op_as, getreg(__reg)->addr, __to);
+	op_asq(_op_asq, getreg(__reg)->addr, __to);
 }
 
 void rgst(char const *__reg, ff_addr_t __dst) {
 	reginfo *rg = getreg(__reg);
-	op_mov(_op_mov, rg->l, rg->addr, __dst);
+	ff_u8_t op;
+	switch(rg->l) {
+		case 1: op = _op_movb; break;
+		case 2: op = _op_movw; break;
+		case 4: op = _op_movd; break;
+		case 8: op = _op_movq; break;
+	}
+	op_mov(op, rg->addr, __dst);
 }
 
 void rgld(char const *__reg, ff_addr_t __src) {
 	reginfo *rg = getreg(__reg);
-	op_mov(_op_mov, rg->l, __src, rg->addr);
+	ff_u8_t op;
+	switch(rg->l) {
+		case 1: op = _op_movb; break;
+		case 2: op = _op_movw; break;
+		case 4: op = _op_movd; break;
+		case 8: op = _op_movq; break;
+	}
+	op_mov(op, __src, rg->addr);
 }
 
 void emit_exit(insp __ins) {
@@ -259,72 +265,33 @@ void emit_asq(insp __ins) {
 	op_asq(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_u64_t*)__ins->r->p);
 }
 
-void op_ld(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt) {
+void op_ld(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(__l);
 	oust_addr(__lt);
 	oust_addr(__rt);
 }
 
-void op_st(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt) {
+void op_st(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(__l);
 	oust_addr(__lt);
 	oust_addr(__rt);
 }
 
-void emit_ldb(insp __ins) {
-	op_ld(__ins->op, 1, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+void emit_ld(insp __ins) {
+	op_ld(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
 }
 
-void emit_ldw(insp __ins) {
-	op_ld(__ins->op, 2, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+void emit_st(insp __ins) {
+	op_st(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
 }
 
-void emit_ldd(insp __ins) {
-	op_ld(__ins->op, 4, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
-}
-
-void emit_ldq(insp __ins) {
-	op_ld(__ins->op, 8, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
-}
-
-void emit_stb(insp __ins) {
-	op_st(__ins->op, 1, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
-}
-
-void emit_stw(insp __ins) {
-	op_st(__ins->op, 2, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
-}
-
-void emit_std(insp __ins) {
-	op_st(__ins->op, 4, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
-}
-
-void emit_stq(insp __ins) {
-	op_st(__ins->op, 8, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
-}
-
-void op_out(ff_u8_t __op, ff_u8_t __l, ff_addr_t __adr) {
+void op_out(ff_u8_t __op, ff_addr_t __adr) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(__l);
 	oust_addr(__adr);
 }
 
-void emit_outq(insp __ins) {
-	op_out(__ins->op, 8, *(ff_addr_t*)__ins->l->p);
-}
-
-void emit_outd(insp __ins) {
-	op_out(__ins->op, 4, *(ff_addr_t*)__ins->l->p);
-}
-
-void emit_outw(insp __ins) {
-	op_out(__ins->op, 2, *(ff_addr_t*)__ins->l->p);
-}
-
-void emit_outb(insp __ins) {
-	op_out(__ins->op, 1, *(ff_addr_t*)__ins->l->p);
+void emit_out(insp __ins) {
+	op_out(__ins->op, *(ff_addr_t*)__ins->l->p);
 }
 
 void static
@@ -358,10 +325,34 @@ emit_rin(insp __ins) {
 	oust_addr(*(ff_addr_t*)__ins->r->p);
 }
 
+
 void static
-op_arm(ff_u8_t __op, ff_u8_t __l, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
+op_div(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
 	ff_as_oustbyte(__op);
-	ff_as_oustbyte(__l);
+	oust_addr(__lt);
+	oust_addr(__rt);
+	oust_addr(__dst);
+}
+
+void static
+op_mul(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
+	ff_as_oustbyte(__op);
+	oust_addr(__lt);
+	oust_addr(__rt);
+	oust_addr(__dst);
+}
+
+void static
+op_sub(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
+	ff_as_oustbyte(__op);
+	oust_addr(__lt);
+	oust_addr(__rt);
+	oust_addr(__dst);
+}
+
+void static
+op_add(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
+	ff_as_oustbyte(__op);
 	oust_addr(__lt);
 	oust_addr(__rt);
 	oust_addr(__dst);
@@ -379,87 +370,42 @@ op_ret(ff_u8_t __op) {
 }
 
 void static
-emit_armb(insp __ins) {
-	op_arm(__ins->op, 1, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
-}
-
-void static
-emit_armw(insp __ins) {
-	op_arm(__ins->op, 2, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
-}
-
-void static
-emit_armd(insp __ins) {
-	op_arm(__ins->op, 4, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
-}
-
-void static
-emit_armq(insp __ins) {
-	op_arm(__ins->op, 8, *(ff_addr_t*)__ins->l->p,
+emit_div(insp __ins) {
+	op_div(__ins->op, *(ff_addr_t*)__ins->l->p,
 		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
 }
 
 void static
-emit_incb(insp __ins) {
-	op_inc(__ins->op, 1, *(ff_addr_t*)__ins->l->p);
+emit_mul(insp __ins) {
+	op_mul(__ins->op, *(ff_addr_t*)__ins->l->p,
+		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
 }
 
 void static
-emit_incw(insp __ins) {
-	op_inc(__ins->op, 2, *(ff_addr_t*)__ins->l->p);
+emit_sub(insp __ins) {
+	op_sub(__ins->op, *(ff_addr_t*)__ins->l->p,
+		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
 }
 
 void static
-emit_incd(insp __ins) {
-	op_inc(__ins->op, 4, *(ff_addr_t*)__ins->l->p);
+emit_add(insp __ins) {
+	op_add(__ins->op, *(ff_addr_t*)__ins->l->p,
+		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
 }
 
 void static
-emit_incq(insp __ins) {
-	op_inc(__ins->op, 8, *(ff_addr_t*)__ins->l->p);
+emit_inc(insp __ins) {
+	op_inc(__ins->op, *(ff_addr_t*)__ins->l->p);
 }
 
 void static 
-emit_decb(insp __ins) {
-	op_dec(__ins->op, 1, *(ff_addr_t*)__ins->l->p);
+emit_dec(insp __ins) {
+	op_dec(__ins->op, *(ff_addr_t*)__ins->l->p);
 }
 
 void static
-emit_decw(insp __ins) {
-	op_dec(__ins->op, 2, *(ff_addr_t*)__ins->l->p);
-}
-
-void static
-emit_decd(insp __ins) {
-	op_dec(__ins->op, 4, *(ff_addr_t*)__ins->l->p);
-}
-
-void static
-emit_decq(insp __ins) {
-	op_dec(__ins->op, 8, *(ff_addr_t*)__ins->l->p);
-}
-
-void static
-emit_cmpb(insp __ins) {
-	op_cmp(__ins->op, 1, *(ff_addr_t*)__ins->l->p,
-		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
-}
-
-void static
-emit_cmpw(insp __ins) {
-	op_cmp(__ins->op, 2, *(ff_addr_t*)__ins->l->p,
-		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
-}
-
-void static
-emit_cmpd(insp __ins) {
-	op_cmp(__ins->op, 4, *(ff_addr_t*)__ins->l->p,
-		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
-}
-
-void static
-emit_cmpq(insp __ins) {
-	op_cmp(__ins->op, 8, *(ff_addr_t*)__ins->l->p,
+emit_cmp(insp __ins) {
+	op_cmp(__ins->op, *(ff_addr_t*)__ins->l->p,
 		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
 }
 
@@ -489,23 +435,8 @@ emit_cjmp(insp __ins) {
 }
 
 void static
-emit_movb(insp __ins) {
-	op_mov(__ins->op, 1, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
-}
-
-void static
-emit_movw(insp __ins) {
-	op_mov(__ins->op, 2, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
-}
-
-void static
-emit_movd(insp __ins) {
-	op_mov(__ins->op, 4, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
-}
-
-void static
-emit_movq(insp __ins) {
-	op_mov(__ins->op, 8, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+emit_mov(insp __ins) {
+	op_mov(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
 }
 
 void static
@@ -530,48 +461,59 @@ emit_ret(insp __ins) {
 
 struct ins *resin[] = {
 	&(struct ins){"exit", NULL, emit_exit, NULL, NULL, _op_exit},
-	&(struct ins){"asb", NULL, emit_asb, NULL, NULL, _op_as},
-	&(struct ins){"asw", NULL, emit_asw, NULL, NULL, _op_as},
-	&(struct ins){"asd", NULL, emit_asd, NULL, NULL, _op_as},
-	&(struct ins){"asq", NULL, emit_asq, NULL, NULL, _op_as},
-	&(struct ins){"ldb", NULL, emit_ldb, NULL, NULL, _op_ld},
-	&(struct ins){"ldw", NULL, emit_ldw, NULL, NULL, _op_ld},
-	&(struct ins){"ldd", NULL, emit_ldd, NULL, NULL, _op_ld},
-	&(struct ins){"ldq", NULL, emit_ldq, NULL, NULL, _op_ld},
-	&(struct ins){"stb", NULL, emit_stb, NULL, NULL, _op_st},
-	&(struct ins){"stw", NULL, emit_stb, NULL, NULL, _op_st},
-	&(struct ins){"std", NULL, emit_stb, NULL, NULL, _op_st},	
-	&(struct ins){"stq", NULL, emit_stq, NULL, NULL, _op_st},
-	&(struct ins){"outb", NULL, emit_outb, NULL, NULL, _op_out},
-	&(struct ins){"outw", NULL, emit_outw, NULL, NULL, _op_out},
-	&(struct ins){"outd", NULL, emit_outd, NULL, NULL, _op_out},
-	&(struct ins){"outq", NULL, emit_outq, NULL, NULL, _op_out},
+	&(struct ins){"asb", NULL, emit_asb, NULL, NULL, _op_asb},
+	&(struct ins){"asw", NULL, emit_asw, NULL, NULL, _op_asw},
+	&(struct ins){"asd", NULL, emit_asd, NULL, NULL, _op_asd},
+	&(struct ins){"asq", NULL, emit_asq, NULL, NULL, _op_asq},
+
+	&(struct ins){"ldb", NULL, emit_ld, NULL, NULL, _op_ldb},
+	&(struct ins){"ldw", NULL, emit_ld, NULL, NULL, _op_ldw},
+	&(struct ins){"ldd", NULL, emit_ld, NULL, NULL, _op_ldd},
+	&(struct ins){"ldq", NULL, emit_ld, NULL, NULL, _op_ldq},
+
+	&(struct ins){"stb", NULL, emit_st, NULL, NULL, _op_stb},
+	&(struct ins){"stw", NULL, emit_st, NULL, NULL, _op_stw},
+	&(struct ins){"std", NULL, emit_st, NULL, NULL, _op_std},	
+	&(struct ins){"stq", NULL, emit_st, NULL, NULL, _op_stq},
+
+	&(struct ins){"outb", NULL, emit_out, NULL, NULL, _op_outb},
+	&(struct ins){"outw", NULL, emit_out, NULL, NULL, _op_outw},
+	&(struct ins){"outd", NULL, emit_out, NULL, NULL, _op_outd},
+	&(struct ins){"outq", NULL, emit_out, NULL, NULL, _op_outq},
+
 	&(struct ins){"jmp", NULL, emit_jmp, NULL, NULL, _op_jmp},
 	&(struct ins){"rin", NULL, emit_rin, NULL, NULL, _op_rin},
-	&(struct ins){"divb", NULL, emit_armb, NULL, NULL, _op_div},
-	&(struct ins){"mulb", NULL, emit_armb, NULL, NULL, _op_mul},
-	&(struct ins){"subb", NULL, emit_armb, NULL, NULL, _op_sub},
-	&(struct ins){"subw", NULL, emit_armw, NULL, NULL, _op_sub},
-	&(struct ins){"subd", NULL, emit_armd, NULL, NULL, _op_sub},
-	&(struct ins){"subq", NULL, emit_armq, NULL, NULL, _op_sub},
-	&(struct ins){"addb", NULL, emit_armb, NULL, NULL, _op_add},
-	&(struct ins){"addw", NULL, emit_armw, NULL, NULL, _op_add},
-	&(struct ins){"addd", NULL, emit_armd, NULL, NULL, _op_add},
-	&(struct ins){"addq", NULL, emit_armq, NULL, NULL, _op_add},
-	&(struct ins){"incb", NULL, emit_incb, NULL, NULL, _op_inc},
-	&(struct ins){"decb", NULL, emit_decb, NULL, NULL, _op_dec},
-	&(struct ins){"cmpb", NULL, emit_cmpb, NULL, NULL, _op_cmp},
-	&(struct ins){"cmpw", NULL, emit_cmpw, NULL, NULL, _op_cmp},
-	&(struct ins){"cmpd", NULL, emit_cmpd, NULL, NULL, _op_cmp},
-	&(struct ins){"cmpq", NULL, emit_cmpq, NULL, NULL, _op_cmp},
+
+	&(struct ins){"divb", NULL, emit_div, NULL, NULL, _op_divb},
+
+	&(struct ins){"mulb", NULL, emit_mul, NULL, NULL, _op_mulb},
+
+	&(struct ins){"subb", NULL, emit_sub, NULL, NULL, _op_subb},
+	&(struct ins){"subw", NULL, emit_sub, NULL, NULL, _op_subw},
+	&(struct ins){"subd", NULL, emit_sub, NULL, NULL, _op_subd},
+	&(struct ins){"subq", NULL, emit_sub, NULL, NULL, _op_subq},
+
+	&(struct ins){"addb", NULL, emit_add, NULL, NULL, _op_addb},
+	&(struct ins){"addw", NULL, emit_add, NULL, NULL, _op_addw},
+	&(struct ins){"addd", NULL, emit_add, NULL, NULL, _op_addd},
+	&(struct ins){"addq", NULL, emit_add, NULL, NULL, _op_addq},
+
+	&(struct ins){"incb", NULL, emit_inc, NULL, NULL, _op_incb},
+	&(struct ins){"decb", NULL, emit_dec, NULL, NULL, _op_decb},
+
+	&(struct ins){"cmpb", NULL, emit_cmp, NULL, NULL, _op_cmpb},
+	&(struct ins){"cmpw", NULL, emit_cmp, NULL, NULL, _op_cmpw},
+	&(struct ins){"cmpd", NULL, emit_cmp, NULL, NULL, _op_cmpd},
+	&(struct ins){"cmpq", NULL, emit_cmp, NULL, NULL, _op_cmpq},
+
 	&(struct ins){"je", NULL, emit_cjmp, NULL, NULL, _op_je},
 	&(struct ins){"jne", NULL, emit_cjmp, NULL, NULL, _op_jne},
 	&(struct ins){"jg", NULL, emit_cjmp, NULL, NULL, _op_jg},
 	&(struct ins){"jl", NULL, emit_cjmp, NULL, NULL, _op_jl},
-	&(struct ins){"movb", NULL, emit_movb, NULL, NULL, _op_mov},
-	&(struct ins){"movw", NULL, emit_movw, NULL, NULL, _op_mov},
-	&(struct ins){"movd", NULL, emit_movd, NULL, NULL, _op_mov},
-	&(struct ins){"movq", NULL, emit_movq, NULL, NULL, _op_mov},
+	&(struct ins){"movb", NULL, emit_mov, NULL, NULL, _op_movb},
+	&(struct ins){"movw", NULL, emit_mov, NULL, NULL, _op_movw},
+	&(struct ins){"movd", NULL, emit_mov, NULL, NULL, _op_movd},
+	&(struct ins){"movq", NULL, emit_mov, NULL, NULL, _op_movq},
 	&(struct ins){"call", NULL, emit_call, NULL, NULL, _op_call},
 	&(struct ins){"ret", NULL, emit_ret, NULL, NULL, _op_ret},
 	NULL

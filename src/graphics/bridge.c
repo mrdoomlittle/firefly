@@ -29,7 +29,7 @@ _again:
 			ff_event_free(event);
 			ff_duct_exit();
 			goto _end;
-		} else if (event->kind == _ffly_wd_ek_btn_press) {
+		} else if (event->kind == _ffly_wd_ek_btn_press || event->kind == _ffly_wd_ek_btn_release) {
 			ff_duct_event(event);
 		}
 

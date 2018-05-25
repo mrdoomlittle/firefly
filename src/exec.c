@@ -140,12 +140,12 @@ void ffexecf(char const *__file) {
 
 	ffly_rdm(bin, end);
 	ffly_printf("routine at: %u\n", hdr.routine);
-	ffly_printf("exec, in 3\n");
-	ffly_nanosleep(1, 0);
-	ffly_printf("2\n");
-	ffly_nanosleep(1, 0);
-	ffly_printf("1\n");
-	ffly_nanosleep(1, 0);
+//	ffly_printf("exec, in 3\n");
+//	ffly_nanosleep(1, 0);
+//	ffly_printf("2\n");
+//	ffly_nanosleep(1, 0);
+//	ffly_printf("1\n");
+//	ffly_nanosleep(1, 0);
 	ffexec(bin, end, hdr.format, prep, &hdr, hdr.routine);
 	__ffly_mem_free(bin);
 	_corrupt:
