@@ -1,0 +1,1 @@
+resin is a interpreter, its to be used for /init and other things that require portable and easily executed code.
