@@ -2,6 +2,7 @@
 # include "../string.h"
 # include "../malloc.h"
 # include "../system/util/hash.h"
+# include "../stdio.h"
 void
 ff_bond_hash_init(hashp __hash) {
 	__hash->table = (struct hash_entry**)malloc(0x100*sizeof(struct hash_entry*));
@@ -43,6 +44,7 @@ ff_bond_hash_put(hashp __hash, ff_u8_t const *__key, ff_uint_t __len, void *__p)
 
 	entry->next = *table;
 	*table = entry;
+	printf("hash_put: len: %u\n", __len);
 	memdup((void**)&entry->key, (void*)__key, __len);
 	entry->p = __p;
 	entry->len = __len;
@@ -59,5 +61,7 @@ ff_bond_hash_get(hashp __hash, ff_u8_t const *__key, ff_uint_t __len) {
 		}
 		cur = cur->next;
 	}
+
+	printf("hash error.\n");
 	return NULL;
 }

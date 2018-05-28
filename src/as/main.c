@@ -55,7 +55,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ff_as_init();
 
-	ff_as_load(resin);
+	ff_as_resin();
 
 	struct stat st;
 	stat(infile, &st);

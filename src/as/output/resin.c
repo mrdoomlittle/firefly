@@ -1,6 +1,7 @@
 # include "../as.h"
 # include "../../ffly_def.h"
 # include "../../stdio.h"
+# include "../opcodes/resin_tbl.h"
 
 labelp extern curlabel;
 // bed of stack
@@ -38,7 +39,6 @@ void static
 oust_addr(ff_addr_t __addr) {
 	ff_as_oust((ff_u8_t*)&__addr, sizeof(ff_addr_t));
 }
-
 
 reginfo reg[] = {
 	{"sp", 8, 0},  {"bp", 8, 8},
@@ -206,19 +206,19 @@ void op_cmp(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
 }
 
 void rgasb(char const *__reg, ff_u8_t __to) {
-	op_asb(_op_asb, getreg(__reg)->addr, __to);
+	op_asb(_resin_op_asb, getreg(__reg)->addr, __to);
 }
 
 void rgasw(char const *__reg, ff_u16_t __to) {
-	op_asw(_op_asw, getreg(__reg)->addr, __to);
+	op_asw(_resin_op_asw, getreg(__reg)->addr, __to);
 }
 
 void rgasd(char const *__reg, ff_u32_t __to) {
-	op_asd(_op_asd, getreg(__reg)->addr, __to);
+	op_asd(_resin_op_asd, getreg(__reg)->addr, __to);
 }
 
 void rgasq(char const *__reg, ff_u64_t __to) {
-	op_asq(_op_asq, getreg(__reg)->addr, __to);
+	op_asq(_resin_op_asq, getreg(__reg)->addr, __to);
 }
 
 void rgst(char const *__reg, ff_addr_t __dst) {
@@ -245,24 +245,28 @@ void rgld(char const *__reg, ff_addr_t __src) {
 	op_mov(op, __src, rg->addr);
 }
 
-void emit_exit(insp __ins) {
-	op_exit(__ins->op, *(ff_addr_t*)__ins->l->p);
+void emit_exit(void) {
+	op_exit(_resin_op_exit, *(ff_addr_t*)fakget(0)->p);
 }
 
-void emit_asb(insp __ins) {
-	op_asb(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_u8_t*)__ins->r->p);
+void emit_asb(void) {
+	op_asb(_resin_op_asb, *(ff_addr_t*)fakget(0)->p,
+		*(ff_u8_t*)fakget(1)->p);
 }
 
-void emit_asw(insp __ins) {
-	op_asw(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_u16_t*)__ins->r->p);
+void emit_asw(void) {
+	op_asw(_resin_op_asw, *(ff_addr_t*)fakget(0)->p,
+		*(ff_u16_t*)fakget(1)->p);
 }
 
-void emit_asd(insp __ins) {
-	op_asd(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_u32_t*)__ins->r->p);
+void emit_asd(void) {
+	op_asd(_resin_op_asd, *(ff_addr_t*)fakget(0)->p,
+		*(ff_u32_t*)fakget(1)->p);
 }
 
-void emit_asq(insp __ins) {
-	op_asq(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_u64_t*)__ins->r->p);
+void emit_asq(void) {
+	op_asq(_resin_op_asq, *(ff_addr_t*)fakget(0)->p,
+		*(ff_u64_t*)fakget(1)->p);
 }
 
 void op_ld(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt) {
@@ -277,12 +281,14 @@ void op_st(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt) {
 	oust_addr(__rt);
 }
 
-void emit_ld(insp __ins) {
-	op_ld(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+void emit_ld(void) {
+	op_ld(*op->opcode, *(ff_addr_t*)fakget(0)->p,
+		*(ff_addr_t*)fakget(1)->p);
 }
 
-void emit_st(insp __ins) {
-	op_st(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+void emit_st(void) {
+	op_st(*op->opcode, *(ff_addr_t*)fakget(0)->p,
+		*(ff_addr_t*)fakget(1)->p);
 }
 
 void op_out(ff_u8_t __op, ff_addr_t __adr) {
@@ -290,14 +296,14 @@ void op_out(ff_u8_t __op, ff_addr_t __adr) {
 	oust_addr(__adr);
 }
 
-void emit_out(insp __ins) {
-	op_out(__ins->op, *(ff_addr_t*)__ins->l->p);
+void emit_out(void) {
+	op_out(*op->opcode, *(ff_addr_t*)fakget(0)->p);
 }
 
 void static
-emit_jmp(insp __ins) {
+emit_jmp(void) {
 	char const *rgname = rbl(sizeof(ff_addr_t));
-	symbolp l = __ins->l;
+	symbolp l = fakget(0);
 	local_labelp ll = NULL;
 
 	labelp la;
@@ -314,17 +320,21 @@ emit_jmp(insp __ins) {
 		is_flag(la->flags, LA_LOOSE)?ff_as_hook:ff_as_reloc;
 
 	p(offset-sizeof(ff_addr_t), 2, &la->sy, ll);
-	ff_as_oustbyte(__ins->op);
+	ff_as_oustbyte(*op->opcode);
 	oust_addr(getreg(rgname)->addr);
 }
 
 void static
-emit_rin(insp __ins) {
-	ff_as_oustbyte(__ins->op);
-	ff_as_oustbyte(*(ff_u8_t*)__ins->l->p);
-	oust_addr(*(ff_addr_t*)__ins->r->p);
+op_rin(ff_u8_t __op, ff_u8_t __no, ff_addr_t __arg) {
+	ff_as_oustbyte(__op);
+	ff_as_oustbyte(__no);
+	oust_addr(__arg);
 }
 
+void static
+emit_rin(void) {
+	op_rin(*op->opcode, *(ff_u8_t*)fakget(0)->p, *(ff_addr_t*)fakget(1)->p);
+}
 
 void static
 op_div(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
@@ -370,49 +380,49 @@ op_ret(ff_u8_t __op) {
 }
 
 void static
-emit_div(insp __ins) {
-	op_div(__ins->op, *(ff_addr_t*)__ins->l->p,
-		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
+emit_div(void) {
+	op_div(*op->opcode, *(ff_addr_t*)fakget(0)->p,
+		*(ff_addr_t*)fakget(1)->p, *(ff_addr_t*)fakget(2)->p);
 }
 
 void static
-emit_mul(insp __ins) {
-	op_mul(__ins->op, *(ff_addr_t*)__ins->l->p,
-		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
+emit_mul(void) {
+	op_mul(*op->opcode, *(ff_addr_t*)fakget(0)->p,
+		*(ff_addr_t*)fakget(1)->p, *(ff_addr_t*)fakget(2)->p);
 }
 
 void static
-emit_sub(insp __ins) {
-	op_sub(__ins->op, *(ff_addr_t*)__ins->l->p,
-		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
+emit_sub(void) {
+	op_sub(*op->opcode, *(ff_addr_t*)fakget(0)->p,
+		*(ff_addr_t*)fakget(1)->p, *(ff_addr_t*)fakget(2)->p);
 }
 
 void static
-emit_add(insp __ins) {
-	op_add(__ins->op, *(ff_addr_t*)__ins->l->p,
-		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
+emit_add(void) {
+	op_add(*op->opcode, *(ff_addr_t*)fakget(0)->p,
+		*(ff_addr_t*)fakget(1)->p, *(ff_addr_t*)fakget(2)->p);
 }
 
 void static
-emit_inc(insp __ins) {
-	op_inc(__ins->op, *(ff_addr_t*)__ins->l->p);
+emit_inc(void) {
+	op_inc(*op->opcode, *(ff_addr_t*)fakget(0)->p);
 }
 
 void static 
-emit_dec(insp __ins) {
-	op_dec(__ins->op, *(ff_addr_t*)__ins->l->p);
+emit_dec(void) {
+	op_dec(*op->opcode, *(ff_addr_t*)fakget(0)->p);
 }
 
 void static
-emit_cmp(insp __ins) {
-	op_cmp(__ins->op, *(ff_addr_t*)__ins->l->p,
-		*(ff_addr_t*)__ins->r->p, *(ff_addr_t*)__ins->r->next->p);
+emit_cmp(void) {
+	op_cmp(*op->opcode, *(ff_addr_t*)fakget(0)->p,
+		*(ff_addr_t*)fakget(1)->p, *(ff_addr_t*)fakget(2)->p);
 }
 
 void static
-emit_cjmp(insp __ins) {
+emit_cjmp(void) {
 	char const *rgname = rbl(sizeof(ff_addr_t));
-	symbolp l = __ins->l;
+	symbolp l = fakget(0);
 	local_labelp ll = NULL;
 
 	labelp la;
@@ -429,20 +439,21 @@ emit_cjmp(insp __ins) {
 		is_flag(la->flags, LA_LOOSE)?ff_as_hook:ff_as_reloc;
 	
 	p(offset-sizeof(ff_addr_t), 2, &la->sy, ll);
-	ff_as_oustbyte(__ins->op);
+	ff_as_oustbyte(*op->opcode);
 	oust_addr(getreg(rgname)->addr);
-	oust_addr(*(ff_addr_t*)__ins->r->p);
+	oust_addr(*(ff_addr_t*)fakget(1)->p);
 }
 
 void static
-emit_mov(insp __ins) {
-	op_mov(__ins->op, *(ff_addr_t*)__ins->l->p, *(ff_addr_t*)__ins->r->p);
+emit_mov(void) {
+	op_mov(*op->opcode, *(ff_addr_t*)fakget(0)->p,
+		*(ff_addr_t*)fakget(1)->p);
 }
 
 void static
-emit_call(insp __ins) {
+emit_call(void) {
 	char const *rgname = rbl(sizeof(ff_addr_t));
-	symbolp l = __ins->l;
+	symbolp l = fakget(0);
 	labelp la = (labelp)l->p;
 
 	rgasw(rgname, 0);
@@ -451,70 +462,108 @@ emit_call(insp __ins) {
 		is_flag(la->flags, LA_LOOSE)?ff_as_hook:ff_as_reloc;
 
 	p(offset-sizeof(ff_addr_t), 2, &la->sy, NULL);
-	op_call(__ins->op, getreg(rgname)->addr);
+	op_call(*op->opcode, getreg(rgname)->addr);
 }
 
 void static
-emit_ret(insp __ins) {
-	op_ret(__ins->op);
+emit_ret(void) {
+	op_ret(*op->opcode);
 }
 
-struct ins *resin[] = {
-	&(struct ins){"exit", NULL, emit_exit, NULL, NULL, _op_exit},
-	&(struct ins){"asb", NULL, emit_asb, NULL, NULL, _op_asb},
-	&(struct ins){"asw", NULL, emit_asw, NULL, NULL, _op_asw},
-	&(struct ins){"asd", NULL, emit_asd, NULL, NULL, _op_asd},
-	&(struct ins){"asq", NULL, emit_asq, NULL, NULL, _op_asq},
+struct berry emit[] = {
+	{emit_exit, NULL},
+	{emit_asb, NULL},
+	{emit_asw, NULL},
+	{emit_asd, NULL},
+	{emit_asq, NULL},
 
-	&(struct ins){"ldb", NULL, emit_ld, NULL, NULL, _op_ldb},
-	&(struct ins){"ldw", NULL, emit_ld, NULL, NULL, _op_ldw},
-	&(struct ins){"ldd", NULL, emit_ld, NULL, NULL, _op_ldd},
-	&(struct ins){"ldq", NULL, emit_ld, NULL, NULL, _op_ldq},
+	{emit_jmp, NULL},
 
-	&(struct ins){"stb", NULL, emit_st, NULL, NULL, _op_stb},
-	&(struct ins){"stw", NULL, emit_st, NULL, NULL, _op_stw},
-	&(struct ins){"std", NULL, emit_st, NULL, NULL, _op_std},	
-	&(struct ins){"stq", NULL, emit_st, NULL, NULL, _op_stq},
+	{emit_st, NULL},
+	{emit_st, NULL},
+	{emit_st, NULL},
+	{emit_st, NULL},
 
-	&(struct ins){"outb", NULL, emit_out, NULL, NULL, _op_outb},
-	&(struct ins){"outw", NULL, emit_out, NULL, NULL, _op_outw},
-	&(struct ins){"outd", NULL, emit_out, NULL, NULL, _op_outd},
-	&(struct ins){"outq", NULL, emit_out, NULL, NULL, _op_outq},
+	{emit_ld, NULL},
+	{emit_ld, NULL},
+	{emit_ld, NULL},
+	{emit_ld, NULL},	
 
-	&(struct ins){"jmp", NULL, emit_jmp, NULL, NULL, _op_jmp},
-	&(struct ins){"rin", NULL, emit_rin, NULL, NULL, _op_rin},
+	{emit_out, NULL},
+	{emit_out, NULL},
+	{emit_out, NULL},
+	{emit_out, NULL},
 
-	&(struct ins){"divb", NULL, emit_div, NULL, NULL, _op_divb},
+	{emit_mov, NULL},
+	{emit_mov, NULL},
+	{emit_mov, NULL},
+	{emit_mov, NULL},
 
-	&(struct ins){"mulb", NULL, emit_mul, NULL, NULL, _op_mulb},
+	{emit_rin, NULL},
 
-	&(struct ins){"subb", NULL, emit_sub, NULL, NULL, _op_subb},
-	&(struct ins){"subw", NULL, emit_sub, NULL, NULL, _op_subw},
-	&(struct ins){"subd", NULL, emit_sub, NULL, NULL, _op_subd},
-	&(struct ins){"subq", NULL, emit_sub, NULL, NULL, _op_subq},
+	{emit_div, NULL},
+	{emit_div, NULL},
+	{emit_div, NULL},
+	{emit_div, NULL},
 
-	&(struct ins){"addb", NULL, emit_add, NULL, NULL, _op_addb},
-	&(struct ins){"addw", NULL, emit_add, NULL, NULL, _op_addw},
-	&(struct ins){"addd", NULL, emit_add, NULL, NULL, _op_addd},
-	&(struct ins){"addq", NULL, emit_add, NULL, NULL, _op_addq},
+	{emit_mul, NULL},
+	{emit_mul, NULL},
+	{emit_mul, NULL},
+	{emit_mul, NULL},
 
-	&(struct ins){"incb", NULL, emit_inc, NULL, NULL, _op_incb},
-	&(struct ins){"decb", NULL, emit_dec, NULL, NULL, _op_decb},
+	{emit_sub, NULL},
+	{emit_sub, NULL},
+	{emit_sub, NULL},
+	{emit_sub, NULL},
 
-	&(struct ins){"cmpb", NULL, emit_cmp, NULL, NULL, _op_cmpb},
-	&(struct ins){"cmpw", NULL, emit_cmp, NULL, NULL, _op_cmpw},
-	&(struct ins){"cmpd", NULL, emit_cmp, NULL, NULL, _op_cmpd},
-	&(struct ins){"cmpq", NULL, emit_cmp, NULL, NULL, _op_cmpq},
+	{emit_add, NULL},
+	{emit_add, NULL},
+	{emit_add, NULL},
+	{emit_add, NULL},
 
-	&(struct ins){"je", NULL, emit_cjmp, NULL, NULL, _op_je},
-	&(struct ins){"jne", NULL, emit_cjmp, NULL, NULL, _op_jne},
-	&(struct ins){"jg", NULL, emit_cjmp, NULL, NULL, _op_jg},
-	&(struct ins){"jl", NULL, emit_cjmp, NULL, NULL, _op_jl},
-	&(struct ins){"movb", NULL, emit_mov, NULL, NULL, _op_movb},
-	&(struct ins){"movw", NULL, emit_mov, NULL, NULL, _op_movw},
-	&(struct ins){"movd", NULL, emit_mov, NULL, NULL, _op_movd},
-	&(struct ins){"movq", NULL, emit_mov, NULL, NULL, _op_movq},
-	&(struct ins){"call", NULL, emit_call, NULL, NULL, _op_call},
-	&(struct ins){"ret", NULL, emit_ret, NULL, NULL, _op_ret},
-	NULL
+	{emit_inc, NULL},
+	{emit_inc, NULL},
+	{emit_inc, NULL},
+	{emit_inc, NULL},
+
+	{emit_dec, NULL},
+	{emit_dec, NULL},
+	{emit_dec, NULL},
+	{emit_dec, NULL},
+
+	{emit_cmp, NULL},
+	{emit_cmp, NULL},
+	{emit_cmp, NULL},
+	{emit_cmp, NULL},
+
+	{emit_cjmp, NULL},
+	{emit_cjmp, NULL},
+	{emit_cjmp, NULL},
+	{emit_cjmp, NULL},
+
+	{emit_call, NULL},
+	{emit_ret, NULL}
 };
+
+void static
+_post(void(*__emit)(void)) {
+	__emit();
+}
+
+# include "../../dep/str_len.h"
+void
+ff_as_resin(void) {
+	struct ff_as_op const **cur;
+	struct ff_as_op const *op;
+
+	struct berry *bar = emit;
+	cur = resin_optab;
+	while(*cur != NULL) {
+		op = *(cur++);
+		ffly_printf("opname: %s\n", op->name);
+		ff_as_hash_put(&env, op->name, ffly_str_len(op->name), bar);
+		(bar++)->op = op;
+		op++;
+	}
+	post = _post;
+}

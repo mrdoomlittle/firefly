@@ -5,6 +5,8 @@ int extern out;
 int extern in;
 # include "../resin.h"
 # include "../ffint.h"
+# define fakget(__off) \
+	(*((fak_)->sy+__off))
 # define inssize struct(ins)
 # define is_flag(__flags, __flag) \
 	((__flags&__flag)==__flag)
@@ -18,21 +20,29 @@ enum {
 	_of_ffef
 };
 
+extern struct ff_as_op const *op;
 ff_u8_t extern of;
 ff_u64_t extern offset;
 
-typedef struct label *labelp;
+extern void(*post)(void(*)(void));
 
-typedef struct ins {
-	char *name;
-	struct ins *next;
-	void(*post)(struct ins*);
-	symbolp l, r;
-	ff_u8_t op;
-} *insp;
+typedef struct label *labelp;
 
 # define LA_LOOSE 0x1
 typedef struct region* regionp;
+
+struct berry {
+	void(*emit)(void);
+	struct ff_as_op const *op;
+};
+
+typedef struct flask {
+	symbolp sy[20];	
+	symbolp *end;
+} *flaskp;
+
+struct flask *fak_;
+
 typedef struct label {
 	ff_uint_t offset, s_adr, adr;
 	ff_u8_t flags;
@@ -126,9 +136,9 @@ ff_u64_t ff_as_read_no(char*, ff_uint_t*, ff_u8_t*);
 void ff_as_hash_init(struct hash*);
 void ff_as_hash_put(struct hash*, ff_u8_t const*, ff_uint_t, void*);
 void* ff_as_hash_get(struct hash*, ff_u8_t const*, ff_uint_t);
-void ff_as_load(insp*);
 ff_uint_t ff_as_stackadr();
 void ff_as_isa(ff_uint_t);
 
+void ff_as_resin(void);
 //void ffef(symbolp);
 # endif /*__ffly__as__h*/

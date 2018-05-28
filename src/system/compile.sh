@@ -32,6 +32,9 @@ $ffly_cc -c $cc_flags -o $dst_dir/shm.o $root_dir/shm.c
 $ffly_cc -c $cc_flags -o $dst_dir/errno.o $root_dir/errno.c
 $ffly_cc -c $cc_flags -o $dst_dir/io.o $root_dir/io.c
 
+nasm -f elf64 $as_inc -o $dst_dir/sys_mkdir.o.0 $root_dir/asm/sys_mkdir.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_mkdir.o.1 $root_dir/sys_mkdir.c
+
 nasm -f elf64 $as_inc -o $dst_dir/sys_arch_prctl.o.0 $root_dir/asm/sys_arch_prctl.asm
 $ffly_cc -c $cc_flags -o $dst_dir/sys_arch_prctl.o.1 $root_dir/sys_arch_prctl.c
 
@@ -220,6 +223,7 @@ $dst_dir/sys_execve.o.0 $dst_dir/sys_execve.o.1 \
 $dst_dir/sys_wait4.o.0 $dst_dir/sys_wait4.o.1 \
 $dst_dir/sys_fork.o.0 $dst_dir/sys_fork.o.1 \
 $dst_dir/sys_rmdir.o.0 $dst_dir/sys_rmdir.o.1 \
+$dst_dir/sys_mkdir.o.0 $dst_dir/sys_mkdir.o.1 \
 $dst_dir/sys_unlink.o.0 $dst_dir/sys_unlink.o.1 \
 $dst_dir/sys_shutdown.o.0 $dst_dir/sys_shutdown.o.1 \
 $dst_dir/sys_connect.o.0 $dst_dir/sys_connect.o.1 \

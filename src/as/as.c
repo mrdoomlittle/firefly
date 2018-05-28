@@ -12,6 +12,8 @@
 	cleanup needed
 */
 
+struct ff_as_op const *op;
+void(*post)(void(*)(void));
 struct hash symbols;
 struct hash defines;
 struct hash env;
@@ -262,15 +264,17 @@ ff_as(char *__p, char *__end) {
 				}
 			} else {
 				ffly_printf("--| %s\n", sy->p);
-				insp ins;
-				if ((ins = (insp)ff_as_hash_get(&env, sy->p, sy->len)) != NULL) {
+				struct berry *bar;
+				struct flask fak;
+				if ((bar = (struct berry*)ff_as_hash_get(&env, sy->p, sy->len)) != NULL) {
+					fak.end = fak.sy;
 					symbolp cur = sy->next;
 					while(cur != NULL) {
 						adaptreg(cur);
+						*(fak.end++) = cur;
 						cur = cur->next;
 					}
 
-					ins->l = sy->next;
 					if (sy->next != NULL) {
 						if (is_syll(sy->next)) {
 							void *p;
@@ -283,14 +287,15 @@ ff_as(char *__p, char *__end) {
 								ff_as_hash_put(&env, sy->next->p, sy->next->len, p = ff_as_al(sizeof(struct label)));
 							sy->next->p = p;
 						}
-						ins->r = sy->next->next;
 					}
 
+					fak_ = &fak;
+					op = bar->op;
 					ff_u64_t beg = offset;
-					ins->post(ins);
+					post(bar->emit);
 					ff_u64_t end = offset;
 					iadr(end-beg);
-					printf("got: %s\n", ins->name);
+					printf("got: %s\n", sy->p);
 				} else
 					printf("unknown.\n");
 			}
@@ -512,14 +517,4 @@ void ff_as_oust_32l(ff_u32_t __data) {
 
 void ff_as_oust_64l(ff_u64_t __data) {
 	ff_as_oust((ff_u8_t*)&__data, 8);
-}
-
-void ff_as_load(insp* __list) {
-	insp* p = __list;
-	char *name;
-	while(*p != NULL) {
-		name = (*p)->name;
-		ff_as_hash_put(&env, name, ffly_str_len(name), *p);
-		p++;
-	}
 }

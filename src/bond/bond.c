@@ -136,8 +136,10 @@ void ff_bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
 	if (!map) {
 		map = (void**)malloc(pg_c*sizeof(void*));
 		ff_uint_t cur = 0;
-		while(cur != page)
+		while(cur != pg_c) {
 			map[cur++] = NULL;
+			printf("page: %u, %p\n", cur, map[cur-1]);
+		}
 		page_c = pg_c;
 	} else {
 		if (pg_c>page_c) {
@@ -151,9 +153,12 @@ void ff_bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
 
 	printf("pg_c: %u\n", pg_c);
 	while(page != pg_c) {
+		printf("page: %u\n", page);
 		if (!map[page]) {
-			printf("page, alloc, %u\n", page);
+			printf("alloc\n");
 			map[page] = malloc(PAGE_SIZE);
+		} else {
+			printf("page not null.\n");
 		}
 		page++;
 	}
@@ -196,6 +201,7 @@ void static
 absorb_symbol(ffef_syp __sy, symbolp *__stp) {
 	char name[128];
 	memcpy(name, stte-__sy->name, __sy->l);
+	*(name+(__sy->l-1)) = '\0';
 	printf("symbol: %s\n", name);
 
 	symbolp p;
@@ -208,6 +214,7 @@ absorb_symbol(ffef_syp __sy, symbolp *__stp) {
 	to_free(p);
 	p->next = cursy;
 	cursy = p;
+
 	ff_bond_hash_put(&symbols, name, __sy->l-1, p);
 	p->name = strdup(name);
 _sk:
@@ -251,6 +258,7 @@ absorb_region(ffef_reg_hdrp __reg) {
 
 	ff_uint_t size;
 	ff_u8_t *buf = (ff_u8_t*)malloc(size = (__reg->end-__reg->beg));
+	printf("region size: %u\n", size);
 
 	lseek(s, __reg->beg, SEEK_SET);
 	read(s, buf, size);
