@@ -49,7 +49,7 @@ gen(char *__buf, ff_size_t __n, char const *__format, va_list __args) {
 				bufp+= ffly_nots(v, bufp);
 			} else if (*p == 's') {
 				char *s = va_arg(__args, char*);
-				bufp+= ffly_str_cpy(bufp, s);  
+				bufp+=ffly_str_cpy(bufp, s);  
 			} else if (*p == 'c') {
 				char c = va_arg(__args, int);
 				*(bufp++) = c;		

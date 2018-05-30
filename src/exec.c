@@ -60,6 +60,7 @@ prep(void *__hdr, void *__ctx) {
 
 void ffexecf(char const *__file) {
 	if ((fd = open(__file, O_RDONLY, 0)) == -1) {
+		ffly_fprintf(ffly_err, "failed to open file, %s\n", __file);
 		return;
 	}
 
@@ -97,8 +98,7 @@ void ffexecf(char const *__file) {
 	if (hdr.sg != FF_EF_NULL) {
 		ff_uint_t i = 0;
 		ff_u64_t offset = hdr.sg;
-		_again:
-		
+	_again:		
 		seg = (segmentp)__ffly_mem_alloc(sizeof(struct segment));
 		lseek(fd, offset, SEEK_SET);
 		read(fd, &seg->hdr, ffef_seg_hdrsz);

@@ -254,6 +254,8 @@ void extern *_ffc_build;
 void extern *_ffly_parse;
 void extern *_ffly_gen;
 
+void ffly_ff_resin(void);
+void ffly_ff_amd64(void);
 ff_err_t ffly_compiler_prepare(struct ffly_compiler*);
 ff_err_t ffly_compiler_free(struct ffly_compiler*);
 ff_u8_t ffly_compiler_kwno(char const*);

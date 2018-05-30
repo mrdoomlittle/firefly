@@ -7,13 +7,13 @@
 */
 __ffly_bcopy:
 	push %rax
-	_again:
+.L0:
 	movb (%rsi), %al
 	movb %al, (%rdi)
 	inc %rdi
 	inc %rsi
 	dec %rbx
 	cmpq $0, %rbx
-	ja _again
+	ja .L0
 	pop %rax
 	ret

@@ -142,6 +142,7 @@ rodp rods[64] = {
 
 static struct pot main_pot;
 
+// rename
 static void *spot[30];
 
 static ff_uint_t arena_tls;
@@ -265,13 +266,15 @@ detatch(potp __pot, blkdp __blk) {
 	ar_off_t *bin = bin_at(__pot, __blk->size);
 	ar_off_t fwd = __blk->fd;
 	ar_off_t bck = __blk->bk;
-
+# ifdef __ffly_debug
 	if (is_null(*bin))
 		ffly_errmsg("bin at this location is dead.\n");
-
+# endif
 	if (__blk->off == *bin) {
+# ifdef __ffly_debug
 		if (not_null(bck))
 			ffly_errmsg("block seems to have a back link.\n");
+# endif
 		if (not_null(*bin = fwd))
 			get_blk(__pot, fwd)->bk = AR_NULL; 
 	} else {
@@ -575,7 +578,9 @@ void ffly_arhang(void) {
 	potp arena = (potp)*arena_spot;
 	potp p;
 	if (!(p = arena)) {
+# ifdef __ffly_debug
 		ffly_printf("dead pot.\n");
+# endif
 		return;
 	}
 
@@ -622,7 +627,9 @@ void ffly_araxe(void) {
 
 	potp p;
 	if (!(p = arena)) {
+# ifdef __ffly_debug
 		ffly_printf("ar, pot has already been axed, or has been like this from the start.\n");
+# endif
 		return;
 	}
 
@@ -646,7 +653,9 @@ void ffly_araxe(void) {
 void static*
 shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 	if (__blk->size <= __size || is_free(__blk)) {
+# ifdef __ffly_debug
 		ffly_printf("forbidden alteration.\n");
+# endif
 		return NULL;
 	}
 
@@ -669,13 +678,15 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 	ar_uint_t dif = (__blk->size-__blk->pad)-__size;
 	ar_off_t *off = &__blk->off;
 	ff_u8_t freed, inuse;
-
+# ifdef __ffly_debug
 	__ffmod_debug
 		ff_rat(_ff_rat_1, "attempting to shrink block by %u bytes.\n", dif);
-
+# endif
 	if (dif>MAX_SH) {
+# ifdef __ffly_debug
 		__ffmod_debug
 			ff_rat(_ff_rat_1, "can't strink block, %u bytes is too much to cutoff.\n", dif);
+# endif
 		goto _r;	
 	}
 
@@ -721,7 +732,9 @@ shrink_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 			goto _r;
 		}
 	}
+# ifdef __ffly_debug
 	ff_rat(_ff_rat_1, "can't shrink block.\n");
+# endif
 _r:
 	ulpot(__pot);
 	ffly_free(p);
@@ -731,7 +744,9 @@ _r:
 void static*
 grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 	if (__blk->size-__blk->pad >= __size || is_free(__blk)) {
+# ifdef __ffly_debug
 		ffly_printf("forbidden alteration.\n");
+# endif
 		return NULL;
 	}
 
@@ -751,13 +766,15 @@ grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 	ar_uint_t dif = __size-(__blk->size-__blk->pad);
 	ar_off_t *off = &__blk->off;
 	ff_u8_t freed, inuse;
-
+# ifdef __ffly_debug
 	__ffmod_debug
 		ff_rat(_ff_rat_1, "attempting to grow block by %u bytes.\n", dif);
-
+# endif
 	if (dif>MAX_GR) {
+# ifdef __ffly_debug
 		__ffmod_debug
 			ff_rat(_ff_rat_1, "can't grow block, %u bytes is to much to add on.\n", dif);
+# endif
 		goto _r;
 	}
 
@@ -803,7 +820,9 @@ grow_blk(potp __pot, blkdp __blk, ar_uint_t __size) {
 			goto _r;
 		}
 	}
+# ifdef __ffly_debug
 	ff_rat(_ff_rat_1, "can't grow block.\n");
+# endif
 _r:
 	ulpot(__pot);
 	ffly_free(p);
@@ -822,7 +841,9 @@ ffly_arsh(void *__p, ff_uint_t __to) {
 		p = p->fd;
 		ulpot(bk);
 		if (!p) {
+# ifdef __ffly_debug
 			ffly_errmsg("ar, address '%p' can't be found.\n", __p);
+# endif
 			return NULL;
 		}
 		lkpot(p);
@@ -845,7 +866,9 @@ ffly_argr(void *__p, ff_uint_t __to) {
 		p = p->fd;
 		ulpot(bk);	
 		if (!p) {
+# ifdef __ffly_debug
 			ffly_errmsg("ar, address '%p' can't be found.\n", __p);
+# endif
 			return NULL;
 		}
 		lkpot(p);
@@ -946,7 +969,10 @@ _bk:
 		if ((page_c = ((top>>PAGE_SHIFT)+((top&((~(ff_u64_t)0)>>(64-PAGE_SHIFT)))>0))) > __pot->page_c) {
 		//if ((page_c = ((top>>PAGE_SHIFT)+((top-((top>>PAGE_SHIFT)*PAGE_SIZE))>0))) > __pot->page_c) {
 			if (brk(__pot->top = (void*)((ff_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
+# ifdef __ffly_debug
 				ffly_errmsg("error: brk.\n");
+# endif
+				abort();
 			}
 		}
 	} else {
@@ -988,6 +1014,7 @@ ffly_alloc(ff_uint_t __bc) {
 		void *p;
 		if ((p = mmap(NULL, blkd_size+__bc, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0)) == (void*)-1) {
 			// failure
+			abort();
 		}
 		blkdp blk = (blkdp)p;
 		blk->size = __bc;
@@ -1016,7 +1043,7 @@ _again:
 
 	if (!ret) {
 		if (!(t = alloc_pot(POT_SIZE))) {
-			// failure
+			abort();
 		}
 
 		atr(t, *rod_at(t->end));
@@ -1042,29 +1069,33 @@ _ffly_free(potp __pot, void *__p) {
 
 	blkdp blk = (blkdp)((ff_u8_t*)__p-blkd_size);
 	if (is_free(blk)) {
+# ifdef __ffly_debug
 		ffly_errmsg("error: block has already been freed, at: %p\n", __p);
+# endif
 		goto _end;
 	}
 
 	decouple(__pot, blk);
+# ifdef __ffly_debug
 	__ffmod_debug
 		ff_rat(_ff_rat_0,"to free: %u\n", blk->size);
-
+# endif
 	blkdp prev, next, top = NULL, end = NULL;
 	if (not_null(blk->prev)) {
 		prev = prev_blk(__pot, blk);
 		while(is_free(prev)) {
 			__pot->blk_c--;
 			__pot->buried-=prev->size;
+# ifdef __ffly_debug
 			__ffmod_debug
 				ff_rat(_ff_rat_0,"found free space above, %u\n", prev->size);
-
+# endif
 			detatch(__pot, prev);
 			decouple(__pot, prev);
-
+# ifdef __ffly_debug
 			__ffmod_debug
 				ff_rat(_ff_rat_0,"total freed: %u\n", prev->end-prev->off); 
-
+# endif
 			top = prev;
 			if (is_null(prev->prev)) break;
 			prev = prev_blk(__pot, prev);
@@ -1076,15 +1107,16 @@ _ffly_free(potp __pot, void *__p) {
 		while(is_free(next)) {
 			__pot->blk_c--;
 			__pot->buried-=next->size;
+# ifdef __ffly_debug
 			__ffmod_debug
 				ff_rat(_ff_rat_0, "found free space below, %u\n", next->size);
-
+# endif
 			detatch(__pot, next);
 			decouple(__pot, next);
-
+# ifdef __ffly_debug
 			__ffmod_debug
 				ff_rat(_ff_rat_0, "total freed: %u\n", next->end-next->off);
-
+# endif
 			end = next;
 			if (is_null(next->next)) break;
 			next = next_blk(__pot, next);
@@ -1104,12 +1136,14 @@ _ffly_free(potp __pot, void *__p) {
 
 	// only used when used
 	blk->pad = 0;
-
+# ifdef __ffly_debug
 	__ffmod_debug
 		ff_rat(_ff_rat_0, "freed: %u, %u\n", blk->size, blk->off);
-
+# endif
 	if (blk->off>=__pot->off) {
+# ifdef __ffly_debug
 		ffly_errmsg("somthing is wong.\n");
+# endif
 	}
 
 	if (blk->end == __pot->off) {
@@ -1120,7 +1154,10 @@ _ffly_free(potp __pot, void *__p) {
 			if ((page_c = ((__pot->off>>PAGE_SHIFT)+((__pot->off&((~(ff_u64_t)0)>>(64-PAGE_SHIFT)))>0))) < __pot->page_c) {
 //			if ((page_c = ((__pot->off>>PAGE_SHIFT)+((__pot->off-((__pot->off>>PAGE_SHIFT)*PAGE_SIZE))>0))) < __pot->page_c) {
 				if (brk(__pot->top = (void*)((ff_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
+# ifdef __ffly_debug
 					ffly_errmsg("error: brk.\n");
+# endif
+					abort();
 				}
 			}
 		}
@@ -1147,7 +1184,9 @@ ffly_free(void *__p) {
 	void **arena_spot = spot+ffly_tls_get(arena_tls);
 	potp arena = (potp)*arena_spot;
 	if (!__p) {
+# ifdef __ffly_debug
 		ffly_errmsg("error: got null ptr.\n");
+# endif
 		return;
 	}
 	blkdp blk = (blkdp)((ff_u8_t*)__p-blkd_size);
@@ -1165,7 +1204,9 @@ _bk:
 		rodp bk;
 		while(!(bk = r)->p) {
 			if ((r = r->next) == beg) {
+# ifdef __ffly_debug
 				ffly_errmsg("error.\n");
+# endif
 				ulrod(bk);
 				abort();
 			}
@@ -1174,7 +1215,9 @@ _bk:
 		}
 	
 		if (!(p = r->p)) {
+# ifdef __ffly_debug
 			ffly_errmsg("error.\n");
+# endif
 			ulrod(r);
 			abort();
 		}
@@ -1199,7 +1242,9 @@ _bk:
 				ulrod(bk);
 
 				if (r == beg) {
+# ifdef __ffly_debug
 					ffly_errmsg("error: could not find pot associated with pointer.\n");
+# endif
 					abort();
 				}
 			}
@@ -1207,7 +1252,9 @@ _bk:
 				if (!r)
 					goto _bk;
 				else {
+# ifdef __ffly_debug
 					ffly_errmsg("error.\n");
+# endif
 					return;
 				}
 			}
@@ -1244,7 +1291,9 @@ _bk:
 void*
 ffly_realloc(void *__p, ff_uint_t __bc) {
 	if (!__p) {
+# ifdef __ffly_debug
 		ffly_errmsg("error: got null ptr.\n");
+# endif
 		return NULL;
 	}
 
@@ -1254,23 +1303,31 @@ ffly_realloc(void *__p, ff_uint_t __bc) {
 	void *p;
 	if (!is_flag(blk->flags, MMAPED)) {
 		if (dif>0) {
+# ifdef __ffly_debug
 			__ffmod_debug
 				ff_rat(_ff_rat_1, "shrink.\n");
+# endif
 /*			if ((p = ffly_arsh(__p, __bc)) != NULL) {
 				ff_rat(_ff_rat_1, "shrunk %u bytes.\n", dif);
 				return p;
 			}*/
+# ifdef __ffly_debug
 			__ffmod_debug
 				ff_rat(_ff_rat_1, "can't shrink block.\n");
+# endif
 		} else if (dif<0) {
+# ifdef __ffly_debug
 			__ffmod_debug
 				ff_rat(_ff_rat_1, "grow.\n");
+# endif
 /*			if ((p = ffly_argr(__p, __bc)) != NULL) {
 				ff_rat(_ff_rat_1, "grew %u bytes.\n", -dif);
 				return p;
 			}*/
+# ifdef __ffly_debug
 			__ffmod_debug
 				ff_rat(_ff_rat_1, "can't grow block.\n");
+# endif
 		}
 	}
 
@@ -1278,9 +1335,10 @@ ffly_realloc(void *__p, ff_uint_t __bc) {
 		// failure
 	}
 
+# ifdef __ffly_debug
 	__ffmod_debug
 		ff_rat(_ff_rat_1, "prev size: %u, new size: %u, copysize: %u\n", size, __bc, size<__bc?size:__bc);
-
+# endif
 	copy(p, __p, size<__bc?size:__bc);
 	ffly_free(__p);
 	return p;

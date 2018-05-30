@@ -8,11 +8,13 @@
 # include "../malloc.h"
 # include "../dep/str_cmp.h"
 # include "../ffef.h"
+
 /*
 	cleanup needed
 */
 
 struct ff_as_op const *op;
+void(*ff_as_forge)(void);
 void(*post)(void(*)(void));
 struct hash symbols;
 struct hash defines;
@@ -264,9 +266,9 @@ ff_as(char *__p, char *__end) {
 				}
 			} else {
 				ffly_printf("--| %s\n", sy->p);
-				struct berry *bar;
+				struct berry *ber;
 				struct flask fak;
-				if ((bar = (struct berry*)ff_as_hash_get(&env, sy->p, sy->len)) != NULL) {
+				if ((ber = (struct berry*)ff_as_hash_get(&env, sy->p, sy->len)) != NULL) {
 					fak.end = fak.sy;
 					symbolp cur = sy->next;
 					while(cur != NULL) {
@@ -290,9 +292,9 @@ ff_as(char *__p, char *__end) {
 					}
 
 					fak_ = &fak;
-					op = bar->op;
+					op = ber->op;
 					ff_u64_t beg = offset;
-					post(bar->emit);
+					post(ber->emit);
 					ff_u64_t end = offset;
 					iadr(end-beg);
 					printf("got: %s\n", sy->p);
@@ -336,129 +338,14 @@ void outsegs() {
 	}
 }
 
-# include "../exec.h"
+labelp ff_as_entry;
 void ff_as_final(void) {
 	if (!ep)
 		ep = "_start";
 	printf("entry point: %s\n", ep);
-	labelp entry;
-	if (!(entry = (labelp)ff_as_hash_get(&env, ep, ffly_str_len(ep))))
+	if (!(ff_as_entry = (labelp)ff_as_hash_get(&env, ep, ffly_str_len(ep))))
 		printf("entry point not found.\n");
-	if (of == _of_ffef) {
-		struct ffef_hdr hdr;
-		*hdr.ident = FF_EF_MAG0;
-		hdr.ident[1] = FF_EF_MAG1;
-		hdr.ident[2] = FF_EF_MAG2;
-		hdr.ident[3] = FF_EF_MAG3;
-		hdr.ident[4] = '\0';
-		hdr.routine = entry != NULL?entry->adr:FF_EF_NULL;
-		hdr.format = _ffexec_bc;
-		hdr.nsg = 0;
-		hdr.nrg = 0;
-		hdr.nrl = 0;
-		hdr.nhk = 0;
-		hdr.sg = FF_EF_NULL;
-		hdr.rg = FF_EF_NULL;
-		hdr.rl = FF_EF_NULL;
-		hdr.hk = FF_EF_NULL;
-		hdr.adr = curadr();
-		outsegs();
-		char const **cur = globl;
-		while(*(--cur) != NULL) {
-			printf("symbol: %s\n", *cur);
-			symbolp sy = ff_as_getsymbol(*cur);
-			sy->type = FF_SY_GBL;
-		}
-
-		cur = extrn;
-		while(*(--cur) != NULL) {
-			printf("extern: %s\n", *cur);
-			hookp hk = hok;
-
-			while(hk != NULL) {
-				printf("symbol: %p, len: %u\n", hk->to, hk->l);
-				if (!strcmp((*hk->to)->p, *cur)) {
-					struct ffef_hok hok;
-					hok.offset = hk->offset;
-					hok.l = hk->l;
-					hok.to = (*hk->to)->off;
-					ff_as_oust((ff_u8_t*)&hok, ffef_hoksz);
-					hdr.nhk++;
-				}
-				hk = hk->next;
-			}
-		}
-
-		if (hok != NULL)
-			hdr.hk = offset-ffef_hoksz;	
-
-		relocatep rl = rel;
-		while(rl != NULL) {
-			struct ffef_rel rel;
-			rel.offset = rl->offset;
-			rel.l = rl->l;
-			rel.addto = !rl->ll?0:(rl->ll->adr-(*rl->ll->p_adr));
-			printf("reloc: %s\n", (*rl->sy)->p);
-			rel.sy = (*rl->sy)->off;
-			ff_as_oust((ff_u8_t*)&rel, ffef_relsz);
-			rl = rl->next;
-			hdr.nrl++;
-		}
-
-		if (rel != NULL)
-			hdr.rl = offset-ffef_relsz;
-
-		segmentp sg = curseg;
-		while(sg != NULL) {
-			struct ffef_seg_hdr seg;
-			seg.adr = sg->adr;
-			seg.offset = sg->offset;
-			seg.sz = sg->size;
-			ff_as_oust((ff_u8_t*)&seg, ffef_seg_hdrsz);
-			hdr.nsg++;
-			sg = sg->next;
-		}
-
-		if (curseg != NULL)
-			hdr.sg = offset-ffef_seg_hdrsz;
-
-		regionp rg = curreg;
-		while(rg != NULL) {
-			struct ffef_reg_hdr reg;
-			reg.l = ffly_str_len(rg->name)+1;
-			reg.name = offset;
-			ff_as_oust(rg->name, reg.l);
-			reg.beg = rg->beg;
-			reg.end = rg->end;
-			reg.adr = rg->adr;
-			if (!strcmp(rg->name, "text"))
-				reg.type = FF_RG_PROG;
-			else
-				reg.type = FF_RG_NULL;
-
-			ff_as_oust((ff_u8_t*)&reg, ffef_reg_hdrsz);
-			hdr.nrg++;
-			rg = rg->next;
-		}
-	
-		// drop the region header hear
-		ff_as_syt_drop();
-
-		if (curreg != NULL)
-			hdr.rg = offset-ffef_reg_hdrsz;
-		hdr.nrg++;
-
-		// put contents
-		ff_as_syt_gut();
-		// store header - save
-		ff_as_syt_store();
-
-		// string table region
-		hdr.sttr = ff_as_stt_drop();
-		lseek(out, 0, SEEK_SET);
-		write(out, &hdr, ffef_hdr_size);
-	}
-	
+	ff_as_forge();
 	if (outbuf.off>0) {
 		lseek(out, outbuf.dst, SEEK_SET);
 		write(out, outbuf.p, outbuf.off);
@@ -474,8 +361,14 @@ drain() {
 }
 
 void ff_as_oust(ff_u8_t *__p, ff_u8_t __n) {
-	if (__n > OBSIZE) { //shoud remove
-		printf("error: cant oust anything larger then %u\n", OBSIZE);
+	while(__n>OBSIZE) {
+		ff_as_oust(__p, OBSIZE);
+		__n-=OBSIZE; 
+		__p+=OBSIZE;
+	}
+
+	if (!__n) {
+		printf("nothing left.\n");
 		return;
 	}
 

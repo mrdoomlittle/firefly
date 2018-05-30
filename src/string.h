@@ -9,6 +9,7 @@
 # include "dep/mem_cmp.h"
 # include "dep/str_cpy.h"
 # include "dep/mem_set.h"
+# include "dep/bzero.h"
 # define memset(__dst, __val, __n) \
 	ffly_mem_set(__dst, __val, __n)
 # define memcpy(__dst, __src, __n) \
@@ -25,4 +26,6 @@
 	ffly_str_dup(__s)
 # define memdup(__dst, __p, __l) \
 	ffly_mem_dup(__dst, __p, __l)
+# define bzero(__p, __n) \
+	ffly_bzero(__p, __n)
 # endif /*__ffly__string__h*/

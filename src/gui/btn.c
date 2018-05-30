@@ -82,6 +82,7 @@ ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
 
 ff_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn, ff_u8_t *__dst, ff_u16_t __width, ff_u16_t __height) {
 	ff_err_t err;
+	ffly_fprintf(ffly_log, "button draw.\n");
 	if (_err(err = ffly_pixdraw(__btn->x, __btn->y, __dst, __width, __btn->texture, __btn->width, __btn->height))) {
 		return err;
 	}

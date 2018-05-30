@@ -7,6 +7,12 @@
 *	rsi - src
 */
 __ffly_str_cpy:
+	movb (%rsi), %al
+	cmpb $0x0, %al
+	jne .L0
+	xorq %rax, %rax
+	ret
+.L0:
 	push %rbx
 	push %rcx
 

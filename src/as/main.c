@@ -23,6 +23,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	char const *infile = NULL;
 	char const *outfile = NULL;
 	char const *format = NULL;
+	char const *processor = NULL;
 	struct ffpcll pcl;
 	pcl.cur = __argv+1;
 	pcl.end = __argv+__argc;
@@ -31,6 +32,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	infile = ffoptval(ffoe_get("i"));
 	outfile = ffoptval(ffoe_get("o"));
 	format = ffoptval(ffoe_get("f"));
+	processor = ffoptval(ffoe_get("p"));
 	ffoe_end();
 
 	if (!infile || !outfile || !format) {
@@ -43,6 +45,9 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	if (!strcmp(format, "ffef")) {
 		of = _of_ffef;
 		offset+=ffef_hdr_size;
+	} else {
+		of = _of_elf;
+		offset+=elf64_hdr_size;
 	}
 
 	if ((in = open(infile, O_RDONLY, 0)) == -1) {
@@ -55,8 +60,16 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ff_as_init();
 
-	ff_as_resin();
+	if (!processor)
+		ff_as_resin();
+	else if (!strcmp(processor, "amd64"))
+		ff_as_amd64();
 
+	if (of == _of_ffef)
+		ff_as_ffef();
+	else
+		ff_as_elf();
+	
 	struct stat st;
 	stat(infile, &st);
 

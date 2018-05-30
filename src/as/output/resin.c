@@ -470,7 +470,7 @@ emit_ret(void) {
 	op_ret(*op->opcode);
 }
 
-struct berry emit[] = {
+static struct berry emit[] = {
 	{emit_exit, NULL},
 	{emit_asb, NULL},
 	{emit_asw, NULL},
@@ -556,13 +556,13 @@ ff_as_resin(void) {
 	struct ff_as_op const **cur;
 	struct ff_as_op const *op;
 
-	struct berry *bar = emit;
+	struct berry *ber = emit;
 	cur = resin_optab;
 	while(*cur != NULL) {
 		op = *(cur++);
 		ffly_printf("opname: %s\n", op->name);
-		ff_as_hash_put(&env, op->name, ffly_str_len(op->name), bar);
-		(bar++)->op = op;
+		ff_as_hash_put(&env, op->name, ffly_str_len(op->name), ber);
+		(ber++)->op = op;
 		op++;
 	}
 	post = _post;

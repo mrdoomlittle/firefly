@@ -17,13 +17,13 @@
 extern "C" {
 # endif
 
-# ifdef __ffly_debug_enabled
+# ifdef __ffly_debug
 ff_atomic_uint_t extern ffly_mem_alloc_bc;
 ff_atomic_uint_t extern ffly_mem_alloc_c;
 # endif
 
 # ifdef __ffly_mal_track
-void* ffly_mem_alloc(ff_uint_t, ffly_bool_t);
+void* ffly_mem_alloc(ff_uint_t, ff_bool_t);
 # else
 void* ffly_mem_alloc(ff_uint_t);
 # endif /*__ffly_mal_track*/

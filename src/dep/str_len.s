@@ -8,11 +8,10 @@ __ffly_str_len:
 	xorq %rax, %rax
 	push %rbx
 	movq %rdi, %rbx
-
-	_again:
+.L0:
 	inc %rdi
 	cmpb $0x0, -1(%rdi)
-	jne _again
+	jne .L0
 	dec %rdi
 
 	sub %rbx, %rdi

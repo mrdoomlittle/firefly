@@ -8,10 +8,10 @@ extern "C" {
 # endif
 void ffly_set_cache_dir(char*);
 ff_err_t ffly_cache_prepare(ff_uint_t);
-ff_err_t ffly_cache_put(ff_id_t*, void*);
+ff_err_t ffly_cache_put(ff_id_t*, void*, ff_u32_t, void(*)(void*, void*), void*);
 void* ffly_cache_get(ff_id_t, ff_err_t*);
 ff_err_t ffly_cache_del(ff_id_t);
-ff_err_t ffly_cache_free();
+ff_err_t ffly_cache_cleanup(void);
 # ifdef __cplusplus
 }
 # endif

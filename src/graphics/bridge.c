@@ -5,6 +5,8 @@
 # include "../system/io.h"
 # include "../system/event.h"
 # include "../duct.h"
+# define WIDTH 448
+# define HEIGHT 448
 int main() {
 	ffly_io_init();
 	ff_err_t err;
@@ -15,7 +17,7 @@ int main() {
 
 	ffly_event_t *event;
 	struct ffly_wd window;
-	ffly_wd_init(&window, 400, 400, "Hello");
+	ffly_wd_init(&window, WIDTH, HEIGHT, "Hello");
 	ffly_wd_open(&window);
 	ffly_printf("waiting.\n");
 	ff_duct_connect();
@@ -37,7 +39,7 @@ _again:
 		ff_event_free(event);
 	}
 
-	ff_duct_get_frame(window.raw.frame_buff, 400, 400, 4);
+	ff_duct_get_frame(window.raw.frame_buff, WIDTH, HEIGHT, 4);
 	ff_duct_done();
 	ffly_wd_display(&window);
 	goto _again;

@@ -10,23 +10,23 @@ __ffly_mem_cmp:
 	movq %rsp, %rbp
 	sub $2, %rsp
 	movw $0, -2(%rbp)
-	_again:
+.L0:
 	movb (%rdi), %al
 	cmpb %al, (%rsi)
-	jne _j1
+	jne .L2
 	incw -2(%rbp)
 	cmpw %bx, -2(%rbp)
-	je _j0
+	je .L1
 	inc %rdi
 	inc %rsi
 
-	jmp _again
-	_j0:
+	jmp .L0
+.L1:
 	movb $0x0, %al
-	jmp _sk
-	_j1:
+	jmp .L3
+.L2:
 	movb $0xff, %al
-	_sk:
+.L3:
 	movq %rbp, %rsp
 	pop %rbp
 	ret

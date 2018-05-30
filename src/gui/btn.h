@@ -6,6 +6,7 @@
 # include "../ffly_def.h"
 # include "../event.h"
 struct ffly_gui_btn {
+	ff_u8_t id;
 	ff_u8_t *texture;
 	ff_i8_t pressed;
 	ff_i8_t hovering;

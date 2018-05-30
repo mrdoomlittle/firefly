@@ -54,9 +54,8 @@ void prsy(ffef_reg_hdrp __sttr, ffef_syp __sy, ff_uint_t __no) {
 	lseek(fd, __sttr->end-__sy->name, SEEK_SET);
 	read(fd, name, __sy->l);
 
-	printf("%u: symbol,\ttype: %s,\tname: %s\t: %u,\tloc: %u,\treg: %u\n", __no, sytype_s(__sy->type),
-		name, __sy->name, __sy->loc, __sy->reg);
-
+	printf("%u: symbol,\ttype: %s,\tname: %s\t: %u,\tloc: %u,\treg: %u, len: %u\n", __no, sytype_s(__sy->type),
+		name, __sy->name, __sy->loc, __sy->reg, __sy->l);
 	free(name);
 }
 

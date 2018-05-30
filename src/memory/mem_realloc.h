@@ -13,7 +13,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-# if defined(__ffly_debug_enabled) && !defined(__ffly_mem__alloc__h)
+# if defined(__ffly_debug) && !defined(__ffly_mem__alloc__h)
 ff_atomic_uint_t extern ffly_mem_alloc_bc;
 ff_atomic_uint_t extern ffly_mem_alloc_c;
 # endif

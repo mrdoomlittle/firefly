@@ -45,10 +45,12 @@ out(void *__p, ff_uint_t __n) {
 # include "opt.h"
 # include "depart.h"
 # include "dep/str_cpy.h"
+# include "dep/str_cmp.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffoe_prep();
 	char const *infile;
 	char const *outfile;
+	char const *gen;
 	struct ffpcll pcl;
 	pcl.cur = __argv+1;
 	pcl.end = __argv+__argc;
@@ -56,10 +58,11 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffoe(ffoe_pcll, (void*)&pcl);
 	infile = ffopt_getval(ffoe_get("i"));
 	outfile = ffopt_getval(ffoe_get("o"));
+	gen = ffopt_getval(ffoe_get("g"));
 	ffoe_end();
 
-	if (!infile || !outfile) {
-		ffly_printf("missing -i or -o.\n");
+	if (!infile || !outfile || !gen) {
+		ffly_printf("missing -i, -g or -o.\n");
 		reterr;
 	}
 
@@ -73,6 +76,13 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffc_ldlang(&compiler, _ffc_ff);
 	ldkeywds(&compiler);	
 	ffly_compiler_ld(&compiler, infile);
+	if (!ffly_str_cmp(gen, "resin"))
+		ffly_ff_resin();
+	else if (!ffly_str_cmp(gen, "amd64"))
+		ffly_ff_amd64();
+	else {
+		// error
+	}
 
 	ffc_build(&compiler);
 	ffly_compiler_free(&compiler);

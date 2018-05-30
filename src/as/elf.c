@@ -1,74 +1,146 @@
-# include <unistd.h>
-# include <fcntl.h>
+# include "as.h"
+# include "../string.h"
+# include "../malloc.h"
 # include "../elf.h"
-# include <string.h>
-int main() {
-	int fd = open("elf", O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU);
-	struct elf64_hdr hdr = {
-	.type = ET_EXEC,
-		.machine = EM_X86_64,
-		.version = EV_CURR
-	};
+# include "../stdio.h"
 
-	hdr.ident[EI_MAG0] = 0x7f;
-	hdr.ident[EI_MAG1] = 'E';
- 	hdr.ident[EI_MAG2] = 'L';
-	hdr.ident[EI_MAG3] = 'F';
+/*
+only using this for experimentation
+*/
+ff_uint_t extern stt_off;
+struct elf64_shdr static syt;
+ff_uint_t static stt;
+void static
+syt_store(void) {
+	syt.name = stt_off;
+	syt.type = SHT_SYMTAB;
+	syt.link = stt;
+	syt.entsize = elf64_sym_size;
+	syt.addralign = 1;
+	char buf[128];
+	strcpy(buf, ".symtab");
+	ff_as_stt(buf, 0);
+	lseek(out, syt_dst, SEEK_SET);
+	write(out, &syt, elf64_shdr_size);
+}
+
+void static
+syt_drop(void) {
+	syt_dst = offset;
+	offset+=elf64_shdr_size;
+}
+
+void static
+syt_gut(void) {
+	syt.offset = offset;
+	symbolp cur = syt_head;
+	while(cur != NULL) {
+		struct elf64_sym sy;
+		bzero(&sy, elf64_sym_size);
+		sy.name = stt_off;
+		labelp la = (labelp)ff_as_hash_get(&env, cur->p, cur->len);
+		sy.val = la->adr;
+		sy.info = ELF32_ST_INFO(STB_GLOBAL, STT_NOTYPE);
+		ff_as_stt(cur->p, 0);	
+		ff_as_oust((ff_u8_t*)&sy, elf64_sym_size);
+		symbolp bk = cur;
+		cur = cur->next;
+		syt.size+=elf64_sym_size;
+
+		free(bk->p);
+		free(bk);
+	}
+}
+
+void static
+forge(void) {
+	bzero(&syt, elf64_shdr_size);
+	struct elf64_hdr hdr;
+	bzero(&hdr, elf64_hdr_size);
+	*hdr.ident = ELF_MAG0;
+	hdr.ident[EI_MAG1] = ELF_MAG1;
+	hdr.ident[EI_MAG2] = ELF_MAG2;
+	hdr.ident[EI_MAG3] = ELF_MAG3;
 	hdr.ident[EI_CLS] = ELFCLS64;
 	hdr.ident[EI_DAT] = ELFDAT2LSB;
 	hdr.ident[EI_VERS] = EV_CURR;
 	hdr.ident[EI_OSABI] = ELFOSABI_NONE;
-	hdr.ident[EI_ABIVERS] = 0;
-	hdr.ident[EI_PAD] = 0;
-	hdr.shtesize = sizeof(struct elf64_shdr);
-	hdr.shtec = 2;
-	hdr.shstdx = 1;
 
-	hdr.hdr_size = sizeof(struct elf64_hdr);
-	hdr.entry = 0;
+	hdr.type = ET_REL;
+	hdr.machine = EM_X86_64;
 
-	struct elf64_shdr syt, stt;
-	bzero(&syt, sizeof(struct elf64_shdr));
-	bzero(&stt, sizeof(struct elf64_shdr));
-	syt.offset = sizeof(struct elf64_shdr)+sizeof(struct elf64_shdr)+sizeof(struct elf64_hdr);
-	syt.type = SHT_SYMTAB;
-	syt.flags = SHF_EXECINSTR;
-	syt.entsize = sizeof(struct elf64_sym);
-	syt.link = 1;
-	syt.addralign = 1;
-	syt.size = syt.entsize;
-	syt.name = 0;
+	ff_as_syt_gut();
+	hdr.sh_off = offset;
+	regionp rg = curreg;
+	while(rg != NULL) {
+		struct elf64_shdr sec;
+		bzero(&sec, elf64_shdr_size);
+		sec.name = stt_off;
+		char buf[128];
+		*buf = '.';
+		strcpy(buf+1, rg->name);
+		ff_as_stt(buf, 0);
+		printf("region: %s\n", rg->name);
+		if (!strcmp(rg->name, "text")) {
+			sec.size = rg->end-rg->beg;
+			sec.offset = rg->beg;
+			sec.addralign = 1;
+			sec.flags = SHF_EXECINSTR;
+			sec.type = SHT_PROGBITS;
+		}
+		rg = rg->next;
+		ff_as_oust((ff_u8_t*)&sec, elf64_shdr_size);
+		hdr.shc++;
+	}
 
-	stt.offset = syt.offset+sizeof(struct elf64_sym);
-	stt.type = SHT_STRTAB;
-	stt.flags = 0;
-	stt.entsize = 14;
-	stt.link = 1;
-	stt.addralign = 1;
-	stt.size = 14;
-	stt.name = 6;
+	stt = hdr.shc+1;
+	ff_as_syt_drop();
+	ff_as_syt_store();
+	hdr.shc++;
 
-	hdr.sh_off = sizeof(struct elf64_hdr);
-	
-	write(fd, &hdr, sizeof(struct elf64_hdr));
+	hdr.hdr_size = elf64_hdr_size;
+	hdr.shsize = elf64_shdr_size;
+	ff_as_stt_drop();
+	hdr.shc++;
+	hdr.shstdx = hdr.shc-1;
 
-	write(fd, &syt, sizeof(struct elf64_shdr));
-	write(fd, &stt, sizeof(struct elf64_shdr));
+	lseek(out, 0, SEEK_SET);
+	write(out, &hdr, elf64_hdr_size);
+}
 
-	struct elf64_sym sym;
-	bzero(&sym, sizeof(struct elf64_sym));
-	sym.size = sizeof(struct elf64_sym);
-	sym.info = STB_GLOBAL;
-	sym.other = STV_DEFAULT;
-	write(fd, &sym, sizeof(struct elf64_sym));
+ff_u64_t static
+stt_drop(void) {
+	ff_u64_t ret = offset;
+	offset+=elf64_shdr_size;
+	struct elf64_shdr sec;
+	bzero(&sec, elf64_shdr_size);
 
-/*
-	struct elf64_sym s;
-	bzero(&s, sizeof(struct elf64_sym));
-	sym.size = sizeof(struct elf64_sym);
-*/
-	char const s[] = ".text\0.symtab\0";
+	sec.name = stt_off;
+	ff_as_stt(".strtab", 0);
+	sec.addralign = 1;
+	sec.offset = offset;
+	sec.type = SHT_STRTAB;
+	stp cur = stt_tail;
+	printf("stt_off: %u, name: %u\n", sec.offset, sec.name);
+	while(cur != NULL) {
+		printf("---> %s, %u\n", cur->p, cur->l);
+		ff_as_oust((ff_u8_t*)cur->p, cur->l);
+		sec.size+=cur->l;
+		free((void*)cur->p);
+		stp bk = cur;
+		cur = cur->prev;
+		free(bk);
+	}
 
-	write(fd, s, sizeof(s));
-	close(fd);
+	lseek(out, ret, SEEK_SET);
+	write(out, &sec, elf64_shdr_size);
+	return ret;
+}
+
+void ff_as_elf(void) {
+	ff_as_syt_store = syt_store;
+	ff_as_syt_drop = syt_drop;
+	ff_as_syt_gut = syt_gut;
+	ff_as_forge = forge;
+	ff_as_stt_drop = stt_drop;
 }

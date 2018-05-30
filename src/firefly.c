@@ -1,4 +1,3 @@
-# define __ffly_debug_enabled
 # include "types.h"
 # include "linux/unistd.h"
 
@@ -11,7 +10,6 @@
 # include "dep/str_cmp.h"
 # include "dep/mem_dup.h"
 # include "dep/mem_cpy.h"
-# define __ffly_debug_enabled
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "hatch.h"
@@ -77,11 +75,18 @@ char const static *by = "mrdoomlittle";
 # include "dep/str_cpy.h"
 # include "mod.h"
 
+# ifdef __ffly_mal_track
+# include "system/mal_track.h"
+# endif
+
 # include "system/tls.h"
 void static
 init() {
 	ffly_tls_new();
 	ffly_ar_init();
+# ifdef __ffly_mal_track
+	ffly_mal_track_init(&__ffly_mal_track__);
+# endif
 	ffly_io_init();
 	ffly_arcs_init();
 	ffly_thread_init();
@@ -103,6 +108,9 @@ prep() {
 //	ffly_mod();
 }
 
+# include "linux/stat.h"
+# include "linux/fcntl.h"
+# include "system/string.h"
 void static
 fini() {
 //	ff_mod_de_init();
@@ -111,10 +119,31 @@ fini() {
 	ffly_alloca_cleanup();
 //	pr();
 //	pf();
-	ffly_printf("memory not freed: %u-bytes\n", ffly_mem_alloc_bc-ffly_mem_free_bc);
+# ifdef __ffly_mal_track
+	ffly_mal_track_dump(&__ffly_mal_track__);
+# endif
 	ffly_io_closeup();
+# ifdef __ffly_mal_track
+	ffly_mal_track_de_init(&__ffly_mal_track__);
+# endif
+# ifdef __ffly_debug
+	ff_uint_t leak;
+	if ((leak = (ffly_mem_alloc_bc-ffly_mem_free_bc))>0) {
+		int fd;
+		fd = open("/dev/tty", O_WRONLY, 0);
+		char buf[512];
+		char *p = buf;
+		p+=ffly_str_cpy(p, "memory leakage, ");
+		p+=ffly_nots(leak, p);
+		p+=ffly_str_cpy(p, "-bytes.");
+		*p = '\n';
+		write(fd, buf, (p-buf)+1);
+		close(fd);
+	}
+# endif
 	ffly_ar_cleanup();
 	ffly_tls_destroy();
+
 }
 
 void _start(void) {

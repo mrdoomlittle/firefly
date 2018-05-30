@@ -6,10 +6,10 @@
 *	rbx - no
 */
 __ffly_mem_set:
-	_again:
+.L0:
 	movb %sil, (%rdi)
 	inc %rdi
 	dec %rbx
 	cmpq $0, %rbx
-	ja _again
+	ja .L0
 	ret

@@ -10,6 +10,9 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../dep/str_len.h"
+# ifdef __ffly_debug
+# include "../location.h"
+# endif
 ff_db_err static get_errno(FF_SOCKET*, ff_err_t*);
 
 ff_err_t static ff_db_shutdown(FF_SOCKET*);
@@ -35,29 +38,41 @@ ff_err_t static ff_db_record_stat(FF_SOCKET*, ff_u8_t*, ff_u64_t, ff_uint_t, ffd
 
 ff_db_ctrp
 ff_db_ctr(ff_u64_t __enckey, char const *__ip_adr, ff_u16_t __port, ff_err_t *__err) {
+# ifdef __ffly_debug
+	ff_location_push(_ff_loc_db_ctr);
+# endif
 	ff_db_ctrp ret = (ff_db_ctrp)__ffly_mem_alloc(sizeof(struct ff_db_ctr));
 	ret->enckey = __enckey;
 	ff_err_t err;
+	struct sockaddr_in adr;
 	ret->sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
 	if (_err(err)) {
 		*__err = err;
-		return NULL;
+		goto _fail;
 	}
 
-	struct sockaddr_in adr;
 	ffly_bzero(&adr, sizeof(struct sockaddr_in));
 	adr.sin_addr.s_addr = inet_addr(__ip_adr);
 	adr.sin_family = AF_INET;
 	adr.sin_port = htons(__port);
 	if (_err(err = ff_net_connect(ret->sock, (struct sockaddr*)&adr, sizeof(struct sockaddr_in)))) {
 		*__err = err;
-		return NULL;
+		ff_net_close(ret->sock);
+		goto _fail;
 	}
 	*__err = FFLY_SUCCESS;
+	goto _succ;
+_fail:
+	__ffly_mem_free(ret);
+	ret = NULL;
+_succ:
+# ifdef __ffly_debug
+	ff_location_pop();
+# endif
 	return ret;
 }
 
-void ff_db_ctr_destroy(ff_db_ctrp __ctr) {
+ff_err_t ff_db_ctr_destroy(ff_db_ctrp __ctr) {
 	ffly_sock_shutdown(__ctr->sock, SHUT_RDWR);
 	ff_net_close(__ctr->sock);
 	__ffly_mem_free(__ctr);
@@ -75,7 +90,20 @@ ff_db_ctr_disconnect(ff_db_ctrp __ctr) {
 
 ff_err_t
 ff_db_ctr_login(ff_db_ctrp __ctr, char const *__id, ff_u32_t __passkey) {
-	return ff_db_login(__ctr->sock, (ff_u8_t const*)__id, ffly_str_len(__id), __passkey, __ctr->key, __ctr->enckey);
+# ifdef __ffly_debug
+	ff_location_push(_ff_loc_db_ctr_login);
+# endif
+	ff_err_t err;
+	if (!__ctr) {
+		err = FFLY_FAILURE;
+		goto _fail;
+	}
+	err = ff_db_login(__ctr->sock, (ff_u8_t const*)__id, ffly_str_len(__id), __passkey, __ctr->key, __ctr->enckey);
+_fail:
+# ifdef __ffly_debug
+	ff_location_pop();
+# endif
+	return err;
 }
 
 ff_err_t

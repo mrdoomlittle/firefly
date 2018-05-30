@@ -201,8 +201,8 @@ void tree(ffly_arcp __root) {
         p++;
     }
 }
-//#define __ffly_debug
-# ifdef __ffly_debug
+//#define DEBUG
+# ifdef DEBUG
 void pr();
 # include "stdio.h"
 # include "types/err_t.h"

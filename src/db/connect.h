@@ -18,7 +18,7 @@ typedef struct ff_db_conn {
 
 # ifndef __only_struc
 ff_db_ctrp ff_db_ctr(ff_u64_t, char const*, ff_u16_t, ff_err_t*); 
-void ff_db_ctr_destroy(ff_db_ctrp);
+ff_err_t ff_db_ctr_destroy(ff_db_ctrp);
 
 ff_err_t ff_db_ctr_shutdown(ff_db_ctrp);
 ff_err_t ff_db_ctr_disconnect(ff_db_ctrp);

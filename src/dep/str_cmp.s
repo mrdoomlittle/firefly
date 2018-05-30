@@ -12,50 +12,50 @@ __ffly_str_cmp:
 	movq %rdi, -10(%rbp)
 	movq %rsi, -18(%rbp)
 	movw $0, -2(%rbp)
-	_again:
+.L0:
 	mov (%rdi), %al
 	cmpb %al, (%rsi)
-	jne _end
+	jne .L1
 
 	incw -2(%rbp)
 
 	cmpb $0x0, (%rdi)
-	je _end
+	je .L1
 	cmpb $0x0, (%rsi) 
-	je _end
+	je .L1
 	inc %rdi
 	inc %rsi
-	jmp _again
-	_end:
+	jmp .L0
+.L1:
 
 	decw -2(%rbp)
 
-	_n0:
+.L2:
 	inc %rdi
 	cmpb $0x0, -1(%rdi)
-	jne _n0
+	jne .L2
 	dec %rdi
 
-	_n1:
+.L3:
 	inc %rsi
 	cmpb $0x0, -1(%rsi)
-	jne _n1
+	jne .L3
 	dec %rsi
 
 	sub -10(%rbp), %rdi
 	sub -18(%rbp), %rsi
 	cmpq %rdi, %rsi
-	jne _j0
+	jne .L4
 
 	xorq %rax, %rax
 	movw -2(%rbp), %ax
 	cmp %rdi, %rax
-	jne _j0
+	jne .L4
 	mov $0x0, %al
-	jmp _sk
-	_j0:
+	jmp .L5
+.L4:
 	mov $0xff, %al
-	_sk:
+.L5:
 	movq %rbp, %rsp
 	pop %rbp
 	ret

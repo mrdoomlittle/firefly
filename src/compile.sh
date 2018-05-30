@@ -1,6 +1,7 @@
 #!/bin/sh
 ffly_cc=gcc
-cc_flags="-fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr -D__fflib -D__ffly_source"
+cc_flags="-D__ffly_debug -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr -D__fflib -D__ffly_source"
+
 ffly_objs=$(
 	dst_dir=$PWD/dep
 	root_dir=dep;
@@ -59,6 +60,13 @@ ffly_objs="$ffly_objs $(
 
 dst_dir=$PWD
 root_dir=.
+$ffly_cc $cc_flags -c -o $dst_dir/gui/window.o $root_dir/gui/window.c
+$ffly_cc $cc_flags -c -o $dst_dir/copy.o $root_dir/copy.c
+$ffly_cc $cc_flags -c -o $dst_dir/clock.o $root_dir/clock.c
+$ffly_cc $cc_flags -c -o $dst_dir/tile.o $root_dir/tile.c
+$ffly_cc $cc_flags -c -o $dst_dir/pallet.o $root_dir/pallet.c
+$ffly_cc $cc_flags -c -o $dst_dir/resource.o $root_dir/resource.c
+$ffly_cc $cc_flags -c -o $dst_dir/cache.o $root_dir/cache.c
 $ffly_cc $cc_flags -c -o $dst_dir/event.o $root_dir/event.c
 $ffly_cc $cc_flags -c -o $dst_dir/db.o $root_dir/db.c
 $ffly_cc $cc_flags -c -o $dst_dir/db/connect.o $root_dir/db/connect.c
@@ -108,6 +116,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/call.o $root_dir/call.c
 $ffly_cc $cc_flags -c -o $dst_dir/mod.o $root_dir/mod.c
 $ffly_cc $cc_flags -c -o $dst_dir/layer.o $root_dir/layer.c
 $ffly_cc $cc_flags -c -o $dst_dir/gui/btn.o $root_dir/gui/btn.c
+$ffly_cc $cc_flags -c -o $dst_dir/location.o $root_dir/location.c
 export ffly_objs="$dst_dir/event.o $ffly_objs $dst_dir/resin.o $dst_dir/exec.o \
 $dst_dir/resin/exec.o $dst_dir/resin/mm.o $dst_dir/mode.o \
 $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  $dst_dir/get_bit.o \
@@ -119,4 +128,6 @@ $dst_dir/lot.o $dst_dir/chunk_manager.o $dst_dir/uni.o $dst_dir/chunk.o \
 $dst_dir/obj.o $dst_dir/obj_pool.o $dst_dir/obj_manager.o $dst_dir/polygon.o \
 $dst_dir/ui/camera.o $dst_dir/graphics.o $dst_dir/gravity.o $dst_dir/duct.o \
 $dst_dir/terrain.o $dst_dir/compactor.o $dst_dir/stores.o $dst_dir/db.o \
-$dst_dir/db/connect.o $dst_dir/layer.o $dst_dir/gui/btn.o"
+$dst_dir/db/connect.o $dst_dir/layer.o $dst_dir/gui/btn.o $dst_dir/tile.o \
+$dst_dir/pallet.o $dst_dir/resource.o $dst_dir/cache.o $dst_dir/clock.o \
+$dst_dir/copy.o $dst_dir/gui/window.o $dst_dir/location.o"

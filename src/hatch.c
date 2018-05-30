@@ -5,7 +5,6 @@
 # include "dep/str_cpy.h"
 # include "system/io.h"
 # include "hatch.h"
-# define __ffly_debug_enabled
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/vec.h"
@@ -119,7 +118,9 @@ _again:
 			
 	} else if (op == _ffly_ho_meminfo) {
 		struct ffly_meminfo info;
+# ifdef __ffly_debug
 		info.used = ffly_mem_alloc_bc-ffly_mem_free_bc;
+# endif
 		if (_err(ffly_pipe_write(&info, sizeof(struct ffly_meminfo), pipe)))
 			goto _end;
 	} else if (op == _ffly_ho_disconnect)

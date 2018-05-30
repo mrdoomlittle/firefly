@@ -17,6 +17,7 @@ moddir:"modules",
 inidir:"init",
 # where are we installed
 root_dir:"/home/daniel-robson/mount/firefly",
+cache_dir:"/home/daniel-robson/mount/firefly/cache",
 db:{
 	ip_addr:"127.0.0.1",
 	port:21299~_16l_u,

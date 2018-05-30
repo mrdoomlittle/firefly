@@ -16,7 +16,7 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
-# ifdef __ffly_debug_enabled
+# ifdef __ffly_debug
 ff_atomic_uint_t extern ffly_mem_free_bc;
 ff_atomic_uint_t extern ffly_mem_free_c;
 # endif /*__ffly_debug_enabled*/

@@ -8,15 +8,15 @@
 __ffly_mem_cpy:
 	push %rbp
 	mov %rsp, %rbp
-	push %rax
-_again:	
+	push %rax	
+.L0:
 	movb (%rsi), %al
 	movb %al, (%rdi)
 	inc %rdi
 	inc %rsi
 	dec %rbx
 	cmpq $0, %rbx
-	ja _again
+	ja .L0
 	pop %rax
 	mov %rbp, %rsp
 	pop %rbp

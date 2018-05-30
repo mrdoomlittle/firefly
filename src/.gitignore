@@ -11,5 +11,9 @@ daemon
 terminal
 hatch
 ffc
+main*
+pallet*
+tile*
+renderer*
 sector.c
 sector.h

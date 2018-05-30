@@ -1,7 +1,9 @@
 # include "mem_alloc.h"
+# include "mem_free.h"
 # include "../system/errno.h"
 # include "../system/io.h"
-# ifdef __ffly_debug_enabled
+# ifdef __ffly_debug
+# include "../location.h"
 ff_atomic_uint_t ffly_mem_alloc_bc = 0;
 ff_atomic_uint_t ffly_mem_alloc_c = 0;
 # endif
@@ -9,13 +11,16 @@ ff_atomic_uint_t ffly_mem_alloc_c = 0;
 void* ffly_mem_alloc(ff_uint_t __bc, ff_u8_t __track_bypass) {
 # else
 void* ffly_mem_alloc(ff_uint_t __bc) {
+# ifdef __ffly_debug
+	ff_location_push(_ff_loc_mem_alloc);
+# endif
 # endif /*__ffly_mal_track*/
 	ff_u8_t *p;
-# ifdef __ffly_debug_enabled
+# ifdef __ffly_debug
 # ifndef __ffly_use_allocr
 	if ((p = (ff_u8_t*)malloc(__bc+sizeof(ff_uint_t))) == NULL) {
 		ffly_fprintf(ffly_err, "mem_alloc: failed to allocate memory.\n");
-		return NULL;
+		goto _fail;
 	}
 # else
     p = ffly_alloc(__bc+sizeof(ff_uint_t));
@@ -35,17 +40,26 @@ void* ffly_mem_alloc(ff_uint_t __bc) {
 # ifdef __ffly_mal_track
 	if (!__track_bypass) {
 		if (ffly_mal_track_alloc(&__ffly_mal_track__, (void*)p) != FFLY_SUCCESS) {
-# ifdef __ffly_debug_enabled
+# ifdef __ffly_debug
 			ffly_fprintf(ffly_err, "mem_alloc: mal track failure.\n");
 # endif
 # ifndef __ffly_use_allocr
-			free((void*)(p+sizeof(ff_uint_t)));
+			free((void*)(p-sizeof(ff_uint_t)));
 # else
-            ffly_free((void*)(p+sizeof(ff_uint_t)));
+            ffly_free((void*)(p-sizeof(ff_uint_t)));
 # endif
-			return NULL;
+			goto _fail;
 		}
 	}
+# endif
+	goto _succ;
+_fail:
+	if (p != NULL)
+		__ffly_mem_free(p);
+	p = NULL;
+_succ:
+# ifdef __ffly_debug
+	ff_location_pop();
 # endif
 	return (void*)p;
 }

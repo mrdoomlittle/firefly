@@ -6,8 +6,6 @@ struct ff_as_op {
 	ff_u8_t l;
 };
 
-# define mkop \
+# define op_\
 	&(struct ff_as_op)
-
-# include "opcodes/resin_tbl.h"
 # endif /*__ffly__opcodes__h*/

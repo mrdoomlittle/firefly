@@ -3,11 +3,18 @@
 # include "memory/mem_free.h"
 # include "memory/mem_alloc.h"
 # include "ffly_def.h"
+# include "clock.h"
+# include "system/sched.h"
+# include "system/io.h"
 struct record {
     void *p;
     ff_id_t id;
-
+	struct record *prev, *next;
     struct record *fd;
+	ff_u64_t creation;
+	ff_u32_t death;
+	void *arg_p;
+	void(*perish)(void*, void*);
 };
 
 typedef struct record* recordp;
@@ -15,20 +22,51 @@ typedef recordp* recordpp;
 typedef recordpp* recordppp;
 ff_uint_t static max;
 recordp static top = NULL;
+recordp static records = NULL;
 recordp static fresh;
 
 recordp bin = NULL;
 void ffly_set_cache_dir(char *__dir) {
 }
 
-ff_err_t ffly_cache_prepare(ff_uint_t __max) {
-    top = (recordp)__ffly_mem_alloc(__max*sizeof(struct record));
-    fresh = top; 
-    max = __max;
+ff_i8_t static
+update(void *__arg) {
+	recordp cur = top, bk;
+	while(cur != NULL) {
+		bk = cur;
+		cur = cur->next;
+		ffly_printf("[%u] cache, creation: %u, death: %u\n", *bk->id, bk->creation, bk->death);
+		if (clock>=bk->creation+bk->death) {
+			if (bk->perish != NULL)
+				bk->perish(bk->arg_p, bk->p);
+			ffly_cache_del(bk->id);
+		}
+	}
+	return -1;
 }
 
-ff_err_t ffly_cache_put(ff_id_t *__id, void *__p) {
-    if (fresh>=top+max) {
+ff_err_t ffly_cache_prepare(ff_uint_t __max) {
+    records = (recordp)__ffly_mem_alloc(__max*sizeof(struct record));
+    fresh = records; 
+    max = __max;
+	ffly_schedule(update, NULL, 0);
+}
+
+void static
+delink(recordp __rec) {
+	if (__rec == top) {
+		if ((top = __rec->next) != NULL)
+			top->prev = NULL;
+		return;
+	}
+	if (__rec->prev != NULL)
+		__rec->prev->next = __rec->next;
+	if (__rec->next != NULL)
+		__rec->next->prev = __rec->prev; 
+}
+
+ff_err_t ffly_cache_put(ff_id_t *__id, void *__p, ff_u32_t __death, void(*__perish)(void*, void*), void *__arg_p) {
+    if (fresh>=records+max) {
         return FFLY_FAILURE;
     }
  
@@ -40,12 +78,20 @@ ff_err_t ffly_cache_put(ff_id_t *__id, void *__p) {
     } else
         id = (ff_id_t)__ffly_mem_alloc(sizeof(__ff_id_t));
     recordp rec;
-    *id = fresh-top;
+    *id = fresh-records;
+	if (top != NULL)
+		top->prev = rec;
     *(rec = fresh++) = (struct record) {
         .id = id,
-        .p = __p
+        .p = __p,
+		.prev = NULL,
+		.next = top,
+		.death = __death,
+		.creation = clock,
+		.perish = __perish,
+		.arg_p = __arg_p
     };
-
+	top = rec;
     *__id = id;
     return FFLY_SUCCESS;
 }
@@ -55,8 +101,11 @@ void* ffly_cache_get(ff_id_t __id, ff_err_t *__err) {
 }
 
 ff_err_t ffly_cache_del(ff_id_t __id) {
-    recordp rec = top+*__id;
-    if (rec == fresh-1) {
+	ffly_fprintf(ffly_log, "[%u] cache obliteration.\n", *__id);
+    recordp rec = records+*__id;
+	delink(rec);
+	if (rec == fresh-1) {
+		__ffly_mem_free(rec->id);
         fresh--;
         return FFLY_SUCCESS;
     }
@@ -72,8 +121,14 @@ ff_err_t ffly_cache_del(ff_id_t __id) {
 }
 
 
-ff_err_t ffly_cache_free() {
-    __ffly_mem_free(top);
+ff_err_t ffly_cache_cleanup(void) {
+	recordp cur = records;
+	while(cur != fresh) {
+		__ffly_mem_free(cur->id);
+		cur++;
+	}
+	if (records != NULL)
+		__ffly_mem_free(records);
 }
 /*
 # include <stdio.h>

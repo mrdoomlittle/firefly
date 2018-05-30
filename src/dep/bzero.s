@@ -5,10 +5,10 @@
 *	rbx - no
 */
 __ffly_bzero:
-	_again:
+.L0:
 	movb $0x0, (%rdi)
 	inc %rdi
 	dec %rbx
 	cmpq $0, %rbx
-	ja _again
+	ja .L0
 	ret

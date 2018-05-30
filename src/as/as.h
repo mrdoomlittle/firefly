@@ -17,9 +17,11 @@ int extern in;
 # define S_ADR 0x2
 # define _of_null 0xff
 enum {
-	_of_ffef
+	_of_ffef,
+	_of_elf
 };
 
+extern void(*ff_as_forge)(void);
 extern struct ff_as_op const *op;
 ff_u8_t extern of;
 ff_u64_t extern offset;
@@ -102,6 +104,16 @@ struct hash {
 	struct hash_entry **table;
 };
 
+typedef struct st {
+	struct st *prev, *next;
+	char const *p;
+	ff_u8_t l;
+} *stp;
+
+stp extern stt_head;
+stp extern stt_tail;
+ff_u64_t(*ff_as_stt_drop)(void);
+labelp extern ff_as_entry;
 // alloca.c
 // cleanup
 void ff_as_al_cu();
@@ -124,8 +136,6 @@ void ff_as_oust_64l(ff_u64_t);
 
 // stt.c
 ff_uint_t ff_as_stt(char const*, ff_uint_t);
-ff_u64_t ff_as_stt_drop();
-
 void ff_as_reloc(ff_u64_t, ff_u8_t, symbolp*, local_labelp);
 void ff_as_hook(ff_u64_t, ff_u8_t, symbolp*, local_labelp);
 void ff_as_final(void);
@@ -140,5 +150,8 @@ ff_uint_t ff_as_stackadr();
 void ff_as_isa(ff_uint_t);
 
 void ff_as_resin(void);
+void ff_as_amd64(void);
+void ff_as_ffef(void);
+void ff_as_elf(void);
 //void ffef(symbolp);
 # endif /*__ffly__as__h*/

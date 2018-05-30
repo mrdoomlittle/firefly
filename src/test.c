@@ -68,7 +68,7 @@ ff_i8_t test(void *__arg_p) {
 # include "system/queue.h"
 void showfsreg() {
 	void *p = NULL;
-	if (arch_prctl(ARCH_GET_GS, &p) == -1) {
+	if (arch_prctl(ARCH_GET_FS, &p) == -1) {
 		ffly_printf("error, %s\n", strerror(errno));	
 	}
 	ffly_printf("fs: %p\n", p);
@@ -76,11 +76,45 @@ void showfsreg() {
 ff_uint_t tls_test;
 # include "linux/mman.h"
 # include "system/thread.h"
+# include "clock.h"
+# include "pallet.h"
 void *tls;
 void* th(void *__arg) {
 }
+# include "cache.h"
+# include "resource.h"
+# include "location.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
-	struct ffly_queue queue;
+/*
+	ffly_scheduler_init();
+	ffly_set_cache_dir("../cache");
+	ffly_cache_prepare(20);
+
+	ff_rid_t r;
+	ffly_resource_creat(&r);
+	ffly_resource_move("test.res");
+*/
+//	struct ffly_pallet pallet;
+//	ffly_pallet_init(&pallet, 20, 20, _ffly_tile_64);
+/*
+	ff_uint_t i = 0;
+	while(i++ != 300) {
+		ffly_sched_clock_tick(1);
+		ffly_scheduler_tick();
+ 		ffly_nanosleep(0, 1000000);
+		ffly_clock_tick();
+		ffly_printf("clock: %u\n", clock);
+		ffly_resource_load_bin(r, "test.res");
+	}
+
+    ffly_scheduler_de_init();
+	ffly_cache_cleanup();
+	*/
+//	ffly_pallet_de_init(&pallet);
+//	ffly_resource_cleanup();
+	//__ffly_mem_alloc(10);
+/*
+struct ffly_queue queue;
 	ffly_queue_init(&queue, 1);
 	ff_u8_t a;
 	ffly_queue_push(&queue,&a);
@@ -92,6 +126,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_queue_pop(&queue,&a);
 	ffly_queue_pop(&queue,&a);
 	ffly_queue_de_init(&queue);
+*/
 //tls = p;
 //	ff_tid_t id;
 //	ffly_thread_create(&id, th, NULL);
@@ -162,13 +197,20 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_scheduler_de_init();
 */
-//	ff_stores_connect();
-//	ff_stores_login();
-//	char *motd = (char*)ff_stores_get(_ff_stores_motd);
-//	ffly_printf("motd: %s\n", motd);
-//	__ffly_mem_free(motd);
-//	ff_stores_logout();
-//	ff_stores_disconnect();
+	if (_err(ff_stores_connect())) {
+		ff_location_list();
+		goto _fault;		
+	}
 	
+	if (_err(ff_stores_login())) {
+		ff_location_list();
+		goto _fault;
+	}
+	char *motd = (char*)ff_stores_get(_ff_stores_motd);
+	ffly_printf("motd: %s\n", motd);
+	__ffly_mem_free(motd);
+	ff_stores_logout();
+	ff_stores_disconnect();
+_fault:
 	ffly_arstat();
 }

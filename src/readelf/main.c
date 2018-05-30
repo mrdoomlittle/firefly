@@ -2,7 +2,8 @@
 # include <fcntl.h>
 # include <sys/stat.h>
 # include <malloc.h>
-# include "../elf.h"
+# include <elf.h>
+# include "../ffint.h"
 char const *hdrtyps(ff_u16_t __type) {
 	switch(__type) {
 		case ET_NONE: return "none";
@@ -15,15 +16,14 @@ char const *hdrtyps(ff_u16_t __type) {
 }
 
 
-void print_hdr(elf64_hdrp __hdr) {
-	ff_u8_t *i = __hdr->ident;
+void print_hdr(Elf64_Ehdr *__hdr) {
+	ff_u8_t *i = __hdr->e_ident;
 	printf("magic: ");
-	while(i != __hdr->ident+EI_NIDENT-1)
+	while(i != __hdr->e_ident+EI_NIDENT-1)
 		printf("%02x ", *(i++));
 	printf("%02x\n", *i);
 
-	printf("type: %s\n", hdrtyps(__hdr->type));
-
+	printf("type: %s\n", hdrtyps(__hdr->e_type));
 }
 
 int main(int __argc, char const *__argv[]) {
@@ -40,12 +40,16 @@ int main(int __argc, char const *__argv[]) {
 	struct stat st;
 	fstat(fd, &st);
 
-	void *p = malloc(st.st_size);
+	ff_u8_t *p = malloc(st.st_size);
 	read(fd, p, st.st_size);
 
-	elf64_hdrp hdr = (elf64_hdrp)p;
+	Elf64_Ehdr *hdr = (Elf64_Ehdr*)p;
 	print_hdr(hdr);
-	
+	Elf64_Shdr *sec = (Elf64_Shdr*)(p+hdr->e_shoff);
+    
+	char *stt = (char*)(p+sec->sh_offset);
+	printf("%s\n", stt+sec->sh_name);
+
 
 	free(p);
 	close(fd);

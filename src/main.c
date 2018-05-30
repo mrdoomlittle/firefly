@@ -145,8 +145,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_int_t old_x, old_y;
 	ffly_queue_init(&ffly_event_queue, sizeof(ff_eventp));
 	while(1) {
-		delta = clock-start;
-		start = clock;
+		delta = phy_clock-start;
+		start = phy_clock;
 		char c;
 		if (read(fd, &c, 1) < 0) goto _sk;
 		if (c == '!')
@@ -170,7 +170,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		if (!ff_duct_serve())
 			goto _end;
 		ffly_nanosleep(0, 100000000);
-		ffly_clock_tick();
+		ffly_phy_clock_tick();
 		ff_eventp event;
 		while(!ff_event_poll(&event)) {
 			ffly_printf("got event.\n");

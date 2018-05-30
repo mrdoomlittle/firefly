@@ -49,7 +49,8 @@ struct ffly_grj* ffly_grj_mk(ff_u8_t __kind, void *__p) {
 
 struct ffly_grj*
 ffly_grj_pixfill(ff_byte_t *__dst, ff_uint_t __npix, ffly_colour_t __colour) {
-	ff_u8_t *p = __ffly_mem_alloc(parsize3(ff_byte_t*, ff_uint_t, ffly_colour_t));
+	ffly_fprintf(ffly_log, "pixfill job.\n");
+	ff_u8_t *p = (ff_u8_t*)__ffly_mem_alloc(parsize3(ff_byte_t*, ff_uint_t, ffly_colour_t));
 	struct ffly_grj *ret = ffly_grj_mk(_grj_pixfill, p);
 	void **par = ret->par;
 
@@ -78,7 +79,8 @@ struct ffly_grj*
 ffly_grj_pixdraw(ff_uint_t __x, ff_uint_t __y, ff_byte_t *__dst, ff_uint_t __dstw,
 	ff_byte_t *__pixels, ff_uint_t __width, ff_uint_t __height)
 {
-	ff_u8_t *p = __ffly_mem_alloc(parsize7(ff_uint_t, ff_uint_t, ff_byte_t*, ff_uint_t, ff_byte_t*, ff_uint_t, ff_uint_t));
+	ffly_fprintf(ffly_log, "pixdraw job.\n");
+	ff_u8_t *p = (ff_u8_t*)__ffly_mem_alloc(parsize7(ff_uint_t, ff_uint_t, ff_byte_t*, ff_uint_t, ff_byte_t*, ff_uint_t, ff_uint_t));
 	struct ffly_grj *ret = ffly_grj_mk(_grj_pixdraw, p);
 	void **par = ret->par;
 
@@ -129,7 +131,8 @@ ffly_grj_pixdraw(ff_uint_t __x, ff_uint_t __y, ff_byte_t *__dst, ff_uint_t __dst
 
 struct ffly_grj*
 ffly_grj_pixcopy(ff_byte_t *__dst, ff_byte_t *__src, ff_uint_t __npix) {
-	ff_u8_t *p = __ffly_mem_alloc(parsize3(ff_byte_t*, ff_byte_t*, ff_uint_t));
+	ffly_fprintf(ffly_log, "pixcopy job.\n");
+	ff_u8_t *p = (ff_u8_t*)__ffly_mem_alloc(parsize3(ff_byte_t*, ff_byte_t*, ff_uint_t));
 	struct ffly_grj *ret = ffly_grj_mk(_grj_pixcopy, p);
 	void **par = ret->par;
 
@@ -225,8 +228,8 @@ ff_err_t ffly_grj_prosess(struct ffly_grj *__job) {
 			ff_byte_t *pixels;
 			ff_uint_t width, height;
 
-			x = *(ff_off_t*)*(par++);
-			y = *(ff_off_t*)*(par++);
+			x = *(ff_uint_t*)*(par++);
+			y = *(ff_uint_t*)*(par++);
 	
 			dst = *(ff_byte_t**)*(par++);
 			dstw = *(ff_uint_t*)*(par++);
