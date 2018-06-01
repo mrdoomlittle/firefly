@@ -443,6 +443,7 @@ void ffdb_del_pile(ffdbp __db, ffdb_pilep __pile) {
 	free_pile(__db, __pile);
 }
 
+// not the best but for now its okay 
 ff_u32_t static top = FFDB_NULL;
 ffdb_blkdp static bin = NULL;
 void ffdb_unlink(ffdb_blkdp);

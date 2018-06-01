@@ -5,3 +5,6 @@ all with ffly_* should be avoided e.g. ffly_mem_cpy should be memcpy from src/st
 pixel format:
 	we should work in only r,b,g,a, but when needed to work in another we will just convert it but
 	that should be left for higher level functions.
+
+security:
+	dont care, just leads more work when changing things and can be left until its actually needed.

@@ -133,6 +133,121 @@ void adaptreg(symbolp __sy) {
 
 ff_i8_t static epdeg = -1;
 char const static *ep = NULL;
+
+symbolp static sy;
+void static
+_macro(void) {
+	if (!ffly_str_cmp(sy->p, "define")) {
+		printf("got: macro\n");
+					
+	}
+}
+
+void static 
+_label(void) {
+	labelp la = (labelp)ff_as_hash_get(&env, sy->p, sy->len);
+	ff_i8_t exist = !la?-1:0;
+
+	if (exist == -1)
+		la = (labelp)ff_as_al(sizeof(struct label));
+	la->offset = offset;
+	la->s_adr = ff_as_stackadr();
+	la->adr = curadr();
+	la->s = sy->p;
+	la->reg = curreg;
+	if (exist == -1)
+		ff_as_hash_put(&env, sy->p, sy->len, la);
+
+	symbolp s = ff_as_syt(sy->p, NULL);
+	ff_as_putsymbol(s);
+	la->sy = s;
+	s->sort = SY_LABEL;
+	s->type = FF_SY_LCA;
+	curlabel = la;
+	printf("label\n");
+}
+
+void static
+_directive(void) {
+	printf("directive, %s\n", sy->p);
+	if (*(char*)sy->p == 'b') {
+		if (curseg->offset != offset) {
+			// err
+		}
+		//oustbyte((ff_u8_t*)sy->next->p);
+		*(curseg->fresh++) = *(ff_u8_t*)sy->next->p;
+		ff_as_isa(sizeof(ff_u8_t));
+		curseg->size++;
+	} else if (*(char*)sy->p == 'w') {
+		*(ff_u16_t*)curseg->fresh = *(ff_u16_t*)sy->next->p;
+		curseg->fresh+=sizeof(ff_u16_t);
+		ff_as_isa(sizeof(ff_u16_t));
+		curseg->size+=sizeof(ff_u16_t);
+	} else if (*(char*)sy->p == 'd') {
+		*(ff_u32_t*)curseg->fresh = *(ff_u32_t*)sy->next->p;
+		curseg->fresh+=sizeof(ff_u32_t);
+		ff_as_isa(sizeof(ff_u32_t));
+		curseg->size+=sizeof(ff_u32_t);
+	} else if (*(char*)sy->p == 'q') {
+		*(ff_u64_t*)curseg->fresh = *(ff_u64_t*)sy->next->p;
+		curseg->fresh+=sizeof(ff_u64_t);
+		ff_as_isa(sizeof(ff_u64_t));
+		curseg->size+=sizeof(ff_u64_t);
+	} else if (!strcmp(sy->p, "frk")) {
+
+	} else if (!strcmp(sy->p, "entry") && epdeg<0) {
+		epdeg = 0;
+		ep = sy->next->p;
+	} else if (!strcmp(sy->p, "globl")) {
+		*(globl++) = sy->next->p;
+		printf("-->symbol: %s\n", sy->next->p);
+	} else if (!strcmp(sy->p, "segment")) {
+		segmentp sg = (segmentp)ff_as_al(sizeof(struct segment));
+//			sg->name = sy->next->p;
+		sg->next = curseg;
+		sg->size = 0;
+		sg->adr = ff_as_stackadr();
+		sg->offset = 0;
+		sg->fresh = sg->buf;
+		curseg = sg;
+	} else if (!strcmp(sy->p, "region")) {
+		regionp rg = (regionp)ff_as_al(sizeof(struct region));
+		rg->name = sy->next->p;
+		rg->next = curreg;
+		rg->beg = offset;
+		rg->adr = curadr();
+		if (!curreg)
+			rg->no = 1;
+		else
+			rg->no = curreg->no+1;
+		curreg = rg;
+	} else if (!strcmp(sy->p, "endof")) {
+		curreg->end = offset;
+	} else if (!strcmp(sy->p, "extern")) {
+		labelp la = (labelp)ff_as_al(sizeof(struct label));
+		la->flags = LA_LOOSE;
+		la->s = (char const*)ff_as_memdup(sy->next->p, sy->next->len+1);
+		ff_as_hash_put(&env, sy->next->p, sy->next->len, la);
+		symbolp s = ff_as_syt(sy->next->p, NULL);
+		ff_as_putsymbol(s);
+		la->sy = s;
+		s->type = FF_SY_IND;
+		s->sort = 0;
+		printf("extern %s\n", sy->next->p);
+		*(extrn++) = sy->next->p;
+	} else if (*(char*)sy->p == 'l') {
+		local_labelp ll = (local_labelp)ff_as_hash_get(&env, sy->next->p, sy->next->len);	
+		ff_i8_t exist = !ll?-1:0;
+		ffly_printf("---> %d, %s\n", exist, sy->next->p);
+		if (exist == -1) {
+			ll = (local_labelp)ff_as_al(sizeof(struct local_label));
+			ff_as_hash_put(&env, sy->next->p, sy->next->len, ll);
+		}
+
+		ll->adr = curadr();
+	}
+}
+
 void
 ff_as(char *__p, char *__end) {
 	/*
@@ -158,112 +273,13 @@ ff_as(char *__p, char *__end) {
 		p = copyln(buf, p, __end, &len)+1;
 		*(buf+len) = '\0';
 
-		symbolp sy;
 		if ((sy = ff_as_parse(buf)) != NULL) {
 			if (is_symac(sy)) {
-				if (!ffly_str_cmp(sy->p, "define")) {
-					printf("got: macro\n");
-					
-				}
+				_macro();
 			} else if (is_sylabel(sy)) {
-				labelp la = (labelp)ff_as_hash_get(&env, sy->p, sy->len);
-				ff_i8_t exist = !la?-1:0;
-
-				if (exist == -1)
-					la = (labelp)ff_as_al(sizeof(struct label));
-				la->offset = offset;
-				la->s_adr = ff_as_stackadr();
-				la->adr = curadr();
-				la->s = sy->p;
-				la->reg = curreg;
-				if (exist == -1)
-					ff_as_hash_put(&env, sy->p, sy->len, la);
-
-				symbolp s = ff_as_syt(sy->p, NULL);
-				ff_as_putsymbol(s);
-				la->sy = s;
-				s->sort = SY_LABEL;
-				s->type = FF_SY_LCA;
-				curlabel = la;
-				printf("label\n");
+				_label();
 			} else if (is_sydir(sy)) {
-				printf("directive, %s\n", sy->p);
-				if (*(char*)sy->p == 'b') {
-					if (curseg->offset != offset) {
-						// err
-					}
-					//oustbyte((ff_u8_t*)sy->next->p);
-					*(curseg->fresh++) = *(ff_u8_t*)sy->next->p;
-					ff_as_isa(sizeof(ff_u8_t));
-					curseg->size++;
-				} else if (*(char*)sy->p == 'w') {
-					*(ff_u16_t*)curseg->fresh = *(ff_u16_t*)sy->next->p;
-					curseg->fresh+=sizeof(ff_u16_t);
-					ff_as_isa(sizeof(ff_u16_t));
-					curseg->size+=sizeof(ff_u16_t);
-				} else if (*(char*)sy->p == 'd') {
-					*(ff_u32_t*)curseg->fresh = *(ff_u32_t*)sy->next->p;
-					curseg->fresh+=sizeof(ff_u32_t);
-					ff_as_isa(sizeof(ff_u32_t));
-					curseg->size+=sizeof(ff_u32_t);
-				} else if (*(char*)sy->p == 'q') {
-					*(ff_u64_t*)curseg->fresh = *(ff_u64_t*)sy->next->p;
-					curseg->fresh+=sizeof(ff_u64_t);
-					ff_as_isa(sizeof(ff_u64_t));
-					curseg->size+=sizeof(ff_u64_t);
-				} else if (!strcmp(sy->p, "frk")) {
-
-				} else if (!strcmp(sy->p, "entry") && epdeg<0) {
-					epdeg = 0;
-					ep = sy->next->p;
-				} else if (!strcmp(sy->p, "globl")) {
-					*(globl++) = sy->next->p;
-					printf("-->symbol: %s\n", sy->next->p);
-				} else if (!strcmp(sy->p, "segment")) {
-					segmentp sg = (segmentp)ff_as_al(sizeof(struct segment));
-		//			sg->name = sy->next->p;
-					sg->next = curseg;
-					sg->size = 0;
-					sg->adr = ff_as_stackadr();
-					sg->offset = 0;
-					sg->fresh = sg->buf;
-					curseg = sg;
-				} else if (!strcmp(sy->p, "region")) {
-					regionp rg = (regionp)ff_as_al(sizeof(struct region));
-					rg->name = sy->next->p;
-					rg->next = curreg;
-					rg->beg = offset;
-					rg->adr = curadr();
-					if (!curreg)
-						rg->no = 1;
-					else
-						rg->no = curreg->no+1;
-					curreg = rg;
-				} else if (!strcmp(sy->p, "endof")) {
-					curreg->end = offset;
-				} else if (!strcmp(sy->p, "extern")) {
-					labelp la = (labelp)ff_as_al(sizeof(struct label));
-					la->flags = LA_LOOSE;
-					la->s = (char const*)ff_as_memdup(sy->next->p, sy->next->len+1);
-					ff_as_hash_put(&env, sy->next->p, sy->next->len, la);
-					symbolp s = ff_as_syt(sy->next->p, NULL);
-					ff_as_putsymbol(s);
-					la->sy = s;
-					s->type = FF_SY_IND;
-					s->sort = 0;
-					printf("extern %s\n", sy->next->p);
-					*(extrn++) = sy->next->p;
-				} else if (*(char*)sy->p == 'l') {
-					local_labelp ll = (local_labelp)ff_as_hash_get(&env, sy->next->p, sy->next->len);	
-					ff_i8_t exist = !ll?-1:0;
-					ffly_printf("---> %d, %s\n", exist, sy->next->p);
-					if (exist == -1) {
-						ll = (local_labelp)ff_as_al(sizeof(struct local_label));
-						ff_as_hash_put(&env, sy->next->p, sy->next->len, ll);
-					}
-
-					ll->adr = curadr();
-				}
+				_directive();
 			} else {
 				ffly_printf("--| %s\n", sy->p);
 				struct berry *ber;

@@ -1,6 +1,8 @@
 # ifndef __ffly__system__string__h
 # define __ffly__system__string__h
 # include "../ffint.h"
+# define CUT_SHIFT 3
+# define CUT_SIZE (1<<CUT_SHIFT)
 # define islrc(__c) \
 	((__c)>='a'&&(__c)<='z')
 # define ishrc(__c) \

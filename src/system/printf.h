@@ -12,6 +12,7 @@ ff_err_t ffly_vfprintf(FF_FILE*, char const*, va_list);
 ff_err_t ffly_vsfprintf(FF_FILE*, ff_size_t, char const*, va_list);
 ff_uint_t ffly_sprintf(char*, char const*, ...);
 ff_uint_t ffly_vsprintf(char*, char const*, va_list);
+ff_uint_t ffly_fprintfs(FF_FILE*, char const*, ...);
 # ifdef __cplusplus
 }
 # endif

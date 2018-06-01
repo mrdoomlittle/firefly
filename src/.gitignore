@@ -5,6 +5,7 @@
 *.fuse_hidden*
 log
 err
+storage
 main
 client
 daemon

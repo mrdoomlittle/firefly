@@ -9,6 +9,7 @@
 # include "../memory/mem_free.h"
 # include "../dep/str_len.h"
 # include "../system/thread.h"
+# include "../signal.h"
 ff_uint_t acquire_slot();
 void scrap_slot(ff_uint_t);
 void *slotget(ff_uint_t);
@@ -697,6 +698,11 @@ ff_i8_t to_shut = -1;
 ff_atomic_u32_t live = 0;
 void ff_db_shut();
 
+void static sig(int __sig) {
+	to_shut = 0;
+	ff_net_shutdown(sock, SHUT_RDWR);
+}
+
 void*
 ff_db_serve(void *__arg_p) {
 	ffly_atomic_incr(&live);
@@ -885,6 +891,11 @@ def_users(ff_dbdp __d) {
 
 void
 ff_dbd_start(char const *__file, ff_u16_t __port) {
+	struct sigaction sa;
+	ffly_bzero(&sa, sizeof(struct sigaction));
+	sa.sa_handler = sig;
+	sigaction(SIGINT, &sa, NULL); 
+
 	struct ff_dbd daemon;
 	ffdb_init(&daemon.db);
 	ffdb_open(&daemon.db, __file);

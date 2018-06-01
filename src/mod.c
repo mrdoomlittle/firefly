@@ -39,8 +39,13 @@ void ffly_mod() {
 	
 	while(*mod != NULL) {		
 		ffly_str_cpy(bufp, *mod);	
-		ffly_printf("module path: %s\n", buf);
+		ffly_fprintf(ffly_log, "module path: %s\n", buf);
+		if (access(buf, F_OK) == -1) {
+			ffly_fprintf(ffly_log, "file access has been denied, or file doesent exist. skipping...\n", buf);
+			goto _sk;	
+		}
 		ff_mod_load((char const*)buf);
+	_sk:
 		mod++;
 	}
 }

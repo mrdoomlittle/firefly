@@ -83,6 +83,10 @@ ff_err_t ffly_io_init() {
 		return FFLY_FAILURE;
 	}
 
+	ffly_fopt(ffly_out, FF_STREAM);
+	ffly_fopt(ffly_log, FF_STREAM);
+	ffly_fopt(ffly_err, FF_STREAM);
+
     ffly_in = ffly_out;
 	return FFLY_SUCCESS;
 }

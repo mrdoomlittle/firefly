@@ -18,6 +18,7 @@ ff_s32_t open(char const*, ff_s32_t, ff_s32_t);
 
 ff_s32_t read(ff_u32_t, void*, ff_u64_t);
 ff_s32_t write(ff_u32_t, void*, ff_u64_t);
+ff_s32_t pwrite(ff_u32_t, void*, ff_u64_t, ff_u64_t);
 ff_s32_t access(char const*, ff_u32_t);
 
 ff_s32_t fsync(ff_s32_t);

@@ -1,5 +1,4 @@
 # include "stores.h"
-# include "system/config.h"
 # include "db/connect.h"
 # include "system/util/hash.h"
 # include "dep/str_len.h"
@@ -13,13 +12,12 @@
 # define FF_STORES_INFO 0
 ff_db_ctrp static ct = NULL;
 
-ff_err_t ff_stores_connect(void) {
+ff_err_t ff_stores_connect(char const *__ip_addr, ff_u16_t __port, char const *__enckey) {
 # ifdef __ffly_debug
 	ff_location_push(_ff_loc_stores_connect);
 # endif
 	ff_err_t err;
-	char const *enckey = __ffly_sysconf__.db.enckey;
-	ct = ff_db_ctr(ffly_hash(enckey, ffly_str_len(enckey)), __ffly_sysconf__.db.ip_addr, __ffly_sysconf__.db.port, &err);	
+	ct = ff_db_ctr(ffly_hash(__enckey, ffly_str_len(__enckey)), __ip_addr, __port, &err);	
 # ifdef __ffly_debug
 	if (_err(err)) {
 		ffly_fprintf(ffly_err, "failed to create connector.\n");
@@ -30,13 +28,12 @@ ff_err_t ff_stores_connect(void) {
 	return err;
 }
 
-ff_err_t ff_stores_login(void) {
+ff_err_t ff_stores_login(char const *__user, char const *__passwd) {
 # ifdef __ffly_debug
 	ff_location_push(_ff_loc_stores_login);
 # endif
 	ff_err_t err;
-	char const *passwd = __ffly_sysconf__.db.passwd;
-	if (_err(err = ff_db_ctr_login(ct, __ffly_sysconf__.db.user, ffly_hash(passwd, ffly_str_len(passwd))))) {
+	if (_err(err = ff_db_ctr_login(ct, __user, ffly_hash(__passwd, ffly_str_len(__passwd))))) {
 		
 	}
 # ifdef __ffly_debug

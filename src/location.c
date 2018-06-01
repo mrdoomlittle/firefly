@@ -1,5 +1,6 @@
 # include "location.h"
 # include "ffly_def.h"
+// my parent, my child
 typedef struct region {
 	struct region *parent;
 	struct region *child, *fd;
@@ -8,22 +9,23 @@ typedef struct region {
 
 struct loc_info {
 	char const *label;
+	char const *file;
 };
 
 # define get_info(__n) \
 	(info+(__n))
 struct loc_info info[] = {
-	{"mem_alloc"},
-	{"mem_free"},
-	{"mem_realloc"},
-	{"stores_connect"},
-	{"stores_login"},
-	{"stores_logout"},
-	{"stores_disconnect"},
-	{"db_ctr"},
-	{"net_creat"},
-	{"net_connect"},
-	{"db_ctr_login"}
+	{"mem_alloc", "src/memory/mem_alloc.c"},
+	{"mem_free", "src/memory/mem_free.c"},
+	{"mem_realloc", "src/memory/mem_realloc.c"},
+	{"stores_connect", "src/stores.c"},
+	{"stores_login", "src/stores.c"},
+	{"stores_logout", "src/stores.c"},
+	{"stores_disconnect", "src/stores.c"},
+	{"db_ctr", "src/db/connect.c"},
+	{"net_creat", "src/net.c"},
+	{"net_connect", "src/net.c"},
+	{"db_ctr_login", "src/db/connect.c"}
 };
 
 # define MAX 46
@@ -39,7 +41,8 @@ char static *pd = pad;
 # include "system/nanosleep.h"
 void static prrg(regionp __reg) {
 	ffly_nanosleep(0, 100000000);
-	ffly_printf("%s, %s\n", pad, get_info(__reg->loc)->label);
+	struct loc_info *inf = get_info(__reg->loc);
+	ffly_printf("%s` %s : %s\n", pad, inf->label, inf->file);
 
 	if (__reg->child != NULL) {
 		*(pd++) = ' ';

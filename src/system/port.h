@@ -5,6 +5,10 @@
 
 # define FF_PORT_CREAT 0x1
 # define FF_PORT_SHMM 0x2
+/*
+	rename,
+	allow for multiple to chat of diffrent bands using one piece of memory
+*/
 ff_uint_t ffly_port_get_shmid(ff_uint_t);
 ff_err_t ffly_port_send(ff_u32_t, void*, ff_uint_t, ff_uint_t);
 ff_err_t ffly_port_recv(ff_u32_t, void*, ff_uint_t, ff_uint_t);

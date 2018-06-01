@@ -11,13 +11,20 @@ struct ffly_sysconf {
 	char const **modl, **inil;
 	ff_uint_t alssize;
 	struct {
+		ff_i8_t loaded;
 		char const *ip_addr;
 		ff_u16_t port;
 		char const *enckey;
 		char const *user;
 		char const *passwd;
 	} db;
+	ff_i8_t loaded;
 };
+
+# define sysconf_loaded \
+	__ffly_sysconf__.loaded
+# define sysconf_db_loaded \
+	__ffly_sysconf__.db.loaded
 
 # ifdef __cplusplus
 extern "C" {

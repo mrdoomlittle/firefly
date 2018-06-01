@@ -18,18 +18,28 @@
 /*
 	TODO:
 		work more on this, write buffer, etc.
+		allow for flags to be passed to write to bypass buffer and write
+		directly to file, if error happens be wont be able to print
+		as its going to get stuck in a loop
 */
 # define ffly_fileno(__file) \
     (__file)->fd
-
+# define OBUFSZ 76
 struct ffly_file {
 	char const *path;
 	ff_u32_t fd;
 # ifndef __fflib
 	FILE *libc_fp;
 # endif
+	ff_u8_t flags;
+	ff_u32_t bufdst;
+	ff_i8_t drain;
+	ff_u32_t off;
+	ff_u8_t obuf[OBUFSZ];
+	ff_u8_t *ob_p;
 };
 
+#define FF_STREAM 0x1
 #define FF_O_TRUNC O_TRUNC
 #define FF_O_RDONLY O_RDONLY
 #define FF_O_WRONLY O_WRONLY
@@ -46,12 +56,16 @@ struct ffly_file {
 extern "C" {
 # endif
 struct ffly_file* ffly_fopen(char const*, int, ff_u32_t, ff_err_t*);
+void ffly_fopt(struct ffly_file*, ff_u8_t);
 ff_err_t ffly_fcreat(char const*, ff_u32_t);
 ff_err_t ffly_fstat(char const*, struct ffly_stat*);
 ff_err_t ffly_fwrite(struct ffly_file*, void*, ff_uint_t);
 ff_off_t ffly_fseek(struct ffly_file*, ff_off_t, int);
 ff_err_t ffly_fread(struct ffly_file*, void*, ff_uint_t);
 ff_err_t ffly_fclose(struct ffly_file*);
+ff_err_t ffly_fdrain(struct ffly_file*);
+// solid write
+ff_err_t ffly_fwrites(struct ffly_file*, void*, ff_uint_t);
 # ifdef __cplusplus
 }
 # endif

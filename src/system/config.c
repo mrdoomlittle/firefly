@@ -11,7 +11,16 @@
 struct ffly_sysconf __ffly_sysconf__ = {
 	.version = NULL, .root_dir = NULL,
 	.moddir = NULL, .inidir = NULL,
-	.modl = NULL, .inil = NULL
+	.modl = NULL, .inil = NULL,
+	.db = {
+		.loaded = -1,
+		.ip_addr = NULL,
+		.port = 0,
+		.enckey = NULL,
+		.user = NULL,
+		.passwd = NULL
+	},
+	.loaded = -1
 };
 
 void static
@@ -136,6 +145,7 @@ ld_db(void const *__db) {
 		ffly_printf("password: %s\n", __ffly_sysconf__.db.passwd);
 	} else
 		__ffly_sysconf__.db.passwd = NULL;
+	__ffly_sysconf__.db.loaded = 0;
 }
 
 ff_err_t ffly_ld_sysconf(char const *__path) {
@@ -184,7 +194,7 @@ ff_err_t ffly_ld_sysconf(char const *__path) {
 
 	__ffly_sysconf__.version = (char const*)ffly_str_dupe(ffly_conf_str(version));
 	__ffly_sysconf__.root_dir = (char const*)ffly_str_dupe(ffly_conf_str(root_dir));
-
+	__ffly_sysconf__.loaded = 0;
 _fail:
 	if (_err(err = ffly_conf_free(&conf))) {
 		ffly_fprintf(ffly_err, "failed to free config:0.\n");

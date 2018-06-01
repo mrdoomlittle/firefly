@@ -84,6 +84,7 @@ void* th(void *__arg) {
 # include "cache.h"
 # include "resource.h"
 # include "location.h"
+# include "system/config.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 /*
 	ffly_scheduler_init();
@@ -197,12 +198,20 @@ struct ffly_queue queue;
 
 	ffly_scheduler_de_init();
 */
-	if (_err(ff_stores_connect())) {
+	if (sysconf_db_loaded == -1) {
+		ffly_printf("config not loaded.\n");
+		goto _fault;
+	}
+
+	if (_err(ff_stores_connect(__ffly_sysconf__.db.ip_addr,
+								__ffly_sysconf__.db.port,
+								__ffly_sysconf__.db.enckey)))
+	{
 		ff_location_list();
 		goto _fault;		
 	}
 	
-	if (_err(ff_stores_login())) {
+	if (_err(ff_stores_login(__ffly_sysconf__.db.user, __ffly_sysconf__.db.passwd))) {
 		ff_location_list();
 		goto _fault;
 	}

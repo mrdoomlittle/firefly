@@ -134,7 +134,7 @@ script: clean
 	gcc $(cc_flags) -D__ffc_no_ff -c compiler.c
 	gcc $(cc_flags) -Wall -o main script.c compiler.o $(ffly_objs) script/exec.o script/mm.o script/parser.o script/gen.o parser.o lexer.o -nostdlib
 clean:
-	rm -f main
+#	rm -f main
 	cd ../ && make clean && cd src
 #all
 

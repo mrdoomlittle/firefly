@@ -92,6 +92,8 @@ void _rivetto();
 void _bind();
 void _acquire_slot();
 void _scrap_slot();
+void _ls_piles();
+void _ls_records();
 void _exist();
 void _bufal();
 void _buffr();
@@ -120,6 +122,8 @@ struct cmd *cmdl[] = {
 	&(struct cmd){"bind", _bind},
 	&(struct cmd){"acquireslot", _acquire_slot},
 	&(struct cmd){"scrapslot", _scrap_slot},
+	&(struct cmd){"lspiles", _ls_piles},
+	&(struct cmd){"lsrecords", _ls_records},
 	&(struct cmd){"exist", _exist},
 	&(struct cmd){"bufal", _bufal},
 	&(struct cmd){"buffr", _buffr},
@@ -184,12 +188,14 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	lddct(&map);
 	
 	dctp cur;
+	void *to;
 	__asm__("_again:\n\t");
 	ffly_printf("~: ");
+	ffly_fdrain(ffly_out);
 	ffly_rdline(ln, 200, ffly_in);
 	cur = read_dct(ln);
 
-	void *to = ffly_map_get(&map, cur->ident, ffly_str_len(cur->ident), &err);
+	to = ffly_map_get(&map, cur->ident, ffly_str_len(cur->ident), &err);
 	if (!to || _err(err)) {
 		ffly_printf("command does not exist.\n");
 		jmpagain;
@@ -349,6 +355,16 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	__asm__("_scrap_slot:\n\t"); {
 		ff_db_ctr_scrap_slot(ctor, ffly_stno(*cur->params));
+	}
+	jmpagain;
+
+	__asm__("_ls_piles:\n\t"); {
+		
+	}
+	jmpagain;
+
+	__asm__("_ls_records:\n\t"); {
+		
 	}
 	jmpagain;
 

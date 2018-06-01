@@ -2,6 +2,7 @@
 # include "system/config.h"
 # include "dep/str_cpy.h"
 # include "exec.h"
+# include "linux/unistd.h"
 void ffly_init() {
 	if (!__ffly_sysconf__.root_dir ||
 		!__ffly_sysconf__.inidir ||
@@ -17,8 +18,13 @@ void ffly_init() {
 	char const **ini = __ffly_sysconf__.inil;
 	while(*ini != NULL) {
 		ffly_str_cpy(bufp, *ini);
+		ffly_fprintf(ffly_log, "init path: %s\n", buf);
+		if (access(buf, F_OK) == -1) {
+			ffly_fprintf(ffly_log, "file access has been denied, or file doesent exist. skipping...\n", buf);
+			goto _sk;
+		}
 		ffexecf(buf);
-		ffly_printf("init path: %s\n", buf);
+	_sk:
 		ini++;
 	}
 }

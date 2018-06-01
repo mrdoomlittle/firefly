@@ -1,9 +1,6 @@
 # include "string.h"
 # include "../ffint.h"
 # include "../ffly_def.h"
-# define CUT_SHIFT 3
-# define CUT_SIZE (1<<CUT_SHIFT)
-
 ff_u64_t static powof10[] = {
 	1,
 	10,
