@@ -14,6 +14,7 @@ commands:
 . recordalloc <record>
 . recordfree <record>
 . rivet <rivetno> <slotno>
+. derivet <rivetno>
 . rivetto <rivetno> <slotno>
 . bind <rivetno> <slotno> <type{record, pile}>
 . acquireslot
