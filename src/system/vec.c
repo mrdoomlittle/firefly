@@ -22,12 +22,9 @@ ffly_vecp ffly_vec_list() {
 void ffly_vec_attach(ffly_vecp __vec) {
 	__vec->prev = NULL;
 	__vec->next = top;
-	if (!top)
-		top = __vec;
-	else {
+	if (top != NULL)
 		top->prev = __vec;
-		top = __vec; 
-	}
+	top = __vec;
 }
 
 void ffly_vec_detach(ffly_vecp __vec) {
@@ -210,6 +207,8 @@ void* ffly_vec_last(ffly_vecp __vec) {
 void ffly_vec_dechain(ffly_vecp __vec, struct ffly_vec_blkd *__blk) {
 	ffly_vec_blkdp prev;
 	ffly_vec_blkdp next;
+
+	// get prev&next
 	if (is_flag(__vec, VEC_NONCONTINUOUS)) {
 		if (not_null(__blk->prev))
 			prev = (ffly_vec_blkdp)get_at(__vec, __blk->prev);
@@ -221,15 +220,23 @@ void ffly_vec_dechain(ffly_vecp __vec, struct ffly_vec_blkd *__blk) {
 	}
 
 	ff_off_t off = (__blk->page*VEC_PAGE_SIZE)+__blk->off;
-	if (not_null(__vec->top) && off == __vec->top)
-		__vec->top = __blk->next;
-	if (not_null(__vec->end) && off == __vec->end)
-		__vec->end = __blk->prev;
+	if (not_null(__vec->top) && off == __vec->top) {
+		if (not_null(__vec->top = __blk->next))
+			next->prev = VEC_NULL;
+		goto _end;
+	}
+
+	if (not_null(__vec->end) && off == __vec->end) {
+		if (not_null(__vec->end = __blk->prev))
+			prev->next = VEC_NULL;
+		goto _end;
+	}
 
 	if (not_null(__blk->prev))
 		prev->next = __blk->next;	
 	if (not_null(__blk->next))
 		next->prev = __blk->prev;
+_end:
 	__blk->next = VEC_NULL;
 	__blk->prev = VEC_NULL;
 }
@@ -312,10 +319,12 @@ ff_err_t ffly_vec_push_back(ffly_vecp __vec, void **__p) {
 	__vec->off++;
 	return FFLY_SUCCESS;
 }
+
 ff_err_t ffly_vec_pop_back(ffly_vecp __vec, void *__p) {
 	__vec->size--;
+	ff_uint_t page = __vec->off>>VEC_PAGE_SHIFT;
 	if (is_flag(__vec, VEC_AUTO_RESIZE)) {
-		if (__vec->off>>VEC_PAGE_SHIFT < __vec->page_c-1 && __vec->page_c>1) {
+		if (page < __vec->page_c-1 && __vec->page_c>1) {
 			if (is_flag(__vec, VEC_NONCONTINUOUS)) { 
 				void *page = *((void**)__vec->p+(--__vec->page_c));
 				__ffly_mem_free(page);
@@ -331,8 +340,9 @@ ff_err_t ffly_vec_pop_back(ffly_vecp __vec, void *__p) {
 
 	if (is_flag(__vec, VEC_BLK_CHAIN)) {
 		void *last = ffly_vec_last(__vec);
+		ff_uint_t size = __vec->blk_size-sizeof(struct ffly_vec_blkd);
 		ffly_vec_blkdp blk = (ffly_vec_blkdp)((ff_u8_t*)last-sizeof(struct ffly_vec_blkd));
-		ffly_mem_cpy(__p, last, __vec->blk_size-sizeof(struct ffly_vec_blkd));
+		ffly_mem_cpy(__p, last, size);
 		if (is_flag(__vec, VEC_NONCONTINUOUS)?(blk == get_at(__vec, __vec->off-1)):(blk == (void*)((ff_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size)))) {
 			ffly_vec_dechain(__vec, blk);
 			__vec->off--;

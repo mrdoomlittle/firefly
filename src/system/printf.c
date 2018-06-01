@@ -4,6 +4,7 @@
 # include "io.h"
 # include "../dep/str_cpy.h"
 # include "../dep/mem_cpy.h"
+# include "../dep/mem_set.h"
 # include "string.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
@@ -49,9 +50,10 @@ drain(ff_u8_t *__p, ff_u16_t __size, ff_u16_t __cut, ff_u8_t __off) {
 		ff_uint_t chunk_off = off-(chunk*CHUNK_SIZE);
 		ff_uint_t left = CHUNK_SIZE-chunk_off;
 		void **c = chunks+chunk;
-		if (!*c)
+		if (!*c) {
 			*c = __ffly_mem_alloc(CHUNK_SIZE);
-
+			ffly_mem_set(*c, '@', CHUNK_SIZE);
+		}
 		ff_uint_t size = __size-(p-__p);
 
 		if (left<size)
@@ -103,7 +105,7 @@ gen(ff_size_t __n, char const *__format, va_list __args) {
 			} else if (*p == 's') {
 				char *s = va_arg(__args, char*);
 				ff_uint_t l = ffly_str_len(s);
-				drain(s, l, cut, off);
+				drain(s, l+1, cut, off);
 				ff_u16_t cc = l>>CUT_SHIFT;
 				cut+=cc;
 				off+=l-(cc*CUT_SIZE);
@@ -130,7 +132,7 @@ gen(ff_size_t __n, char const *__format, va_list __args) {
 		}
 	}
 	char c = '\0';
-	drain(&c, 1, cut, off++);
+	drain(&c, 1, cut, off);
 	return (cut*CUT_SIZE)+off;
 }
 
@@ -157,7 +159,7 @@ ff_uint_t ffly_vsprintf(char *__buf, char const *__format, va_list __args) {
 	ffly_mutex_lock(&lock);
 	ff_uint_t l;
 	prep();
-	l = gen(ffly_str_len(__format), __format, __args);
+	l = gen(ffly_str_len(__format), __format, __args)+1;
 
 	void **chunk = chunks;
 	void **end = chunks+(l>>CHUNK_SHIFT);
@@ -170,7 +172,7 @@ ff_uint_t ffly_vsprintf(char *__buf, char const *__format, va_list __args) {
 
 	ff_uint_t left = l-((l>>CHUNK_SHIFT)*CHUNK_SIZE);
 	if (left>0)
-		ffly_mem_cpy(p, chunk, left);
+		ffly_mem_cpy(p, *chunk, left);
 	cleanup();
 	ffly_mutex_unlock(&lock);
 	return l;
@@ -204,7 +206,7 @@ out(FF_FILE *__file, ff_size_t __n, char const *__format, va_list __args, ff_err
 	ffly_mutex_lock(&lock);
 	prep();
 	ff_uint_t l;
-	l = gen(__n, __format, __args);
+	l = gen(__n, __format, __args)+1;
 
 	void **chunk = chunks;
 	void **end = chunks+(l>>CHUNK_SHIFT);

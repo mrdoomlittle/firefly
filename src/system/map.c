@@ -120,7 +120,7 @@ ff_err_t ffly_map_put(ffly_mapp __map, ff_u8_t const *__key, ff_uint_t __bc, voi
 	if (!*blk) {
 		*blk = (struct ffly_vec*)__ffly_mem_alloc(sizeof(struct ffly_vec));
 		ffly_vec_clear_flags(*blk);
-		ffly_vec_tog_flag(*blk, VEC_AUTO_RESIZE);
+		ffly_vec_set_flags(*blk, VEC_AUTO_RESIZE);
 		if (_err(ffly_vec_init(*blk, sizeof(map_entry_t*)))) {
 			ffly_fprintf(ffly_err, "failed to init vec.\n");
 		}

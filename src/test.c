@@ -223,6 +223,7 @@ struct ffly_queue queue;
 	ff_stores_logout();
 	ff_stores_disconnect();
 */
+/*
 	struct ffly_reservoir res;
 	ffly_reservoir_init(&res, "test.resv");
 	void *r0, *r1, *r2;
@@ -242,6 +243,7 @@ struct ffly_queue queue;
 	ffly_reservoir_free(&res, r1);
 	ffly_reservoir_free(&res, r2);
 	ffly_reservoir_de_init(&res);
+*/
 _fault:
 	ffly_arstat();
 }

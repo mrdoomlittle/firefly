@@ -59,14 +59,20 @@ ff_uint_t _ffly_nots(ff_u64_t __no, ff_u16_t *__cut, ff_u8_t *__off, void(*__dra
 	char buf[CUT_SIZE];
 	ff_u16_t cut = *__cut;
 	ff_u8_t ct_off = *__off;
+	if (ct_off>=CUT_SIZE) {
+		cut++;
+		ct_off-=CUT_SIZE;
+	}
+
 	if (!__no) {
 		*buf = '0';
 		*(buf+1) = '\0';
 		__drain(buf, 2, cut, ct_off++);
 		if (ct_off>=CUT_SIZE) {
-			(*__cut)++;
+			cut++;
 			ct_off-=CUT_SIZE;
 		}
+		*__cut = cut;
 		*__off = ct_off;
 		return 1;
 	}
@@ -105,21 +111,20 @@ ff_uint_t _ffly_nots(ff_u64_t __no, ff_u16_t *__cut, ff_u8_t *__off, void(*__dra
 		pow--;
 	}
 	if (p>buf) {
+		ff_uint_t left;
 		ff_uint_t l = p-buf;
 		__drain(buf, l, cut, ct_off);
-		ct_off+=l;
-		if (ct_off>=CUT_SIZE) {
+		if ((left = (0xff-ct_off))<l) {
+			l-=l-left;
 			cut++;
-			ct_off-=CUT_SIZE;
+			ct_off = 0;
 		}
+
+		ct_off+=l;
 	}
 
 	char c = '\0';
-	__drain(&c, 1, cut, ct_off++);
-	if (ct_off>=CUT_SIZE) {
-		cut++;
-		ct_off-=CUT_SIZE;
-	}
+	__drain(&c, 1, cut, ct_off);
 
 	*__cut = cut;
 	*__off = ct_off;
