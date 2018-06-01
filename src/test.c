@@ -85,6 +85,7 @@ void* th(void *__arg) {
 # include "resource.h"
 # include "location.h"
 # include "system/config.h"
+# include "storage/reservoir.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 /*
 	ffly_scheduler_init();
@@ -198,6 +199,7 @@ struct ffly_queue queue;
 
 	ffly_scheduler_de_init();
 */
+/*
 	if (sysconf_db_loaded == -1) {
 		ffly_printf("config not loaded.\n");
 		goto _fault;
@@ -220,6 +222,26 @@ struct ffly_queue queue;
 	__ffly_mem_free(motd);
 	ff_stores_logout();
 	ff_stores_disconnect();
+*/
+	struct ffly_reservoir res;
+	ffly_reservoir_init(&res, "test.resv");
+	void *r0, *r1, *r2;
+	r0 = ffly_reservoir_alloc(&res, 1028);
+	r1 = ffly_reservoir_alloc(&res, 1028);
+	ffly_reservoir_free(&res, r0);
+	r2 = ffly_reservoir_alloc(&res, 1028);
+
+	ffly_reservoir_info(&res);
+	char buf[1028];
+	ffly_str_cpy(buf, "https://github.com/mrdoomlittle/firefly");
+	ffly_reservoir_write(&res, r2, buf, 0, 1028);
+
+	ffly_reservoir_read(&res, r2, buf, 0, 1028);
+	
+	ffly_printf("%s\n", buf);
+	ffly_reservoir_free(&res, r1);
+	ffly_reservoir_free(&res, r2);
+	ffly_reservoir_de_init(&res);
 _fault:
 	ffly_arstat();
 }

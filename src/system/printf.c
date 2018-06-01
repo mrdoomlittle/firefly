@@ -118,7 +118,7 @@ gen(ff_size_t __n, char const *__format, va_list __args) {
 				_ffly_noths((ff_u64_t)v, &cut, &off, drain);
 			} else if (*p == 'x') {
 				ff_u64_t v = is_long? va_arg(__args, ff_u64_t):va_arg(__args, ff_u32_t);
-				_ffly_noths((ff_u64_t)v, &cut, &off, drain);
+				_ffly_noths(v, &cut, &off, drain);
 			}
 			p++;
 		} else 

@@ -170,6 +170,9 @@ $ffly_cc $cc_flags -c -o $dst_dir/sys_fstat.o.1 $root_dir/sys_fstat.c
 nasm -f elf64 $as_inc -o $dst_dir/sys_pwrite.o.0 $root_dir/asm/sys_pwrite.asm
 $ffly_cc $cc_flags -c -o $dst_dir/sys_pwrite.o.1 $root_dir/sys_pwrite.c
 
+nasm -f elf64 $as_inc -o $dst_dir/sys_pread.o.0 $root_dir/asm/sys_pread.asm
+$ffly_cc $cc_flags -c -o $dst_dir/sys_pread.o.1 $root_dir/sys_pread.c
+
 $ffly_cc -c $cc_flags -o $dst_dir/sched.o $root_dir/sched.c
 
 $ffly_cc -c $cc_flags -o $dst_dir/send.o $root_dir/send.c
@@ -238,6 +241,7 @@ $dst_dir/sys_socket.o.0 $dst_dir/sys_socket.o.1 \
 $dst_dir/sys_sendto.o.0 $dst_dir/sys_sendto.o.1 \
 $dst_dir/sys_recvfrom.o.0 $dst_dir/sys_recvfrom.o.1 \
 $dst_dir/sys_pwrite.o.0 $dst_dir/sys_pwrite.o.1 \
+$dst_dir/sys_pread.o.0 $dst_dir/sys_pread.o.1 \
 $dst_dir/send.o $dst_dir/recv.o \
 $dst_dir/sys_setsockopt.o.0 $dst_dir/sys_setsockopt.o.1 \
 $dst_dir/sys_getsockopt.o.0 $dst_dir/sys_getsockopt.o.1 \
