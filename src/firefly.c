@@ -107,7 +107,10 @@ prep() {
 	ffly_arcs_creatrec("created-by", NULL, _ffly_rec_def, 0);
 	ffly_arcs_bk();
 	ffly_init_run();
-//	ffly_piston();
+
+	/* pistons are on even if sched has not been inited
+	*/
+	ffly_piston();
 //	ff_mod_init();
 //	ff_mod_handle();
 //	ffly_mod();
@@ -119,7 +122,7 @@ prep() {
 void static
 fini() {
 	ffly_crucify_run();
-//	ffly_pistons_stall();
+	ffly_pistons_stall();
 //	ff_mod_de_init();
 	ffly_thread_cleanup();
 	ffly_arcs_de_init();

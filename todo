@@ -115,3 +115,26 @@ any librarys as all, soo the user will have pulse and alsa and the engine will b
 user gives the engine data and it will be stored in a custom format <- for image files.
 -. src/system/thread.c clone thread local storage wrong
 -. src/ff need memcpy, ...
+-. sched entity locking
+-. storage/slab cacheing
+-. system/vec page cacheing write to storage/reservoir
+-. add lot.c to sched and dealloc lots not in use
+-. resin/exec pass function to get slice of file at point also chould cache the slices with storage/reservoir
+-. as needs more woking on
+-. improvments need to be made to allocr
+-. rename crucify
+-. start working on db multi client
+-. work on mod.c
+-. obj_pool is thread only and wont use system/sched
+say 4 obj pools objects will be added to the one with less latency like system/task_pool 
+but objects only
+-. terrain loading going to be chunk by chunk
+-. src/ff/output/resin
+need to 
+
+remove switch statments
+and 
+op(__compiler, "movb", "%rel", reg, NULL);
+op(__compiler, "movw", "%rel", reg, NULL);
+op(__compiler, "movd", "%rel", reg, NULL);
+op(__compiler, "movq", "%rel", reg, NULL);

@@ -12,12 +12,15 @@ ff_tid_t static *piston = pistons;
 ff_i8_t static stall = -1;
 void static*
 handle(void *__arg_p) {
+	ffly_printf("piston online.\n");
 	while(stall == -1) {
-		ffly_printf("piston tick.\n");
 		ffly_nanosleep(0, 10000);
-//		ffly_scheduler_tick();
-//		ffly_sched_clock_tick(1);
+		ffly_scheduler_tick();
+
+		// okay for now as only one piston
+		ffly_sched_clock_tick(1); // put this somwhere else
 	}
+	ffly_printf("piston stall.\n");
 }
 
 void ffly_pistons_stall(void) {

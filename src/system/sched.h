@@ -1,7 +1,7 @@
 # ifndef __ffly__sched__h
 # define __ffly__sched__h
 # include "../ffint.h"
-
+# include "mutex.h"
 // 1 millisecond
 # define SCHED_TIME_PERIOD 0.001
 # define SCHED_CRUCIFY 0x1
@@ -12,6 +12,7 @@ typedef struct sched_entity {
 	void *arg_p;
 	struct sched_entity *prev, *next;
 	struct sched_entity *fd;
+	ff_mlock_t lock;
 } *sched_entityp;
 
 void ffly_sched_rm(ff_u32_t);

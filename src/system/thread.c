@@ -153,7 +153,7 @@ prox() {
 
 	thr->exit = 0;
 
-//	ffly_thread_del(thr->tid);
+	ffly_thread_del(thr->tid);
 //	ffly_mal_hang;
 	exit(0);
 }

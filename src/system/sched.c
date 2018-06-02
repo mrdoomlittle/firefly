@@ -2,7 +2,10 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../memory/mem_realloc.h"
+ff_mlock_t static lock = FFLY_MUTEX_INIT;
+
 ff_u64_t static clock = 0;
+
 sched_entityp static top = NULL;
 sched_entityp static end = NULL;
 # define PAGE_SHIFT 3
@@ -18,7 +21,16 @@ sched_entityp static dead = NULL;
 # define get_entity(__id) \
 	((*(entities+(__id&0xfff)))+((__id>>12)&0xfffff))
 
+# define sched_lock ffly_mutex_lock(&lock)
+# define sched_unlock ffly_mutex_unlock(&lock)
+
+# define entity_lock(__ent) \
+	ffly_mutex_lock(&(__ent)->lock)
+# define entity_unlock(__ent) \
+	ffly_mutex_unlock(&(__ent)->lock)
+
 ff_u32_t ffly_schedule(ff_i8_t(*__func)(void*), void *__arg_p, ff_u64_t __interval) {
+	sched_lock;
 	ff_uint_t page = off>>PAGE_SHIFT;
 	ff_uint_t pg_off;
 	sched_entityp ent;
@@ -45,16 +57,17 @@ _dead:
 		top = ent;
 
 	ent->prev = end;
-	if (end != NULL)
-		end->next = ent;
-	end = ent;
 	
-
+	ent->lock = FFLY_MUTEX_INIT;
 	ent->func = __func;
 	ent->arg_p = __arg_p;
 	ent->interval = __interval;
 	ent->elapsed = 0;
 	ent->fd = NULL;
+	if (end != NULL)
+		end->next = ent;
+	end = ent;
+	sched_unlock;
 	return (page&0xfff)|((pg_off&0xfffff)<<12);
 }
 
@@ -83,12 +96,15 @@ deatach(sched_entityp __ent) {
 
 void static
 remove(sched_entityp __ent) {
+	sched_lock;
 	deatach(__ent);
 	__ent->fd = dead;
 	dead = __ent;
+	sched_unlock;
 }
 
 void ffly_sched_rm(ff_u32_t __id) {
+	sched_lock;
 	if (((__id&0xfff)*PAGE_SIZE)+((__id>>12)&0xfffff) == off-1) {
 		deatach(get_entity(__id));
 		off--;
@@ -97,7 +113,10 @@ void ffly_sched_rm(ff_u32_t __id) {
 			__ffly_mem_free(*(entities+(page+1)));
 			entities = (sched_entityp*)__ffly_mem_realloc(entities, (--page_c)*sizeof(sched_entityp));
 		}
+		sched_unlock;
+		return;
 	}
+	sched_unlock;
 
 	remove(get_entity(__id));
 }
@@ -107,8 +126,7 @@ void ffly_sched_clock_tick(ff_u64_t __delta) {
 }
 
 ff_u64_t static last_time = 0;
-void ffly_scheduler_tick(void) {
-	
+void ffly_scheduler_tick(void) {	
 	sched_entityp cur = top, ent;
 	while(cur != NULL) {
 		ent = cur;
