@@ -81,6 +81,7 @@ void ffly_thread_init() {
 
 ff_err_t static
 ffly_thread_del(ff_tid_t __tid) {
+	// keep memory on pot 0
 	ffly_mutex_lock(&mutex);
 	if (uu_ids.off >= uu_ids.page_c*UU_PAGE_SIZE) {
 		ffly_ctl(ffly_malc, _ar_setpot, (ff_u64_t)pot);
@@ -152,7 +153,7 @@ prox() {
 
 	thr->exit = 0;
 
-	ffly_mal_axe;
+	ffly_mal_hang;
 	ffly_thread_del(thr->tid);
 	exit(0);
 }
@@ -289,7 +290,7 @@ ff_err_t ffly_thread_cleanup() {
 		}
 		if (cur->exit == -1) { // if exit was a not a success and has been forced to stop
 			ffly_ctl(ffly_malc, _ar_setpot, (ff_u64_t)cur->pot);
-			ffly_araxe();	
+			ffly_arhang();	
 			ffly_ctl(ffly_malc, _ar_unset, 0);
 		}
 		__ffly_mem_free(cur);

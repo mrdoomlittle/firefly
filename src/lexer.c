@@ -164,7 +164,7 @@ void ff_token_free(ff_tokenp __tok) {
 		}
 		return;
 	} else {
-		ffly_printf("%u , %u, %u, %u\n", off, (t_off-1)-(PULLIN-1), (t_off-1), PULLIN-1);
+		//ffly_printf("%u , %u, %u, %u\n", off, (t_off-1)-(PULLIN-1), (t_off-1), PULLIN-1);
 		if (off >= (t_off-1)-PULLIN && t_off-1 >= PULLIN) {
 			struct pullin *p = pi+((off-((t_off-1)-PULLIN)));
 			ffly_printf("-------> %u\n", p-pi);

@@ -80,6 +80,8 @@ char const static *by = "mrdoomlittle";
 # endif
 
 # include "system/tls.h"
+# include "piston.h"
+# include "crucify.h"
 void static
 init() {
 	ffly_tls_new();
@@ -92,7 +94,7 @@ init() {
 	ffly_thread_init();
 }
 
-void ffly_init();
+# include "init.h"
 
 void static
 prep() {
@@ -102,7 +104,8 @@ prep() {
 	ffly_arcs_tun("info");
 	ffly_arcs_creatrec("created-by", NULL, _ffly_rec_def, 0);
 	ffly_arcs_bk();
-	ffly_init();
+	ffly_init_run();
+//	ffly_piston();
 //	ff_mod_init();
 //	ff_mod_handle();
 //	ffly_mod();
@@ -113,6 +116,8 @@ prep() {
 # include "system/string.h"
 void static
 fini() {
+	ffly_crucify_run();
+//	ffly_pistons_stall();
 //	ff_mod_de_init();
 	ffly_thread_cleanup();
 	ffly_arcs_de_init();

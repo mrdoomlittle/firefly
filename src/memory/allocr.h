@@ -24,5 +24,4 @@ void* ffly_realloc(void*, ff_uint_t);
 void* ffly_arsh(void*, ff_uint_t);
 void* ffly_argr(void*, ff_uint_t);
 void ffly_arbl(void*);
-void ffly_araxe(void);
 # endif /*__ffly__allocr__h*/

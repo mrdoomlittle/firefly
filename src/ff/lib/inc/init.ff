@@ -1,0 +1,4 @@
+%ifndef __ffly__init__ff
+%define __ffly__init__ff
+void ffly_sched_init();
+%endif /*__ffly_init__ff*/

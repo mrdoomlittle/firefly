@@ -83,6 +83,7 @@ ffly_fopen(char const *__path, int __flags, ff_u32_t __mode, ff_err_t *__err) {
 	file->off = 0;
 	file->flags = 0x0;
 	file->ob_p = file->obuf;
+	file->lock = FFLY_MUTEX_INIT;
 	return file;
 }
 
@@ -139,11 +140,13 @@ ff_err_t ffly_fcreat(char const *__path, ff_u32_t __mode) {
 
 // solid write will skip buffer
 ff_err_t ffly_fwrites(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
+	ffly_mutex_lock(&__f->lock);
 	if (__f->ob_p>__f->obuf)
 		ffly_fdrain(__f);
 	if (write(__f->fd, __p, __bc) == -1) {
 
 	}
+	ffly_mutex_unlock(&__f->lock);
 	return FFLY_SUCCESS;
 }
 
@@ -153,11 +156,13 @@ ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 		return FFLY_FAILURE;
 	}
 
+	ffly_mutex_lock(&__f->lock);
 	if (!__f->drain) {
 		ffly_fdrain(__f);
 		__f->bufdst = __f->off;
 		__f->drain = -1;
 	}
+	ffly_mutex_unlock(&__f->lock);
 
 	ff_u8_t *src = (ff_u8_t*)__p;
 	while(__bc>OBUFSZ) {
@@ -166,17 +171,21 @@ ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 		__bc-=OBUFSZ;
 	}
 
+	ffly_mutex_lock(&__f->lock);
+	ff_uint_t left;
+	ff_int_t overflow;
+
 	if (!__bc) {
-		return FFLY_SUCCESS;
+		goto _end;
 	}
 
-	ff_uint_t left = OBUFSZ-(__f->ob_p-__f->obuf);
+	left = OBUFSZ-(__f->ob_p-__f->obuf);
 	if (!left) {
 		ffly_fdrain(__f);
 		left = OBUFSZ;
 	}
 
-	ff_int_t overflow = (ff_int_t)__bc-(ff_int_t)left;
+	overflow = (ff_int_t)__bc-(ff_int_t)left;
 	__f->off+=__bc;
 	if (overflow>0) {
 		bufput(__f, src, left);
@@ -186,6 +195,8 @@ ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	}
 
 	bufput(__f, src, __bc);
+_end:
+	ffly_mutex_unlock(&__f->lock);
 	return FFLY_SUCCESS;
 }
 

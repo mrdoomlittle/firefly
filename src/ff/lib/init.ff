@@ -1,0 +1,10 @@
+%include "inc/lib.ff"
+void ffly_sched_init() {
+	struct arg_s arg;
+	arg.what = 0;
+	struct init_arg init;
+	arg.init_arg = &init;
+	init.flags = SCHED_CRUCIFY;
+
+	as("rin 5, %rel\n" : "rel", &arg);
+}

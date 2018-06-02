@@ -2,4 +2,3 @@
 *.o
 *.exec
 *.fuse_hidden*
-a.out

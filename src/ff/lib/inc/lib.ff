@@ -1,0 +1,17 @@
+%ifndef __ffly__lib__ff
+%define __ffly__lib__ff
+
+%define SCHED_CRUCIFY 1
+struct arg_s {
+	u64_t p;
+	u64_t src;
+	u32_t size;
+	u8_t what;
+	u64_t init_arg;
+};
+
+struct init_arg { 
+	u8_t flags;
+};
+
+%endif /*__ffly__lib__ff*/

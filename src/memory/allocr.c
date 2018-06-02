@@ -619,13 +619,17 @@ _next:
 
 void free_pot(potp);
 
+
+/*
+	hang the pots, dead parts will drop off
+*/
 void ffly_arhang(void) {
 	void **arena_spot = spot+ffly_tls_get(arena_tls);
 	potp arena = (potp)*arena_spot;
 	potp p;
 	if (!(p = arena)) {
 # ifdef __ffly_debug
-		printf("dead pot.\n");
+		printf("ar, pot has already been axed, or has been like this from the start.\n");
 # endif
 		return;
 	}
@@ -635,60 +639,23 @@ void ffly_arhang(void) {
 		bk = p;
 		lkpot(p);
 		p = p->fd;
-		if (bk->off>0) {
-			if (bk == arena) {
-				potp prev = arena->previous;
-				potp next = arena->next;
-				if ((arena = bk->fd) != NULL) {
-					arena->bk = NULL;
-					if (prev != NULL) {
-						lkpot(prev);
-						prev->next = arena;	
-						ulpot(prev);
-					}
 
-					if (next != NULL) {
-						lkpot(next);
-						next->previous = arena;
-						ulpot(next);
-					}
-				}
-			}
-
-			if (bk->fd != NULL)
-				bk->fd->bk = bk->bk;
-			if (bk->bk != NULL)
-				bk->bk->fd = bk->fd;
-			bk->fd = NULL;
-			bk->bk = NULL;
+		if (bk->fd != NULL)
+			bk->fd->bk = bk->bk;
+		if (bk->bk != NULL)
+			bk->bk->fd = bk->fd;
+		
+		bk->fd = NULL;
+		bk->bk = NULL;
+		if (!bk->off) {
+			rfr(bk);
 		}
 		ulpot(bk);
-	}
-	*arena_spot = arena;
-}
 
-void ffly_araxe(void) {
-	void **arena_spot = spot+ffly_tls_get(arena_tls);
-	potp arena = (potp)*arena_spot;
-
-	potp p;
-	if (!(p = arena)) {
-# ifdef __ffly_debug
-		printf("ar, pot has already been axed, or has been like this from the start.\n");
-# endif
-		return;
-	}
-
-	rfr(p);
-	potp bk;
-	while(p != NULL) {
-		bk = p;
-		p = p->fd;
-		rfr(bk);
 		free_pot(bk);
 	}
-	arena = NULL;
-	*arena_spot = arena;
+
+	*arena_spot = NULL;
 }
 
 /*

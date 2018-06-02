@@ -31,12 +31,15 @@ struct arg_s {
 	void *p;
 	ff_u64_t src;
 	ff_u32_t size;
+	ff_u8_t what;
+	ff_u64_t init_arg;
 } __attribute__((packed));
 
 # include "../dep/mem_cpy.h"
+# include "../init.h"
 struct ffly_resin ctx;
 void* ring(ff_u8_t __no, void *__arg_p) {
-	ff_u8_t *arg = (ff_u8_t*)__arg_p;
+	struct arg_s *arg = (struct arg_s*)ff_resin_resolv_adr(&ctx, *(ff_addr_t*)__arg_p);
 	switch(__no) {
 		case 0x0: {// set stack pointer
 			ff_u64_t sp = ctx.stack_size;
@@ -45,26 +48,28 @@ void* ring(ff_u8_t __no, void *__arg_p) {
 		}
 		case 0x1: {
 			// mem_read
-			struct arg_s *p = (struct arg_s*)ff_resin_resolv_adr(&ctx, *(ff_addr_t*)arg);
-			ffly_mem_cpy(ff_resin_resolv_adr(&ctx, p->src), p->p, p->size);
+			ffly_mem_cpy(ff_resin_resolv_adr(&ctx, arg->src), arg->p, arg->size);
 			break;
 		}
 		case 0x2: {
 			// mem_write
-			struct arg_s *p = (struct arg_s*)ff_resin_resolv_adr(&ctx, *(ff_addr_t*)arg);
-			ffly_mem_cpy(p->p, ff_resin_resolv_adr(&ctx, p->src), p->size);
+			ffly_mem_cpy(arg->p, ff_resin_resolv_adr(&ctx, arg->src), arg->size);
 			break;
 		}
 		case 0x3: {
 			// mem_mmap
-			struct arg_s *p = (struct arg_s*)ff_resin_resolv_adr(&ctx, *(ff_addr_t*)arg);
-			ffly_printf("size: %u, %u\n", p->size, *(ff_addr_t*)arg);
-			p->p = ff_resin_mmap(p->size);	
+			arg->p = ff_resin_mmap(arg->size);	
 			break;
 		}
 		case 0x4: {
-			ff_resin_munmap(*(void**)arg);
+			ff_resin_munmap(*(void**)__arg_p);
 			// mem_munmap
+			break;
+		}
+		case 0x5: {
+			//init
+			__init_arg__ = (struct init_arg*)ff_resin_resolv_adr(&ctx, arg->init_arg);
+			ffly_init(arg->what);
 			break;
 		}
 	}

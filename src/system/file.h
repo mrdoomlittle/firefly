@@ -14,7 +14,7 @@
 # include <unistd.h>
 # include <stdio.h>
 # endif
-
+# include "mutex.h"
 /*
 	TODO:
 		work more on this, write buffer, etc.
@@ -37,6 +37,7 @@ struct ffly_file {
 	ff_u32_t off;
 	ff_u8_t obuf[OBUFSZ];
 	ff_u8_t *ob_p;
+	ff_mlock_t lock;
 };
 
 #define FF_STREAM 0x1

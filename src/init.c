@@ -1,9 +1,10 @@
+# include "init.h"
 # include "system/io.h"
 # include "system/config.h"
 # include "dep/str_cpy.h"
 # include "exec.h"
 # include "linux/unistd.h"
-void ffly_init() {
+void ffly_init_run() {
 	if (!__ffly_sysconf__.root_dir ||
 		!__ffly_sysconf__.inidir ||
 		!__ffly_sysconf__.inil) return;
@@ -27,4 +28,20 @@ void ffly_init() {
 	_sk:
 		ini++;
 	}
+}
+
+# include "system/sched.h"
+struct init_arg *__init_arg__;
+void static
+sched_init(void) {
+	ffly_printf("sched init, flags: %u\n", __init_arg__->flags);
+	ffly_scheduler_init(__init_arg__->flags);
+}
+
+static void(*init[])(void) = {
+	sched_init
+};
+
+void ffly_init(ff_u8_t __what) {
+	init[__what]();
 }

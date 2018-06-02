@@ -1,66 +1,11 @@
-%include "lib/types.ff"
+%include "lib/inc/types.ff"
 %include "lib/inc/error.ff"
 %include "lib/inc/memory.ff"
+%include "lib/inc/init.ff"
 %define return ret
-//Hello
-
-void ts0();
-void ts1();
-void ts2();
-void ts3();
-void ts4();
-void ts5();
-
-void ts0() {
-	char n = 0;
-	out(n);
-	ts1();
-}
-
-void ts1() {
-	char n = 1;
-	out(n);
-	ts2();
-}
-
-void ts2() {
-	char n = 2;
-	out(n);
-	ts3();
-}
-
-void ts3() {
-	char n = 3;
-	out(n);
-	ts4();
-}
-
-void ts4() {
-	char n = 4;
-	out(n);
-	ts5();
-}
-
-void ts5() {
-	char n = 5;
-	out(n);
-}
-
 /*
-struct nop {
-	u8_t a;
-	u8_t b;
-	u8_t c;
-};
-*/
-//void ts0(u8_t __a, u16_t __b, u32_t __c, u64_t __d) {
-//	out(__a);
-//	out(__b);
-//	out(__c);
-//	out(__d);
-//	abort();
-//}
 
+*/
 u8_t main() {
-	ts0();
+	ffly_sched_init();
 }

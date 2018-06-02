@@ -107,7 +107,7 @@ void ffly_sched_clock_tick(ff_u64_t __delta) {
 }
 
 ff_u64_t static last_time = 0;
-void ffly_scheduler_tick() {
+void ffly_scheduler_tick(void) {
 	
 	sched_entityp cur = top, ent;
 	while(cur != NULL) {
@@ -123,11 +123,24 @@ void ffly_scheduler_tick() {
 	last_time = clock;
 }
 
-void ffly_scheduler_init() {
-	
+# define is_flag(__flags, __flag) \
+	((__flags&__flag)==__flag)
+# include "../crucify.h"
+# include "io.h"
+
+void static crucify(void *__arg) {
+	ffly_scheduler_de_init();
 }
 
-void ffly_scheduler_de_init() {
+void ffly_scheduler_init(ff_u8_t __flags) {	
+	ffly_fprintf(ffly_log, "sched init.\n");
+	if (is_flag(__flags, SCHED_CRUCIFY)) {
+		ffly_crucify(crucify, NULL);
+	}
+}
+
+void ffly_scheduler_de_init(void) {
+	ffly_fprintf(ffly_log, "sched de-init.\n");
 	sched_entityp *cur = entities;
 	sched_entityp *end = cur+page_c;
 	while(cur != end)
