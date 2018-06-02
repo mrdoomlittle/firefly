@@ -10,7 +10,7 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_realloc.h"
 # include "memory/mem_free.h"
-
+# include "system/nanosleep.h"
 # define hdrsize sizeof(struct hdr)
 typedef struct hdr {
 	struct hdr *prev, *next;
@@ -52,6 +52,34 @@ _end:
 
 # define PAGE_SHIFT 4
 # define PAGE_SIZE (1<<PAGE_SHIFT)
+# define PULLIN 20
+struct pullin {
+	ff_i8_t used;
+	ff_tokenp tok;
+	ff_uint_t off;
+	struct pullin *prev, *next;
+};
+
+struct pullin *pil = NULL;
+
+struct pullin pi[PULLIN] = {
+	{-1}, {-1}, {-1}, {-1},
+	{-1}, {-1}, {-1}, {-1},
+	{-1}, {-1}, {-1}, {-1},
+	{-1}, {-1}, {-1}, {-1},
+	{-1}, {-1}, {-1}, {-1}
+};
+
+# define pullin_delink(__p) \
+	if (__p == pil) { \
+		if ((pil = __p->next) != NULL) \
+			pil->prev = NULL; \
+	} else { \
+		if (__p->prev != NULL) \
+			__p->prev->next = __p->next; \
+		if (__p->next != NULL) \
+			__p->next->prev = __p->prev; \
+	}
 
 ff_tokenp static *tokens = NULL;
 ff_uint_t static t_off = 0;
@@ -59,14 +87,52 @@ ff_uint_t static t_page_c = 0;
 
 ff_tokenp free_toks = NULL;
 
-ff_tokenp ff_token_alloc() {
+ff_uint_t static uu = 0;
+
+ff_tokenp ff_token_alloc(void) {
+	ffly_printf("token uu: %u, pages: %u\n", uu, t_page_c);
 	if (free_toks != NULL) {
 		ff_tokenp ret = free_toks;
 		free_toks = free_toks->fd;
+		uu--;
 		return ret;
 	}
 
-	ff_uint_t page = t_off>>PAGE_SHIFT;
+	struct pullin *p = pi+(PULLIN-1);
+	if (p->used == -1)
+		ffly_printf("--------------------------------nothing.\n");
+	else
+		ffly_printf("--------------------------------somthing.\n");
+	while(!p->used && p->off == t_off-1) {
+		t_off--;
+		pullin_delink(p);
+		p->used = -1;
+		p--;
+		if (p<pi)
+			break;
+	}
+
+	ff_uint_t page;
+	
+	// if pullin list is null +1 to t_off so we wont realloc a page for that token
+	page = (t_off+(!pil))>>PAGE_SHIFT;
+	if (page < t_page_c-1 && t_page_c>1) {
+		ffly_printf("page removeal.\n");
+		ffly_nanosleep(1, 0); // debug
+		__ffly_mem_free(*(tokens+(page+1)));
+		tokens = (ff_tokenp*)__ffly_mem_realloc(tokens, (--t_page_c)*sizeof(ff_tokenp));
+	}
+
+	if (pil != NULL) {
+		ff_tokenp ret = pil->tok;
+		pil->used = -1;
+		if ((pil = pil->next) != NULL)
+			pil->prev = NULL;
+		uu--;
+		return ret;
+	}
+
+	page = t_off>>PAGE_SHIFT;
 	ff_uint_t pg_off;
 	if (!tokens) {
 		tokens = __ffly_mem_alloc(sizeof(ff_tokenp));
@@ -80,14 +146,16 @@ ff_tokenp ff_token_alloc() {
 	*(tokens+page) = (ff_tokenp)__ffly_mem_alloc(PAGE_SIZE*sizeof(struct token));
 _sk:
 	pg_off = ((t_off++)-(page*PAGE_SIZE));
-	ff_tokenp ret = (*(tokens+page))+pg_off;
+	ff_tokenp *pg = tokens+page;
+	ff_tokenp ret = (*pg)+pg_off;
 	ret->page = page;
 	ret->pg_off = pg_off;
 	return ret;
 }
 
 void ff_token_free(ff_tokenp __tok) {
-	if (__tok->pg_off+(__tok->page*PAGE_SIZE) == t_off-1) {
+	ff_u32_t off = __tok->pg_off+(__tok->page*PAGE_SIZE);
+	if (off == t_off-1) {
 		t_off--;
 		ff_uint_t page = t_off>>PAGE_SHIFT;
 		if (page < t_page_c-1 && t_page_c>1) {
@@ -96,6 +164,28 @@ void ff_token_free(ff_tokenp __tok) {
 		}
 		return;
 	} else {
+		ffly_printf("%u , %u, %u, %u\n", off, (t_off-1)-(PULLIN-1), (t_off-1), PULLIN-1);
+		if (off >= (t_off-1)-PULLIN && t_off-1 >= PULLIN) {
+			struct pullin *p = pi+((off-((t_off-1)-PULLIN)));
+			ffly_printf("-------> %u\n", p-pi);
+			if (!p->used) {
+				pullin_delink(p);
+				p->tok->fd = free_toks;
+				free_toks = p->tok;
+			}
+			p->used = 0;
+			p->off = off;
+			p->tok = __tok;
+			p->prev = NULL;
+			p->next = pil;
+			if (pil != NULL)
+				pil->prev = p;
+			pil = p;
+			uu++;
+			return;
+		}
+		ffly_printf("noop.\n");
+		uu++;
 		__tok->fd = free_toks;
 		free_toks = __tok;
 	}
@@ -327,10 +417,8 @@ read_token(ff_lexerp __lexer) {
 		break;
 		case '\x27':
 			incp;
-			*tok = (struct token) {
-				.kind = _tok_chr,
-				.p = (void*)read_chr(__lexer) 
-			};
+			tok->kind = _tok_chr;
+			tok->p = (void*)read_chr(__lexer);
 			incp;
 		break;
 		case '*':
@@ -435,10 +523,8 @@ read_token(ff_lexerp __lexer) {
 		break;
 		default:
 		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
-			*tok = (struct token) {
-				.kind = _tok_ident,
-				.p = (void*)read_ident(__lexer)
-			};
+			tok->kind = _tok_ident;
+			tok->p = (void*)read_ident(__lexer);
 		} else if (c >= '0' && c <= '9') goto _no;
 		else {
 			incp;
@@ -448,10 +534,8 @@ read_token(ff_lexerp __lexer) {
 		_no:
 		{
 			ff_u8_t is_float = 0, is_hex = 0;
-			*tok = (struct token) {
-				.kind = _tok_no,
-				.p = (void*)read_no(__lexer, &is_hex, &is_float)
-			};
+			tok->kind = _tok_no;
+			tok->p = (void*)read_no(__lexer, &is_hex, &is_float);
 			tok->is_float = is_float;
 			tok->is_hex = is_hex;
 		}
@@ -516,10 +600,10 @@ ffly_lex(ff_lexerp __lexer, ff_err_t *__err) {
 	while(!(tok = read_token(__lexer)) && !at_eof(__lexer));
 	return tok;
 }
+
 /*
 ff_err_t ffmain(int __argc, char const *___argv[]) {
-	char const *s = "hello 128 u8_t test;";
-
+	char const *s = "hello hello hello hello hello 128 u8_t test hello gello hello hello hello hello hello 128 u8_t test hello gello hello hello hello 128 u8_t test hello gello hello hello hello 128 u8_t test hello gello hello hello";
 	ff_uint_t line, lo;
 	struct ff_lexer lexer = {
 		.p = s,
@@ -529,13 +613,27 @@ ff_err_t ffmain(int __argc, char const *___argv[]) {
 		.lo = &lo
 	};
 
+	ff_tokenp toks[128];
+	ff_tokenp *p = toks;
+
 	ffly_lexer_init(&lexer);
 	ff_err_t err;
-	struct token *tok;
 	while(!at_eof(&lexer)) {
-		tok = ffly_lex(&lexer, &err);
-		ffly_printf("%s\n", tok->p);
+		*p = ffly_lex(&lexer, &err);
+		ffly_printf("%s\n", (*p)->p);
+		p++;
 	}
 
+	*p = NULL;
+	p = toks;
+	while(*p != NULL) {
+		ff_token_free(*p);
+		p++;
+	}
+
+	ff_uint_t i = 0;
+	while(i++ != 40) {
+		ff_token_alloc();
+	}
 	ffly_lexer_cleanup(&lexer);
 }*/

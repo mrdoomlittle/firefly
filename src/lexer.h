@@ -27,7 +27,7 @@ typedef struct ff_token {
 void ffly_lexer_init(ff_lexerp);
 void ffly_lexer_cleanup(ff_lexerp);
 void ff_lexer_free(ff_lexerp, void*);
-ff_tokenp ff_token_alloc();
+ff_tokenp ff_token_alloc(void);
 void ff_token_free(ff_tokenp);
 void ff_token_cleanup(ff_tokenp);
 void ff_token_destroy(ff_tokenp);

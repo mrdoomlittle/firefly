@@ -33,6 +33,9 @@ mat: clean
 	gcc $(cc_flags) -Wall -o daemon mat.o mtp.o daemon.o $(ffly_objs) -nostdlib
 	gcc $(cc_flags) -Wall -o client mat.o mtp.o client.o $(ffly_objs) -nostdlib
 #	gcc $(cc_flags) -Wall -o main mat.o mat/main.c $(ffly_objs) -nostdlib
+lex: clean
+	gcc $(cc_flags) -c lexer.c
+	gcc $(cc_flags) -Wall -o main lexer.o $(ffly_objs) -nostdlib
 mul: clean
 	gcc $(cc_flags) -c mul/hash.c
 	gcc $(cc_flags) -c mul/lexer.c

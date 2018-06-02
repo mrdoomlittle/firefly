@@ -21,6 +21,7 @@ ffly_slabp ffly_slab_alloc(ffly_reservoirp __res) {
 		__res->top->prev = sb;
 	__res->top = sb;
 	sb->fd = NULL;
+	sb->inuse = 0;
 	return sb;
 }
 
@@ -41,11 +42,18 @@ deattach(ffly_reservoirp __res, ffly_slabp __sb) {
 ff_err_t ffly_slab_free(ffly_reservoirp __res, ffly_slabp __sb) {
 	deattach(__res, __sb);
 	if (__res->off-1 == __sb->off) {
-		__res->off--;
-		__ffly_mem_free(__sb);
+		ffly_slabp sb = __sb, bk;
+		while(sb != NULL) {
+			if (!sb->inuse) break;
+			bk = sb;
+			sb = sb->next;
+			__res->off--;
+			__ffly_mem_free(bk);
+		}
 		reterr;
 	}
 
+	__sb->inuse = -1;
 	__sb->fd = __res->bin;
 	__res->bin = __sb;
 	retok;

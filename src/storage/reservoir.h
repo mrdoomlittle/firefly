@@ -8,6 +8,7 @@ typedef struct ffly_slab {
 	ff_u64_t off;
 	struct ffly_slab *fd;
 	struct ffly_slab *prev, *next;
+	ff_i8_t inuse;
 } *ffly_slabp;
 
 typedef struct ffly_reservoir {
