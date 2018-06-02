@@ -320,21 +320,39 @@ void copy(void *__dst, void *__src, ff_uint_t __bc);
 # include "mem_realloc.h"
 # include "../rat.h"
 # include "plate.h"
-
-void *pt0;
+# include "../system/tls.h"
+# include "../malloc.h"
+# include "../location.h"
+ff_uint_t a = 0;
+ff_i8_t go = -1;
 void t0(void *__p) {
-	pt0 = __ffly_mem_alloc(2000);
-	ffly_arhang(); // hang all pots that arnt empty
+	a++;
+	while(a != 2 && go<0);
+	ff_uint_t i = 0;
+	while(i != 2000) {
+	//	free(malloc(1000));
+		//ffly_alloc(1);
+		malloc(1);
+		i++;
+	}
 }
 
-void *pt1;
 void t1(void *__p) {
-	pt1 = __ffly_mem_alloc(2000);
-	ffly_arhang();
+	a++;
+	while(a != 2 && go<0);
+	ff_uint_t i = 0;
+	while(i != 2000) {
+		//ffly_alloc(1);
+	//	free(malloc(1000));
+		malloc(1);
+		i++;
+	}
 }
 
 void _start() {
+	ffly_tls_new();
 	ffly_ar_init();
+	ff_location_init();
 	ffly_io_init();
 	ffset_mode(_ff_mod_debug);
 	ff_rat_put(_ff_rat_1);
@@ -450,23 +468,22 @@ void _start() {
 		i++;
 	}
 */
-	ff_tid_t id0, id1;
 
+	ff_tid_t id0, id1;
 	ffly_thread_create(&id0, t0, NULL);
 	ffly_thread_create(&id1, t1, NULL);
+	go = 0;
 	ffly_thread_wait(id0);
 	ffly_thread_wait(id1);
 	ffly_thread_cleanup();	
-	ffly_plate_cleanup();
 
-	__ffly_mem_free(pt0);
-	__ffly_mem_free(pt1);
-
-	 pr();
+	pr();
 	 pf();
 	ffly_arstat();
+	
 	ffly_io_closeup();
 	ffly_ar_cleanup();
+	ffly_tls_destroy();
 	exit(0);
 }
 /*

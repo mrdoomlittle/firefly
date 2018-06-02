@@ -145,16 +145,16 @@ prox() {
 	ffly_atomic_incr(&active_threads);
 	ffly_cond_lock_signal(&thr->lock);
 	thr->alive = 1;*/
-	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&thr->pot);
-	ffly_fprintf(ffly_out, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
+//	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&thr->pot);
+//	ffly_fprintf(ffly_out, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
 	thr->routine(thr->arg_p);
 //	thr->alive = 0;
 //	ffly_atomic_decr(&active_threads);
 
 	thr->exit = 0;
 
-	ffly_mal_hang;
-	ffly_thread_del(thr->tid);
+//	ffly_thread_del(thr->tid);
+//	ffly_mal_hang;
 	exit(0);
 }
 
@@ -193,14 +193,15 @@ ff_err_t ffly_thread_create(ff_tid_t *__tid, void*(*__p)(void*), void *__arg_p) 
 		goto _exec;
 	}
 
-	ffly_printf("thread id: %u\n", *__tid = off++);
+	*__tid = off++;
+//	ffly_printf("thread id: %u\n", *__tid = off++);
 
 	ffly_mutex_unlock(&mutex);
 	goto _alloc;
 
 _exec:
 	{
-	ffly_printf("stage, exec.\n");
+//	ffly_printf("stage, exec.\n");
 
 	ffly_threadp thr = get_thr(*__tid);
 	thr->alive = 0;
@@ -222,6 +223,7 @@ _exec:
 	*(void**)(thr->sp+(DSS-8)) = (void*)prox;
 	*(void**)(thr->sp+(DSS-16)) = (void*)thr;
 
+	*(void**)thr->tls = thr->tls;
 	__linux_pid_t pid;
 	if ((pid = clone(CLONE_VM|CLONE_SIGHAND|CLONE_FILES|CLONE_FS|SIGCHLD|CLONE_SETTLS,
 		(ff_u64_t)(thr->sp+(DSS-8)), NULL, NULL, (ff_u64_t)thr->tls)) == (__linux_pid_t)-1)
@@ -235,7 +237,7 @@ _exec:
 	return FFLY_SUCCESS;
 
 _alloc:
-	ffly_printf("stage, alloc.\n");
+//	ffly_printf("stage, alloc.\n");
 	ffly_mutex_lock(&mutex);
 	if (off > page_c*PAGE_SIZE) {
 		if (!threads) {

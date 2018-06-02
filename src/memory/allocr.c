@@ -2,6 +2,8 @@
 # include "../linux/mman.h"
 # include "../linux/unistd.h"
 # include "../linux/signal.h"
+# include "../linux/fcntl.h"
+# include "../linux/stat.h"
 # include "../system/util/checksum.h"
 # include "../system/thread.h"
 # include "../system/mutex.h"
@@ -108,6 +110,7 @@ copy(void *__dst, void *__src, ff_uint_t __bc) {
 /*
 	using real one will only take more time and cause more obstacles in the future
 */
+int static stdout;
 void static
 out(char const *__format, va_list __args) {
 	char buf[2048];
@@ -136,7 +139,7 @@ out(char const *__format, va_list __args) {
 			*(bufp++) = *(p-1);
 	}
 	*bufp = '\0';
-	ffly_fwrite(ffly_out, buf, bufp-buf);	
+	write(stdout, buf, bufp-buf);
 }
 
 void static
@@ -460,11 +463,14 @@ ff_err_t init_pot(potp __pot) {
 void static tls_init(void) {
 	ffly_tls_set(0, arena_tls);
 	ffly_tls_set(0, temp_tls);
+	printf("tls init.\n");
 }
 
 ff_err_t ffly_ar_init(void) {
-	arena_tls = ffly_tls_alloc();
-	temp_tls = ffly_tls_alloc();
+	stdout = open("/dev/tty", O_WRONLY, 0);
+
+	arena_tls = ffly_tls_alloc(sizeof(ff_uint_t));
+	temp_tls = ffly_tls_alloc(sizeof(ff_uint_t));
 	ffly_tls_toinit(tls_init);
 	tls_init();
 	ffly_process_prep();
@@ -489,6 +495,7 @@ ff_err_t _ffly_ar_cleanup(potp __pot) {
 }
 
 ff_err_t ffly_ar_cleanup(void) {
+	close(stdout);
 	_ffly_ar_cleanup(&main_pot);
 }
 
@@ -649,10 +656,9 @@ void ffly_arhang(void) {
 		bk->bk = NULL;
 		if (!bk->off) {
 			rfr(bk);
-		}
-		ulpot(bk);
-
-		free_pot(bk);
+			free_pot(bk);
+		} else
+			ulpot(bk);
 	}
 
 	*arena_spot = NULL;
@@ -1036,8 +1042,11 @@ ffly_alloc(ff_uint_t __bc) {
 	}
 
 	if (!arena) {
+		printf("new arena, %u\n", ffly_tls_get(arena_tls));
 		arena = alloc_pot(POT_SIZE);
+		lkpot(arena);
 		atr(arena, *rod_at(arena->end));
+		ulpot(arena);
 	}
 
 	potp p = arena, t;
@@ -1054,7 +1063,9 @@ _again:
 		ulpot(p);
 	}
 
+	p = arena;
 	if (!ret) {
+		printf("new pot alloc, %u\n", ffly_tls_get(arena_tls));
 		if (!(t = alloc_pot(POT_SIZE))) {
 			abort();
 		}
@@ -1062,11 +1073,18 @@ _again:
 		atr(t, *rod_at(t->end));
 
 		lkpot(p);
+		lkpot(t);
+		potp ft = p->fd;
+		t->fd = ft;
+		t->bk = p;
 		p->fd = t;
-		lkpot(p->fd);
-		p->fd->bk = p;
-		ulpot(p->fd);
-		t = p->fd;
+		if (ft != NULL) {
+			lkpot(ft);
+			ft->bk = t;
+			ulpot(ft);
+		}
+
+		ulpot(t);
 		ulpot(p);
 		p = t;
 		goto _again;  
@@ -1280,24 +1298,32 @@ _bk:
 	_ffly_free(p, __p);
 	// free pot as we don't need it
 	lkpot(p);
-	if (!p->off && p != arena && !r) {
-		if (p->bk != NULL) {
-			lkpot(p->bk);
-			p->bk->fd = p->fd;
-			ulpot(p->bk);
+	if (!p->off && p != arena) {
+		potp ft = p->fd;
+		potp rr = p->bk;
+		if (ft != NULL) {
+			lkpot(ft);
+			ft->bk = rr;
 		}
-		if (p->fd != NULL) {
-			lkpot(p->fd);
-			p->fd->bk = p->bk;
-			ulpot(p->fd);
-		}
-		ulpot(p);
 
+		if (rr != NULL) {
+			lkpot(rr);
+			rr->fd = ft;
+		}
+
+		if (ft != NULL) {
+			ulpot(ft);
+		}
+		if (rr != NULL) {
+			ulpot(rr);
+		}
 		rfr(p);
+		ulpot(p);
 		free_pot(p);
-		return;
+		goto _end;
 	}
 	ulpot(p);
+_end:
 	*arena_spot = arena;
 }
 

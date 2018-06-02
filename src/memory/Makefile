@@ -17,10 +17,23 @@ bzero.o.1 bzero.o.0 \
 mem_cpy.o.1 mem_cpy.o.0 \
 mem_set.o.1 mem_set.o.0 \
 sys_clone.o.0 sys_clone.o.1 \
-sys_wait4.o.0 sys_wait4.o.1\
-mode.o sys_clock_gettime.o.0 sys_clock_gettime.o.1 rat.o
-ccflags=-Wall -D__fflib -D__ffly_source -D__ffly_use_allocr -fno-builtin
+sys_wait4.o.0 sys_wait4.o.1 \
+mode.o sys_clock_gettime.o.0 sys_clock_gettime.o.1 rat.o \
+tls.o sys_pread.o.0 sys_pread.o.1 sys_pwrite.o.0 sys_pwrite.o.1 sys_arch_prctl.o.0 sys_arch_prctl.o.1 location.o
+ccflags=-Wall -D__ffly_debug -D__fflib -D__ffly_source -D__ffly_use_allocr -fno-builtin
 all: clean
+	nasm $(nasm_flags) -f elf64 ../system/asm/sys_pread.asm -o sys_pread.o.0
+	gcc $(ccflags) -c ../system/sys_pread.c -o sys_pread.o.1
+	
+	nasm $(nasm_flags) -f elf64 ../system/asm/sys_pwrite.asm -o sys_pwrite.o.0
+	gcc $(ccflags) -c ../system/sys_pwrite.c -o sys_pwrite.o.1
+
+	nasm $(nasm_flags) -f elf64 ../system/asm/sys_arch_prctl.asm -o sys_arch_prctl.o.0
+	gcc $(ccflags) -c ../system/sys_arch_prctl.c -o sys_arch_prctl.o.1
+
+	gcc $(ccflags) -c ../location.c -o location.o
+	gcc $(ccflags) -c ../system/tls.c -o tls.o
+
 	nasm $(nasm_flags) -f elf64 ../system/asm/cond_lock.asm -o cond_lock.o.0
 	gcc $(ccflags) -c ../system/cond_lock.c -o cond_lock.o.1
 

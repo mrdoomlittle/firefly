@@ -1,5 +1,9 @@
 # include "location.h"
 # include "ffly_def.h"
+
+/*
+	tls not tested;
+*/
 // my parent, my child
 typedef struct region {
 	struct region *parent;
@@ -28,12 +32,15 @@ struct loc_info info[] = {
 	{"db_ctr_login", "src/db/connect.c"}
 };
 
+# include "system/mutex.h"
+ff_mlock_t static lock = FFLY_MUTEX_INIT;
+# include "system/tls.h"
+
 # define MAX 46
-struct region static list[MAX];
-struct region static *cur = list;
-
-static struct region *r = NULL;
-
+static ff_uint_t list_tls;
+static ff_uint_t cur_tls;
+static ff_uint_t r_tls;
+static ff_uint_t pc_tls;
 char static pad[128];
 char static *pd = pad;
 
@@ -56,19 +63,40 @@ void static prrg(regionp __reg) {
 	}
 }
 
+void static 
+tls_init(void) {
+	ffly_tls_set((ff_u64_t)ffly_tls_getp(list_tls), cur_tls);
+	ffly_tls_set(0, r_tls);
+	ffly_tls_set(0, pc_tls);
+}
+
+void ff_location_init(void) {
+	list_tls = ffly_tls_alloc(MAX*sizeof(struct region));
+	cur_tls = ffly_tls_alloc(sizeof(regionp));
+	r_tls = ffly_tls_alloc(sizeof(regionp));
+	pc_tls = ffly_tls_alloc(sizeof(ff_uint_t));
+	ffly_tls_toinit(tls_init);
+	tls_init();
+}
+
 void ff_location_list(void) {
 	*pd = '\0';
-	prrg(list);
+	prrg(ffly_tls_getp(list_tls));
 }
 
 void ff_location_show(void) {
 }
 
 void ff_location_push(ff_uint_t __loc) {
+return;
+	regionp list = (regionp)ffly_tls_getp(list_tls);
+	regionp cur = (regionp)ffly_tls_get(cur_tls);
+	regionp r = (regionp)ffly_tls_get(r_tls);
+
 	if (cur>=list+MAX) {
-		ffly_printf("error.\n");
+//		ffly_fprintfs(ffly_err, "error.\n");
 		cur = list;
-		return;
+		goto _end;
 	}
 
 	cur->parent = r;
@@ -81,16 +109,27 @@ void ff_location_push(ff_uint_t __loc) {
 	r = cur;
 	cur->loc = __loc;
 	cur++;
+	ffly_tls_set(r, r_tls);
+_end:
+	ffly_tls_set(cur, cur_tls);
 }
 
-ff_uint_t static pc = 0;
-void ff_location_pop(void) { 
+void ff_location_pop(void) {
+return;
+	regionp list = (regionp)ffly_tls_getp(list_tls);
+	regionp r = (regionp)ffly_tls_get(r_tls);
+	regionp cur = (regionp)ffly_tls_get(cur_tls);
+	ff_uint_t pc = ffly_tls_get(pc_tls);
 	if ((cur-1)-pc == list) {
 		cur = list;
+		ffly_tls_set(cur, cur_tls);
 		pc = 0;
 		r = NULL;
-		return;
+		goto _end;
 	}
 	r = r->parent;
 	pc++;
+_end:
+	ffly_tls_set(pc, pc_tls);
+	ffly_tls_set(r, r_tls);
 }

@@ -82,10 +82,12 @@ char const static *by = "mrdoomlittle";
 # include "system/tls.h"
 # include "piston.h"
 # include "crucify.h"
+# include "location.h"
 void static
 init() {
 	ffly_tls_new();
 	ffly_ar_init();
+	ff_location_init();
 # ifdef __ffly_mal_track
 	ffly_mal_track_init(&__ffly_mal_track__);
 # endif

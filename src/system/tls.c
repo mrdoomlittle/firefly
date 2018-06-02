@@ -3,12 +3,15 @@
 # include "../linux/prctl.h"
 # include "../ffly_def.h"
 # define TLS_SIZE 2048
+
+ff_uint_t tls_off = 8;
 void ffly_tls_new(void) {
 	void *p;
 	p = mmap(NULL, TLS_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
 	if (arch_prctl(ARCH_SET_FS, (ff_u64_t)p) == -1) {
 
 	}
+	*(void**)p = p;
 }
 
 void ffly_tls_destroy(void) {
@@ -18,9 +21,10 @@ void ffly_tls_destroy(void) {
 	munmap(p, TLS_SIZE);
 }
 
-ff_uint_t tls_off = 0;
-ff_uint_t ffly_tls_alloc(void) {
-	return tls_off++;
+ff_uint_t ffly_tls_alloc(ff_uint_t __size) {
+	ff_uint_t ret = tls_off;
+	tls_off+=((__size>>3)+((__size&((~(ff_u64_t)0)>>(64-3)))>0));
+	return ret;	
 }
 
 static void(*init[26])(void);
@@ -51,4 +55,11 @@ ff_u64_t ffly_tls_get(ff_uint_t __off) {
 			"movq %%fs:(%%eax), %%rdx\n\t"
 			"movq %%rdx, %0" : "=m"(ret) : "m"(off) : "rax", "rdx");
 	return ret;
+}
+
+void *ffly_tls_getp(ff_uint_t __off) {
+	ff_u8_t *ret;
+	__asm__("movq %%fs:0, %%rax\n\t"
+			"movq %%rax, %0" : "=m"(ret) : : "rax");
+	return ret+(__off*8);
 }

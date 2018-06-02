@@ -3,6 +3,7 @@
 # include "system/nanosleep.h"
 # include "system/thread.h"
 # include "system/io.h"
+# include "malloc.h"
 // not finished and not tested
 
 ff_tid_t static pistons[20];
@@ -13,9 +14,9 @@ void static*
 handle(void *__arg_p) {
 	while(stall == -1) {
 		ffly_printf("piston tick.\n");
-		ffly_nanosleep(0, 100000000);
-		ffly_scheduler_tick();
-		ffly_sched_clock_tick(1);
+		ffly_nanosleep(0, 10000);
+//		ffly_scheduler_tick();
+//		ffly_sched_clock_tick(1);
 	}
 }
 

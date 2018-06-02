@@ -16,6 +16,7 @@ enum {
 	_ff_loc_db_ctr_login
 };
 
+void ff_location_init(void);
 void ff_location_list(void);
 void ff_location_show(void);
 void ff_location_push(ff_uint_t);
