@@ -4,7 +4,7 @@ void ffly_sched_init() {
 	arg.what = 0;
 	struct init_arg init;
 	arg.init_arg = &init;
-	init.flags = SCHED_CRUCIFY;
+	init.flags = SCHED_CORRODE;
 
 	as("rin 5, %rel\n" : "rel", &arg);
 }

@@ -81,7 +81,7 @@ char const static *by = "mrdoomlittle";
 
 # include "system/tls.h"
 # include "piston.h"
-# include "crucify.h"
+# include "corrode.h"
 # include "location.h"
 void static
 init() {
@@ -121,7 +121,7 @@ prep() {
 # include "system/string.h"
 void static
 fini() {
-	ffly_crucify_run();
+	ffly_corrode_start();
 	ffly_pistons_stall();
 //	ff_mod_de_init();
 	ffly_thread_cleanup();

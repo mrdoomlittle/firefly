@@ -1,4 +1,4 @@
-# include "crucify.h"
+# include "corrode.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "ffly_def.h"
@@ -16,7 +16,7 @@ struct task {
 };
 
 static struct task *top = NULL;
-void ffly_crucify(void(*__func)(void*), void *__arg_p) {
+void ffly_corrode(void(*__func)(void*), void *__arg_p) {
 	struct task *t = (struct task*)__ffly_mem_alloc(sizeof(struct task));
 	t->func = __func;
 	t->arg_p = __arg_p;
@@ -25,7 +25,7 @@ void ffly_crucify(void(*__func)(void*), void *__arg_p) {
 	top = t;
 }
 
-void ffly_crucify_run(void) {
+void ffly_corrode_start(void) {
 	struct task *cur = top, *bk;
 	while(cur != NULL) {
 		bk = cur;

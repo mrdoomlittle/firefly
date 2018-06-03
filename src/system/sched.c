@@ -143,17 +143,18 @@ void ffly_scheduler_tick(void) {
 
 # define is_flag(__flags, __flag) \
 	((__flags&__flag)==__flag)
-# include "../crucify.h"
+# include "../corrode.h"
 # include "io.h"
 
-void static crucify(void *__arg) {
+void static
+corrode(void *__arg) {
 	ffly_scheduler_de_init();
 }
 
 void ffly_scheduler_init(ff_u8_t __flags) {	
 	ffly_fprintf(ffly_log, "sched init.\n");
-	if (is_flag(__flags, SCHED_CRUCIFY)) {
-		ffly_crucify(crucify, NULL);
+	if (is_flag(__flags, SCHED_CORRODE)) {
+		ffly_corrode(corrode, NULL);
 	}
 }
 

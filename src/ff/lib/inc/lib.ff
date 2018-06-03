@@ -1,7 +1,7 @@
 %ifndef __ffly__lib__ff
 %define __ffly__lib__ff
 
-%define SCHED_CRUCIFY 1
+%define SCHED_CORRODE 1
 struct arg_s {
 	u64_t p;
 	u64_t src;

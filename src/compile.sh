@@ -120,7 +120,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/location.o $root_dir/location.c
 $ffly_cc $cc_flags -c -o $dst_dir/storage/slab.o $root_dir/storage/slab.c
 $ffly_cc $cc_flags -c -o $dst_dir/storage/reservoir.o $root_dir/storage/reservoir.c
 $ffly_cc $cc_flags -c -o $dst_dir/piston.o $root_dir/piston.c
-$ffly_cc $cc_flags -c -o $dst_dir/crucify.o $root_dir/crucify.c
+$ffly_cc $cc_flags -c -o $dst_dir/corrode.o $root_dir/corrode.c
 export ffly_objs="$dst_dir/event.o $ffly_objs $dst_dir/resin.o $dst_dir/exec.o \
 $dst_dir/resin/exec.o $dst_dir/resin/mm.o $dst_dir/mode.o \
 $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  $dst_dir/get_bit.o \
@@ -135,4 +135,4 @@ $dst_dir/terrain.o $dst_dir/compactor.o $dst_dir/stores.o $dst_dir/db.o \
 $dst_dir/db/connect.o $dst_dir/layer.o $dst_dir/gui/btn.o $dst_dir/tile.o \
 $dst_dir/pallet.o $dst_dir/resource.o $dst_dir/cache.o $dst_dir/clock.o \
 $dst_dir/copy.o $dst_dir/gui/window.o $dst_dir/location.o \
-$dst_dir/storage/slab.o $dst_dir/storage/reservoir.o $dst_dir/piston.o $dst_dir/crucify.o"
+$dst_dir/storage/slab.o $dst_dir/storage/reservoir.o $dst_dir/piston.o $dst_dir/corrode.o"
