@@ -13,6 +13,8 @@ ffly_slabp ffly_slab_alloc(ffly_reservoirp __res) {
 	if (__res->bin != NULL) {
 		sb = __res->bin;
 		__res->bin = sb->fd;
+		sb->inuse = 0;
+		return sb;
 	} else {
 		sb = (ffly_slabp)__ffly_mem_alloc(sizeof(struct ffly_slab));
 		sb->off = __res->off++;
