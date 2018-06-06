@@ -1,4 +1,5 @@
 %ifndef __ffly__init__ff
 %define __ffly__init__ff
 void ffly_sched_init();
+void ffly_resv_init();
 %endif /*__ffly_init__ff*/

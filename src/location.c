@@ -36,7 +36,7 @@ struct loc_info info[] = {
 ff_mlock_t static lock = FFLY_MUTEX_INIT;
 # include "system/tls.h"
 
-# define MAX 46
+# define MAX 12
 static ff_uint_t list_tls;
 static ff_uint_t cur_tls;
 static ff_uint_t r_tls;

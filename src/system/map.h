@@ -34,6 +34,7 @@ enum {
 # ifdef __cplusplus
 extern "C" {
 # endif
+ffly_mapp ffly_map_creat(ff_uint_t);
 ffly_mapp ffly_map(ff_uint_t);
 void ffly_map_free(ffly_mapp);
 void ffly_map_destroy(ffly_mapp);

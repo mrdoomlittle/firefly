@@ -13,19 +13,28 @@
 char const static* 
 opst(ff_u8_t __op) {
 	switch(__op) {
-		case _op_fresh_: return "fresh";
-        case _op_free_: return "free";
-		case _op_assign_: return "assign";
-		case _op_copy_: return "copy";
-		case _op_print_: return "print";
-        case _op_jump_: return "jump";
-        case _op_cond_jump_: return "cond jump";
-        case _op_incr_: return "incr";
-        case _op_decr_: return "decr";
-        case _op_zero_: return "zero";
-        case _op_push_: return "push";
-        case _op_pop_: return "pop";
-        case _op_compare_: return "compare";
+		case _op_fresh_:	return "fresh";
+		case _op_free_:		return "free";
+		case _op_assign_:	return "assign";
+		case _op_copy_:		return "copy";
+		case _op_print_:	return "print";
+		case _op_compare_:	return "compare";
+		case _op_jump_:		return "jump";
+		case _op_cond_jump_:	return "cond jump";
+		case _op_zero_:		return "zero";
+		case _op_push_:		return "push";
+		case _op_pop_:		return "pop";
+		case _op_incr_:		return "incr";
+		case _op_decr_:		return "decr";
+		case _op_call_:		return "call";
+		case _op_exit_:		return "exit";
+		case _op_frame_:	return "frame";
+		case _op_free_frame_:	return "free frame";
+		case _op_conv_:		return "conv";
+		case _op_add_:		return "add";
+		case _op_sub_:		return "sub";
+		case _op_mul_:		return "mul";
+		case _op_div_:		return "div";
 	}
 	return "unknown";
 }
@@ -78,9 +87,18 @@ op_compare(ffscriptp __script, struct obj *__obj) {
 void static 
 op_jump(ffscriptp __script, struct obj *__objp) {
     struct obj *_obj = *(struct obj**)__objp;
-    if (!_obj->jmp) return;
-    if (!*_obj->jmp) return;
+    if (!_obj->jmp) {
+		ffly_printf("a.\n");
+		goto _fail;
+	}
+    if (!*_obj->jmp) {
+		ffly_printf("b.\n");
+		goto _fail;
+	}
     *(struct obj**)__objp = **_obj->jmp;
+	return;
+_fail:
+	ffly_fprintf(ffly_log, "jump failed.\n");
 }
 
 void static 
@@ -138,12 +156,16 @@ static struct obj *stack[20];
 static struct obj **top = stack;
 void static 
 op_push(ffscriptp __script, struct obj *__obj) {
+	if (top >= stack+20) {
+		ffly_printf("cant push another object.\n");
+		return;
+	}
     *(top++) = __obj->_obj;
 }
 
 void static 
 op_pop(ffscriptp __script, struct obj *__obj) {
-    __obj->_obj = *(--top);
+	__obj->_obj = *(--top);
 }
 
 void static 

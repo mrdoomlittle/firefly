@@ -63,6 +63,10 @@ typedef struct ffly_compiler_file {
 
 # ifdef __ffly_compiler_internal
 struct keywd;
+typedef struct cleanup_task {
+	void(*func)(void*);
+	void *p;
+} *cleanup_taskp;
 # endif
 
 typedef struct ffly_compiler {
@@ -75,12 +79,12 @@ typedef struct ffly_compiler {
 
 	struct ffly_compiler_file *file;
 
+	struct ffly_vec clean;
 	struct ffly_vec nodes;
 	struct ffly_vec vecs;
 	struct ffly_vec maps;
    
 	struct ffly_map typedefs; 
-	struct ffly_buff sbuf;
 	struct ffly_vec to_free;
 	char *dir;
 
@@ -185,6 +189,10 @@ enum {
 # define _func_gbl 0x2
 # define _func_lca 0x4
 # define _func_def 0x8
+
+# define _func_no_va 0x1
+# define _func_no_params 0x2
+# define _func_no_ret 0x4
 // clean up
 
 struct exec_reg {

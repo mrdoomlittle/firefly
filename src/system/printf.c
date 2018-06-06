@@ -133,7 +133,7 @@ gen(ff_size_t __n, char const *__format, va_list __args) {
 	}
 	char c = '\0';
 	drain(&c, 1, cut, off);
-	return (cut*CUT_SIZE)+off-1;
+	return (cut*CUT_SIZE)+off;
 }
 
 void static
@@ -206,7 +206,7 @@ out(FF_FILE *__file, ff_size_t __n, char const *__format, va_list __args, ff_err
 	ffly_mutex_lock(&lock);
 	prep();
 	ff_uint_t l;
-	l = gen(__n, __format, __args)+1;
+	l = gen(__n, __format, __args);
 
 	void **chunk = chunks;
 	void **end = chunks+(l>>CHUNK_SHIFT);

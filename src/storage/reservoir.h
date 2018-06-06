@@ -7,6 +7,8 @@
 # define SLAB_SIZE (1<<SLAB_SHIFT)
 # define RESU_RATE 100
 # define SLAB_AGE 100
+
+# define RESV_CORRODE 0x1
 typedef struct ffly_slab {
 	ff_u64_t off;
 	struct ffly_slab *fd;
@@ -29,7 +31,7 @@ typedef struct ffly_reservoir {
 	void *reg;
 } *ffly_reservoirp;
 
-ff_err_t ffly_reservoir_init(ffly_reservoirp, char const*);
+ff_err_t ffly_reservoir_init(ffly_reservoirp, ff_u8_t, char const*);
 ff_err_t ffly_reservoir_de_init(ffly_reservoirp);
 
 void* ffly_reservoir_alloc(ffly_reservoirp, ff_uint_t);
@@ -43,4 +45,6 @@ ffly_slabp ffly_slab_alloc(ffly_reservoirp);
 ff_err_t ffly_slab_free(ffly_reservoirp, ffly_slabp);
 ff_err_t ffly_slab_write(ffly_reservoirp, ffly_slabp, void*, ff_uint_t, ff_uint_t);
 ff_err_t ffly_slab_read(ffly_reservoirp, ffly_slabp, void*, ff_uint_t, ff_uint_t);
+
+extern struct ffly_reservoir __ffly_reservoir__;
 # endif /*__ffly_reservoir__h*/

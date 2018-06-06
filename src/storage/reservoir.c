@@ -9,6 +9,10 @@
 # include "../system/io.h"
 # include "../system/sched.h"
 # include "../clock.h"
+
+# define is_flag(__flags, __flag) \
+	((__flags&__flag)==__flag)
+struct ffly_reservoir __ffly_reservoir__;
 typedef struct region {
 	ffly_slabp *slabs;
 	ff_uint_t sc;
@@ -49,7 +53,14 @@ update(void *__arg_p) {
 	return -1;
 }
 
-ff_err_t ffly_reservoir_init(ffly_reservoirp __res, char const *__file) {
+# include "../corrode.h"
+void static
+corrode(void *__arg) {
+	ffly_printf("reservoir-corrode.\n");
+	ffly_reservoir_de_init((ffly_reservoirp)__arg);
+}
+
+ff_err_t ffly_reservoir_init(ffly_reservoirp __res, ff_u8_t __flags, char const *__file) {
 	if ((__res->fd = open(__file, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR)) == -1) {
 
 	}
@@ -61,6 +72,9 @@ ff_err_t ffly_reservoir_init(ffly_reservoirp __res, char const *__file) {
 	__res->off = 0;
 	__res->reg = NULL;
 	sched_id = ffly_schedule(update, __res, RESU_RATE);
+	if (is_flag(__flags, RESV_CORRODE)) {
+		ffly_corrode(corrode, __res);
+	}
 }
 
 ff_err_t ffly_reservoir_de_init(ffly_reservoirp __res) {

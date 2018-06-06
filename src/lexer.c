@@ -50,6 +50,9 @@ _end:
 	__ffly_mem_free(p);
 }
 
+/*
+	needs testing
+*/
 # define PAGE_SHIFT 4
 # define PAGE_SIZE (1<<PAGE_SHIFT)
 # define PULLIN 20
@@ -57,7 +60,7 @@ struct pullin {
 	ff_i8_t used;
 	ff_tokenp tok;
 	ff_uint_t off;
-	struct pullin *prev, *next;
+	struct pullin **bk, *next;
 };
 
 struct pullin *pil = NULL;
@@ -71,14 +74,9 @@ struct pullin pi[PULLIN] = {
 };
 
 # define pullin_delink(__p) \
-	if (__p == pil) { \
-		if ((pil = __p->next) != NULL) \
-			pil->prev = NULL; \
-	} else { \
-		if (__p->prev != NULL) \
-			__p->prev->next = __p->next; \
-		if (__p->next != NULL) \
-			__p->next->prev = __p->prev; \
+	*__p->bk = __p->next; \
+	if (__p->next != NULL) { \
+		__p->next->bk = __p->bk; \
 	}
 
 ff_tokenp static *tokens = NULL;
@@ -127,7 +125,7 @@ ff_tokenp ff_token_alloc(void) {
 		ff_tokenp ret = pil->tok;
 		pil->used = -1;
 		if ((pil = pil->next) != NULL)
-			pil->prev = NULL;
+			pil->bk = &pil;
 		uu--;
 		return ret;
 	}
@@ -176,10 +174,11 @@ void ff_token_free(ff_tokenp __tok) {
 			p->used = 0;
 			p->off = off;
 			p->tok = __tok;
-			p->prev = NULL;
-			p->next = pil;
+			
+			p->bk = &pil;
 			if (pil != NULL)
-				pil->prev = p;
+				pil->bk = &p->next;
+			p->next = pil;
 			pil = p;
 			uu++;
 			return;
@@ -594,7 +593,10 @@ ffly_lex(ff_lexerp __lexer, ff_err_t *__err) {
 		incp;
 	}
 
-	if (at_eof(__lexer)) return NULL;
+	if (at_eof(__lexer)) {
+		ffly_printf("------------- end of file -------------\n");
+		return NULL;
+	}
 
 	struct token *tok;
 	while(!(tok = read_token(__lexer)) && !at_eof(__lexer));
@@ -602,8 +604,8 @@ ffly_lex(ff_lexerp __lexer, ff_err_t *__err) {
 }
 
 /*
-ff_err_t ffmain(int __argc, char const *___argv[]) {
-	char const *s = "hello hello hello hello hello 128 u8_t test hello gello hello hello hello hello hello 128 u8_t test hello gello hello hello hello 128 u8_t test hello gello hello hello hello 128 u8_t test hello gello hello hello";
+ff_err_t ffmain(int __argc, char const *__argv[]) {
+	char const *s = "hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123";
 	ff_uint_t line, lo;
 	struct ff_lexer lexer = {
 		.p = s,
@@ -624,16 +626,5 @@ ff_err_t ffmain(int __argc, char const *___argv[]) {
 		p++;
 	}
 
-	*p = NULL;
-	p = toks;
-	while(*p != NULL) {
-		ff_token_free(*p);
-		p++;
-	}
-
-	ff_uint_t i = 0;
-	while(i++ != 40) {
-		ff_token_alloc();
-	}
 	ffly_lexer_cleanup(&lexer);
 }*/

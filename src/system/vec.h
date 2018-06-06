@@ -59,6 +59,7 @@ void ffly_vec_detach(ffly_vecp);
 void ffly_vec_fd(ffly_vecp, void**);
 void ffly_vec_bk(ffly_vecp, void**);
 // allocate and then attach and init
+ffly_vecp ffly_vec_creat(ff_size_t, ff_flag_t, ff_err_t*);
 ffly_vecp ffly_vec(ff_size_t, ff_flag_t, ff_err_t*);
 ffly_vecp ffly_vec_list(); //get list of all vectors
 ff_err_t ffly_vec_init(ffly_vecp, ff_size_t);

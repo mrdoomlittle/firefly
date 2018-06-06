@@ -254,16 +254,29 @@ void pr_tok(struct token *__tok) {
 	ffly_printf("tok id: %s\n", tokid_str(__tok->id));
 }
 
+void static _vec(void *__arg) {
+	ffly_vec_de_init((ffly_vecp)__arg);
+}
+
+void static _map(void *__arg) {
+	ffly_map_de_init((ffly_mapp)__arg);
+}
+
+void static cu_task(struct ffly_compiler *__compiler, void *__p, void(*__func)(void*)) {
+	struct cleanup_task **task;
+	ffly_vec_push_back(&__compiler->clean, (void**)&task);
+	*(*task = (cleanup_taskp)__ffly_mem_alloc(sizeof(struct cleanup_task))) = (struct cleanup_task){
+		.func = __func,
+		.p = __p
+	};
+}
+
 void vec_cleanup(struct ffly_compiler *__compiler, struct ffly_vec *__vec) {
-	struct ffly_vec *vec;
-	ffly_vec_push_back(&__compiler->vecs, (void**)&vec);
-	*vec = *__vec;
+	cu_task(__compiler, __vec, _vec);
 }
 
 void map_cleanup(struct ffly_compiler *__compiler, struct ffly_map *__map) {
-	struct ffly_map *map;
-	ffly_vec_push_back(&__compiler->maps, (void**)&map);
-	*map = *__map;
+	cu_task(__compiler, __map, _map);
 }
 
 void cleanup(struct ffly_compiler *__compiler, void *__p) {
@@ -394,34 +407,23 @@ ff_err_t ffly_compiler_free(struct ffly_compiler *__compiler) {
 
 	ffly_lexer_cleanup(&__compiler->lexer);
 
-	ff_vec *vec;
-	___ffly_vec_nonempty(&__compiler->vecs) {
-		vec = (ffly_vecp)ffly_vec_begin(&__compiler->vecs);
-		while(!vec_deadstop(vec, &__compiler->vecs))
-			ffly_vec_de_init(vec++);
+	cleanup_taskp *task;
+	___ffly_vec_nonempty(&__compiler->clean) {
+		task = (cleanup_taskp*)ffly_vec_begin(&__compiler->clean);
+		while(!vec_deadstop(task, &__compiler->clean)) {
+			cleanup_taskp t = *task;
+			t->func(t->p);
+			__ffly_mem_free(t);
+			task++;
+		}
 	}
 
-	ff_map *map;
-	___ffly_vec_nonempty(&__compiler->maps) {
-		map = (ffly_mapp)ffly_vec_begin(&__compiler->maps);
-		while(!vec_deadstop(map, &__compiler->maps))
-			ffly_map_de_init(map++);
+	if (_err(err = ffly_vec_de_init(&__compiler->clean))) {
+		errmsg("failed to de-init vector.\n");
 	}
 
 	if (_err(err = ffly_map_de_init(&__compiler->env))) {
 		errmsg("failed to de-init map.\n");
-	}
-
-	if (_err(err = ffly_buff_de_init(&__compiler->sbuf))) {
-		errmsg("failed to de-init buffer.\n");
-	}
-
-	if (_err(err = ffly_vec_de_init(&__compiler->vecs))) {
-		errmsg("failed to de-init vector.\n");
-	}
-
-	if (_err(err = ffly_vec_de_init(&__compiler->maps))) {
-		errmsg("failed to de-init vector.\n");	
 	}
 
 	if (_err(err = ffly_vec_de_init(&__compiler->nodes))) {
@@ -663,8 +665,10 @@ struct token* next_token(struct ffly_compiler *__compiler) {
 	struct token *tok;
 _bk:
 	tok = ffly_lex(&__compiler->lexer, &err);
-	if (!tok) return NULL;
-
+	if (!tok) {
+		ffly_printf("got null token.\n");
+		return NULL;
+	}
 	if (tok->kind == _tok_newline) {
 		ff_token_free(tok);
 		goto _bk;
@@ -686,6 +690,9 @@ _bk:
 	}
 
 	maybe_keyword(__compiler, tok);
+	if (!tok) {
+		ffly_printf("null token being returned.\n");
+	}
 	return tok;
 }
 
@@ -740,6 +747,9 @@ char const static *keywords[] = {
 	"SYPUT",
 	"va_args",
 	"sizeof",
+	"no_va",
+	"no_params",
+	"no_ret",
 	NULL
 };
 
@@ -775,6 +785,9 @@ ff_u8_t static keyword_ids[] = {
 	_k_syput,
 	_k_va_args,
 	_k_sizeof,
+	_k_no_va,
+	_k_no_params,
+	_k_no_ret,
 	0
 };
 
@@ -808,25 +821,14 @@ ff_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 		reterr;
 	}
 
-	if (_err(err = ffly_buff_init(&__compiler->sbuf, 100, 1))) {
-		errmsg("failed to initialize buffer.\n");
-		_ret;
-	}
-
 	ffly_vec_set_flags(&__compiler->to_free, VEC_AUTO_RESIZE);
 	if (_err(err = ffly_vec_init(&__compiler->to_free, sizeof(void*)))) {
 		errmsg("failed to initialize vector.\n");
 		_ret;
 	}
 
-	ffly_vec_set_flags(&__compiler->vecs, VEC_AUTO_RESIZE);
-	if (_err(err = ffly_vec_init(&__compiler->vecs, sizeof(struct ffly_vec)))) {
-		errmsg("failed to initialize vector.\n");
-		_ret;
-	}
-
-	ffly_vec_set_flags(&__compiler->vecs, VEC_AUTO_RESIZE);
-	if (_err(err = ffly_vec_init(&__compiler->maps, sizeof(struct ffly_map)))) {
+	ffly_vec_set_flags(&__compiler->clean, VEC_AUTO_RESIZE);
+	if (_err(err = ffly_vec_init(&__compiler->clean, sizeof(cleanup_taskp)))) {
 		errmsg("failed to initialize vector.\n");
 		_ret;
 	}

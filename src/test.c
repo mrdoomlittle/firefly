@@ -225,10 +225,10 @@ struct ffly_queue queue;
 */
 
 	// might break
-	ffly_scheduler_init(0);
+	ffly_scheduler_init(SCHED_CORRODE);
 	
 	struct ffly_reservoir res;
-	ffly_reservoir_init(&res, "test.resv");
+	ffly_reservoir_init(&res, RESV_CORRODE, "test.resv");
 
 	void *r0, *r1, *r2;
 	r0 = ffly_reservoir_alloc(&res, 1024);
@@ -242,8 +242,8 @@ struct ffly_queue queue;
 
 	ffly_nanosleep(2, 0);
 
-	ffly_reservoir_de_init(&res);
+//	ffly_reservoir_de_init(&res);
+//	ffly_scheduler_de_init();
 
-	ffly_scheduler_de_init();
 	ffly_nanosleep(2, 0);
 }

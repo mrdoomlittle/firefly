@@ -114,9 +114,9 @@ ast_if(struct ffly_compiler *__compiler, struct node **__node,
 
 void static
 ast_func(struct ffly_compiler *__compiler, struct node **__node, struct ffly_vec *__params,
-	struct ffly_vec *__block, struct type *__type, ff_bool_t __va)
+	struct ffly_vec *__block, struct type *__type, ff_bool_t __va, ff_u8_t __flags)
 {
-	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_func, .params=*__params, .block=*__block, ._type=__type, .va=__va});
+	ffc_build_node(__compiler, __node, &(struct node){.kind=_ast_func, .params=*__params, .block=*__block, ._type=__type, .va=__va, .flags=__flags});
 }
 
 void static
@@ -332,15 +332,16 @@ parser_struct_spec(struct ffly_compiler *__compiler, struct type **__type) {
 		reterr;
 	}
 
-	struct ffly_map fields;    
-	ffly_map_init(&fields, _ffly_map_127);
+	ffly_mapp fields;
+	fields = ffly_map_creat(_ffly_map_127);
 	ff_uint_t size;
-	if (_err(err = parser_struct_decl(__compiler, &fields, &size))) {
+	if (_err(err = parser_struct_decl(__compiler, fields, &size))) {
 		// err
 		reterr;
 	}
-
-	ffc_build_type(__compiler, __type, &(struct type){.kind=_struct, .size=size, .fields=fields});
+	map_cleanup(__compiler, fields);
+	cleanup(__compiler, fields);
+	ffc_build_type(__compiler, __type, &(struct type){.kind=_struct, .size=size, .fields=*fields});
 	ffly_map_put(ffc_get_env(__compiler), name->p, ffly_str_len((char*)name->p), *__type);
 	retok;
 }
@@ -427,11 +428,13 @@ parser_primary_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	struct token *tok = next_token(__compiler);
 	ff_err_t err;
 	if (!tok) {
+		ffly_printf("parser_primary_expr() null token.\n");
 		retok;
 	}
 
 	switch(tok->kind) {
 		case _tok_ident: {
+			ffly_printf("ident: %s\n", tok->p);
 			if (__compiler->local != NULL) {
 				*__node = (struct node*)ffly_map_get(__compiler->local, tok->p, ffly_str_len((char*)tok->p), &err);
 				if (*__node != NULL) break;   
@@ -644,6 +647,8 @@ parser_cast_type(struct ffly_compiler *__compiler, ff_err_t *__err) {
 ff_err_t
 parser_cast_expr(struct ffly_compiler *__compiler, struct node **__node) {
 	struct token *tok = next_token(__compiler);
+	if (!tok)
+		retok;
 	ff_err_t err;
 	if (is_keyword(tok, _l_paren) && is_type(__compiler, peek_token(__compiler))) {
 		struct type *_type = parser_cast_type(__compiler, &err);
@@ -713,10 +718,12 @@ parser_expr(struct ffly_compiler *__compiler, struct node **__node) {
 		errmsg("failed to read primary expression.\n");
 		_ret;
 	}
+
 	if (_err(err = parser_cast_expr(__compiler, __node))) {
 		errmsg("failed to read cast expression.\n");
 		_ret;
 	}
+
 	if (_err(err = parser_postfix_expr(__compiler, __node))) {
 		errmsg("failed to read postfix expression.\n");
 		_ret;
@@ -955,28 +962,27 @@ parser_if_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 		reterr;
 	}
 
-	struct ffly_vec _do;
-	ffly_vec_set_flags(&_do, VEC_AUTO_RESIZE);
-	ffly_vec_init(&_do, sizeof(struct node*));
-	if (_err(err = parser_compound_stmt(__compiler, &_do))) {
+	ffly_vecp _do;
+	_do = ffly_vec_creat(sizeof(struct node*), VEC_AUTO_RESIZE, &err);
+	if (_err(err = parser_compound_stmt(__compiler, _do))) {
 		errmsg("failed to read compound statment.\n");
 		_ret;
 	}
 
-	vec_cleanup(__compiler, &_do);
-
-	struct ffly_vec _else;
-	ffly_vec_set_flags(&_else, VEC_AUTO_RESIZE);
-	ffly_vec_init(&_else, sizeof(struct node*));
+	vec_cleanup(__compiler, _do);
+	cleanup(__compiler, _do);
+	ffly_vecp _else;
+	_else = ffly_vec_creat(sizeof(struct node*), VEC_AUTO_RESIZE, &err);
 	if (next_token_is(__compiler, _tok_keywd, _k_else)) {
-		if (_err(err = parser_compound_stmt(__compiler, &_else))) {
+		if (_err(err = parser_compound_stmt(__compiler, _else))) {
 			errmsg("failed to read compound statment.\n");
 			_ret;
 		}
 	}
 
-	vec_cleanup(__compiler, &_else);
-	ast_if(__compiler, __node, cond, &_do, &_else);
+	vec_cleanup(__compiler, _else);
+	cleanup(__compiler, _else);
+	ast_if(__compiler, __node, cond, _do, _else);
 	return FFLY_SUCCESS;
 }
 
@@ -1019,15 +1025,16 @@ parser_match_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 				reterr;
 			}
 
-			struct ffly_vec block;
-			ffly_vec_set_flags(&block, VEC_AUTO_RESIZE);
-			ffly_vec_init(&block, sizeof(struct node*));
-			if (_err(err = parser_compound_stmt(__compiler, &block))) {
+			ffly_vecp block;
+			
+			block = ffly_vec_creat(sizeof(struct node*), VEC_AUTO_RESIZE, &err);
+			if (_err(err = parser_compound_stmt(__compiler, block))) {
 				errmsg("failed to read compound statment.\n");
 				_ret;
 			}			 
 
-			vec_cleanup(__compiler, &block);
+			vec_cleanup(__compiler, block);
+			cleanup(__compiler, block);
 			if (!next_token_is(__compiler, _tok_keywd, _r_brace)) {
 				goto _next;
 			}
@@ -1118,22 +1125,27 @@ parser_func_call(struct ffly_compiler *__compiler, struct node **__node, struct 
 		reterr;
 	}
 
-	ff_err_t err;
-	struct ffly_vec args;
-	ffly_vec_set_flags(&args, VEC_AUTO_RESIZE);
-	ffly_vec_init(&args, sizeof(struct node*));
+	if (!__call) {
+		errmsg("no call.\n");
+		reterr;
+	}
 
+	ff_err_t err;
+
+	ffly_vecp args;
+	args = ffly_vec_creat(sizeof(struct node*), VEC_AUTO_RESIZE, &err);
+	
 	struct node **va_arg = NULL;
 	struct node **param = (struct node**)ffly_vec_begin(&__call->params);
 	if (!next_token_is(__compiler, _tok_keywd, _r_paren)) {
 	_next:
-		{
+		{	
 			struct node *arg;
 			if (_err(err = parser_expr(__compiler, &arg))) {
 				errmsg("failed to read expression.\n");
 				return err;
 			}	 
-	
+
 			if (arg->_type->kind == _array) {
 				struct type *_type;
 				ffc_build_type(__compiler, &_type, ptr);
@@ -1146,7 +1158,7 @@ parser_func_call(struct ffly_compiler *__compiler, struct node **__node, struct 
 			}	
  
 			struct node **p;
-			ffly_vec_push_back(&args, (void**)&p);
+			ffly_vec_push_back(args, (void**)&p);
 			*p = arg;
 
 			if (param > (struct node**)ffly_vec_end(&__call->params)) {
@@ -1168,14 +1180,40 @@ parser_func_call(struct ffly_compiler *__compiler, struct node **__node, struct 
 		}
 	}
  
-	vec_cleanup(__compiler, &args);
-	ast_func_call(__compiler, __node, __call, &args, va_arg);
+	vec_cleanup(__compiler, args);
+	cleanup(__compiler, args);
+	ast_func_call(__compiler, __node, __call, args, va_arg);
 	return FFLY_SUCCESS;
 }
 
 ff_err_t
 parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
 	sktok(__compiler);
+	ff_u8_t flags = 0x0;
+	if (next_token_is(__compiler, _tok_keywd, _colon)) {
+	_again:
+		{
+			struct token *tok = next_token(__compiler);
+			switch(tok->id) {
+				case _k_no_va:
+					flags |= _func_no_va;
+					ffly_printf("no va.\n");
+				break;
+				case _k_no_params:
+					flags |= _func_no_params;
+					ffly_printf("no params.\n");
+				break;
+				case _k_no_ret:
+					flags |= _func_no_ret;
+					ffly_printf("no ret.\n");
+				break;
+			}
+		}
+
+		if (next_token_is(__compiler, _tok_keywd, _comma))
+			goto _again;
+	}
+
 	ff_err_t err;
 	struct token *name = next_token(__compiler);
 	if (!expect_token(__compiler, _tok_keywd, _l_paren)) {
@@ -1189,9 +1227,8 @@ parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
 	save = __compiler->local;
 	__compiler->local = &local;
 
-	struct ffly_vec params;
-	ffly_vec_set_flags(&params, VEC_AUTO_RESIZE);
-	ffly_vec_init(&params, sizeof(struct node*)); 
+	ffly_vecp params;
+	params = ffly_vec_creat(sizeof(struct node*), VEC_AUTO_RESIZE, &err);
 	if (next_token_is(__compiler, _tok_keywd, _ellipsis)) {
 		va = 1; 
 	}
@@ -1222,7 +1259,7 @@ parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
 			ast_decl(__compiler, &decl, var, NULL);
 		 
 			struct node **p;
-			ffly_vec_push_back(&params, (void**)&p);
+			ffly_vec_push_back(params, (void**)&p);
 			*p = decl;
 
 			ffly_map_put(&local, name, ffly_str_len(name), var);
@@ -1238,7 +1275,8 @@ parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
 		}
 	}
 
-	vec_cleanup(__compiler, &params);
+	vec_cleanup(__compiler, params);
+	cleanup(__compiler, params);
 	if (!expect_token(__compiler, _tok_keywd, _r_arrow)) {
 		errmsg("expect error.\n");
 		reterr;
@@ -1252,17 +1290,17 @@ parser_func_def(struct ffly_compiler *__compiler, struct node **__node) {
 	}
 	ff_token_free(tok);
 
-	struct ffly_vec block;
-	ffly_vec_set_flags(&block, VEC_AUTO_RESIZE);
-	ffly_vec_init(&block, sizeof(struct node*));
+	ffly_vecp block;
+	block = ffly_vec_creat(sizeof(struct node*), VEC_AUTO_RESIZE, &err);
 
 	__compiler->ret_type = ret_type;
-	parser_compound_stmt(__compiler, &block); 
+	parser_compound_stmt(__compiler, block); 
 	__compiler->local = save;
 	ffly_map_de_init(&local);
    
-	vec_cleanup(__compiler, &block);
-	ast_func(__compiler, __node, &params, &block, ret_type, va);
+	vec_cleanup(__compiler, block);
+	cleanup(__compiler, block);
+	ast_func(__compiler, __node, params, block, ret_type, va, flags);
 	ffly_printf("func: %s, %p\n", name->p, *__node);
 	ffly_map_put(__compiler->local != NULL?__compiler->local:&__compiler->env, name->p, ffly_str_len((char*)name->p), *__node);
 	ff_token_free(name);
@@ -1304,16 +1342,16 @@ parser_while_stmt(struct ffly_compiler *__compiler, struct node **__node) {
 		reterr;
 	}
 
-	struct ffly_vec block;
-	ffly_vec_set_flags(&block, VEC_AUTO_RESIZE);
-	ffly_vec_init(&block, sizeof(struct node*));
-	if (_err(err = parser_compound_stmt(__compiler, &block))) {
+	ffly_vecp block;
+	block = ffly_vec_creat(sizeof(struct node*), VEC_AUTO_RESIZE, &err);
+	if (_err(err = parser_compound_stmt(__compiler, block))) {
 		errmsg("failed to read compound statment.\n");
 		return err;
 	}
 
-	vec_cleanup(__compiler, &block);
-	ast_while(__compiler, __node, cond, &block);
+	vec_cleanup(__compiler, block);
+	cleanup(__compiler, block);
+	ast_while(__compiler, __node, cond, block);
 	retok;
 }
 
@@ -1336,9 +1374,8 @@ parser_call(struct ffly_compiler *__compiler, struct node **__node) {
 		reterr;
 	}
 
-	struct ffly_vec params;
-	ffly_vec_set_flags(&params, VEC_AUTO_RESIZE);
-	ffly_vec_init(&params, sizeof(struct node*));
+	ffly_vecp params;
+	params = ffly_vec_creat(sizeof(struct node*), VEC_AUTO_RESIZE, &err);
 	if (!next_token_is(__compiler, _tok_keywd, _r_brace)) {
 	_next:
 		{
@@ -1349,7 +1386,7 @@ parser_call(struct ffly_compiler *__compiler, struct node **__node) {
 			}
 
 			struct node **p;
-			ffly_vec_push_back(&params, (void**)&p);
+			ffly_vec_push_back(params, (void**)&p);
 			*p = param;
 
 			if (next_token_is(__compiler, _tok_keywd, _comma))
@@ -1361,12 +1398,13 @@ parser_call(struct ffly_compiler *__compiler, struct node **__node) {
 		}
 	}
 
-	vec_cleanup(__compiler, &params);
+	vec_cleanup(__compiler, params);
+	cleanup(__compiler, params);
 	if (!expect_token(__compiler, _tok_keywd, _semicolon)) {
 		reterr;
 	}
 
-	ast_call(__compiler, __node, no, &params);
+	ast_call(__compiler, __node, no, params);
 	retok;
 }
 
@@ -1413,6 +1451,8 @@ ffly_script_parse(struct ffly_compiler *__compiler) {
 			errmsg("got dead token.\n");
 			break;
 		}
+
+		ffly_printf("%s, %s\n", tokk_str(tok->kind), tokid_str(tok->id));
 
 		struct node *nod = NULL; 
 		if (is_type(__compiler, tok) || tok->id == _k_typedef) {

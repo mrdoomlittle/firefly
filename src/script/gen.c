@@ -7,6 +7,8 @@
 # include "../memory/mem_free.h"
 # include "../system/buff.h"
 # include "../dep/mem_cpy.h"
+# define is_flag(__flags, __flag) \
+	((__flags&__flag)==__flag)
 struct obj static *rg_8l_u, *rg_16l_u, *rg_32l_u, *rg_64l_u;
 void static
 build_obj(struct obj **__obj, struct obj *__tmpl) {
@@ -471,25 +473,31 @@ emit_func(struct ffly_compiler *__compiler, struct node *__node) {
 	__node->er.start = &end->next;
 	struct obj *frame = create_frame(__compiler);
 	__compiler->frame = frame;
+	
+	if (!is_flag(__node->flags, _func_no_va))
+		pop(__compiler, &va_args);
 
-	pop(__compiler, &va_args);
 	struct node **itr = NULL;
-	___ffly_vec_nonempty(&__node->params) {
-		itr = (struct node**)ffly_vec_end(&__node->params);
-		while(itr >= (struct node**)ffly_vec_begin(&__node->params)) {
-			emit(__compiler, *itr);
-			emit(__compiler, (*itr)->var);
-			struct obj **to, **from;
-			pop(__compiler, &to);
-			pop(__compiler, &from);
-			next_obj(__compiler, mk_op_copy((*itr)->var->_type->size, to, from, 0));
-			itr--;
+	if (!is_flag(__node->flags, _func_no_params)) {
+		___ffly_vec_nonempty(&__node->params) {
+			itr = (struct node**)ffly_vec_end(&__node->params);
+			while(itr >= (struct node**)ffly_vec_begin(&__node->params)) {
+				emit(__compiler, *itr);
+				emit(__compiler, (*itr)->var);
+				struct obj **to, **from;
+				pop(__compiler, &to);
+				pop(__compiler, &from);
+				next_obj(__compiler, mk_op_copy((*itr)->var->_type->size, to, from, 0));
+				itr--;
+			}
 		}
 	}
 
 	struct obj **ret_to;
-	pop(__compiler, &ret_to);
-	__compiler->ret_to = ret_to;
+	if (!is_flag(__node->flags, _func_no_ret)) {
+		pop(__compiler, &ret_to);
+		__compiler->ret_to = ret_to;
+	}
 
 	___ffly_vec_nonempty(&__node->block) {
 		itr = (struct node**)ffly_vec_begin(&__node->block);
@@ -499,8 +507,11 @@ emit_func(struct ffly_compiler *__compiler, struct node *__node) {
 
 	free_frame(__compiler, frame);
 	__node->er.end = &end->next;
-	struct obj *ret = next_obj(__compiler, mk_op_jump());
-	ret->jmp = (struct obj***)ret_to;
+
+	if (!is_flag(__node->flags, _func_no_ret)) {
+		struct obj *ret = next_obj(__compiler, mk_op_jump());
+		ret->jmp = (struct obj***)ret_to;
+	}
 
 	struct obj **p = &end->next;
 	jmp->jmp = (struct obj***)stack_push(&p, sizeof(struct obj**));
@@ -516,6 +527,7 @@ emit_func_call(struct ffly_compiler *__compiler, struct node *__node) {
 	___ffly_vec_nonempty(&__node->args) {
 		arg = (struct node**)ffly_vec_begin(&__node->args);
 		while(!vec_deadstop(arg, &__node->args)) {
+			ffly_printf("size: %u\n", (*arg)->_type->size);
 			if (__node->va_arg != NULL) {
 				if (arg >= __node->va_arg)
 					va_size+=(*arg)->_type->size;
@@ -523,23 +535,23 @@ emit_func_call(struct ffly_compiler *__compiler, struct node *__node) {
 			emit(__compiler, *arg); 
 			arg++;
 		}
-
-		ff_uint_t off = va_size;
-		if (__node->va_arg != NULL) {
-			ffly_printf("has va args, %p, %p\n", __node->va_arg, arg);
-			struct obj *m = __fresh(__compiler, va_size);
-			while(arg-- != __node->va_arg) {
-				struct obj **src;
-				pop(__compiler, &src);
-				off-=(*arg)->_type->size;;
-				next_obj(__compiler, mk_op_copy((*arg)->_type->size, objpp(m), src, off));
-			}
-			push(__compiler, m);
-		} else {
-			push(__compiler, rg_8l_u);
-			ffly_printf("no va params\n");
-		}
 	}
+
+	ff_uint_t off = va_size;
+	if (__node->va_arg != NULL) {
+		ffly_printf("has va args, %p, %p\n", __node->va_arg, arg);
+		struct obj *m = __fresh(__compiler, va_size);
+		while(arg-- != __node->va_arg) {
+			struct obj **src;
+			pop(__compiler, &src);
+			off-=(*arg)->_type->size;;
+			next_obj(__compiler, mk_op_copy((*arg)->_type->size, objpp(m), src, off));
+		}
+		push(__compiler, m);
+	} else {
+		push(__compiler, rg_8l_u);
+		ffly_printf("no va params\n");
+	}	
 
 	struct obj *jmp = next_obj(__compiler, mk_op_jump());
 

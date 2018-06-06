@@ -1,6 +1,6 @@
 %include "fflib.ff"
 
-fn test()->void{
+fn : no_va,no_params,no_ret test()->void{
 	print(101987);
 }
 
@@ -46,8 +46,8 @@ ffly_mem_store(a, &data, sizeof(uint_t), 0);
 ffly_printf("data: %u\n", data);
 ffly_mem_free(a);
 */
+
 %include "ts0.ff"
 %include "ts1.ff"
 %include "ts2.ff"
-
 exit;

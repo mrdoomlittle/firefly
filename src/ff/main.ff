@@ -8,4 +8,5 @@
 */
 u8_t main() {
 	ffly_sched_init();
+	ffly_resv_init();
 }

@@ -169,6 +169,7 @@ void ffly_scheduler_tick(void) {
 
 void static
 corrode(void *__arg) {
+	ffly_printf("scheduler-corrode.\n");
 	ffly_scheduler_de_init();
 }
 

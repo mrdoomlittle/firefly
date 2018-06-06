@@ -110,7 +110,7 @@ copy(void *__dst, void *__src, ff_uint_t __bc) {
 /*
 	using real one will only take more time and cause more obstacles in the future
 */
-int static stdout;
+int static arout;
 void static
 out(char const *__format, va_list __args) {
 	char buf[2048];
@@ -139,7 +139,7 @@ out(char const *__format, va_list __args) {
 			*(bufp++) = *(p-1);
 	}
 	*bufp = '\0';
-	write(stdout, buf, bufp-buf);
+	write(arout, buf, bufp-buf);
 }
 
 void static
@@ -467,7 +467,7 @@ void static tls_init(void) {
 }
 
 ff_err_t ffly_ar_init(void) {
-	stdout = open("/dev/tty", O_WRONLY, 0);
+	arout = open("arout", O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
 
 	arena_tls = ffly_tls_alloc(sizeof(ff_uint_t));
 	temp_tls = ffly_tls_alloc(sizeof(ff_uint_t));
@@ -495,7 +495,7 @@ ff_err_t _ffly_ar_cleanup(potp __pot) {
 }
 
 ff_err_t ffly_ar_cleanup(void) {
-	close(stdout);
+	close(arout);
 	_ffly_ar_cleanup(&main_pot);
 }
 

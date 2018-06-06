@@ -1,10 +1,21 @@
 %include "inc/lib.ff"
+
 void ffly_sched_init() {
 	struct arg_s arg;
-	arg.what = 0;
+	arg.what = SCHED_INIT;
 	struct init_arg init;
 	arg.init_arg = &init;
-	init.flags = SCHED_CORRODE;
+	init.flags = 0;
+
+	as("rin 5, %rel\n" : "rel", &arg);
+}
+
+void ffly_resv_init() {
+	struct arg_s arg;
+	arg.what = RESV_INIT;
+	struct init_arg init;
+	arg.init_arg = &init;
+	init.flags = 0;
 
 	as("rin 5, %rel\n" : "rel", &arg);
 }

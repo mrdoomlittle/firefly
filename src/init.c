@@ -31,15 +31,23 @@ void ffly_init_run() {
 }
 
 # include "system/sched.h"
+# include "storage/reservoir.h"
 struct init_arg *__init_arg__;
 void static
 sched_init(void) {
 	ffly_printf("sched init, flags: %u\n", __init_arg__->flags);
-	ffly_scheduler_init(__init_arg__->flags);
+	ffly_scheduler_init(__init_arg__->flags|SCHED_CORRODE);
+}
+
+void static
+resv_init(void) {
+	ffly_printf("resv init, flags: %u\n", __init_arg__->flags);
+	ffly_reservoir_init(&__ffly_reservoir__, __init_arg__->flags|RESV_CORRODE, "temp.resv");
 }
 
 static void(*init[])(void) = {
-	sched_init
+	sched_init,
+	resv_init
 };
 
 void ffly_init(ff_u8_t __what) {

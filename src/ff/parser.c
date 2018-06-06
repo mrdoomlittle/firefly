@@ -4,6 +4,7 @@
 # include "../memory/mem_alloc.h"
 # include "../dep/str_cpy.h"
 # include "../dep/str_len.h"
+# include "../system/string.h"
 ffly_mapp ffc_get_env(struct ffly_compiler*);
 void ffc_build_node(struct ffly_compiler*, struct node**, struct node*);
 void ffc_build_type(struct ffly_compiler*, struct type**, struct type*);
@@ -173,15 +174,18 @@ parser_struct_spec(struct ffly_compiler *__compiler, struct type **__type) {
 	*__type = (struct type*)ffly_map_get(&__compiler->env, name->p, ffly_str_len((char*)name->p), &err);
 	if (_ok(err) && *__type != NULL) retok;
 
-	struct ffly_map fields;
-	ffly_map_init(&fields, _ffly_map_127);
+	ffly_mapp fields;
+
+	fields = ffly_map_creat(_ffly_map_127);
 	ff_uint_t size = 0;
-	if (_err(err = parser_struct_decl(__compiler, &fields, &size))) {
+	if (_err(err = parser_struct_decl(__compiler, fields, &size))) {
 		reterr;
 	}
+	map_cleanup(__compiler, fields);
+	cleanup(__compiler, fields);
 	ffly_printf("struct size: %u\n", size);
 	
-	ffc_build_type(__compiler, __type, &(struct type){.kind=_struct, .size=size, .len=0, .fields=fields});
+	ffc_build_type(__compiler, __type, &(struct type){.kind=_struct, .size=size, .len=0, .fields=*fields});
 	ffly_map_put(&__compiler->env, name->p, ffly_str_len((char*)name->p), *__type);
 	retok;
 }

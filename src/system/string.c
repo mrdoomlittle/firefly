@@ -29,13 +29,12 @@ static __thread ff_u8_t *buf;
 # include "../dep/mem_cpy.h"
 # include "tls.h"
 static ff_uint_t buf_tls;
-static ff_u8_t *buf;
 # endif
 
 void 
-ffly_string_init() {
+ffly_string_init(void) {
 # ifdef __fflib
-//	buf_tls = ffly_tls_alloc();
+	buf_tls = ffly_tls_alloc(sizeof(ff_u8_t*));
 # endif
 }
 
@@ -44,12 +43,13 @@ drain(ff_u8_t *__p, ff_u16_t __size, ff_u16_t __cut, ff_u8_t __off) {
 # ifndef __fflib
 	memcpy(buf+(__cut*CUT_SIZE)+__off, __p, __size);
 # else
+	ff_u8_t *buf = ffly_tls_get(buf_tls);
 	ffly_mem_cpy(buf+(__cut*CUT_SIZE)+__off, __p, __size);
 # endif
 }
 
 ff_uint_t ffly_nots(ff_u64_t __no, char *__buf) {
-	buf = __buf;
+	ffly_tls_set(__buf, buf_tls);
 	ff_u16_t cut = 0;
 	ff_u8_t off = 0;
 	return _ffly_nots(__no, &cut, &off, drain);
@@ -202,7 +202,7 @@ ff_u64_t ffly_htint(char *__s) {
 // needs testing
 
 ff_uint_t ffly_floatts(double __no, char *__buf) {
-	buf = __buf;
+	ffly_tls_set(__buf, buf_tls);
 	ff_u16_t cut = 0;
 	ff_u8_t off = 0;
 	return _ffly_floatts(__no, &cut, &off, drain);
@@ -300,7 +300,7 @@ _bk:
 }
 
 ff_uint_t ffly_noths(ff_u64_t __no, char *__buf) {
-	buf = __buf;
+	ffly_tls_set(__buf, buf_tls);
 	ff_u16_t cut = 0;
 	ff_u8_t off = 0;
 	return _ffly_noths(__no, &cut, &off, drain);

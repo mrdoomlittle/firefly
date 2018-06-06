@@ -20,6 +20,7 @@ fn c(u8_t __lhs, u8_t __rhs)->void{
 a(0, 1);
 b(2, 3);
 c(4, 5);
+
 %else
 ffly_printf("ts0 can't be included, is 'ts1.ff' or 'ts2.ff' included?.\n");
 %endif

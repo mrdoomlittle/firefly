@@ -30,6 +30,12 @@ ff_err_t ffly_map_init(ffly_mapp __map, ff_uint_t __size) {
 	return FFLY_SUCCESS;
 }
 
+ffly_mapp ffly_map_creat(ff_uint_t __size) {
+	ffly_mapp p = (ffly_mapp)__ffly_mem_alloc(sizeof(struct ffly_map));
+	ffly_map_init(p, __size);
+	return p;
+}
+
 ffly_mapp ffly_map(ff_uint_t __size) {
 	ffly_mapp p = (ffly_mapp)__ffly_mem_alloc(sizeof(struct ffly_map));
 	ffly_map_init(p, __size);
@@ -42,7 +48,7 @@ void ffly_map_free(ffly_mapp __map) {
 
 void ffly_map_destroy(ffly_mapp __map) {
 	ffly_map_de_init(__map);
-	ffly_map_free(__map);
+	__ffly_mem_free(__map);
 }
 
 void const* ffly_map_begin(ffly_mapp __map) {

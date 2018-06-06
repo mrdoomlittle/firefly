@@ -40,6 +40,13 @@ void ffly_vec_detach(ffly_vecp __vec) {
 		__vec->next->prev = __vec->prev;
 }
 
+ffly_vecp ffly_vec_creat(ff_size_t __blk_size, ff_flag_t __flags, ff_err_t *__err) {
+	ffly_vecp p = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
+	p->flags = __flags;
+	*__err = ffly_vec_init(p, __blk_size);
+	return p;
+}
+
 ffly_vecp ffly_vec(ff_size_t __blk_size, ff_flag_t __flags, ff_err_t *__err) { 
 	ffly_vecp p = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
 	p->flags = __flags;

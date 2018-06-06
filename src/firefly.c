@@ -83,10 +83,12 @@ char const static *by = "mrdoomlittle";
 # include "piston.h"
 # include "corrode.h"
 # include "location.h"
+void ffly_string_init(void);
 void static
 init() {
 	ffly_tls_new();
 	ffly_ar_init();
+	ffly_string_init();
 	ff_location_init();
 # ifdef __ffly_mal_track
 	ffly_mal_track_init(&__ffly_mal_track__);
@@ -112,8 +114,8 @@ prep() {
 
 	/* pistons are on even if sched has not been inited
 	*/
-	ffly_bog_start();
-	ffly_piston();
+//	ffly_bog_start();
+//	ffly_piston();
 //	ff_mod_init();
 //	ff_mod_handle();
 //	ffly_mod();
@@ -125,8 +127,8 @@ prep() {
 void static
 fini() {
 	ffly_corrode_start();
-	ffly_pistons_stall();
-	ffly_bog_stop();
+//	ffly_pistons_stall();
+//	ffly_bog_stop();
 //	ff_mod_de_init();
 	ffly_thread_cleanup();
 	ffly_arcs_de_init();

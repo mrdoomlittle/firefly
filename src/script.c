@@ -32,6 +32,9 @@ char const static *keywords[] = {
 	"va_args",
 	"sizeof",
 	"struct",
+	"no_va",
+	"no_params",
+	"no_ret",
 	NULL
 };
 
