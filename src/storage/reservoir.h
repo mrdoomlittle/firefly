@@ -26,6 +26,7 @@ typedef struct ffly_reservoir {
 	ffly_slabp bin, top;
 	ffly_slabp open;
 	ff_mlock_t lock;
+	void *reg;
 } *ffly_reservoirp;
 
 ff_err_t ffly_reservoir_init(ffly_reservoirp, char const*);

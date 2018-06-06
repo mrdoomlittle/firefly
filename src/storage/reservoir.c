@@ -12,6 +12,7 @@
 typedef struct region {
 	ffly_slabp *slabs;
 	ff_uint_t sc;
+	struct region **bk, *next;
 } *regionp;
 
 ff_u32_t sched_id;
@@ -58,11 +59,19 @@ ff_err_t ffly_reservoir_init(ffly_reservoirp __res, char const *__file) {
 	__res->top = NULL;
 	__res->bin = NULL;
 	__res->off = 0;
+	__res->reg = NULL;
 	sched_id = ffly_schedule(update, __res, RESU_RATE);
 }
 
 ff_err_t ffly_reservoir_de_init(ffly_reservoirp __res) {
 	ffly_sched_rm(sched_id);
+	regionp cur = (regionp)__res->reg, bk;
+	while(cur != NULL) {
+		bk = cur;
+		cur = cur->next;
+		ffly_reservoir_free(__res, bk);
+	}
+
 	ffly_slab_cleanup(__res);
 	close(__res->fd);
 }
@@ -84,6 +93,12 @@ void* ffly_reservoir_alloc(ffly_reservoirp __res, ff_uint_t __size) {
 	while(p != end)
 		*(p++) = ffly_slab_alloc(__res);
 	reg->sc = sc;
+
+	reg->bk = (regionp*)&__res->reg;
+	if (__res->reg != NULL)
+		((regionp)__res->reg)->bk = &reg->next;
+	reg->next = (regionp)__res->reg;
+	__res->reg = reg;
 	return reg;
 }
 
@@ -93,6 +108,10 @@ ff_err_t ffly_reservoir_free(ffly_reservoirp __res, void *__reg) {
 	ffly_slabp *end = p+reg->sc;
 	while(p != end)
 		ffly_slab_free(__res, *(p++));
+
+	*reg->bk = reg->next;
+	if (reg->next != NULL)
+		reg->next->bk = reg->bk;
 	__ffly_mem_free(reg->slabs);
 	__ffly_mem_free(__reg);
 }
