@@ -138,3 +138,4 @@ op(__compiler, "movb", "%rel", reg, NULL);
 op(__compiler, "movw", "%rel", reg, NULL);
 op(__compiler, "movd", "%rel", reg, NULL);
 op(__compiler, "movq", "%rel", reg, NULL);
+-. clock get should be added 

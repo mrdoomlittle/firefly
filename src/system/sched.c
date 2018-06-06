@@ -125,8 +125,31 @@ void ffly_sched_clock_tick(ff_u64_t __delta) {
 	clock+=__delta;
 }
 
+# define set_flag(__flag) \
+	__asm__("mov %1, %%eax\n" \
+			"lock orb %%al, %0\n" : "=m"(flags) : "r"(__flag) : "eax");
+# define clr_flag(__flag) \
+	__asm__("mov %1, %%eax\n" \
+			"lock xorb %%al, %0\n" : "=m"(flags) : "r"(__flag) : "eax");
+# define is_flag(__flags, __flag) \
+	((__flags&__flag)==__flag)
+
+# define STOP 0x1
+# define INIT 0x2
+# define OKAY 0x4
+ff_i8_t static flags = 0x0;
 ff_u64_t static last_time = 0;
 void ffly_scheduler_tick(void) {	
+	if (!is_flag(flags, INIT)) {
+		return;
+	}
+
+	if (is_flag(flags, STOP)) {
+		if (!is_flag(flags, OKAY)) {
+			set_flag(OKAY);
+		}
+		return;
+	}
 	sched_entityp cur = top, ent;
 	while(cur != NULL) {
 		ent = cur;
@@ -141,8 +164,6 @@ void ffly_scheduler_tick(void) {
 	last_time = clock;
 }
 
-# define is_flag(__flags, __flag) \
-	((__flags&__flag)==__flag)
 # include "../corrode.h"
 # include "io.h"
 
@@ -152,6 +173,7 @@ corrode(void *__arg) {
 }
 
 void ffly_scheduler_init(ff_u8_t __flags) {	
+	set_flag(INIT);
 	ffly_fprintf(ffly_log, "sched init.\n");
 	if (is_flag(__flags, SCHED_CORRODE)) {
 		ffly_corrode(corrode, NULL);
@@ -160,6 +182,8 @@ void ffly_scheduler_init(ff_u8_t __flags) {
 
 void ffly_scheduler_de_init(void) {
 	ffly_fprintf(ffly_log, "sched de-init.\n");
+	set_flag(STOP);
+	while(!is_flag(flags, OKAY));
 	sched_entityp *cur = entities;
 	sched_entityp *end = cur+page_c;
 	while(cur != end)

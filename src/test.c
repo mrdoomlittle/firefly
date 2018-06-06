@@ -223,26 +223,27 @@ struct ffly_queue queue;
 	ff_stores_logout();
 	ff_stores_disconnect();
 */
-/*
+
+	// might break
+	ffly_scheduler_init(0);
+	
 	struct ffly_reservoir res;
 	ffly_reservoir_init(&res, "test.resv");
+
 	void *r0, *r1, *r2;
-	r0 = ffly_reservoir_alloc(&res, 1028);
-	r1 = ffly_reservoir_alloc(&res, 1028);
-	ffly_reservoir_free(&res, r0);
-	r2 = ffly_reservoir_alloc(&res, 1028);
+	r0 = ffly_reservoir_alloc(&res, 1024);
+	r1 = ffly_reservoir_alloc(&res, 1024);
+	r2 = ffly_reservoir_alloc(&res, 1024);
 
-	ffly_reservoir_info(&res);
-	char buf[1028];
-	ffly_str_cpy(buf, "https://github.com/mrdoomlittle/firefly");
-	ffly_reservoir_write(&res, r2, buf, 0, 1028);
+	char buf[1024];
+	ffly_reservoir_write(&res, r0, buf, 0, 1024);
+	ffly_reservoir_write(&res, r1, buf, 0, 1024);
+	ffly_reservoir_write(&res, r2, buf, 0, 1024);
 
-	ffly_reservoir_read(&res, r2, buf, 0, 1028);
-	
-	ffly_printf("%s\n", buf);
-	ffly_reservoir_free(&res, r1);
-	ffly_reservoir_free(&res, r2);
+	ffly_nanosleep(2, 0);
+
 	ffly_reservoir_de_init(&res);
-*/
-	ffly_nanosleep(0, 4000000);
+
+	ffly_scheduler_de_init();
+	ffly_nanosleep(2, 0);
 }

@@ -2,19 +2,30 @@
 # define __ffly_reservoir__h
 # include "../ffint.h"
 # include "../types.h"
+# include "../system/mutex.h"
 # define SLAB_SHIFT 6
 # define SLAB_SIZE (1<<SLAB_SHIFT)
+# define RESU_RATE 100
+# define SLAB_AGE 100
 typedef struct ffly_slab {
 	ff_u64_t off;
 	struct ffly_slab *fd;
 	struct ffly_slab *prev, *next;
+
+	ff_u64_t creation;
+	ff_u32_t death;
+	struct ffly_slab *link;
 	ff_i8_t inuse;
+	void *p;
+	ff_mlock_t lock;
 } *ffly_slabp;
 
 typedef struct ffly_reservoir {
 	int fd;
 	ff_u64_t off;
 	ffly_slabp bin, top;
+	ffly_slabp open;
+	ff_mlock_t lock;
 } *ffly_reservoirp;
 
 ff_err_t ffly_reservoir_init(ffly_reservoirp, char const*);

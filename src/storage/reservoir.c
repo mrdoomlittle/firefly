@@ -7,23 +7,62 @@
 # include "../memory/mem_realloc.h"
 # include "../ffly_def.h"
 # include "../system/io.h"
+# include "../system/sched.h"
+# include "../clock.h"
 typedef struct region {
 	ffly_slabp *slabs;
 	ff_uint_t sc;
 } *regionp;
 
+ff_u32_t sched_id;
+
+ff_i8_t static
+update(void *__arg_p) {
+	ffly_reservoirp r = (ffly_reservoirp)__arg_p;
+	ffly_mutex_lock(&r->lock);
+	ffly_slabp sb = r->open, *bk = &r->open;
+	ffly_fprintf(ffly_log, "reservoir update.\n");
+	while(sb != NULL) {
+		ff_int_t tl = ((ff_int_t)(sb->creation+sb->death))-(ff_int_t)clock;
+
+		ffly_fprintf(ffly_log, "slab : %u, creation: %u, death: %u, time left: %d\n",
+			sb->off, sb->creation, sb->creation+sb->death, tl);
+		if (clock >= sb->creation+sb->death) {
+			if (!sb->p) {
+				ffly_printf("error.\n");
+			}
+			*bk = sb->link;
+			ffly_mutex_lock(&sb->lock);
+			ffly_fprintf(ffly_log, "saving slab : %u\n", sb->off);
+			pwrite(r->fd, sb->p, SLAB_SIZE, sb->off*SLAB_SIZE);
+			__ffly_mem_free(sb->p);
+			sb->p = NULL;
+			sb->link = NULL;
+			ffly_mutex_unlock(&sb->lock);
+		}
+	_sk:
+		bk = &sb->link;
+		sb = sb->link;
+	}
+	ffly_mutex_unlock(&r->lock);
+	return -1;
+}
 
 ff_err_t ffly_reservoir_init(ffly_reservoirp __res, char const *__file) {
 	if ((__res->fd = open(__file, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR)) == -1) {
 
 	}
-
+	
+	__res->lock = FFLY_MUTEX_INIT;
+	__res->open = NULL;
 	__res->top = NULL;
 	__res->bin = NULL;
 	__res->off = 0;
+	sched_id = ffly_schedule(update, __res, RESU_RATE);
 }
 
 ff_err_t ffly_reservoir_de_init(ffly_reservoirp __res) {
+	ffly_sched_rm(sched_id);
 	ffly_slab_cleanup(__res);
 	close(__res->fd);
 }
@@ -62,16 +101,16 @@ ff_err_t
 ffly_reservoir_write(ffly_reservoirp __res, void *__reg,
 	void *__p, ff_uint_t __offset, ff_uint_t __size)
 {
+	ffly_fprintf(ffly_log, "writing to region.\n");
 	regionp reg = (regionp)__reg;
 	ffly_slabp *sb = reg->slabs;
 	ff_u8_t *p = (ff_u8_t*)__p;
-	ff_u8_t *end = p+__size;
-	while(p != end && p-(ff_u8_t*)__p >= SLAB_SIZE) {
+	while(__size-(p-(ff_u8_t*)__p) >= SLAB_SIZE) {
 		ffly_slab_write(__res, *(sb++), p, 0, SLAB_SIZE);
 		p+=SLAB_SIZE;
 	}
 
-	ff_uint_t left = p-(ff_u8_t*)__p;
+	ff_uint_t left = __size-(p-(ff_u8_t*)__p);
 	if (left>0)
 		ffly_slab_write(__res, *sb, p, 0, left);
 }
@@ -80,16 +119,16 @@ ff_err_t
 ffly_reservoir_read(ffly_reservoirp __res, void *__reg,
 	void *__p, ff_uint_t __offset, ff_uint_t __size)
 {
+	ffly_fprintf(ffly_log, "reading from region.\n");
 	regionp reg = (regionp)__reg;
 	ffly_slabp *sb = reg->slabs;
 	ff_u8_t *p = (ff_u8_t*)__p;
-	ff_u8_t *end = p+__size;
-	while(p != end && p-(ff_u8_t*)__p >= SLAB_SIZE) {
+	while(__size-(p-(ff_u8_t*)__p) >= SLAB_SIZE) {
 		ffly_slab_read(__res, *(sb++), p, 0, SLAB_SIZE);
 		p+=SLAB_SIZE;
 	}
 
-	ff_uint_t left = p-(ff_u8_t*)__p;
+	ff_uint_t left = __size-(p-(ff_u8_t*)__p);
 	if (left>0)
 		ffly_slab_read(__res, *sb, p, 0, left);
 }

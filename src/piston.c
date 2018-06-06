@@ -14,11 +14,9 @@ void static*
 handle(void *__arg_p) {
 	ffly_printf("piston online.\n");
 	while(stall == -1) {
-		ffly_nanosleep(0, 10000);
+		ffly_nanosleep(0, 50000000);
 		ffly_scheduler_tick();
-
-		// okay for now as only one piston
-		ffly_sched_clock_tick(1); // put this somwhere else
+		ffly_fprintf(ffly_log, "piston tick\n");
 	}
 	ffly_printf("piston stall.\n");
 }

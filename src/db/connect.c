@@ -60,6 +60,7 @@ ff_db_ctr(ff_u64_t __enckey, char const *__ip_adr, ff_u16_t __port, ff_err_t *__
 		ff_net_close(ret->sock);
 		goto _fail;
 	}
+
 	*__err = FFLY_SUCCESS;
 	goto _succ;
 _fail:

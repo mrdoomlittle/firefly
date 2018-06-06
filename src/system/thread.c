@@ -136,7 +136,8 @@ prox() {
 	ffly_tls_init();
 	ffly_process_prep();
 	ffly_threadp thr = (ffly_threadp)arg_p;
-/*
+	ffly_cond_lock_signal(&thr->lock);
+	/*
 	ff_setpid();
 	thr->pid = ff_getpid();
 	id = thr->tid;
@@ -153,7 +154,7 @@ prox() {
 
 	thr->exit = 0;
 
-	ffly_thread_del(thr->tid);
+	//ffly_thread_del(thr->tid);
 //	ffly_mal_hang;
 	exit(0);
 }
@@ -168,7 +169,13 @@ ff_err_t ffly_thread_kill(ff_tid_t __tid) {
 }
 
 void ffly_thread_wait(ff_tid_t __tid) {
-	wait4(get_thr(__tid)->pid, NULL, __WALL|__WCLONE, NULL);
+	ffly_threadp t = get_thr(__tid);
+	if (!t) {
+		ffly_printf("error.\n");
+		return;
+	}
+	ffly_printf("waiting for : %u\n", __tid);
+	wait4(t->pid, NULL, __WALL|__WCLONE, NULL);
 }
 
 ff_err_t ffly_thread_create(ff_tid_t *__tid, void*(*__p)(void*), void *__arg_p) {
@@ -194,7 +201,7 @@ ff_err_t ffly_thread_create(ff_tid_t *__tid, void*(*__p)(void*), void *__arg_p) 
 	}
 
 	*__tid = off++;
-//	ffly_printf("thread id: %u\n", *__tid = off++);
+	ffly_printf("thread id: %u\n", off-1);
 
 	ffly_mutex_unlock(&mutex);
 	goto _alloc;
@@ -232,7 +239,7 @@ _exec:
 		return FFLY_FAILURE;
 	}
 
-//	ffly_cond_lock_wait(&thr->lock);
+	ffly_cond_lock_wait(&thr->lock);
 	}
 	return FFLY_SUCCESS;
 
@@ -261,9 +268,10 @@ _alloc:
 			*(itr++) = NULL;
 	}
 
-	if (!*(threads+*__tid))
+	if (!*(threads+*__tid)) {
 		*(threads+*__tid) = (ffly_threadp)__ffly_mem_alloc(sizeof(struct ffly_thread));
-	
+	}
+
 	ffly_mutex_unlock(&mutex);
 	goto _exec;
 _fail:

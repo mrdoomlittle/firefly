@@ -105,7 +105,7 @@ gen(ff_size_t __n, char const *__format, va_list __args) {
 			} else if (*p == 's') {
 				char *s = va_arg(__args, char*);
 				ff_uint_t l = ffly_str_len(s);
-				drain(s, l+1, cut, off);
+				drain(s, l, cut, off);
 				ff_u16_t cc = l>>CUT_SHIFT;
 				cut+=cc;
 				off+=l-(cc*CUT_SIZE);
@@ -123,7 +123,7 @@ gen(ff_size_t __n, char const *__format, va_list __args) {
 				_ffly_noths(v, &cut, &off, drain);
 			}
 			p++;
-		} else 
+		} else // buffer this
 			drain(p-1, 1, cut, off++);
 
 		if (off>=CUT_SIZE) {
@@ -133,7 +133,7 @@ gen(ff_size_t __n, char const *__format, va_list __args) {
 	}
 	char c = '\0';
 	drain(&c, 1, cut, off);
-	return (cut*CUT_SIZE)+off;
+	return (cut*CUT_SIZE)+off-1;
 }
 
 void static
