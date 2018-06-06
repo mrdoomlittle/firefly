@@ -4,36 +4,66 @@
 # include <sys/stat.h>
 # define __ffly_source
 # include "src/ffint.h"
+# include "src/system/util/ff6.h"
+# include <string.h>
+ff_uint_t gen_c_vers(ff_u8_t *__buf, char *__vers, ff_uint_t __len) {
+	ff_u8_t *bufp = __buf;
+	char *p = __vers;
+	char *end = p+__len;
 
-ff_uint_t vst(char *__buf, ff_u64_t __ver) {
-	char *p = __buf;
-	char c0;
+	*(bufp++) = '{';
+	while(p != end-1) {
+		*(bufp++) = 0x27;
+		*(bufp++) = *(p++);
+		*(bufp++) = 0x27;
+		*(bufp++) = ',';
+		*(bufp++) = ' ';
+	}
 	
-	__ver<<=4;
-	ff_u8_t buf;
-	ff_u8_t i = 0;
-_again:
-	buf = (__ver>>58&0x3f);
-	c0 = 'a'+(buf>>3);
-	buf-=((buf>>3)*(1<<3));
-	
-	*(p++) = c0;
+	*(bufp++) = 0x27;
+	*(bufp++) = *(p++);
+	*(bufp++) = 0x27;
 
-	*(p++) = '0'+buf;
+	*(bufp++) = '}';
+	return bufp-__buf;
+}
 
-_sk:
-	__ver<<=6;
-	if (i++ != 9)
-		goto _again;
+void out_c_hdr(ff_u8_t *__buf, char *__vers, ff_uint_t __len) {
+	int fd;
+	fd = open("src/version.h", O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
+	char const p0[] = {'#', 'i', 'f', 'n', 'd', 'e', 'f', ' ', '_', '_', 'f', 'f', 'l', 'y', '_', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', '_', 'h', '\n'};
+	char const p1[] = {'#', 'd', 'e', 'f', 'i', 'n', 'e', ' ', '_', '_', 'f', 'f', 'l', 'y', '_', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', '_', 'h', '\n'};
+	char const p2[] = {'#', 'd', 'e', 'f', 'i', 'n', 'e', ' ', 'f', 'f', 'l', 'y', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n'};
+	char const p3[] = {'#', 'e', 'n', 'd', 'i', 'f', ' ', '/', '*', '_', '_', 'f', 'f', 'l', 'y', '_', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', '_', 'h', '*', '/', '\n'};
 
-	*(p++) = ';';
+	ff_u8_t *p = __buf;
+	ff_uint_t l;
+	l = sizeof(p0);
+	memcpy(p, p0, l);
+	p+=l;
+
+	l = sizeof(p1);
+	memcpy(p, p1, l);
+	p+=l;
+
+	l = sizeof(p2);
+	memcpy(p, p2, l);
+	p+=l;
+	*(p++) = ' ';
+	p+=gen_c_vers(p, __vers, __len);
 	*(p++) = '\n';
-	return p-__buf;
+
+	l = sizeof(p3);
+	memcpy(p, p3, l);
+	p+=l;
+
+	write(fd, __buf, p-__buf);
+	close(fd);
 }
 
 int main() {
 	int fd;
-
+	ff_u8_t vers[1024];
 	ff_u8_t buf[1024];
 	fd = open("version", O_RDWR);
 
@@ -44,32 +74,17 @@ int main() {
 	*(buf+st.st_size-1) = '\0';
 
 	ff_u64_t val = 0;
-
-	ff_u8_t *p = buf;
-
-	char c0, c1;
-	while((c0 = *(p++)) != ';') {
-		if (c0 < 'a' || c0 > 'h') {
-			printf("error.\n");
-			break;
-		}
-
-		c1 = *(p++);
-		if (c1 < '0' || c1 > '7') {
-			printf("error.\n");
-			break;
-		}
-
-		val = (val<<6)|(((c0-'a')<<3)+(c1-'0'));
-	}
-
+	ffly_ff6_dec(buf, &val, st.st_size-1);
 	printf("%u\n", val);
 
-	ff_uint_t l;	
-	l = vst(buf, val+1);
-	*(buf+l) = '\0';
-	printf("out: %s\n", buf);
+	ff_uint_t l;
+	val++;
+	l = ffly_ff6_enc(&val, vers, sizeof(ff_u64_t));
+	*(vers+l) = '\0';
+	printf("out: %s\n", vers);
 	ftruncate(fd, 0);
-	pwrite(fd, buf, l, 0);
+	pwrite(fd, vers, l, 0);
 	close(fd);
+
+	out_c_hdr(buf, vers, l);
 }
