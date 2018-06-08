@@ -7,10 +7,25 @@ static ffly_lotp top = NULL;
 static ffly_lotp end = NULL;
 
 void ffly_lot_add(ffly_lotp __lot, ffly_phy_bodyp __body) {
+	if (!__body) {
+		return;
+	}
+
+	if (__lot->end>=__lot->top+__lot->size) {
+		ffly_fprintf(ffly_err, "failure adding body to lot.\n");
+		return;
+	}
 	ff_uint_t xoff = *__body->x-__lot->x;
 	ff_uint_t yoff = *__body->y-__lot->y;
 	ff_uint_t zoff = *__body->z-__lot->z;
-	*(*(__lot->bodies+xoff+(yoff*__lot->xl)+(zoff*(__lot->yl*__lot->xl))) = __lot->end++) = __body;
+	ffly_phy_bodyppp body = __lot->bodies+xoff+(yoff*__lot->xl)+(zoff*(__lot->yl*__lot->xl));
+	if (body>=__lot->bodies+__lot->size) {
+		ffly_fprintf(ffly_err, "body is out of bounds.\n");
+		return;
+	}
+
+	ffly_printf("lot usage: %u:%u\n", __lot->size, __lot->end-__lot->top);
+	*(*(__body->p = body) = __lot->end++) = __body;
 }
 
 void ffly_lot_rm(ffly_lotp __lot, ffly_phy_bodyp __body) {
@@ -23,17 +38,28 @@ void ffly_lot_rm(ffly_lotp __lot, ffly_phy_bodyp __body) {
 	ff_uint_t yoff = *__body->y-__lot->y;
 	ff_uint_t zoff = *__body->z-__lot->z;
 	ffly_phy_bodyppp body = __lot->bodies+xoff+(yoff*__lot->xl)+(zoff*(__lot->yl*__lot->xl)); 
+	if (body>=__lot->bodies+__lot->size) {
+		ffly_fprintf(ffly_err, "body is out of bounds.\n");
+		return;
+	}
+
 	if (!*body) {
 		ffly_fprintf(ffly_err, "body is not apart of lot.\n");
+		return;
+	}
+
+	if (!**body) {
+		ffly_fprintf(ffly_err, "body at location does not exist.\n");
 		return;
 	}
 
 	if (*body == __lot->end-1) {
 		__lot->end--;
 		*body = NULL;
-	} else {
-		**body = *(--__lot->end);
-		*(__lot->end+1) = NULL;
+	} else { 
+		ffly_phy_bodyp t = *(--__lot->end);
+		*t->p = NULL;
+		*t->p = *body;
 	}	
 }
 
@@ -62,6 +88,7 @@ ffly_lotp ffly_lot_alloc(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
 	end = lot;
 
 	ff_uint_t size = (lot->xl = __xl)*(lot->yl = __yl)*(lot->zl = __zl);
+	lot->size = size;
 	lot->top = (ffly_phy_bodypp)__ffly_mem_alloc(size*sizeof(ffly_phy_bodyp));
 	lot->end = lot->top;
 

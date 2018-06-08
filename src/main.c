@@ -14,7 +14,7 @@
 # include "physics/direction.h"
 # include "system/nanosleep.h"
 # include "graphics/frame_buff.h"
-# define __ffly_debug_enabled
+# define __ffly_debug
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "dep/bzero.h"
@@ -23,9 +23,8 @@
 # include "duct.h"
 # include "graphics/pipe.h"
 # include "memory/plate.h"
-# define WIDTH 400
-# define HEIGHT 400
-
+# define WIDTH 448
+# define HEIGHT 448
 /*
 	only for testing
 */
@@ -96,9 +95,6 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_phy_bodyp body0 = ffly_get_phy_body(obj0->phy_body);
 	ffly_phy_bodyp body1 = ffly_get_phy_body(obj1->phy_body);
 
-	ffly_uni_attach_body(&uni, body0);
-	ffly_uni_attach_body(&uni, body1);
-
 	ff_byte_t *texture = (ff_byte_t*)__ffly_mem_alloc(20*20*4);
 	ffly_mem_set(texture, 0xff, 20*20*4);
 
@@ -128,6 +124,9 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	obj1->y = 40;
 	obj1->z = 0;
 
+	ffly_uni_attach_body(&uni, body0);
+	ffly_uni_attach_body(&uni, body1);
+
 	// set velocity of object to ...
 	ffly_set_velocity(obj0->phy_body, 0.5);
 	ffly_set_velocity(obj1->phy_body, 0);
@@ -140,8 +139,10 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_set_angular_velocity(obj1->phy_body, 0.0);
 
 	ffly_set_mass(obj0->phy_body, 800000);
+	ffly_set_mass(obj1->phy_body, 0);
 
-	ff_uint_t delta = 0, start = 0;
+
+	ff_uint_t delta = 0, start = phy_clock;
 	ff_int_t old_x, old_y;
 	ffly_queue_init(&ffly_event_queue, sizeof(ff_eventp));
 	while(1) {
@@ -163,7 +164,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		ffly_obj_handle(&uni, delta, obj1);
 		ffly_printf("-------------- x: %u{%d}:%u, y: %u{%d}:%u ------------- memusage: %u, clock pulse: %u\n",
 			obj0->x, (ff_int_t)obj0->x-old_x, obj1->x,
-			obj0->y, (ff_int_t)obj0->y-old_y, obj1->y, ffly_mem_alloc_bc-ffly_mem_free_bc, clock);
+			obj0->y, (ff_int_t)obj0->y-old_y, obj1->y, ffly_mem_alloc_bc-ffly_mem_free_bc, phy_clock);
 		ffly_camera_handle(&camera);
 		ffly_camera_draw(&camera, ffly_frame(__frame_buff__), WIDTH, HEIGHT, 0, 0);
 		ffly_grp_unload(&__ffly_grp__);

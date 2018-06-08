@@ -25,6 +25,7 @@ ff_uint_t ffly_rdline(void*, ff_uint_t, FF_FILE*);
 # else
 void ffly_fprintf(FF_FILE*, char const*, ...);
 void ffly_printf(char const*, ...);
+void ffly_fprintfs(FF_FILE*, char const*, ...);
 # endif
 /*
 ffly_size_t ffly_write(ffly_fd_t, void*, ffly_size_t, ff_err_t*);

@@ -20,7 +20,8 @@ struct ffly_lot {
 	ffly_phy_bodyppp bodies;
     ff_uint_t xl, yl, zl;
     ff_uint_t x, y, z;
-    /*
+	ff_uint_t size;
+	/*
         cleanup
     */
     struct ffly_lot *prev, *next;

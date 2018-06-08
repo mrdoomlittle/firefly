@@ -30,6 +30,7 @@ typedef struct ffly_phy_body {
 
 	// help locate what lot this body is in
 	ffly_lotp lot;
+	struct ffly_phy_body ***p;
 
 	// direction
 	ff_u8_t dir;

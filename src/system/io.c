@@ -119,6 +119,13 @@ void ffly_fprintf(FF_FILE *__file, char const *__format, ...) {
 	va_end(args);
 }
 
+void ffly_fprintfs(FF_FILE *__file, char const *__format, ...) {
+	va_list args;
+	va_start(args, __format);
+	ffly_print(__file, __format, args);
+	va_end(args);
+}
+
 void ffly_printf(char const *__format, ...) {
 	va_list args;
 	va_start(args, __format);

@@ -49,7 +49,11 @@ drain(ff_u8_t *__p, ff_u16_t __size, ff_u16_t __cut, ff_u8_t __off) {
 }
 
 ff_uint_t ffly_nots(ff_u64_t __no, char *__buf) {
+# ifndef __fflib
+	buf = __buf;
+# else
 	ffly_tls_set(__buf, buf_tls);
+# endif
 	ff_u16_t cut = 0;
 	ff_u8_t off = 0;
 	return _ffly_nots(__no, &cut, &off, drain);
@@ -202,7 +206,11 @@ ff_u64_t ffly_htint(char *__s) {
 // needs testing
 
 ff_uint_t ffly_floatts(double __no, char *__buf) {
+# ifndef __fflib
+	buf = __buf;
+# else
 	ffly_tls_set(__buf, buf_tls);
+# endif
 	ff_u16_t cut = 0;
 	ff_u8_t off = 0;
 	return _ffly_floatts(__no, &cut, &off, drain);
@@ -300,7 +308,11 @@ _bk:
 }
 
 ff_uint_t ffly_noths(ff_u64_t __no, char *__buf) {
+# ifndef __fflib
+	buf = __buf;
+# else
 	ffly_tls_set(__buf, buf_tls);
+# endif
 	ff_u16_t cut = 0;
 	ff_u8_t off = 0;
 	return _ffly_noths(__no, &cut, &off, drain);

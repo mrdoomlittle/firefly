@@ -74,11 +74,13 @@ _sk:
 	end = body;
 
 	body->velocity = 0;
+	body->angular_velocity = 0.0;
 	body->gravity = 0.0;
 	body->dir = 26;
 	body->x = __x;
 	body->y = __y;
 	body->z = __z;
+	body->mass = 0;
 	body->lot = NULL;
 	return (page&0xfff)|((pg_off&0xfffff)<<12);
 }

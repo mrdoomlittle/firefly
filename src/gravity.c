@@ -21,6 +21,7 @@ ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
 
 	default: 16x16
 */
+
 # define ZONE_SHIFT 4
 
 # define ZONE_LENGTH (1<<ZONE_SHIFT)
@@ -29,6 +30,7 @@ ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
 
 float static *map = NULL;
 ff_uint_t static xl, yl, zl;
+float static *end;
 ff_err_t
 ffly_gravity_init(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {	
 	ff_uint_t size;
@@ -38,7 +40,7 @@ ffly_gravity_init(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
 	}
 
 	float *p = map;
-	float *end = map+size;
+	end = map+size;
 	while(p != end)
 		*(p++) = 0.0;
 	retok;
@@ -54,6 +56,11 @@ void ffly_gravity_apply(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __delt
 	ff_uint_t x = (*__body->x)>>ZONE_SHIFT;
 	ff_uint_t y = (*__body->y)>>ZONE_SHIFT;
 	ff_uint_t z = (*__body->z)>>ZONE_SHIFT;
+
+	if (map+(x+(y*xl)+(z*(xl*yl)))>=end) {
+		ffly_fprintf(ffly_err, "body out of bounds.\n");
+		return;
+	}
 
 	float z0;
 	float z1;
@@ -152,12 +159,26 @@ void ffly_gravity_apply(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __delt
 }
 
 void ffly_gravity_add(float __val, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
+	if (!map) {
+		return;
+	}
 	float *p = at(__x, __y, __z);
+	if (p>=end) {
+		ffly_fprintf(ffly_err, "body out of bounds.\n");
+		return;
+	}
 	*p+=__val;
 }
 
 void ffly_gravity_sub(float __val, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
+	if (!map) {
+		return;
+	}
 	float *p = at(__x, __y, __z);
+	if (p>=end) {
+		ffly_fprintf(ffly_err, "body out of bounds.\n");
+		return;
+	}
 	*p-=__val;
 }
 
@@ -165,7 +186,15 @@ void ffly_gravity_sub(float __val, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) 
 	get gravity at point
 */
 float ffly_gravity_at(ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
-	return *at(__x, __y, __z);
+	if (!map) {
+		return 0.0;
+	}
+	float *p = at(__x, __y, __z);
+	if (p>=end) {
+		ffly_fprintf(ffly_err, "body out of bounds.\n");
+		return 0.0;
+	}
+	return *p;
 }
 
 void ffly_gravity_cleanup() {
