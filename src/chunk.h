@@ -15,7 +15,7 @@ typedef struct ffly_chunk {
     ffly_no_t no;
 
     // cleanup
-    struct ffly_chunk *prev, *next;
+    struct ffly_chunk **bk, *next;
 } *ffly_chunkp;
 
 # ifdef __cplusplus

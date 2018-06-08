@@ -17,7 +17,6 @@ ffly_objp fastpool[FASTSIZE];
 ffly_objp static *fast = fastpool;
 
 ffly_objp static top = NULL;
-ffly_objp static end = NULL;
 void ffly_obj_rotate(ffly_objp __obj, float __angle) {
 	__obj->angle = __angle;
 }
@@ -40,37 +39,18 @@ ffly_objp ffly_obj_alloc(ff_err_t *__err) {
 	else
 		obj = (ffly_objp)__ffly_mem_alloc(sizeof(struct ffly_obj));
 	ffly_fprintf(ffly_log, "alloced new object.\n");
-	if (!top) {
-		top = obj;
-		obj->no = 0;
+	if (top != NULL) {
+		obj->bk = &top->next;
 	}
-
-	obj->prev = end;
-	obj->next = NULL;
-	if (end != NULL) {
-		end->next = obj;
-		obj->no = end->no+1;
-	}
-	end = obj;
+	obj->next = top;
+	obj->bk = &top;
+	top = obj;
 	return obj;
 }
 
 ff_err_t ffly_obj_free(ffly_objp __obj) {
 	ffly_fprintf(ffly_log, "freed object %u.\n", __obj->no);
-	if (__obj == top) {
-		if ((top = __obj->next) != NULL)
-			top->prev = NULL;
-		goto _sk;
-	}
-
-	if (__obj == end) {
-		if ((end = __obj->prev) != NULL)
-			end->next = NULL;
-		goto _sk;
-	} 
-
-	__obj->next->prev = __obj->prev;
-	__obj->prev->next = __obj->next;
+	*__obj->bk = __obj->next;
 _sk:
 	if (fast < fastpool+FASTSIZE)
 		*(fast++) = __obj;
@@ -90,8 +70,6 @@ ff_err_t ffly_obj_cleanup() {
 	}
 
 	top = NULL;
-	end = NULL;
-
 	if (fast > fastpool) {
 		ffly_objp *p = fastpool;
 		while(p != fast) {

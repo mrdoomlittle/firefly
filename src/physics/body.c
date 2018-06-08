@@ -25,7 +25,6 @@ ff_u64_t static off = 0;
 ff_uint_t static page_c = 0;
 
 static ffly_phy_bodyp top = NULL;
-static ffly_phy_bodyp end = NULL;
 # define get_body(__id) \
 	((*(bodies+(__id&0xfff)))+((__id>>12)&0xfffff))
 
@@ -39,10 +38,6 @@ ffly_phy_bodyp ffly_phy_body_top() {
 
 void ffly_phy_body_fd(ffly_phy_bodyp *__p) {
 	*__p = (*__p)->next;
-}
-
-ffly_phy_bodyp ffly_phy_body_end() {
-	return end;
 }
 
 ff_u32_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z) {
@@ -64,14 +59,11 @@ ff_u32_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z) {
 _sk:
 	pg_off = (off++)-(page*PAGE_SIZE);
 	body = (*(bodies+page))+pg_off;
-	if (!top)
-		top = body;
-	
-	body->prev = end;
-	body->next = NULL;
-	if (end != NULL)
-		end->next = body;
-	end = body;
+	if (top != NULL)
+		top->bk = &body->next;
+	body->next = top;
+	body->bk = &top;
+	top = body;
 
 	body->velocity = 0;
 	body->angular_velocity = 0.0;

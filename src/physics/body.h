@@ -35,7 +35,7 @@ typedef struct ffly_phy_body {
 	// direction
 	ff_u8_t dir;
 
-	struct ffly_phy_body *prev, *next;
+	struct ffly_phy_body **bk, *next;
 } *ffly_phy_bodyp;
 
 typedef ffly_phy_bodyp* ffly_phy_bodypp;
@@ -43,7 +43,6 @@ typedef ffly_phy_bodypp* ffly_phy_bodyppp;
 
 ffly_phy_bodyp ffly_phy_body_top();
 void ffly_phy_body_fd(ffly_phy_bodyp*);
-ffly_phy_bodyp ffly_phy_body_end();
 
 ffly_phy_bodyp ffly_get_phy_body(ff_u32_t);
 ff_u32_t ffly_physical_body(ff_uint_t*, ff_uint_t*, ff_uint_t*);

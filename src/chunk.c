@@ -9,7 +9,6 @@
 	!((__al-(lotsplice(__al, __lotsize)*(1<<__lotsize)))>0)
 
 static ffly_chunkp top = NULL;
-static ffly_chunkp end = NULL;
 ffly_lotpp ffly_fetch_lot(ffly_chunkp __chunk, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 	ff_uint_t x = lotsplice(__x-__chunk->x, __chunk->lotsize);
 	ff_uint_t y = lotsplice(__y-__chunk->y, __chunk->lotsize);
@@ -46,19 +45,12 @@ ffly_chunkp ffly_chunk_alloc(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_
 	}	 
 
 	ffly_chunkp chunk = (ffly_chunkp)__ffly_mem_alloc(sizeof(struct ffly_chunk));
-	if (!top) {
-		top = chunk;
-		chunk->no = 0;
-	}
+	if (top != NULL)
+		top->bk = &chunk->next;
+	chunk->next = top;
+	chunk->bk = &top;
+	top = chunk;
 
-	chunk->prev = end;
-	chunk->next = NULL;
-	if (end != NULL) {
-		end->next = chunk;
-		chunk->no = end->no+1;
-	}
-
-	end = chunk;
 
 	chunk->lotx = lotsplice(__xl, __lotsize);
 	chunk->loty = lotsplice(__yl, __lotsize);
@@ -88,7 +80,9 @@ ffly_chunkp ffly_chunk_alloc(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_
 }
 
 void ffly_chunk_free(ffly_chunkp __chunk) {
+	*__chunk->bk = __chunk->next;
 	__ffly_mem_free(__chunk->lots);
+	__ffly_mem_free(__chunk);
 }
 
 void ffly_chunk_cleanup() {
@@ -99,6 +93,5 @@ void ffly_chunk_cleanup() {
 		bk = cur;
 		cur = cur->next;
 		ffly_chunk_free(bk);
-		__ffly_mem_free(bk);
 	}
 }

@@ -4,7 +4,6 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 static ffly_lotp top = NULL;
-static ffly_lotp end = NULL;
 
 void ffly_lot_add(ffly_lotp __lot, ffly_phy_bodyp __body) {
 	if (!__body) {
@@ -78,14 +77,11 @@ void ffly_lot_prepare(ffly_lotp __lot, ff_uint_t __x, ff_uint_t __y, ff_uint_t _
 
 ffly_lotp ffly_lot_alloc(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
 	ffly_lotp lot = (ffly_lotp)__ffly_mem_alloc(sizeof(struct ffly_lot));
-	if (!top)
-		top = lot;
-
-	lot->prev = end;
-	lot->next = NULL;
-	if (end != NULL)
-		end->next = lot;
-	end = lot;
+	if (top != NULL)
+		top->bk = &lot->next;
+	lot->next = top;
+	lot->bk = &top;
+	top = lot;
 
 	ff_uint_t size = (lot->xl = __xl)*(lot->yl = __yl)*(lot->zl = __zl);
 	lot->size = size;
@@ -100,8 +96,17 @@ ffly_lotp ffly_lot_alloc(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
 }
 
 void ffly_lot_free(ffly_lotp __lot) {
+	*__lot->bk = __lot->next;
 	__ffly_mem_free(__lot->top);
 	__ffly_mem_free(__lot->bodies);
+	__ffly_mem_free(__lot);
+}
+
+ffly_lotp ffly_lot_creat(ff_uint_t __x, ff_uint_t __y, ff_uint_t __z, ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
+	ffly_lotp lot;
+	lot = ffly_lot_alloc(__xl, __yl, __zl);
+	ffly_lot_prepare(lot, __x, __y, __z);
+	return lot;
 }
 
 void ffly_lot_cleanup() {
@@ -110,6 +115,5 @@ void ffly_lot_cleanup() {
 		bk = cur;
 		cur = cur->next;
 		ffly_lot_free(bk);
-		__ffly_mem_free(bk);
 	}
 }

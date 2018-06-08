@@ -2,6 +2,7 @@
 # define __ffly__lot__h
 # include "ffint.h"
 # include "physics/body.h"
+# include "system/mutex.h"
 /*
 	x*x*x sized block where objects are grouped into a nice package
 	so we dont need to look a large area for it.
@@ -21,10 +22,11 @@ struct ffly_lot {
     ff_uint_t xl, yl, zl;
     ff_uint_t x, y, z;
 	ff_uint_t size;
+	ff_mlock_t lock;
 	/*
         cleanup
     */
-    struct ffly_lot *prev, *next;
+	struct ffly_lot **bk, *next;
 };
 
 typedef struct ffly_lot* ffly_lotp;

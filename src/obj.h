@@ -50,7 +50,7 @@ struct ffly_obj {
 	void(*init)(void*);
 
 	// cleanup
-	struct ffly_obj *prev, *next;
+	struct ffly_obj **bk, *next;
 };
 
 typedef struct ffly_obj* ffly_objp;
