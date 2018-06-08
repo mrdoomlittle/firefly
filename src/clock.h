@@ -5,4 +5,5 @@
 ff_u64_t extern clock;
 
 void ffly_clock_tick(void);
+ff_u64_t ffly_clock_get(void);
 # endif /*__ffly__clock__h*/

@@ -6,6 +6,11 @@
 # include "memory/mem_free.h"
 # include "dep/mem_set.h"
 # include "physics/light.h"
+/*
+	TODO:
+		dealloc 'lots' that are not inuse
+*/
+
 # define is_sliceable(__no, __by) \
 	!(__no-((__no>>__by)*(1<<__by)))
 

@@ -73,7 +73,7 @@ load(ffly_reservoirp __res, ffly_slabp __slab) {
 	__slab->p = __ffly_mem_alloc(SLAB_SIZE);
 	pread(__res->fd, __slab->p, SLAB_SIZE, __slab->off*SLAB_SIZE);
 	__slab->creation = clock;
-	__slab->death = __slab->creation+SLAB_AGE;
+	__slab->death = SLAB_AGE;
 	ffly_mutex_lock(&__res->lock);
 	__slab->link = __res->open;
 	__res->open = __slab;
@@ -86,7 +86,7 @@ ff_err_t ffly_slab_write(ffly_reservoirp __res, ffly_slabp __slab,
 	ffly_fprintf(ffly_log, "writing to slab %u\n", __slab->off);
 	ffly_mutex_lock(&__slab->lock);
 	if (__slab->p != NULL) {
-		__slab->death+=SLAB_AGE;
+		__slab->creation = clock;
 	_bk:
 		ffly_mem_cpy((ff_u8_t*)__slab->p+__offset, __p, __size);
 	} else {
@@ -104,7 +104,7 @@ ff_err_t ffly_slab_read(ffly_reservoirp __res, ffly_slabp __slab,
 	ffly_fprintf(ffly_log, "reading from slab %u\n", __slab->off);
 	ffly_mutex_lock(&__slab->lock);
 	if (__slab->p != NULL) {
-		__slab->death+=SLAB_AGE;
+		__slab->creation = clock;
 	_bk:
 		ffly_mem_cpy(__p, (ff_u8_t*)__slab->p+__offset, __size);
 	} else {

@@ -23,6 +23,8 @@
 # include "duct.h"
 # include "graphics/pipe.h"
 # include "memory/plate.h"
+# include "system/sched.h"
+# include "storage/reservoir.h"
 # define WIDTH 448
 # define HEIGHT 448
 /*
@@ -30,6 +32,9 @@
 */
 
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	ffly_scheduler_init(SCHED_CORRODE);
+	ffly_reservoir_init(&__ffly_reservoir__, RESV_CORRODE, "test.resv");
+
 	ff_err_t err;
 	ffly_grp_prepare(&__ffly_grp__, 20);
 

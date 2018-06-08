@@ -3,7 +3,7 @@
 # include "../ffint.h"
 
 // rename this
-# define TIME_PERIOD 0.2
+# define PHY_TIME_PERIOD 0.2
 ff_u32_t extern phy_clock;
 
 void ffly_phy_clock_tick(void);

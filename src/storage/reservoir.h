@@ -5,8 +5,8 @@
 # include "../system/mutex.h"
 # define SLAB_SHIFT 6
 # define SLAB_SIZE (1<<SLAB_SHIFT)
-# define RESU_RATE 100
-# define SLAB_AGE 100
+# define RESU_RATE 100 // update rate
+# define SLAB_AGE 100 // ms
 
 # define RESV_CORRODE 0x1
 typedef struct ffly_slab {

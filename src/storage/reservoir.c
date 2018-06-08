@@ -9,7 +9,7 @@
 # include "../system/io.h"
 # include "../system/sched.h"
 # include "../clock.h"
-
+# include "../dep/mem_set.h"
 # define is_flag(__flags, __flag) \
 	((__flags&__flag)==__flag)
 struct ffly_reservoir __ffly_reservoir__;
@@ -19,7 +19,7 @@ typedef struct region {
 	struct region **bk, *next;
 } *regionp;
 
-ff_u32_t sched_id;
+ff_u32_t static sched_id;
 
 ff_i8_t static
 update(void *__arg_p) {
@@ -146,6 +146,15 @@ ffly_reservoir_write(ffly_reservoirp __res, void *__reg,
 	ff_uint_t left = __size-(p-(ff_u8_t*)__p);
 	if (left>0)
 		ffly_slab_write(__res, *sb, p, 0, left);
+/*
+	ff_uint_t junk;
+	if ((junk = (SLAB_SIZE-left))>0) {
+		void *p = __ffly_mem_alloc(junk);
+		ffly_mem_set(p, 0x0, junk);
+		ffly_slab_write(__res, *sb, p, left, junk);
+		__ffly_mem_free(p);
+	}
+*/
 }
 
 ff_err_t
