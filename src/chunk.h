@@ -8,12 +8,14 @@
 
 typedef struct ffly_chunk {
     ff_u8_t lotsize;
-    ffly_lotpp lots;
+	ffly_lotpp top, end;
+    ffly_lotppp lots;
     ff_uint_t lotx, loty, lotz;
     ff_uint_t xl, yl, zl;
     ff_uint_t x, y, z;
     ffly_no_t no;
 
+	ff_uint_t size;
     // cleanup
     struct ffly_chunk **bk, *next;
 } *ffly_chunkp;
@@ -21,8 +23,10 @@ typedef struct ffly_chunk {
 # ifdef __cplusplus
 extern "C" {
 # endif
-void ffly_chunk_cleanup();
-ffly_lotpp ffly_fetch_lot(ffly_chunkp, ff_uint_t, ff_uint_t, ff_uint_t);
+ffly_lotp ffly_chunk_lot(ffly_chunkp, ff_uint_t, ff_uint_t, ff_uint_t);
+void ffly_chunk_cleanup(void);
+void ffly_chunk_update(ffly_chunkp);
+ffly_lotp ffly_fetch_lot(ffly_chunkp, ff_uint_t, ff_uint_t, ff_uint_t);
 void ffly_chunk_prepare(ffly_chunkp, ff_uint_t, ff_uint_t, ff_uint_t);
 ffly_chunkp ffly_chunk_alloc(ff_uint_t, ff_uint_t, ff_uint_t, ff_u8_t);
 void ffly_chunk_free(ffly_chunkp);

@@ -6,7 +6,7 @@
 	de init
 
 
-	when initing shit it will push crucify function to de init
+	when initing shit it will push corrode function to de init
 */
 
 struct task {

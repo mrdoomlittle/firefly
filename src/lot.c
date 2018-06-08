@@ -4,6 +4,11 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 static ffly_lotp top = NULL;
+ff_mlock_t lock = FFLY_MUTEX_INIT;
+# define lk(__lot) \
+	ffly_mutex_lock(&(__lot)->lock)
+# define ul(__lot) \
+	ffly_mutex_unlock(&(__lot)->lock)
 
 void ffly_lot_add(ffly_lotp __lot, ffly_phy_bodyp __body) {
 	if (!__body) {
@@ -52,14 +57,13 @@ void ffly_lot_rm(ffly_lotp __lot, ffly_phy_bodyp __body) {
 		return;
 	}
 
-	if (*body == __lot->end-1) {
+	if (*body == __lot->end-1)
 		__lot->end--;
-		*body = NULL;
-	} else { 
+	else { 
 		ffly_phy_bodyp t = *(--__lot->end);
-		*t->p = NULL;
-		*t->p = *body;
-	}	
+		*(*t->p = *body) = t;
+	}
+	*body = NULL;
 }
 
 ffly_phy_bodypp ffly_lot_obj(ffly_lotp __lot, ffly_phy_bodyp __body) {
@@ -75,13 +79,28 @@ void ffly_lot_prepare(ffly_lotp __lot, ff_uint_t __x, ff_uint_t __y, ff_uint_t _
 	__lot->z = __z;
 }
 
+ffly_lotp ffly_lot_top(void) {
+	return top;
+}
+
 ffly_lotp ffly_lot_alloc(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
 	ffly_lotp lot = (ffly_lotp)__ffly_mem_alloc(sizeof(struct ffly_lot));
-	if (top != NULL)
+	lot->lock = FFLY_MUTEX_INIT;
+	ffly_mutex_lock(&lock);
+	lk(lot);
+	if (top != NULL) {
+		lk(top);
 		top->bk = &lot->next;
+		top->prev = lot;
+	}
 	lot->next = top;
 	lot->bk = &top;
+	lot->prev = NULL;
 	top = lot;
+	if (lot->next != NULL)
+		ul(lot->next);
+	ul(lot);
+	ffly_mutex_unlock(&lock);
 
 	ff_uint_t size = (lot->xl = __xl)*(lot->yl = __yl)*(lot->zl = __zl);
 	lot->size = size;
@@ -96,7 +115,17 @@ ffly_lotp ffly_lot_alloc(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
 }
 
 void ffly_lot_free(ffly_lotp __lot) {
-	*__lot->bk = __lot->next;
+	lk(__lot);
+	ffly_lotp next;
+	if ((next = __lot->next) != NULL) {
+		lk(next);
+		next->prev = __lot->prev;
+		next->bk = __lot->bk;
+	}
+
+	if ((*__lot->bk = next) != NULL)
+		ul(next);
+	ul(__lot);
 	__ffly_mem_free(__lot->top);
 	__ffly_mem_free(__lot->bodies);
 	__ffly_mem_free(__lot);
@@ -109,7 +138,7 @@ ffly_lotp ffly_lot_creat(ff_uint_t __x, ff_uint_t __y, ff_uint_t __z, ff_uint_t 
 	return lot;
 }
 
-void ffly_lot_cleanup() {
+void ffly_lot_cleanup(void) {
 	ffly_lotp cur = top, bk;
 	while(cur != NULL) {
 		bk = cur;

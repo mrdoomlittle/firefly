@@ -29,14 +29,14 @@ get_chunk(ffly_unip __uni, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 	return ffly_cnk_man_fetch(&__uni->chunk_man, ffly_uni_chunk(__uni, __x, __y, __z));
 }
 
-ffly_lotpp static
+ffly_lotp static
 get_lot(ffly_unip __uni, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 	ffly_chunkp chunk = get_chunk(__uni, __x, __y, __z);
 	return ffly_fetch_lot(chunk, __x, __y, __z);
 }
 
 ffly_lotp ffly_uni_get_lot(ffly_unip __uni, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
-	return *get_lot(__uni, __x, __y, __z);
+	return get_lot(__uni, __x, __y, __z);
 }
 
 ff_err_t
@@ -67,24 +67,28 @@ ffly_uni_frame(ffly_unip __uni, ff_byte_t *__dst,
 			x = __x;
 			while(x < __x+__xl) {
 				chunk = get_chunk(__uni, x, y, z);
-				ffly_lotp lot = *ffly_fetch_lot(chunk, x, y, z);
+				ffly_lotp lot = ffly_fetch_lot(chunk, x, y, z);
 				if (lot != NULL) {
 					ffly_phy_bodypp itr = lot->top;
 					ffly_phy_bodyp body;
 					while(itr != lot->end) {
 						body = *itr;
+						if (!body) {
+							ffly_printf("lot error null body within.\n");
+						} else {
 						if ((*body->x < __x+__xl && *body->x >= __x) && (*body->y < __y+__yl && *body->y >= __y) && (*body->z < __z+__zl && *body->z >= __z)) {
 							ffly_draw_polygon(&body->shape, __dst, body->texture, body->xl, *body->x-__x, *body->y-__y, 0, __xl, __yl, __x+__xl, __y+__yl, 0.0);
 							//ffly_light_emit(__dst, __xl, __yl, *body->x-__x, *body->y-__y, 0, *body->light);
 						}
+						}
 						itr++;
 					}
 				}
-				x+= 1<<chunk->lotsize;
+				x+=1<<chunk->lotsize;
 			}
-			y+= 1<<chunk->lotsize;
+			y+=1<<chunk->lotsize;
 		}
-		z+= 1<<chunk->lotsize;
+		z+=1<<chunk->lotsize;
 	}
 }
 
@@ -111,19 +115,15 @@ ffly_uni_attach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 	/*
 		later we will deallocate lots that are not in use
 	*/
-	ffly_lotpp lot = get_lot(__uni, x, y, z);
-	if (!*lot) {
+	ffly_lotp lot = get_lot(__uni, x, y, z);
+	if (!lot) {
 		ffly_fprintf(ffly_log, "new lot.\n");
 		ffly_chunkp chunk = get_chunk(__uni, x, y, z);
-		*lot = ffly_lot_alloc(1<<chunk->lotsize, 1<<chunk->lotsize, 1<<chunk->lotsize);
-		ffly_lot_prepare(*lot, (x>>chunk->lotsize)*(1<<chunk->lotsize),
-			(y>>chunk->lotsize)*(1<<chunk->lotsize),
-			(z>>chunk->lotsize)*(1<<chunk->lotsize));
+		lot = ffly_chunk_lot(chunk, x, y, z);
 	}
 
-//	  ffly_fprintf(ffly_log, "added to lot.\n");
-	ffly_lot_add(*lot, __body);
-	__body->lot = *lot;
+	ffly_lot_add(lot, __body);
+	__body->lot = lot;
 	retok;
 }
 	
@@ -143,6 +143,15 @@ ffly_uni_update(ffly_unip __uni, ff_uint_t __delta) {
 	while(cur != NULL) {
 		ffly_gravity_apply(__uni, cur, __delta);
 		ffly_phy_body_fd(&cur);
+	}
+
+	ff_id_t *id = __uni->chunks;
+	ff_id_t *end = id+__uni->chunk_c;
+	ffly_chunkp chunk;
+	while(id != end) {
+		chunk = ffly_cnk_man_fetch(&__uni->chunk_man, *id);
+		ffly_chunk_update(chunk);
+		id++;
 	}
 }
 
