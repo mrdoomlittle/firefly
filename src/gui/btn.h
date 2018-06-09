@@ -5,9 +5,10 @@
 # include "../dep/bzero.h"
 # include "../ffly_def.h"
 # include "../event.h"
+# include "../pallet.h"
 struct ffly_gui_btn {
 	ff_u8_t id;
-	ff_u8_t *texture;
+	struct ffly_pallet texture;
 	ff_i8_t pressed;
 	ff_i8_t hovering;
     ff_u16_t x, y;
@@ -31,7 +32,7 @@ extern "C" {
 ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t*, ff_u16_t, ff_u16_t, ff_u16_t, ff_u16_t);
 void ffly_gui_btn_destroy(ffly_gui_btnp);
 void ffly_gui_btn_init(ffly_gui_btnp, ff_u8_t*, ff_u16_t, ff_u16_t, ff_u16_t, ff_u16_t);
-ff_err_t ffly_gui_btn_draw(ffly_gui_btnp, ff_u8_t*, ff_u16_t, ff_u16_t);
+ff_err_t ffly_gui_btn_draw(ffly_gui_btnp, ffly_palletp, ff_u16_t, ff_u16_t);
 ff_err_t ffly_gui_btn_enable_ir(ffly_gui_btnp);
 ff_i8_t ffly_gui_btn_handle(void*);
 ff_i8_t ffly_gui_btn_hovering(ffly_gui_btnp);

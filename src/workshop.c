@@ -9,6 +9,7 @@
 # include "graphics.h"
 # include "layer.h"
 # include "graphics/colour.h"
+# define __ffly_debug
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "graphics/fill.h"
@@ -25,13 +26,13 @@ enum {
 };
 
 void opt() {
-	ffly_gui_btn_draw(workshop.front, ffly_frame(__frame_buff__), WIDTH, HEIGHT);
+	ffly_gui_window_draw(&workshop.window, &workshop.frame, WIDTH, HEIGHT);
+	ffly_gui_btn_draw(workshop.front, &workshop.frame, WIDTH, HEIGHT);
 }
 
 void front() {
-	ffly_gui_window_draw(&workshop.window, &workshop.frame);
-	ffly_pallet_draw(&workshop.frame, ffly_frame(__frame_buff__), WIDTH, HEIGHT);
-	ffly_gui_btn_draw(workshop.opt, ffly_frame(__frame_buff__), WIDTH, HEIGHT);
+	ffly_gui_window_draw(&workshop.window, &workshop.frame, WIDTH, HEIGHT);
+	ffly_gui_btn_draw(workshop.opt, &workshop.frame, WIDTH, HEIGHT);
 }
 
 static void(*draw)(void) = front;
@@ -42,6 +43,7 @@ void ffly_workshop_start() {
 	while(1) {
 		ffly_pixfill(ffly_frame(__frame_buff__), WIDTH*HEIGHT, ffly_colour(63, 60, 54, 255));
 		draw();
+		ffly_pallet_draw(&workshop.frame, ffly_frame(__frame_buff__), WIDTH, HEIGHT, 0, 0);
 		ff_eventp event;
 		while(!ff_event_poll(&event)) {
 			if (event->kind == _ffly_wd_ek_btn_press || event->kind == _ffly_wd_ek_btn_release) {
@@ -59,16 +61,18 @@ void ffly_workshop_start() {
 		}
 		ffly_sched_clock_tick(1);
 		ffly_scheduler_tick();
-		ffly_nanosleep(0, 100000000);
+		// 16 rps
+		ffly_nanosleep(0, 60000000);
 		ffly_grp_unload(&__ffly_grp__);
 
 		if (!ff_duct_serve())
 			break;
-		ffly_printf("%u\n", cc++);
+		ffly_printf("%u, memusage: %u\n", cc++, ffly_mem_alloc_bc-ffly_mem_free_bc);
 	}
 }
 
-void static bt_press(ffly_gui_btnp __btn, void *__arg) {
+void static
+bt_press(ffly_gui_btnp __btn, void *__arg) {
 	ffly_printf("button press.\n");
 	if (__btn->id == _bt_opt) {
 		//ffly_pixfill(btn->texture, 20*20, ffly_colour(66, 194, 224, 255));
@@ -80,7 +84,8 @@ void static bt_press(ffly_gui_btnp __btn, void *__arg) {
 	}
 }
 
-void static bt_release(ffly_gui_btnp __btn, void *__arg) {
+void static
+bt_release(ffly_gui_btnp __btn, void *__arg) {
 	ffly_printf("button, release.\n");
 	if (__btn->id == _bt_opt) {
 		//ffly_pixfill(btn->texture, 20*20, ffly_colour(2, 52, 132, 255));
@@ -93,27 +98,26 @@ void static bt_hover(ffly_gui_btnp __btn, void *__arg) {
 
 ff_u8_t *tex0, *tex1;
 void ffly_workshop_init() {
-	ffly_pallet_init(&workshop.frame, WIDTH>>_ffly_tile_64, HEIGHT>>_ffly_tile_64, _ffly_tile_64);
+	ffly_pallet_init(&workshop.frame, WIDTH, HEIGHT, _ffly_tile_64);
 	ffly_grp_prepare(&__ffly_grp__, 100);
 	ff_set_frame_size(WIDTH, HEIGHT);
 	ff_graphics_init();
 
 	ff_duct_open(FF_PIPE_CREAT);
 	ffly_mem_set(ffly_frame(__frame_buff__), 255, (WIDTH*HEIGHT)*4);
-	ffly_pallet_update(&workshop.frame, ffly_frame(__frame_buff__));
 	ff_duct_listen();
 
 	ffly_queue_init(&ffly_event_queue, sizeof(ff_eventp));
 
-	ffly_scheduler_init();
-	tex0 = (ff_u8_t*)__ffly_mem_alloc(20*20*4);
-	tex1 = (ff_u8_t*)__ffly_mem_alloc(20*20*4);
-	ffly_pixfill(tex0, 20*20, ffly_colour(2, 52, 132, 255));
-	ffly_pixfill(tex1, 20*20, ffly_colour(244, 206, 66, 255));
-	
+	ffly_scheduler_init(0);
+	tex0 = (ff_u8_t*)__ffly_mem_alloc(76*76*4);
+	tex1 = (ff_u8_t*)__ffly_mem_alloc(76*76*4);
+	ffly_pixfill(tex0, 76*76, ffly_colour(255, 52, 132, 255));
+	ffly_pixfill(tex1, 76*76, ffly_colour(244, 206, 66, 255));
+	ffly_grp_unload(&__ffly_grp__);	
 
 	ffly_gui_btnp btn;
-	btn = ffly_gui_btn_creat(tex0, 20, 20, 40, 20);
+	btn = ffly_gui_btn_creat(tex0, 76, 76, 0, 0);
 	btn->pt_x = &pt_x;
 	btn->pt_y = &pt_y;
 	btn->press = bt_press;
@@ -123,7 +127,7 @@ void ffly_workshop_init() {
 	btn->id = _bt_opt;
 	workshop.opt = btn;
 
-	btn = ffly_gui_btn_creat(tex1, 20, 20, 20, 20);
+	btn = ffly_gui_btn_creat(tex1, 76, 76, 76, 0);
 	btn->pt_x = &pt_x;
 	btn->pt_y = &pt_y;
 	btn->press = bt_press;
@@ -133,7 +137,7 @@ void ffly_workshop_init() {
 	btn->id = _bt_front;
 	workshop.front = btn;
 
-	ffly_gui_window_init(&workshop.window, 128, 128, 40, 40);
+	ffly_gui_window_init(&workshop.window, 64, 64, 128, 128);
 }
 
 void ffly_workshop_de_init() {
@@ -151,6 +155,7 @@ void ffly_workshop_de_init() {
 	ffly_grp_cleanup(&__ffly_grp__);
 	ffly_grj_cleanup();
 	ffly_pallet_de_init(&workshop.frame);
+	ffly_tile_cleanup();
 }
 
 ff_err_t ffmain(int __argc, char const *__argv[]) {

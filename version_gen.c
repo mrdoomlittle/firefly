@@ -7,6 +7,7 @@
 # include "src/system/util/ff6.h"
 # include <string.h>
 # include "src/version.h"
+# include "src/system/string.h"
 ff_uint_t gen_c_vers(ff_u8_t *__buf, char *__vers, ff_uint_t __len) {
 	ff_u8_t *bufp = __buf;
 	char *p = __vers;
@@ -29,14 +30,15 @@ ff_uint_t gen_c_vers(ff_u8_t *__buf, char *__vers, ff_uint_t __len) {
 	return bufp-__buf;
 }
 
-void out_c_hdr(ff_u8_t *__buf, char *__vers, ff_uint_t __len) {
+void out_c_hdr(ff_u8_t *__buf, char *__vers, ff_uint_t __len, ff_u64_t __vers_int) {
 	int fd;
 	fd = open("src/version.h", O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
 	char const p0[] = {'#', 'i', 'f', 'n', 'd', 'e', 'f', ' ', '_', '_', 'f', 'f', 'l', 'y', '_', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', '_', 'h', '\n'};
 	char const p1[] = {'#', 'd', 'e', 'f', 'i', 'n', 'e', ' ', '_', '_', 'f', 'f', 'l', 'y', '_', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', '_', 'h', '\n'};
 	char const p2[] = {'#', 'd', 'e', 'f', 'i', 'n', 'e', ' ', 'f', 'f', 'l', 'y', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n'};
 	char const p3[] = {'#', 'd', 'e', 'f', 'i', 'n', 'e', ' ', 'f', 'f', 'l', 'y', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', 'l', 'e', 'n'};
-	char const p4[] = {'#', 'e', 'n', 'd', 'i', 'f', ' ', '/', '*', '_', '_', 'f', 'f', 'l', 'y', '_', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', '_', 'h', '*', '/', '\n'};
+	char const p4[] = {'#', 'd', 'e', 'f', 'i', 'n', 'e', ' ', 'f', 'f', 'l', 'y', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', 'i', 'n', 't'};
+	char const p5[] = {'#', 'e', 'n', 'd', 'i', 'f', ' ', '/', '*', '_', '_', 'f', 'f', 'l', 'y', '_', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', '_', 'h', '*', '/', '\n'};
 
 	ff_u8_t *p = __buf;
 	ff_uint_t l;
@@ -65,6 +67,13 @@ void out_c_hdr(ff_u8_t *__buf, char *__vers, ff_uint_t __len) {
 
 	l = sizeof(p4);
 	memcpy(p, p4, l);
+	p+=l;
+	*(p++) = ' ';
+	p+=ffly_nots(__vers_int, p);
+	*(p++) = '\n';
+
+	l = sizeof(p5);
+	memcpy(p, p5, l);
 	p+=l;
 
 	write(fd, __buf, p-__buf);
@@ -96,5 +105,5 @@ int main() {
 	pwrite(fd, vers, l, 0);
 	close(fd);
 
-	out_c_hdr(buf, vers, l);
+	out_c_hdr(buf, vers, l, val);
 }

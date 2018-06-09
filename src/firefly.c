@@ -10,9 +10,12 @@
 # include "dep/str_cmp.h"
 # include "dep/mem_dup.h"
 # include "dep/mem_cpy.h"
+# include "dep/mem_cmp.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "hatch.h"
+# include "version.h"
+# include "system/util/ff6.h"
 /*
 extern void*(*ffly_allocp)(ff_uint_t);
 extern void(*ffly_freep)(void*);
@@ -27,6 +30,7 @@ typedef struct _ffopt {
 # define ffopt_size sizeof(struct _ffopt)
 
 ffopt static *optbed = NULL;
+// rename
 void evalopts(char const *__s) {
 	char const *p = __s;
 	char buf[128];
@@ -83,6 +87,23 @@ char const static *by = "mrdoomlittle";
 # include "piston.h"
 # include "corrode.h"
 # include "location.h"
+ff_i8_t static
+check_conf_version(void) {
+	ff_i8_t ret;
+	char p[] = ffly_version;
+	if ((ret = ffly_mem_cmp(__ffly_sysconf__.version, p, ffly_version_len))<0) {
+		ffly_printf("sysconf out of date.\n");
+		ff_u64_t a;
+		ffly_ff6_dec(__ffly_sysconf__.version, &a, ffly_version_len);
+		if (a>ffly_version_int) {
+			ffly_printf("config version too in date.\n");
+		} else if (a<ffly_version_int) {
+			ffly_printf("config version out of date.\n");
+		}
+	}
+	return ret;
+}
+
 void ffly_string_init(void);
 void static
 init() {
@@ -184,6 +205,9 @@ void _start(void) {
 	char const **arg = argl;
 	*(arg++) = *(argp++); 
 
+	/*
+		move to its own function
+	*/
 	ff_i8_t conf = -1;
 	ff_i8_t hatch = -1;
 	if (argc > 1) {
@@ -200,8 +224,9 @@ void _start(void) {
 				if (!cur->val) {
 					ffly_printf("error.\n");
 				}
-				ffly_ld_sysconf(cur->val);
 				ffly_printf("loaded sysconfig.\n");
+				ffly_ld_sysconf(cur->val);
+				check_conf_version();
 				conf = 0;
 			} else if (!ffly_str_cmp(cur->name, "-mode")) {
 				if (!ffly_str_cmp(cur->val, "debug"))
@@ -219,7 +244,7 @@ void _start(void) {
 	}
 
 	if (conf<0)
-		// load default builtin config
+		// load default builtin config if no file was provided
 		ffly_ld_sysconf_def();
 	/*
 		alloca is giving pointer from the temp stack,
@@ -262,10 +287,10 @@ _end:
 			__ffly_mem_free(bk);
 		}
 	}
-
+# ifdef __ffly_debug
 	__ffmod_debug
 		ffly_arstat();
-
+# endif
 	ffly_collapse(frame);
 
 //	pr();

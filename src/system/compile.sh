@@ -189,6 +189,7 @@ $ffly_cc -c $cc_flags -o $dst_dir/event.o $root_dir/event.c
 $ffly_cc -c $cc_flags -o $dst_dir/queue.o $root_dir/queue.c
 $ffly_cc -c $cc_flags -o $dst_dir/port.o $root_dir/port.c
 $ffly_cc -c $cc_flags -o $dst_dir/tls.o $root_dir/tls.c
+$ffly_cc -c $cc_flags -o $dst_dir/util/ff6.o $root_dir/util/ff6.c
 #$ffly_cc -c $cc_flags -o $dst_dir/mal_track.o $root_dir/mal_track.c
 
 # $dst_dir/task_worker.o $dst_dir/task.o $dst_dir/task_pool.o $dst_dir/time.o
@@ -250,5 +251,6 @@ $dst_dir/sys_clock_gettime.o.0 $dst_dir/sys_clock_gettime.o.1 \
 $dst_dir/sys_rt_sigaction.o.0 $dst_dir/sys_rt_sigaction.o.1 \
 $dst_dir/barrel.o $dst_dir/sched.o $dst_dir/task_pool.o $dst_dir/servant.o \
 $dst_dir/event.o $dst_dir/queue.o $dst_dir/port.o $dst_dir/tls.o
-$dst_dir/sys_arch_prctl.o.0 $dst_dir/sys_arch_prctl.o.1"
+$dst_dir/sys_arch_prctl.o.0 $dst_dir/sys_arch_prctl.o.1 \
+$dst_dir/util/ff6.o"
 # $dst_dir/mal_track.o"

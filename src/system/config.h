@@ -25,7 +25,6 @@ struct ffly_sysconf {
 	__ffly_sysconf__.loaded
 # define sysconf_db_loaded \
 	__ffly_sysconf__.db.loaded
-
 # ifdef __cplusplus
 extern "C" {
 # endif

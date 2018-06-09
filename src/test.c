@@ -86,6 +86,7 @@ void* th(void *__arg) {
 # include "location.h"
 # include "system/config.h"
 # include "storage/reservoir.h"
+# include "version.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 /*
 	ffly_scheduler_init();
@@ -223,7 +224,7 @@ struct ffly_queue queue;
 	ff_stores_logout();
 	ff_stores_disconnect();
 */
-
+/*
 	// might break
 	ffly_scheduler_init(SCHED_CORRODE);
 	
@@ -246,4 +247,5 @@ struct ffly_queue queue;
 //	ffly_scheduler_de_init();
 
 	ffly_nanosleep(2, 0);
+*/
 }

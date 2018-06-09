@@ -136,6 +136,9 @@ ffly_chunkp ffly_chunk_alloc(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, ff_
 
 void ffly_chunk_free(ffly_chunkp __chunk) {
 	*__chunk->bk = __chunk->next;
+	if (__chunk->next != NULL)
+		__chunk->next->bk = __chunk->bk;
+
 	__ffly_mem_free(__chunk->top);
 	__ffly_mem_free(__chunk->lots);
 	__ffly_mem_free(__chunk);

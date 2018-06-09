@@ -65,7 +65,8 @@ void
 ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
 	ff_u16_t __height, ff_u16_t __x, ff_u16_t __y)
 {
-	__btn->texture = __texture;
+	ffly_pallet_init(&__btn->texture, __width, __height, _ffly_tile_64);
+	ffly_pallet_update(&__btn->texture, __texture, __width, __height);
 	__btn->pressed = -1;
 	__btn->hovering = -1;
 	__btn->x = __x;
@@ -80,12 +81,13 @@ ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
 	__btn->hover = NULL;
 }
 
-ff_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn, ff_u8_t *__dst, ff_u16_t __width, ff_u16_t __height) {
+ff_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn, ffly_palletp __pallet, ff_u16_t __width, ff_u16_t __height) {
 	ff_err_t err;
 	ffly_fprintf(ffly_log, "button draw.\n");
-	if (_err(err = ffly_pixdraw(__btn->x, __btn->y, __dst, __width, __btn->texture, __btn->width, __btn->height))) {
-		return err;
-	}
+//	if (_err(err = ffly_pixdraw(__btn->x, __btn->y, __dst, __width, __btn->texture, __btn->width, __btn->height))) {
+//		return err;
+//	}
+	ffly_pallet_copy(&__btn->texture, __pallet, __btn->x, __btn->y);
 	return FFLY_SUCCESS;
 }
 
@@ -101,6 +103,7 @@ ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t *__texture, ff_u16_t __width,
 
 void ffly_gui_btn_destroy(ffly_gui_btnp __btn) {
 	ffly_sched_rm(__btn->sched_id);
+	ffly_pallet_de_init(&__btn->texture);
 	__ffly_mem_free(__btn);
 }
 
