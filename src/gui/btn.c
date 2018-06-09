@@ -115,6 +115,11 @@ ff_i8_t ffly_gui_btn_handle(void *__arg_p) {
 	pt_x = *btn->pt_x;
 	pt_y = *btn->pt_y;	
 
+	/*
+		if press or hover ... is detected pass the call 
+		to task_pool to keep the sched from clogging up.
+	*/
+
 	ffly_fprintf(ffly_log, "pt_x: %u, pt_y: %u, bt_x: %u, bt_y: %u\n", pt_x, pt_y, btn->x, btn->y);
 	if (pt_x >= btn->x && pt_y >= btn->y) {
 		if (pt_x < btn->x+btn->width && pt_y < btn->y+btn->height) {

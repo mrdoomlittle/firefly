@@ -74,7 +74,7 @@ _sk:
 	body->z = __z;
 	body->mass = 0;
 	body->lot = NULL;
-	return (page&0xfff)|((pg_off&0xfffff)<<12);
+	return (body->id = (page&0xfff)|((pg_off&0xfffff)<<12));
 }
 
 /*

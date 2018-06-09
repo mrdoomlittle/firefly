@@ -36,6 +36,7 @@ typedef struct ffly_phy_body {
 	ff_u8_t dir;
 
 	struct ffly_phy_body **bk, *next;
+	ff_u32_t id;
 } *ffly_phy_bodyp;
 
 typedef ffly_phy_bodyp* ffly_phy_bodypp;

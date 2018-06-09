@@ -25,11 +25,29 @@
 # include "memory/plate.h"
 # include "system/sched.h"
 # include "storage/reservoir.h"
+# include "physics/contact.h"
 # define WIDTH 448
 # define HEIGHT 448
 /*
 	only for testing
 */
+
+char const *contact_str(ff_u8_t __loc) {
+	switch(__loc) {
+		case _ffly_contact_c0: return "top";
+		case _ffly_contact_c1: return "right";
+		case _ffly_contact_c2: return "bottom";
+		case _ffly_contact_c3: return "left";
+	}
+	return "unknown";
+}
+
+ff_i8_t contact(ff_u8_t __loc, ffly_phy_bodyp __a, ffly_phy_bodyp __b) {
+	if (__loc == _ffly_contact_c2) {
+	//	ffly_set_direction(__a->id, _ff_dir_a0);
+	}
+	ffly_printf("############################# body contact, from: %s\n", contact_str(__loc));
+}
 
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_scheduler_init(SCHED_CORRODE);
@@ -58,21 +76,21 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_duct_listen();
 
 	struct ffly_camera camera;
-	ffly_camera_init(&camera, 100, 100);
+	ffly_camera_init(&camera, 256, 256);
 
 	/*
 		clear camera memory
 	*/
-	ffly_mem_set(camera.pixels, 0, 100*100*4);
+	ffly_mem_set(camera.pixels, 0, 256*256*4);
 
 	struct ffly_uni uni;
 
 	/*
 		build universe
 	*/
-	ffly_uni_build(&uni, _ffly_uni_128, _ffly_uni_128, _ffly_uni_64, 4, _ffly_lotsize_8);
+	ffly_uni_build(&uni, _ffly_uni_256, _ffly_uni_256, _ffly_uni_64, 4, _ffly_lotsize_8);
 
-	ffly_gravity_init(_ffly_uni_128, _ffly_uni_128, _ffly_uni_64);
+	ffly_gravity_init(_ffly_uni_256, _ffly_uni_256, _ffly_uni_64);
 /*
 	ff_uint_t x, y = 0;
 	while(y != 70) {
@@ -112,8 +130,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	body0->yl = 20;
 	body0->zl = 1;
 
-	obj0->x = 0;
-	obj0->y = 40;
+	obj0->x = 40;
+	obj0->y = 0;
 	obj0->z = 0;
 
 	ffly_bzero(&body1->shape, sizeof(ffly_polygon));
@@ -125,20 +143,20 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	body1->yl = 20;
 	body1->zl = 1;
 
-	obj1->x = 0;
-	obj1->y = 40;
+	obj1->x = 40;
+	obj1->y = 140;
 	obj1->z = 0;
 
 	ffly_uni_attach_body(&uni, body0);
 	ffly_uni_attach_body(&uni, body1);
 
 	// set velocity of object to ...
-	ffly_set_velocity(obj0->phy_body, 0.5);
+	ffly_set_velocity(obj0->phy_body, 2);
 	ffly_set_velocity(obj1->phy_body, 0);
 
 	// set direction to a1 or right
-	ffly_set_direction(obj0->phy_body, _ff_dir_a1);
-	ffly_set_direction(obj1->phy_body, _ff_dir_a1);
+	ffly_set_direction(obj0->phy_body, _ff_dir_a2);
+	ffly_set_direction(obj1->phy_body, _ff_dir_a2);
 
 	ffly_set_angular_velocity(obj0->phy_body, 0.0);
 	ffly_set_angular_velocity(obj1->phy_body, 0.0);
@@ -146,6 +164,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_set_mass(obj0->phy_body, 800000);
 	ffly_set_mass(obj1->phy_body, 0);
 
+	ffly_phy_contact(body0, body1, contact);
 
 	ff_uint_t delta = 0, start = phy_clock;
 	ff_int_t old_x, old_y;
@@ -160,10 +179,10 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	_sk:
 		old_x = obj0->x;
 		old_y = obj0->y;
-		if (obj0->x >= 100)
-			ffly_set_direction(obj0->phy_body, _ff_dir_a3);
-		else if (!obj0->x)
-			ffly_set_direction(obj0->phy_body, _ff_dir_a1);
+		if (obj0->y >= 100)
+			ffly_set_direction(obj0->phy_body, _ff_dir_a0);
+		else if (!obj0->y)
+			ffly_set_direction(obj0->phy_body, _ff_dir_a2);
 		ffly_uni_update(&uni, delta);
 		ffly_obj_handle(&uni, delta, obj0);
 		ffly_obj_handle(&uni, delta, obj1);
@@ -175,7 +194,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		ffly_grp_unload(&__ffly_grp__);
 		if (!ff_duct_serve())
 			goto _end;
-		ffly_nanosleep(0, 100000000);
+		ffly_nanosleep(0, 30000000);
 		ffly_phy_clock_tick();
 		ff_eventp event;
 		while(!ff_event_poll(&event)) {
@@ -199,4 +218,6 @@ _end:
 	ffly_camera_de_init(&camera);
 	ffly_grp_cleanup(&__ffly_grp__);
 	ffly_plate_cleanup();
+//	ffly_terrain_cleanup();
+	ffly_sentinel_cleanup();
 }

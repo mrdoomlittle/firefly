@@ -121,7 +121,6 @@ update(void *__arg) {
 
 ff_err_t
 ffly_gravity_init(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {	
-	ff_uint_t size;
 	size = (xl = (__xl>>ZONE_SHIFT))*(yl = (__yl>>ZONE_SHIFT))*(zl = (__zl>>ZONE_SHIFT));
 	page_c = (size>>PAGE_SHIFT)+((size&((~(ff_u64_t)0)>>(64-PAGE_SHIFT)))>0);
 	pages = (struct page*)__ffly_mem_alloc(page_c*sizeof(struct page));
@@ -162,8 +161,8 @@ void ffly_gravity_apply(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __delt
 	ff_uint_t y = (*__body->y)>>ZONE_SHIFT;
 	ff_uint_t z = (*__body->z)>>ZONE_SHIFT;
 
-	if (x+(y*xl)+(z*(xl*yl))>=size) {
-		ffly_fprintf(ffly_err, "body out of bounds.\n");
+	if ((x+(y*xl)+(z*(xl*yl)))>=size) {
+		ffly_fprintf(ffly_err, "gravity, body out of bounds zone' {%u!%u}:{%u!%u}:{%u!%u}:%u\n", x, xl, y, yl, z, zl, size);
 		return;
 	}
 

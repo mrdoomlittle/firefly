@@ -13,7 +13,7 @@
     (1<<__uni->splice)
 
 enum {
-    _ffly_uni_8 = 8,
+    _ffly_uni_8 = 3,
     _ffly_uni_16 = 16,
     _ffly_uni_32 = 32,
     _ffly_uni_64 = 64,

@@ -120,6 +120,7 @@ ffly_uni_attach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 		ffly_fprintf(ffly_log, "new lot.\n");
 		ffly_chunkp chunk = get_chunk(__uni, x, y, z);
 		lot = ffly_chunk_lot(chunk, x, y, z);
+		ffly_printf("new lot %p for %u\n", lot, __body->id);
 	}
 
 	ffly_lot_add(lot, __body);
@@ -132,6 +133,11 @@ ff_err_t ffly_uni_detach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 		ffly_fprintf(ffly_err, "failed to detatch body.\n");
 		reterr;
 	}
+	if (!__body->lot) {
+		ffly_fprintf(ffly_err, "unknown lot.\n");
+		reterr;
+	}
+
 	ffly_lot_rm(__body->lot, __body);
 	retok;
 }
@@ -142,6 +148,7 @@ ffly_uni_update(ffly_unip __uni, ff_uint_t __delta) {
 	ffly_phy_bodyp cur = ffly_phy_body_top();
 	while(cur != NULL) {
 		ffly_gravity_apply(__uni, cur, __delta);
+		ffly_printf("body: %u, %u:%u:%u\n", cur->id, *cur->x, *cur->y, *cur->z);
 		ffly_phy_body_fd(&cur);
 	}
 

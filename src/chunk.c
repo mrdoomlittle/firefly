@@ -14,6 +14,10 @@ ffly_lotp ffly_chunk_lot(ffly_chunkp __chunk, ff_uint_t __x, ff_uint_t __y, ff_u
 	ff_uint_t y = lotsplice(__y-__chunk->y, __chunk->lotsize);
 	ff_uint_t z = lotsplice(__z-__chunk->z, __chunk->lotsize);
 	ffly_lotppp p = __chunk->lots+x+(y*__chunk->lotx)+(z*(__chunk->loty*__chunk->lotx));
+	if (p>=__chunk->lots+__chunk->size) {
+		ffly_printf("chunk, out of bounds.\n");
+		return NULL;
+	}
 
 	ff_u8_t lotsize = __chunk->lotsize;
 
@@ -22,10 +26,17 @@ ffly_lotp ffly_chunk_lot(ffly_chunkp __chunk, ff_uint_t __x, ff_uint_t __y, ff_u
 		return NULL;
 	}
 
+	if (*p != NULL) {
+		ffly_printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@chunk, unclean memory.\n");
+		// error
+		return NULL;
+	}
+
 	ffly_lotp lot;
 	lot = (*(*p = __chunk->end++) = ffly_lot_alloc(1<<lotsize, 1<<lotsize, 1<<lotsize));
-	ffly_lot_prepare(lot, (x>>lotsize)*(1<<lotsize), (y>>lotsize)*(1<<lotsize), (z>>lotsize)*(1<<lotsize));
+	ffly_lot_prepare(lot, (__x>>lotsize)*(1<<lotsize), (__y>>lotsize)*(1<<lotsize), (__z>>lotsize)*(1<<lotsize));
 	lot->p = p;
+	ffly_printf("created new lot : %p, {%u:%u:%u}, {%u:%u:%u} : %u\n", lot, __x, __y, __z, lot->x, lot->y, lot->z, lotsize);
 	return lot;
 }
 
@@ -38,7 +49,12 @@ ffly_lotp ffly_fetch_lot(ffly_chunkp __chunk, ff_uint_t __x, ff_uint_t __y, ff_u
 	ffly_lotppp p = __chunk->lots+x+(y*__chunk->lotx)+(z*(__chunk->loty*__chunk->lotx));
 	if (!*p)
 		return NULL;
-	return **p;
+	ffly_lotp lot = **p;
+	if (lot->p != p) {
+		ffly_fprintf(ffly_err, "chunk, lot location differ.\n");
+		return NULL;
+	}
+	return lot;
 }
 
 void ffly_chunk_update(ffly_chunkp __chunk) {
@@ -47,17 +63,17 @@ void ffly_chunk_update(ffly_chunkp __chunk) {
 	//ffly_printf("chunk usage: %u:%u\n", __chunk->lotx*__chunk->loty*__chunk->lotz, __chunk->end-__chunk->top);
 	while(cur < __chunk->end) {
 		lot = *cur;
+		ffly_printf("lotsize: %u\n", lot->end-lot->top);
 		if (!lot) {
 			ffly_printf("chunk update error.\n");
 		} else {
 			if (lot->top == lot->end) {
-				ffly_printf("removing lot, not in use/empty.\n");
+				ffly_printf("removing lot, not in use/empty, %p\n", lot);
 				if (cur == __chunk->end-1)
 					__chunk->end--;
 				else {
 					ffly_lotp t = *(--__chunk->end);
 					*(*t->p = *lot->p) = t;
-					*lot->p = NULL;
 				}
 				*lot->p = NULL;
 				ffly_lot_free(lot);

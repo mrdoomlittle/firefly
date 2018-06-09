@@ -11,7 +11,7 @@ ff_mlock_t lock = FFLY_MUTEX_INIT;
 	ffly_mutex_unlock(&(__lot)->lock)
 
 void ffly_lot_add(ffly_lotp __lot, ffly_phy_bodyp __body) {
-	if (!__body) {
+	if (!__body || !__lot) {
 		return;
 	}
 
@@ -19,17 +19,27 @@ void ffly_lot_add(ffly_lotp __lot, ffly_phy_bodyp __body) {
 		ffly_fprintf(ffly_err, "failure adding body to lot.\n");
 		return;
 	}
-	ff_uint_t xoff = *__body->x-__lot->x;
-	ff_uint_t yoff = *__body->y-__lot->y;
-	ff_uint_t zoff = *__body->z-__lot->z;
+
+	ff_uint_t xoff = (*__body->x)-__lot->x;
+	ff_uint_t yoff = (*__body->y)-__lot->y;
+	ff_uint_t zoff = (*__body->z)-__lot->z;
 	ffly_phy_bodyppp body = __lot->bodies+xoff+(yoff*__lot->xl)+(zoff*(__lot->yl*__lot->xl));
 	if (body>=__lot->bodies+__lot->size) {
-		ffly_fprintf(ffly_err, "body is out of bounds.\n");
-		return;
+		ffly_fprintf(ffly_err, "lot, body is out of bounds, {%u:%u:%u}, {%u:%u:%u}, {%u:%u:%u}, body: %u\n", xoff, yoff, zoff, __lot->x, __lot->y, __lot->z, *__body->x, *__body->y, *__body->z, __body->id);
+		goto _fail;
+	}
+	
+	if (*body != NULL) {
+		ffly_printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@lot, unclean memory, %u:%u:%u\n", xoff, yoff, zoff);
+		goto _fail;
 	}
 
 	ffly_printf("lot usage: %u:%u\n", __lot->size, __lot->end-__lot->top);
 	*(*(__body->p = body) = __lot->end++) = __body;
+	ffly_printf("body: %u added to lot %p\n", __body->id, __lot);
+	return;
+_fail:
+	ffly_fprintf(ffly_err, "failed to add to lot.\n");
 }
 
 void ffly_lot_rm(ffly_lotp __lot, ffly_phy_bodyp __body) {
@@ -38,32 +48,47 @@ void ffly_lot_rm(ffly_lotp __lot, ffly_phy_bodyp __body) {
 		return;
 	}
 
-	ff_uint_t xoff = *__body->x-__lot->x;
-	ff_uint_t yoff = *__body->y-__lot->y;
-	ff_uint_t zoff = *__body->z-__lot->z;
+	__body->lot = NULL;
+
+	ff_uint_t xoff = (*__body->x)-__lot->x;
+	ff_uint_t yoff = (*__body->y)-__lot->y;
+	ff_uint_t zoff = (*__body->z)-__lot->z;
 	ffly_phy_bodyppp body = __lot->bodies+xoff+(yoff*__lot->xl)+(zoff*(__lot->yl*__lot->xl)); 
 	if (body>=__lot->bodies+__lot->size) {
-		ffly_fprintf(ffly_err, "body is out of bounds.\n");
-		return;
+		ffly_fprintf(ffly_err, "lot, body is out of bounds, {%u:%u:%u}, {%u:%u:%u}, {%u:%u:%u}, body: %u\n", xoff, yoff, zoff, __lot->x, __lot->y, __lot->z, *__body->x, *__body->y, *__body->z, __body->id);
+		goto _fail;
 	}
 
 	if (!*body) {
-		ffly_fprintf(ffly_err, "body is not apart of lot.\n");
-		return;
+		ffly_fprintf(ffly_err, "lot, body is not apart of lot.\n");
+		goto _fail;
 	}
 
 	if (!**body) {
-		ffly_fprintf(ffly_err, "body at location does not exist.\n");
-		return;
+		ffly_fprintf(ffly_err, "lot, body at location does not exist.\n");
+		goto _fail;
 	}
 
-	if (*body == __lot->end-1)
+	if (**body != __body) {
+		ffly_fprintf(ffly_err, "body alreay at this location.\n");
+		goto _fail;
+	}
+
+	if (__body->p != body) {
+		ffly_fprintf(ffly_err, "body location does not match.\n");
+		goto _fail;
+	}
+
+	if (*body == __lot->end-1) 
 		__lot->end--;
 	else { 
 		ffly_phy_bodyp t = *(--__lot->end);
 		*(*t->p = *body) = t;
 	}
 	*body = NULL;
+	return;
+_fail:
+	ffly_fprintf(ffly_err, "failed to remove from lot.\n");
 }
 
 ffly_phy_bodypp ffly_lot_obj(ffly_lotp __lot, ffly_phy_bodyp __body) {
@@ -111,6 +136,7 @@ ffly_lotp ffly_lot_alloc(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
 	ffly_phy_bodyppp itr = lot->bodies;
 	while(itr != lot->bodies+size)
 		*(itr++) = NULL;
+	ffly_printf("new lot alloc %p\n", lot);
 	return lot;
 }
 
