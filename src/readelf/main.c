@@ -49,7 +49,7 @@ int main(int __argc, char const *__argv[]) {
     
 	char *stt = (char*)(p+sec->sh_offset);
 	printf("%s\n", stt+sec->sh_name);
-
+	printf("entry: %lu\n", hdr->e_entry);
 
 	free(p);
 	close(fd);

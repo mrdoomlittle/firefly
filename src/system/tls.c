@@ -3,15 +3,20 @@
 # include "../linux/prctl.h"
 # include "../ffly_def.h"
 # define TLS_SIZE 2048
-
+# include "error.h"
 ff_uint_t tls_off = 8;
-void ffly_tls_new(void) {
+ff_err_t
+ffly_tls_new(void) {
 	void *p;
 	p = mmap(NULL, TLS_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);
+	if (p == (void*)-1) {
+		reterr;		
+	}
 	if (arch_prctl(ARCH_SET_FS, (ff_u64_t)p) == -1) {
 
 	}
 	*(void**)p = p;
+	retok;
 }
 
 void ffly_tls_destroy(void) {

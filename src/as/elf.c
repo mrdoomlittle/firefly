@@ -17,6 +17,7 @@ syt_store(void) {
 	syt.link = stt;
 	syt.entsize = elf64_sym_size;
 	syt.addralign = 1;
+	syt.info = 1;
 	char buf[128];
 	strcpy(buf, ".symtab");
 	ff_as_stt(buf, 0);
@@ -34,6 +35,13 @@ void static
 syt_gut(void) {
 	syt.offset = offset;
 	symbolp cur = syt_head;
+	struct elf64_sym sy;
+	bzero(&sy, elf64_sym_size);
+	sy.name = stt_off;
+	ff_as_stt("uk\0", 3);
+	sy.info = ELF32_ST_INFO(STB_LOCAL, STT_NOTYPE);
+	ff_as_oust((ff_u8_t*)&sy, elf64_sym_size);
+	syt.size+=elf64_sym_size;
 	while(cur != NULL) {
 		struct elf64_sym sy;
 		bzero(&sy, elf64_sym_size);
@@ -41,6 +49,7 @@ syt_gut(void) {
 		labelp la = (labelp)ff_as_hash_get(&env, cur->p, cur->len);
 		sy.val = la->adr;
 		sy.info = ELF32_ST_INFO(STB_GLOBAL, STT_NOTYPE);
+		sy.sdx = 1;
 		ff_as_stt(cur->p, 0);	
 		ff_as_oust((ff_u8_t*)&sy, elf64_sym_size);
 		symbolp bk = cur;
@@ -71,6 +80,12 @@ forge(void) {
 
 	ff_as_syt_gut();
 	hdr.sh_off = offset;
+	struct elf64_shdr sec;
+	bzero(&sec, elf64_shdr_size);
+	sec.name = stt_off;
+	ff_as_stt("uk\0", 3);
+	ff_as_oust((ff_u8_t*)&sec, elf64_shdr_size);
+	hdr.shc++;
 	regionp rg = curreg;
 	while(rg != NULL) {
 		struct elf64_shdr sec;
@@ -85,7 +100,7 @@ forge(void) {
 			sec.size = rg->end-rg->beg;
 			sec.offset = rg->beg;
 			sec.addralign = 1;
-			sec.flags = SHF_EXECINSTR;
+			sec.flags = SHF_EXECINSTR|SHF_ALLOC;
 			sec.type = SHT_PROGBITS;
 		}
 		rg = rg->next;

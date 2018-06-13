@@ -82,7 +82,6 @@ typedef struct elf64_sym {
 # define SHT_NULL 0
 # define SHT_SYMTAB 2
 # define SHT_STRTAB 3
-# define SHF_EXECINSTR 0x4
 
 #define ELF32_ST_BIND(val) (((unsigned char)(val))>>4)
 #define ELF32_ST_TYPE(val) ((val)&0xf)
@@ -129,6 +128,14 @@ typedef struct elf64_shdr {
 	ff_u64_t entsize;
 } *elf64_shdrp;
 
+#define SHF_WRITE (1<<0)
+#define SHF_ALLOC (1<<1)
+#define SHF_EXECINSTR (1<<2)
+#define SHF_MERGE (1<<4)
+#define SHF_STRINGS (1<<5)
+#define SHF_INFO_LINK (1<<6)
+#define SHF_LINK_ORDER (1<<7)
+#define SHF_OS_NONCONFORMING (1<<8)
 typedef struct elf64_syminfo {
 
 } *elf64_syminfop;

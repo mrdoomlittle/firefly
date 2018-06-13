@@ -466,8 +466,12 @@ void static tls_init(void) {
 	printf("tls init.\n");
 }
 
-ff_err_t ffly_ar_init(void) {
+ff_err_t
+ffly_ar_init(void) {
 	arout = open("arout", O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
+	if (arout == -1) {
+		reterr;
+	}
 
 	arena_tls = ffly_tls_alloc(sizeof(ff_uint_t));
 	temp_tls = ffly_tls_alloc(sizeof(ff_uint_t));
@@ -475,19 +479,26 @@ ff_err_t ffly_ar_init(void) {
 	tls_init();
 	ffly_process_prep();
 	init_pot(&main_pot);
-	main_pot.end = brk((void*)0);
+	main_pot.end = brk((void*)0); // should check for error
 	main_pot.top = main_pot.end;
 	main_pot.flags |= USE_BRK;
 
+	rodp r;
 	rodp *p = rods;
 	while(p != rods+64) {
-		*(*(p++) = (rodp)_ffly_alloc(&main_pot, sizeof(struct rod))) =
+		r = (rodp)_ffly_alloc(&main_pot, sizeof(struct rod));
+		if (!r) {
+			reterr;
+		}
+
+		*(*(p++) = r) =
 			(struct rod){.lock=FFLY_MUTEX_INIT,.p=NULL, .no=(p-rods)-1};
 	}
 
 	while(p != rods+1)
 		(*--p)->next = *(p-1);
 	(*rods)->next = *(rods+63);
+	retok;
 }
 
 ff_err_t _ffly_ar_cleanup(potp __pot) {

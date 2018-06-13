@@ -16,6 +16,7 @@
 # include "hatch.h"
 # include "version.h"
 # include "system/util/ff6.h"
+# include "system/error.h"
 /*
 extern void*(*ffly_allocp)(ff_uint_t);
 extern void(*ffly_freep)(void*);
@@ -105,17 +106,31 @@ check_conf_version(void) {
 }
 
 void ffly_string_init(void);
-void static
+ff_err_t static
 init() {
-	ffly_tls_new();
-	ffly_ar_init();
+	ff_err_t err;
+
+	err = ffly_tls_new();
+	if (_err(err)) {
+		_ret;
+	}
+
+	err = ffly_ar_init();
+	if (_err(err)) {
+		_ret;
+	}
+
 	ffly_string_init();
 	ff_location_init();
+# ifndef __ffly_crucial
 # ifdef __ffly_mal_track
 	ffly_mal_track_init(&__ffly_mal_track__);
 # endif
+# endif
 	ffly_io_init();
+# ifndef __ffly_crucial
 	ffly_arcs_init();
+# endif
 	ffly_thread_init();
 }
 
@@ -125,6 +140,7 @@ void ffly_bog_start(void);
 void ffly_bog_stop(void);
 void static
 prep() {
+# ifndef __ffly_crucial
 	void **p = ffly_alloca(sizeof(void*), NULL);
 	*p = (void*)by;
 	ffly_arcs_creatarc("info");
@@ -137,6 +153,7 @@ prep() {
 	*/
 	ffly_bog_start();
 	ffly_piston();
+# endif
 //	ff_mod_init();
 //	ff_mod_handle();
 //	ffly_mod();
@@ -147,23 +164,36 @@ prep() {
 # include "system/string.h"
 void static
 fini() {
+# ifndef __ffly_crucial
 	ffly_corrode_start();
 	ffly_pistons_stall();
 	ffly_bog_stop();
+# endif
 //	ff_mod_de_init();
-	ffly_thread_cleanup();
+# ifndef __ffly_crucial
 	ffly_arcs_de_init();
+# endif
 	ffly_alloca_cleanup();
+	ffly_thread_cleanup();
 //	pr();
 //	pf();
+# ifndef __ffly_crucial
 # ifdef __ffly_mal_track
 	ffly_mal_track_dump(&__ffly_mal_track__);
 # endif
+# endif
+
 	ffly_io_closeup();
+
+# ifndef __ffly_crucial
 # ifdef __ffly_mal_track
 	ffly_mal_track_de_init(&__ffly_mal_track__);
 # endif
+# endif
 # ifdef __ffly_debug
+	/*
+		if any leaks then say so.
+	*/
 	ff_uint_t leak;
 	if ((leak = (ffly_mem_alloc_bc-ffly_mem_free_bc))>0) {
 		int fd;
@@ -180,12 +210,10 @@ fini() {
 # endif
 	ffly_ar_cleanup();
 	ffly_tls_destroy();
-
 }
 
 void _start(void) {
 	init();
-
 	int long argc;
 	char const **argv;
 	__asm__("mov 8(%%rbp), %0\t\n"
@@ -194,6 +222,7 @@ void _start(void) {
 			"mov %%rax, %1" : "=r"(argc), "=r"(argv) : : "rax");
 	char const **argp = argv;
 	char const **end = argp+argc;
+# ifndef __ffly_crucial
 	void *frame;
 	void *tmp;
 
@@ -266,6 +295,11 @@ void _start(void) {
 		ffly_hatch_start();
 
 	ffmain(arg-argl, argl);
+# else
+	prep();
+	ffmain(argc, argv);
+# endif
+# ifndef __ffly_crucial
 	ffly_printf("\n\n");
 
 	if (!hatch) {
@@ -292,7 +326,7 @@ _end:
 		ffly_arstat();
 # endif
 	ffly_collapse(frame);
-
+# endif // __ffly_crucial
 //	pr();
 //	pf();
 	fini();
