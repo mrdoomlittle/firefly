@@ -6,6 +6,7 @@
 # include "../malloc.h"
 # include "../stdio.h"
 # include "../types.h"
+# include "../string.h"
 ff_u8_t *p = NULL;
 ff_u8_t static *eof;
 ff_u8_t at_eof() {
@@ -22,6 +23,7 @@ void to_free(void *__p) {
 	*(fresh++) = __p;
 }
 
+struct hash env;
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	char const *file;
 	if (__argc < 2) {
@@ -54,9 +56,36 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	eof = p+st.st_size;
 	bucketp top = NULL;
 	printf("filesize: %u\n", st.st_size);
+	hash_init(&env);
+	char const **arg = __argv+1;
+	while(arg != __argv+__argc) {
+		if (!strcmp(*arg, "-D")) {
+			char const *s = *(++arg);
+			char const *p = s;
+			char buf[128];
+			char *bufp;
+			struct var *v = (struct var*)malloc(sizeof(struct var));
+			to_free(v);
+
+			bufp = buf;
+			while(*p != '=')
+				*(bufp++) = *(p++);
+			hash_put(&env, buf, bufp-buf, v);
+			p++;
+			bufp = buf;
+			while(*p != '\0')
+				*(bufp++) = *(p++);
+			*bufp = '\0';
+			memdup(&v->p, buf, (bufp-buf)+1);
+			v->l = bufp-buf;
+		}
+		arg++;
+	}
+
 	parse(&top);
 	objp ep;
 	gen(top, &ep);
+	hash_destroy(&env);
 	brew_exec(ep);
 
 	void **cur = tf;
@@ -64,7 +93,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		free(*(cur++));
 	lexer_cleanup();
 
-	_fault:
+_fault:
 	close(fd);
 	if (bed != NULL)
 		free(bed);

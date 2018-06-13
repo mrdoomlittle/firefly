@@ -49,9 +49,11 @@ ff_u8_t expect_token(ff_u8_t __sort, ff_u8_t __val) {
 char* read_ident(ff_u16_t *__len) {
 	char buf[1024];
 	char *bufp = buf;
-	while((nextc() >= 'a' && nextc() <= 'z') || nextc() == '_') {
+	char c = nextc();
+	while((c >= 'a' && c <= 'z') || c == '_' || c == '/' || c == '.') {
 		*(bufp++) = *p;
 		incrp;
+		c = nextc();
 	}
 	*bufp = '\0';
 	ff_u16_t len;
@@ -116,7 +118,7 @@ bucketp lex() {
 	}
 	
 	sk_white_space();
-	_bk:
+_bk:
 	if (at_eof()) return NULL;
 	if (*p == '#') {
 		while(*p != '\n') {
@@ -152,6 +154,11 @@ bucketp lex() {
 		//printf("~~~\n");
 	} else {
 		switch(c) {
+			case '=':
+				ret->sort = _keywd;
+				ret->val = _eq;
+				incrp;
+			break;
 			case '"':
 				incrp;
 				ret->sort = _str;

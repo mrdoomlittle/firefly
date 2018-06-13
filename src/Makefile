@@ -113,7 +113,8 @@ brew: clean
 	gcc $(cc_flags) -o brew/gen.o -c brew/gen.c
 	gcc $(cc_flags) -o brew/parser.o -c brew/parser.c
 	gcc $(cc_flags) -o brew/lexer.o -c brew/lexer.c
-	gcc $(cc_flags) -Wall -o main brew/main.c $(ffly_objs) brew/parser.o brew/gen.o brew/exec.o brew/brew.o brew/lexer.o -nostdlib
+	gcc $(cc_flags) -o brew/hash.o -c brew/hash.c
+	gcc $(cc_flags) -Wall -o main brew/main.c $(ffly_objs) brew/parser.o brew/hash.o brew/gen.o brew/exec.o brew/brew.o brew/lexer.o -nostdlib
 ffc: clean
 	gcc $(cc_flags) -c -o ff/parser.o ff/parser.c
 	gcc $(cc_flags) -c -o ff/gen.o ff/gen.c

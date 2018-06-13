@@ -4,8 +4,10 @@
 # include "../ffly_def.h"
 # include "../types.h"
 # include "../system/err.h"
+# include "../string.h"
 # define alloc_node (bucketp)malloc(sizeof(struct bucket))
 
+struct frag* format_str(char const*);
 ff_err_t parser_jump(bucketp *__node) {
 	bucketp label = nexttok();
 	if (label->sort != _ident) {
@@ -41,6 +43,20 @@ ff_err_t parser_label(bucketp *__node) {
 	}
 	p->fd = NULL;
 	retok;
+}
+
+ff_err_t parser_decl(bucketp *__node) {
+	bucketp name = nexttok();	
+	bucketp val;
+	struct var *v = (struct var*)malloc(sizeof(struct var));
+	to_free(v);
+	hash_put(&env, name->p, strlen(name->p), v);
+	if (!expect_token(_keywd, _eq)) {
+	}
+	val = nexttok();
+	v->p = val->p;
+	v->l = val->len;
+	printf("var value: %s\n", val->p);
 }
 
 ff_err_t parser_cp(bucketp *__node) {
@@ -88,21 +104,113 @@ ff_err_t parser_echo(bucketp *__node) {
 		reterr;
 	}
 
-	char *format = (char*)nexttok()->p;
+	bucketp val = nexttok();
+
 	bucketp p = (*__node = alloc_node);
 	p->sort = _echo;
-	p->p = format;
+	p->p = format_str(val->p);
 	retok;
 }
 
-ff_err_t parser_shell(bucketp *__node) {
-	if (!expect_token(_keywd, _circumflex)) {
-		reterr;
+struct frag*
+format_str(char const *__s) {
+	char *p = __s;
+	char *bed = p;
+	char buf[1024];
+	char *bufp;
+	struct frag *top = (struct frag*)malloc(sizeof(struct frag));
+	struct frag *cur = top, *f;
+	top->next = NULL;
+
+_again:
+	to_free(cur);
+	bed = p;
+	if (*p == '$') {
+		p++;
+		bufp = buf;
+		while(*p != ' ' && *p != '\0')
+			*(bufp++) = *(p++);
+		struct var *v;
+
+		v = (struct var*)hash_get(&env, buf, bufp-buf);
+		if (!v) {
+			printf("error.\n");
+			return NULL;
+		}
+
+		printf("var value: %s\n", v->p);
+		cur->len = v->l;
+		cur->p = v->p;
+	} else {
+		while(*p != '$' && *p != '\0')
+			p++;
+		ff_uint_t l = p-bed;
+		cur->p = malloc(l+1);
+		to_free(cur->p);
+		memcpy(cur->p, bed, l);
+		cur->len = l;
+		*((char*)cur->p+l) = '\0';
 	}
 
-	bucketp p = (*__node = alloc_node);
-	p->sort = _shell;
-	p->p = (char*)nexttok()->p;
+	if (*p != '\0') {
+		f = (struct frag*)malloc(sizeof(struct frag));
+		cur->next = f;
+		cur = f;
+		f->next = NULL;
+		goto _again;
+	}
+
+	return top;
+}
+
+ff_err_t parser_shell(bucketp *__node) {
+//	if (!expect_token(_keywd, _circumflex)) {
+//		reterr;
+//	}
+
+	struct shell *s = (struct shell*)malloc(sizeof(struct shell));
+	to_free(s);
+	bucketp b = (*__node = alloc_node);
+	b->sort = _shell;
+	char *p = (char*)nexttok()->p;
+ 	printf("shell.\n");
+ 	char **arg = s->args;
+	char buf[1024];
+	char *bufp = buf;
+	while(*p != ' ' && *p != '\0')
+		*(bufp++) = *(p++);
+	if (*buf == '$') {
+		struct var *v;
+		v = (struct var*)hash_get(&env, buf+1, (bufp-buf)-1);
+		s->base = v->p;
+	} else {
+		*bufp = '\0';
+		memdup(&s->base, buf, (bufp-buf)+1);
+		to_free(s->base);
+	}
+	if (*p == '\0')
+		goto _sk;
+_again:
+	p++;
+	bufp = buf;
+	while(*p != ' ' && *p != '\0')
+		*(bufp++) = *(p++);
+	if (*buf == '$') {
+		struct var *v;
+		v = (struct var*)hash_get(&env, buf+1, (bufp-buf)-1);
+		if (*(char*)v->p != '\0')
+			*(arg++) = v->p;
+	} else {
+		*bufp = '\0';
+		memdup(arg++, buf, (bufp-buf)+1);
+		to_free(*(arg-1));
+	}
+
+	if (*p != '\0')
+		goto _again;
+_sk:
+	*arg = NULL;
+	b->p = s;
 	retok;
 }
 
@@ -166,19 +274,23 @@ void parse(bucketp *__p) {
 			bucketp brief = peektok();
 			ulex(tok);
 
-			if (brief->sort == _keywd && brief->val == _comma) {
-				if (_err(parser_label(&p))) return;
-				if (!*__p)
-					*__p = p;
-				if (end != NULL)
-					end->fd = p;
-				to_free(p);
-				while(p->fd != NULL)
-					to_free(p = p->fd);
-				end = p;
-				continue;
+			if (brief->sort == _keywd && brief->val == _eq) {
+				parser_decl(&p);
 			} else {
-				if (_err(parser_jump(&p))) return;
+				if (brief->sort == _keywd && brief->val == _comma) {
+					if (_err(parser_label(&p))) return;
+					if (!*__p)
+						*__p = p;
+					if (end != NULL)
+						end->fd = p;
+					to_free(p);
+					while(p->fd != NULL)
+						to_free(p = p->fd);
+					end = p;
+					continue;
+				} else {
+					if (_err(parser_jump(&p))) return;
+				}
 			}
 		} else {
 			printf("unknown.\n");

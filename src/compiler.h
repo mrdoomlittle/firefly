@@ -200,6 +200,11 @@ struct exec_reg {
 	struct obj **end;
 };
 
+/*
+ cleanup also place #ifdef __script / #ifdef __ff
+ to remove unneeded junk
+*/
+
 struct node {
 	ff_u8_t kind, op;
 

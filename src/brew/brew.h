@@ -22,14 +22,45 @@ enum {
 	_op_shell
 };
 
+struct hash_entry {
+	struct hash_entry *fd, *next;	
+	ff_u8_t const *key;
+	ff_uint_t len;
+	void *p;
+};
+
+struct hash {
+	struct hash_entry **table;
+	struct hash_entry *top;
+};
+
+struct frag {
+	void *p;
+	ff_uint_t len;
+	struct frag *next;
+};
+
+extern struct hash env;
+struct shell {
+	char *base;
+	char *args[20];
+	ff_uint_t argc;
+};
+
+struct var {
+	void *p;
+	ff_uint_t l;
+};
+
 typedef struct obj {
 	struct obj *next;
-	ff_u8_t opcode;
+	ff_u8_t op;
 	void *src, *dst, *p;
 	struct obj *to;
 } *objp;
 
 enum {
+	_eq,
 	_colon,
 	_comma,
 	_circumflex,
@@ -49,7 +80,7 @@ enum {
 	_end,
 	_jump,
 	_shell,
-	_echo
+	_echo,
 };
 
 enum {
@@ -75,4 +106,10 @@ void brew_exec(objp);
 void gen(bucketp, objp*);
 void oust(bucketp, ff_u8_t);
 void to_free(void*);
+
+// hash.c
+void hash_init(struct hash*);
+void hash_destroy(struct hash*);
+void hash_put(struct hash*, ff_u8_t const*, ff_uint_t, void*);
+void* hash_get(struct hash*, ff_u8_t const*, ff_uint_t);
 # endif /*__brew__h*/

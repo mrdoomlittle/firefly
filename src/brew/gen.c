@@ -32,13 +32,13 @@ nextobj() {
 void static
 op_exit() {
 	objp o = nextobj();
-	o->opcode = _op_exit;
+	o->op = _op_exit;
 }
 
 void static
 emit_cp(bucketp __p) {
 	objp o = nextobj();
-	o->opcode = _op_cp;
+	o->op = _op_cp;
 	o->src = __p->src;
 	o->dst = __p->dst;
 }
@@ -56,13 +56,13 @@ emit_label(bucketp __p) {
 void static
 emit_end(bucketp __p) {
 	objp o = nextobj();
-	o->opcode = _op_end;
+	o->op = _op_end;
 }
 
 void static
 emit_jump(bucketp __p) {
 	objp o = nextobj();
-	o->opcode = _op_jump;
+	o->op = _op_jump;
 	jmpdp p;
 	ffly_vec_push_back(&jmpto, (void**)&p);
 	p->label = (char const*)__p->p;
@@ -72,14 +72,14 @@ emit_jump(bucketp __p) {
 void static
 emit_echo(bucketp __p) {
 	objp o = nextobj();
-	o->opcode = _op_echo;
+	o->op = _op_echo;
 	o->p = __p->p;
 }
 
 void static 
 emit_shell(bucketp __p) {
 	objp o = nextobj();
-	o->opcode = _op_shell;
+	o->op = _op_shell;
 	o->p = __p->p;
 }
 

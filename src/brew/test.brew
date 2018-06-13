@@ -1,10 +1,31 @@
 .entry all
-all,routine_a routine_b,
-	echo "--- entry point\n"
+cc="/usr/bin/gcc"
+cc_flags="-O0 -Wall -fno-builtin -D__ffly_testing -D__ffly_no_task_pool -D__ffly_use_allocr -D__ffly_source -D__fflib"
+all,brew.o exec.o gen.o parser.o lexer.o hash.o,
+	echo "--- $cc $cc_flags entry point\n"
+#	^"$cc $cc_flags -c example.c -o example.o"
 	exit
-routine_a,,
-	echo "--- <routine_a>\n"
+brew.o,,
+	^"$cc $cc_flags -c brew.c -o brew.o"
 	end
-routine_b,,
-	echo "--- <routine_b>\n"
+exec.o,,
+	^"$cc $cc_flags -c exec.c -o exec.o"
 	end
+gen.o,,
+	^"$cc $cc_flags -c gen.c -o gen.o"
+	end
+parser.o,,
+	^"$cc $cc_flags -c parser.c -o parser.o"
+	end
+lexer.o,,
+	^"$cc $cc_flags -c lexer.c -o lexer.o"
+	end
+hash.o,,
+	^"$cc $cc_flags -c hash.c -o hash.o"
+	end
+#routine_a,,
+#	echo "--- <routine_a>\n"
+#	end
+#routine_b,,
+#	echo "--- <routine_b>\n"
+#	end

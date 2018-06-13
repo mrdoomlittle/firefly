@@ -87,7 +87,10 @@ void* th(void *__arg) {
 # include "system/config.h"
 # include "storage/reservoir.h"
 # include "version.h"
+# include "env.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	envset("HOME", "1234");
+	return;
 /*
 	ffly_scheduler_init();
 	ffly_set_cache_dir("../cache");

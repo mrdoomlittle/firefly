@@ -212,16 +212,23 @@ fini() {
 	ffly_tls_destroy();
 }
 
+# include "env.h"
 void _start(void) {
 	init();
 	int long argc;
 	char const **argv;
+	char const **envp;
 	__asm__("mov 8(%%rbp), %0\t\n"
 			"mov %%rbp, %%rax\n\t"
 			"add $16, %%rax\n\t"
-			"mov %%rax, %1" : "=r"(argc), "=r"(argv) : : "rax");
+			"mov %%rax, %1\n\t"
+			"add $16, %%rax\n\t"
+			"mov %%rax, %2" : "=r"(argc), "=r"(argv), "=r"(envp) : : "rax");
 	char const **argp = argv;
 	char const **end = argp+argc;
+
+	envinit();
+	envload(envp);
 # ifndef __ffly_crucial
 	void *frame;
 	void *tmp;
@@ -329,6 +336,7 @@ _end:
 # endif // __ffly_crucial
 //	pr();
 //	pf();
+	envcleanup();
 	fini();
 	exit(0);
 }
