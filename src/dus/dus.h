@@ -1,6 +1,7 @@
 # ifndef __ffly__dus__h
 # define __ffly__dus__h
 # include "../ffint.h"
+# define new_node ff_dus_node_alloc()
 # define incrp p++
 extern ff_u8_t *p;
 void ff_dus_init(void);
@@ -11,7 +12,8 @@ typedef struct obj {
 	struct obj *next;
     ff_u8_t op;
 	ff_uint_t size, len;
-	struct obj *to;
+	struct obj *to, *dst, *src;
+	char *name;
 	void *p;
 } *objp;
 
@@ -30,6 +32,8 @@ typedef struct node {
 	ff_u8_t kind;
 	struct node *var, *init;
 	struct node *l, *r;
+	struct node *src;
+	char *name;
 	objp _obj;
 } *nodep;
 
@@ -45,6 +49,11 @@ struct hash {
 	struct hash_entry *top;
 };
 
+struct frag {
+	struct frag *next;
+	void *p;
+	ff_uint_t len;
+};
 
 void hash_init(struct hash*);
 void hash_destroy(struct hash*);
@@ -57,6 +66,7 @@ tokenp ff_dus_nexttok(void);
 
 ff_u8_t ff_dus_next_token_is(ff_u8_t, ff_u8_t);
 ff_u8_t ff_dus_expect_token(ff_u8_t, ff_u8_t);
+void ff_dus_lexer_cleanup(void);
 tokenp peektok(void);
 void ff_dus_parse(nodep*);
 objp ff_dus_gen(nodep);
@@ -73,7 +83,10 @@ enum {
 	_op_pop,
 	_op_fresh,
 	_op_free,
-	_op_out
+	_op_out,
+	_op_cas,
+	_op_syput,
+	_op_shell
 };
 
 enum {
@@ -82,12 +95,18 @@ enum {
 	_str,
 	_int,
 	_assign,
-	_out
+	_out,
+	_cas,
+	_syput,
+	_shell
 };
 
 enum {
 	_eq,
-	_keywd_out
+	_keywd_out,
+	_keywd_cas,
+	_keywd_syput,
+	_keywd_shell
 };
 
 enum {
@@ -95,4 +114,8 @@ enum {
 	_tok_keywd,
 	_tok_str
 };
+
+nodep ff_dus_node_alloc(void);
+objp ff_dus_obj_alloc(void);
+void to_free(void*);
 # endif /*__ffly__dus__h*/

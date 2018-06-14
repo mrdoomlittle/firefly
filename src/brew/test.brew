@@ -1,9 +1,9 @@
 .entry all
 cc="/usr/bin/gcc"
-cc_flags="-O0 -Wall -fno-builtin -D__ffly_testing -D__ffly_no_task_pool -D__ffly_use_allocr -D__ffly_source -D__fflib"
-all,brew.o exec.o gen.o parser.o lexer.o hash.o,
+cc_flags="-Wall -fno-builtin -D__ffly_testing -D__ffly_no_task_pool -D__ffly_use_allocr -D__ffly_source -D__fflib"
+all,,
 	echo "--- $cc $cc_flags entry point\n"
-#	^"$cc $cc_flags -c example.c -o example.o"
+	^"$cc $cc_flags -c main.c -o main.o"
 	exit
 brew.o,,
 	^"$cc $cc_flags -c brew.c -o brew.o"

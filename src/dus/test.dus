@@ -1,2 +1,6 @@
-example="hello"
-out example
+cc="/usr/bin/gcc"
+cc_flags="-D__ffly_debug"
+syput "cc" cc
+syput "cc_flags" cc_flags
+
+shell cas "$cc $cc_flags -c -o example.o example.c"

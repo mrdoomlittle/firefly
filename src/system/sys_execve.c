@@ -1,5 +1,5 @@
 # include "../ffint.h"
-ff_s32_t execve(char const *__file, char *const __argv[], char *const __envp[]) {
+ff_s32_t execve(char const *__file, char *const *__argv, char *const *__envp) {
     ff_s32_t ret;
     __asm__("movq %1, %%rdi\n\t"
         "movq %2, %%rsi\n\t"

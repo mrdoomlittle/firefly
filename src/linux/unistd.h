@@ -28,7 +28,7 @@ ff_s32_t exit(ff_s32_t);
 ff_s32_t getcwd(char*, ff_u64_t);
 void* brk(void*);
 
-ff_s32_t execve(const char*, char *const, char *const);
+ff_s32_t execve(const char*, char *const*, char *const*);
 ff_s32_t rmdir(char const*);
 ff_s32_t unlink(char const*);
 ff_s32_t ftruncate(ff_u32_t, ff_u32_t);

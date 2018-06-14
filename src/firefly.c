@@ -219,13 +219,21 @@ void _start(void) {
 	char const **argv;
 	char const **envp;
 	__asm__("mov 8(%%rbp), %0\t\n"
-			"mov %%rbp, %%rax\n\t"
-			"add $16, %%rax\n\t"
-			"mov %%rax, %1\n\t"
-			"add $16, %%rax\n\t"
-			"mov %%rax, %2" : "=r"(argc), "=r"(argv), "=r"(envp) : : "rax");
+			"mov %%rbp, %%rdi\n\t"
+			"add $16, %%rdi\n\t"
+			"mov %%rdi, %1\n\t"
+			"movq 8(%%rbp), %%rax\n\t"
+			"add $8, %%rdi\n\t"
+			"mov $8, %%rcx\n\t"
+			"mul %%rcx\n\t"
+			"add %%rax, %%rdi\n\t"
+			"mov %%rdi, %2" : "=r"(argc), "=r"(argv), "=r"(envp) : : "rax", "rdi", "rcx");
 	char const **argp = argv;
 	char const **end = argp+argc;
+
+//	ffly_printf("%u - %u, %s\n", envp-argv, argc, *envp);
+//	fini();
+//	exit(0);
 
 	envinit();
 	envload(envp);

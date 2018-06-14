@@ -1,6 +1,8 @@
 # include "dus.h"
 # include "../string.h"
 # include "../ffly_def.h"
+# include "../malloc.h"
+# include "../stdio.h"
 struct hash env;
 void ff_dus_init(void) {
 	hash_init(&env);
@@ -32,11 +34,44 @@ tokenp ff_dus_nexttok(void) {
 	if (tok->sort == _tok_ident) {
 		if (!strcmp(tok->p, "out")) {
 			to_keyword(tok, _keywd_out);
+		} else if (!strcmp(tok->p, "cas")) {
+			to_keyword(tok, _keywd_cas);
+		} else if (!strcmp(tok->p, "syput")) {
+			to_keyword(tok, _keywd_syput);
+		} else if (!strcmp(tok->p, "shell")) {
+			to_keyword(tok, _keywd_shell);
 		}
 	}
 	return tok;
 }
 
+void *tf[100];
+void **fresh = tf;
+void to_free(void *__p) {
+	if (fresh-tf >= 100) {
+		printf("error overflow.\n");
+	}
+	*(fresh++) = __p;
+}
+
+nodep ff_dus_node_alloc(void) {
+	nodep ret;
+	ret = (nodep)malloc(sizeof(struct node));
+	to_free(ret);
+	return ret;
+}
+
+objp ff_dus_obj_alloc(void) {
+	objp ret;
+	ret = (objp)malloc(sizeof(struct obj));
+	to_free(ret);
+	return ret;
+}
+
 void ff_dus_cleanup(void) {
 	hash_destroy(&env);
+	void **cur = tf;
+	while(cur != fresh)
+		free(*(cur++));
+	ff_dus_lexer_cleanup();
 }

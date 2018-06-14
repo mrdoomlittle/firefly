@@ -11,6 +11,7 @@
 # include "../string.h"
 # include "../system/errno.h"
 # include "../env.h"
+# include "../malloc.h"
 // return buffer
 # define RTBUF_SIZE 20
 
@@ -55,34 +56,58 @@ op_shell(objp *__p) {
 	struct shell *s = (struct shell*)p->p;
 	printf("base: %s\n", s->base);
 	char **arg = s->args;
-	char **argv[100];
+	char *argv[100];
 	*argv = s->base;
 	char **cur = argv+1;
+	char *bed;
+	ff_uint_t l;
 	while(*arg != NULL) {
 		printf("arg: %s\n", *arg);
-		*(cur++) = *(arg++);
+		char *p = *(arg++);
+_again:
+		bed = p;
+		while(*p != ' ' && *p != '\0')
+			p++;
+
+		*cur = malloc((l = (p-bed))+1);
+		memcpy(*cur, bed, l);
+		*(char*)((*cur)+l) = '\0';
+		cur++;
+		if (*p != '\0') {
+			p++;
+			goto _again;
+		}
 	}
 	*cur = NULL;
 
-	printf("command: ");
-	cur = argv;
+	printf("command: %s ", s->base);
+	cur = argv+1;
 	while(*cur != NULL) {
-		printf("%s, ", *cur);
+		printf("%s | ", *cur);
 		cur++;
 	}
 	printf("\n");
-/*
+
 	__linux_pid_t pid;
 
+	char const *envp[] = {
+		"PATH=/usr/bin",
+		NULL
+	};
+	
 	pid = fork();
 	if (pid == 0) {
-		if (execve(s->base, argv, NULL) == -1) {
-			printf("execve failure, %s\n", strerror(errno));
+		if (execve(s->base, argv, envp) == -1) {
+			// error
 		}
 		exit(0);
 	}
 	wait4(pid, NULL, __WALL, NULL);
-*/
+
+	cur = argv+1;
+	while(*cur != NULL) {
+		free(*(cur++));
+	}
 }
 
 static void(*op[])(objp*) = {

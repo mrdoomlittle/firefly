@@ -2,7 +2,6 @@
 # include "../malloc.h"
 # include "../stdio.h"
 # include "../system/string.h"
-# define new_node (nodep)malloc(sizeof(struct node))
 
 void static
 exp_assign(nodep *__expr) {
@@ -10,6 +9,9 @@ exp_assign(nodep *__expr) {
 		nodep exp = new_node;
 		exp->r = ff_dus_exp();
 		exp->l = *__expr;
+		if (!exp->l || !exp->r) {
+			printf("error.\n");
+		}
 		exp->kind = _assign;
 		*__expr = exp;
 	}
@@ -29,6 +31,16 @@ exp_int(char *__s) {
 }
 
 void static
+exp_cas(nodep *__expr) {
+	if (ff_dus_next_token_is(_tok_keywd, _keywd_cas)) {
+		nodep exp = new_node;
+		exp->p = ff_dus_exp();
+		exp->kind = _cas;
+		*__expr = exp;
+	}
+}
+
+void static
 exp_primary(nodep *__expr) {
 	tokenp tok = ff_dus_nexttok();
 	if (!tok) {
@@ -40,10 +52,10 @@ exp_primary(nodep *__expr) {
 		exp = hash_get(&env, tok->p, tok->l);
 	} else {
 		if (tok->sort == _tok_str){// || tok->sort == _dec) {
-			char c = *(char*)tok->p;
-			if (c>=0 && c<='9') {
-				exp = exp_int((char*)tok->p);
-			} else if (c>='a' && c<='z') {
+	//		char c = *(char*)tok->p;
+	//		if () {
+	//			exp = exp_int((char*)tok->p);
+			if (tok->sort == _tok_str) {
 				exp = new_node;
 				exp->kind = _str;
 				exp->p = (char*)tok->p;
@@ -60,6 +72,7 @@ exp_primary(nodep *__expr) {
 nodep ff_dus_exp(void) {
 	nodep exp = NULL;
 	exp_primary(&exp);
+	exp_cas(&exp);
 	exp_assign(&exp);
 	return exp;
 }

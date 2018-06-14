@@ -18,7 +18,7 @@ read_ident(ff_uint_t *__l) {
 	char buf[128];
 	char *bufp = buf;
 	char c = nextc;
-	while(c>='a' && c<='z') {
+	while((c>='a' && c<='z') || c == '_') {
 		*(bufp++) = c;
 		incrp;
 		c = nextc;
@@ -27,6 +27,7 @@ read_ident(ff_uint_t *__l) {
 	*bufp = '\0';
 	ff_uint_t l;
 	char *p = (char*)malloc((l = (bufp-buf))+1);
+	to_free(p);
 	memcpy(p, buf, l+1);
 	*__l = l;
 	return p;
@@ -46,6 +47,7 @@ read_str(ff_uint_t *__l) {
 	*bufp = '\0';
 	ff_uint_t l;
 	char *p = (char*)malloc((l = (bufp-buf))+1);
+	to_free(p);
 	memcpy(p, buf, l+1);
 	*__l = l;
 	return p;
@@ -81,9 +83,19 @@ tokenp ff_dus_lex(void) {
 	}
 
 	sk_white_space();
-
+_bk:
 	if (at_eof()) {
 		return NULL;
+	}
+
+	if (*p == '#') {
+		while(*p != '\n') {
+			if (at_eof())
+				return NULL;
+			incrp;
+		}
+		incrp;
+		goto _bk;
 	}
 
 	tokenp tok;
@@ -97,7 +109,7 @@ tokenp ff_dus_lex(void) {
 	next = tok;
 
 	char c = nextc;
-	if (c>='a' && c<='z') {
+	if ((c>='a' && c<='z') || c == '_') {
 		tok->sort = _tok_ident;
 		tok->p = read_ident(&tok->l);
 	} else {
@@ -119,4 +131,13 @@ tokenp ff_dus_lex(void) {
 	}
 	len++;
 	return tok;
+}
+
+void ff_dus_lexer_cleanup(void) {
+	tokenp cur = head, tmp;
+	while(cur != NULL) {
+		tmp = cur->next;
+		free(cur);
+		cur = tmp;
+	}
 }

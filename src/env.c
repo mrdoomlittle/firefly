@@ -9,6 +9,11 @@
 # include "dep/mem_cpy.h"
 # include "system/io.h"
 char static **env = NULL;
+
+char const **getenv(void) {
+	return env;
+}
+
 ff_uint_t static off = 0;
 struct entry {
 	ff_u8_t const *key;
@@ -113,10 +118,10 @@ envset(char const *__key, char const *__p) {
 
 void
 envput(char const *__key, char const *__p) {
-	//ffly_printf("env, key: %s, val: %s\n", __key, __p);
 	if (!envset(__key, __p))
 		return;
-
+		
+//	ffly_printf("env, key: %s, val: %s\n", __key, __p);
 	if (!env) {
 		env = (char**)__ffly_mem_alloc(sizeof(char*));	
 		off++;
