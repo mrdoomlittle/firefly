@@ -13,6 +13,7 @@ typedef struct obj {
     ff_u8_t op;
 	ff_uint_t size, len;
 	struct obj *to, *dst, *src;
+	struct obj *objpp;
 	char *name;
 	void *p;
 } *objp;
@@ -103,6 +104,7 @@ enum {
 
 enum {
 	_eq,
+	_dollar,
 	_keywd_out,
 	_keywd_cas,
 	_keywd_syput,
@@ -112,7 +114,8 @@ enum {
 enum {
 	_tok_ident,
 	_tok_keywd,
-	_tok_str
+	_tok_str,
+	_tok_dec
 };
 
 nodep ff_dus_node_alloc(void);

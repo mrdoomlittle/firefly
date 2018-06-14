@@ -116,9 +116,8 @@ bucketp lex() {
 		head = head->next;
 		free(bk);
 	}
-	
+_bk:	
 	sk_white_space();
-_bk:
 	if (at_eof()) return NULL;
 	if (*p == '#') {
 		while(*p != '\n') {

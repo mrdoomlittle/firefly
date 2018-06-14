@@ -19,6 +19,15 @@ next_obj(void) {
 }
 
 void static
+op_copy(objp *__src, objp *__dst, ff_uint_t __len) {
+	objp o = next_obj();
+	o->op = _op_copy;
+	o->dst = __dst;
+	o->src = __src;
+	o->len = __len;
+}
+
+void static
 op_assign(objp __to, ff_u8_t *__from, ff_uint_t __len) {
 	objp o = next_obj();
 	o->op = _op_assign;
@@ -96,9 +105,18 @@ objp* pop(void) {
 	return ret;
 }
 
+objp static*
+objpp(objp  __obj) {
+	__obj->objpp = __obj;
+	return &__obj->objpp;
+}
+
 void static
 emit_decl_init(nodep __node, objp __to) {
-	op_assign(__to, __node->p, __node->len);
+	emit(__node);
+	objp *src;
+	src = pop();
+	op_copy(src, objpp(__to), __node->len);
 }
 
 void static
@@ -125,10 +143,13 @@ emit_out(nodep __node) {
 
 void static
 emit_assign(nodep __node) {
-	nodep src = __node->r;
-
-	objp m = op_fresh(src->len);
-	op_assign(m, src->p, src->len);
+	nodep r = __node->r;
+	emit(r);
+	objp *src;
+	src = pop();
+	ff_uint_t len;
+	objp m = op_fresh(len = r->_obj->size);
+	op_copy(src, objpp(m), len);
 	__node->l->_obj = m;
 }
 
@@ -137,9 +158,10 @@ emit_cas(nodep __node) {
 	objp *o;
 	emit((nodep)__node->p);
 	o = pop();
-	objp m = next_obj(); 
+	objp m = ff_dus_obj_alloc(); 
 	op_cas(o, m);
 	push(m);
+	__node->_obj = m;
 }
 
 void static 
@@ -160,6 +182,21 @@ emit_str(nodep __node) {
 	objp m = op_fresh(__node->len);
 	op_assign(m, __node->p, __node->len);
 	push(m);
+	__node->_obj = m;
+}
+
+char const *nkstr(ff_u8_t __kind) {
+	switch(__kind) {
+		case _str:		return "str";
+		case _decl:		return "decl";
+		case _var:		return "var";
+		case _assign:	return "assign";
+		case _out:		return "out";
+		case _cas:		return "cas";
+		case _syput:	return "syput";
+		case _shell:	return "shell";
+	}
+	return "unknown";
 }
 
 void
@@ -190,6 +227,7 @@ emit(nodep __node) {
 			emit_shell(__node);
 		break;
 	}
+	//printf("%s\n", nkstr(__node->kind));
 }
 
 objp ff_dus_gen(nodep __top) {

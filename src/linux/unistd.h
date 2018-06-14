@@ -32,4 +32,5 @@ ff_s32_t execve(const char*, char *const*, char *const*);
 ff_s32_t rmdir(char const*);
 ff_s32_t unlink(char const*);
 ff_s32_t ftruncate(ff_u32_t, ff_u32_t);
+ff_s32_t dup2(ff_u32_t, ff_u32_t);
 # endif /*__ffly__linux__unistd__h*/

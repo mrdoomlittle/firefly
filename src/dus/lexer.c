@@ -34,8 +34,28 @@ read_ident(ff_uint_t *__l) {
 }
 
 char static*
-read_str(ff_uint_t *__l) {
+read_dec(ff_uint_t *__l) {
 	char buf[128];
+	char *bufp = buf;
+	char c = nextc;
+	while(c>='0' && c<='9') {
+		*(bufp++) = c;
+		incrp;
+		c = nextc;
+	}
+
+	*bufp = '\0';
+	ff_uint_t l;
+	char *p = (char*)malloc((l = (bufp-buf))+1);
+	to_free(p);
+	memcpy(p, buf, l+1);
+	*__l = l;
+	return p;
+}
+
+char static*
+read_str(ff_uint_t *__l) {
+	char buf[1024];
 	char *bufp = buf;
 	char c = nextc;
 	while(c != '"') {
@@ -82,8 +102,8 @@ tokenp ff_dus_lex(void) {
 		free(bk);
 	}
 
-	sk_white_space();
 _bk:
+	sk_white_space();
 	if (at_eof()) {
 		return NULL;
 	}
@@ -112,8 +132,16 @@ _bk:
 	if ((c>='a' && c<='z') || c == '_') {
 		tok->sort = _tok_ident;
 		tok->p = read_ident(&tok->l);
+	} else if (c>='0' && c<='9') {
+		tok->sort = _tok_dec;
+		tok->p = read_dec(&tok->l);
 	} else {
 		switch(c) {
+			case '$':
+				tok->sort = _tok_keywd;
+				tok->val = _dollar;
+				incrp;
+			break;
 			case '"':
 				incrp;
 				tok->sort = _tok_str;

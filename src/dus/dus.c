@@ -45,10 +45,10 @@ tokenp ff_dus_nexttok(void) {
 	return tok;
 }
 
-void *tf[100];
+void *tf[648];
 void **fresh = tf;
 void to_free(void *__p) {
-	if (fresh-tf >= 100) {
+	if (fresh-tf >= 648) {
 		printf("error overflow.\n");
 	}
 	*(fresh++) = __p;

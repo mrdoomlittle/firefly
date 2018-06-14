@@ -1,7 +1,7 @@
 #!/bin/sh
-ffly_cc=gcc
-
+ffly_cc=/usr/bin/gcc
 cc_flags="$cc_flags -D__ffly_debug -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr -D__fflib -D__ffly_source"
+
 ffly_objs=$(
 	dst_dir=$PWD/dep
 	root_dir=dep;

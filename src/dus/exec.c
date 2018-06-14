@@ -29,12 +29,14 @@ char const *opstr(ff_u8_t __op) {
 objp static objs[20];
 objp static* top = objs;
 
-ff_u8_t static stack[689];
+ff_u8_t static stack[2048];
 ff_u8_t static *fresh = stack;
 
 void static
 op_copy(objp __obj) {
-	
+	ff_u8_t *src = (*(objp*)__obj->src)->p;
+	ff_u8_t *dst = (*(objp*)__obj->dst)->p;
+	memcpy(dst, src, __obj->len);
 }
 
 void static
@@ -85,7 +87,7 @@ _again:
 	if (*p == '$') {
 		p++;
 		bufp = buf;
-		while(*p != ' ' && *p != '\0')
+		while(*p != ' ' && *p != '\0' && ((*p >= 'a' && *p <= 'z') || *p == '_'))
 			*(bufp++) = *(p++);
 		*bufp = '\0';
 		objp o = (objp)hash_get(&sy, buf, bufp-buf);
@@ -111,7 +113,7 @@ _again:
 void static
 op_syput(objp __obj) {
 	hash_put(&sy, __obj->name, __obj->len, __obj->p);
-	printf("put symbol, %s\n", __obj->name);
+//	printf("put symbol, %s\n", __obj->name);
 }
 # include "../system/nanosleep.h"
 void static
@@ -128,8 +130,10 @@ op_shell(objp __obj) {
 	while(*p != ' ' && *p != '\0')
 		*(bp++) = *(p++);
 	*bp = '\0';
-	p++;
+	
+	while(*p == ' ') p++;
 	*(cur++) = base;
+//	printf("base: %s\n", base);
 _again:
 	bed = p;
 	while(*p != ' ' && *p != '\0')
@@ -138,10 +142,11 @@ _again:
 	*cur = malloc((l = (p-bed))+1);
 	memcpy(*cur, bed, l);
 	*(char*)((*cur)+l) = '\0';
+//	printf("--> %s\n", *cur);
 	cur++;
 
 	if (*p != '\0') {
-		p++;
+		while(*p == ' ') p++;
 		goto _again;
 	}
 
@@ -151,9 +156,14 @@ _again:
 		"PATH=/usr/bin",
 		NULL
 	};
+
 	__linux_pid_t pid;
 	pid = fork();
 	if (pid == 0) {
+		int fd = open("stdout", O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
+		dup2(fd, 1);
+		dup2(fd, 2);
+		close(fd);
 		if (execve(base, argv, envp) == -1) {
 			// failure
 		}
@@ -163,7 +173,6 @@ _again:
 
 	cur = argv+1;
 	while(*cur != NULL) {
-		printf("--> %s\n", *cur);
 		free(*cur);
 		cur++;
 	}
@@ -187,7 +196,7 @@ void ff_dus_run(objp __top) {
 	objp cur = __top;
 	while(cur != NULL) {
 		op[cur->op](cur);
-		printf("op: %s\n", opstr(cur->op));
+//		printf("op: %s\n", opstr(cur->op));
 		cur = cur->next;
 	}
 	hash_destroy(&sy);

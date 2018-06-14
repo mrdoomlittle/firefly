@@ -283,19 +283,19 @@ ff_err_t ffly_thread_cleanup() {
 	while(active_threads != 0);
 	ffly_threadp *itr = threads, cur;
 	ffly_threadp *end = threads+off;
-	ffly_printf("thread shutdown, stage 0.\n");
+	ffly_fprintf(ffly_log, "thread shutdown, stage 0.\n");
 	while(itr != end) {
-		ffly_printf("thread with id: %u, cleaning.\n", itr-threads);
+		ffly_fprintf(ffly_log, "thread with id: %u, cleaning.\n", itr-threads);
 		cur = *(itr++);
 //		if (cur->alive)
 //			ffly_thread_kill(cur->tid); // bad - rethink
 		ffly_thread_wait(cur->tid);
 		if (cur->sp != NULL) {
-			ffly_printf("\t.- stack release.\n");
+			ffly_fprintf(ffly_log, "\t.- stack release.\n");
 			__ffly_mem_free(cur->sp);
 		}
 		if (cur->tls != NULL) {
-			ffly_printf("\t.- tls release.\n");
+			ffly_fprintf(ffly_log, "\t.- tls release.\n");
 			__ffly_mem_free(cur->tls);
 		}
 		if (cur->exit == -1) { // if exit was a not a success and has been forced to stop
@@ -306,13 +306,13 @@ ff_err_t ffly_thread_cleanup() {
 		__ffly_mem_free(cur);
 	}
 
-	ffly_printf("thread shutdown, stage 1.\n");
+	ffly_fprintf(ffly_log, "thread shutdown, stage 1.\n");
 	if (threads != NULL) {
 		__ffly_mem_free(threads);
 		threads = NULL;
 	}
 
-	ffly_printf("thread shutdown, stage 2.\n");
+	ffly_fprintf(ffly_log, "thread shutdown, stage 2.\n");
 	if (uu_ids.p != NULL) {
 		__ffly_mem_free(uu_ids.p);
 		uu_ids.p = NULL;

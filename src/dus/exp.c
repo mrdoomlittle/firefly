@@ -2,7 +2,7 @@
 # include "../malloc.h"
 # include "../stdio.h"
 # include "../system/string.h"
-
+# include "../string.h"
 void static
 exp_assign(nodep *__expr) {
 	if (ff_dus_next_token_is(_tok_keywd, _eq)) {
@@ -62,8 +62,16 @@ exp_primary(nodep *__expr) {
 				exp->len = tok->l+1;
 			}
 		} else {
-			ff_dus_ulex(tok);
-			return;
+			if (tok->sort == _tok_keywd && tok->val == _dollar) {
+				tokenp n = ff_dus_nexttok();	
+				exp = new_node;
+				exp->kind = _str;
+				exp->p = hash_get(&env, n->p, 1);
+				exp->len = strlen(exp->p)+1;
+			} else {
+				ff_dus_ulex(tok);
+				return;
+			}
 		}
 	}
 	*__expr = exp;

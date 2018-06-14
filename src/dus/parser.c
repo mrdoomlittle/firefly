@@ -17,7 +17,7 @@ parser_decl(nodep *__node) {
 		// error
 		while(1);
 	}
-	printf("decl, %s = %s, %u\n", name->p, init->p, init->len);
+//	printf("decl, %s\n", name->p);
 
 	nodep var = new_node;
 	var->kind = _var;

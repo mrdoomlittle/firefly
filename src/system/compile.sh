@@ -35,6 +35,9 @@ $ffly_cc -c $cc_flags -o $dst_dir/io.o $root_dir/io.c
 nasm -f elf64 $as_inc -o $dst_dir/sys_mkdir.o.0 $root_dir/asm/sys_mkdir.asm
 $ffly_cc -c $cc_flags -o $dst_dir/sys_mkdir.o.1 $root_dir/sys_mkdir.c
 
+nasm -f elf64 $as_inc -o $dst_dir/sys_dup2.o.0 $root_dir/asm/sys_dup2.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_dup2.o.1 $root_dir/sys_dup2.c
+
 nasm -f elf64 $as_inc -o $dst_dir/sys_arch_prctl.o.0 $root_dir/asm/sys_arch_prctl.asm
 $ffly_cc -c $cc_flags -o $dst_dir/sys_arch_prctl.o.1 $root_dir/sys_arch_prctl.c
 
@@ -252,5 +255,5 @@ $dst_dir/sys_rt_sigaction.o.0 $dst_dir/sys_rt_sigaction.o.1 \
 $dst_dir/barrel.o $dst_dir/sched.o $dst_dir/task_pool.o $dst_dir/servant.o \
 $dst_dir/event.o $dst_dir/queue.o $dst_dir/port.o $dst_dir/tls.o
 $dst_dir/sys_arch_prctl.o.0 $dst_dir/sys_arch_prctl.o.1 \
-$dst_dir/util/ff6.o"
+$dst_dir/util/ff6.o $dst_dir/sys_dup2.o.0 $dst_dir/sys_dup2.o.1"
 # $dst_dir/mal_track.o"

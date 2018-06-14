@@ -3,3 +3,4 @@
 *.exec
 *.fuse_hidden*
 arout
+stdout
