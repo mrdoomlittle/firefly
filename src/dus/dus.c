@@ -20,6 +20,8 @@ ff_u8_t ff_dus_next_token_is(ff_u8_t __sort, ff_u8_t __val) {
 
 ff_u8_t ff_dus_expect_token(ff_u8_t __sort, ff_u8_t __val) {
 	tokenp tok = ff_dus_nexttok();
+	if (!tok)
+		return 0;
 	ff_u8_t res = (tok->sort == __sort && tok->val == __val);
 	return res;
 }

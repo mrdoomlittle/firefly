@@ -2,10 +2,22 @@ cc=$1
 cc_flags=$2
 syput "cc" cc
 syput "cc_flags" cc_flags
-shell cas "$cc $cc_flags -c -o dus.o dus.c"
-shell cas "$cc $cc_flags -c -o exec.o exec.c"
-shell cas "$cc $cc_flags -c -o exp.o exp.c"
-shell cas "$cc $cc_flags -c -o lexer.o lexer.c"
-shell cas "$cc $cc_flags -c -o parser.o parser.c"
-shell cas "$cc $cc_flags -c -o gen.o gen.c"
-shell cas "$cc $cc_flags -c -o hash.o hash.c"
+
+# decl
+dus exec exp lexer parser gen hash
+
+set dus		= cas "$cc $cc_flags -c -o dus.o dus.c"
+set exec	= cas "$cc $cc_flags -c -o exec.o exec.c"
+set exp		= cas "$cc $cc_flags -c -o exp.o exp.c"
+set lexer	= cas "$cc $cc_flags -c -o lexer.o lexer.c"
+set parser	= cas "$cc $cc_flags -c -o parser.o parser.c"
+set gen		= cas "$cc $cc_flags -c -o gen.o gen.c"
+set hash	= cas "$cc $cc_flags -c -o hash.o hash.c"
+
+shell dus
+shell exec
+shell exp
+shell lexer
+shell parser
+shell gen
+shell hash

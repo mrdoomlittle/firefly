@@ -5,21 +5,20 @@ void static
 parser_decl(nodep *__node) {
 	tokenp name = ff_dus_nexttok();
 
+	nodep init = NULL, var;
 	nodep nod = (*__node = new_node);
-	if (!ff_dus_expect_token(_tok_keywd, _eq)) {
-		// error
-		printf("error expected.\n");
+	if (!ff_dus_next_token_is(_tok_keywd, _eq)) {
+		goto _sk;
 	}
 
-	nodep init;
 	init = ff_dus_exp();
 	if (!init) {
 		// error
 		while(1);
 	}
 //	printf("decl, %s\n", name->p);
-
-	nodep var = new_node;
+_sk:
+	var = new_node;
 	var->kind = _var;
 	hash_put(&env, name->p, name->l, var);
 	nod->init = init;

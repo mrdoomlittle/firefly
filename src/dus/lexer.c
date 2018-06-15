@@ -5,7 +5,7 @@
 # define nextc (*p)
 
 ff_u8_t is_space(char __c) {
-	return __c == ' ' || __c == '\n';
+	return __c == ' ' || __c == '\n' || __c == '\t';
 }
 
 void static

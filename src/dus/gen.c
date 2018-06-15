@@ -131,8 +131,12 @@ void static
 emit_decl(nodep __node) {
 	nodep init = __node->init;
 	nodep var = __node->var;
-	objp m = op_fresh(init->len);
-	emit_decl_init(init, m);
+	objp m;
+	if (init != NULL) {
+		m = op_fresh(init->len);
+		emit_decl_init(init, m);
+	} else
+		m = ff_dus_obj_alloc();
 	var->_obj = m;
 }
 
