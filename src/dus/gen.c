@@ -80,6 +80,14 @@ op_cas(objp *__obj, objp __m) {
 }
 
 void static
+op_set(objp *__src, objp *__dst) {
+	objp o = next_obj();
+	o->op = _op_set;
+	o->src = __src;
+	o->dst = __dst;
+}
+
+void static
 op_syput(char *__name, ff_uint_t __len, objp __obj) {
 	objp o = next_obj();
 	o->op = _op_syput;
@@ -199,9 +207,27 @@ char const *nkstr(ff_u8_t __kind) {
 	return "unknown";
 }
 
+
+void static
+emit_set(nodep __node) {
+	nodep l = __node->l;
+	nodep r = __node->r;
+	emit(r);
+	emit(l);
+
+	objp *src;
+	objp *dst;
+	dst = pop();
+	src = pop();
+	op_set(src, dst);
+}
+
 void
 emit(nodep __node) {
 	switch(__node->kind) {
+		case _set:
+			emit_set(__node);
+		break;
 		case _str:
 			emit_str(__node);
 		break;

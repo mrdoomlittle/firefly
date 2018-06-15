@@ -12,6 +12,7 @@ typedef struct obj {
 	struct obj *next;
     ff_u8_t op;
 	ff_uint_t size, len;
+	// change to void
 	struct obj *to, *dst, *src;
 	struct obj *objpp;
 	char *name;
@@ -87,7 +88,8 @@ enum {
 	_op_out,
 	_op_cas,
 	_op_syput,
-	_op_shell
+	_op_shell,
+	_op_set
 };
 
 enum {
@@ -99,7 +101,8 @@ enum {
 	_out,
 	_cas,
 	_syput,
-	_shell
+	_shell,
+	_set
 };
 
 enum {
@@ -108,7 +111,8 @@ enum {
 	_keywd_out,
 	_keywd_cas,
 	_keywd_syput,
-	_keywd_shell
+	_keywd_shell,
+	_keywd_set
 };
 
 enum {

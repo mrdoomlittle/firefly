@@ -52,6 +52,18 @@ parser_shell(nodep *__node) {
 	nod->p = ff_dus_exp();
 }
 
+void static
+parser_set(nodep *__node) {
+	nodep nod = (*__node = new_node);
+	nod->kind = _set;
+	tokenp l;
+	l = ff_dus_nexttok();
+	ff_dus_nexttok();
+
+	nod->l = (nodep)hash_get(&env, l->p, l->l);
+	nod->r = ff_dus_exp();
+}
+
 void ff_dus_parse(nodep *__top) {
 	nodep p, end = NULL;
 	while(!at_eof()) {
@@ -73,6 +85,8 @@ void ff_dus_parse(nodep *__top) {
 				parser_syput(&p);
 			} else if (tok->val == _keywd_shell) {
 				parser_shell(&p);
+			} else if (tok->val == _keywd_set) {
+				parser_set(&p);
 			}
 		}
 

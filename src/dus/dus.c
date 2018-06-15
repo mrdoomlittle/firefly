@@ -40,6 +40,8 @@ tokenp ff_dus_nexttok(void) {
 			to_keyword(tok, _keywd_syput);
 		} else if (!strcmp(tok->p, "shell")) {
 			to_keyword(tok, _keywd_shell);
+		} else if (!strcmp(tok->p, "set")) {
+			to_keyword(tok, _keywd_set);
 		}
 	}
 	return tok;

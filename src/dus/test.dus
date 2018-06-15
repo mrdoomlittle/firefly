@@ -1,0 +1,5 @@
+cc="Hello"
+cc_flags="Good"
+syput "ccf" cc_flags
+set cc=cas "Hello $ccf"
+out cc

@@ -178,6 +178,16 @@ _again:
 	}
 }
 
+void static
+op_set(objp __obj) {
+	objp src = *(objp*)__obj->src;
+	objp dst = *(objp*)__obj->dst;
+
+	dst->p = fresh;
+	fresh+=(dst->size = src->size);
+	memcpy(dst->p, src->p, src->size);
+}
+
 static void(*op[])(objp) = {	
 	op_copy,
 	op_assign,
@@ -188,7 +198,8 @@ static void(*op[])(objp) = {
 	op_out,
 	op_cas,
 	op_syput,
-	op_shell
+	op_shell,
+	op_set
 };
 
 void ff_dus_run(objp __top) {
