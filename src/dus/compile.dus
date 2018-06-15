@@ -4,7 +4,7 @@ syput "cc" cc
 syput "cc_flags" cc_flags
 
 # decl
-dus exec exp lexer parser gen hash
+dus exec exp lexer parser gen hash mm
 
 set dus		= cas "$cc $cc_flags -c -o dus.o dus.c"
 set exec	= cas "$cc $cc_flags -c -o exec.o exec.c"
@@ -13,7 +13,7 @@ set lexer	= cas "$cc $cc_flags -c -o lexer.o lexer.c"
 set parser	= cas "$cc $cc_flags -c -o parser.o parser.c"
 set gen		= cas "$cc $cc_flags -c -o gen.o gen.c"
 set hash	= cas "$cc $cc_flags -c -o hash.o hash.c"
-
+set mm		= cas "$cc $cc_flags -c -o mm.o mm.c"
 shell dus
 shell exec
 shell exp
@@ -21,3 +21,4 @@ shell lexer
 shell parser
 shell gen
 shell hash
+shell mm

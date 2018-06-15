@@ -49,10 +49,10 @@ tokenp ff_dus_nexttok(void) {
 	return tok;
 }
 
-void *tf[648];
+void *tf[2048];
 void **fresh = tf;
 void to_free(void *__p) {
-	if (fresh-tf >= 648) {
+	if (fresh-tf >= 2048) {
 		printf("error overflow.\n");
 	}
 	*(fresh++) = __p;
@@ -71,11 +71,12 @@ objp ff_dus_obj_alloc(void) {
 	to_free(ret);
 	return ret;
 }
-
+# include "mm.h"
 void ff_dus_cleanup(void) {
 	hash_destroy(&env);
 	void **cur = tf;
 	while(cur != fresh)
 		free(*(cur++));
 	ff_dus_lexer_cleanup();
+	ff_dus_mm_cleanup();
 }

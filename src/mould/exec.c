@@ -1,4 +1,4 @@
-# include "brew.h"
+# include "mould.h"
 # include "../stdio.h"
 # include "../ffly_def.h"
 # include "../linux/mman.h"
@@ -119,7 +119,7 @@ static void(*op[])(objp*) = {
 	op_shell
 };
 
-void brew_exec(objp __top) {
+void mould_exec(objp __top) {
 	printf("exec.\n");
 	objp cur = __top, bk;
 	while(cur != NULL) {

@@ -1,5 +1,5 @@
-# ifndef __brew__h
-# define __brew__h
+# ifndef __ffly__mould__h
+# define __ffly__mould__h
 # include "../ffint.h"
 extern ff_u8_t *p;
 # define incrp p++
@@ -102,7 +102,7 @@ void ulex(bucketp);
 void parse(bucketp*);
 ff_u8_t at_eof();
 void lexer_cleanup();
-void brew_exec(objp);
+void mould_exec(objp);
 void gen(bucketp, objp*);
 void oust(bucketp, ff_u8_t);
 void to_free(void*);
@@ -112,4 +112,4 @@ void hash_init(struct hash*);
 void hash_destroy(struct hash*);
 void hash_put(struct hash*, ff_u8_t const*, ff_uint_t, void*);
 void* hash_get(struct hash*, ff_u8_t const*, ff_uint_t);
-# endif /*__brew__h*/
+# endif /*__ffly__mould__h*/

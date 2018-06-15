@@ -12,6 +12,7 @@
 # include "../linux/wait.h"
 # include "../system/errno.h"
 # include "../env.h"
+# include "mm.h"
 static struct hash sy;
 char const *opstr(ff_u8_t __op) {
 	switch(__op) {
@@ -29,9 +30,6 @@ char const *opstr(ff_u8_t __op) {
 objp static objs[20];
 objp static* top = objs;
 
-ff_u8_t static stack[2048];
-ff_u8_t static *fresh = stack;
-
 void static
 op_copy(objp __obj) {
 	ff_u8_t *src = (*(objp*)__obj->src)->p;
@@ -41,13 +39,12 @@ op_copy(objp __obj) {
 
 void static
 op_fresh(objp __obj) {
-	__obj->p = fresh;
-	fresh+=__obj->size;
+	__obj->p = ff_dus_mmap(__obj->size);
 }
 
 void static
 op_free(objp __obj) {
-
+	ff_dus_munmap(__obj->p);
 }
 
 void static
@@ -78,7 +75,7 @@ void static
 op_cas(objp __obj) {
 	objp dst = __obj->dst;
 	objp src = *(objp*)__obj->p;
-	dst->p = fresh;
+	dst->p = ff_dus_mmap(1048);
 	char *p = src->p;
 	ff_u8_t *dp = dst->p;
 	char buf[128];
@@ -119,7 +116,7 @@ op_syput(objp __obj) {
 void static
 op_shell(objp __obj) {
 	char *p = (*(objp*)__obj->p)->p;
-	printf("shell command: %s\n", p);
+//	printf("shell command: %s\n", p);
 	char const *argv[100];
 	char const **cur = argv;
 	char *bed;
@@ -183,8 +180,8 @@ op_set(objp __obj) {
 	objp src = *(objp*)__obj->src;
 	objp dst = *(objp*)__obj->dst;
 
-	dst->p = fresh;
-	fresh+=(dst->size = src->size);
+	
+	dst->p = ff_dus_mmap(dst->size = src->size);
 	memcpy(dst->p, src->p, src->size);
 }
 

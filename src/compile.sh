@@ -60,6 +60,7 @@ ffly_objs="$ffly_objs $(
 
 dst_dir=$PWD
 root_dir=.
+if ! [ -f $dus ]; then
 $ffly_cc $cc_flags -c -o $dst_dir/gui/window.o $root_dir/gui/window.c
 $ffly_cc $cc_flags -c -o $dst_dir/copy.o $root_dir/copy.c
 $ffly_cc $cc_flags -c -o $dst_dir/clock.o $root_dir/clock.c
@@ -123,6 +124,9 @@ $ffly_cc $cc_flags -c -o $dst_dir/piston.o $root_dir/piston.c
 $ffly_cc $cc_flags -c -o $dst_dir/corrode.o $root_dir/corrode.c
 $ffly_cc $cc_flags -c -o $dst_dir/bog.o $root_dir/bog.c
 $ffly_cc $cc_flags -c -o $dst_dir/env.o $root_dir/env.c
+else
+	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
+fi
 export ffly_objs="$dst_dir/event.o $ffly_objs $dst_dir/resin.o $dst_dir/exec.o \
 $dst_dir/resin/exec.o $dst_dir/resin/mm.o $dst_dir/mode.o \
 $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  $dst_dir/get_bit.o \
