@@ -19,7 +19,8 @@ enum {
 	_op_jump,
 	_op_echo,
 	_op_end,
-	_op_shell
+	_op_shell,
+	_op_jobs_wait
 };
 
 struct hash_entry {
@@ -70,7 +71,8 @@ enum {
 	_keywd_cp,
 	_keywd_exit,
 	_keywd_end,
-	_keywd_echo
+	_keywd_echo,
+	_keywd_waitall
 };
 
 enum {
@@ -81,6 +83,7 @@ enum {
 	_jump,
 	_shell,
 	_echo,
+	_waitall
 };
 
 enum {

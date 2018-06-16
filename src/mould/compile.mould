@@ -1,12 +1,10 @@
 .entry all
-cc="/usr/bin/gcc"
-cc_flags="-Wall -fno-builtin -D__ffly_testing -D__ffly_no_task_pool -D__ffly_use_allocr -D__ffly_source -D__fflib"
-all,,
+all,mould.o exec.o gen.o parser.o lexer.o hash.o job.o,
 	echo "--- $cc $cc_flags entry point\n"
-	^"$cc $cc_flags -c main.c -o main.o"
+	waitall
 	exit
-brew.o,,
-	^"$cc $cc_flags -c brew.c -o brew.o"
+mould.o,,
+	^"$cc $cc_flags -c mould.c -o mould.o"
 	end
 exec.o,,
 	^"$cc $cc_flags -c exec.c -o exec.o"
@@ -23,9 +21,6 @@ lexer.o,,
 hash.o,,
 	^"$cc $cc_flags -c hash.c -o hash.o"
 	end
-#routine_a,,
-#	echo "--- <routine_a>\n"
-#	end
-#routine_b,,
-#	echo "--- <routine_b>\n"
-#	end
+job.o,,
+	^"$cc $cc_flags -c job.c -o job.o"
+	end

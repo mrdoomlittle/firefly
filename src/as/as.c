@@ -15,13 +15,16 @@
 
 struct ff_as_op const *op;
 void(*ff_as_forge)(void);
-void(*post)(void(*)(void));
+void*(*ff_as_getreg)(char const*);
+void(*post)(void);
 struct hash symbols;
 struct hash defines;
 struct hash env;
 
 char const **globl;
 char const **extrn;
+
+struct flask *fak_;
 
 segmentp curseg = NULL;
 regionp curreg = NULL;
@@ -122,14 +125,6 @@ copyln(char *__dst, char *__src, char *__end, ff_uint_t *__len) {
 }
 
 ff_addr_t rgadr(char const*);
-void adaptreg(symbolp __sy) {
-	if (!__sy) return;
-	if (is_syreg(__sy)) {
-		ff_addr_t *ra = (ff_addr_t*)ff_as_al(sizeof(ff_addr_t));
-		*ra = rgadr((char const*)__sy->p);
-		__sy->p = ra;
-	}
-}
 
 ff_i8_t static epdeg = -1;
 char const static *ep = NULL;
@@ -282,35 +277,49 @@ ff_as(char *__p, char *__end) {
 				_directive();
 			} else {
 				ffly_printf("--| %s\n", sy->p);
-				struct berry *ber;
 				struct flask fak;
-				if ((ber = (struct berry*)ff_as_hash_get(&env, sy->p, sy->len)) != NULL) {
-					fak.end = fak.sy;
+				if ((op = (struct ff_as_op*)ff_as_hash_get(&env, sy->p, sy->len)) != NULL) {
 					symbolp cur = sy->next;
+					void **p = fak.p;
+					ff_u8_t info;
 					while(cur != NULL) {
-						adaptreg(cur);
-						*(fak.end++) = cur;
+						if (is_syreg(cur)) {
+							printf("-- reg.\n");
+							*p = ff_as_getreg((char const*)cur->p);
+							info = _o_reg;
+						} else {
+							printf("-- int.\n");
+							*p = cur->p;
+							info = _o_int;
+						}
+
+						setinfo(&fak, info, p-fak.p);
+						p++;
 						cur = cur->next;
 					}
+					*p = NULL;
 
 					if (sy->next != NULL) {
 						if (is_syll(sy->next)) {
 							void *p;
 							if (!(p = ff_as_hash_get(&env, sy->next->p, ffly_str_len(sy->next->p))))
 								ff_as_hash_put(&env, sy->next->p, sy->next->len, p = ff_as_al(sizeof(struct local_label)));
-							sy->next->p = p;
+							*fak.p = p;
+							*(fak.p+1) = NULL;
+							setinfo(&fak, _o_local_label, 0);
 						} else if (is_sylabel(sy->next)) {
 							void *p;
 							if (!(p = ff_as_hash_get(&env, sy->next->p, ffly_str_len(sy->next->p))))
 								ff_as_hash_put(&env, sy->next->p, sy->next->len, p = ff_as_al(sizeof(struct label)));
-							sy->next->p = p;
+							*fak.p = p;
+							*(fak.p+1) = NULL;
+							setinfo(&fak, _o_label, 0);
 						}
 					}
 
 					fak_ = &fak;
-					op = ber->op;
 					ff_u64_t beg = offset;
-					post(ber->emit);
+					post();
 					ff_u64_t end = offset;
 					iadr(end-beg);
 					printf("got: %s\n", sy->p);

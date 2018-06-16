@@ -10,7 +10,7 @@
 # define SY_REG 0x7
 # define SY_UNKNOWN 0x8
 # define SY_LL 0x9
-# define is_syreg(__st) \
+# define is_syreg(__sy) \
 	((__sy)->sort==SY_REG)
 # define is_symac(__sy) \
 	((__sy)->sort==SY_MAC)

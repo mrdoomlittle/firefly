@@ -2,7 +2,7 @@
 # include "../../ffly_def.h"
 # include "../../stdio.h"
 # include "../opcodes/resin_tbl.h"
-
+# include "../../string.h"
 labelp extern curlabel;
 // bed of stack
 ff_uint_t static bed = 0;
@@ -12,6 +12,8 @@ typedef struct {
 	ff_u8_t l;
 	ff_uint_t addr;
 } reginfo;
+
+void static *p0, *p1, *p2, *p4;
 
 # define sp_rg 0x0
 # define bp_rg 0x1
@@ -140,6 +142,11 @@ ff_addr_t rgadr(char const *__reg) {
 	return getreg(__reg)->addr;
 }
 
+void static
+emit_label(void) {
+
+}
+
 # define POSTST 48//registers
 void ff_as_prepstack(void) {
 	bed+=POSTST;		
@@ -151,11 +158,6 @@ ff_uint_t ff_as_stackadr() {
 
 void ff_as_isa(ff_uint_t __by) {
 	bed+=__by;
-}
-
-void op_exit(ff_u8_t __op, ff_addr_t __exit) {
-	ff_as_oustbyte(__op);
-	oust_addr(__exit);
 }
 
 void op_asb(ff_u8_t __op, ff_addr_t __dst, ff_u8_t __val) {
@@ -182,29 +184,6 @@ void op_asq(ff_u8_t __op, ff_addr_t __dst, ff_u64_t __val) {
 	ff_as_oust_64l(__val);
 }
 
-void op_mov(ff_u8_t __op, ff_addr_t __src, ff_addr_t __dst) {
-	ff_as_oustbyte(__op);
-	oust_addr(__src);
-	oust_addr(__dst);
-}
-
-void op_inc(ff_u8_t __op, ff_addr_t __adr) {
-	ff_as_oustbyte(__op);
-	oust_addr(__adr);
-}
-
-void op_dec(ff_u8_t __op, ff_addr_t __adr) {
-	ff_as_oustbyte(__op);
-	oust_addr(__adr);
-}
-
-void op_cmp(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
-	ff_as_oustbyte(__op);
-	oust_addr(__lt);
-	oust_addr(__rt);
-	oust_addr(__dst);
-}
-
 void rgasb(char const *__reg, ff_u8_t __to) {
 	op_asb(_resin_op_asb, getreg(__reg)->addr, __to);
 }
@@ -221,333 +200,57 @@ void rgasq(char const *__reg, ff_u64_t __to) {
 	op_asq(_resin_op_asq, getreg(__reg)->addr, __to);
 }
 
-void rgst(char const *__reg, ff_addr_t __dst) {
-	reginfo *rg = getreg(__reg);
-	ff_u8_t op;
-	switch(rg->l) {
-		case 1: op = _op_movb; break;
-		case 2: op = _op_movw; break;
-		case 4: op = _op_movd; break;
-		case 8: op = _op_movq; break;
+void static
+_post(void) {
+	ff_u8_t buf[64];
+	ff_u8_t *p = buf;
+	memcpy(p, op->opcode, op->l);
+	p+=op->l;
+	void **cur = fak_->p;
+	ff_u8_t info;
+	while(*cur != NULL) {
+		ff_u8_t off = cur-fak_->p;
+		info = getinfo(fak_, off);
+		switch(info) {
+			case _o_local_label:
+			case _o_label: {
+				char const *rgname = rbl(sizeof(ff_addr_t));
+				local_labelp ll = NULL;
+				labelp la;
+				if (info == _o_local_label) {
+					la = curlabel;
+					ll = (local_labelp)fakget(off);
+					ll->p_adr = &curlabel->adr;
+				} else
+					la = (labelp)fakget(off);
+
+				rgasw(rgname, 0);
+				void(*f)(ff_u64_t, ff_u8_t, symbolp*, local_labelp) =
+					is_flag(la->flags, LA_LOOSE)?ff_as_hook:ff_as_reloc;
+				f(offset-sizeof(ff_addr_t), 2, &la->sy, ll);
+				memcpy(p, &getreg(rgname)->addr, sizeof(ff_addr_t));
+				p+=sizeof(ff_addr_t);
+				break;
+			}
+			case _o_int:
+				printf("int.\n");
+				memcpy(p, fakget(off), get_ous(op, off));
+				p+=get_ous(op, off);
+			break;
+			case _o_reg:
+				printf("reg.\n");
+				memcpy(p, &((reginfo*)fakget(off))->addr, sizeof(ff_addr_t));
+				p+=sizeof(ff_addr_t);
+			break;
+		}
+		cur++;
 	}
-	op_mov(op, rg->addr, __dst);
+	ff_as_oust(buf, p-buf);
 }
 
-void rgld(char const *__reg, ff_addr_t __src) {
-	reginfo *rg = getreg(__reg);
-	ff_u8_t op;
-	switch(rg->l) {
-		case 1: op = _op_movb; break;
-		case 2: op = _op_movw; break;
-		case 4: op = _op_movd; break;
-		case 8: op = _op_movq; break;
-	}
-	op_mov(op, __src, rg->addr);
-}
-
-void emit_exit(void) {
-	op_exit(_resin_op_exit, *(ff_addr_t*)fakget(0)->p);
-}
-
-void emit_asb(void) {
-	op_asb(_resin_op_asb, *(ff_addr_t*)fakget(0)->p,
-		*(ff_u8_t*)fakget(1)->p);
-}
-
-void emit_asw(void) {
-	op_asw(_resin_op_asw, *(ff_addr_t*)fakget(0)->p,
-		*(ff_u16_t*)fakget(1)->p);
-}
-
-void emit_asd(void) {
-	op_asd(_resin_op_asd, *(ff_addr_t*)fakget(0)->p,
-		*(ff_u32_t*)fakget(1)->p);
-}
-
-void emit_asq(void) {
-	op_asq(_resin_op_asq, *(ff_addr_t*)fakget(0)->p,
-		*(ff_u64_t*)fakget(1)->p);
-}
-
-void op_ld(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt) {
-	ff_as_oustbyte(__op);
-	oust_addr(__lt);
-	oust_addr(__rt);
-}
-
-void op_st(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt) {
-	ff_as_oustbyte(__op);
-	oust_addr(__lt);
-	oust_addr(__rt);
-}
-
-void emit_ld(void) {
-	op_ld(*op->opcode, *(ff_addr_t*)fakget(0)->p,
-		*(ff_addr_t*)fakget(1)->p);
-}
-
-void emit_st(void) {
-	op_st(*op->opcode, *(ff_addr_t*)fakget(0)->p,
-		*(ff_addr_t*)fakget(1)->p);
-}
-
-void op_out(ff_u8_t __op, ff_addr_t __adr) {
-	ff_as_oustbyte(__op);
-	oust_addr(__adr);
-}
-
-void emit_out(void) {
-	op_out(*op->opcode, *(ff_addr_t*)fakget(0)->p);
-}
-
-void static
-emit_jmp(void) {
-	char const *rgname = rbl(sizeof(ff_addr_t));
-	symbolp l = fakget(0);
-	local_labelp ll = NULL;
-
-	labelp la;
-	if (is_syll(l)) {
-		la = curlabel;
-		ll = (local_labelp)l->p;
-		ll->p_adr = &curlabel->adr; 
-	} else
-		la = (labelp)l->p;
-
-	rgasw(rgname, 0);
-
-	void(*p)(ff_u64_t, ff_u8_t, symbolp*, local_labelp) = 
-		is_flag(la->flags, LA_LOOSE)?ff_as_hook:ff_as_reloc;
-
-	p(offset-sizeof(ff_addr_t), 2, &la->sy, ll);
-	ff_as_oustbyte(*op->opcode);
-	oust_addr(getreg(rgname)->addr);
-}
-
-void static
-op_rin(ff_u8_t __op, ff_u8_t __no, ff_addr_t __arg) {
-	ff_as_oustbyte(__op);
-	ff_as_oustbyte(__no);
-	oust_addr(__arg);
-}
-
-void static
-emit_rin(void) {
-	op_rin(*op->opcode, *(ff_u8_t*)fakget(0)->p, *(ff_addr_t*)fakget(1)->p);
-}
-
-void static
-op_div(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
-	ff_as_oustbyte(__op);
-	oust_addr(__lt);
-	oust_addr(__rt);
-	oust_addr(__dst);
-}
-
-void static
-op_mul(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
-	ff_as_oustbyte(__op);
-	oust_addr(__lt);
-	oust_addr(__rt);
-	oust_addr(__dst);
-}
-
-void static
-op_sub(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
-	ff_as_oustbyte(__op);
-	oust_addr(__lt);
-	oust_addr(__rt);
-	oust_addr(__dst);
-}
-
-void static
-op_add(ff_u8_t __op, ff_addr_t __lt, ff_addr_t __rt, ff_addr_t __dst) {
-	ff_as_oustbyte(__op);
-	oust_addr(__lt);
-	oust_addr(__rt);
-	oust_addr(__dst);
-}
-
-void static
-op_call(ff_u8_t __op, ff_addr_t __adr) {
-	ff_as_oustbyte(__op);
-	oust_addr(__adr);
-}
-
-void static
-op_ret(ff_u8_t __op) {
-	ff_as_oustbyte(__op);
-}
-
-void static
-emit_div(void) {
-	op_div(*op->opcode, *(ff_addr_t*)fakget(0)->p,
-		*(ff_addr_t*)fakget(1)->p, *(ff_addr_t*)fakget(2)->p);
-}
-
-void static
-emit_mul(void) {
-	op_mul(*op->opcode, *(ff_addr_t*)fakget(0)->p,
-		*(ff_addr_t*)fakget(1)->p, *(ff_addr_t*)fakget(2)->p);
-}
-
-void static
-emit_sub(void) {
-	op_sub(*op->opcode, *(ff_addr_t*)fakget(0)->p,
-		*(ff_addr_t*)fakget(1)->p, *(ff_addr_t*)fakget(2)->p);
-}
-
-void static
-emit_add(void) {
-	op_add(*op->opcode, *(ff_addr_t*)fakget(0)->p,
-		*(ff_addr_t*)fakget(1)->p, *(ff_addr_t*)fakget(2)->p);
-}
-
-void static
-emit_inc(void) {
-	op_inc(*op->opcode, *(ff_addr_t*)fakget(0)->p);
-}
-
-void static 
-emit_dec(void) {
-	op_dec(*op->opcode, *(ff_addr_t*)fakget(0)->p);
-}
-
-void static
-emit_cmp(void) {
-	op_cmp(*op->opcode, *(ff_addr_t*)fakget(0)->p,
-		*(ff_addr_t*)fakget(1)->p, *(ff_addr_t*)fakget(2)->p);
-}
-
-void static
-emit_cjmp(void) {
-	char const *rgname = rbl(sizeof(ff_addr_t));
-	symbolp l = fakget(0);
-	local_labelp ll = NULL;
-
-	labelp la;
-	if (is_syll(l)) {
-		la = curlabel;
-		ll = (local_labelp)l->p;
-		ll->p_adr = &curlabel->adr;
-	} else 
-		la = (labelp)l->p;
-
-	rgasw(rgname, 0);
-
-	void(*p)(ff_u64_t, ff_u8_t, symbolp*, local_labelp) = 
-		is_flag(la->flags, LA_LOOSE)?ff_as_hook:ff_as_reloc;
-	
-	p(offset-sizeof(ff_addr_t), 2, &la->sy, ll);
-	ff_as_oustbyte(*op->opcode);
-	oust_addr(getreg(rgname)->addr);
-	oust_addr(*(ff_addr_t*)fakget(1)->p);
-}
-
-void static
-emit_mov(void) {
-	op_mov(*op->opcode, *(ff_addr_t*)fakget(0)->p,
-		*(ff_addr_t*)fakget(1)->p);
-}
-
-void static
-emit_call(void) {
-	char const *rgname = rbl(sizeof(ff_addr_t));
-	symbolp l = fakget(0);
-	labelp la = (labelp)l->p;
-
-	rgasw(rgname, 0);
-
-	void(*p)(ff_u64_t, ff_u8_t, symbolp*, local_labelp) = 
-		is_flag(la->flags, LA_LOOSE)?ff_as_hook:ff_as_reloc;
-
-	p(offset-sizeof(ff_addr_t), 2, &la->sy, NULL);
-	op_call(*op->opcode, getreg(rgname)->addr);
-}
-
-void static
-emit_ret(void) {
-	op_ret(*op->opcode);
-}
-
-static struct berry emit[] = {
-	{emit_exit, NULL},
-	{emit_asb, NULL},
-	{emit_asw, NULL},
-	{emit_asd, NULL},
-	{emit_asq, NULL},
-
-	{emit_jmp, NULL},
-
-	{emit_st, NULL},
-	{emit_st, NULL},
-	{emit_st, NULL},
-	{emit_st, NULL},
-
-	{emit_ld, NULL},
-	{emit_ld, NULL},
-	{emit_ld, NULL},
-	{emit_ld, NULL},	
-
-	{emit_out, NULL},
-	{emit_out, NULL},
-	{emit_out, NULL},
-	{emit_out, NULL},
-
-	{emit_mov, NULL},
-	{emit_mov, NULL},
-	{emit_mov, NULL},
-	{emit_mov, NULL},
-
-	{emit_rin, NULL},
-
-	{emit_div, NULL},
-	{emit_div, NULL},
-	{emit_div, NULL},
-	{emit_div, NULL},
-
-	{emit_mul, NULL},
-	{emit_mul, NULL},
-	{emit_mul, NULL},
-	{emit_mul, NULL},
-
-	{emit_sub, NULL},
-	{emit_sub, NULL},
-	{emit_sub, NULL},
-	{emit_sub, NULL},
-
-	{emit_add, NULL},
-	{emit_add, NULL},
-	{emit_add, NULL},
-	{emit_add, NULL},
-
-	{emit_inc, NULL},
-	{emit_inc, NULL},
-	{emit_inc, NULL},
-	{emit_inc, NULL},
-
-	{emit_dec, NULL},
-	{emit_dec, NULL},
-	{emit_dec, NULL},
-	{emit_dec, NULL},
-
-	{emit_cmp, NULL},
-	{emit_cmp, NULL},
-	{emit_cmp, NULL},
-	{emit_cmp, NULL},
-
-	{emit_cjmp, NULL},
-	{emit_cjmp, NULL},
-	{emit_cjmp, NULL},
-	{emit_cjmp, NULL},
-
-	{emit_call, NULL},
-	{emit_ret, NULL}
-};
-
-void static
-_post(void(*__emit)(void)) {
-	__emit();
+void static*
+_getreg(char const *__name) {
+	return getreg(__name);
 }
 
 # include "../../dep/str_len.h"
@@ -556,14 +259,13 @@ ff_as_resin(void) {
 	struct ff_as_op const **cur;
 	struct ff_as_op const *op;
 
-	struct berry *ber = emit;
 	cur = resin_optab;
 	while(*cur != NULL) {
 		op = *(cur++);
 		ffly_printf("opname: %s\n", op->name);
-		ff_as_hash_put(&env, op->name, ffly_str_len(op->name), ber);
-		(ber++)->op = op;
+		ff_as_hash_put(&env, op->name, ffly_str_len(op->name), op);
 		op++;
 	}
 	post = _post;
+	ff_as_getreg = _getreg;
 }

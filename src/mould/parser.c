@@ -112,6 +112,15 @@ ff_err_t parser_echo(bucketp *__node) {
 	retok;
 }
 
+ff_err_t parser_waitall(bucketp *__node) {
+	if (!expect_token(_keywd, _keywd_waitall)) {
+	}
+
+	bucketp p = (*__node = alloc_node);
+	p->sort = _waitall;
+	retok;
+}
+
 struct frag*
 format_str(char const *__s) {
 	char *p = __s;
@@ -267,6 +276,9 @@ void parse(bucketp *__p) {
 					break;
 					case _keywd_end:
 						if (_err(parser_end(&p))) return;
+					break;
+					case _keywd_waitall:
+						if (_err(parser_waitall(&p))) return;
 					break;
 				}
 			}

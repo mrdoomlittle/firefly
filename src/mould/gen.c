@@ -36,6 +36,12 @@ op_exit() {
 }
 
 void static
+op_jobs_wait() {
+	objp o = nextobj();
+	o->op = _op_jobs_wait;
+}
+
+void static
 emit_cp(bucketp __p) {
 	objp o = nextobj();
 	o->op = _op_cp;
@@ -83,6 +89,11 @@ emit_shell(bucketp __p) {
 	o->p = __p->p;
 }
 
+void static
+emit_waitall(bucketp __p) {
+	op_jobs_wait();
+}
+
 static void(*emit[])(bucketp) = {
 	emit_label,
 	emit_cp,
@@ -90,7 +101,8 @@ static void(*emit[])(bucketp) = {
 	emit_end,
 	emit_jump,
 	emit_shell,
-	emit_echo
+	emit_echo,
+	emit_waitall
 };
 
 void oust(bucketp __p, ff_u8_t __no) {

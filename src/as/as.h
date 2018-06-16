@@ -6,7 +6,7 @@ int extern in;
 # include "../resin.h"
 # include "../ffint.h"
 # define fakget(__off) \
-	(*((fak_)->sy+__off))
+	(*((fak_)->p+__off))
 # define inssize struct(ins)
 # define is_flag(__flags, __flag) \
 	((__flags&__flag)==__flag)
@@ -23,27 +23,33 @@ enum {
 
 extern void(*ff_as_forge)(void);
 extern struct ff_as_op const *op;
+extern void*(*ff_as_getreg)(char const*);
 ff_u8_t extern of;
 ff_u64_t extern offset;
 
-extern void(*post)(void(*)(void));
-
+extern void(*post)(void);
 typedef struct label *labelp;
 
 # define LA_LOOSE 0x1
 typedef struct region* regionp;
 
-struct berry {
-	void(*emit)(void);
-	struct ff_as_op const *op;
+# define setinfo(__fak, __bits, __off) \
+	(__fak)->info = ((__fak)->info^((__fak)->info&(0x3<<(((ff_u64_t)(__off))*2))))|((__bits&0xf)<<(((ff_u64_t)(__off))*2))
+# define getinfo(__fak, __off) \
+	(((__fak)->info&(0x3<<(((ff_u64_t)(__off))*2)))>>(((ff_u64_t)__off)*2))
+enum {
+	_o_local_label,
+	_o_label,
+	_o_reg,
+	_o_int
 };
 
 typedef struct flask {
-	symbolp sy[20];	
-	symbolp *end;
+	ff_u8_t info;
+	void *p[4];
 } *flaskp;
 
-struct flask *fak_;
+extern struct flask *fak_;
 
 typedef struct label {
 	ff_uint_t offset, s_adr, adr;
