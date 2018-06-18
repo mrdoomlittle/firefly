@@ -1,4 +1,5 @@
 # include "ff6.h"
+//# include "../io.h"
 ff_uint_t ffly_ff6_enc(void *__src, char *__dst, ff_uint_t __len) {
 	ff_u8_t *p = (ff_u8_t*)__src;
 	ff_u8_t *end = p+__len;
@@ -28,17 +29,18 @@ _bk:
 	}
 
 	if (n>0) {
-		v = (buf>>(n-6)&0x3f);
-		c0 = 'a'+(buf>>3);
-		buf-=((buf>>3)*(1<<3));
-		*(ff_u16_t*)dst = ('0'+buf)<<8|c0;
+		v = (buf&(0xffffffffffffffff>>(64-n)));
+		v = v<<(6-n);
+		c0 = 'a'+(v>>3);
+		v-=((v>>3)*(1<<3));
+		*(ff_u16_t*)dst = ('0'+v)<<8|c0;
 		dst++;
 	}
 
 	return (char*)dst-__dst;
 }
 
-void ffly_ff6_dec(char *__src, void *__dst, ff_uint_t __len) {
+ff_uint_t ffly_ff6_dec(char *__src, void *__dst, ff_uint_t __len) {
 	char c0, c1;
 	char *p = __src;
 	char *end = p+__len;
@@ -68,7 +70,5 @@ void ffly_ff6_dec(char *__src, void *__dst, ff_uint_t __len) {
 			buf &= 0xffffffffffffffff>>(64-n);
 		}
 	}
-
-	if (n>0)
-		*(dst++) = buf>>(n-8);
+	return dst-(ff_u8_t*)__dst;
 }
