@@ -78,7 +78,14 @@ ca: clean
 	gcc -c memory/mem_realloc.c
 	gcc cache.c mem_alloc.o mem_free.o mem_realloc.o
 ff: clean
-	gcc $(cc_flags) ff.c $(ffly_objs) -nostdlib
+	gcc $(cc_flags) -c -o shell/eval.o shell/eval.c
+	gcc $(cc_flags) -c -o shell/parser.o shell/parser.c
+	gcc $(cc_flags) -c -o shell/lexer.o shell/lexer.c
+	gcc $(cc_flags) -c -o shell/input.o shell/input.c
+	gcc $(cc_flags) -c -o shell/memalloc.o shell/memalloc.c
+	gcc $(cc_flags) -c -o shell/exec.o shell/exec.c
+	gcc $(cc_flags) -c -o shell/hash.o shell/hash.c
+	gcc $(cc_flags) ff.c $(ffly_objs) shell/eval.o shell/parser.o shell/lexer.o shell/input.o shell/memalloc.o shell/exec.o shell/hash.o -nostdlib
 main: clean
 	g++ $(cc_flags) main.c $(ffly_objs) -nostdlib
 uni: clean
