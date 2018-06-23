@@ -104,9 +104,9 @@ void lddct(ffly_mapp __map) {
 }
 
 char const *notice = "FF, ...\n";
+void static exec_cmd(void*, ff_uint_t, struct param_s*);
 
-# define jmpend __asm__("jmp _end")
-# define jmpagain __asm__("jmp _again")
+ff_i8_t static run = 0;
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_printf("%s", notice);
 	char line[256];
@@ -118,8 +118,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	FF_MAP map;
 	ffly_map_init(&map, _ffly_map_127);
 	lddct(&map);
-	ff_i8_t run = 0;
-	__asm__("_again:\n\t");
+_again:
 
 	ffly_printf("~: ");
 	ffly_fdrain(ffly_out);
@@ -129,10 +128,23 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	to = ffly_map_get(&map, d->ident, ffly_str_len(d->ident), &err);
 	if (!to || _err(err)) {
 		ffly_printf("command none existent.\n");
-		jmpend;
+		goto _again;	
 	}
-	
-	__asm__("jmp *%0" : : "r"(to));
+
+	exec_cmd(to, d->n, d->params);
+	dct_free(d);
+	if (!run)
+		goto _again;
+
+	ffly_map_de_init(&map);
+}
+
+# define jmpend __asm__("jmp _end")
+void
+exec_cmd(void *__func, ff_uint_t __n,  struct param_s *__params) {
+	char buf[128];
+
+	__asm__("jmp *%0" : : "r"(__func));
 
 	__asm__("_help:\n\t");
 		ffly_printf("%s", help);
@@ -143,11 +155,11 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	jmpend;
 
 	__asm__("_ff6:\n\t"); {
-		if (d->n != 2) {
+		if (__n != 2) {
 			ffly_printf("2 arguments needed.\n");
 		} else {
-			struct param_s *mot = d->params;
-			struct param_s *val = d->params+1;
+			struct param_s *mot = __params;
+			struct param_s *val = __params+1;
 			ff_uint_t l;
 			if (mot->l != 2) {
 				if (!ffly_mem_cmp(mot->s, "enc", mot->l)) {
@@ -172,11 +184,5 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	jmpend;
 
 	__asm__("_end:\n\t");
-	dct_free(d);
-	if (!run) {
-		jmpagain;
-	}
-
-	ffly_map_de_init(&map);
-	return 0;
+	return;
 }
