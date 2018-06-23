@@ -7,6 +7,10 @@
 # include "../../memory/mem_free.h"
 # include "../../system/string.h"
 # include "../../dep/mem_dup.h"
+void static
+out_s(ff_compilerp __compiler, char const *__s) {
+	__compiler->out(__s, ffly_str_len(__s));
+}
 
 void static
 emit(ff_compilerp __compiler, struct node *__node) {
@@ -16,11 +20,12 @@ emit(ff_compilerp __compiler, struct node *__node) {
 
 void static
 start(ff_compilerp __compiler) {
+	out_s(__compiler, "\t.region text\n");
 }
 
 void static
 final(ff_compilerp __compiler) {
-
+	out_s(__compiler, ".endof\n");
 }
 
 # include "../gen.h"

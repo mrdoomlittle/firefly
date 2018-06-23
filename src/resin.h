@@ -101,6 +101,7 @@ typedef struct ffly_resin {
 	ff_addr_t *retto;
 } *ffly_resinp;
 
+ff_u8_t ff_resin_ops(ff_u8_t);
 void* ff_resin_resolv_adr(ffly_resinp, ff_addr_t);
 void ff_resin_sst(ffly_resinp, void*, ff_addr_t, ff_uint_t);
 void ff_resin_sld(ffly_resinp, ff_addr_t, void*, ff_uint_t);

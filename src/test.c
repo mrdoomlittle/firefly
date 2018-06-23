@@ -89,10 +89,33 @@ void* th(void *__arg) {
 # include "version.h"
 # include "env.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
-	envset("HOME", "1234");
-	return;
 /*
-	ffly_scheduler_init();
+	ffly_scheduler_init(0);	
+	ff_uint_t const c = 20;
+	ff_u32_t s[c];
+
+	ff_uint_t i = 0;
+	while(i != c) {
+		s[i] = ffly_schedule(NULL, NULL, 0);
+		i++;
+	}
+
+	i = 0;
+	while(i != c) {
+		if (i != 12) 
+			ffly_sched_rm(s[i]);
+		i++;
+	}
+
+	i = 0;
+	while(i != c) {
+		s[i] = ffly_schedule(NULL, NULL, 0);
+		i++;
+	}
+
+	ffly_scheduler_de_init();
+*/
+/*
 	ffly_set_cache_dir("../cache");
 	ffly_cache_prepare(20);
 

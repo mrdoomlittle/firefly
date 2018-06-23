@@ -77,6 +77,8 @@ ca: clean
 	gcc -c memory/mem_free.c
 	gcc -c memory/mem_realloc.c
 	gcc cache.c mem_alloc.o mem_free.o mem_realloc.o
+ff: clean
+	gcc $(cc_flags) ff.c $(ffly_objs) -nostdlib
 main: clean
 	g++ $(cc_flags) main.c $(ffly_objs) -nostdlib
 uni: clean

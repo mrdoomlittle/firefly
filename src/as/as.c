@@ -13,9 +13,10 @@
 	cleanup needed
 */
 
-struct ff_as_op const *op;
+void **op_tray;
 void(*ff_as_forge)(void);
 void*(*ff_as_getreg)(char const*);
+ff_u8_t(*ff_as_regsz)(void*);
 void(*post)(void);
 struct hash symbols;
 struct hash defines;
@@ -278,24 +279,46 @@ ff_as(char *__p, char *__end) {
 			} else {
 				ffly_printf("--| %s\n", sy->p);
 				struct flask fak;
-				if ((op = (struct ff_as_op*)ff_as_hash_get(&env, sy->p, sy->len)) != NULL) {
+				if ((op_tray = (void**)ff_as_hash_get(&env, sy->p, sy->len)) != NULL) {
+					fak.n = 0;
 					symbolp cur = sy->next;
 					void **p = fak.p;
-					ff_u8_t info;
+					ff_u16_t info;
 					while(cur != NULL) {
 						if (is_syreg(cur)) {
 							printf("-- reg.\n");
-							*p = ff_as_getreg((char const*)cur->p);
-							info = _o_reg;
+							switch(ff_as_regsz(*p = ff_as_getreg((char const*)cur->p))) {
+								case 1:
+									info = _o_reg8;
+								break;
+								case 2:
+									info = _o_reg16;
+								break;
+								case 4:
+									info = _o_reg32;
+								break;
+								case 8:
+									info = _o_reg64;
+								break;
+							}
 						} else {
 							printf("-- int.\n");
 							*p = cur->p;
-							info = _o_int;
+							ff_u64_t val = *(ff_u64_t*)*p;
+							if (val >= 0 && val <= (ff_u8_t)~0)
+								info = _o_imm8;
+							else if (val > (ff_u8_t)~0 && val <= (ff_u16_t)~0)
+								info = _o_imm16;
+							else if (val > (ff_u16_t)~0 && val <= (ff_u32_t)~0)
+								info = _o_imm32;
+							else if (val > (ff_u32_t)~0 && val <= (ff_u64_t)~0)
+								info = _o_imm64;
 						}
 
 						setinfo(&fak, info, p-fak.p);
 						p++;
 						cur = cur->next;
+						fak.n++;
 					}
 					*p = NULL;
 

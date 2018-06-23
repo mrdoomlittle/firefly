@@ -9,7 +9,7 @@ int extern in;
 	(*((fak_)->p+__off))
 # define inssize struct(ins)
 # define is_flag(__flags, __flag) \
-	((__flags&__flag)==__flag)
+	(((__flags)&(__flag))==(__flag))
 
 # define HOOK 0x1
 # define RELOCATE 0x2
@@ -22,8 +22,9 @@ enum {
 };
 
 extern void(*ff_as_forge)(void);
-extern struct ff_as_op const *op;
+extern void **op_tray;
 extern void*(*ff_as_getreg)(char const*);
+extern ff_u8_t(*ff_as_regsz)(void*);
 ff_u8_t extern of;
 ff_u64_t extern offset;
 
@@ -34,19 +35,27 @@ typedef struct label *labelp;
 typedef struct region* regionp;
 
 # define setinfo(__fak, __bits, __off) \
-	(__fak)->info = ((__fak)->info^((__fak)->info&(0x3<<(((ff_u64_t)(__off))*2))))|((__bits&0xf)<<(((ff_u64_t)(__off))*2))
+	(__fak)->info[__off] = __bits
 # define getinfo(__fak, __off) \
-	(((__fak)->info&(0x3<<(((ff_u64_t)(__off))*2)))>>(((ff_u64_t)__off)*2))
-enum {
-	_o_local_label,
-	_o_label,
-	_o_reg,
-	_o_int
-};
+	((__fak)->info[__off])
+
+# define _o_reg (_o_reg8|_o_reg16|_o_reg32|_o_reg64)
+# define _o_imm (_o_imm8|_o_imm16|_o_imm32|_o_imm64)
+# define _o_local_label 0x1
+# define _o_label 0x2
+# define _o_reg8 0x4
+# define _o_reg16 0x8
+# define _o_reg32 0x10
+# define _o_reg64 0x20
+# define _o_imm8 0x40
+# define _o_imm16 0x80
+# define _o_imm32 0x100
+# define _o_imm64 0x200
 
 typedef struct flask {
-	ff_u8_t info;
+	ff_u16_t info[4];
 	void *p[4];
+	ff_u8_t n;
 } *flaskp;
 
 extern struct flask *fak_;

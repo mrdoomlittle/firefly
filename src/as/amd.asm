@@ -1,6 +1,5 @@
 .region text
 _start:
-nop
-movd 60, %ecx
+mov %rax, 60
 syscall
 .endof

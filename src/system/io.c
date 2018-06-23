@@ -13,7 +13,7 @@ FF_FILE *ffly_err = NULL;
 FF_FILE *ffly_in = NULL;
 # ifdef __fflib
 void putchar(char __c) {
-	write(ffly_fileno(ffly_out), &__c, 1);
+	ffly_fwrite(ffly_out, &__c, 1);
 }
 
 /*
@@ -24,16 +24,12 @@ void ppad(char __c, ff_uint_t __n) {
 }
 
 ff_uint_t ffly_rdline(void *__buf, ff_uint_t __size, FF_FILE *__file) {
-    ff_u8_t *p = (ff_u8_t*)__buf;
-    while((p-(ff_u8_t*)__buf)<__size) {
-
-        char c;
-        if (read(__file->fd, &c, 1) <= 0) continue;
-        if (c == '\n') break;
-        *(p++) = c;
-    } 
-
-    *p = '\0';
+	ff_uint_t size;
+_again:
+	if ((size = read(__file->fd, __buf, __size))<=0)
+		goto _again;
+	*((ff_u8_t*)__buf+size-1) = '\0';
+	return size-1;
 }
 # endif
 /*

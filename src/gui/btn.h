@@ -16,10 +16,11 @@ struct ffly_gui_btn {
 
     ff_i16_t *pt_x, *pt_y;
 	ff_i8_t *pt_state;
-    ff_i8_t enabled;
+   	ff_i8_t enabled;
+	ff_u8_t flags;
 	ff_u32_t sched_id;
-    void *arg_p;
-    void(*press)(struct ffly_gui_btn*, void*);
+	void *arg_p;
+	void(*press)(struct ffly_gui_btn*, void*);
 	void(*release)(struct ffly_gui_btn*, void*);
     void(*hover)(struct ffly_gui_btn*, void*);
 	struct ffly_gui_btn *prev, *next;
@@ -30,6 +31,7 @@ typedef struct ffly_gui_btn* ffly_gui_btnp;
 extern "C" {
 # endif
 ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t*, ff_u16_t, ff_u16_t, ff_u16_t, ff_u16_t);
+void ffly_gui_btn_sched(ffly_gui_btnp);
 void ffly_gui_btn_destroy(ffly_gui_btnp);
 void ffly_gui_btn_init(ffly_gui_btnp, ff_u8_t*, ff_u16_t, ff_u16_t, ff_u16_t, ff_u16_t);
 ff_err_t ffly_gui_btn_draw(ffly_gui_btnp, ffly_palletp, ff_u16_t, ff_u16_t);

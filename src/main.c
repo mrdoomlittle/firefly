@@ -26,6 +26,7 @@
 # include "system/sched.h"
 # include "storage/reservoir.h"
 # include "physics/contact.h"
+# include "linux/time.h"
 # define WIDTH 448
 # define HEIGHT 448
 /*
@@ -169,7 +170,18 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_uint_t delta = 0, start = phy_clock;
 	ff_int_t old_x, old_y;
 	ffly_queue_init(&ffly_event_queue, sizeof(ff_eventp));
+	struct timespec t0, t1;
+	clock_gettime(CLOCK_MONOTONIC, &t0);
+
+	ff_uint_t rps = 0;
 	while(1) {
+		clock_gettime(CLOCK_MONOTONIC, &t1);
+		if (t1.tv_sec-t0.tv_sec >=1) {
+			clock_gettime(CLOCK_MONOTONIC, &t0);
+			ffly_printf("##### %u-RPS.\n", rps);
+			rps = 0;
+		}
+
 		delta = phy_clock-start;
 		start = phy_clock;
 		char c;
@@ -201,6 +213,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 			ffly_printf("got event.\n");
 			ff_event_del(event);
 		}
+		rps++;
 	}	
 _end:
 	ffly_queue_de_init(&ffly_event_queue);

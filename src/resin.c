@@ -102,6 +102,89 @@ get(ffly_resinp __resin, ff_u8_t *__dst, ff_u8_t __n, ff_err_t *__err) {
 	}
 }
 
+/*
+
+*/
+ff_u8_t static ops[] = {
+	sizeof(ff_addr_t),		// exit
+
+	sizeof(ff_addr_t)+1,	// asb
+	sizeof(ff_addr_t)+2,	// asw
+	sizeof(ff_addr_t)+4,	// asd
+	sizeof(ff_addr_t)+8,	// asq
+
+	sizeof(ff_addr_t),		// jmp
+
+	sizeof(ff_addr_t)*2,	// stb
+	sizeof(ff_addr_t)*2,	// stw
+	sizeof(ff_addr_t)*2,	// std
+	sizeof(ff_addr_t)*2,	// stq
+
+	sizeof(ff_addr_t)*2,    // ldb
+	sizeof(ff_addr_t)*2,    // ldw
+	sizeof(ff_addr_t)*2,    // ldd
+	sizeof(ff_addr_t)*2,    // ldq
+
+	sizeof(ff_addr_t),		// outb
+	sizeof(ff_addr_t),		// outw
+	sizeof(ff_addr_t),		// outd
+	sizeof(ff_addr_t),		// outq
+
+	sizeof(ff_addr_t)*2,	// movb
+	sizeof(ff_addr_t)*2,	// movw
+	sizeof(ff_addr_t)*2,	// movd
+	sizeof(ff_addr_t)*2,	// movq
+
+	sizeof(ff_addr_t)+1,	// rin
+
+	sizeof(ff_addr_t)*3,	// divb
+	sizeof(ff_addr_t)*3,	// divw
+	sizeof(ff_addr_t)*3,	// divd
+	sizeof(ff_addr_t)*3,	// divq
+
+	sizeof(ff_addr_t)*3,	// mulb
+	sizeof(ff_addr_t)*3,	// mulw
+	sizeof(ff_addr_t)*3,	// muld
+	sizeof(ff_addr_t)*3,	// mulq
+
+	sizeof(ff_addr_t)*3,	// subb
+	sizeof(ff_addr_t)*3,	// subw
+	sizeof(ff_addr_t)*3,	// subd
+	sizeof(ff_addr_t)*3,	// subq
+
+	sizeof(ff_addr_t)*3,	// addb
+	sizeof(ff_addr_t)*3,	// addw
+	sizeof(ff_addr_t)*3,	// addd
+	sizeof(ff_addr_t)*3,	// addq
+
+	sizeof(ff_addr_t),		// incb
+	sizeof(ff_addr_t),		// incw
+	sizeof(ff_addr_t),		// incd
+	sizeof(ff_addr_t),		// incq
+
+	sizeof(ff_addr_t),		// decb
+	sizeof(ff_addr_t),		// decw
+	sizeof(ff_addr_t),		// decd
+	sizeof(ff_addr_t),		// decq
+
+	sizeof(ff_addr_t)*3,	// cmpb
+	sizeof(ff_addr_t)*3,	// cmpw
+	sizeof(ff_addr_t)*3,	// cmpd
+	sizeof(ff_addr_t)*3,	// cmpq
+
+	sizeof(ff_addr_t)*2,	// cjmp
+	sizeof(ff_addr_t)*2,	// cjmp
+	sizeof(ff_addr_t)*2,	// cjmp
+	sizeof(ff_addr_t)*2,	// cjmp
+
+	sizeof(ff_addr_t),		// call
+	0						// ret
+};
+
+ff_u8_t ff_resin_ops(ff_u8_t __op) {
+	return ops[__op];
+}
+
 void*
 ff_resin_resolv_adr(ffly_resinp __resin, ff_addr_t __adr) {
 	return (void*)(__resin->stack+__adr);
@@ -182,7 +265,8 @@ static void(*op[])() = {
 	_asb,
 	_asw,
 	_asd,
-	_asq,
+	_asq,	
+	// jump
 	_jmp,
 	// store
 	_stb,
@@ -204,7 +288,7 @@ static void(*op[])() = {
 	_movw,
 	_movd,
 	_movq,
-
+	// ring
 	_rin,
 	// dev
 	_divb,
@@ -281,9 +365,6 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 
 	jmpto(op[opno]);
 
-	/*
-		the less instruction we use the better
-	*/
 	__asm__("_divb:\n\t");
 	l = 1;
 	__asm__("jmp _div");
@@ -498,7 +579,9 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	l = 8;
 	__asm__("_as:\n\t");
 	{
-		ff_addr_t to = get_addr(__resin, &err);	
+		ff_addr_t to;
+		to = get_addr(__resin, &err);	
+
 		ff_u64_t val;
 		get(__resin, (ff_u8_t*)&val, l, &err);
 		stack_put(__resin, (ff_u8_t*)&val, l, to);

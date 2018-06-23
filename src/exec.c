@@ -1,8 +1,8 @@
 # include "exec.h"
-void ffexec(void *__p, void *__end, ff_u8_t __format, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
+void ffexec(void(*__get)(ff_uint_t, ff_uint_t, ff_uint_t, void*), ff_u32_t __end, ff_u8_t __format, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
 	switch(__format) {
 		case _ffexec_bc:
-			ffres_exec(__p, __end, __prep, __hdr, __entry);
+			ffres_exec(__get, __end, __prep, __hdr, __entry);
 		break;
 	}
 }
@@ -57,6 +57,42 @@ prep(void *__hdr, void *__ctx) {
 		__ffly_mem_free(bk);
 	}
 }
+
+static int prog;
+void static
+get(ff_uint_t __from, ff_uint_t __offset, ff_uint_t __size, void *__buf) {
+	pread(prog, (ff_u8_t*)__buf+__offset, __size, __from);
+}
+
+/*
+	load program segments into its own file
+*/
+# define CHUNK_SIZE 20
+void static
+load_psegs(segmentp __seg) {
+	ff_u8_t *chunk = (ff_u8_t*)__ffly_mem_alloc(CHUNK_SIZE);
+	segmentp cur = __seg;
+	while(cur != NULL) {
+		ff_uint_t size = cur->hdr.sz;
+		ff_uint_t off = 0;
+		ff_uint_t adr = cur->hdr.adr;
+		while((size-off)>=CHUNK_SIZE) {
+			pread(fd, chunk, 20, off+cur->hdr.offset);
+			pwrite(prog, chunk, 20, adr);
+			off+=CHUNK_SIZE;
+			adr+=CHUNK_SIZE;
+		}
+
+		ff_uint_t left = size-off;
+		if (left>0) {
+			pread(fd, chunk, left, off+cur->hdr.offset);
+			pwrite(prog, chunk, left, adr);
+		}
+		cur = cur->next;
+	}
+	__ffly_mem_free(chunk);
+}
+
 
 void ffexecf(char const *__file) {
 	if ((fd = open(__file, O_RDONLY, 0)) == -1) {
@@ -122,28 +158,28 @@ void ffexecf(char const *__file) {
 		}	
 	}
 
-	ff_u8_t *bin, *end;
-	if (!(bin = (ff_u8_t*)__ffly_mem_alloc(size))) {
-		// error
-	}
+	prog = open("resin.temp", O_RDWR|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
 
+	/*
+		load program segments into file ^
+	*/
+	load_psegs(ps);
+
+	// free program segments - not data
 	segmentp cur = ps, bk;
 	while(cur != NULL) {
-		lseek(fd, cur->hdr.offset, SEEK_SET);
-		read(fd, bin+cur->hdr.adr, cur->hdr.sz);
 		bk = cur;
 		cur = cur->next;
 		__ffly_mem_free(bk);
 	}
 
-	end = bin+size;
 # ifdef __ffly_debug
-	ffly_rdm(bin, end);
+	ffly_rdm(get, 0, size);
 # endif
 	ffly_printf("routine at: %u\n", hdr.routine);
-	ffexec(bin, end, hdr.format, prep, &hdr, hdr.routine);
-	__ffly_mem_free(bin);
+	ffexec(get, size, hdr.format, prep, &hdr, hdr.routine);
 _corrupt:
+	close(prog);
 	close(fd);
 
 }

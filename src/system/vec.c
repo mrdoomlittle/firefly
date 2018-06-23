@@ -19,6 +19,12 @@ ffly_vecp ffly_vec_list() {
 	return top;
 }
 
+// later
+struct page {
+	void **p;
+
+};
+
 void ffly_vec_attach(ffly_vecp __vec) {
 	__vec->prev = NULL;
 	__vec->next = top;
@@ -251,8 +257,8 @@ _end:
 void ffly_vec_del(ffly_vecp __vec, void *__p) {
 	ffly_vec_blkdp blk = (ffly_vec_blkdp)((ff_u8_t*)__p-sizeof(struct ffly_vec_blkd));
 
-	ffly_rm_flag(&blk->flags, VEC_BLK_USED);
-	ffly_add_flag(&blk->flags, VEC_BLK_FREE, 0);
+	ffly_rm_flag(blk->flags, VEC_BLK_USED);
+	ffly_add_flag(blk->flags, VEC_BLK_FREE);
 	ffly_vec_dechain(__vec, blk);
 
 	ff_off_t *p;

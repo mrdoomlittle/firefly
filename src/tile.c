@@ -53,6 +53,7 @@ void ffly_tile_del(ffly_tilep __tile) {
 ff_u32_t static sched_id;
 void static
 update(void) {
+/*
 	lk;
 	ffly_tilep cur = top;
 	while(cur != NULL) {
@@ -60,14 +61,15 @@ update(void) {
 		cur = cur->next;
 	}
 	ul;
+*/
 }
 
 void ffly_tiles_sched(void) {
-	sched_id = ffly_schedule(update, NULL, 2);
+//	sched_id = ffly_schedule(update, NULL, 2);
 }
 
 void ffly_tiles_usched(void) {
-	ffly_sched_rm(sched_id);
+//	ffly_sched_rm(sched_id);
 }
 
 void ffly_tile_cleanup(void) {

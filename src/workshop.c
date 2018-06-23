@@ -59,8 +59,6 @@ void ffly_workshop_start() {
 			ffly_printf("event.\n");
 			ff_event_del(event);
 		}
-		ffly_sched_clock_tick(1);
-		ffly_scheduler_tick();
 		// 16 rps
 		ffly_nanosleep(0, 60000000);
 		ffly_grp_unload(&__ffly_grp__);
@@ -126,6 +124,7 @@ void ffly_workshop_init() {
 	btn->pt_state = &pt_state;
 	btn->id = _bt_opt;
 	workshop.opt = btn;
+	ffly_gui_btn_sched(btn);
 
 	btn = ffly_gui_btn_creat(tex1, 76, 76, 76, 0);
 	btn->pt_x = &pt_x;
@@ -136,7 +135,7 @@ void ffly_workshop_init() {
 	btn->pt_state = &pt_state;
 	btn->id = _bt_front;
 	workshop.front = btn;
-
+	ffly_gui_btn_sched(btn);
 	ffly_gui_window_init(&workshop.window, 64, 64, 128, 128);
 }
 
@@ -150,12 +149,12 @@ void ffly_workshop_de_init() {
 	ffly_gui_window_de_init(&workshop.window);
 	ffly_gui_btn_destroy(workshop.opt);
 	ffly_gui_btn_destroy(workshop.front);
-	ffly_scheduler_de_init();
 	ff_event_cleanup();
 	ffly_grp_cleanup(&__ffly_grp__);
 	ffly_grj_cleanup();
 	ffly_pallet_de_init(&workshop.frame);
 	ffly_tile_cleanup();
+	ffly_scheduler_de_init();
 }
 
 ff_err_t ffmain(int __argc, char const *__argv[]) {

@@ -24,9 +24,16 @@ lookup(struct hash *__table, ff_u8_t const *__key, ff_uint_t __len) {
 }
 
 void ff_as_hash_put(struct hash *__table, ff_u8_t const *__key, ff_uint_t __len, void *__p) {
+	hash_entryp entry;
+	if ((entry = lookup(__table, __key, __len)) != NULL) {
+		entry->p = __p;
+		return;
+	}
+	
 	ff_u64_t sum = ffly_hash(__key, __len);
 	struct hash_entry **table = __table->table+(sum&0xff);
-	hash_entryp entry = (hash_entryp)ff_as_al(sizeof(struct hash_entry)); 
+
+	entry = (hash_entryp)ff_as_al(sizeof(struct hash_entry)); 
 	entry->next = *table;
 	*table = entry;
 

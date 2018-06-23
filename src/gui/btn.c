@@ -10,57 +10,11 @@
 # include "../system/sched.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
-// should use event .xa .ya from window
-// will be called every time new event is pushed
-/*
-typedef struct {
-	ffly_event_t *event;
-	ffly_gui_btnp btn;
-} arg;
-
-arg static top[20];
-arg static *fresh = top;
-arg static *bin[20];
-arg static **next = bin;
-ff_mlock_t static mutex = FFLY_MUTEX_INIT;
+# include "../system/flags.h"
+# define BTN_SCHED 0x1
 
 
-// out of date
-ff_i8_t static proxy(void *__arg_p) {
-	arg *p = (arg*)__arg_p;
-//	ffly_gui_btn_handle(p->btn, p->event);
-	__ffly_mem_free(p->event);
-	__ffly_mem_free(p->event->data);
-	ffly_mutex_lock(&mutex);
-	if (p == fresh-1)
-		fresh--;
-	else
-		*(next++) = p; 
-	ffly_mutex_unlock(&mutex); 
-	return 0;
-}
 
-ff_err_t static eir(ffly_event_t *__event, void *__arg_p) {
-	if (__event->kind == _ffly_wd_ek_btn_press) {
-		arg *p;
-		ffly_mutex_lock(&mutex);
-		if (next != bin) 
-			p = *(--next);
-		else {
-			if (fresh >= top+sizeof(top)) {
-				return FFLY_FAILURE;
-			}
-			p = fresh++;
-		}
-		ffly_mutex_unlock(&mutex);
-
-		p->event = ffly_event_dup(__event);
-		p->btn = (ffly_gui_btnp)__arg_p;
-		ffly_task_pool_add(&__ffly_task_pool__, &proxy, p); 
-	}
-	return FFLY_SUCCESS;
-}
-*/
 void
 ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
 	ff_u16_t __height, ff_u16_t __x, ff_u16_t __y)
@@ -79,6 +33,7 @@ ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
 	__btn->arg_p = NULL;
 	__btn->press = NULL;
 	__btn->hover = NULL;
+	__btn->flags = 0x0;
 }
 
 ff_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn, ffly_palletp __pallet, ff_u16_t __width, ff_u16_t __height) {
@@ -98,11 +53,17 @@ ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t *__texture, ff_u16_t __width,
 
 	btn = (ffly_gui_btnp)__ffly_mem_alloc(sizeof(struct ffly_gui_btn));
 	ffly_gui_btn_init(btn, __texture, __width, __height, __x, __y);
-	btn->sched_id = ffly_schedule(ffly_gui_btn_handle, btn, 2);
+}
+
+void ffly_gui_btn_sched(ffly_gui_btnp __btn) {
+	__btn->sched_id = ffly_schedule(ffly_gui_btn_handle, __btn, 2);
+	__btn->flags |= BTN_SCHED;
 }
 
 void ffly_gui_btn_destroy(ffly_gui_btnp __btn) {
-	ffly_sched_rm(__btn->sched_id);
+	if (ffly_is_flag(__btn->flags, BTN_SCHED))
+		ffly_sched_rm(__btn->sched_id);
+
 	ffly_pallet_de_init(&__btn->texture);
 	__ffly_mem_free(__btn);
 }

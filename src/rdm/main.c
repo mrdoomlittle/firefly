@@ -9,6 +9,7 @@
 # include "../malloc.h"
 # include "../stdio.h"
 # include "../depart.h"
+# define MIN 2048
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	if (__argc<2) {
 		printf("please provide binfile.\n");
@@ -41,16 +42,24 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		if (beg>0)
 			size-=beg;
 	}
+	/*
+		if file size is over the MIN then use rdmf as it will load from file bit by bit.
+	*/
+	if (st.st_size<MIN) {
+		ff_u8_t *p = (ff_u8_t*)malloc(size);
+		if (beg>0)
+			lseek(fd, beg, SEEK_SET);
+		read(fd, p, size);
+		close(fd);
 
-	ff_u8_t *p = (ff_u8_t*)malloc(size);
-	if (beg>0)
-		lseek(fd, beg, SEEK_SET);
-	read(fd, p, size);
-	close(fd);
+		printf("beg, %u, size, %u\n", beg, size);
+		ffly_rdmp(p, size);
+		free(p);
+	} else {
+		printf("beg, %u, size, %u\n", beg, size);
+		ffly_rdmf(bin, beg, size);
+	}
 
-	printf("beg, %u, size, %u\n", beg, size);
-	ffly_rdm(p, p+size);
-	free(p);
 	ffly_depart(NULL);
 	retok;
 }

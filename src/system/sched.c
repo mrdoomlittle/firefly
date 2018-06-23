@@ -2,6 +2,7 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../memory/mem_realloc.h"
+# include "io.h"
 ff_mlock_t static lock = FFLY_MUTEX_INIT;
 
 ff_u64_t static clock = 0;
@@ -29,14 +30,23 @@ sched_entityp static dead = NULL;
 # define entity_unlock(__ent) \
 	ffly_mutex_unlock(&(__ent)->lock)
 
+void static
+delink(sched_entityp __ent) {
+	*__ent->bk = __ent->fd;
+	if (__ent->fd != NULL)
+		__ent->fd->bk = __ent->bk;
+}
+
 ff_u32_t ffly_schedule(ff_i8_t(*__func)(void*), void *__arg_p, ff_u64_t __interval) {
 	sched_lock;
+	ff_u32_t ret;
 	ff_uint_t page = off>>PAGE_SHIFT;
 	ff_uint_t pg_off;
 	sched_entityp ent;
 	if (dead != NULL) {
 		ent = dead;
 		dead = dead->fd;
+		ret = ent->id;
 		goto _dead;
 	}
 	if (!entities) {
@@ -52,12 +62,14 @@ ff_u32_t ffly_schedule(ff_i8_t(*__func)(void*), void *__arg_p, ff_u64_t __interv
 _sk:
 	pg_off = (off++)-(page*PAGE_SIZE);
 	ent = (*(entities+page))+pg_off;
+	ret = (ent->id = ((page&0xfff)|((pg_off&0xfffff)<<12)));
 _dead:
+	ffly_fprintf(ffly_log, "sched, interval: %u, id: %u\n", __interval, ret);
 	if (!top)
 		top = ent;
-
+	ent->inuse = 0;
 	ent->prev = end;
-	
+	ent->next = NULL;
 	ent->lock = FFLY_MUTEX_INIT;
 	ent->func = __func;
 	ent->arg_p = __arg_p;
@@ -68,11 +80,12 @@ _dead:
 		end->next = ent;
 	end = ent;
 	sched_unlock;
-	return (page&0xfff)|((pg_off&0xfffff)<<12);
+	return ret;
 }
 
 void static 
 deatach(sched_entityp __ent) {
+	ffly_fprintf(ffly_log, "sched-deatach, id: %u\n", __ent->id);
 	if (__ent == top) {
 		if ((top = __ent->next) != NULL) {
 			top->prev = NULL;
@@ -84,7 +97,8 @@ deatach(sched_entityp __ent) {
 	if (__ent == end) {
 		if ((end = __ent->prev) != NULL) {
 			end->next = NULL;
-		}
+		} else
+			top = NULL;
 		return;
 	}
 
@@ -99,7 +113,11 @@ remove(sched_entityp __ent) {
 	sched_lock;
 	deatach(__ent);
 	__ent->fd = dead;
+	__ent->bk = &dead;
+	if (dead != NULL)
+		dead->bk = &__ent->fd;
 	dead = __ent;
+	__ent->inuse = -1;
 	sched_unlock;
 }
 
@@ -108,10 +126,32 @@ void ffly_sched_rm(ff_u32_t __id) {
 	if (((__id&0xfff)*PAGE_SIZE)+((__id>>12)&0xfffff) == off-1) {
 		deatach(get_entity(__id));
 		off--;
-		ff_uint_t page = off>>PAGE_SHIFT;
+		sched_entityp p;
+		ff_uint_t page, pg_off;
+	_again:
+		if (off>0) {
+			off--;
+			page = off>>PAGE_SHIFT;
+			pg_off = off-(page*PAGE_SIZE);
+			p = (*(entities+page))+pg_off;
+
+			if (p->inuse == -1) {
+				delink(p);
+				ffly_fprintf(ffly_log, "sched, upper free.\n");
+				goto _again;
+			} else
+				ffly_fprintf(ffly_log, "sched upper inuse.\n");
+		}
+
+		off++;
+		page = off>>PAGE_SHIFT;
 		if (page < page_c-1 && page_c>1) {
-			__ffly_mem_free(*(entities+(page+1)));
-			entities = (sched_entityp*)__ffly_mem_realloc(entities, (--page_c)*sizeof(sched_entityp));
+			sched_entityp *p = entities+(page+1);
+			sched_entityp *end = entities+page_c;
+			while(p != end)
+				__ffly_mem_free(*(p++));
+			page_c = page+1;
+			entities = (sched_entityp*)__ffly_mem_realloc(entities, page_c*sizeof(sched_entityp));
 		}
 		sched_unlock;
 		return;
@@ -150,6 +190,7 @@ void ffly_scheduler_tick(void) {
 		}
 		return;
 	}
+	
 	sched_entityp cur = top, ent;
 	while(cur != NULL) {
 		ent = cur;
@@ -184,7 +225,7 @@ void ffly_scheduler_init(ff_u8_t __flags) {
 void ffly_scheduler_de_init(void) {
 	ffly_fprintf(ffly_log, "sched de-init.\n");
 	set_flag(STOP);
-	while(!is_flag(flags, OKAY));
+//	while(!is_flag(flags, OKAY));
 	sched_entityp *cur = entities;
 	sched_entityp *end = cur+page_c;
 	while(cur != end)

@@ -11,8 +11,10 @@ typedef struct sched_entity {
 	ff_i8_t(*func)(void*);
 	void *arg_p;
 	struct sched_entity *prev, *next;
-	struct sched_entity *fd;
+	struct sched_entity *fd, **bk;
 	ff_mlock_t lock;
+	ff_u32_t id;
+	ff_i8_t inuse;
 } *sched_entityp;
 
 void ffly_sched_rm(ff_u32_t);

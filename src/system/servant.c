@@ -40,7 +40,7 @@ handle(void *__arg_p) {
 		ffly_mutex_unlock(&arg->lock);
 	//	ffly_nanosleep(1, 0);
 	} while(!ffly_is_flag(arg->flags, FF_SERVANT_KILL));
-	ffly_add_flag(&arg->flags, FF_SERVANT_DEAD, 0);
+	ffly_add_flag(arg->flags, FF_SERVANT_DEAD);
 	ffly_fprintf(ffly_log, "servant has died.\n");
 }
 

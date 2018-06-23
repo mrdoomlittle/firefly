@@ -85,7 +85,7 @@ void static __inline__* ffly_vec_p(struct ffly_vec *__vec){return __vec->p;}
 ff_size_t static __inline__ ffly_vec_size(struct ffly_vec *__vec) {return __vec->size;}
 ff_bool_t static __inline__ ffly_vec_empty(struct ffly_vec *__vec) {return !__vec->size;}
 ff_bool_t static __inline__ ffly_vec_nonempty(struct ffly_vec *__vec) {return __vec->size>0;}
-void static __inline__ ffly_vec_tog_flag(struct ffly_vec *__vec, ff_flag_t __flag) {ffly_add_flag(&__vec->flags, __flag, 0);}
+void static __inline__ ffly_vec_tog_flag(struct ffly_vec *__vec, ff_flag_t __flag) {ffly_add_flag(__vec->flags, __flag);}
 void static __inline__ ffly_vec_clear_flags(struct ffly_vec *__vec){__vec->flags = 0x0;} // remove
 void static __inline__ ffly_vec_clr_flags(struct ffly_vec *__vec){__vec->flags = 0x0;}
 void static __inline__ ffly_vec_set_flags(struct ffly_vec *__vec, ff_flag_t __flags) {__vec->flags = __flags;}

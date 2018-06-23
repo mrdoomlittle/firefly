@@ -18,7 +18,6 @@ $ffly_cc -c $cc_flags -o $dst_dir/bin_tree.o $root_dir/bin_tree.c
 $ffly_cc -c $cc_flags -o $dst_dir/buff.o $root_dir/buff.c
 $ffly_cc -c $cc_flags -o $dst_dir/vec.o $root_dir/vec.c
 $ffly_cc -c $cc_flags -o $dst_dir/map.o $root_dir/map.c
-$ffly_cc -c $cc_flags -o $dst_dir/flags.o $root_dir/flags.c
 $ffly_cc -c $cc_flags -o $dst_dir/hash.o $root_dir/util/hash.c
 $ffly_cc -c $cc_flags -o $dst_dir/lat.o $root_dir/lat.c
 $ffly_cc -c $cc_flags -o $dst_dir/dict.o $root_dir/dict.c
@@ -205,7 +204,7 @@ $dst_dir/sys_brk.o.0 $dst_dir/sys_brk.o.1 \
 $dst_dir/mutex.o.0 $dst_dir/mutex.o.1 \
 $dst_dir/errno.o $dst_dir/io.o $dst_dir/pipe.o $dst_dir/shm.o \
 $dst_dir/atomic_op.o.0 $dst_dir/atomic_op.o.1 \
-$dst_dir/vec.o $dst_dir/map.o $dst_dir/flags.o $dst_dir/hash.o \
+$dst_dir/vec.o $dst_dir/map.o $dst_dir/hash.o \
 $dst_dir/buff.o $dst_dir/bin_tree.o \
 $dst_dir/sys_nanosleep.o.0 $dst_dir/sys_nanosleep.o.1 \
 $dst_dir/thread.o $dst_dir/config.o \

@@ -59,7 +59,7 @@ lsvec(ff_uint_t __pipe) {
 		reterr;
 	ffly_printf("buffer size: %u\n", l);
 	char *s = (char*)__ffly_mem_alloc(l);
-	_next:
+_next:
 	ffly_pipe_read(s, l, __pipe);
 	if (_err(err))
 		reterr;

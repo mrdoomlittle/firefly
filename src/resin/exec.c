@@ -4,12 +4,16 @@
 # include "../linux/stat.h"
 # include "../ffef.h"
 # include "mm.h"
-ff_u8_t static *bin = NULL, *end = NULL;
+static void(*get)(ff_uint_t, ff_uint_t, ff_uint_t, void*);
+ff_u32_t static end;
 ff_u32_t static ip;
 ff_u8_t static
 fetch_byte(ff_off_t __off) {
-	if (bin+ip+__off >= end) return 0x0;
-	return *(bin+ip+__off);
+	if (ip+__off >= end) return 0x0;
+
+	ff_u8_t byte;
+	get(ip+__off, 0, 1, &byte);
+	return byte;
 }
 
 void static
@@ -85,9 +89,9 @@ struct ffly_resin ctx = {
 	.rin = ring
 };
 
-void ffres_exec(void *__bin, void *__end, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
-	bin = (ff_u8_t*)__bin;
-	end = (ff_u8_t*)__end;
+void ffres_exec(void(*__get)(ff_uint_t, ff_uint_t, ff_uint_t, void*), ff_u32_t __end, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
+	get = __get;
+	end = __end;
 	ip = __entry;
 	ff_resin_init(&ctx);
 	if (__prep != NULL)

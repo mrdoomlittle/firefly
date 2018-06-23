@@ -1,7 +1,7 @@
 # include "../as.h"
 # include "../../ffly_def.h"
 # include "../../stdio.h"
-# include "../opcodes/resin_tbl.h"
+# include "../opcodes/resin.h"
 # include "../../string.h"
 labelp extern curlabel;
 // bed of stack
@@ -13,6 +13,7 @@ typedef struct {
 	ff_uint_t addr;
 } reginfo;
 
+static struct ff_as_op *op;
 void static *p0, *p1, *p2, *p4;
 
 # define sp_rg 0x0
@@ -202,6 +203,8 @@ void rgasq(char const *__reg, ff_u64_t __to) {
 
 void static
 _post(void) {
+	op = (struct ff_as_op*)op_tray;
+
 	ff_u8_t buf[64];
 	ff_u8_t *p = buf;
 	memcpy(p, op->opcode, op->l);
@@ -232,12 +235,12 @@ _post(void) {
 				p+=sizeof(ff_addr_t);
 				break;
 			}
-			case _o_int:
+			case _o_imm8: case _o_imm16: case _o_imm32: case _o_imm64:
 				printf("int.\n");
 				memcpy(p, fakget(off), get_ous(op, off));
 				p+=get_ous(op, off);
 			break;
-			case _o_reg:
+			case _o_reg8: case _o_reg16: case _o_reg32: case _o_reg64:
 				printf("reg.\n");
 				memcpy(p, &((reginfo*)fakget(off))->addr, sizeof(ff_addr_t));
 				p+=sizeof(ff_addr_t);
@@ -251,6 +254,11 @@ _post(void) {
 void static*
 _getreg(char const *__name) {
 	return getreg(__name);
+}
+
+ff_uint_t static
+_regsz(void *__reg) {
+	return ((reginfo*)__reg)->l;
 }
 
 # include "../../dep/str_len.h"
@@ -268,4 +276,5 @@ ff_as_resin(void) {
 	}
 	post = _post;
 	ff_as_getreg = _getreg;
+	ff_as_regsz = _regsz;
 }

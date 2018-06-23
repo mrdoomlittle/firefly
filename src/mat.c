@@ -59,6 +59,7 @@ typedef struct parameter {
 	char const *val;
 } *parameterp;
 
+// change to attr
 typedef struct pill {
 	ff_u8_t type;
 	ff_u64_t bits;
