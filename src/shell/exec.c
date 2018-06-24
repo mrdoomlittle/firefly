@@ -18,8 +18,8 @@ void _ff6();
 void *cmds[] = {
 	_help,
 	_exit,
-	_info,
-	_ff6
+	_ff6,
+	_info
 };
 
 void ffsh_cmdput(struct hash *__hash, char const *__ident, ff_uint_t __func) {
@@ -49,15 +49,15 @@ void ffsh_exec_cmd(void *__func, ff_uint_t __n, struct arg_s **__args) {
 		if (__n != 2) {
 			ffly_printf("2 arguments needed.\n");
 		} else {
-			struct arg_s *mot = __args;
-			struct arg_s *val = __args+1;
+			struct arg_s *mot = *__args;
+			struct arg_s *val = *(__args+1);
 			ff_uint_t l;
-			if (mot->l != 2) {
-				if (!ffly_mem_cmp(mot->p, "enc", mot->l)) {
+			if (mot->l == 4) {
+				if (!ffly_mem_cmp(mot->p, "enc", mot->l-1)) {
 					l = ffly_ff6_enc(val->p, buf, val->l);
 					*(buf+l) = '\0';
 					printf("enc, '%s':'%s'\n", val->p, buf);
-				} else if (!ffly_mem_cmp(mot->p, "dec", mot->l)) {
+				} else if (!ffly_mem_cmp(mot->p, "dec", mot->l-1)) {
 					l = ffly_ff6_dec(val->p, buf, val->l);
 					*(buf+l) = '\0';
 					printf("dec, '%s':'%s'\n", val->p, buf);

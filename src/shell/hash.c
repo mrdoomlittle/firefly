@@ -38,6 +38,7 @@ void hash_put(struct hash *__hash, ff_u8_t const *__key, ff_uint_t __len, void *
 }
 
 void* hash_get(struct hash *__hash, ff_u8_t const *__key, ff_uint_t __len) {
+	printf("%s: %u\n", __key, __len);
 	ff_u64_t sum = ffly_hash(__key, __len);
 	struct hash_entry *cur = *(__hash->table+(sum&0xff));
 	while(cur != NULL) {

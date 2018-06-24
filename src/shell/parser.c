@@ -26,6 +26,7 @@ parser_cmd(void) {
 
 		struct arg_s *a = (struct arg_s*)mem_alloc(sizeof(struct arg_s));
 		*(arg++) = a;
+		printf("arg: %s\n", tok_data);
 		a->p = tok_data;
 		a->l = tok_sz;
 	}

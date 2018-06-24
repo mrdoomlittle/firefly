@@ -88,7 +88,20 @@ void* th(void *__arg) {
 # include "storage/reservoir.h"
 # include "version.h"
 # include "env.h"
+# include "stdio.h"
+# include "linux/termios.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	struct termios term, old;
+	tcgetattr(ffly_in->fd, &term);
+	old = term;
+	term.c_lflag &= ~(ICANON|ECHO);
+
+	tcsetattr(ffly_in->fd, &term);
+	ff_u8_t b;
+	read(ffly_in->fd, &b, 1);
+	printf("---> %c\n", b);
+	tcsetattr(ffly_in->fd, &old);
+
 /*
 	ffly_scheduler_init(0);	
 	ff_uint_t const c = 20;

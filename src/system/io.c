@@ -69,9 +69,14 @@ ffly_size_t ffly_read(ffly_fd_t __fd, void *__buf, ffly_size_t __size, ff_err_t 
 */
 ff_err_t ffly_io_init() {
     ff_err_t err;
-	if (!(ffly_out = ffly_fopen("/dev/tty", FF_O_RDWR, 0, &err))) {
+	if (!(ffly_out = ffly_fopen("/dev/tty", FF_O_WRONLY, 0, &err))) {
 		return FFLY_FAILURE;
 	}
+
+	if (!(ffly_in = ffly_fopen("/dev/tty", FF_O_RDONLY, 0, &err))) {
+		return FFLY_FAILURE;
+	}
+
 	if (!(ffly_log = ffly_fopen("log", FF_O_WRONLY|FF_O_TRUNC|FF_O_CREAT, FF_S_IRUSR|FF_S_IWUSR, &err))) {
 		return FFLY_FAILURE;
 	}
@@ -82,18 +87,16 @@ ff_err_t ffly_io_init() {
 	ffly_fopt(ffly_out, FF_STREAM);
 	ffly_fopt(ffly_log, FF_STREAM);
 	ffly_fopt(ffly_err, FF_STREAM);
-
-    ffly_in = ffly_out;
 	return FFLY_SUCCESS;
 }
 
 void ffly_io_closeup() {
 # ifdef __fflib
-	fsync(ffly_fileno(ffly_out));
     fsync(ffly_fileno(ffly_log));
     fsync(ffly_fileno(ffly_err));
 # endif
 	ffly_fclose(ffly_out);
+	ffly_fclose(ffly_in);
 	ffly_fclose(ffly_log);
 	ffly_fclose(ffly_err);
 }

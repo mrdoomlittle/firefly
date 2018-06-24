@@ -7,13 +7,18 @@ void *tok_data;
 ff_uint_t tok_sz;
 ff_u8_t tok_val;
 void static
-read_ident(char __first) {
+read_ident(void) {
 	char buf[128];
 	char *p = buf;
-	*(p++) = __first;
-	char c = __first;
-	while(c>='a'&&c<='z' && !at_eof())
-		*(p++) = (c = getc());
+	char c = getc();
+	while((c>='a'&&c<='z') || (c>='0'&&c<='9')) {
+		*(p++) = c;
+		if (at_eof()) break;
+		c = getc();
+	}
+	if (!at_eof())
+		ugetc(c);
+
 	*p = '\0';
 	ff_uint_t l;
 
@@ -59,7 +64,8 @@ _again:
 		goto _again;
 
 	if (c>='a'&&c<='z') {
-		read_ident(c);
+		ugetc(c);
+		read_ident();
 		return _tok_ident;
 	} else if (c == '"') {
 		read_str();		

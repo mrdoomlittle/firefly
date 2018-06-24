@@ -52,6 +52,9 @@ $ffly_cc -c $cc_flags -o $dst_dir/sys_clock_gettime.o.1 $root_dir/sys_clock_gett
 nasm -f elf64 $as_inc -o $dst_dir/mutex.o.0 $root_dir/asm/mutex.asm
 $ffly_cc -c $cc_flags -o $dst_dir/mutex.o.1 $root_dir/mutex.c
 
+nasm -f elf64 $as_inc -o $dst_dir/sys_ioctl.o.0 $root_dir/asm/sys_ioctl.asm
+$ffly_cc -c $cc_flags -o $dst_dir/sys_ioctl.o.1 $root_dir/sys_ioctl.c
+
 nasm -f elf64 $as_inc -o $dst_dir/sys_unlink.o.0 $root_dir/asm/sys_unlink.asm
 $ffly_cc -c $cc_flags -o $dst_dir/sys_unlink.o.1 $root_dir/sys_unlink.c
 
@@ -192,6 +195,8 @@ $ffly_cc -c $cc_flags -o $dst_dir/queue.o $root_dir/queue.c
 $ffly_cc -c $cc_flags -o $dst_dir/port.o $root_dir/port.c
 $ffly_cc -c $cc_flags -o $dst_dir/tls.o $root_dir/tls.c
 $ffly_cc -c $cc_flags -o $dst_dir/util/ff6.o $root_dir/util/ff6.c
+$ffly_cc -c $cc_flags -o $dst_dir/tcsetattr.o $root_dir/tcsetattr.c
+$ffly_cc -c $cc_flags -o $dst_dir/tcgetattr.o $root_dir/tcgetattr.c
 #$ffly_cc -c $cc_flags -o $dst_dir/mal_track.o $root_dir/mal_track.c
 
 # $dst_dir/task_worker.o $dst_dir/task.o $dst_dir/task_pool.o $dst_dir/time.o
@@ -254,5 +259,6 @@ $dst_dir/sys_rt_sigaction.o.0 $dst_dir/sys_rt_sigaction.o.1 \
 $dst_dir/barrel.o $dst_dir/sched.o $dst_dir/task_pool.o $dst_dir/servant.o \
 $dst_dir/event.o $dst_dir/queue.o $dst_dir/port.o $dst_dir/tls.o
 $dst_dir/sys_arch_prctl.o.0 $dst_dir/sys_arch_prctl.o.1 \
-$dst_dir/util/ff6.o $dst_dir/sys_dup2.o.0 $dst_dir/sys_dup2.o.1"
+$dst_dir/util/ff6.o $dst_dir/sys_dup2.o.0 $dst_dir/sys_dup2.o.1 \
+$dst_dir/sys_ioctl.o.0 $dst_dir/sys_ioctl.o.1 $dst_dir/tcsetattr.o $dst_dir/tcgetattr.o"
 # $dst_dir/mal_track.o"
