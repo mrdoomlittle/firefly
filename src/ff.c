@@ -49,7 +49,7 @@ _at_eof(void) {
 
 ff_int_t static cursor_pos;
 # define cursorat(__p) \
-	 (line+(ff_uint_t)(((ff_int_t)(__p-line))+cursor_pos))
+	 (line+((ff_uint_t)(((ff_int_t)(__p-line))+cursor_pos)))
 
 ff_i8_t ffsh_run = 0;
 # include "linux/termios.h"
@@ -78,6 +78,9 @@ _again:
 	ffly_printf("~: ");
 	ffly_fdrain(ffly_out);
 	char temp;
+	/*
+		will be moved later just piecing it together
+	*/
 	while(1) {
 		ff_uint_t n, i = 0;
 		n = read(ffly_in->fd, buf, sizeof(buf));
@@ -88,23 +91,32 @@ _again:
 			if (c == 27) {
 				i++;
 				i++;
-				if (*(buf+2) == 'D') {
+				if (*(buf+2) == 'D' && ((ff_int_t)(p-line))+cursor_pos > 0) {
 					cursor_pos--;
-				} else if (*(buf+2) == 'C' && cursor_pos < (p-line)) {
+				} else if (*(buf+2) == 'C' && cursor_pos<1) {
 					cursor_pos++;
 				}
-			} else if (c == 127 && ((ff_int_t)(p-line))+cursor_pos > 0) {
-				char *pp = cursorat(p);
+			} else if (c == 127 && p>line && ((ff_int_t)(p-line))+cursor_pos>0) {
+				char *pp = cursorat(p)-1;
+				if (pp<line)
+					pp = line;
+
 				char *e = p;
 				while(pp != e) {
 					*pp = *(pp+1);
 					pp++;
 				}
+	
 				p--;
 			} else if (c>=32 && c<=126) {
 				if (p>line) {
-					char *cursor_p = cursorat(p);			
+					char *cursor_p;
+					if (!(((ff_int_t)(p-line))+cursor_pos))
+						cursor_p = line;
+					else
+						cursor_p = cursorat(p);	
 					char *e = p;
+
 					while(e != cursor_p) {
 						*e = *(e-1);
 						e--;
@@ -119,19 +131,20 @@ _again:
 			}
 			i++;
 		}
-	
+
+		*p = ' ';
 		temp = *cursorat(p);
 		*cursorat(p) = '#';
 		ffly_printf("\e[2K\r");
 		ffly_fdrain(ffly_out);
-		*p = '\0';
+		*(p+1) = '\0';
 		ffly_printf("~: %s", line);
 		ffly_fdrain(ffly_out);
-		if (cursor_pos<(ff_int_t)(p-line)) {
-			ffly_printf("\e[%uD", (p-line)-(ff_uint_t)(((ff_int_t)(p-line))+cursor_pos));
-			ffly_fdrain(ffly_out);
-		}
+		ffly_printf("\e[%uD", ((p-line)-(ff_uint_t)(((ff_int_t)(p-line))+cursor_pos))+1);
+		ffly_fdrain(ffly_out);
+	
 		*cursorat(p) = temp;
+//		ffly_printf("\ncursor: %u:%d\n", cursorat(p)-line, cursor_pos);
 	}
 _out:
 	*p = '\0';
