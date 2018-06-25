@@ -124,6 +124,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/piston.o $root_dir/piston.c
 $ffly_cc $cc_flags -c -o $dst_dir/corrode.o $root_dir/corrode.c
 $ffly_cc $cc_flags -c -o $dst_dir/bog.o $root_dir/bog.c
 $ffly_cc $cc_flags -c -o $dst_dir/env.o $root_dir/env.c
+$ffly_cc $cc_flags -c -o $dst_dir/line.o $root_dir/line.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -143,4 +144,4 @@ $dst_dir/pallet.o $dst_dir/resource.o $dst_dir/cache.o $dst_dir/clock.o \
 $dst_dir/copy.o $dst_dir/gui/window.o $dst_dir/location.o \
 $dst_dir/storage/slab.o $dst_dir/storage/reservoir.o \
 $dst_dir/piston.o $dst_dir/corrode.o $dst_dir/bog.o \
-$dst_dir/env.o"
+$dst_dir/env.o $dst_dir/line.o"

@@ -89,6 +89,7 @@ void* th(void *__arg) {
 # include "version.h"
 # include "env.h"
 # include "stdio.h"
+# include "line.h"
 # include "linux/termios.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	struct termios term, old;
@@ -97,11 +98,36 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	term.c_lflag &= ~(ICANON|ECHO);
 
 	tcsetattr(ffly_in->fd, &term);
-	ff_u8_t b;
-	read(ffly_in->fd, &b, 1);
-	printf("---> %c\n", b);
-	tcsetattr(ffly_in->fd, &old);
 
+	ffly_fdrain(ffly_out);
+	char c;
+	ff_uint_t n, i;
+	while(1) {
+		ffly_l_show(ffly_out);
+		char buf[26];
+		n = read(ffly_in->fd, buf, sizeof(buf));
+		i = 0;
+		while(i != n) {
+			c = *(buf+i);
+			if (c == '\n') goto _out;
+			if (c == 27) {
+				i++;
+				i++;
+				if (*(buf+2) == 'D') {
+					ffly_l_backward;
+				} else if (*(buf+2) == 'C') {
+					ffly_l_forward;
+				}
+			} else if (c>=32 && c<=126) {
+				ffly_l_put(c);
+			} else if (c == 127) {
+				ffly_l_del();
+			}
+			i++;
+		}
+	}
+_out:
+	tcsetattr(ffly_in->fd, &old);
 /*
 	ffly_scheduler_init(0);	
 	ff_uint_t const c = 20;

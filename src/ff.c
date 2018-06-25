@@ -57,6 +57,7 @@ ff_i8_t ffsh_run = 0;
 	can break needs fixing and shit.
 */
 
+# include "line.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	struct termios term, old;
 	tcgetattr(ffly_in->fd, &term);
@@ -75,13 +76,11 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 _again:
 	cursor_pos = 0;
 	p = line;
-	ffly_printf("~: ");
-	ffly_fdrain(ffly_out);
-	char temp;
 	/*
 		will be moved later just piecing it together
 	*/
 	while(1) {
+		ffly_l_show(ffly_out);
 		ff_uint_t n, i = 0;
 		n = read(ffly_in->fd, buf, sizeof(buf));
 		char c;
@@ -91,62 +90,22 @@ _again:
 			if (c == 27) {
 				i++;
 				i++;
-				if (*(buf+2) == 'D' && ((ff_int_t)(p-line))+cursor_pos > 0) {
-					cursor_pos--;
-				} else if (*(buf+2) == 'C' && cursor_pos<1) {
-					cursor_pos++;
+				if (*(buf+2) == 'D') {
+					ffly_l_backward;
+				} else if (*(buf+2) == 'C') {
+					ffly_l_forward;
 				}
-			} else if (c == 127 && p>line && ((ff_int_t)(p-line))+cursor_pos>0) {
-				char *pp = cursorat(p)-1;
-				if (pp<line)
-					pp = line;
-
-				char *e = p;
-				while(pp != e) {
-					*pp = *(pp+1);
-					pp++;
-				}
-	
-				p--;
+			} else if (c == 127) {
+				ffly_l_del();
 			} else if (c>=32 && c<=126) {
-				if (p>line) {
-					char *cursor_p;
-					if (!(((ff_int_t)(p-line))+cursor_pos))
-						cursor_p = line;
-					else
-						cursor_p = cursorat(p);	
-					char *e = p;
-
-					while(e != cursor_p) {
-						*e = *(e-1);
-						e--;
-					}
-
-					*cursor_p = c;
-				} else {
-					cursor_pos = 0;
-					*p = c;
-				}
-				p++;
+				ffly_l_put(c);
 			}
 			i++;
 		}
-
-		*p = ' ';
-		temp = *cursorat(p);
-		*cursorat(p) = '#';
-		ffly_printf("\e[2K\r");
-		ffly_fdrain(ffly_out);
-		*(p+1) = '\0';
-		ffly_printf("~: %s", line);
-		ffly_fdrain(ffly_out);
-		ffly_printf("\e[%uD", ((p-line)-(ff_uint_t)(((ff_int_t)(p-line))+cursor_pos))+1);
-		ffly_fdrain(ffly_out);
-	
-		*cursorat(p) = temp;
-//		ffly_printf("\ncursor: %u:%d\n", cursorat(p)-line, cursor_pos);
 	}
 _out:
+	p+=ffly_l_load(line);
+	ffly_l_reset();
 	*p = '\0';
 	ffly_printf("\n: line: %s\n", line);
 	ffly_fdrain(ffly_out);
