@@ -41,6 +41,7 @@ struct ffly_file {
 };
 
 #define FF_STREAM 0x1
+#define FF_NOBUFF 0x2
 #define FF_O_TRUNC O_TRUNC
 #define FF_O_RDONLY O_RDONLY
 #define FF_O_WRONLY O_WRONLY
@@ -67,6 +68,7 @@ ff_err_t ffly_fclose(struct ffly_file*);
 ff_err_t ffly_fdrain(struct ffly_file*);
 // solid write
 ff_err_t ffly_fwrites(struct ffly_file*, void*, ff_uint_t);
+ff_err_t ffly_fpwrite(struct ffly_file*, void*, ff_uint_t, ff_uint_t);
 # ifdef __cplusplus
 }
 # endif

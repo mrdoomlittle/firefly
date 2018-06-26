@@ -38,7 +38,8 @@ void out_c_hdr(ff_u8_t *__buf, char *__vers, ff_uint_t __len, ff_u64_t __vers_in
 	char const p2[] = {'#', 'd', 'e', 'f', 'i', 'n', 'e', ' ', 'f', 'f', 'l', 'y', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n'};
 	char const p3[] = {'#', 'd', 'e', 'f', 'i', 'n', 'e', ' ', 'f', 'f', 'l', 'y', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', 'l', 'e', 'n'};
 	char const p4[] = {'#', 'd', 'e', 'f', 'i', 'n', 'e', ' ', 'f', 'f', 'l', 'y', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', 'i', 'n', 't'};
-	char const p5[] = {'#', 'e', 'n', 'd', 'i', 'f', ' ', '/', '*', '_', '_', 'f', 'f', 'l', 'y', '_', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', '_', 'h', '*', '/', '\n'};
+	char const p5[] = {'#', 'd', 'e', 'f', 'i', 'n', 'e', ' ', 'f', 'f', 'l', 'y', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', 's', 't', 'r'};
+	char const p6[] = {'#', 'e', 'n', 'd', 'i', 'f', ' ', '/', '*', '_', '_', 'f', 'f', 'l', 'y', '_', '_', 'v', 'e', 'r', 's', 'i', 'o', 'n', '_', '_', 'h', '*', '/', '\n'};
 
 	ff_u8_t *p = __buf;
 	ff_uint_t l;
@@ -74,6 +75,16 @@ void out_c_hdr(ff_u8_t *__buf, char *__vers, ff_uint_t __len, ff_u64_t __vers_in
 
 	l = sizeof(p5);
 	memcpy(p, p5, l);
+	p+=l;
+	*(p++) = ' ';
+	*(p++) = '"';
+	memcpy(p, __vers, __len);
+	p+=__len;
+	*(p++) = '"';
+	*(p++) = '\n';
+
+	l = sizeof(p6);
+	memcpy(p, p6, l);
 	p+=l;
 
 	write(fd, __buf, p-__buf);

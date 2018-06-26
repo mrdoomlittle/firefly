@@ -1,14 +1,13 @@
 %include "inc/lib.ff"
-
 u64_t ffly_mem_alloc(u32_t __size) {
 	struct arg_s arg;
 	arg.size = __size;
-	as("rin 3, %rel\n" : "rel", &arg);
+	as("\trin 3, %rel\n" : "rel", &arg);
 	ret arg.p;
 }
 
 void ffly_mem_free(u64_t __p) {
-	as("rin 4, %rel\n" : "rel", __p);
+	as("\trin 4, %rel\n" : "rel", __p);
 }
 
 void ffly_mem_read(u64_t __p, u8_t *__src, u32_t __size) {
@@ -16,7 +15,7 @@ void ffly_mem_read(u64_t __p, u8_t *__src, u32_t __size) {
 	arg.p = __p;
 	arg.size = __size;
 	arg.src = __src;
-	as("rin 1, %rel\n" : "rel", &arg);
+	as("\trin 1, %rel\n" : "rel", &arg);
 }
 
 void ffly_mem_write(u64_t __p, u8_t *__src, u32_t __size) {
@@ -24,5 +23,5 @@ void ffly_mem_write(u64_t __p, u8_t *__src, u32_t __size) {
 	arg.p = __p;
 	arg.size = __size;
 	arg.src = __src;
-	as("rin 2, %rel\n" : "rel", &arg);
+	as("\trin 2, %rel\n" : "rel", &arg);
 }

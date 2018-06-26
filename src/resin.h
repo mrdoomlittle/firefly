@@ -87,6 +87,8 @@
 # define _eq 0x4
 // resin byte code interp
 
+typedef ff_u16_t res_adr_t;
+
 typedef struct ffly_resin {
 	struct ffly_getbit bit;
 	ff_uint_t stack_size;

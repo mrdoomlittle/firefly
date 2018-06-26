@@ -5,21 +5,24 @@
 # include "../system/util/ff6.h"
 # include "../stdio.h"
 # include "../string.h"
+# include "../exec.h"
 static char const *help = "commands:\n"
 	"	help\n"
 	"	exit\n"
-	"	ff6 <enc,dec> <value>\n";
+	"	ff6 <enc,dec> <value>\n"
+	"	exec <file>\n";
 
 void _help();
 void _exit();
 void _info();
 void _ff6();
-
+void _exec();
 void *cmds[] = {
 	_help,
 	_exit,
 	_ff6,
-	_info
+	_info,
+	_exec
 };
 
 void ffsh_cmdput(struct hash *__hash, char const *__ident, ff_uint_t __func) {
@@ -70,7 +73,15 @@ void ffsh_exec_cmd(void *__func, ff_uint_t __n, struct arg_s **__args) {
 	}
 	jmpend;
 	__asm__("_info:\n\t"); {
-		printf("version: %u\n", ffly_version_int);
+		printf("firefly version: %u-%s\n", ffly_version_int, ffly_version_str);
+	}
+	jmpend;
+	__asm__("_exec:\n\t"); {
+		if (__n>0) {
+			struct arg_s *file = *__args;
+			ffexecf(file->p);
+		} else
+			ffly_printf("please provide file.\n");
 	}
 	jmpend;
 	__asm__("_end:\n\t");

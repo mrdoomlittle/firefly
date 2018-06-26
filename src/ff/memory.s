@@ -18,7 +18,7 @@ ffly_mem_alloc:
 	asq %rel, 37
 	subq %bp, %rel, %rel
 	movq %rel, %rel
-rin 3, %rel
+	rin 3, %rel
 	asq %rel, 0
 	asq %rlx, 37
 	subq %bp, %rlx, %rlx
@@ -45,7 +45,7 @@ ffly_mem_free:
 	subq %bp, %rlx, %rlx
 	stq %rlx, %rel
 	movq %rel, %rel
-rin 4, %rel
+	rin 4, %rel
 .l l1
 	movq %bp, %sp
 ;reset %bp
@@ -86,7 +86,7 @@ ffly_mem_read:
 	asq %rel, 53
 	subq %bp, %rel, %rel
 	movq %rel, %rel
-rin 1, %rel
+	rin 1, %rel
 .l l2
 	movq %bp, %sp
 ;reset %bp
@@ -127,7 +127,7 @@ ffly_mem_write:
 	asq %rel, 53
 	subq %bp, %rel, %rel
 	movq %rel, %rel
-rin 2, %rel
+	rin 2, %rel
 .l l3
 	movq %bp, %sp
 ;reset %bp

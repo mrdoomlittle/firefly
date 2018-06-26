@@ -12,7 +12,8 @@ enum {
 	_cmd_help,
 	_cmd_exit,
 	_cmd_ff6,
-	_cmd_info
+	_cmd_info,
+	_cmd_exec
 };
 
 void ffsh_cmdput(struct hash*, char const*, ff_uint_t);

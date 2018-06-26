@@ -140,7 +140,7 @@ emit_func(ff_compilerp __compiler, struct node *__node) {
 		*p = '\n';
 		__compiler->out(buf, (p-buf)+1);
 
-		out_s(__compiler, ";save %bp\n");
+		out_s(__compiler, "\t;save %bp\n");
 		push(__compiler, "%bp", 8);
 		out_op_s(__compiler, "movq %sp, %bp\n");
 		s_off = 0;
@@ -194,7 +194,7 @@ emit_func(ff_compilerp __compiler, struct node *__node) {
 		__compiler->out(buf, (p-buf)+1);
 
 		out_op_s(__compiler, "movq %bp, %sp\n");
-		out_s(__compiler, ";reset %bp\n");
+		out_s(__compiler, "\t;reset %bp\n");
 		pop(__compiler, "%bp", 8);
 		out_op_s(__compiler, "ret\n");
 

@@ -27,6 +27,8 @@ char const static* mode_str(ff_u32_t __flags) {
 	else if (is_flag(__flags, FF_O_RDWR) && is_flag(__flags, FF_O_CREAT) && is_flag(__flags, FF_O_TRUNC)) {
 		*(p++) = 'w';
 		*(p++) = '+';
+	} else if (is_flag(__flags, FF_O_WRONLY)) {
+		*(p++) = 'w';
 	} else {
 		*(p++) = 'r';
 	}
@@ -74,7 +76,7 @@ ffly_fopen(char const *__path, int __flags, ff_u32_t __mode, ff_err_t *__err) {
 	}
 	*__err = FFLY_SUCCESS;
 # ifndef __fflib
-	//printf("%s\n", mode_str(__flags));
+	printf("%s\n", mode_str(__flags));
 	file->libc_fp = fdopen(dup(file->fd), mode_str(__flags));
 	fchmod(fileno(file->libc_fp), __mode);
 # endif
@@ -150,6 +152,10 @@ ff_err_t ffly_fwrites(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	return FFLY_SUCCESS;
 }
 
+ff_err_t ffly_fpwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc, ff_uint_t __offset) {
+	pwrite(__f->fd, __p, __bc, __offset);
+}
+
 ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	if (!valid_fd(__f->fd)) {
 		ffly_fprintfs(ffly_err, "file descriptor not valid.\n");
@@ -157,6 +163,9 @@ ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	}
 
 	ffly_mutex_lock(&__f->lock);
+	if (is_flag(__f->flags, FF_NOBUFF)) {
+		write(__f->fd, __p, __bc);		
+	} else {
 	if (!__f->drain) {
 		ffly_fdrain(__f);
 		__f->bufdst = __f->off;
@@ -195,6 +204,7 @@ ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	}
 
 	bufput(__f, src, __bc);
+	}
 _end:
 	ffly_mutex_unlock(&__f->lock);
 	return FFLY_SUCCESS;

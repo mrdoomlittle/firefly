@@ -7,7 +7,7 @@ void ffly_sched_init() {
 	arg.init_arg = &init;
 	init.flags = 0;
 
-	as("rin 5, %rel\n" : "rel", &arg);
+	as("\trin 5, %rel\n" : "rel", &arg);
 }
 
 void ffly_resv_init() {
@@ -17,5 +17,5 @@ void ffly_resv_init() {
 	arg.init_arg = &init;
 	init.flags = 0;
 
-	as("rin 5, %rel\n" : "rel", &arg);
+	as("\trin 5, %rel\n" : "rel", &arg);
 }

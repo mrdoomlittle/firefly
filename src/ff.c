@@ -19,6 +19,7 @@ static struct cmd *cmd_tbl[] = {
 	&(struct cmd){"exit", _cmd_exit},
 	&(struct cmd){"info", _cmd_info},
 	&(struct cmd){"ff6", _cmd_ff6},
+	&(struct cmd){"exec", _cmd_exec},
 	NULL
 };
 
@@ -46,11 +47,6 @@ _at_eof(void) {
 	return off>=e;
 }
 
-
-ff_int_t static cursor_pos;
-# define cursorat(__p) \
-	 (line+((ff_uint_t)(((ff_int_t)(__p-line))+cursor_pos)))
-
 ff_i8_t ffsh_run = 0;
 # include "linux/termios.h"
 /*
@@ -74,7 +70,6 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	char *p;
 	char buf[26];
 _again:
-	cursor_pos = 0;
 	p = line;
 	/*
 		will be moved later just piecing it together

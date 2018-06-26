@@ -1,4 +1,8 @@
 # include "exec.h"
+/*
+	this is to used for ffscript as well
+*/
+
 void ffexec(void(*__get)(ff_uint_t, ff_uint_t, ff_uint_t, void*), ff_u32_t __end, ff_u8_t __format, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
 	switch(__format) {
 		case _ffexec_bc:

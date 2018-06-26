@@ -85,7 +85,7 @@ ff: clean
 	gcc $(cc_flags) -c -o shell/memalloc.o shell/memalloc.c
 	gcc $(cc_flags) -c -o shell/exec.o shell/exec.c
 	gcc $(cc_flags) -c -o shell/hash.o shell/hash.c
-	gcc $(cc_flags) ff.c $(ffly_objs) shell/eval.o shell/parser.o shell/lexer.o shell/input.o shell/memalloc.o shell/exec.o shell/hash.o -nostdlib
+	gcc $(cc_flags) -o ff.exec ff.c $(ffly_objs) shell/eval.o shell/parser.o shell/lexer.o shell/input.o shell/memalloc.o shell/exec.o shell/hash.o -nostdlib
 main: clean
 	g++ $(cc_flags) main.c $(ffly_objs) -nostdlib
 uni: clean

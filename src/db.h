@@ -12,7 +12,19 @@
 // bind rivet to pile or record
 # define ffdb_bind(__p, __no) \
 		(__p)->no = __no
+# define FFDBF_MAG0 'f'
+# define FFDBF_MAG1 'f'
+# define FFDBF_MAG2 'd'
+# define FFDBF_MAG3 'b'
 // needs testing
+
+/*
+	TODO
+	ffdb_off_t - not ff_uint_t
+*/
+
+# define ffdb_hdrsize sizeof(struct ffdb_hdr)
+# define FFDB_NULL ((ff_uint_t)~0)
 enum {
 	_ff_db_auth_root,
 	_ff_db_auth_user,
@@ -60,14 +72,6 @@ typedef ff_u8_t ff_db_key[KEY_SIZE];
 
 typedef ff_u8_t ff_db_err;
 # define MAX_PILES 20
-struct ffdb_blkd {
-	ff_uint_t size;
-	ff_u32_t end, off;
-	struct ffdb_blkd *fd, *bk, *p;
-	ff_u32_t prev, next;
-	ff_u8_t inuse;
-};
-
 /*
 	need to rething
 	'struct ff_db_msg'
@@ -78,6 +82,33 @@ struct ff_db_msg {
 
 struct ff_db_rep {
 	ff_u8_t type;
+};
+
+
+struct ffdb_record_hdr {
+	ff_u32_t p;
+	ff_uint_t size;
+	ff_uint_t no;
+};
+
+struct ffdb_pile_hdr {
+	ff_u16_t nr;
+	ff_u32_t rec;
+	ff_uint_t no;
+	ff_u32_t next;
+};
+
+struct ffdb_hdr {
+	char ident[4];
+	ff_u32_t top, off;
+	ff_u32_t bin;
+
+	ff_u32_t pile;
+
+	ff_u16_t fresh;
+
+	ff_uint_t nd;
+	ff_u16_t diched;
 };
 
 /*
@@ -188,4 +219,12 @@ ff_err_t ffdb_init(ffdbp);
 ff_err_t ffdb_cleanup(ffdbp);
 ff_err_t ffdb_open(ffdbp, char const*);
 ff_err_t ffdb_close(ffdbp);
+
+// db/store.c
+void ffdb_settle(ffdbp);
+// db/load.c
+void ffdb_load(ffdbp);
+extern ff_u16_t ffdb_ndiched[100];
+extern ff_u16_t *ffdb_nnext;
+extern ff_u16_t ffdb_nfresh;
 # endif /*__ffly__db__h*/

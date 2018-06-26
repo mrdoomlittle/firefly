@@ -7,4 +7,4 @@ pixel format:
 	that should be left for higher level functions.
 
 security:
-	dont care, just leads more work when changing things and can be left until its actually needed.
+	dont care, just leads more work when changing things later and can be left until its actually needed.
