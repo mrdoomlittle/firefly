@@ -115,6 +115,7 @@ struct ffdb_hdr {
 	hold the underworld and surface together
 */
 typedef struct ffdb_rivet {
+	struct ffdb_rivet *fd, **bk;
 	struct ffdb_rivet *next;
 	ff_u16_t no;
 	void *to;
@@ -189,9 +190,9 @@ ff_err_t ff_db_snd_errno(FF_SOCKET*, ff_db_err);
 ff_err_t ff_db_rcv_errno(FF_SOCKET*, ff_db_err*);
 ff_err_t ff_db_sndmsg(FF_SOCKET*, ff_db_msgp);
 ff_err_t ff_db_rcvmsg(FF_SOCKET*, ff_db_msgp);
-ffdb_recordp ffdb_creat_record(ffdbp, ffdb_pilep, ff_uint_t);
-ffdb_recordp ffdb_fetch_record(ffdbp, char const*, char const*);
-void ffdb_del_record(ffdbp, ffdb_pilep, ffdb_recordp);
+ffdb_recordp ffdb_record_creat(ffdbp, ffdb_pilep, ff_uint_t);
+ffdb_recordp ffdb_record_fetch(ffdbp, char const*, char const*);
+void ffdb_record_del(ffdbp, ffdb_pilep, ffdb_recordp);
 void ffdb_record_alloc(ffdbp, ffdb_recordp);
 void ffdb_record_free(ffdbp, ffdb_recordp);
 void ffdb_record_stat(ffdbp, ffdb_recordp, ffdb_recstatp);
@@ -207,11 +208,11 @@ void ffdb_ditch_no(ff_u16_t);
 
 void ffdb_settle(ffdbp);
 
-ffdb_pilep ffdb_creat_pile(ffdbp);
+ffdb_pilep ffdb_pile_creat(ffdbp);
 void ffdb_record_alias(ffdbp, ffdb_pilep, char const*, ffdb_recordp); 
 void ffdb_pile_alias(ffdbp, char const*, ffdb_pilep);
-ffdb_pilep ffdb_fetch_pile(ffdbp, char const*);
-void ffdb_del_pile(ffdbp, ffdb_pilep);
+ffdb_pilep ffdb_pile_fetch(ffdbp, char const*);
+void ffdb_pile_del(ffdbp, ffdb_pilep);
 
 ff_uint_t ffdb_alloc(ffdbp, ff_uint_t);
 void ffdb_free(ffdbp, ff_uint_t);

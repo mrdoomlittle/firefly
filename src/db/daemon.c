@@ -136,7 +136,7 @@ ff_db_creat_pile(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *
 
 	ff_uint_t slotno = acquire_slot();
 
-	slotput(slotno, ffdb_creat_pile(&__d->db));
+	slotput(slotno, ffdb_pile_creat(&__d->db));
 	ffly_printf("create pile at slotno: %u\n", slotno);
 
 	ff_net_send(__sock, &slotno, sizeof(ff_uint_t), &err);	
@@ -170,7 +170,7 @@ ff_db_del_pile(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *__
 	}
 
 	ffly_printf("delete pile at slotno: %u\n", slotno);
-	ffdb_del_pile(&__d->db, slotget(slotno));
+	ffdb_pile_del(&__d->db, slotget(slotno));
 	scrap_slot(slotno);
 	retok;
 _fail:
@@ -199,7 +199,7 @@ ff_db_creat_record(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err
 	ff_net_recv(__sock, &size, sizeof(ff_uint_t), &err);
 
 	slotno = acquire_slot();
-	slotput(slotno, ffdb_creat_record(&__d->db, pile, size));
+	slotput(slotno, ffdb_pile_record(&__d->db, pile, size));
 	ff_net_send(__sock, &slotno, sizeof(ff_uint_t), &err);	
 
 	retok;
@@ -230,7 +230,7 @@ ff_db_del_record(ff_dbdp __d, FF_SOCKET *__sock, ff_db_userp __user, ff_db_err *
 
 	rec = (ffdb_recordp)slotget(slotno);
 
-	ffdb_del_record(&__d->db, pile, rec);
+	ffdb_record_del(&__d->db, pile, rec);
 	scrap_slot(slotno);
 
 	retok;

@@ -1,5 +1,5 @@
 nasm_flags=-I../system/asm/ -I../linux/asm/
-objs=ffly_system.o allocr.o flags.o vec.o checksum.o sys_fcntl.o.0 sys_fcntl.o.1 \
+objs=ffly_system.o allocr.o vec.o checksum.o sys_fcntl.o.0 sys_fcntl.o.1 \
 sys_open.o.0 sys_open.o.1 sys_close.o.0 sys_close.o.1 printf.o sys_brk.o.0 sys_brk.o.1 string.o \
 errno.o mem_free.o mem_alloc.o.1 mem_alloc.o.0 mem_realloc.o file.o io.o \
 sys_write.o.0 sys_write.o.1 mutex.o.0 mutex.o.1 atomic_op.o.0 atomic_op.o.1 cond_lock.o.0 cond_lock.o.1 \
@@ -20,7 +20,7 @@ sys_clone.o.0 sys_clone.o.1 \
 sys_wait4.o.0 sys_wait4.o.1 \
 mode.o sys_clock_gettime.o.0 sys_clock_gettime.o.1 rat.o \
 tls.o sys_pread.o.0 sys_pread.o.1 sys_pwrite.o.0 sys_pwrite.o.1 sys_arch_prctl.o.0 sys_arch_prctl.o.1 location.o
-ccflags=-Wall -D__ffly_debug -D__fflib -D__ffly_source -D__ffly_use_allocr -fno-builtin
+ccflags=-D__tty -Wall -D__ffly_debug -D__fflib -D__ffly_source -D__ffly_use_allocr -fno-builtin
 all: clean
 	nasm $(nasm_flags) -f elf64 ../system/asm/sys_pread.asm -o sys_pread.o.0
 	gcc $(ccflags) -c ../system/sys_pread.c -o sys_pread.o.1
@@ -133,7 +133,6 @@ all: clean
 	gcc $(ccflags) -c -std=gnu99 allocr.c
 	gcc $(ccflags) -c ../system/util/checksum.c
 	gcc $(ccflags) -c ../system/vec.c
-	gcc $(ccflags) -c ../system/flags.c
 	gcc $(ccflags) -c ../system/err.c
 	gcc $(ccflags) -c ../rand.c
 	gcc $(ccflags) -c ../mode.c

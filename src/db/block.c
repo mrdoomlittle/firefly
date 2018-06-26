@@ -2,6 +2,15 @@
 # include "../db.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
+
+/*
+	TODO:
+
+	multipools
+
+	2 or more files for diffrent threads
+	after disconnect will be murged with main file
+*/
 // not the best but for now its okay 
 
 // top block

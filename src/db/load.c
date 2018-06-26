@@ -4,7 +4,7 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 void ld_record(ffdbp __db, ffdb_pilep __pile, struct ffdb_record_hdr *__rec) {
-	ffdb_recordp p = ffdb_creat_record(__db, __pile, __rec->size);
+	ffdb_recordp p = ffdb_record_creat(__db, __pile, __rec->size);
 	p->p = __rec->p;
 	ffdb_rivet(__rec->no, p);
 	ffdb_bind(p, __rec->no);
@@ -16,7 +16,7 @@ void ld_pile(ffdbp __db, ff_u32_t *__pile) {
 	ffly_fread(__db->file, &pile, sizeof(struct ffdb_pile_hdr));
 	ffly_printf("pile: %u\n", *__pile);
 
-	ffdb_pilep p = ffdb_creat_pile(__db);
+	ffdb_pilep p = ffdb_pile_creat(__db);
 	ffdb_rivet(pile.no, p);
 	ffdb_bind(p, pile.no);
 	*__pile = pile.next;

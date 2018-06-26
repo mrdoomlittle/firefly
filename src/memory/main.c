@@ -348,12 +348,12 @@ void t1(void *__p) {
 		i++;
 	}
 }
-
+void ffly_dispose(void*, ff_uint_t);
 void _start() {
 	ffly_tls_new();
 	ffly_ar_init();
-	ff_location_init();
-	ffly_io_init();
+//	ff_location_init();
+//	ffly_io_init();
 	ffset_mode(_ff_mod_debug);
 	ff_rat_put(_ff_rat_1);
 /*
@@ -468,7 +468,7 @@ void _start() {
 		i++;
 	}
 */
-
+/*
 	ff_tid_t id0, id1;
 	ffly_thread_create(&id0, t0, NULL);
 	ffly_thread_create(&id1, t1, NULL);
@@ -476,12 +476,34 @@ void _start() {
 	ffly_thread_wait(id0);
 	ffly_thread_wait(id1);
 	ffly_thread_cleanup();	
+*/
+//	void *p;
+//	p = ffly_alloc(200);
+//
+//	ffly_free(p);
+//	ffly_dispose(p, 200);
+
+//	pr();
+//	 pf();
+	ff_uint_t const c = 200;
+	ff_uint_t i;
+	void *list[c];
+
+	i = 0;
+	while(i != c)
+		list[i++] = ffly_alloc(1);
 
 	pr();
-	 pf();
+	pf();
 	ffly_arstat();
-	
-	ffly_io_closeup();
+	i = 0;
+	while(i != c)
+		ffly_free(list[i++]);
+
+//	ffly_arstat();
+//	ffly_free(p);
+
+//	ffly_io_closeup();
 	ffly_ar_cleanup();
 	ffly_tls_destroy();
 	exit(0);

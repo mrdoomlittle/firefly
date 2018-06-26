@@ -20,10 +20,8 @@
 	not tested at all.
 */
 
-
-
 // rivet table
-ffdb_rivetp rt[64] = {
+static ffdb_rivetp rt[64] = {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -75,13 +73,26 @@ void* ffdb_rivetto(ff_u16_t __no) {
 	return rivet->to;
 }
 
+static struct ffdb_rivet *rtop = NULL;
 void ffdb_rivet(ff_u16_t __no, void *__to) {
 	ffdb_rivetp *p = rt+(__no&0x3f);
-	ffdb_rivetp rivet = (ffdb_rivetp)__ffly_mem_alloc(sizeof(struct ffdb_rivet));
-	rivet->next = *p;
-	rivet->no = __no;
-	rivet->to = __to;
-	*p = rivet;
+	ffdb_rivetp r = (ffdb_rivetp)__ffly_mem_alloc(sizeof(struct ffdb_rivet));
+	r->next = *p;
+	r->no = __no;
+	r->to = __to;
+	r->fd = rtop;
+	r->bk = &rtop;
+	if (rtop != NULL)
+		rtop->bk = &r->fd;
+	rtop = r;
+	*p = r;
+}
+
+void static
+delink_rivet(ffdb_rivetp __r) {
+	*__r->bk = __r->fd;
+	if (__r->fd != NULL)
+		__r->fd->bk = __r->bk;
 }
 
 void ffdb_derivet(ff_u16_t __no) {
@@ -91,6 +102,7 @@ void ffdb_derivet(ff_u16_t __no) {
 	while(cur != NULL) {
 		if (cur->no == __no) {
 			*i = cur->next;
+			delink_rivet(cur);
 			__ffly_mem_free(cur);
 			return;
 		}
@@ -209,45 +221,69 @@ ff_err_t ffdb_close(ffdbp __db) {
 	ffly_fclose(__db->file);
 }
 
-void prepare_pile(ffdb_pilep __p) {
+void static
+prepare_pile(ffdb_pilep __p) {
 	ffly_map_init(&__p->map, _ffly_map_127);
 	__p->top = NULL;
 }
 
-void destroy_pile(ffdbp __db, ffdb_pilep __p) {
+void static
+destroy_pile(ffdbp __db, ffdb_pilep __p) {
 	ffdb_recordp rec = __p->top, bk;
 	while(rec != NULL) {
 		bk = rec;
 		rec = rec->next;
-		ffdb_del_record(__db, __p, bk);
+		ffdb_record_del(__db, __p, bk);
 	} 
 
 	ffly_map_de_init(&__p->map);
 }
 
-void free_pile(ffdbp __db, ffdb_pilep __p) {
+void static
+free_pile(ffdbp __db, ffdb_pilep __p) {
 	destroy_pile(__db, __p);
 	__ffly_mem_free(__p);
 }
 
+// clear block bin
+void static 
+clear_bbin(void) {
+	ffdb_blkdp b = ffdb_bbin, bk;
+	while(b != NULL) {
+		bk = b;
+		b = b->fd;
+		__ffly_mem_free(bk);
+	}
+}
+
+// remove rivets and memory
+void static
+rivet_disposal(void) {
+	ffdb_rivetp r = rtop, bk;
+	while(r != NULL) {
+		bk = r;
+		r = r->fd;
+		delink_rivet(bk);
+		__ffly_mem_free(bk);
+	}
+}
+
 ff_err_t ffdb_cleanup(ffdbp __db) {
 	ffly_map_de_init(&__db->map);
-	ffdb_pilep cur = __db->top, prev = NULL;
+
+	ffdb_pilep cur = __db->top, bk;
 	ffdb_pilep *p;
 	if (!cur)
 		goto _sk;
-	prev = NULL;
-	while(cur != NULL) {
-		if (prev != NULL)
-			free_pile(__db, prev);
-		prev = cur;
-		cur = cur->next;
-	}
-	if (prev != NULL)
-		free_pile(__db, prev);
-	__db->top = NULL;
 
-	_sk:
+	while(cur != NULL) {
+		bk = cur;
+		cur = cur->next;
+		free_pile(__db, bk);
+	}
+
+	__db->top = NULL;
+_sk:
 	if (__db->next > __db->free) {
 		p = __db->free;
 		while(p != __db->next) {
@@ -256,9 +292,18 @@ ff_err_t ffdb_cleanup(ffdbp __db) {
 		}
 		__db->next = __db->free; 
 	}
+
+	clear_bbin();
+	rivet_disposal();
 }
 
-ffdb_recordp ffdb_creat_record(ffdbp __db, ffdb_pilep __pile, ff_uint_t __size) { 
+/*
+	record creat and del dont effect the space allocated on file
+	if not freed the space will be forever lost in the abyss
+*/
+
+ffdb_recordp
+ffdb_record_creat(ffdbp __db, ffdb_pilep __pile, ff_uint_t __size) { 
 	ffdb_recordp p = (ffdb_recordp)__ffly_mem_alloc(sizeof(struct ffdb_record));
 	p->prev = NULL;
 	p->next = __pile->top;
@@ -280,16 +325,18 @@ void ffdb_record_free(ffdbp __db, ffdb_recordp __rec) {
 	ffdb_bfree(__db, __rec->p);
 }
 
-ffdb_recordp ffdb_fetch_record(ffdbp __db, char const *__pile, char const *__name) {
+// ffdb_record_fetch
+ffdb_recordp
+ffdb_record_fetch(ffdbp __db, char const *__pile, char const *__name) {
 	ffdb_recordp p;
 
 	ff_err_t err;
-	p = (ffdb_recordp)ffly_map_get(&ffdb_fetch_pile(__db, __pile)->map,
+	p = (ffdb_recordp)ffly_map_get(&ffdb_pile_fetch(__db, __pile)->map,
 		(ff_u8_t const*)__name, ffly_str_len(__name), &err);	 
 	return p;
 }
 
-void ffdb_del_record(ffdbp __db, ffdb_pilep __pile, ffdb_recordp __rec) {
+void ffdb_record_del(ffdbp __db, ffdb_pilep __pile, ffdb_recordp __rec) {
 	if (__pile->top == __rec) {
 		if ((__pile->top = __rec->next) != NULL)
 			__pile->top->prev = NULL;
@@ -328,27 +375,25 @@ void ffdb_pile_alias(ffdbp __db, char const *__name, ffdb_pilep __p) {
 	ffly_map_put(&__db->map, (ff_u8_t const*)__name, ffly_str_len(__name), __p);
 }
 
-ffdb_pilep ffdb_creat_pile(ffdbp __db) {
+
+// ffly_pile_...
+ffdb_pilep ffdb_pile_creat(ffdbp __db) {
 	ffdb_pilep p;
 	if (__db->next > __db->free)
 		p = *(--__db->next);
 	else
 		p = __ffly_mem_alloc(sizeof(struct ffdb_pile));
-	p->prev = NULL;
-	p->next = NULL;
-	if (!__db->top)
-		__db->top = p; 
-	else {
-		p->next = __db->top;
-		__db->top->prev = p;
-		__db->top = p; 
-	}
 
+	p->next = __db->top;
+	if (__db->top != NULL)
+		__db->top->prev = p;
+	__db->top = p;
+	p->prev = NULL;
 	prepare_pile(p);
 	return p;
 }
 
-ffdb_pilep ffdb_fetch_pile(ffdbp __db, char const *__name) {
+ffdb_pilep ffdb_pile_fetch(ffdbp __db, char const *__name) {
 	ffdb_pilep p;
 
 	ff_err_t err;
@@ -357,7 +402,7 @@ ffdb_pilep ffdb_fetch_pile(ffdbp __db, char const *__name) {
 	return p;
 }
 
-void ffdb_del_pile(ffdbp __db, ffdb_pilep __pile) {
+void ffdb_pile_del(ffdbp __db, ffdb_pilep __pile) {
 	if (__pile == __db->top) {
 		if ((__db->top = __pile->next) != NULL)
 			__db->top->prev = NULL;
@@ -381,8 +426,8 @@ _sk:
 	free_pile(__db, __pile);
 }
 
-ff_uint_t no = 0;
-ff_uint_t rand() {
+ff_uint_t static no = 0;
+ff_uint_t static rand() {
 	ff_uint_t ret;
 	ret = no;
 	no = ((no<<1)|0x1)+7;
@@ -391,7 +436,7 @@ ff_uint_t rand() {
 	return ret;
 }
 
-void ts0(ffdbp __db) {
+void static ts0(ffdbp __db) {
 	ff_uint_t p0;
 	ff_u8_t i = 0;
 	p0 = ffdb_balloc(__db, 100);
@@ -405,23 +450,23 @@ void ts0(ffdbp __db) {
 	}
 }
 
-void ts1(ffdbp __db, char const *__pile) {
-	ffdb_pilep p = ffdb_fetch_pile(__db, __pile);
+void static ts1(ffdbp __db, char const *__pile) {
+	ffdb_pilep p = ffdb_pile_fetch(__db, __pile);
 	ff_u8_t i = 0;   
  
-	ffdb_recordp rec0 = ffdb_creat_record(__db, p, 100);
-	ffdb_recordp rec1 = ffdb_creat_record(__db, p, 1);
-	ffdb_del_record(__db, p, rec0);
+	ffdb_recordp rec0 = ffdb_record_creat(__db, p, 100);
+	ffdb_recordp rec1 = ffdb_record_creat(__db, p, 1);
+	ffdb_record_del(__db, p, rec0);
 
 	while(i != 0xf) {
-		ffdb_recordp rec = ffdb_creat_record(__db, p, rand()%100);
-		ffdb_del_record(__db, p, rec); 
+		ffdb_recordp rec = ffdb_record_creat(__db, p, rand()%100);
+		ffdb_record_del(__db, p, rec); 
 		i++;
 	}
-	ffdb_del_record(__db, p, rec1);
+	ffdb_record_del(__db, p, rec1);
 }
 
-void ts2(ffdbp __db) {
+void static ts2(ffdbp __db) {
 	ff_uint_t p0, p1, p2, p3, p4, p5;
 	p0 = ffdb_balloc(__db, 1);
 	p1 = ffdb_balloc(__db, 1);
@@ -439,7 +484,7 @@ void ts2(ffdbp __db) {
 	ffdb_bfree(__db, p5); 
 }
 
-void ts3(ffdbp __db) {
+void static ts3(ffdbp __db) {
 	ff_uint_t p0, p1, p2, p3, p4, p5;
 	p0 = ffdb_balloc(__db, 1);
 	p1 = ffdb_balloc(__db, 2);
@@ -477,9 +522,9 @@ void _pr(ffdbp __db) {
 	}
 }
 
-void ts4(ffdbp __db) {
-	ffdb_recordp rec = ffdb_fetch_record(__db, "users", "mrdoomlittle");
-	ffdb_pilep p = ffdb_fetch_pile(__db, "users");
+void static ts4(ffdbp __db) {
+	ffdb_recordp rec = ffdb_record_fetch(__db, "users", "mrdoomlittle");
+	ffdb_pilep p = ffdb_pile_fetch(__db, "users");
 	char passwd[40];
 	char c;
 	ff_uint_t off = 0;
@@ -493,7 +538,7 @@ void ts4(ffdbp __db) {
 
 	ffly_printf("passwd: %s\n", passwd);
 }
-# define __debug
+//# define __debug
 # ifdef __debug
 # include "dep/str_cpy.h"
 # define PILE 0
@@ -506,7 +551,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 /*
 	if (ffdb_exist(PILE) == -1) {
 		ffly_printf("creating pile.\n");
-		ffdb_pilep pile = ffdb_creat_pile(&db);
+		ffdb_pilep pile = ffdb_pile_creat(&db);
 		ffdb_rivet(PILE, pile);
 		ffdb_bind(pile, PILE);
 	} else {
@@ -516,7 +561,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		pile = ffdb_rivetto(PILE);
 		char buf[67];
 		if (ffdb_exist(GITHUB_REC) == -1) {
-			rec = ffdb_creat_record(&db, pile, 67);
+			rec = ffdb_record_creat(&db, pile, 67);
 			ffdb_record_alloc(&db, rec);
 			ffdb_rivet(GITHUB_REC, rec);
 			ffdb_bind(rec, GITHUB_REC);
@@ -529,12 +574,12 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 			ffdb_read(&db, pile, rec, 0, buf, 67);
 			ffly_printf("github: %s\n", buf);
 			ffdb_record_free(&db, rec);
-			ffdb_del_record(&db, pile, rec);
+			ffdb_record_del(&db, pile, rec);
 			ffdb_derivet(GITHUB_REC);
 		}
 
 		if (ffdb_exist(TWITTER_REC) == -1) {
-			rec = ffdb_creat_record(&db, pile, 67);
+			rec = ffdb_record_creat(&db, pile, 67);
 			ffdb_record_alloc(&db, rec);
 			ffdb_rivet(TWITTER_REC, rec);
 			ffdb_bind(rec, TWITTER_REC);
@@ -550,24 +595,25 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffdb_recordp rec;
 	ffdb_pilep pile;
 	if (ffdb_exist(PILE) == -1) {
-		pile = ffdb_creat_pile(&db);
+		ffly_printf("no pile.\n");
+		pile = ffdb_pile_creat(&db);
 		ffdb_rivet(PILE, pile);
 		ffdb_bind(pile, PILE);
 
-		rec = ffdb_creat_record(&db, pile, 67);
-		ffdb_record_alloc(&db, rec);
-		ffdb_rivet(REC, rec);
-		ffdb_bind(rec, REC);
+//		rec = ffdb_record_creat(&db, pile, 67);
+//		ffdb_record_alloc(&db, rec);
+//		ffdb_rivet(REC, rec);
+//		ffdb_bind(rec, REC);
 	} else {
 		pile = ffdb_rivetto(PILE);
 		rec = ffdb_rivetto(REC);
-		ffdb_record_free(&db, rec);
+//		ffdb_record_free(&db, rec);
 
-		ffdb_del_record(&db, pile, rec);
-		ffdb_derivet(REC);
+//		ffdb_record_del(&db, pile, rec);
+//		ffdb_derivet(REC);
 
 		ffdb_derivet(PILE);
-		ffdb_del_pile(&db, pile);
+		ffdb_pile_del(&db, pile);
 	}
 	_pr(&db);
 	_pf();
