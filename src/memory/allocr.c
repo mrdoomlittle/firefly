@@ -923,12 +923,13 @@ potp alloc_pot(ff_uint_t __size) {
 		// err
 	}
 
-	__size+=sizeof(rodp**);
+	__size+=sizeof(potp*);
 	init_pot(p);
 	p->page_c = (__size>>PAGE_SHIFT)+((__size&((~(ff_u64_t)0)>>(64-PAGE_SHIFT)))>0);
 	ff_uint_t size = p->page_c*PAGE_SIZE;
 	void *pp = _ffly_alloc(&main_pot, size);
-	p->end = (ff_u8_t*)pp+sizeof(rodp**);
+	*(potp*)pp = p;
+	p->end = (ff_u8_t*)pp+sizeof(potp*);
 	p->top = (void*)((ff_u8_t*)pp+size);
 	p->total = p->top-p->end;
 	return p;
@@ -1064,7 +1065,7 @@ ffly_alloc(ff_uint_t __bc) {
 		printf("new arena, %u\n", ffly_tls_get(arena_tls));
 		arena = alloc_pot(POT_SIZE);
 		lkpot(arena);
-		atr(arena, *(*((rodp**)((ff_u8_t*)arena->end-sizeof(rodp**))) = rod_at(arena->end)));
+		atr(arena, *rod_at(arena->end));
 		ulpot(arena);
 	}
 
@@ -1089,7 +1090,7 @@ _again:
 			abort();
 		}
 
-		atr(t, *(*((rodp**)((ff_u8_t*)t->end-sizeof(rodp**))) = rod_at(t->end)));
+		atr(t, *rod_at(t->end));
 
 		lkpot(p);
 		lkpot(t);
@@ -1313,24 +1314,7 @@ ffly_free(void *__p) {
 	potp p, bk;
 	rodp r;
 
-	r = **(rodp**)(((ff_u8_t*)blk-blk->off)-sizeof(rodp**));
-	if (!r)
-		goto _r;
-	lkrod(r);
-	p = r->p;
-	ulrod(r);
-	if (!p) {
-		printf("rod error.\n");
-	_r:
-		if (!(p = lookup(__p))) {
-			printf("block not located.\n");
-			return;
-		}
-
-		// error info ^
-		printf("error pot\n");
-		return;
-	}
+	p = *(potp*)(((ff_u8_t*)blk-blk->off)-sizeof(potp*));
 
 	lkpot(p);
 	while(!(__p >= p->end && __p < p->top)) {
