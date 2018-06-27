@@ -23,7 +23,7 @@ void* ffly_mem_alloc(ff_uint_t __bc) {
 		goto _fail;
 	}
 # else
-    p = ffly_alloc(__bc+sizeof(ff_uint_t));
+    p = ffly_balloc(__bc+sizeof(ff_uint_t));
 # endif
 
 	*((ff_uint_t*)p) = __bc;
@@ -34,7 +34,7 @@ void* ffly_mem_alloc(ff_uint_t __bc) {
 # ifndef __ffly_use_allocr
 	p = (ff_u8_t*)malloc(__bc);
 # else
-    p = ffly_alloc(__bc);
+    p = ffly_balloc(__bc);
 # endif
 # endif
 # ifdef __ffly_mal_track
@@ -46,7 +46,7 @@ void* ffly_mem_alloc(ff_uint_t __bc) {
 # ifndef __ffly_use_allocr
 			free((void*)(p-sizeof(ff_uint_t)));
 # else
-            ffly_free((void*)(p-sizeof(ff_uint_t)));
+            ffly_bfree((void*)(p-sizeof(ff_uint_t)));
 # endif
 			goto _fail;
 		}

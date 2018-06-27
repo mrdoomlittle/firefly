@@ -23,7 +23,7 @@ void* ffly_mem_realloc(void *__p, ff_uint_t __nbc) {
 		goto _fail;
 	}
 # else
-    p = (ff_u8_t*)ffly_realloc(p, __nbc+sizeof(ff_uint_t));
+    p = (ff_u8_t*)ffly_brealloc(p, __nbc+sizeof(ff_uint_t));
 # endif
 
 	if (__nbc > mem_size)
@@ -36,7 +36,7 @@ void* ffly_mem_realloc(void *__p, ff_uint_t __nbc) {
 # ifndef __ffly_use_allocr
 	p = (ff_u8_t*)realloc(__p, __nbc);
 # else
-    p = (ff_u8_t*)ffly_realloc(__p, __nbc);
+    p = (ff_u8_t*)ffly_brealloc(__p, __nbc);
 # endif
 # endif
 

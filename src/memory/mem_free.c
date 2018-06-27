@@ -39,13 +39,13 @@ ff_err_t ffly_mem_free(void *__p) {
 # ifndef __ffly_use_allocr
 	free((void*)p);
 # else
-    ffly_free((void*)p);
+    ffly_bfree((void*)p);
 # endif
 # else
 # ifndef __ffly_use_allocr
 	free(__p);
 # else
-    ffly_free(__p);
+    ffly_bfree(__p);
 # endif
 # endif
 	err = FFLY_SUCCESS;

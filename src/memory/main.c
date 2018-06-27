@@ -9,19 +9,19 @@ void pf();
 /*
 void t0() {
 	void *p0, *p1, *p2, *p3;
-	p0 = ffly_alloc(10);
-	p1 = ffly_alloc(20);
-	p2 = ffly_alloc(30);
-	p3 = ffly_alloc(40);
-	ffly_free(p0);
-	ffly_free(p1);
-	ffly_free(p2);
-	ffly_free(p3);
+	p0 = ffly_balloc(10);
+	p1 = ffly_balloc(20);
+	p2 = ffly_balloc(30);
+	p3 = ffly_balloc(40);
+	ffly_bfree(p0);
+	ffly_bfree(p1);
+	ffly_bfree(p2);
+	ffly_bfree(p3);
 
 
 
-	p0 = ffly_alloc(200);
-	p1 = ffly_alloc(200);
+	p0 = ffly_balloc(200);
+	p1 = ffly_balloc(200);
 }
 */
 void ts1() {
@@ -29,15 +29,15 @@ void ts1() {
 	ff_u8_t i = 0;
 	void *p;
 	while(i != 20) {
-		p = ffly_alloc((i+1)*10);
-		list[i] = ffly_alloc(8);
-		ffly_free(p);
+		p = ffly_balloc((i+1)*10);
+		list[i] = ffly_balloc(8);
+		ffly_bfree(p);
 		i++;
 	}
 
 	i = 0;
 	while(i != 20) {
-		ffly_free(list[i]);
+		ffly_bfree(list[i]);
 		i++;
 	}
 }
@@ -52,9 +52,9 @@ struct tsstruct {
 };
 
 void ts2() {
-	void *pp = ffly_alloc(1<<5);
-	ffly_alloc(1);
-	ffly_free(pp);
+	void *pp = ffly_balloc(1<<5);
+	ffly_balloc(1);
+	ffly_bfree(pp);
 	struct ffly_vec vec;
 	ffly_vec_set_flags(&vec, VEC_AUTO_RESIZE);
 	ffly_vec_init(&vec, sizeof(struct tsstruct));
@@ -67,9 +67,9 @@ void ts2() {
 		p->a = i>>1;
 		p->b = i>>2;
 		p->c = i>>3;
-		t = ffly_alloc(400);
-		p->p = ffly_alloc(100);
-		ffly_free(t);
+		t = ffly_balloc(400);
+		p->p = ffly_balloc(100);
+		ffly_bfree(t);
 		ffly_mem_set(p->p, '@', 100);
 		i++;
 	}
@@ -79,7 +79,7 @@ void ts2() {
 	while(i != n) {
 		ffly_vec_pop_back(&vec, &ts);
 		ffly_printf("%u{%s}, %u-%u-%u\n", ts.i, ts.i==((n-1)-i)?"ok":"error", ts.a==(((n-1)-i)>>1), ts.b==(((n-1)-i)>>2), ts.c==(((n-1)-i)>>3));
-		ffly_free(ts.p);
+		ffly_bfree(ts.p);
 		i++;
 	}
 	
@@ -88,70 +88,70 @@ void ts2() {
 
 void ts3() {
 	void *p0, *p1, *p2, *p3, *p4, *p5, *p6;
-	p0 = ffly_alloc(124);
-	p1 = ffly_alloc(583);
-	p2 = ffly_alloc(212);
-	p3 = ffly_alloc(332);
-	p4 = ffly_alloc(113);
-	p5 = ffly_alloc(27);
-	p6 = ffly_alloc(449);
+	p0 = ffly_balloc(124);
+	p1 = ffly_balloc(583);
+	p2 = ffly_balloc(212);
+	p3 = ffly_balloc(332);
+	p4 = ffly_balloc(113);
+	p5 = ffly_balloc(27);
+	p6 = ffly_balloc(449);
 
 
-	ffly_free(p0);
-	ffly_free(p1);
-	ffly_free(p2);
-	ffly_free(p3);
-	ffly_free(p4);
-	ffly_free(p5);
-	ffly_free(p6);
+	ffly_bfree(p0);
+	ffly_bfree(p1);
+	ffly_bfree(p2);
+	ffly_bfree(p3);
+	ffly_bfree(p4);
+	ffly_bfree(p5);
+	ffly_bfree(p6);
 
-	void *p = ffly_alloc(1000);
-	ffly_alloc(1);
-	ffly_free(p);
+	void *p = ffly_balloc(1000);
+	ffly_balloc(1);
+	ffly_bfree(p);
 }
 
 void ts4() {
 	ff_u8_t i = 20;
-	void *p = ffly_alloc((--i)*10);
+	void *p = ffly_balloc((--i)*10);
 	while(i != 1) {
-		p = ffly_realloc(p, (--i)*10);
+		p = ffly_brealloc(p, (--i)*10);
 	}
 }
 
 # include "../dep/bzero.h"
 void ts5() {
 	void *p0, *p1;
-	p0 = ffly_alloc(2000);
+	p0 = ffly_balloc(2000);
 	ffly_bzero(p0, 2000);
-	p1 = ffly_alloc(1);
+	p1 = ffly_balloc(1);
 
-	ffly_free(p0);
+	ffly_bfree(p0);
 
 	ff_u8_t i = 0;
 
 	while(i != 200) {
-	void *p2 = ffly_alloc(1940);
+	void *p2 = ffly_balloc(1940);
 	ffly_bzero(p2, 1940);
-	void *p3 = ffly_alloc(27);
+	void *p3 = ffly_balloc(27);
 	ffly_bzero(p3, 27);
 
-	ffly_free(p2);
-	ffly_free(p3);
+	ffly_bfree(p2);
+	ffly_bfree(p3);
 	i++;
 	}
 }
 
 void ts6() {
 	void *p0, *p1, *p2, *p3, *p4, *p5, *p6;
-	p0 = ffly_alloc(3000);
-	ffly_alloc(1);
-	ffly_free(p0);
-	ffly_alloc(2950);
+	p0 = ffly_balloc(3000);
+	ffly_balloc(1);
+	ffly_bfree(p0);
+	ffly_balloc(2950);
 	ff_u8_t i = 0;
 
 	while(i != 200) {
-		p0 = ffly_alloc(17);
-		ffly_free(p0);
+		p0 = ffly_balloc(17);
+		ffly_bfree(p0);
 		i++;
 	}
 }
@@ -161,14 +161,14 @@ void ts7() {
 	void *list[n];
 	ff_u8_t i = 0;
 	while(i != n) {
-		list[i] = ffly_alloc(100);
+		list[i] = ffly_balloc(100);
 		ffly_bzero(list[i], 100);
 		i++;
 	}
 
 	i = 0;
 	while(i != n) {
-		ffly_free(list[i]);
+		ffly_bfree(list[i]);
 		i++;
 	}
 }
@@ -179,33 +179,33 @@ void ts8() {
 	ff_u16_t i = 0;
 	void *p[n];
 	while(i != n) {
-		p[i] = ffly_alloc(200);
+		p[i] = ffly_balloc(200);
 		//ffly_bzero(p[i], 200);
 		ffly_mem_set(p[i], 'A', 200);
 		i++;
 	}
 	void *e;
-	e = ffly_alloc(1);
+	e = ffly_balloc(1);
 	i = 0;
 	while(i != n) {
 		//ffly_nanosleep(0, 99999999);
-		ffly_free(p[i++]);
+		ffly_bfree(p[i++]);
 		//ffly_printf("\n\n");
 	}
 
 
 	ffly_printf("\n\n\n\n");
-	ffly_free(e);
+	ffly_bfree(e);
 }
 
 void ts9() {
-	char *p = (char*)ffly_alloc(100);
+	char *p = (char*)ffly_balloc(100);
 	ffly_mem_set(p, 'X', 100);
 
 	ff_u8_t i = 0;
-	p = ffly_realloc(p, 200);
+	p = ffly_brealloc(p, 200);
 
-	void *pp = ffly_alloc(30);
+	void *pp = ffly_balloc(30);
 	ffly_mem_set(pp, '@', 30);
 
 	char *end = p+200;
@@ -228,37 +228,37 @@ void ts11() {
 	void *p[n];
 	ff_u8_t i = 0;
 	while(i != n) {
-		p[i] = ffly_alloc(i+1);
+		p[i] = ffly_balloc(i+1);
 		i++;
 	}
 
 	i = 0;
 	while(i != n-1) {
-		ffly_free(p[i++]);
+		ffly_bfree(p[i++]);
 	}
 
 	void *p0, *p1;
-	p0 = ffly_alloc(26000);
-	p1 = ffly_alloc(401);
-	void *l = ffly_alloc(1);
-	ffly_free(p1);
-	ffly_free(p0);
-	ffly_free(l);
-	ffly_free(p[n-1]);
+	p0 = ffly_balloc(26000);
+	p1 = ffly_balloc(401);
+	void *l = ffly_balloc(1);
+	ffly_bfree(p1);
+	ffly_bfree(p0);
+	ffly_bfree(l);
+	ffly_bfree(p[n-1]);
 }
 
 void ts12() {
 	ff_uint_t const m = 10, n = 100;
 	ff_uint_t i = 10, c = 0;
-	void *p = ffly_alloc(10);
+	void *p = ffly_balloc(10);
 	_again:
 	while(i != 10*m) {
-		p = ffly_realloc(p, i);
+		p = ffly_brealloc(p, i);
 		i += 10;
 	}
 
 	while(i != 10) {
-		p = ffly_realloc(p, i);
+		p = ffly_brealloc(p, i);
 		i -= 10;
 	}
 
@@ -267,7 +267,7 @@ void ts12() {
 		goto _again;
 	}
 
-	ffly_free(p);
+	ffly_bfree(p);
 }
 
 # include "../system/nanosleep.h"
@@ -277,8 +277,8 @@ void* thr0(void *__arg_p) {
 	ff_u8_t i = 0;
 	void *p0;
 	while(i != 0xFF) {
-		p0 = ffly_alloc(12);
-		ffly_free(p0);
+		p0 = ffly_balloc(12);
+		ffly_bfree(p0);
 		ffly_nanosleep(0, 1000);
 		i++;
 	}
@@ -331,7 +331,7 @@ void t0(void *__p) {
 	ff_uint_t i = 0;
 	while(i != 2000) {
 	//	free(malloc(1000));
-		//ffly_alloc(1);
+		//ffly_balloc(1);
 		malloc(1);
 		i++;
 	}
@@ -342,7 +342,7 @@ void t1(void *__p) {
 	while(a != 2 && go<0);
 	ff_uint_t i = 0;
 	while(i != 2000) {
-		//ffly_alloc(1);
+		//ffly_balloc(1);
 	//	free(malloc(1000));
 		malloc(1);
 		i++;
@@ -353,9 +353,9 @@ void _start() {
 	ffly_tls_new();
 	ffly_ar_init();
 //	ff_location_init();
-//	ffly_io_init();
+	ffly_io_init();
 	ffset_mode(_ff_mod_debug);
-	ff_rat_put(_ff_rat_1);
+	ff_rat_put(_ff_rat_2);
 /*
 	struct ffly_vec vec;
 	ffly_vec_set_flags(&vec, VEC_AUTO_RESIZE);
@@ -366,7 +366,7 @@ void _start() {
 	i = 0;
 	while(i != n) {
 		ff_uint_t *p;
-		*((ff_u8_t*)ffly_alloc(1)) = 212;
+		*((ff_u8_t*)ffly_balloc(1)) = 212;
 		ffly_vec_push_back(&vec, (void**)&p);
 		*p = i++;
 	}
@@ -383,9 +383,9 @@ void _start() {
 
 	ffly_vec_de_init(&vec);
 */
-//	ffly_free(p2);
-/*
-	ff_uint_t const n = 6000;
+//	ffly_bfree(p2);
+
+	ff_uint_t const n = 10000;
 	void *list[n];
 
 	void **cur, **end = (void*)((ff_u8_t*)list+(n*sizeof(void*)));
@@ -393,29 +393,33 @@ void _start() {
 	cur = list;
 	while(cur != end) *(cur++) = NULL;
 
+	ff_uint_t ac = 0;
 	struct timespec begt, endt;
 
 	ff_u64_t nsec = 0, c = 0;
 	i = 0;
 	while(i != n) {
-//		ffly_printf("%u, %u\n", i, n);
 		cur = list;
 		while(cur != end) {
 			if (!*cur) {
-				size = ((ffly_rand()%400)+100);
+				size = ((ffly_rand()%22)+7);
 				clock_gettime(CLOCK_MONOTONIC, &begt);
 				*cur = __ffly_mem_alloc(size);
 				clock_gettime(CLOCK_MONOTONIC, &endt);
-				*cur = __ffly_mem_realloc(*cur, size-=40);
-				nsec += (endt.tv_nsec-begt.tv_nsec)+((endt.tv_sec-begt.tv_sec)*1000000000);
-//				ffly_bzero(*cur, size);	
+				*(ff_u8_t*)*cur = 21;
+				*cur = __ffly_mem_realloc(*cur, size-=3);
+				if (*(ff_u8_t*)*cur != 21)
+					ffly_printf("error, got: %u\n", *(ff_u8_t*)*cur);
+				nsec+=(endt.tv_nsec-begt.tv_nsec)+((endt.tv_sec-begt.tv_sec)*1000000000);
 				i++;
 				c++;
+				ac++;
 			}
 
 			void **p = (void*)((ff_u8_t*)list+((ffly_rand()%(n-1))*sizeof(void*)));
 			if (*p != NULL) {
 				__ffly_mem_free(*p);
+				ac--;
 				*p = NULL;
 			}
 		cur++;
@@ -425,8 +429,12 @@ void _start() {
 //	pr();
 
 	ffly_arstat();
-	ffly_printf("used: %lu\n", ffly_mem_alloc_bc-ffly_mem_free_bc);
+	struct arinfo info;
+	arinfo(&info);
+	ffly_printf("used: %lu, blocks: %u, mused: %u, %u\n", ffly_mem_alloc_bc-ffly_mem_free_bc, info.block_c, info.used, ac);
+	ff_uint_t used = (ac*33)+(ffly_mem_alloc_bc-ffly_mem_free_bc)+(ac*sizeof(ff_uint_t));
 
+	ffly_printf("pot guess: %u, used? %u\n", (ff_uint_t)(used/39023), used);
 	i = 0;
 	while(i != n) {
 		if (list[i] != NULL)
@@ -435,17 +443,39 @@ void _start() {
 	}
 
 	ffly_printf("%luns\n", nsec/c);
+/*
+	ff_uint_t const c = 200;
+	ff_uint_t i = 0;
+	void *p0 = ffly_balloc(12);
+	void *p1 = ffly_balloc(16);
+	void *p2 = ffly_balloc(16);
+
+	ffly_bfree(p0);
+	while(i != c) {
+	*(ff_u8_t*)p1 = 212;
+	ffly_arbl(p1);
+	p1 = ffly_arsh(p1, 4);
+	ffly_arbl(p1);
+	p1 = ffly_argr(p1, 6);
+	ffly_arbl(p1);
+	if (*(ff_u8_t*)p1 != 212) {
+		ffly_printf("error.\n");
+	}
+	i++;}
+	
+
+	pr();
 */
 /*
 	void *p0, *p1, *p2, *p3;
 
-	p0 = ffly_alloc(12);
-	p1 = ffly_alloc(12);
-	p2 = ffly_alloc(12);
-	p3 = ffly_alloc(12);
+	p0 = ffly_balloc(12);
+	p1 = ffly_balloc(12);
+	p2 = ffly_balloc(12);
+	p3 = ffly_balloc(12);
 
-	ffly_free(p0);
-	//ffly_free(p1);
+	ffly_bfree(p0);
+	//ffly_bfree(p1);
 
 	ffly_arsh(p1, 8);
 
@@ -478,32 +508,30 @@ void _start() {
 	ffly_thread_cleanup();	
 */
 //	void *p;
-//	p = ffly_alloc(200);
+//	p = ffly_balloc(200);
 //
-//	ffly_free(p);
+//	ffly_bfree(p);
 //	ffly_dispose(p, 200);
 
 //	pr();
 //	 pf();
-	ff_uint_t const c = 200;
-	ff_uint_t i;
-	void *list[c];
+/*
+	void *p0, *p1, *p2, *p3;
+	p0 = ffly_balloc(8);
+	p1 = ffly_balloc(8);
+	p2 = ffly_balloc(8);
+	p3 = ffly_balloc(8);
+	ffly_bfree(p2);
+	ffly_bfree(p1);
 
-	i = 0;
-	while(i != c)
-		list[i++] = ffly_alloc(1);
-
+	p1 = ffly_balloc(13);
+//	ffly_arhang();
 	pr();
 	pf();
-	ffly_arstat();
-	i = 0;
-	while(i != c)
-		ffly_free(list[i++]);
-
 //	ffly_arstat();
-//	ffly_free(p);
-
-//	ffly_io_closeup();
+//	ffly_bfree(p);
+*/
+	ffly_io_closeup();
 	ffly_ar_cleanup();
 	ffly_tls_destroy();
 	exit(0);
@@ -516,29 +544,29 @@ int main(int __argc, char **__argv) {
 /*
 	ffly_set_ppid(getpid());
 	void *p0;
-	p0 = ffly_alloc(1020);
-	ffly_alloc(1);
+	p0 = ffly_balloc(1020);
+	ffly_balloc(1);
 
-	ffly_free(p0);
+	ffly_bfree(p0);
 
 	struct timespec begin, end;
 	clock_gettime(CLOCK_MONOTONIC, &begin);
 
-	p0 = ffly_alloc(1000); 
+	p0 = ffly_balloc(1000); 
 
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	ff_u64_t nsec = (end.tv_nsec-begin.tv_nsec)+((end.tv_sec-begin.tv_sec)*1000000000.0);
 	ffly_printf("%luns\n", nsec);
 */
 /*
-	p = (ff_uint_t*)ffly_alloc(sizeof(ff_uint_t));
+	p = (ff_uint_t*)ffly_balloc(sizeof(ff_uint_t));
 	ffly_tid_t tid;
 	ffly_thread_create(&tid, thr0, NULL);
 	void *p0;
 	ff_u8_t i = 0;
 	while(i != 0xFF) {
-		p0 = ffly_alloc(12);
-		ffly_free(p0);
+		p0 = ffly_balloc(12);
+		ffly_bfree(p0);
 		ffly_nanosleep(0, 10000);
 		i++;
 	}
@@ -547,10 +575,10 @@ int main(int __argc, char **__argv) {
 
 
 	ffly_thread_cleanup();
-	ffly_free(p);
+	ffly_bfree(p);
 */
 /*
-	struct r *rr = (struct r*)ffly_alloc(sizeof(struct r));
+	struct r *rr = (struct r*)ffly_balloc(sizeof(struct r));
 	rr->a = 0xf;
 	rr->b = 0xff;
 	rr->c = 0xfff;
@@ -560,11 +588,11 @@ int main(int __argc, char **__argv) {
 
 	prr(rr);
 
-	ff_u8_t *pp = (ff_u8_t*)ffly_alloc(200);
+	ff_u8_t *pp = (ff_u8_t*)ffly_balloc(200);
 	ffly_mem_set(pp, 0xFF, 200);
-	ffly_free(pp);
+	ffly_bfree(pp);
 
-	rr = (struct r*)ffly_realloc(rr, 2*sizeof(struct r));
+	rr = (struct r*)ffly_brealloc(rr, 2*sizeof(struct r));
 	prr(rr);
 
 */
