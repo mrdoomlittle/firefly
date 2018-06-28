@@ -9,6 +9,7 @@
 # define modrm 0x1
 // same size as dst
 # define ssad 0x2
+# define noprefix 0x4
 struct ff_as_op {
 	char const *name;
 	ff_u8_t nme_len;

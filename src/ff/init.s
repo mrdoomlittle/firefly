@@ -1,7 +1,7 @@
 	.region text
 	.globl ffly_sched_init
 ffly_sched_init:
-;save %bp
+	;save %bp
 	asq %rlx, 8
 	subq %sp, %rlx, %sp
 	ldq %sp, %bp
@@ -26,17 +26,17 @@ ffly_sched_init:
 	asq %rel, 29
 	subq %bp, %rel, %rel
 	movq %rel, %rel
-rin 5, %rel
+	rin 5, %rel
 .l l0
 	movq %bp, %sp
-;reset %bp
+	;reset %bp
 	stq %sp, %bp
 	asq %rlx, 8
 	addq %sp, %rlx, %sp
 	ret
 	.globl ffly_resv_init
 ffly_resv_init:
-;save %bp
+	;save %bp
 	asq %rlx, 8
 	subq %sp, %rlx, %sp
 	ldq %sp, %bp
@@ -61,10 +61,10 @@ ffly_resv_init:
 	asq %rel, 29
 	subq %bp, %rel, %rel
 	movq %rel, %rel
-rin 5, %rel
+	rin 5, %rel
 .l l1
 	movq %bp, %sp
-;reset %bp
+	;reset %bp
 	stq %sp, %bp
 	asq %rlx, 8
 	addq %sp, %rlx, %sp

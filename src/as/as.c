@@ -10,14 +10,24 @@
 # include "../ffef.h"
 
 /*
-	cleanup needed
+	operation tray
 */
-
 void **op_tray;
+
+
 void(*ff_as_forge)(void);
 void*(*ff_as_getreg)(char const*);
 ff_u8_t(*ff_as_regsz)(void*);
+
+/*
+	rename
+
+	output instruction 
+*/
 void(*post)(void);
+
+ff_i8_t _local = -1;
+void *__label;
 struct hash symbols;
 struct hash defines;
 struct hash env;
@@ -94,20 +104,20 @@ ff_as_read_no(char *__p, ff_uint_t *__len, ff_u8_t *__sign) {
 	if ((*__sign = (*p == '-')))
 		p++;
 	ff_u8_t hex = 0;
-	while(*p >= '0' && *p <= '9') {
-		if (*p == 'x') {
-			bufp = buf;
-			p++;
+	while((*p >= '0' && *p <= '9') || *p == 'x' || (*p >= 'a' && *p <= 'z')) {
+		if (*p == 'x')
 			hex = 1;
-		}
+
 		*(bufp++) = *(p++);
 	}
 
 	*bufp = '\0';
 	*__len = bufp-buf;
 
-	if (hex) 
-		return ffly_htint(buf);
+	if (hex) {
+		printf("hex: %s:%u\n", buf, ffly_htint(buf+2));
+		return ffly_htint(buf+2);
+	}
 	if (*__sign)
 		return -ffly_stno(buf);
 	return ffly_stno(buf);
@@ -255,17 +265,29 @@ ff_as(char *__p, char *__end) {
 	while(p < __end) {
 	_bk:
 		while ((*p == ' ' | *p == '\t' | *p == '\n') && p < __end) p++;
-		if (*p == '\0') break;
+		if (*p == '\0')
+			break;
 
 		if (*p == ';') {
+			p++;
 			while(*p != '\n') {
-				if (*p == '\0')
-					break;
-				p++;
+				if (++p>=__end)
+					goto _r;
 			}
+			goto _bk;
+		} else if (*p == '/') {
+			p++;
+			while(*p != '/') {
+				if (++p>=__end)
+					goto _r;
+			}
+			p++;
 			goto _bk;
 		}
 
+		/*
+			copy line to buffer
+		*/
 		p = copyln(buf, p, __end, &len)+1;
 		*(buf+len) = '\0';
 
@@ -286,8 +308,13 @@ ff_as(char *__p, char *__end) {
 					ff_u16_t info;
 					while(cur != NULL) {
 						if (is_syreg(cur)) {
+							void *reg;
+							if (!(reg = ff_as_getreg((char const*)cur->p))) {
+								printf("register not recognized, %s\n", cur->p);
+								return;
+							}
 							printf("-- reg.\n");
-							switch(ff_as_regsz(*p = ff_as_getreg((char const*)cur->p))) {
+							switch(ff_as_regsz(*p = reg)) {
 								case 1:
 									info = _o_reg8;
 								break;
@@ -301,10 +328,11 @@ ff_as(char *__p, char *__end) {
 									info = _o_reg64;
 								break;
 							}
-						} else {
+						} else if (is_syint(cur)) {
 							printf("-- int.\n");
 							*p = cur->p;
 							ff_u64_t val = *(ff_u64_t*)*p;
+							
 							if (val >= 0 && val <= (ff_u8_t)~0)
 								info = _o_imm8;
 							else if (val > (ff_u8_t)~0 && val <= (ff_u16_t)~0)
@@ -313,6 +341,21 @@ ff_as(char *__p, char *__end) {
 								info = _o_imm32;
 							else if (val > (ff_u32_t)~0 && val <= (ff_u64_t)~0)
 								info = _o_imm64;
+							printf("val: %u\n", val);
+						} else if (is_syll(sy->next) || is_sylabel(sy->next)) {
+							__label = ff_as_hash_get(&env, sy->next->p, ffly_str_len(sy->next->p));
+
+							if (is_syll(sy->next)) {
+								_local = 0;
+								if (!__label)
+									ff_as_hash_put(&env, sy->next->p, sy->next->len, __label = ff_as_al(sizeof(struct local_label)));
+								((local_labelp)__label)->p_adr = &curlabel->adr;
+							} else if (is_sylabel(sy->next)) {
+								_local = -1;
+								if (!__label)
+									ff_as_hash_put(&env, sy->next->p, sy->next->len, __label = ff_as_al(sizeof(struct label)));
+							}
+							info = _o_label;
 						}
 
 						setinfo(&fak, info, p-fak.p);
@@ -320,26 +363,8 @@ ff_as(char *__p, char *__end) {
 						cur = cur->next;
 						fak.n++;
 					}
+			
 					*p = NULL;
-
-					if (sy->next != NULL) {
-						if (is_syll(sy->next)) {
-							void *p;
-							if (!(p = ff_as_hash_get(&env, sy->next->p, ffly_str_len(sy->next->p))))
-								ff_as_hash_put(&env, sy->next->p, sy->next->len, p = ff_as_al(sizeof(struct local_label)));
-							*fak.p = p;
-							*(fak.p+1) = NULL;
-							setinfo(&fak, _o_local_label, 0);
-						} else if (is_sylabel(sy->next)) {
-							void *p;
-							if (!(p = ff_as_hash_get(&env, sy->next->p, ffly_str_len(sy->next->p))))
-								ff_as_hash_put(&env, sy->next->p, sy->next->len, p = ff_as_al(sizeof(struct label)));
-							*fak.p = p;
-							*(fak.p+1) = NULL;
-							setinfo(&fak, _o_label, 0);
-						}
-					}
-
 					fak_ = &fak;
 					ff_u64_t beg = offset;
 					post();
@@ -347,43 +372,12 @@ ff_as(char *__p, char *__end) {
 					iadr(end-beg);
 					printf("got: %s\n", sy->p);
 				} else
-					printf("unknown.\n");
+					printf("unknown op.\n");
 			}
 		}
 	}
-}
-
-void
-ff_as_reloc(ff_u64_t __offset, ff_u8_t __l, symbolp *__sy, local_labelp __ll) {
-	relocatep rl = (relocatep)ff_as_al(sizeof(struct relocate));
-	rl->offset = __offset;
-	rl->l = __l;
-	rl->sy = __sy;
-	rl->next = rel;
-	rl->ll = __ll;
-	rel = rl;
-}
-
-void
-ff_as_hook(ff_u64_t __offset, ff_u8_t __l, symbolp *__to, local_labelp __ll) {
-	hookp hk = (hookp)ff_as_al(sizeof(struct hook));
-
-	hk->offset = __offset;
-	hk->l = __l;
-	hk->to = __to;
-	hk->next = hok;
-	hok = hk;
-}
-
-void outsegs() {
-	segmentp cur = curseg;
-	while(cur != NULL) {
-		cur->offset = offset;
-		ff_uint_t size = cur->fresh-cur->buf;
-		if (size>0)
-			ff_as_oust(cur->buf, size);
-		cur = cur->next;
-	}
+_r:
+	return;
 }
 
 labelp ff_as_entry;

@@ -25,12 +25,11 @@ extern void(*ff_as_forge)(void);
 extern void **op_tray;
 extern void*(*ff_as_getreg)(char const*);
 extern ff_u8_t(*ff_as_regsz)(void*);
+
 ff_u8_t extern of;
 ff_u64_t extern offset;
 
 extern void(*post)(void);
-typedef struct label *labelp;
-
 # define LA_LOOSE 0x1
 typedef struct region* regionp;
 
@@ -41,16 +40,20 @@ typedef struct region* regionp;
 
 # define _o_reg (_o_reg8|_o_reg16|_o_reg32|_o_reg64)
 # define _o_imm (_o_imm8|_o_imm16|_o_imm32|_o_imm64)
-# define _o_local_label 0x1
-# define _o_label 0x2
-# define _o_reg8 0x4
-# define _o_reg16 0x8
-# define _o_reg32 0x10
-# define _o_reg64 0x20
-# define _o_imm8 0x40
-# define _o_imm16 0x80
-# define _o_imm32 0x100
-# define _o_imm64 0x200
+# define _o_dis (_o_dis8|_o_dis16|_o_dis32|_o_dis64)
+# define _o_label 0x1
+# define _o_reg8 0x2
+# define _o_reg16 0x4
+# define _o_reg32 0x8
+# define _o_reg64 0x10
+# define _o_imm8 0x20
+# define _o_imm16 0x40
+# define _o_imm32 0x80
+# define _o_imm64 0x100
+# define _o_dis8 0x200
+# define _o_dis16 0x400
+# define _o_dis32 0x800
+# define _o_dis64 0x1000
 
 typedef struct flask {
 	ff_u16_t info[4];
@@ -72,6 +75,12 @@ typedef struct local_label {
 	ff_uint_t adr;
 	ff_uint_t *p_adr;
 } *local_labelp;
+
+extern ff_i8_t _local;
+extern void *__label;
+
+// rename
+extern labelp curlabel;
 
 typedef struct segment {
 	struct segment *next;
@@ -151,8 +160,6 @@ void ff_as_oust_64l(ff_u64_t);
 
 // stt.c
 ff_uint_t ff_as_stt(char const*, ff_uint_t);
-void ff_as_reloc(ff_u64_t, ff_u8_t, symbolp*, local_labelp);
-void ff_as_hook(ff_u64_t, ff_u8_t, symbolp*, local_labelp);
 void ff_as_final(void);
 void ff_as_init(void);
 void ff_as_de_init(void);

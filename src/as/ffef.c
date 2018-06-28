@@ -76,9 +76,43 @@ stt_drop(void) {
 
 extern char const *globl;
 extern char const *extrn;
-void extern outsegs();
 relocatep extern rel;
 hookp extern hok;
+
+void outsegs() {
+	segmentp cur = curseg;
+	while(cur != NULL) {
+		cur->offset = offset;
+		ff_uint_t size = cur->fresh-cur->buf;
+		if (size>0)
+			ff_as_oust(cur->buf, size);
+		cur = cur->next;
+	}
+}
+
+void
+_ffef_reloc(ff_u64_t __offset, ff_u8_t __l) {
+	printf("reloc.\n");
+	relocatep rl = (relocatep)ff_as_al(sizeof(struct relocate));
+	rl->offset = __offset;
+	rl->l = __l;
+	rl->sy = &((labelp)__label)->sy;
+	rl->next = rel;
+	rl->ll = !_local?(local_labelp)__label:NULL;
+	rel = rl;
+}
+
+void
+_ffef_hook(ff_u64_t __offset, ff_u8_t __l) {
+	printf("ffef hook.\n");
+	hookp hk = (hookp)ff_as_al(sizeof(struct hook));
+
+	hk->offset = __offset;
+	hk->l = __l;
+	hk->to = &((labelp)__label)->sy;
+	hk->next = hok;
+	hok = hk;
+}
 
 void static
 forge(void) {
@@ -113,7 +147,7 @@ forge(void) {
 		hookp hk = hok;
 
 		while(hk != NULL) {
-			printf("symbol: %p, len: %u\n", hk->to, hk->l);
+			printf("symbol: %s:%p, len: %u\n", (*hk->to)->p, hk->to, hk->l);
 			if (!strcmp((*hk->to)->p, *cur)) {
 				struct ffef_hok hok;
 				hok.offset = hk->offset;

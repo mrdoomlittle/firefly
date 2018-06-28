@@ -27,6 +27,7 @@
 # define is_syll(__sy) \
 	((__sy)->sort==SY_LL)
 typedef struct symbol {
+	struct symbol *next;
 	void *p;
 	
 	ff_u8_t len:6;
@@ -35,8 +36,11 @@ typedef struct symbol {
 	ff_u8_t sort:4;
 
 	ff_u8_t type;
+
+	/*
+		
+	*/
 	ff_u16_t off;
-	struct symbol *next;
 } *symbolp;
 
 void(*ff_as_syt_store)(void);

@@ -20,6 +20,9 @@ symbolp ff_as_eval(char *__s) {
 		while(*p == ' ') p++;
 		if (*p == '\0') break;
 		switch(*p) {
+			/*
+				local label
+			*/
 			case '#': {
 				p++;
 				ff_uint_t l;
@@ -53,6 +56,9 @@ symbolp ff_as_eval(char *__s) {
 				cur->len = l;
 				break;
 			}
+			/*
+				default label
+			*/
 			case '$':
 				p++;
 				if (*p >= 'a' && *p <= 'z') {

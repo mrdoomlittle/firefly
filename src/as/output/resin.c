@@ -201,6 +201,7 @@ void rgasq(char const *__reg, ff_u64_t __to) {
 	op_asq(_resin_op_asq, getreg(__reg)->addr, __to);
 }
 
+# include "../ffef.h"
 void static
 _post(void) {
 	op = (struct ff_as_op*)op_tray;
@@ -210,44 +211,45 @@ _post(void) {
 	memcpy(p, op->opcode, op->l);
 	p+=op->l;
 	void **cur = fak_->p;
-	ff_u8_t info;
+	ff_u16_t info;
+	printf("%s, ", op->name);
 	while(*cur != NULL) {
 		ff_u8_t off = cur-fak_->p;
 		info = getinfo(fak_, off);
-		switch(info) {
-			case _o_local_label:
-			case _o_label: {
-				char const *rgname = rbl(sizeof(ff_addr_t));
-				local_labelp ll = NULL;
-				labelp la;
-				if (info == _o_local_label) {
-					la = curlabel;
-					ll = (local_labelp)fakget(off);
-					ll->p_adr = &curlabel->adr;
-				} else
-					la = (labelp)fakget(off);
+		if ((info&_o_imm)>0) {
+//			printf("imm, ");
+			printf("%u, ", *(ff_u64_t*)fakget(off));
+			memcpy(p, fakget(off), get_ous(op, off));
+			p+=get_ous(op, off);
+		} else if ((info&_o_reg)>0) {
+//			printf("reg, ");
+			printf("%s, ", ((reginfo*)fakget(off))->name);
+			memcpy(p, &((reginfo*)fakget(off))->addr, sizeof(ff_addr_t));
+			p+=sizeof(ff_addr_t);
+		} else if ((info&_o_dis)>0) {
+//			printf("dis, ");
+		} else if ((info&_o_label)>0) {
+//			printf("label, ");
+			char const *rgname = rbl(sizeof(ff_addr_t));
+			labelp la;
+			if (!_local)
+				la = curlabel;
+			else
+				la = (labelp)__label;
 
-				rgasw(rgname, 0);
-				void(*f)(ff_u64_t, ff_u8_t, symbolp*, local_labelp) =
-					is_flag(la->flags, LA_LOOSE)?ff_as_hook:ff_as_reloc;
-				f(offset-sizeof(ff_addr_t), 2, &la->sy, ll);
-				memcpy(p, &getreg(rgname)->addr, sizeof(ff_addr_t));
-				p+=sizeof(ff_addr_t);
-				break;
-			}
-			case _o_imm8: case _o_imm16: case _o_imm32: case _o_imm64:
-				printf("int.\n");
-				memcpy(p, fakget(off), get_ous(op, off));
-				p+=get_ous(op, off);
-			break;
-			case _o_reg8: case _o_reg16: case _o_reg32: case _o_reg64:
-				printf("reg.\n");
-				memcpy(p, &((reginfo*)fakget(off))->addr, sizeof(ff_addr_t));
-				p+=sizeof(ff_addr_t);
-			break;
+			rgasw(rgname, 0);
+			if (is_flag(la->flags, LA_LOOSE))
+				_ffef_hook(offset-sizeof(ff_addr_t), 2);
+			else
+				_ffef_reloc(offset-sizeof(ff_addr_t), 2);
+
+			*(ff_addr_t*)p = getreg(rgname)->addr;
+			p+=sizeof(ff_addr_t);
 		}
+	
 		cur++;
 	}
+	printf("\n");
 	ff_as_oust(buf, p-buf);
 }
 

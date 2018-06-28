@@ -152,6 +152,11 @@ stt_drop(void) {
 	return ret;
 }
 
+void
+_elf_reloc(void) {
+
+}
+
 void ff_as_elf(void) {
 	ff_as_syt_store = syt_store;
 	ff_as_syt_drop = syt_drop;

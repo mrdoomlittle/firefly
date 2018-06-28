@@ -11,10 +11,12 @@ typedef struct {
 } reginfo;
 
 static struct ff_as_op *op;
-# define regc 6
+# define regc 14
 static reginfo reg[] = {
-	{"eax", 0, 0|3<<6, 4}, {"ebx", 3, 3|3<<6, 4}, {"ecx", 1, 1|3<<6, 4},
-	{"al", 0, 0|3<<6, 1}, {"ax", 0, 0|3<<6, 2}, {"rax", 0, 0, 8}
+	{"rax", 0, 0, 8}, {"eax", 0, 0, 4}, {"ax", 0, 0, 2}, {"al", 0, 0, 1},
+	{"rbx", 3, 0, 8}, {"ebx", 3, 3, 4}, {"bx", 3, 3, 2}, {"bl", 3, 3, 1},
+	{"rcx", 1, 0, 8}, {"ecx", 1, 1, 4}, {"cx", 1, 1, 2}, {"cl", 1, 1, 1},
+	{"rbp", 5, 5, 8}, {"rsp", 4, 4, 8}
 };
 
 char const *prot(ff_u16_t __ot) {
@@ -85,45 +87,55 @@ _post(void) {
 	ff_u8_t buf[64];
 	ff_u8_t *p = buf;
 
-	if (fak_->n>0) {
+	if (fak_->n>0 && !is_flag(op->flags, noprefix)) {
 		if (!(getinfo(fak_, 0)^_o_reg16)) {
 			*(p++) = 0x66;
 		} else if (!(getinfo(fak_, 0)^_o_reg64)) {
 			*(p++) = 0x4<<4|1<<3;
+			printf("--> v: %x\n", *(p-1));
 		}
 	}
 
+	ff_u8_t *mod;
+	ff_u8_t *opbase;
 	memcpy(p, op->opcode, op->l);
+	opbase = p;
 	p+=op->l;
 	*p = 0;
 	if (is_flag(op->flags, modrm))
-		p++;
+		*(mod = p++) = 0x0;
 	void **cur = fak_->p;
+	printf("; ; ; ; ; %s, ", op->name);
 	while(*cur != NULL) {
 		ff_u8_t off = cur-fak_->p;
-		switch(getinfo(fak_, off)) {
-			case _o_imm8: case _o_imm16: case _o_imm32: case _o_imm64: {
-				ff_u8_t sz;
-				if (is_flag(op->flags, ssad))
-					sz = ((reginfo*)fakget(off-1))->l;
-				else
-					sz = imm_sz(getinfo(fak_, off));
-				memcpy(p, fakget(off), sz);
-				p+=sz;
-				break;
+		ff_u16_t info = getinfo(fak_, off);
+		if ((info&_o_imm)>0) {
+			printf("%u, ", *(ff_u64_t*)fakget(off));
+			ff_u8_t sz;
+			if (is_flag(op->flags, ssad))
+				sz = ((reginfo*)fakget(off-1))->l;
+			else
+				sz = imm_sz(getinfo(fak_, off));
+			memcpy(p, fakget(off), sz);
+			p+=sz;
+		} else if ((info&_o_reg)>0) {
+			reginfo *reg = (reginfo*)fakget(off);
+			printf("%s, ", reg->name);
+			if (is_flag(op->flags, modrm)) {
+				char const *name = reg->name;
+				*mod = *mod<<3|reg->mrm;
+			} else {
+				*opbase = (*(ff_u8_t*)opbase)+reg->enc;
 			}
-			case _o_reg8: case _o_reg16: case _o_reg32: case _o_reg64: {
-				reginfo *reg = (reginfo*)fakget(off);
-				if (is_flag(op->flags, modrm)) {
-					char const *name = reg->name;
-					buf[1] |= (op->ext<<3)|reg->mrm;
-				} else
-					*(ff_u8_t*)buf = (*(ff_u8_t*)buf)+reg->enc;
-				break;
-			}
+		} else if ((info&_o_dis)>0) {
+			
 		}
 		cur++;
 	}
+	printf("\n");
+
+	if (is_flag(op->flags, modrm))
+		*mod |= op->ext<<3|3<<6;
 	ff_as_oust(buf, p-buf);
 }
 
@@ -131,8 +143,10 @@ void static*
 _getreg(char const *__name) {
 	reginfo *cur = reg;
 	while(cur != reg+regc) {
-		if (!strcmp(cur->name, __name))
+		if (!strcmp(cur->name, __name)) {
+			printf("matched reg: %s to %s\n", cur->name, __name);
 			return cur;
+		}
 		cur++;
 	}
 	return NULL;

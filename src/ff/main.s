@@ -8,7 +8,7 @@
 	.extern ffly_resv_init
 	.globl main
 main:
-;save %bp
+	;save %bp
 	asq %rlx, 8
 	subq %sp, %rlx, %sp
 	ldq %sp, %bp
@@ -17,7 +17,7 @@ main:
 	call $ffly_resv_init
 .l l0
 	movq %bp, %sp
-;reset %bp
+	;reset %bp
 	stq %sp, %bp
 	asq %rlx, 8
 	addq %sp, %rlx, %sp

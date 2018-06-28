@@ -1,14 +1,15 @@
-as(	"_start:\n"
-	"rin 0\n"
-	"call $main\n"
-	"exit %al\n");
-
 void main() {
-	u8_t a = 0;
-bk:
-	out(a);
-	if (a != 21) {
-		a = a+1;
-		goto bk;
+	u8_t i = 0;
+
+back:
+	i = i+1;
+	out(i);
+	if (i != 20) {
+		goto back;
 	}
 }
+
+as(	"_start:\n\t"
+	"rin 0, 0\n\t"
+	"call $main\n\t"
+	"exit %al\n");
