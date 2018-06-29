@@ -396,6 +396,11 @@ static void(*op[])() = {
 	memory for variables on function entry so i dont think
 	it should cause any problems if it does re will have to 
 	we think how we deal with variables.
+
+	also registers might cause issues with all the jmps 
+	i dont know how gcc would react so could break.
+	
+	so using push and pop if using registers
 */
 
 /*
@@ -533,7 +538,6 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	fi;
 
-
 	__asm__("_addb:			\n\t"
 			"movb $1, %0	\n\t"
 			"jmp _add		\n"
@@ -565,51 +569,29 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 		stack_put(__resin, (ff_u8_t*)&dst, l, dst_adr);
 	}
 	fi;
-/*
+
 	__asm__("_inc1br0:		\n\t"
 			"push %%rax		\n\t"
-			"push %%rdi		\n\t"
-			"movq %0, %%rdi	\n\t"
-			"movb (%%rdi), %%al	\n\t"
-			"decb %%al		\n\t"
-			"movb %%al, (%%rdi)	\n\t"
-			"pop %%rdi		\n\t"
+			"movq %0, %%rax	\n\t"
+			"incb (%%rax)	\n\t"
 			"pop %%rax		\n\t"
-			"jmp _fi" : : "m"(r0));
-
-	__asm__("_inc1wr0:      \n\t"
-			"push %%rax     \n\t"
-			"push %%rdi		\n\t"
-			"movq %0, %%rdi \n\t"
-			"movw (%%rdi), %%ax	\n\t"
-			"decw %%ax      \n\t"
-			"movw %%ax, (%%rdi)	\n\t"
-			"pop %%rdi		\n\t"
+			"jmp _fi		\n"
+			"_inc1wr0:      \n\t" 
+			"movq %0, %%rax \n\t"
+			"incw (%%rax)   \n\t"
 			"pop %%rax      \n\t"
-			"jmp _fi" : : "m"(r0));
-
-	__asm__("_inc1dr0:      \n\t"
-			"push %%rax     \n\t"
-			"push %%rdi		\n\t"
-			"movq %0, %%rdi \n\t"
-			"movl (%%rdi), %%eax	\n\t"
-			"decl %%eax      \n\t"
-			"movl %%eax, (%%rdi)	\n\t"
-			"pop %%rdi		\n\t"
+			"jmp _fi        \n"
+			"_inc1dr0:      \n\t"
+			"movq %0, %%rax \n\t"
+			"incl (%%rax)   \n\t"
 			"pop %%rax      \n\t"
-			"jmp _fi" : : "m"(r0));
-
-	__asm__("_inc1qr0:      \n\t"
-			"push %%rax     \n\t"
-			"push %%rdi		\n\t"
-			"movq %0, %%rdi \n\t"
-			"movq (%%rdi), %%rax	\n\t"
-			"decq %%rax      \n\t"
-			"movq %%rax, (%%rdi)	\n\t"
-			"pop %%rdi		\n\t"
+			"jmp _fi        \n"
+			"_inc1qr0:      \n\t"
+			"movq %0, %%rax \n\t"
+			"incq (%%rax)   \n\t"
 			"pop %%rax      \n\t"
-			"jmp _fi" : : "m"(r0));
-*/
+			"jmp _fi        \n" : : "m"(r0));
+
 	__asm__("_incb:			\n\t"
 			"movb $1, %0	\n\t"
 			"jmp _inc		\n"
@@ -630,6 +612,28 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 		stack_put(__resin, (ff_u8_t*)&tmp, l, adr);
 	}
 	fi;
+
+	__asm__("_dec1br0:      \n\t"
+			"push %%rax     \n\t"
+			"movq %0, %%rax \n\t"
+			"decb (%%rax)   \n\t"
+			"pop %%rax      \n\t"
+			"jmp _fi        \n"
+			"_dec1wr0:      \n\t"
+			"movq %0, %%rax \n\t"
+			"decw (%%rax)   \n\t"
+			"pop %%rax      \n\t"
+			"jmp _fi        \n"
+			"_dec1dr0:      \n\t"
+			"movq %0, %%rax \n\t"
+			"decl (%%rax)   \n\t"
+			"pop %%rax      \n\t"
+			"jmp _fi        \n"
+			"_dec1qr0:      \n\t"
+			"movq %0, %%rax \n\t"
+			"decq (%%rax)   \n\t"
+			"pop %%rax      \n\t"
+			"jmp _fi        \n" : : "m"(r0));
 
 	__asm__("_decb:			\n\t"
 			"movb $1, %0	\n\t"
