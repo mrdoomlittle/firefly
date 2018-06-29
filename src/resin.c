@@ -102,7 +102,6 @@ ff_err_t ff_resin_init(ffly_resinp __resin) {
 
 ff_err_t ff_resin_de_init(ffly_resinp __resin) {
 	__ffly_mem_free(__resin->stack);
-
 	return FFLY_SUCCESS;
 }
 
@@ -422,6 +421,13 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	ff_u8_t opno, l;
 	ff_err_t code;
 
+	ff_u64_t *r0, *r1, *r2, *r3;
+
+	r0 = &__resin->r0;
+	r1 = &__resin->r1;
+	r2 = &__resin->r2;
+	r3 = &__resin->r3;
+
 	__asm__("_next:\n\t");
 	__resin->ip_off = 0;	
 	if ((opno = get_8l(__resin, &err)) > MAX) {
@@ -559,7 +565,51 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 		stack_put(__resin, (ff_u8_t*)&dst, l, dst_adr);
 	}
 	fi;
+/*
+	__asm__("_inc1br0:		\n\t"
+			"push %%rax		\n\t"
+			"push %%rdi		\n\t"
+			"movq %0, %%rdi	\n\t"
+			"movb (%%rdi), %%al	\n\t"
+			"decb %%al		\n\t"
+			"movb %%al, (%%rdi)	\n\t"
+			"pop %%rdi		\n\t"
+			"pop %%rax		\n\t"
+			"jmp _fi" : : "m"(r0));
 
+	__asm__("_inc1wr0:      \n\t"
+			"push %%rax     \n\t"
+			"push %%rdi		\n\t"
+			"movq %0, %%rdi \n\t"
+			"movw (%%rdi), %%ax	\n\t"
+			"decw %%ax      \n\t"
+			"movw %%ax, (%%rdi)	\n\t"
+			"pop %%rdi		\n\t"
+			"pop %%rax      \n\t"
+			"jmp _fi" : : "m"(r0));
+
+	__asm__("_inc1dr0:      \n\t"
+			"push %%rax     \n\t"
+			"push %%rdi		\n\t"
+			"movq %0, %%rdi \n\t"
+			"movl (%%rdi), %%eax	\n\t"
+			"decl %%eax      \n\t"
+			"movl %%eax, (%%rdi)	\n\t"
+			"pop %%rdi		\n\t"
+			"pop %%rax      \n\t"
+			"jmp _fi" : : "m"(r0));
+
+	__asm__("_inc1qr0:      \n\t"
+			"push %%rax     \n\t"
+			"push %%rdi		\n\t"
+			"movq %0, %%rdi \n\t"
+			"movq (%%rdi), %%rax	\n\t"
+			"decq %%rax      \n\t"
+			"movq %%rax, (%%rdi)	\n\t"
+			"pop %%rdi		\n\t"
+			"pop %%rax      \n\t"
+			"jmp _fi" : : "m"(r0));
+*/
 	__asm__("_incb:			\n\t"
 			"movb $1, %0	\n\t"
 			"jmp _inc		\n"
@@ -885,21 +935,29 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	next;
 	__asm__("_exit2r3:		\n\t"
+			"push %%rax		\n\t"
 			"movb %1, %%al	\n\t" 
 			"movb %%al, %0	\n\t"
-			"jmp _end" : "=m"(code) : "m"(__resin->r3) : "rax");
+			"pop %%rax		\n\t"
+			"jmp _end" : "=m"(code) : "m"(__resin->r3));
 	__asm__("_exit2r2:		\n\t"
+			"push %%rax		\n\t"
 			"movb %1, %%al	\n\t" 
 			"movb %%al, %0	\n\t"
-			"jmp _end" : "=m"(code) : "m"(__resin->r2) : "rax");
+			"pop %%rax		\n\t"
+			"jmp _end" : "=m"(code) : "m"(__resin->r2));
 	__asm__("_exit2r1:		\n\t"
+			"push %%rax		\n\t"
 			"movb %1, %%al	\n\t" 
 			"movb %%al, %0	\n\t"
-			"jmp _end" : "=m"(code) : "m"(__resin->r1) : "rax");
+			"pop %%rax		\n\t"
+			"jmp _end" : "=m"(code) : "m"(__resin->r1));
 	__asm__("_exit2r0:		\n\t"
+			"push %%rax		\n\t"
 			"movb %1, %%al	\n\t" 
 			"movb %%al, %0	\n\t"
-			"jmp _end" : "=m"(code) : "m"(__resin->r0) : "rax");
+			"pop %%rax		\n\t"
+			"jmp _end" : "=m"(code) : "m"(__resin->r0));
 	__asm__("_exit1:\n\t");
 	get(__resin, (ff_u8_t*)&code, 1, &err);
 	end;
