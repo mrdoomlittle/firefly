@@ -365,18 +365,18 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 
 	jmpto(op[opno]);
 
-	__asm__("_divb:\n\t");
-	l = 1;
-	__asm__("jmp _div");
-	__asm__("_divw:\n\t");
-	l = 2;
-	__asm__("jmp _div");
-	__asm__("_divd:\n\t");
-	l = 4;
-	__asm__("jmp _div");
-	__asm__("_divq:\n\t");
-	l = 8;
-	__asm__("_div:\n\t");
+	__asm__("_divb:			\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _div		\n\t"
+			"_divw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _div		\n\t"
+			"_divd:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _div		\n\t"
+			"_divq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_div:			\n\t" : "=m"(l));
 	{
 		ff_u64_t lt, rt;
 		ff_addr_t lt_adr, rt_adr, dst_adr;
@@ -397,18 +397,18 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	fi;
 
-	__asm__("_mulb:\n\t");
-	l = 1;
-	__asm__("jmp _mul");
-	__asm__("_mulw:\n\t");
-	l = 2;
-	__asm__("jmp _mul");
-	__asm__("_muld:\n\t");
-	l = 4;
-	__asm__("jmp _mul");
-	__asm__("_mulq:\n\t");
-	l = 8;
-	__asm__("_mul:\n\t");
+	__asm__("_mulb:			\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _mul		\n\t"
+			"_mulw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _mul		\n\t"
+			"_muld:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _mul		\n\t"
+			"_mulq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_mul:			\n\t" : "=m"(l));
 	{
 		ff_u64_t lt, rt;
 		ff_addr_t lt_adr, rt_adr, dst_adr;
@@ -429,18 +429,18 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	fi;
 
-	__asm__("_subb:\n\t");
-	l = 1;
-	__asm__("jmp _sub");
-	__asm__("_subw:\n\t");
-	l = 2;
-	__asm__("jmp _sub");
-	__asm__("_subd:\n\t");
-	l = 4;
-	__asm__("jmp _sub");
-	__asm__("_subq:\n\t");
-	l = 8;
-	__asm__("_sub:\n\t");
+	__asm__("_subb:			\n\t"
+			"movb $1, %0	\n\t"		
+			"jmp _sub		\n\t"
+			"_subw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _sub		\n\t"
+			"_subd:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _sub		\n\t"
+			"_subq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_sub:			\n\t" : "=m"(l));
 	{
 		ff_u64_t lt, rt;
 		ff_addr_t lt_adr, rt_adr, dst_adr;
@@ -461,18 +461,19 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	fi;
 
-	__asm__("_addb:\n\t");
-	l = 1;
-	__asm__("jmp _add");
-	__asm__("_addw:\n\t");
-	l = 2;
-	__asm__("jmp _add");
-	__asm__("_addd:\n\t");
-	l = 4;
-	__asm__("jmp _add");
-	__asm__("_addq:\n\t");
-	l = 8;
-	__asm__("_add:\n\t");
+
+	__asm__("_addb:			\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _add		\n\t"
+			"_addw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _add		\n\t"
+			"_addd:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _add		\n\t"
+			"_addq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_add:			\n\t" : "=m"(l));
 	{
 		ff_u64_t lt, rt;
 		ff_addr_t lt_adr, rt_adr, dst_adr;
@@ -493,18 +494,18 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	fi;
 
-	__asm__("_incb:\n\t");
-	l = 1;
-	__asm__("jmp _inc");
-	__asm__("_incw:\n\t");
-	l = 2;
-	__asm__("jmp _inc");
-	__asm__("_incd:\n\t");
-	l = 4;
-	__asm__("jmp _inc");
-	__asm__("_incq:\n\t");
-	l = 8;
-	__asm__("_inc:\n\t");
+	__asm__("_incb:			\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _inc		\n\t"
+			"_incw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _inc		\n\t"
+			"_incd:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _inc		\n\t"
+			"_incq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_inc:			\n\t" : "=m"(l));
 	{
 		ff_addr_t adr = get_addr(__resin, &err);
 		ff_u64_t tmp = 0;
@@ -514,18 +515,18 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	fi;
 
-	__asm__("_decb:\n\t");
-	l = 1;
-	__asm__("jmp _dec");
-	__asm__("_decw:\n\t");
-	l = 2;
-	__asm__("jmp _dec");
-	__asm__("_decd:\n\t");
-	l = 4;
-	__asm__("jmp _dec");
-	__asm__("_decq:\n\t");
-	l = 8;
-	__asm__("_dec:\n\t");
+	__asm__("_decb:			\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _dec		\n\t"
+			"_decw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _dec		\n\t"
+			"_decd:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _dec		\n\t"
+			"_decq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_dec:			\n\t" : "=m"(l));
 	{
 		ff_addr_t adr = get_addr(__resin, &err);
 		ff_u64_t tmp = 0;
@@ -535,18 +536,18 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	fi;
 
-	__asm__("_cmpb:\n\t");
-	l = 1;
-	__asm__("jmp _cmp");
-	__asm__("_cmpw:\n\t");
-	l = 2;
-	__asm__("jmp _cmp");
-	__asm__("_cmpd:\n\t");
-	l = 4;
-	__asm__("jmp _cmp");
-	__asm__("_cmpq:\n\t");
-	l = 8;
-	__asm__("_cmp:\n\t");
+	__asm__("_cmpb:			\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _cmp		\n\t"
+			"_cmpw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _cmp		\n\t"
+			"_cmpd:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _cmp		\n\t"
+			"_cmpq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_cmp:			\n\t" : "=m"(l));
 	{
 		ff_addr_t la, ra, dst;
 		
@@ -566,18 +567,19 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	fi;
 	
-	__asm__("_asb:\n\t");
-	l = 1;
-	__asm__("jmp _as");
-	__asm__("_asw:\n\t");
-	l = 2;
-	__asm__("jmp _as");
-	__asm__("_asd:\n\t");
-	l = 4;
-	__asm__("jmp _as");
-	__asm__("_asq:\n\t");
-	l = 8;
-	__asm__("_as:\n\t");
+
+	__asm__("_asb:			\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _as		\n\t"
+			"_asw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _as		\n\t"
+			"_asd:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _as		\n\t"
+			"_asq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_as:			\n\t" : "=m"(l));
 	{
 		ff_addr_t to;
 		to = get_addr(__resin, &err);	
@@ -632,18 +634,18 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	next;
 
-	__asm__("_ldb:\n\t");
-	l = 1;
-	__asm__("jmp _ld");
-	__asm__("_ldw:\n\t");
-	l = 2;
-	__asm__("jmp _ld");
-	__asm__("_ldd:\n\t");
-	l = 4;
-	__asm__("jmp _ld");
-	__asm__("_ldq:\n\t"); // from ??? to stack
-	l = 8;
-	__asm__("_ld:\n\t");
+	__asm__("_ldb:			\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _ld		\n\t"
+			"_ldw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _ld		\n\t"
+			"_ldd:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _ld		\n\t"
+			"_ldq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_ld:			\n\t" : "=m"(l));
 	{
 		ff_addr_t dst = get_addr(__resin, &err);
 		ff_addr_t src = get_addr(__resin, &err);
@@ -655,18 +657,18 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	fi;
 
-	__asm__("_stb:\n\t");
-	l = 1;
-	__asm__("jmp _st");
-	__asm__("_stw:\n\t");
-	l = 2;
-	__asm__("jmp _st");
-	__asm__("_std:\n\t");
-	l = 4;
-	__asm__("jmp _st");
-	__asm__("_stq:\n\t"); // from stack to ???
-	l = 8;
-	__asm__("_st:\n\t");
+	__asm__("_stb:			\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _st		\n\t"
+			"_stw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _st		\n\t"
+			"_std:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _st		\n\t"
+			"_stq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_st:			\n\t" : "=m"(l));
 	{
 		ff_addr_t src = get_addr(__resin, &err);
 		ff_addr_t dst = get_addr(__resin, &err);
@@ -678,18 +680,19 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	fi;
 
-	__asm__("_movb:\n\t");
-	l = 1;
-	__asm__("jmp _mov");
-	__asm__("_movw:\n\t");
-	l = 2;
-	__asm__("jmp _mov");
-	__asm__("_movd:\n\t");
-	l = 4;
-	__asm__("jmp _mov");
-	__asm__("_movq:\n\t");
-	l = 8;
-	__asm__("_mov:\n\t");
+
+	__asm__("_movb:			\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _mov		\n\t"
+			"_movw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _mov		\n\t"
+			"_movd:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _mov		\n\t"
+			"_movq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_mov:			\n\t" : "=m"(l));
 	{
 		ff_addr_t src = get_addr(__resin, &err);
 		ff_addr_t dst = get_addr(__resin, &err);
@@ -708,18 +711,18 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 	fi;
 
-	__asm__("_outb:\n\t");
-	l = 1;
-	__asm__("jmp _out");
-	__asm__("_outw:\n\t");
-	l = 2;
-	__asm__("jmp _out");
-	__asm__("_outd:\n\t");
-	l = 4;
-	__asm__("jmp _out");
-	__asm__("_outq:\n\t");
-	l = 8;
-	__asm__("_out:\n\t");
+	__asm__("_outb:			\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _out		\n\t"
+			"_outw:			\n\t"
+			"movb $2, %0	\n\t"
+			"jmp _out		\n\t"
+			"_outd:			\n\t"
+			"movb $4, %0	\n\t"
+			"jmp _out		\n\t"
+			"_outq:			\n\t"
+			"movb $8, %0	\n\t"
+			"_out:			\n\t" : "=m"(l));
 	{
 		ff_addr_t addr = get_addr(__resin, &err);
 		ff_u64_t val = 0;
