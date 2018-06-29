@@ -82,17 +82,39 @@
 # define _op_jl 0x36
 # define _op_call 0x37
 # define _op_ret 0x38
+
+# define _op_as1br0 0x39
+# define _op_as1wr0 0x3a
+# define _op_as1dr0 0x3b
+# define _op_as1qr0 0x3c
+
+# define _op_mov1br0 0x3d
+# define _op_mov1wr0 0x3e
+# define _op_mov1dr0 0x3f
+# define _op_mov1qr0 0x40
+
+# define _op_mov2br0 0x41
+# define _op_mov2wr0 0x42
+# define _op_mov2dr0 0x43
+# define _op_mov2qr0 0x44
+
+# define _op_out1br0 0x45
+# define _op_out1wr0 0x46
+# define _op_out1dr0 0x47
+# define _op_out1qr0 0x48
+
 # define _gt 0x1
 # define _lt 0x2
 # define _eq 0x4
-// resin byte code interp
 
-typedef ff_u16_t res_adr_t;
+// resin byte code interp
 
 typedef struct ffly_resin {
 	struct ffly_getbit bit;
 	ff_uint_t stack_size;
 	ff_u8_t *stack;
+	ff_u64_t *r[4];
+	ff_u64_t r0, r1, r2, r3;
 	ff_u8_t(*fetch_byte)(ff_off_t);
 	void(*ip_incr)(ff_uint_t);
 	ff_addr_t(*get_ip)();
@@ -107,6 +129,10 @@ ff_u8_t ff_resin_ops(ff_u8_t);
 void* ff_resin_resolv_adr(ffly_resinp, ff_addr_t);
 void ff_resin_sst(ffly_resinp, void*, ff_addr_t, ff_uint_t);
 void ff_resin_sld(ffly_resinp, ff_addr_t, void*, ff_uint_t);
+
+void ff_resin_rset(ffly_resinp, void*, ff_u8_t, ff_uint_t);
+void ff_resin_rget(ffly_resinp, ff_u8_t, void*, ff_uint_t);
+
 ff_err_t ff_resin_init(ffly_resinp);
 ff_err_t ff_resin_de_init(ffly_resinp);
 ff_err_t ff_resin_exec(ffly_resinp, ff_err_t*);
