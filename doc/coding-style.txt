@@ -10,3 +10,7 @@ ffobj - product
 ff_obj - partially a product
 
 function args - double underscore each arg.
+
+comments:
+	no large comments only small ones why?
+	because it increase compile time it should be put in /doc/???/file?.txt.
