@@ -92,7 +92,7 @@ ff_err_t ff_resin_init(ffly_resinp __resin) {
 	ffly_mem_set(__resin->stack, 0xff, __resin->stack_size);
 	__resin->retto = __resin->rtbuf;
 
-	ff_u64_t *r = __resin->r;
+	ff_u64_t **r = __resin->r;
 	*(r++) = &__resin->r0;
 	*(r++) = &__resin->r1;
 	*(r++) = &__resin->r2;
@@ -203,7 +203,7 @@ ff_resin_resolv_adr(ffly_resinp __resin, ff_addr_t __adr) {
 	return (void*)(__resin->stack+__adr);
 }
 
-void _exit();
+void _exit0();
 
 void _as0b();
 void _as0w();
@@ -294,7 +294,7 @@ void _out1dr0();
 void _out1qr0();
 
 static void(*op[])() = {
-	_exit,
+	_exit0,
 	// assign
 	_as0b,
 	_as0w,
@@ -420,6 +420,7 @@ static void(*op[])() = {
 ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	ff_err_t err;
 	ff_u8_t opno, l;
+	ff_err_t code;
 
 	__asm__("_next:\n\t");
 	__resin->ip_off = 0;	
@@ -883,17 +884,29 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 		__resin->ip_off = 0;
 	}
 	next;
-
-	__asm__("_exit:\n\t");
+	__asm__("_exit2r3:		\n\t"
+			"movb %1, %%al	\n\t" 
+			"movb %%al, %0	\n\t"
+			"jmp _end" : "=m"(code) : "m"(__resin->r3) : "rax");
+	__asm__("_exit2r2:		\n\t"
+			"movb %1, %%al	\n\t" 
+			"movb %%al, %0	\n\t"
+			"jmp _end" : "=m"(code) : "m"(__resin->r2) : "rax");
+	__asm__("_exit2r1:		\n\t"
+			"movb %1, %%al	\n\t" 
+			"movb %%al, %0	\n\t"
+			"jmp _end" : "=m"(code) : "m"(__resin->r1) : "rax");
+	__asm__("_exit2r0:		\n\t"
+			"movb %1, %%al	\n\t" 
+			"movb %%al, %0	\n\t"
+			"jmp _end" : "=m"(code) : "m"(__resin->r0) : "rax");
+	__asm__("_exit1:\n\t");
+	get(__resin, (ff_u8_t*)&code, 1, &err);
+	end;
+	__asm__("_exit0:\n\t");
 	{
-		ffly_printf("goodbye.\n");
 		ff_addr_t adr = get_addr(__resin, &err);
-		ff_err_t exit_code;
-		if (__exit_code != NULL) {
-			stack_get(__resin, (ff_u8_t*)&exit_code, sizeof(ff_err_t), adr);
-			*__exit_code = exit_code;
-		}
-		
+		stack_get(__resin, (ff_u8_t*)&code, sizeof(ff_err_t), adr);
 	}
 	end;
 	
@@ -902,4 +915,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	next;
 
 	__asm__("_end:\n\t");
+	ffly_printf("goodbye.\n");
+	if (__exit_code != NULL)
+		*__exit_code = code;
 }
