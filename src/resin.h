@@ -103,6 +103,16 @@
 # define _op_out1dr0 0x47
 # define _op_out1qr0 0x48
 
+# define _op_inc1br0 0x49
+# define _op_inc1wr0 0x4a
+# define _op_inc1dr0 0x4b
+# define _op_inc1qr0 0x4c
+
+# define _op_dec1br0 0x4d
+# define _op_dec1wr0 0x4e
+# define _op_dec1dr0 0x4f
+# define _op_dec1qr0 0x50
+
 # define _gt 0x1
 # define _lt 0x2
 # define _eq 0x4

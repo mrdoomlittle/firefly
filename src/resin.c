@@ -292,6 +292,16 @@ void _out1wr0();
 void _out1dr0();
 void _out1qr0();
 
+void _inc1br0();
+void _inc1wr0();
+void _inc1dr0();
+void _inc1qr0();
+
+void _dec1br0();
+void _dec1wr0();
+void _dec1dr0();
+void _dec1qr0();
+
 static void(*op[])() = {
 	_exit0,
 	// assign
@@ -388,7 +398,17 @@ static void(*op[])() = {
 	_out1br0,
 	_out1wr0,
 	_out1dr0,
-	_out1qr0
+	_out1qr0,
+
+	_inc1br0,
+	_inc1wr0,
+	_inc1dr0,
+	_inc1qr0,
+
+	_dec1br0,
+	_dec1wr0,
+	_dec1dr0,
+	_dec1qr0
 };
 /*
 	as im using asm labels it may cause issues
@@ -410,7 +430,7 @@ static void(*op[])() = {
 	if we did it diffrently it would be slower and speed
 	is the most important thing for this.
 */
-# define MAX _op_out1qr0
+# define MAX _op_dec1qr0
 # define get_addr(__resin, __err) \
 	get_16l(__resin, __err)
 
@@ -576,17 +596,20 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"incb (%%rax)	\n\t"
 			"pop %%rax		\n\t"
 			"jmp _fi		\n"
-			"_inc1wr0:      \n\t" 
+			"_inc1wr0:      \n\t"
+			"push %%rax     \n\t"
 			"movq %0, %%rax \n\t"
 			"incw (%%rax)   \n\t"
 			"pop %%rax      \n\t"
 			"jmp _fi        \n"
 			"_inc1dr0:      \n\t"
+			"push %%rax     \n\t"
 			"movq %0, %%rax \n\t"
 			"incl (%%rax)   \n\t"
 			"pop %%rax      \n\t"
 			"jmp _fi        \n"
 			"_inc1qr0:      \n\t"
+			"push %%rax     \n\t"
 			"movq %0, %%rax \n\t"
 			"incq (%%rax)   \n\t"
 			"pop %%rax      \n\t"
@@ -620,16 +643,19 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"pop %%rax      \n\t"
 			"jmp _fi        \n"
 			"_dec1wr0:      \n\t"
+			"push %%rax     \n\t"
 			"movq %0, %%rax \n\t"
 			"decw (%%rax)   \n\t"
 			"pop %%rax      \n\t"
 			"jmp _fi        \n"
 			"_dec1dr0:      \n\t"
+			"push %%rax     \n\t"
 			"movq %0, %%rax \n\t"
 			"decl (%%rax)   \n\t"
 			"pop %%rax      \n\t"
 			"jmp _fi        \n"
 			"_dec1qr0:      \n\t"
+			"push %%rax     \n\t"
 			"movq %0, %%rax \n\t"
 			"decq (%%rax)   \n\t"
 			"pop %%rax      \n\t"
