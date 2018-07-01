@@ -110,7 +110,8 @@ $ffly_cc $cc_flags -c -o $dst_dir/get_bit.o $root_dir/get_bit.c
 $ffly_cc $cc_flags -c -o $dst_dir/exec.o $root_dir/exec.c
 $ffly_cc $cc_flags -c -o $dst_dir/resin/exec.o $root_dir/resin/exec.c
 $ffly_cc $cc_flags -c -o $dst_dir/arcs.o $root_dir/arcs.c
-$ffly_cc $cc_flags -c -o $dst_dir/resin.o $root_dir/resin.c
+$ffly_cc $cc_flags -c -o $dst_dir/resin.o.0 $root_dir/resin.c
+as -c -o $dst_dir/resin.o.1 $root_dir/resin.s
 $ffly_cc $cc_flags -c -o $dst_dir/resin/mm.o $root_dir/resin/mm.c
 $ffly_cc $cc_flags -c -o $dst_dir/mod/port.o $root_dir/mod/port.c
 $ffly_cc $cc_flags -c -o $dst_dir/call.o $root_dir/call.c
@@ -132,7 +133,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/db/error.o $root_dir/db/error.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
-export ffly_objs="$dst_dir/event.o $ffly_objs $dst_dir/resin.o $dst_dir/exec.o \
+export ffly_objs="$dst_dir/event.o $ffly_objs $dst_dir/resin.o.0 $dst_dir/resin.o.1 $dst_dir/exec.o \
 $dst_dir/resin/exec.o $dst_dir/resin/mm.o $dst_dir/mode.o \
 $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  $dst_dir/get_bit.o \
 $dst_dir/arcs.o $dst_dir/call.o $dst_dir/rand.o $dst_dir/lib.o $dst_dir/mod.o $dst_dir/mod/port.o \
