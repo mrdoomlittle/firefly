@@ -45,10 +45,11 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	if (!strcmp(format, "ffef")) {
 		of = _of_ffef;
 		offset+=ffef_hdr_size;
-	} else {
+	} else if (!strcmp(format, "elf")) {
 		of = _of_elf;
 		offset+=elf64_hdr_size;
-	}
+	} else if (!strcmp(format, "raw"))
+		of = _of_raw;
 
 	if ((in = open(infile, O_RDONLY, 0)) == -1) {
 		return -1;

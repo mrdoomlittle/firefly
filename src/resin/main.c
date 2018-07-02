@@ -5,10 +5,18 @@
 # include "../linux/stat.h"
 # include "../ffint.h"
 # include "../stdio.h"
+# include "../string.h"
 # include "exec.h"
 /*
 	execute raw byte code, no headers or anything just raw code
 */
+
+ff_u8_t static *bin;
+void static
+get(ff_uint_t __from, ff_uint_t __offset, ff_uint_t __size, void *__buf) {
+	memcpy((ff_u8_t*)__buf+__offset, bin+__from, __size);
+}
+
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	if (__argc < 2) {
 		ffly_printf("please provide binary file.\n");
@@ -19,11 +27,11 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	struct stat st;
 	fstat(fd, &st);
 	
-	ff_u8_t *bin = (ff_u8_t*)malloc(st.st_size);
+	bin = (ff_u8_t*)malloc(st.st_size);
 	read(fd, bin, st.st_size);
 	close(fd);
 
-	ffbci_exec(bin, bin+st.st_size, NULL, NULL, 0);
+	ffres_exec(get, st.st_size, NULL, NULL, 0);
 	free(bin);
 	retok;
 }

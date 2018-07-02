@@ -4,4 +4,4 @@ cc_flags="-std=c99 -D__ffly_crucial -fno-builtin -D__ffly_no_task_pool -D__ffly_
 dst_dir=$root_dir
 cd ../ && . ./compile.sh && cd resin
 ffly_objs="$ffly_objs"
-gcc $cc_flags -o rexec main.c $ffly_objs -nostdlib
+gcc $cc_flags -o test test.c $ffly_objs -nostdlib

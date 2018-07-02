@@ -48,6 +48,7 @@ void* ring(ff_u8_t __no, void *__arg_p) {
 		case 0x0: {// set stack pointer
 			ff_u64_t sp = ctx.stack_size;
 			ff_resin_sst(&ctx, &sp, 0, sizeof(ff_u64_t));
+			ctx.sp = ctx.stack_size;
 			break;
 		}
 		case 0x1: {

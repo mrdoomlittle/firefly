@@ -11,6 +11,8 @@ typedef struct {
 	char const *name;
 	ff_u8_t l;
 	ff_uint_t addr;
+	ff_u8_t flags;
+	ff_u8_t start;
 } reginfo;
 
 static struct ff_as_op *op;
@@ -38,22 +40,27 @@ void static *p0, *p1, *p2, *p4;
 # define els_rg 0xf
 # define ls_rg 0x10
 # define xs_rg 0x11
+# define r0_rg 0x12
+# define r1_rg 0x13
 void static
 oust_addr(ff_addr_t __addr) {
 	ff_as_oust((ff_u8_t*)&__addr, sizeof(ff_addr_t));
 }
 
+# define reg_spl 0x1
 reginfo reg[] = {
-	{"sp", 8, 0},  {"bp", 8, 8},
-	{"rax", 8, 16},	{"eax", 4, 16},	{"ax", 2, 16},	{"al", 1, 16},
-	{"rlx", 8, 24},	{"elx", 4, 24},	{"lx", 2, 24},	{"ll", 1, 24},
-	{"rel", 8, 32},	{"ael", 4, 32},	{"el", 2, 32},	{"ae", 1, 32},
-	{"xes", 8, 40}, {"els", 4, 40}, {"ls", 2, 40},  {"xs", 1, 40},
+	{"sp", 8, 0, 0},  {"bp", 8, 8, 0},
+	{"rax", 8, 16, 0},	{"eax", 4, 16, 0},	{"ax", 2, 16, 0},	{"al", 1, 16, 0},
+	{"rlx", 8, 24, 0},	{"elx", 4, 24, 0},	{"lx", 2, 24, 0},	{"ll", 1, 24, 0},
+	{"rel", 8, 32, 0},	{"ael", 4, 32, 0},	{"el", 2, 32, 0},	{"ae", 1, 32, 0},
+	{"xes", 8, 40, 0}, {"els", 4, 40, 0}, {"ls", 2, 40, 0},  {"xs", 1, 40, 0},
+	{"r0", 8, 0, reg_spl, 0}, {"r1", 8, 0, reg_spl, 4},
 };
 
 /*
 	1, 2, 4, 8, 16, 32, 64, 128
 	r, a, x, e, l,	s,	b,	p
+	   0,				1
 */
 
 /*
@@ -73,15 +80,17 @@ reginfo reg[] = {
 	els	=				= 199
 	ls	=				= 207
 	xs	=				= 219
-	sp	=	11111111	= 95
-	bp	=	11111111	= 63
+	sp	=				= 95
+	bp	=				= 63
+	r0	=				= 253
+	r1	=				= 191
 */
 
 ff_u8_t c[] = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,	//0
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,	//1
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,	//2
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,	//3
+	1,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,	//3
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,	//4
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,	//5
 	0,1,6,0,0,3,0,0,0,0,0,0,4,0,0,0,	//6
@@ -116,24 +125,26 @@ getreg(char const *__name) {
 
 	printf("reg: %u, %s\n", no, __name);
 	switch(no) {
-		case 248:	return reg+rax_rg;
-		case 241:	return reg+eax_rg;
-		case 249:	return reg+ax_rg;
-		case 237:	return reg+al_rg;
-		case 234:	return reg+rlx_rg;
-		case 227:	return reg+elx_rg;
-		case 235:	return reg+lx_rg;
-		case 255:	return reg+ll_rg;
-		case 230:	return reg+rel_rg;
-		case 229:	return reg+ael_rg;
-		case 231:	return reg+el_rg;
-		case 245:	return reg+ae_rg;
-		case 211:	return reg+xes_rg;
-		case 199:	return reg+els_rg;
-		case 207:	return reg+ls_rg;
-		case 219:	return reg+xs_rg;
-		case 95:	return reg+sp_rg;
-		case 63:	return reg+bp_rg;
+		case 0xf8:	return reg+rax_rg;
+		case 0xf1:	return reg+eax_rg;
+		case 0xf9:	return reg+ax_rg;
+		case 0xed:	return reg+al_rg;
+		case 0xea:	return reg+rlx_rg;
+		case 0xe3:	return reg+elx_rg;
+		case 0xeb:	return reg+lx_rg;
+		case 0xff:	return reg+ll_rg;
+		case 0xe6:	return reg+rel_rg;
+		case 0xe5:	return reg+ael_rg;
+		case 0xe7:	return reg+el_rg;
+		case 0xf5:	return reg+ae_rg;
+		case 0xd3:	return reg+xes_rg;
+		case 0xc7:	return reg+els_rg;
+		case 0xcf:	return reg+ls_rg;
+		case 0xdb:	return reg+xs_rg;
+		case 0x5f:	return reg+sp_rg;
+		case 0x3f:	return reg+bp_rg;
+		case 0xfc:	return reg+r0_rg;
+		case 0xbe:	return reg+r1_rg;
 	}
 	printf("failed to get register.\n");
 	return NULL;
@@ -201,6 +212,20 @@ void rgasq(char const *__reg, ff_u64_t __to) {
 	op_asq(_resin_op_asq, getreg(__reg)->addr, __to);
 }
 
+ff_u8_t imm_sz(ff_u16_t __o) {
+	switch(__o) {
+		case _o_imm8:
+			return 1;
+		case _o_imm16:
+			return 2;
+		case _o_imm32:
+			return 4;
+		case _o_imm64:
+			return 8;
+	}
+	return 0;
+}
+
 # include "../ffef.h"
 void static
 _post(void) {
@@ -208,7 +233,9 @@ _post(void) {
 
 	ff_u8_t buf[64];
 	ff_u8_t *p = buf;
-	memcpy(p, op->opcode, op->l);
+	ff_u8_t *oc = op->opcode;
+	ff_u8_t *opbase;
+	opbase = p;
 	p+=op->l;
 	void **cur = fak_->p;
 	ff_u16_t info;
@@ -219,13 +246,35 @@ _post(void) {
 		if ((info&_o_imm)>0) {
 //			printf("imm, ");
 			printf("%u, ", *(ff_u64_t*)fakget(off));
-			memcpy(p, fakget(off), get_ous(op, off));
-			p+=get_ous(op, off);
+			ff_u8_t os = get_ous(op, off);
+			if (!os)
+				os = imm_sz(info);
+			memcpy(p, fakget(off), os);
+			p+=os;
+
+			if (is_flag(op->flags, newr)) {
+				switch(info) {
+					case _o_imm16:
+                		oc++;
+					break;
+					case _o_imm32:
+						oc+=2;
+					break;
+					case _o_imm64:
+						oc+=3;
+					break;
+				}
+			}
 		} else if ((info&_o_reg)>0) {
 //			printf("reg, ");
 			printf("%s, ", ((reginfo*)fakget(off))->name);
-			memcpy(p, &((reginfo*)fakget(off))->addr, sizeof(ff_addr_t));
-			p+=sizeof(ff_addr_t);
+			reginfo *reg = (reginfo*)fakget(off);
+			if (is_flag(reg->flags, reg_spl)) {
+				oc+=reg->start;
+			} else {
+				memcpy(p, &reg->addr, sizeof(ff_addr_t));
+				p+=sizeof(ff_addr_t);
+			}
 		} else if ((info&_o_dis)>0) {
 //			printf("dis, ");
 		} else if ((info&_o_label)>0) {
@@ -249,6 +298,8 @@ _post(void) {
 	
 		cur++;
 	}
+
+	memcpy(opbase, oc, op->l);
 	printf("\n");
 	ff_as_oust(buf, p-buf);
 }

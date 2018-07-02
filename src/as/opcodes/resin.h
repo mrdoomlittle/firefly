@@ -2,6 +2,13 @@
 # define __ffly__opcodes__resin__h
 # include "../../ffint.h"
 # include "resin_tbl.h"
+# include "../as.h"
+/*
+	im not including resin.h why?
+	because there too much uneeded things
+	and to minimize dependencies of files
+	as such
+*/
 # define _resin_op_exit 0x0
 # define _resin_op_asb 0x1
 # define _resin_op_asw 0x2
@@ -74,10 +81,45 @@
 # define _resin_op_call 0x37
 # define _resin_op_ret 0x38
 
+# define _resin_out1br0 0x59
+# define _resin_out1wr0 0x5a
+# define _resin_out1dr0 0x5b
+# define _resin_out1qr0 0x5c
+
+# define _resin_out1br1 0x5d
+# define _resin_out1wr1 0x5e
+# define _resin_out1dr1 0x5f
+# define _resin_out1qr1 0x60
+
+# define _resin_as1br0 0x39
+# define _resin_as1wr0 0x3a
+# define _resin_as1dr0 0x3b
+# define _resin_as1qr0 0x3c
+
+# define _resin_as1br1 0x3d
+# define _resin_as1wr1 0x3e
+# define _resin_as1dr1 0x3f
+# define _resin_as1qr1 0x40
+
+# define _resin_r0r0 0x97
+# define _resin_r1r0 0x98
+# define _resin_r2r0 0x99
+# define _resin_r3r0 0x9a
+
+# define _resin_r0r1 0x9b
+# define _resin_r1r1 0x9c
+# define _resin_r2r1 0x9d
+# define _resin_r3r1 0x9e
+
+# define ot(__t0, __t1, __t2, __t3) \
+	{__t0, __t1, __t2, __t3}
+# define get_ot(__op, __n) \
+	((__op)->ots[__n])
 # define ous(__o0, __o1, __o2, __o3) \
 	((__o0&0xf)|(__o1&0xf)<<4|(__o2&0xf)<<8|(__o3&0xf)<<12)
 # define get_ous(__op, __n) \
 	(((__op)->ous&(0xf<<(__n*4)))>>(__n*4))
+# define newr 0x1
 struct ff_as_op {
 	char const *name;
 
@@ -86,6 +128,8 @@ struct ff_as_op {
 	ff_u8_t l;
 	// operand output size
 	ff_u16_t ous;
+	ff_u16_t ots[4];
+	ff_u8_t flags;
 };
 
 # define op_\

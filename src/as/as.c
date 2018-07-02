@@ -382,12 +382,15 @@ _r:
 
 labelp ff_as_entry;
 void ff_as_final(void) {
+	if (of == _of_raw)
+		goto _sk;
 	if (!ep)
 		ep = "_start";
 	printf("entry point: %s\n", ep);
 	if (!(ff_as_entry = (labelp)ff_as_hash_get(&env, ep, ffly_str_len(ep))))
 		printf("entry point not found.\n");
 	ff_as_forge();
+_sk:
 	if (outbuf.off>0) {
 		lseek(out, outbuf.dst, SEEK_SET);
 		write(out, outbuf.p, outbuf.off);

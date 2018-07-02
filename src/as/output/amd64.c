@@ -41,7 +41,7 @@ char const *prot(ff_u16_t __ot) {
 	return "unknown.";
 }
 
-ff_u8_t imm_sz(ff_u16_t __o) {
+ff_u8_t static imm_sz(ff_u16_t __o) {
 	switch(__o) {
 		case _o_imm8:
 			return 1;

@@ -18,7 +18,8 @@ int extern in;
 # define _of_null 0xff
 enum {
 	_of_ffef,
-	_of_elf
+	_of_elf,
+	_of_raw
 };
 
 extern void(*ff_as_forge)(void);

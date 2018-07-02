@@ -47,7 +47,7 @@ symbolp ff_as_eval(char *__s) {
 				p++;
 				ff_uint_t l;
 				bufp = buf;
-				while(*p >= 'a' && *p <= 'z')
+				while((*p >= 'a' && *p <= 'z') || (*p >= '0' && *p <= '9'))
 					*(bufp++) = *(p++);
 				*bufp = '\0';
 				l = bufp-buf;
