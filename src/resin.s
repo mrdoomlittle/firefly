@@ -195,7 +195,7 @@ _res_pop1br1:
 	movq res_sp(%rip), %r8
 	movq res_stack(%rip), %r9
 	addq (%r8), %r9
-	decq (%r8)
+	incq (%r8)
 	movq res_r1(%rip), %r10
 	movb (%r9), %r9b
 	movb %r9b, (%r10)
@@ -231,7 +231,7 @@ _res_pop1br0:
 	movq res_sp(%rip), %r8
 	movq res_stack(%rip), %r9
 	addq (%r8), %r9
-	decq (%r8)
+	incq (%r8)
 	movq res_r0(%rip), %r10
 	movb (%r9), %r9b
 	movb %r9b, (%r10)
