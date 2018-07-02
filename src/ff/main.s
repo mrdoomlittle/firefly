@@ -9,17 +9,18 @@
 	.globl main
 main:
 	;save %bp
+	;push
 	asq %rlx, 8
-	subq %sp, %rlx, %sp
+	subq %rlx, %sp
 	ldq %sp, %bp
 	movq %sp, %bp
 	call $ffly_sched_init
-	call $ffly_resv_init
 .l l0
 	movq %bp, %sp
 	;reset %bp
+	;pop
 	stq %sp, %bp
 	asq %rlx, 8
-	addq %sp, %rlx, %sp
+	addq %rlx, %sp
 	ret
 .endof

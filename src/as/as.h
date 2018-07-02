@@ -16,6 +16,7 @@ int extern in;
 # define SIGNED 0x1
 # define S_ADR 0x2
 # define _of_null 0xff
+
 enum {
 	_of_ffef,
 	_of_elf,
@@ -26,6 +27,7 @@ extern void(*ff_as_forge)(void);
 extern void **op_tray;
 extern void*(*ff_as_getreg)(char const*);
 extern ff_u8_t(*ff_as_regsz)(void*);
+extern ff_i8_t(*ff_as_suffix)(ff_u8_t);
 
 ff_u8_t extern of;
 ff_u64_t extern offset;
@@ -75,6 +77,7 @@ typedef struct label {
 typedef struct local_label {
 	ff_uint_t adr;
 	ff_uint_t *p_adr;
+	struct label *parent;
 } *local_labelp;
 
 extern ff_i8_t _local;
@@ -104,6 +107,7 @@ typedef struct relocate {
 	struct relocate *next;
 	ff_u64_t offset;
 	ff_u8_t l;
+	ff_u64_t adr;
 	symbolp *sy;
 	local_labelp ll;
 } *relocatep;
@@ -112,6 +116,7 @@ typedef struct hook {
 	struct hook *next;
 	ff_u64_t offset;
 	ff_u8_t l;
+	ff_u64_t adr;
 	symbolp *to;
 } *hookp;
 
@@ -176,5 +181,7 @@ void ff_as_resin(void);
 void ff_as_amd64(void);
 void ff_as_ffef(void);
 void ff_as_elf(void);
+ff_u32_t curadr(void);
+void iadr(ff_uint_t);
 //void ffef(symbolp);
 # endif /*__ffly__as__h*/

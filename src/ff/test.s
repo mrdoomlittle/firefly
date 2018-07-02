@@ -1,69 +1,51 @@
 	.region text
 	.globl main
 main:
+	ret
 	;save %bp
 	asq %rlx, 8
-	subq %sp, %rlx, %sp
+	subq %rlx, %sp
 	ldq %sp, %bp
 	movq %sp, %bp
 	asq %rlx, 1
-	subq %sp, %rlx, %sp
+	subq %sp, %rlx
 	asq %rel, 0
-	asb %ae, 0
-	asq %rlx, 1
-	subq %bp, %rlx, %rlx
+	asb %ae, 21
+	asq %rel, 1
+	movq %bp, %rlx
+	subq %rel, %rlx
 	ldb %rlx, %ae
-.l back
 	asq %rel, 0
 	asq %rel, 0
-	asq %rlx, 1
-	subq %bp, %rlx, %rlx
+	asq %rel, 1
+	movq %bp, %rlx
+	subq %rel, %rlx
 	stb %rlx, %ae
 	asq %rlx, 8
-	subq %sp, %rlx, %sp
+	subq %rlx, %sp
 	ldq %sp, %rel
 	asq %rel, 0
 	asq %rel, 0
-	asq %rel, 0
-	asb %ae, 1
+	asb %ae, 21
 	movq %rel, %xes
 	stq %sp, %rel
 	asq %rlx, 8
-	addq %sp, %rlx, %sp
-	addq %rel, %xes, %rel
-	asq %rlx, 1
-	subq %bp, %rlx, %rlx
-	ldb %rlx, %ae
+	addq %rlx, %sp
+	cmpq %rel, %xes
+jne #l1
 	asq %rel, 0
-	asq %rlx, 1
-	subq %bp, %rlx, %rlx
+	asq %rel, 1
+	movq %bp, %rlx
+	subq %rel, %rlx
 	stb %rlx, %ae
 	outb %ae
-	asq %rel, 0
-	asq %rel, 0
-	asq %rlx, 1
-	subq %bp, %rlx, %rlx
-	stb %rlx, %ae
-	asq %rlx, 8
-	subq %sp, %rlx, %sp
-	ldq %sp, %rel
-	asq %rel, 0
-	asq %rel, 0
-	asb %ae, 20
-	movq %rel, %xes
-	stq %sp, %rel
-	asq %rlx, 8
-	addq %sp, %rlx, %sp
-	cmpq %rel, %xes, %ll
-je #l1, %ll
-jmp #back
 .l l1
 .l l0
 	movq %bp, %sp
 	;reset %bp
 	stq %sp, %bp
 	asq %rlx, 8
-	addq %sp, %rlx, %sp
+	addq %rlx, %sp
 	ret
 _start:
 	rin 0, 0

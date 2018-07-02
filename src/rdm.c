@@ -103,9 +103,7 @@ op_div(ff_u8_t *__p, char const *__ident) {
 	ffly_printf("%s,\t\t", __ident);
 	ffly_printf("lhs{%x},\t\t", *(ff_addr_t*)p);
 	p+=sizeof(ff_addr_t);
-	ffly_printf("rhs{%x},\t\t", *(ff_addr_t*)p);
-	p+=sizeof(ff_addr_t);
-	ffly_printf("dst{%x}\n", *(ff_addr_t*)p);
+	ffly_printf("rhs{%x}\n", *(ff_addr_t*)p);
 }
 
 void static
@@ -114,9 +112,7 @@ op_mul(ff_u8_t *__p, char const *__ident) {
 	ffly_printf("%s,\t\t", __ident);
 	ffly_printf("lhs{%x},\t\t", *(ff_addr_t*)p);
 	p+=sizeof(ff_addr_t);
-	ffly_printf("rhs{%x},\t\t", *(ff_addr_t*)p);
-	p+=sizeof(ff_addr_t);
-	ffly_printf("dst{%x}\n", *(ff_addr_t*)p);
+	ffly_printf("rhs{%x}\n", *(ff_addr_t*)p);
 }
 
 void static
@@ -125,9 +121,7 @@ op_sub(ff_u8_t *__p, char const *__ident) {
 	ffly_printf("%s,\t\t", __ident);
 	ffly_printf("lhs{%x},\t\t", *(ff_addr_t*)p);
 	p+=sizeof(ff_addr_t);
-	ffly_printf("rhs{%x},\t\t", *(ff_addr_t*)p);
-	p+=sizeof(ff_addr_t);
-	ffly_printf("dst{%x}\n", *(ff_addr_t*)p);
+	ffly_printf("rhs{%x}\n", *(ff_addr_t*)p);
 }
 
 void static
@@ -136,9 +130,7 @@ op_add(ff_u8_t *__p, char const *__ident) {
 	ffly_printf("%s,\t\t", __ident);
 	ffly_printf("lhs{%x},\t\t", *(ff_addr_t*)p);
 	p+=sizeof(ff_addr_t);
-	ffly_printf("rhs{%x},\t\t", *(ff_addr_t*)p);
-	p+=sizeof(ff_addr_t);
-	ffly_printf("dst{%x}\n", *(ff_addr_t*)p);
+	ffly_printf("rhs{%x}\n", *(ff_addr_t*)p);
 }
 
 void static
@@ -161,18 +153,14 @@ op_cmp(ff_u8_t *__p, char const *__ident) {
 	ffly_printf("%s,\t\t", __ident);
 	ffly_printf("lhs{%x},\t\t", *(ff_addr_t*)p);
 	p+=sizeof(ff_addr_t);
-	ffly_printf("rhs{%x},\t\t", *(ff_addr_t*)p);
-	p+=sizeof(ff_addr_t);
-	ffly_printf("dst{%x}\n", *(ff_addr_t*)p);
+	ffly_printf("rhs{%x}\n", *(ff_addr_t*)p);
 }
 
 void static
 op_cjmp(ff_u8_t *__p, char const *__ident) {
 	ff_u8_t *p = __p;
 	ffly_printf("%s,\t\t", __ident);
-	ffly_printf("to{%x},\t\t", *(ff_addr_t*)p);
-	p+=sizeof(ff_addr_t);
-	ffly_printf("flags{%x}\n", *(ff_addr_t*)p);
+	ffly_printf("to{%x}\n", *(ff_addr_t*)p);
 }
 
 void static

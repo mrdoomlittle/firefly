@@ -111,6 +111,28 @@
 # define _resin_r2r1 0x9d
 # define _resin_r3r1 0x9e
 
+# define _resin_push1br0 0xa7
+# define _resin_push1wr0 0xa8
+# define _resin_push1dr0 0xa9
+# define _resin_push1qr0 0xaa
+# define _resin_push1br1 0xab
+# define _resin_push1wr1 0xac
+# define _resin_push1dr1 0xad
+# define _resin_push1qr1 0xae
+
+# define _resin_pop1br0 0xaf
+# define _resin_pop1wr0 0xb0
+# define _resin_pop1dr0 0xb1
+# define _resin_pop1qr0 0xb2
+# define _resin_pop1br1 0xb3
+# define _resin_pop1wr1 0xb4
+# define _resin_pop1dr1 0xb5
+# define _resin_pop1qr1 0xb6
+
+# define _resin_exit1 0xb7
+# define _resin_exit2r0 0xb8
+# define _resin_exit2r1 0xb9
+
 # define ot(__t0, __t1, __t2, __t3) \
 	{__t0, __t1, __t2, __t3}
 # define get_ot(__op, __n) \
@@ -119,17 +141,20 @@
 	((__o0&0xf)|(__o1&0xf)<<4|(__o2&0xf)<<8|(__o3&0xf)<<12)
 # define get_ous(__op, __n) \
 	(((__op)->ous&(0xf<<(__n*4)))>>(__n*4))
-# define newr 0x1
+// add suffix to opcode
+# define asto 0x1
 struct ff_as_op {
 	char const *name;
-
-	ff_u8_t opcode[8];
+	ff_u8_t nme_len;
+	ff_u8_t opcode[24];
 	// length of opcode(bytes)
 	ff_u8_t l;
 	// operand output size
 	ff_u16_t ous;
 	ff_u16_t ots[4];
 	ff_u8_t flags;
+	ff_u8_t splr[2];
+	ff_u8_t oc;
 };
 
 # define op_\

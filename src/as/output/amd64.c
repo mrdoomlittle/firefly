@@ -81,7 +81,7 @@ void static
 _post(void) {
 	locate_op();
 	if (!op) {
-		printf("error.\n");
+		printf("failed to locate operation.\n");
 		return;
 	}
 	ff_u8_t buf[64];

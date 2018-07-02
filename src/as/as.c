@@ -18,7 +18,7 @@ void **op_tray;
 void(*ff_as_forge)(void);
 void*(*ff_as_getreg)(char const*);
 ff_u8_t(*ff_as_regsz)(void*);
-
+ff_i8_t(*ff_as_suffix)(ff_u8_t);
 /*
 	rename
 
@@ -44,7 +44,7 @@ hookp hok = NULL;
 
 labelp curlabel = NULL;
 ff_u64_t offset = 0;
-ff_u32_t adr = 0;
+ff_u32_t static adr = 0;
 
 ff_u8_t of = _of_null;
 
@@ -63,7 +63,7 @@ void iadr(ff_uint_t __by) {
 	adr+=__by;
 }
 
-ff_u32_t curadr() {return adr;}
+ff_u32_t curadr(void) {return adr;}
 
 void ff_as_init(void) {
 	ff_as_hash_init(&symbols);
@@ -160,6 +160,7 @@ _label(void) {
 	la->s_adr = ff_as_stackadr();
 	la->adr = curadr();
 	la->s = sy->p;
+	la->flags = 0x0;
 	la->reg = curreg;
 	if (exist == -1)
 		ff_as_hash_put(&env, sy->p, sy->len, la);
@@ -290,6 +291,7 @@ ff_as(char *__p, char *__end) {
 		*/
 		p = copyln(buf, p, __end, &len)+1;
 		*(buf+len) = '\0';
+		printf(":: %s\n", buf);
 
 		if ((sy = ff_as_parse(buf)) != NULL) {
 			if (is_symac(sy)) {
@@ -299,7 +301,7 @@ ff_as(char *__p, char *__end) {
 			} else if (is_sydir(sy)) {
 				_directive();
 			} else {
-				ffly_printf("--| %s\n", sy->p);
+				ffly_printf("--| %s:%u\n", sy->p, sy->len);
 				struct flask fak;
 				if ((op_tray = (void**)ff_as_hash_get(&env, sy->p, sy->len)) != NULL) {
 					fak.n = 0;
@@ -342,18 +344,18 @@ ff_as(char *__p, char *__end) {
 							else if (val > (ff_u32_t)~0 && val <= (ff_u64_t)~0)
 								info = _o_imm64;
 							printf("val: %u\n", val);
-						} else if (is_syll(sy->next) || is_sylabel(sy->next)) {
-							__label = ff_as_hash_get(&env, sy->next->p, ffly_str_len(sy->next->p));
+						} else if (is_syll(cur) || is_sylabel(cur)) {
+							printf("-- label.\n");
+							__label = ff_as_hash_get(&env, cur->p, ffly_str_len(cur->p));
 
-							if (is_syll(sy->next)) {
+							if (is_syll(cur)) {
 								_local = 0;
 								if (!__label)
-									ff_as_hash_put(&env, sy->next->p, sy->next->len, __label = ff_as_al(sizeof(struct local_label)));
-								((local_labelp)__label)->p_adr = &curlabel->adr;
-							} else if (is_sylabel(sy->next)) {
+									ff_as_hash_put(&env, cur->p, cur->len, __label = ff_as_al(sizeof(struct local_label)));
+							} else if (is_sylabel(cur)) {
 								_local = -1;
 								if (!__label)
-									ff_as_hash_put(&env, sy->next->p, sy->next->len, __label = ff_as_al(sizeof(struct label)));
+									ff_as_hash_put(&env, cur->p, cur->len, __label = ff_as_al(sizeof(struct label)));
 							}
 							info = _o_label;
 						}
@@ -363,14 +365,12 @@ ff_as(char *__p, char *__end) {
 						cur = cur->next;
 						fak.n++;
 					}
-			
+		
+					printf("operands: %u\n", fak.n);
 					*p = NULL;
 					fak_ = &fak;
-					ff_u64_t beg = offset;
 					post();
-					ff_u64_t end = offset;
-					iadr(end-beg);
-					printf("got: %s\n", sy->p);
+					printf("got: %s, adr: %u\n", sy->p, adr);
 				} else
 					printf("unknown op.\n");
 			}

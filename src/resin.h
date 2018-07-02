@@ -239,6 +239,10 @@
 # define _op_pop1dr1 0xb5
 # define _op_pop1qr1 0xb6
 
+# define _op_exit1 0xb7
+# define _op_exit2r0 0xb8
+# define _op_exit2r1 0xb9
+
 # define _gt 0x1
 # define _lt 0x2
 # define _eq 0x4
@@ -251,6 +255,7 @@ typedef struct ffly_resin {
 	ff_u8_t *stack;
 	ff_u64_t bp, sp;
 	ff_u64_t *r[4];
+	ff_u8_t cflags;
 	// registers
 	ff_u64_t r0, r1, r2, r3;
 	ff_u8_t(*fetch_byte)(ff_off_t);

@@ -12,3 +12,5 @@ security:
 memory:
 	things can break most likely cause would be 'allocr' as it hasent been tested at large,
 	only small tests have been performed.
+
+firefly lang for resin is broken.

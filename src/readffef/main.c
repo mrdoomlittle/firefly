@@ -43,6 +43,8 @@ void prhdr(ffef_hdrp __hdr) {
 		printf("%c, ", *(i++));
 	printf("%c\n", *i);	
 
+	printf("adr: %u\n", __hdr->adr);
+
 	if (__hdr->routine == FF_EF_NULL)
 		printf("no entry point.\n");
 	else
@@ -69,16 +71,16 @@ void prreg(ffef_reg_hdrp __reg, ff_uint_t __no) {
 	lseek(fd, __reg->name, SEEK_SET);
 	read(fd, name, __reg->l);
 
-	printf("%u: region,\tname: %s,\tbeg: %u,\tend: %u,\tsize: %u\ttype: %s,\t%s\n", __no, name, __reg->beg,
-		__reg->end, __reg->end-__reg->beg, regtype_s(__reg->type), __reg->beg==__reg->end?"empty":"not empty");
+	printf("%u: region,\tname: %s,\tbeg: %u,\tend: %u,\tsize: %u\ttype: %s,\t%s,\tadr: %u\n", __no, name, __reg->beg,
+		__reg->end, __reg->end-__reg->beg, regtype_s(__reg->type), __reg->beg==__reg->end?"empty":"not empty", __reg->adr);
 }
 
 void prhok(ffef_hokp __hok, ff_uint_t __no) {
-	printf("%u: hook,\toffset: %u\tlength: %u,\tto: %u\n", __no, __hok->offset, __hok->l, __hok->to);
+	printf("%u: hook,\toffset: %u\tlength: %u,\tto: %u,\tadr: %u\n", __no, __hok->offset, __hok->l, __hok->to, __hok->adr);
 }
 
 void prrel(ffef_relp __rel, ff_uint_t __no) {
-	printf("%u: relocate,\toffset: %u,\tlength: %u,\tsymbol: %u,\taddto: %u\n", __no, __rel->offset, __rel->l, __rel->sy, __rel->addto);
+	printf("%u: relocate,\toffset: %u,\tlength: %u,\tsymbol: %u,\taddto: %u,\tadr: %u\n", __no, __rel->offset, __rel->l, __rel->sy, __rel->addto, __rel->adr);
 }
 
 int main(int __argc, char const *__argv[]) {

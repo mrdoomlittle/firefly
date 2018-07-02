@@ -60,12 +60,14 @@ typedef struct ffef_rel {
 	ff_u64_t offset;
 	ff_u8_t l;
 	ff_u16_t sy;
+	ff_u16_t adr;
 	ff_u16_t addto;
 } *ffef_relp;
 
 typedef struct ffef_hok {
 	ff_u64_t offset;
 	ff_uint_t l;
+	ff_u16_t adr;
 	ff_u16_t to;
 } *ffef_hokp;
 

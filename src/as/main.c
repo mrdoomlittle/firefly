@@ -68,7 +68,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	if (of == _of_ffef)
 		ff_as_ffef();
-	else
+	else if (of == _of_elf)
 		ff_as_elf();
 	
 	struct stat st;

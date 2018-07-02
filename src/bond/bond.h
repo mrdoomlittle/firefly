@@ -46,6 +46,7 @@ typedef struct relocate {
 	ff_u64_t offset;
 	ff_u8_t l;
 	ff_u16_t addto;
+	ff_u16_t adr;
 	symbolp sy;
 } *relocatep;
 
@@ -53,6 +54,7 @@ typedef struct hook {
 	struct hook *next;
 	ff_uint_t offset;
 	symbolp to;
+	ff_u16_t adr;
 	ff_uint_t l;
 } *hookp;
 

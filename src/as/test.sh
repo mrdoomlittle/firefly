@@ -1,7 +1,12 @@
 ./ffas -f ffef -i test.asm -o test.o
-#./ffas -f ffef -i func.asm -o func.o
-echo "\n\n"
+./ffas -f ffef -i func.asm -o func.o
 ../readffef/readffef test.o
+../readffef/readffef func.o
+../bond/ffbond -s "func.o test.o" -d a.out
+#../exec/ffexec a.out
+#./ffas -f ffef -i func.asm -o func.o
+#echo "\n\n"
+#../readffef/readffef test.o
 #../readffef/readffef func.o
 #../bond/ffbond -s "test.o func.o" -d a.out
 #../exec/ffexec a.out

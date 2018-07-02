@@ -43,7 +43,11 @@ struct arg_s {
 # include "../init.h"
 struct ffly_resin ctx;
 void* ring(ff_u8_t __no, void *__arg_p) {
-	struct arg_s *arg = (struct arg_s*)ff_resin_resolv_adr(&ctx, *(ff_addr_t*)__arg_p);
+	struct arg_s *arg;
+	if (__arg_p != NULL)
+		arg = (struct arg_s*)ff_resin_resolv_adr(&ctx, *(ff_addr_t*)__arg_p);
+	else
+		arg = NULL;
 	switch(__no) {
 		case 0x0: {// set stack pointer
 			ff_u64_t sp = ctx.stack_size;
@@ -72,13 +76,17 @@ void* ring(ff_u8_t __no, void *__arg_p) {
 			break;
 		}
 		case 0x5: {
-			//init
-			__init_arg__ = (struct init_arg*)ff_resin_resolv_adr(&ctx, arg->init_arg);
-			ffly_init(arg->what);
+			//init	
+			if (arg != NULL) {
+				__init_arg__ = (struct init_arg*)ff_resin_resolv_adr(&ctx, arg->init_arg);
+				printf("init what? %u\n", arg->what);
+
+//				ffly_init(arg->what);
+			}
 			break;
 		}
 	}
-	printf("ring ring hello?\n");
+	printf("ring ring hello?, %u, %p\n", __no, __arg_p);
 }
 
 struct ffly_resin ctx = {

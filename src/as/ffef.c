@@ -92,11 +92,12 @@ void outsegs() {
 
 void
 _ffef_reloc(ff_u64_t __offset, ff_u8_t __l) {
-	printf("reloc.\n");
+	printf("reloc, addr: %u\n", curadr());
 	relocatep rl = (relocatep)ff_as_al(sizeof(struct relocate));
 	rl->offset = __offset;
 	rl->l = __l;
-	rl->sy = &((labelp)__label)->sy;
+	rl->sy = !_local?&((local_labelp)__label)->parent->sy:&((labelp)__label)->sy;
+	rl->adr = curadr();
 	rl->next = rel;
 	rl->ll = !_local?(local_labelp)__label:NULL;
 	rel = rl;
@@ -104,11 +105,12 @@ _ffef_reloc(ff_u64_t __offset, ff_u8_t __l) {
 
 void
 _ffef_hook(ff_u64_t __offset, ff_u8_t __l) {
-	printf("ffef hook.\n");
+	printf("hook.\n");
 	hookp hk = (hookp)ff_as_al(sizeof(struct hook));
 
 	hk->offset = __offset;
 	hk->l = __l;
+	hk->adr = curadr();
 	hk->to = &((labelp)__label)->sy;
 	hk->next = hok;
 	hok = hk;
@@ -152,6 +154,7 @@ forge(void) {
 				struct ffef_hok hok;
 				hok.offset = hk->offset;
 				hok.l = hk->l;
+				hok.adr = hk->adr;
 				hok.to = (*hk->to)->off;
 				ff_as_oust((ff_u8_t*)&hok, ffef_hoksz);
 				hdr.nhk++;
@@ -170,6 +173,7 @@ forge(void) {
 		rel.l = rl->l;
 		rel.addto = !rl->ll?0:(rl->ll->adr-(*rl->ll->p_adr));
 		printf("reloc: %s\n", (*rl->sy)->p);
+		rel.adr = rl->adr;
 		rel.sy = (*rl->sy)->off;
 		ff_as_oust((ff_u8_t*)&rel, ffef_relsz);
 		rl = rl->next;

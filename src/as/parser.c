@@ -45,6 +45,11 @@ symbolp ff_as_parse(char *__s) {
 	bufp = buf;
 	while((*p >= 'a' && *p <= 'z') || *p == '_' || (*p >= '0' && *p <= '9'))
 		*(bufp++) = *(p++);
+	if (bufp>buf+1) {
+		if (!ff_as_suffix(*(bufp-1)))
+			bufp--;
+	}
+	
 	*bufp = '\0';
 
 	cur->p = ff_as_memdup(buf, (len = (bufp-buf))+1);
@@ -57,14 +62,22 @@ symbolp ff_as_parse(char *__s) {
 	} else
 		cur->sort = SY_STR;	
 
+	// skip spaces
+	while(*p == ' ') p++;
+
+	// check if end of line
+	if (*p == '\0' || *p == '\n' || *p == ';') {
+		cur->next = NULL;
+		goto _sk;
+	}
 	cur->next = ff_as_eval(p);
-/*
+_sk:
 	cur = sy;
 	while(cur != NULL) {
-		printf("%u\n", *(ff_u8_t*)cur->p);
+		printf(":: %u\n", cur->sort);
 		cur = cur->next;
 	}
-*/		
+
 _ret:
 	return sy;
 }

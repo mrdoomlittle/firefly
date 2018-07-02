@@ -1,6 +1,7 @@
-.globl test
-.region text
+	.region text
+	.globl test
 test:
-
-ret
+	asb %al, 212
+	outb %al
+	ret
 .endof

@@ -3,6 +3,11 @@
 # include "../../stdio.h"
 # include "../opcodes/resin.h"
 # include "../../string.h"
+# define _suffix_byte 0x0
+# define _suffix_word 0x1
+# define _suffix_dword 0x2
+# define _suffix_qword 0x3
+
 labelp extern curlabel;
 // bed of stack
 ff_uint_t static bed = 0;
@@ -54,7 +59,7 @@ reginfo reg[] = {
 	{"rlx", 8, 24, 0},	{"elx", 4, 24, 0},	{"lx", 2, 24, 0},	{"ll", 1, 24, 0},
 	{"rel", 8, 32, 0},	{"ael", 4, 32, 0},	{"el", 2, 32, 0},	{"ae", 1, 32, 0},
 	{"xes", 8, 40, 0}, {"els", 4, 40, 0}, {"ls", 2, 40, 0},  {"xs", 1, 40, 0},
-	{"r0", 8, 0, reg_spl, 0}, {"r1", 8, 0, reg_spl, 4},
+	{"r0", 8, 0, reg_spl, 0}, {"r1", 8, 0, reg_spl, 1},
 };
 
 /*
@@ -82,8 +87,8 @@ reginfo reg[] = {
 	xs	=				= 219
 	sp	=				= 95
 	bp	=				= 63
-	r0	=				= 253
-	r1	=				= 191
+	r0/ra	=			= 253
+	r1/rb	=			= 191
 */
 
 ff_u8_t c[] = {
@@ -176,24 +181,28 @@ void op_asb(ff_u8_t __op, ff_addr_t __dst, ff_u8_t __val) {
 	ff_as_oustbyte(__op);
 	oust_addr(__dst);
 	ff_as_oustbyte(__val);
+	iadr(2+sizeof(ff_addr_t));
 }
 
 void op_asw(ff_u8_t __op, ff_addr_t __dst, ff_u16_t __val) {
 	ff_as_oustbyte(__op);
 	oust_addr(__dst);
 	ff_as_oust_16l(__val);
+	iadr(3+sizeof(ff_addr_t));
 }
 
 void op_asd(ff_u8_t __op, ff_addr_t __dst, ff_u32_t __val) {
 	ff_as_oustbyte(__op);
 	oust_addr(__dst);
 	ff_as_oust_32l(__val);
+	iadr(5+sizeof(ff_addr_t));
 }
 
 void op_asq(ff_u8_t __op, ff_addr_t __dst, ff_u64_t __val) {
 	ff_as_oustbyte(__op);
 	oust_addr(__dst);
 	ff_as_oust_64l(__val);
+	iadr(9+sizeof(ff_addr_t));
 }
 
 void rgasb(char const *__reg, ff_u8_t __to) {
@@ -226,10 +235,37 @@ ff_u8_t imm_sz(ff_u16_t __o) {
 	return 0;
 }
 
+void static
+locate_op(void) {
+	while(*(--op_tray) != NULL) {
+		op = (struct ff_as_op*)*op_tray;
+		printf("%s, %u == %u\n", op->name, op->oc, fak_->n);
+		if (op->oc == fak_->n) {
+			if (!fak_->n)
+				return;
+			ff_u8_t o = 0;
+			while(o != fak_->n) {
+				if (!(getinfo(fak_, o)&get_ot(op, o)))
+					break;
+				o++;
+			}
+			if (o == fak_->n)
+				return;
+		}
+	}
+	op = NULL;
+}
+
+ff_i8_t static suffix;
+
 # include "../ffef.h"
 void static
 _post(void) {
-	op = (struct ff_as_op*)op_tray;
+	locate_op();
+	if (!op) {
+		printf("failed to locate operation.\n");
+		return;
+	}
 
 	ff_u8_t buf[64];
 	ff_u8_t *p = buf;
@@ -238,53 +274,52 @@ _post(void) {
 	opbase = p;
 	p+=op->l;
 	void **cur = fak_->p;
+	
 	ff_u16_t info;
 	printf("%s, ", op->name);
-	while(*cur != NULL) {
-		ff_u8_t off = cur-fak_->p;
+	if (is_flag(op->flags, asto) && suffix>0)
+		oc+=suffix;
+	ff_u8_t i = 0;
+	ff_u8_t n = fak_->n;
+	while(i != n) {
+		ff_u8_t off = i++;
 		info = getinfo(fak_, off);
 		if ((info&_o_imm)>0) {
-//			printf("imm, ");
+			if (suffix>0) {
+				info = _o_imm8<<suffix;
+			}
+			printf("{imm}, ");
 			printf("%u, ", *(ff_u64_t*)fakget(off));
 			ff_u8_t os = get_ous(op, off);
 			if (!os)
 				os = imm_sz(info);
 			memcpy(p, fakget(off), os);
 			p+=os;
-
-			if (is_flag(op->flags, newr)) {
-				switch(info) {
-					case _o_imm16:
-                		oc++;
-					break;
-					case _o_imm32:
-						oc+=2;
-					break;
-					case _o_imm64:
-						oc+=3;
-					break;
-				}
-			}
 		} else if ((info&_o_reg)>0) {
-//			printf("reg, ");
+			printf("{reg}, ");
 			printf("%s, ", ((reginfo*)fakget(off))->name);
 			reginfo *reg = (reginfo*)fakget(off);
 			if (is_flag(reg->flags, reg_spl)) {
-				oc+=reg->start;
+				oc+=op->splr[reg->start];
 			} else {
 				memcpy(p, &reg->addr, sizeof(ff_addr_t));
 				p+=sizeof(ff_addr_t);
 			}
 		} else if ((info&_o_dis)>0) {
-//			printf("dis, ");
+			printf("{dis}, ");
 		} else if ((info&_o_label)>0) {
-//			printf("label, ");
+			printf("{label}, ");
 			char const *rgname = rbl(sizeof(ff_addr_t));
 			labelp la;
-			if (!_local)
+			if (!_local) {
+				printf("local label, parent: %s\n", curlabel->s);
 				la = curlabel;
-			else
+				local_labelp ll = (local_labelp)__label;
+				ll->p_adr = &la->adr;
+				ll->parent = la;
+			} else {
 				la = (labelp)__label;
+			}
 
 			rgasw(rgname, 0);
 			if (is_flag(la->flags, LA_LOOSE))
@@ -294,6 +329,9 @@ _post(void) {
 
 			*(ff_addr_t*)p = getreg(rgname)->addr;
 			p+=sizeof(ff_addr_t);
+		} else {
+			printf("error unknown operand.\n");
+			break;
 		}
 	
 		cur++;
@@ -302,6 +340,7 @@ _post(void) {
 	memcpy(opbase, oc, op->l);
 	printf("\n");
 	ff_as_oust(buf, p-buf);
+	iadr(p-buf);
 }
 
 void static*
@@ -309,9 +348,31 @@ _getreg(char const *__name) {
 	return getreg(__name);
 }
 
-ff_uint_t static
+ff_u8_t static
 _regsz(void *__reg) {
 	return ((reginfo*)__reg)->l;
+}
+
+ff_i8_t static
+_suffix(ff_u8_t __c) {
+	switch(__c) {
+		case 'b':
+			suffix = _suffix_byte;
+		break;
+		case 'w':
+			suffix = _suffix_word;
+		break;
+		case 'd':
+			suffix = _suffix_qword;
+		break;
+		case 'q':
+			suffix = _suffix_qword;
+		break;
+		default:
+			return (suffix = -1);
+	}
+	printf("got suffix.\n");
+	return 0;
 }
 
 # include "../../dep/str_len.h"
@@ -319,15 +380,29 @@ void
 ff_as_resin(void) {
 	struct ff_as_op const **cur;
 	struct ff_as_op const *op;
-
 	cur = resin_optab;
+	void **tray;
 	while(*cur != NULL) {
 		op = *(cur++);
-		ffly_printf("opname: %s\n", op->name);
-		ff_as_hash_put(&env, op->name, ffly_str_len(op->name), op);
+		ffly_printf("opname: %s:%u\n", op->name, op->nme_len);
+		if ((cur-1)>resin_optab) {
+			if (!strcmp(op->name, (*(cur-2))->name)) {
+				goto _sk;
+			}
+		}
+		tray = (void**)ff_as_hash_get(&env, op->name, op->nme_len);
+		if (!tray) {
+			tray = (void**)ff_as_al(20*sizeof(void*));
+			*(tray++) = NULL;
+		}
+	_sk:
+		*(tray++) = op;
+		ff_as_hash_put(&env, op->name, op->nme_len, tray);
 		op++;
 	}
+
 	post = _post;
 	ff_as_getreg = _getreg;
 	ff_as_regsz = _regsz;
+	ff_as_suffix = _suffix;
 }

@@ -207,7 +207,9 @@ absorb_symbol(ffef_syp __sy, symbolp *__stp) {
 	symbolp p;
 	if ((p = (symbolp)ff_bond_hash_get(&symbols, name, __sy->l-1)) != NULL) {
 		printf("symbol already exists.\n");
-		goto _sk;
+		if (__sy->type == FF_SY_IND)
+			goto _sk1;
+		goto _sk0;
 	}
 
 	p = (symbolp)malloc(sizeof(struct symbol));
@@ -217,10 +219,11 @@ absorb_symbol(ffef_syp __sy, symbolp *__stp) {
 
 	ff_bond_hash_put(&symbols, name, __sy->l-1, p);
 	p->name = strdup(name);
-_sk:
+_sk0:
 	p->loc = curadr()+__sy->loc;
 	p->type = __sy->type;
 	p->reg = rindx+__sy->reg;
+_sk1:
 	*__stp = p;
 }
 
@@ -234,6 +237,7 @@ absorb_hook(ffef_hokp __hook) {
 	p->offset = bot+__hook->offset;
 	p->to = *(syt-__hook->to);	
 	p->l = __hook->l;
+	p->adr = curadr()+__hook->adr;
 }
 
 void static
@@ -288,7 +292,7 @@ absorb_region(ffef_reg_hdrp __reg) {
 		rise+=__reg->end-__reg->beg;
 		printf("region placed at: %u\n", reg->beg);
 		reg->adr = __reg->adr+curadr();
-		ffly_rdm(buf, buf+size);
+		ffly_rdmp(buf, size);
 	} else {
 		reg->next = curreg;
 		curreg = reg;
@@ -311,6 +315,7 @@ absorb_relocate(ffef_relp __rel) {
 	rel->offset = bot+__rel->offset;
 	rel->l = __rel->l;
 	rel->addto = __rel->addto;
+	rel->adr = curadr()+__rel->adr;
 	rel->sy = *(syt-__rel->sy);
 	printf("reloc: symbol, %s\n", rel->sy->name);
 }
@@ -415,7 +420,8 @@ void latch_hooks() {
 			printf("cant hook onto a symbol that doesen't exist.\n");
 		else {		
 			if (cur->to->type == FF_SY_GBL) {
-				ff_bond_write(cur->offset, &cur->to->loc, cur->l);	
+				ff_i64_t loc = ((ff_i64_t)cur->to->loc)-(ff_i64_t)cur->adr;
+				ff_bond_write(cur->offset, &loc, cur->l);	
 				printf("hooking at: %u\n", cur->offset);
 			} else
 				printf("symbol hasen't been defined.\n");
@@ -427,12 +433,11 @@ void latch_hooks() {
 void reloc() {
 	relocatep cur = currel;
 	while(cur != NULL) {
-		ff_u64_t loc = cur->sy->loc+cur->addto;
+		ff_i64_t loc = ((ff_i64_t)(cur->sy->loc+cur->addto))-(ff_i64_t)cur->adr;
 		ff_bond_write(cur->offset, &loc, cur->l);	
 		cur = cur->next;
 	}
 }
-
 
 void static 
 cleanup() {

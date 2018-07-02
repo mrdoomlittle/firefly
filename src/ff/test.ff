@@ -1,11 +1,7 @@
 void main() {
-	u8_t i = 0;
-
-back:
-	i = i+1;
-	out(i);
-	if (i != 20) {
-		goto back;
+	u8_t i = 21;
+	if (i == 21) {
+		out(i);
 	}
 }
 
