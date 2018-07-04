@@ -55,10 +55,16 @@ enum {
 	_comma
 };
 
-struct line {
-	char buf[1024];
-	ff_uint_t l;
+struct frag {
 	char *p;
+	ff_uint_t l;
+	ff_uint_t off;
+};
+
+struct line {
+	struct frag *frags[20];
+	struct frag **p;
+	ff_uint_t off;
 };
 
 typedef struct parameter {
@@ -283,32 +289,47 @@ label(ffly_matp __mat, ff_i8_t *__exit) {
 	act(__mat, &p);
 }
 
-# define line_save \
+# define new_frag \
 {						\
 	struct line *ln;	\
-	ln = *(frame+cur);	\
-	if (__attr != NULL)	{	\
-		if (__attr->type == _po)	\
-			p = base;				\
-	}								\
-	ln->l = p-ln->buf;	\
-	ln->p = p;			\
+	ln = *(frame+cur);  \
+	f = (*(ln->p++) = (struct frag*)malloc(sizeof(struct frag)));	\
+}
+
+# define line_save \
+{                       \
+	struct line *ln;    \
+	ln = *(frame+cur);  \
+	new_frag            \
+	if ((f->l = (p-buf)) > 0) {				\
+		memdup((void*)&f->p, buf, f->l); 	\
+		f->off = ln->off+dis;				\
+		ln->off+=f->l;						\
+	}										\
 }
 
 # define HEIGHT 60
 static struct line *frame[HEIGHT];
-static char *p;
-static ff_uint_t cur = 0;
+static char buf[1024];
+static char *p = buf;
 static char *base;
+static struct frag *f;
+static ff_uint_t cur = 0;
+# define clr memset(p, '.', 1024-(p-buf));
+static ff_uint_t dis;
+static ff_i8_t pomode = -1;
 void
 act(ffly_matp __mat, attrp __attr) {
 	ff_u8_t rc = 0;
 	if (__attr != NULL) {
-		if (__attr->type == _po)
+		if (__attr->type == _po) {
 			base = p;
-		if (is_bit(__attr, _padt))
-			p = (*(frame+(cur = __attr->pad_top)))->p;
-		
+			pomode = 0;
+		}
+		if (is_bit(__attr, _padt)) {
+			cur = __attr->pad_top;
+		}
+
 		if (is_bit(__attr, _padl)) {
 			p+=__attr->pad_left;
 		}
@@ -325,7 +346,7 @@ act(ffly_matp __mat, attrp __attr) {
 			*(p++) = 'm';
 		}
 	}
-	
+
 	bucketp tok;
 	while(!at_eof(__mat)) {
 		ff_i8_t exit;
@@ -347,7 +368,8 @@ act(ffly_matp __mat, attrp __attr) {
 					__mat->p++;
 					line_save;
 					cur++;
-					p = (*(frame+cur))->p;
+					clr
+					p = buf;
 					if (__attr != NULL) {
 						if (is_bit(__attr, _padl)) {
 							p+=__attr->pad_left;
@@ -366,43 +388,86 @@ act(ffly_matp __mat, attrp __attr) {
 		p+=4;
 	}
 
+	if (!pomode) {
+		ffly_printf("--> %u\n", p-base);
+		(*(frame+cur))->off-=(dis = p-base);
+		pomode = -1;
+	}
 	line_save;
+	p = buf;
+	clr
+	dis = 0;
 }
 
 void static
 cleanup() {
 	struct line **p = frame;
 	struct line **e = p+HEIGHT;
-	while(p != e) 
-		free(*(p++));
+	struct line *ln;
+	while(p != e) { 
+		ln = *(p++);
+		struct frag **cur = ln->frags;
+		while(*cur != NULL) {
+			struct frag *f = *cur;
+			if (f->l>0)
+				free(f->p);
+			free(f);
+			cur++;
+		}
+		free(ln);
+	}
 
 	if (bk != NULL)
 		free(bk);
+
+	{
+		void **p = tf;
+		while(p != fresh)
+			free(*(p++));
+	}
 }
 
 void static 
 show(void) {
 	struct line **p = frame;
 	struct line **e = p+HEIGHT;
-
+	ff_uint_t off;
 	struct line *ln;
 	while(p != e) {
 		ln = *(p++);
-		if (ln->l>0)
-			ffly_fwrite(ffly_out, ln->buf, ln->l);
+		off = 0;
+		if (*ln->frags != NULL) {
+			struct frag **cur = ln->frags;
+			while(*cur != NULL) {
+				struct frag *f = *cur;
+				if (f->l>0) {
+					ff_uint_t bias;
+					bias = off-f->off;
+					ff_uint_t l = f->l-bias;
+					char *p = f->p+bias;
+					if (l>1024) {
+						ffly_printf("error.\n");
+					} else
+						ffly_fwrite(ffly_out, p, l);
+					off+=f->l;
+				}
+				cur++;
+			}
+		}
 		ffly_printf("\n");
 	}
 }
 
 void ffly_matact(ffly_matp __mat) {
+	clr
 	struct line **p = frame;
 	struct line **e = p+HEIGHT;
 	struct line *ln;
 	while(p != e) {
 		ln = (*(p++) = (struct line*)malloc(sizeof(struct line)));
-		ln->l = 0;
-		ln->p = ln->buf;
-		memset(ln->buf, ' ', sizeof(ln->buf));
+		memset(ln->frags, 0, sizeof(ln->frags));
+		ln->p = ln->frags;
+		ln->off = 0;
 	}
 	act(__mat, NULL);
 
