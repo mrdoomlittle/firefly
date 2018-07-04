@@ -28,7 +28,8 @@ at_eof(ffly_matp __mat) {
 
 enum {
 	_colour,
-	_pos
+	_pos,
+	_po
 };
 
 # define _padl 1
@@ -37,8 +38,8 @@ enum {
 # define _g 8
 # define _b 16
 
-# define is_bit(__pill, __bit) \
-	(((__pill)->bits&__bit)==__bit)
+# define is_bit(__attr, __bit) \
+	(((__attr)->bits&__bit)==__bit)
 
 enum {
 	_keychr,
@@ -54,20 +55,25 @@ enum {
 	_comma
 };
 
+struct line {
+	char buf[1024];
+	ff_uint_t l;
+	char *p;
+};
+
 typedef struct parameter {
 	char const *name;
 	char const *val;
 } *parameterp;
 
-// change to attr
-typedef struct pill {
+typedef struct attr {
 	ff_u8_t type;
 	ff_u64_t bits;
 
 	ff_uint_t pad_left;
 	ff_uint_t pad_top;
 	ff_u8_t r, g, b;
-} *pillp;
+} *attrp;
 
 typedef struct bucket {
 	ff_u8_t sort;
@@ -191,7 +197,7 @@ next_tokis(ffly_matp __mat, ff_u8_t __sort, ff_u8_t __val) {
 	return -1;
 }
 
-void static act(ffly_matp, pillp);
+void static act(ffly_matp, attrp);
 void static 
 label(ffly_matp __mat, ff_i8_t *__exit) {
 	if (!next_tokis(__mat, _keychr, _slash)) {
@@ -225,17 +231,19 @@ label(ffly_matp __mat, ff_i8_t *__exit) {
 			goto _again;
 		}
 	} else
-		printf("no params.\n");
+		printf("no params, %s\n", name);
 	if (!expect(__mat, _keychr, _gt)) {
 		printf("expect error.\n");
 	}
 
-	struct pill p;
+	struct attr p;
 	p.bits = 0;
 	if (!strcmp(name, "colour")) {
 		p.type = _colour;
 	} else if (!strcmp(name, "pos")) {
 		p.type = _pos;
+	} else if (!strcmp(name, "po")) {
+		p.type = _po;
 	} else
 		printf("error.\n");
 
@@ -275,71 +283,80 @@ label(ffly_matp __mat, ff_i8_t *__exit) {
 	act(__mat, &p);
 }
 
-# define WD_SH 7
+# define line_save \
+{						\
+	struct line *ln;	\
+	ln = *(frame+cur);	\
+	if (__attr != NULL)	{	\
+		if (__attr->type == _po)	\
+			p = base;				\
+	}								\
+	ln->l = p-ln->buf;	\
+	ln->p = p;			\
+}
 
-# define WIDTH (1<<WD_SH)
-# define HEIGHT 40
-
-char static frame[WIDTH*HEIGHT];
-char static buf[WIDTH*HEIGHT];
-char static **bkbuf;
+# define HEIGHT 60
+static struct line *frame[HEIGHT];
+static char *p;
+static ff_uint_t cur = 0;
+static char *base;
 void
-act(ffly_matp __mat, pillp __pill) {
-	if (!*(bkbuf-1))
-		*bkbuf = frame;
-	else
-		*bkbuf = *(bkbuf-1);
-	char *p = *(bkbuf++);
-
+act(ffly_matp __mat, attrp __attr) {
 	ff_u8_t rc = 0;
-	if (__pill != NULL) {
-		if (is_bit(__pill, _padl))
-			p+=__pill->pad_left;
-		if (is_bit(__pill, _padt))
-			p+=__pill->pad_top*WIDTH;
-	
-		if (is_bit(__pill, _r) || is_bit(__pill, _g) || is_bit(__pill, _b)) {
-			char r[24];
-			char g[24];
-			char b[24];
+	if (__attr != NULL) {
+		if (__attr->type == _po)
+			base = p;
+		if (is_bit(__attr, _padt))
+			p = (*(frame+(cur = __attr->pad_top)))->p;
+		
+		if (is_bit(__attr, _padl)) {
+			p+=__attr->pad_left;
+		}
+
+		if ((__attr->bits&(_r|_g|_b))>0) {
 			rc = 1;
 
-
-			ffly_nots(__pill->r, r);
-			ffly_nots(__pill->g, g);
-			ffly_nots(__pill->b, b);
-			p+=ffly_sprintf(p, "\e[38;2;%s;%s;%sm", r, g, b);
-			*p = '.';
+			p+=ffly_str_cpy(p, "\e[38;2;");
+			p+=ffly_nots(__attr->r, p);
+			*(p++) = ';';
+			p+=ffly_nots(__attr->g, p);
+			*(p++) = ';';
+			p+=ffly_nots(__attr->b, p);
+			*(p++) = 'm';
 		}
 	}
 	
 	bucketp tok;
 	while(!at_eof(__mat)) {
-		while(*__mat->p == '\n')
-			__mat->p++;
+		ff_i8_t exit;
 		if (*__mat->p != '<')
 			goto _no;
 		if (!(tok = lex(__mat)))
 			break;
-		ff_i8_t exit;
-		if (tok->sort == _keychr && tok->val == _lt) {
-			*(bkbuf-1) = p;
-			if (!next_tokis(__mat, _keychr, _gt))
-				act(__mat, NULL);
-			else
-				label(__mat, &exit);
-			p = *(bkbuf-1);
-			if (!exit) break;
+		label(__mat, &exit);
+		if (!exit) {
+			break;
 		}
 		_no:
 		{
 			char c;
 			while((c = *__mat->p) != '<' && !at_eof(__mat)) {
-				if (*p == '\n') p++;
-				if (c == '\n' || c == '\t')
+				if (c == '\t' || c == '\n')
 					__mat->p++;
-				else
-					*(p++) = *(__mat->p++);
+				else if (c == ';') {
+					__mat->p++;
+					line_save;
+					cur++;
+					p = (*(frame+cur))->p;
+					if (__attr != NULL) {
+						if (is_bit(__attr, _padl)) {
+							p+=__attr->pad_left;
+						}
+					}
+				} else {
+					*(p++) = c;
+					__mat->p++;
+				}
 			}
 		}
 	}
@@ -349,52 +366,47 @@ act(ffly_matp __mat, pillp __pill) {
 		p+=4;
 	}
 
-	if (!*(bkbuf-2))
-		bkbuf--;
-	else {
-		if (*(bkbuf-3) != NULL)
-			*((--bkbuf)-1) = p;
-		else
-			bkbuf--;
-	}
+	line_save;
 }
 
 void static
 cleanup() {
+	struct line **p = frame;
+	struct line **e = p+HEIGHT;
+	while(p != e) 
+		free(*(p++));
+
 	if (bk != NULL)
 		free(bk);
 }
 
+void static 
+show(void) {
+	struct line **p = frame;
+	struct line **e = p+HEIGHT;
+
+	struct line *ln;
+	while(p != e) {
+		ln = *(p++);
+		if (ln->l>0)
+			ffly_fwrite(ffly_out, ln->buf, ln->l);
+		ffly_printf("\n");
+	}
+}
+
 void ffly_matact(ffly_matp __mat) {
-	bkbuf = (char**)malloc(12*sizeof(char*));
-	*(bkbuf++) = NULL;
-	char *p = frame;
-	while(p != frame+(WIDTH*HEIGHT)) {
-		memset(p, '.', WIDTH);
-		*p = '@';
-		*((p+WIDTH)-2) = '@';
-		*((p+=WIDTH)-1) = '\n';
+	struct line **p = frame;
+	struct line **e = p+HEIGHT;
+	struct line *ln;
+	while(p != e) {
+		ln = (*(p++) = (struct line*)malloc(sizeof(struct line)));
+		ln->l = 0;
+		ln->p = ln->buf;
+		memset(ln->buf, ' ', sizeof(ln->buf));
 	}
-
 	act(__mat, NULL);
-	*p = '\0';
-	char buf[2048];
-	char *bufp;
-	p = frame;
-	_again:
-	bufp = buf;
-	while(*p != '\n') {
-		if (p >= frame+(WIDTH*HEIGHT))
-			goto _end;
 
-		*(bufp++) = *(p++);
-	}
-	p++;
-	*bufp = '\0';
-	printf("%s\n", buf);
-	goto _again;
-	_end:
-	free(bkbuf-1);
+	show();
 	cleanup();
 }
 
