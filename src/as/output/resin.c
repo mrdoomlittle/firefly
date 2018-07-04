@@ -288,6 +288,7 @@ _post(void) {
 			if (suffix>0) {
 				info = _o_imm8<<suffix;
 			}
+
 			printf("{imm}, ");
 			printf("%u, ", *(ff_u64_t*)fakget(off));
 			ff_u8_t os = get_ous(op, off);

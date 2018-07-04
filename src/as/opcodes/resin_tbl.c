@@ -12,7 +12,7 @@ struct ff_as_op const *resin_optab[] = {
 	op_{"mov", 3, {_resin_op_movb, _resin_op_movw, _resin_op_movd, _resin_op_movq}, 1, ous(0, 0, 0, 0), ot(_o_reg, _o_reg, 0, 0), asto, {0, 0}, 2},
 
 	op_{"rin", 3, {_resin_op_rin}, 1, ous(1, sizeof(ff_addr_t), 0, 0), ot(_o_imm8, _o_reg64|_o_imm, 0, 0), 0, {0, 0}, 2},
-
+	
 	op_{"div", 3, {_resin_op_divb, _resin_op_divw, _resin_op_divd, _resin_op_divq}, 1, ous(0, 0, 0, 0), ot(_o_reg, _o_reg, 0, 0), asto, {0, 0}, 2},
 	op_{"mul", 3, {_resin_op_mulb, _resin_op_mulw, _resin_op_muld, _resin_op_mulq}, 1, ous(0, 0, 0, 0), ot(_o_reg, _o_reg, 0, 0), asto, {0, 0}, 2},
 	op_{"sub", 3, {_resin_op_subb, _resin_op_subw, _resin_op_subd, _resin_op_subq}, 1, ous(0, 0, 0, 0), ot(_o_reg, _o_reg, 0, 0), asto, {0, 0}, 2},

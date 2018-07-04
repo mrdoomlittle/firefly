@@ -200,7 +200,7 @@ ff_u8_t ff_resin_ops(ff_u8_t __op) {
 void*
 ff_resin_resolv_adr(ffly_resinp __resin, ff_addr_t __adr) {
 	if (__adr>=__resin->stack_size) {
-		ffly_printf("address out of rage.\n");
+		ffly_printf("address out of rage, got: %u\n", __adr);
 		return NULL;
 	}
 	return (void*)(__resin->stack+__adr);
@@ -846,7 +846,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 		stack_get(__resin, (ff_u8_t*)&rt, l, rt_adr);
 		ff_u64_t dst;
 
-		ff_u64_t mask = 0xffffffffffffffff>>(64-(8<<l));
+		ff_u64_t mask = 0xffffffffffffffff>>(64-(l*8));
 		lt &= mask;
 		rt &= mask;
 
@@ -877,12 +877,13 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 		stack_get(__resin, (ff_u8_t*)&rt, l, rt_adr);
 		ff_u64_t dst;
 
-		ff_u64_t mask = 0xffffffffffffffff>>(64-(4<<l));
+		ff_u64_t mask = 0xffffffffffffffff>>(64-(l*8));
 		lt &= mask;
 		rt &= mask;
 
 		dst = rt+lt;
 		stack_put(__resin, (ff_u8_t*)&dst, l, rt_adr);
+//		ffly_printf("%u, %u, %u\n", lt, rt, dst);
 	}
 	fi;
 

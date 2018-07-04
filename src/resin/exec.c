@@ -81,7 +81,7 @@ void* ring(ff_u8_t __no, void *__arg_p) {
 				__init_arg__ = (struct init_arg*)ff_resin_resolv_adr(&ctx, arg->init_arg);
 				printf("init what? %u\n", arg->what);
 
-//				ffly_init(arg->what);
+				ffly_init(arg->what);
 			}
 			break;
 		}

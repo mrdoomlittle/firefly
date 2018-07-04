@@ -7,6 +7,17 @@
 
 */
 u8_t main() {
+%ifdef test
+	u8_t i = 0;
+	u8_t a = 0;
+bk:
+	i = i+1;
+	out(i);
+	if (i != 21) {
+		goto bk;
+	}
+%else
 	ffly_sched_init();
-//	ffly_resv_init();
+	ffly_resv_init();
+%endif
 }
