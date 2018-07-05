@@ -449,7 +449,7 @@ show(void) {
 						ffly_printf("error.\n");
 					} else
 						ffly_fwrite(ffly_out, p, l);
-					off+=f->l;
+					off+=l;
 				}
 				cur++;
 			}
