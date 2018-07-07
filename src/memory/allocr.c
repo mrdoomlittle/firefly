@@ -18,6 +18,10 @@
 //	might want to keep track of mmaps
 
 /*
+	rename dispose to dislodge???
+*/
+
+/*
 	not using this until finished
 	as it may hide issues.
 */

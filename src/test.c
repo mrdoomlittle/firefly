@@ -91,7 +91,20 @@ void* th(void *__arg) {
 # include "stdio.h"
 # include "line.h"
 # include "linux/termios.h"
+# include "linux/time.h"
+# include "linux/signal.h"
+# include "signal.h"
+# include "pulse.h"
+# include "clock.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	ff_uint_t i = 0;
+	ff_u64_t start;
+	while(i++ != 100) {
+		start = ffly_clock_get();
+		ffly_nanosleep(0, 200000000);
+		ffly_printf("%lu\n", ffly_clock_get()-start);
+	}
+/*
 	struct termios term, old;
 	tcgetattr(ffly_in->fd, &term);
 	old = term;
@@ -128,6 +141,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	}
 _out:
 	tcsetattr(ffly_in->fd, &old);
+*/
 /*
 	ffly_scheduler_init(0);	
 	ff_uint_t const c = 20;

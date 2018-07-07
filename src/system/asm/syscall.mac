@@ -83,3 +83,7 @@
 %define sys_getppid 110
 %define sys_arch_prctl 158
 %define sys_clock_gettime 228
+
+%define sys_timer_create 222
+%define sys_timer_settime 223
+%define sys_timer_delete 226

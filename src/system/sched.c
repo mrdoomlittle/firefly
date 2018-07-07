@@ -161,7 +161,7 @@ void ffly_sched_rm(ff_u32_t __id) {
 	remove(get_entity(__id));
 }
 
-void ffly_sched_clock_tick(ff_u64_t __delta) {
+void ffly_sched_clock_tick(ff_u32_t __delta) {
 	clock+=__delta;
 }
 

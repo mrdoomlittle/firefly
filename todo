@@ -139,3 +139,4 @@ op(__compiler, "movw", "%rel", reg, NULL);
 op(__compiler, "movd", "%rel", reg, NULL);
 op(__compiler, "movq", "%rel", reg, NULL);
 -. clock get should be added 
+-, remove ffly_nanosleep and reput using nanosleep

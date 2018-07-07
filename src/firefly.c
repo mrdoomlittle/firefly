@@ -88,6 +88,7 @@ char const static *by = "mrdoomlittle";
 # include "piston.h"
 # include "corrode.h"
 # include "location.h"
+# include "pulse.h"
 ff_i8_t static
 check_conf_version(void) {
 	ff_i8_t ret;
@@ -151,6 +152,7 @@ prep() {
 
 	/* pistons are on even if sched has not been inited
 	*/
+	ffly_pengage();
 	ffly_bog_start();
 	ffly_piston();
 # endif
@@ -168,6 +170,7 @@ fini() {
 	ffly_corrode_start();
 	ffly_pistons_stall();
 	ffly_bog_stop();
+	ffly_pdisengage();
 # endif
 //	ff_mod_de_init();
 # ifndef __ffly_crucial

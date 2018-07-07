@@ -19,7 +19,7 @@ typedef struct sched_entity {
 
 void ffly_sched_rm(ff_u32_t);
 ff_u32_t ffly_schedule(ff_i8_t(*)(void*), void*, ff_u64_t);
-void ffly_sched_clock_tick(ff_u64_t);
+void ffly_sched_clock_tick(ff_u32_t);
 void ffly_scheduler_tick(void);
 void ffly_scheduler_init(ff_u8_t);
 void ffly_scheduler_de_init(void);

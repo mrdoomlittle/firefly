@@ -1,7 +1,7 @@
 # include "signal.h"
 void __restore();
 __asm__("__restore:\n\t"
-		"mov $15,%rax\n\t"
+		"movq $15,%rax\n\t"
 		"syscall");
 
 # include "dep/mem_cpy.h"
