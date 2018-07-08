@@ -96,7 +96,9 @@ void* th(void *__arg) {
 # include "signal.h"
 # include "pulse.h"
 # include "clock.h"
+# include "brick.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+/*
 	ff_uint_t i = 0;
 	ff_u64_t start;
 	while(i++ != 100) {
@@ -104,6 +106,25 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		ffly_nanosleep(0, 200000000);
 		ffly_printf("%lu\n", ffly_clock_get()-start);
 	}
+*/
+	ff_uint_t const c = 21;
+	ff_u32_t b_list[c];
+	ff_uint_t i;
+
+
+	i = 0;
+	while(i != c) {
+		b_list[i++] = ffly_brick_new(_ff_brick_64, NULL, 0);
+	}
+
+	ffly_bricks_show();
+	i = 0;
+	while(i != c) {
+		ffly_brick_rid(b_list[i++]);
+	}
+
+	ffly_bricks_show();
+	ffly_brick_cleanup();
 /*
 	struct termios term, old;
 	tcgetattr(ffly_in->fd, &term);
