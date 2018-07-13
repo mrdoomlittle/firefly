@@ -1,16 +1,20 @@
 # include "ff6.h"
 //# include "../io.h"
-ff_uint_t ffly_ff6_enc(void *__src, char *__dst, ff_uint_t __len) {
-	ff_u8_t *p = (ff_u8_t*)__src;
-	ff_u8_t *end = p+__len;
+ff_uint_t ffly_ff6_enc(void const *__src, char *__dst, ff_uint_t __len) {
+	ff_u8_t const *in = (ff_u8_t const*)__src;
+	ff_u8_t const *e = in+__len;
 	char c0;
 	ff_i16_t *dst = (ff_u16_t*)__dst;
-	ff_u64_t buf = 0;
+	ff_u64_t buf;
 	ff_u8_t v;
 
-	ff_uint_t n = 0;
+	ff_uint_t n;
+
+
+	buf = 0;
+	n = 0;
 _again:
-	buf = buf<<8|*p; 
+	buf = buf<<8|*in; 
 	n+=8;
 _bk:
 	if (n>=6) {
@@ -23,8 +27,8 @@ _bk:
 		goto _bk;
 	}
 	
-	if (p != end-1) {
-		p++;
+	if (in<e) {
+		in++;
 		goto _again;
 	}
 
@@ -40,25 +44,29 @@ _bk:
 	return (char*)dst-__dst;
 }
 
-ff_uint_t ffly_ff6_dec(char *__src, void *__dst, ff_uint_t __len) {
+ff_uint_t ffly_ff6_dec(char const *__src, void *__dst, ff_uint_t __len) {
 	char c0, c1;
-	char *p = __src;
-	char *end = p+__len;
+	char const *in = __src;
+	char const *e = in+__len;
 	ff_u8_t *dst = (ff_u8_t*)__dst;
 
-	ff_u64_t buf = 0;
-	ff_uint_t n = 0;
-	while(p != end) {
-		c0 = *(p++);
+	ff_u64_t buf;
+	ff_uint_t n;
+
+	buf = 0;
+	n = 0;
+_again:
+	if(in<e) {
+		c0 = *(in++);
 		if (c0 < 'a' || c0 > 'h') {
 //			printf("error.\n");
-			break;
+			goto _fail;
 		}
 
-		c1 = *(p++);
+		c1 = *(in++);
 		if (c1 < '0' || c1 > '7') {
 //			printf("error.\n");
-			break;
+			goto _fail;
 		}
 		
 		buf = (buf<<6)|(((c0-'a')<<3)+(c1-'0'));
@@ -69,6 +77,9 @@ ff_uint_t ffly_ff6_dec(char *__src, void *__dst, ff_uint_t __len) {
 			n-=8;
 			buf &= 0xffffffffffffffff>>(64-n);
 		}
+		goto _again;
 	}
 	return dst-(ff_u8_t*)__dst;
+_fail:
+	return 0;
 }

@@ -204,8 +204,10 @@ $ffly_cc -c $cc_flags -o $dst_dir/queue.o $root_dir/queue.c
 $ffly_cc -c $cc_flags -o $dst_dir/port.o $root_dir/port.c
 $ffly_cc -c $cc_flags -o $dst_dir/tls.o $root_dir/tls.c
 $ffly_cc -c $cc_flags -o $dst_dir/util/ff6.o $root_dir/util/ff6.c
+$ffly_cc -c $cc_flags -o $dst_dir/util/ff5.o $root_dir/util/ff5.c
 $ffly_cc -c $cc_flags -o $dst_dir/tcsetattr.o $root_dir/tcsetattr.c
 $ffly_cc -c $cc_flags -o $dst_dir/tcgetattr.o $root_dir/tcgetattr.c
+
 #$ffly_cc -c $cc_flags -o $dst_dir/mal_track.o $root_dir/mal_track.c
 
 # $dst_dir/task_worker.o $dst_dir/task.o $dst_dir/task_pool.o $dst_dir/time.o
@@ -272,5 +274,6 @@ $dst_dir/util/ff6.o $dst_dir/sys_dup2.o.0 $dst_dir/sys_dup2.o.1 \
 $dst_dir/sys_ioctl.o.0 $dst_dir/sys_ioctl.o.1 $dst_dir/tcsetattr.o $dst_dir/tcgetattr.o \
 $dst_dir/sys_timer_settime.o.0 $dst_dir/sys_timer_settime.o.1 \
 $dst_dir/sys_timer_create.o.0 $dst_dir/sys_timer_create.o.1 \
-$dst_dir/sys_timer_delete.o.0 $dst_dir/sys_timer_delete.o.1"
+$dst_dir/sys_timer_delete.o.0 $dst_dir/sys_timer_delete.o.1 \
+$dst_dir/util/ff5.o"
 # $dst_dir/mal_track.o"
