@@ -5,9 +5,10 @@ int extern out;
 int extern in;
 # include "../resin.h"
 # include "../ffint.h"
+# include "frag.h"
 # define fakget(__off) \
 	(*((fak_)->p+__off))
-# define inssize struct(ins)
+//# define inssize struct(ins)
 # define is_flag(__flags, __flag) \
 	(((__flags)&(__flag))==(__flag))
 
@@ -18,16 +19,18 @@ int extern in;
 # define _of_null 0xff
 
 enum {
-	_of_ffef,
+	_of_remf,
 	_of_elf,
 	_of_raw
 };
 
+struct fix_s;
 extern void(*ff_as_forge)(void);
 extern void **op_tray;
 extern void*(*ff_as_getreg)(char const*);
 extern ff_u8_t(*ff_as_regsz)(void*);
 extern ff_i8_t(*ff_as_suffix)(ff_u8_t);
+extern void(*ff_as_fixins)(struct fix_s*);
 
 ff_u8_t extern of;
 ff_u64_t extern offset;
@@ -44,7 +47,7 @@ typedef struct region* regionp;
 # define _o_reg (_o_reg8|_o_reg16|_o_reg32|_o_reg64)
 # define _o_imm (_o_imm8|_o_imm16|_o_imm32|_o_imm64)
 # define _o_dis (_o_dis8|_o_dis16|_o_dis32|_o_dis64)
-# define _o_label 0x1
+# define _o_label 0x1 // resin
 # define _o_reg8 0x2
 # define _o_reg16 0x4
 # define _o_reg32 0x8
@@ -58,6 +61,29 @@ typedef struct region* regionp;
 # define _o_dis32 0x800
 # define _o_dis64 0x1000
 
+# define _fx_label 0x1
+# define _fx_ll 0x2
+enum {
+	_fx_jmp
+};
+
+struct label;
+struct fix_s {
+	struct fix_s *next;
+	void *arg;
+	ff_u32_t offset;
+
+	ff_u8_t type;
+	ff_u8_t start;
+	ff_u8_t flags;
+	struct frag *f;
+};
+
+struct point {
+	struct frag *f;
+	ff_uint_t offset;
+};
+
 typedef struct flask {
 	ff_u16_t info[4];
 	void *p[4];
@@ -67,16 +93,25 @@ typedef struct flask {
 extern struct flask *fak_;
 
 typedef struct label {
-	ff_uint_t offset, s_adr, adr;
+	// stack address
+	ff_uint_t s_adr;
 	ff_u8_t flags;
 	char const *s;
 	symbolp sy;
 	regionp reg;
+
+	struct frag *f;
+	ff_uint_t foffset;
 } *labelp;
 
 typedef struct local_label {
 	ff_uint_t adr;
-	ff_uint_t *p_adr;
+	struct frag **p_f;
+	ff_uint_t *p_foffset;
+
+	struct frag *f;
+	ff_uint_t foffset;
+
 	struct label *parent;
 } *local_labelp;
 
@@ -90,6 +125,7 @@ typedef struct segment {
 	struct segment *next;
 	ff_u64_t offset;
 	ff_u64_t adr;
+
 	ff_uint_t size;
 	ff_u8_t buf[200];
 	ff_u8_t *fresh;
@@ -98,25 +134,54 @@ typedef struct segment {
 typedef struct region {
 	char const *name;
 	struct region *next;
-	ff_u64_t beg, end;
+	struct point beg, end;
 	ff_u16_t no;
 	ff_u64_t adr;
 } *regionp;
 
+/*
+	remove hook or not use rel for resin,
+*/
+
+/*
+	offset-start = start of instruction in program memory
+*/
 typedef struct relocate {
 	struct relocate *next;
-	ff_u64_t offset;
+	/*
+		displacement value location within fragment
+	*/
+	ff_u64_t dis;
+
+	// length of value
 	ff_u8_t l;
-	ff_u64_t adr;
+
+	/*
+		rename; offset from fragment base to call/jmp opbase
+	*/
+	ff_u32_t ob;
+	struct frag *f;
 	symbolp *sy;
 	local_labelp ll;
 } *relocatep;
 
 typedef struct hook {
 	struct hook *next;
-	ff_u64_t offset;
+	/*
+		displacement value location within fragment
+	*/
+	ff_u64_t dis;
+
+	// length of value
 	ff_u8_t l;
-	ff_u64_t adr;
+
+	/*
+		rename; offset from fragment base to call/jmp opbase
+	*/
+	ff_u32_t ob;
+	struct frag *f;
+
+	// hook it to .... what?
 	symbolp *to;
 } *hookp;
 
@@ -140,15 +205,19 @@ typedef struct st {
 	ff_u8_t l;
 } *stp;
 
+ff_u32_t extern adr;
 stp extern stt_head;
 stp extern stt_tail;
 ff_u64_t(*ff_as_stt_drop)(void);
 labelp extern ff_as_entry;
 // alloca.c
 // cleanup
+void fix(struct frag*, ff_u32_t, void*, ff_u8_t, ff_u8_t, ff_u8_t);
 void ff_as_al_cu();
 // allocate
 void *ff_as_al(ff_uint_t);
+void ff_as_fr(void*);
+void *ff_as_ral(void*, ff_uint_t);
 
 // as.c
 void ff_as(char*, char*);
@@ -179,9 +248,6 @@ void ff_as_isa(ff_uint_t);
 
 void ff_as_resin(void);
 void ff_as_amd64(void);
-void ff_as_ffef(void);
+void ff_as_remf(void);
 void ff_as_elf(void);
-ff_u32_t curadr(void);
-void iadr(ff_uint_t);
-//void ffef(symbolp);
 # endif /*__ffly__as__h*/

@@ -96,7 +96,6 @@ void ffly_br_shutdown(ffly_brp __br) {
 
 void ffly_br_start(ffly_brp __br) {
 	struct sockaddr_in cl;
-	ffly_bzero(&cl, sizeof(struct sockaddr_in));
 
 	ff_err_t err;
 	socklen_t len;
@@ -107,6 +106,7 @@ void ffly_br_start(ffly_brp __br) {
 
 	ff_uint_t n, b, bsz;
 _again:
+	ffly_bzero(&cl, sizeof(struct sockaddr_in));
 	len = sizeof(struct sockaddr_in);
 	if (_err(err = ff_net_listen(sock))) {
 		return;

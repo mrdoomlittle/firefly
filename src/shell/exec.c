@@ -2,24 +2,45 @@
 # include "../dep/str_cmp.h"
 # include "../version.h"
 # include "../dep/mem_cmp.h"
+# include "../system/util/ff5.h"
 # include "../system/util/ff6.h"
 # include "../stdio.h"
 # include "../string.h"
 # include "../exec.h"
+
+/*
+	TODO: 
+	put into macros
+*/
+/*
+	for larger segments just call a function
+	so 
+	jmp _example
+
+	_example:
+	myfunc();
+	jmp _end
+
+	its to keep things tidy its i like to keep small functions 
+	grouped with eachother 
+*/
 static char const *help = "commands:\n"
 	"	help\n"
 	"	exit\n"
+	"	ff5 <enc,dec> <value>\n"
 	"	ff6 <enc,dec> <value>\n"
 	"	exec <file>\n";
 
 void _help();
 void _exit();
 void _info();
+void _ff5();
 void _ff6();
 void _exec();
 void *cmds[] = {
 	_help,
 	_exit,
+	_ff5,
 	_ff6,
 	_info,
 	_exec
@@ -34,7 +55,7 @@ void* ffsh_cmdget(struct hash *__hash, char const *__ident) {
 }
 
 # define jmpend __asm__("jmp _end")
-extern ff_i8_t ffsh_run;
+ff_i8_t *ffsh_run = NULL;
 void ffsh_exec_cmd(void *__func, ff_uint_t __n, struct arg_s **__args) {
 	char buf[128];
 
@@ -45,9 +66,33 @@ void ffsh_exec_cmd(void *__func, ff_uint_t __n, struct arg_s **__args) {
 	jmpend;
 
 	__asm__("_exit:\n\t");
-		ffsh_run = -1;
+		*ffsh_run = -1;
 	jmpend;
 
+	__asm__("_ff5:\n\t"); {
+		if (__n != 2) {
+			ffly_printf("2 arguments needed.\n");
+		} else {
+			struct arg_s *mot = *__args;
+			struct arg_s *val = *(__args+1);
+			ff_uint_t l;
+			if (mot->l == 4) {
+				if (!ffly_mem_cmp(mot->p, "enc", mot->l-1)) {
+					l = ffly_ff5_enc(val->p, buf, val->l-1);
+					*(buf+l) = '\0';
+					printf("enc, '%s':'%s':%u\n", val->p, buf, l);
+				} else if (!ffly_mem_cmp(mot->p, "dec", mot->l-1)) {
+					l = ffly_ff5_dec(val->p, buf, val->l-1);
+					*(buf+l) = '\0';
+					printf("dec, '%s':'%s':%u\n", val->p, buf, l);
+				} else {
+					printf("unknown.\n");
+				}
+			} else
+				printf("length error.\n");
+		}
+	}
+	jmpend;
 	__asm__("_ff6:\n\t"); {
 		if (__n != 2) {
 			ffly_printf("2 arguments needed.\n");
@@ -57,13 +102,13 @@ void ffsh_exec_cmd(void *__func, ff_uint_t __n, struct arg_s **__args) {
 			ff_uint_t l;
 			if (mot->l == 4) {
 				if (!ffly_mem_cmp(mot->p, "enc", mot->l-1)) {
-					l = ffly_ff6_enc(val->p, buf, val->l);
+					l = ffly_ff6_enc(val->p, buf, val->l-1);
 					*(buf+l) = '\0';
-					printf("enc, '%s':'%s'\n", val->p, buf);
+					printf("enc, '%s':'%s':%u\n", val->p, buf, l);
 				} else if (!ffly_mem_cmp(mot->p, "dec", mot->l-1)) {
-					l = ffly_ff6_dec(val->p, buf, val->l);
+					l = ffly_ff6_dec(val->p, buf, val->l-1);
 					*(buf+l) = '\0';
-					printf("dec, '%s':'%s'\n", val->p, buf);
+					printf("dec, '%s':'%s':%u\n", val->p, buf, l);
 				} else {
 					printf("unknown.\n");
 				}

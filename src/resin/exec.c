@@ -2,7 +2,7 @@
 # include "../stdio.h"
 # include "../linux/unistd.h"
 # include "../linux/stat.h"
-# include "../ffef.h"
+# include "../remf.h"
 # include "mm.h"
 static void(*get)(ff_uint_t, ff_uint_t, ff_uint_t, void*);
 ff_u32_t static end;

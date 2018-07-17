@@ -14,15 +14,15 @@
 
 enum {
     _ffly_uni_8 = 3,
-    _ffly_uni_16 = 16,
-    _ffly_uni_32 = 32,
-    _ffly_uni_64 = 64,
-    _ffly_uni_128 = 128,
-    _ffly_uni_256 = 256,
-    _ffly_uni_512 = 512,
-    _ffly_uni_1024 = 1024,
-    _ffly_uni_2048 = 2048,
-    _ffly_uni_4096 = 4096
+    _ffly_uni_16,
+    _ffly_uni_32,
+    _ffly_uni_64,
+    _ffly_uni_128,
+    _ffly_uni_256,
+    _ffly_uni_512,
+    _ffly_uni_1024,
+    _ffly_uni_2048,
+    _ffly_uni_4096
 };
 
 enum {

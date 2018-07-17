@@ -7,8 +7,7 @@
 # include "../string.h"
 # include "../malloc.h"
 # include "../dep/str_cmp.h"
-# include "../ffef.h"
-
+# include "../remf.h"
 /*
 	operation tray
 */
@@ -19,6 +18,7 @@ void(*ff_as_forge)(void);
 void*(*ff_as_getreg)(char const*);
 ff_u8_t(*ff_as_regsz)(void*);
 ff_i8_t(*ff_as_suffix)(ff_u8_t);
+void(*ff_as_fixins)(struct fix_s*);
 /*
 	rename
 
@@ -32,10 +32,15 @@ struct hash symbols;
 struct hash defines;
 struct hash env;
 
+/*
+	replace - using this for now as labels may not exist at the time 
+	so we resolve them later.
+*/
 char const **globl;
 char const **extrn;
 
 struct flask *fak_;
+
 
 segmentp curseg = NULL;
 regionp curreg = NULL;
@@ -43,12 +48,31 @@ relocatep rel = NULL;
 hookp hok = NULL;
 
 labelp curlabel = NULL;
+
+/*
+	oust uses this
+*/
 ff_u64_t offset = 0;
-ff_u32_t static adr = 0;
+
+// used to keep track the end of program memory nothing else
+ff_u32_t adr;
 
 ff_u8_t of = _of_null;
 
 # define OBSIZE 60
+struct fix_s *fx = NULL;
+
+void fix(struct frag *__f, ff_u32_t __offset, void *__arg, ff_u8_t __type, ff_u8_t __start, ff_u8_t __flags) {
+	struct fix_s *s = (struct fix_s*)ff_as_al(sizeof(struct fix_s));
+	s->offset = __offset;
+	s->f = __f;
+	s->arg = __arg;
+	s->type = __type;
+	s->start = __start;
+	s->flags = __flags;
+	s->next = fx;
+	fx = s;
+}
 
 struct {
 	ff_uint_t off, dst;
@@ -58,12 +82,6 @@ struct {
 void ffas_ldsrc(void) {
 
 }
-
-void iadr(ff_uint_t __by) {
-	adr+=__by;
-}
-
-ff_u32_t curadr(void) {return adr;}
 
 void ff_as_init(void) {
 	ff_as_hash_init(&symbols);
@@ -156,12 +174,12 @@ _label(void) {
 
 	if (exist == -1)
 		la = (labelp)ff_as_al(sizeof(struct label));
-	la->offset = offset;
 	la->s_adr = ff_as_stackadr();
-	la->adr = curadr();
 	la->s = sy->p;
 	la->flags = 0x0;
 	la->reg = curreg;
+	la->f = curfrag;
+	la->foffset = frag_offset(curfrag);
 	if (exist == -1)
 		ff_as_hash_put(&env, sy->p, sy->len, la);
 
@@ -221,15 +239,16 @@ _directive(void) {
 		regionp rg = (regionp)ff_as_al(sizeof(struct region));
 		rg->name = sy->next->p;
 		rg->next = curreg;
-		rg->beg = offset;
-		rg->adr = curadr();
+		rg->beg.f = curfrag;
+		rg->beg.offset = frag_offset(curfrag);
 		if (!curreg)
 			rg->no = 1;
 		else
 			rg->no = curreg->no+1;
 		curreg = rg;
 	} else if (!strcmp(sy->p, "endof")) {
-		curreg->end = offset;
+		curreg->end.f = curfrag;
+		curreg->end.offset = frag_offset(curfrag);
 	} else if (!strcmp(sy->p, "extern")) {
 		labelp la = (labelp)ff_as_al(sizeof(struct label));
 		la->flags = LA_LOOSE;
@@ -251,12 +270,14 @@ _directive(void) {
 			ff_as_hash_put(&env, sy->next->p, sy->next->len, ll);
 		}
 
-		ll->adr = curadr();
+		ll->f = curfrag;
+		ll->foffset = frag_offset(curfrag);
 	}
 }
 
 void
 ff_as(char *__p, char *__end) {
+	ff_as_fnew(); // start fragment
 	/*
 		we parse line by line
 	*/
@@ -331,7 +352,7 @@ ff_as(char *__p, char *__end) {
 								break;
 							}
 						} else if (is_syint(cur)) {
-							printf("-- int.\n");
+							printf("-- imm.\n");
 							*p = cur->p;
 							ff_u64_t val = *(ff_u64_t*)*p;
 							
@@ -352,11 +373,14 @@ ff_as(char *__p, char *__end) {
 								_local = 0;
 								if (!__label)
 									ff_as_hash_put(&env, cur->p, cur->len, __label = ff_as_al(sizeof(struct local_label)));
+
 							} else if (is_sylabel(cur)) {
 								_local = -1;
 								if (!__label)
 									ff_as_hash_put(&env, cur->p, cur->len, __label = ff_as_al(sizeof(struct label)));
+								((labelp)__label)->flags = 0x0;
 							}
+
 							info = _o_label;
 						}
 
@@ -370,7 +394,7 @@ ff_as(char *__p, char *__end) {
 					*p = NULL;
 					fak_ = &fak;
 					post();
-					printf("got: %s, adr: %u\n", sy->p, adr);
+					printf("got: %s\n", sy->p);
 				} else
 					printf("unknown op.\n");
 			}
@@ -380,8 +404,21 @@ _r:
 	return;
 }
 
+void static drain();
+
 labelp ff_as_entry;
 void ff_as_final(void) {
+	struct fix_s *cur = fx;
+	while(cur != NULL) {
+		ff_as_fixins(cur);
+		cur = cur->next;
+	}
+
+	 if (outbuf.off>0) {
+		drain();
+	 }
+
+	ff_as_foutput();
 	if (of == _of_raw)
 		goto _sk;
 	if (!ep)
@@ -397,7 +434,7 @@ _sk:
 	}
 }
 
-void static
+void
 drain() {
 	lseek(out, outbuf.dst, SEEK_SET);
 	write(out, outbuf.p, outbuf.off);

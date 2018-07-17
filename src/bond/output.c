@@ -6,16 +6,16 @@
 # include "../stdio.h"
 void static
 out_seg(segmentp __seg) {
-	struct ffef_seg_hdr seg;
+	struct remf_seg_hdr seg;
 	seg.type = __seg->type;
 	seg.offset = __seg->offset;
 	seg.adr = __seg->addr;
 	seg.sz = __seg->size;
-	ff_bond_oust(&seg, ffef_seg_hdrsz);
+	ff_bond_oust(&seg, remf_seghdrsz);
 }
 
 # include "../rdm.h"
-void ff_bond_output(ffef_hdrp __hdr) {
+void ff_bond_output(remf_hdrp __hdr) {
 	regionp cur = curbin, bk;
 	segmentp seg;
 	while(cur != NULL) {
@@ -50,8 +50,8 @@ void ff_bond_output(ffef_hdrp __hdr) {
 		}
 	}
 
-	__hdr->sg = offset-ffef_seg_hdrsz;
+	__hdr->sg = offset-remf_seghdrsz;
 
 	lseek(d, 0, SEEK_SET);
-	write(d, __hdr, ffef_hdr_size);
+	write(d, __hdr, remf_hdrsz);
 }

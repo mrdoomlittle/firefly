@@ -74,6 +74,7 @@ struct ffly_conf {
 	ff_byte_t *p, *end;
 	ff_off_t off;
 	struct ffly_vec toks;
+	// rename to tokbuf
 	struct ffly_buff iject_buff;
 
 	struct ffly_vec entities;

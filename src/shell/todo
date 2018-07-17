@@ -1,0 +1,1 @@
+remove '\0' from toksz in lexer as it includes it

@@ -7,7 +7,7 @@
 # include "mutex.h"
 # include "atomic.h"
 # include "cond_lock.h"
-# ifndef __ffly_no_sysconf
+# if !defined(__ffly_no_sysconf) && !defined(__ffly_crucial)
 # define MAX_THREADS __ffly_sysconf__.max_threads
 # else
 # define MAX_THREADS 20
@@ -21,16 +21,23 @@
 #	include "config.h"
 # endif
 # include "../mal.h"
+# define T_USEABLE 0x1
+
+
+//# define debug
+// no process linked
+# define T_NOP 0x2
 typedef struct ffly_thread {
 	ff_cond_lock_t lock;
 	__linux_pid_t pid;
-	ff_tid_t tid; // change to 'id'
+	ff_u16_t h;
 	ff_bool_t alive;
 	ff_i8_t exit;
 	ff_byte_t *sp, *tls;
 	void*(*routine)(void*);
 	void *arg_p;
 	ffly_potp pot;
+	ff_u8_t flags;
 } *ffly_threadp;
 
 static struct ffly_thread **threads = NULL;
@@ -47,10 +54,10 @@ ffly_potp static pot = NULL;
 # include "tls.h"
 
 struct {
-	ff_tid_t *p;
+	ff_off_t *p;
 	ff_uint_t page_c;
 	ff_off_t off;
-} uu_ids = {
+} uu = {
 	.p = NULL,
 	.page_c = 0,
 	.off = 0
@@ -58,11 +65,50 @@ struct {
 
 ff_mlock_t static mutex = FFLY_MUTEX_INIT;
 
-# define get_thr(__tid) \
-	(*(threads+(__tid)))
+/*
+	find new name
+
+	start from 0 to NHOLES
+	and reloop is -1 then the hole is unused if >=0 then its used
+
+	we could use timing but that can be left for higher level function to do
+*/
+
+# define NHOLES 48
+ff_i32_t static holes[NHOLES] = {
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+
+ff_i32_t static *nhole = holes;
+
+ff_i32_t ffly_tobtain_hole(void) {
+	if (nhole>=holes+NHOLES)
+		nhole = holes;
+
+	if (*nhole>=0) {
+		return -1;
+	}
+
+	return (nhole++)-holes;
+}
+
+void ffly_trelinquish_hole(ff_u16_t __hole) {
+	*(holes+__hole) = -1;
+}
+
+# define hset(__h, __val) \
+	*(holes+(__h)) = (__val)
+
+# define hget(__h) \
+	*(holes+(__h))
+
+# define get_thr(__t) \
+	(*(threads+(__t)))
 
 # define no_threads \
-	(off-uu_ids.off)
+	(off-uu.off)
 
 static __thread ff_tid_t id = FFLY_TID_NULL;
 ff_tid_t ffly_gettid() {
@@ -70,7 +116,8 @@ ff_tid_t ffly_gettid() {
 }
 
 __linux_pid_t ffly_thread_getpid(ff_tid_t __tid) {
-	return get_thr(__tid)->pid;
+	return 0;
+	//return get_thr(__tid)->pid;
 }
 
 void ffly_thread_init() {
@@ -80,18 +127,19 @@ void ffly_thread_init() {
 }
 
 ff_err_t static
-ffly_thread_del(ff_tid_t __tid) {
+ffly_thread_del(ff_tid_t __t) {
 	// keep memory on pot 0
+	ffly_printf("goodbye from thread %u\n", __t);
 	ffly_mutex_lock(&mutex);
-	if (uu_ids.off >= uu_ids.page_c*UU_PAGE_SIZE) {
+	if (uu.off >= uu.page_c*UU_PAGE_SIZE) {
 		ffly_ctl(ffly_malc, _ar_setpot, (ff_u64_t)pot);
-		if (!uu_ids.p) {
-			if ((uu_ids.p = (ff_tid_t*)__ffly_mem_alloc(((++uu_ids.page_c)*UU_PAGE_SIZE)*sizeof(ff_tid_t))) == NULL) {
+		if (!uu.p) {
+			if ((uu.p = (ff_off_t*)__ffly_mem_alloc(((++uu.page_c)*UU_PAGE_SIZE)*sizeof(ff_off_t))) == NULL) {
 				ffly_fprintf(ffly_err, "thread: failed to allocate memory for unused thread ids to be stored.\n");
 				goto _fail;
 			}
 		} else {
-			if ((uu_ids.p = (ff_tid_t*)__ffly_mem_realloc(uu_ids.p, ((++uu_ids.page_c)*UU_PAGE_SIZE)*sizeof(ff_tid_t))) == NULL) {
+			if ((uu.p = (ff_off_t*)__ffly_mem_realloc(uu.p, ((++uu.page_c)*UU_PAGE_SIZE)*sizeof(ff_off_t))) == NULL) {
 				ffly_fprintf(ffly_err, "thread: failed to realloc memory for unused thread ids.\n");
 				goto _fail;
 			}
@@ -106,37 +154,61 @@ ffly_thread_del(ff_tid_t __tid) {
 	}
 
 _sk:
-	*(uu_ids.p+(uu_ids.off++)) = __tid;
+	*(uu.p+(uu.off++)) = hget(__t);
+	hset(__t, -1);
 	ffly_mutex_unlock(&mutex);
 	return FFLY_SUCCESS;
 }
 
 // ??? 
 void static
-thread_free(ff_tid_t __id) {
-	struct ffly_thread *thr = get_thr(__id);
+thread_free(ff_tid_t __t) {
+	ff_i32_t h;
+	if ((h = hget(__t)) == -1) {
+		ffly_printf("no such thread.\n");
+		return;
+	}
+
+	ffly_threadp thr;
+	
+	
+	thr = get_thr(h);
 	__ffly_mem_free(thr->sp);
 	thr->sp = NULL;
 }
 
-ff_bool_t ffly_thread_alive(ff_tid_t __tid) {
-	return get_thr(__tid)->alive;
+ff_bool_t ffly_thread_alive(ff_tid_t __t) {
+	ff_i32_t h;
+	if ((h = hget(__t)) == -1) {
+		return 0;
+	}
+
+	return get_thr(h)->alive;
 }
 
-ff_bool_t ffly_thread_dead(ff_tid_t __tid) {
-	return !get_thr(__tid)->alive;
+ff_bool_t ffly_thread_dead(ff_tid_t __t) {
+	ff_i32_t h;
+	if ((h = hget(__t)) == -1) {
+		return 0; // return errror
+	}
+	return !get_thr(h)->alive;
 }
 
 # include "../tools/printbin.c"
 void static
-prox() {
+prox(void) {
 	void *arg_p;
 	__asm__("movq -8(%%rbp), %%rdi\n\t"
 			"movq %%rdi, %0": "=m"(arg_p) : : "rdi");
+	ffly_threadp thr;
+
 	ffly_tls_init();
 	ffly_process_prep();
-	ffly_threadp thr = (ffly_threadp)arg_p;
+	thr = (ffly_threadp)arg_p;
 	ffly_cond_lock_signal(&thr->lock);
+# ifdef debug
+	ffly_printf("new thread %u : %u.\n", thr->h, hget(thr->h));
+# endif
 	/*
 	ff_setpid();
 	thr->pid = ff_getpid();
@@ -154,13 +226,23 @@ prox() {
 
 	thr->exit = 0;
 
-	//ffly_thread_del(thr->tid);
-//	ffly_mal_hang;
+	ffly_thread_del(thr->h);
+	ffly_mal_hang;
+	thr->flags |= T_USEABLE;
 	exit(0);
 }
 
-ff_err_t ffly_thread_kill(ff_tid_t __tid) {
-	struct ffly_thread *thr = get_thr(__tid);
+ff_err_t ffly_thread_kill(ff_tid_t __t) {
+	ff_i32_t h;
+
+	if ((h = hget(__t)) == -1) {
+		ffly_printf("no such thread.\n");
+		return FFLY_FAILURE;
+	}
+
+	ffly_threadp thr;
+	
+	thr = get_thr(h);
 	if (kill(thr->pid, SIGKILL) == -1) {
 		ffly_fprintf(ffly_err, "thread, failed to kill..\n");
 		return FFLY_FAILURE;
@@ -168,13 +250,21 @@ ff_err_t ffly_thread_kill(ff_tid_t __tid) {
 	return FFLY_SUCCESS;
 }
 
-void ffly_thread_wait(ff_tid_t __tid) {
-	ffly_threadp t = get_thr(__tid);
-	if (!t) {
+void ffly_thread_wait(ff_tid_t __t) {
+	ff_i32_t h;
+
+	if ((h = hget(__t)) == -1) {
+		ffly_printf("no such thread.\n");
+		return;
+	}
+
+	ffly_threadp t;
+	if (!(t = get_thr(h))) {
 		ffly_printf("error.\n");
 		return;
 	}
-	ffly_printf("waiting for : %u\n", __tid);
+
+	ffly_printf("waiting for : %u\n", h);
 	wait4(t->pid, NULL, __WALL|__WCLONE, NULL);
 }
 
@@ -185,12 +275,17 @@ ff_err_t ffly_thread_create(ff_tid_t *__tid, void*(*__p)(void*), void *__arg_p) 
 	}
 
 	ffly_mutex_lock(&mutex);
-	ff_u8_t reused_id = 0;
-	if ((reused_id = (uu_ids.off>0))) {
-		*__tid = *(uu_ids.p+(--uu_ids.off));
-		if (uu_ids.off < ((uu_ids.page_c-1)*UU_PAGE_SIZE) && uu_ids.page_c > 1) {
-			if ((uu_ids.p = (ff_tid_t*)__ffly_mem_realloc(uu_ids.p,
-				((--uu_ids.page_c)*UU_PAGE_SIZE)*sizeof(ff_tid_t))) == NULL)
+	ff_i32_t h;
+	if ((h = ffly_tobtain_hole()) == -1) {
+		goto _fail;
+	}
+
+	ff_u8_t reused = 0;
+	if ((reused = (uu.off>0))) {
+		hset(*__tid = h, *(uu.p+(--uu.off)));
+		if (uu.off < ((uu.page_c-1)*UU_PAGE_SIZE) && uu.page_c > 1) {
+			if ((uu.p = (ff_off_t*)__ffly_mem_realloc(uu.p,
+				((--uu.page_c)*UU_PAGE_SIZE)*sizeof(ff_off_t))) == NULL)
 			{
 				ffly_fprintf(ffly_err, "thread: failed to realloc memory space for unused thread ids.\n");
 				return FFLY_FAILURE;
@@ -200,8 +295,8 @@ ff_err_t ffly_thread_create(ff_tid_t *__tid, void*(*__p)(void*), void *__arg_p) 
 		goto _exec;
 	}
 
-	*__tid = off++;
-	ffly_printf("thread id: %u\n", off-1);
+	hset(*__tid = h, off++);
+	ffly_printf("thread id: %u\n", h);
 
 	ffly_mutex_unlock(&mutex);
 	goto _alloc;
@@ -210,22 +305,48 @@ _exec:
 	{
 //	ffly_printf("stage, exec.\n");
 
-	ffly_threadp thr = get_thr(*__tid);
-	thr->alive = 0;
-	thr->exit = -1;
-	thr->lock = FFLY_COND_LOCK_INIT;
-	if (reused_id) {
+	ffly_threadp thr = get_thr(hget(h));
+
+	if (!(thr->flags&T_NOP)) {
+		/*
+			wait for relese
+		*/
+# ifdef debug 
+		ffly_printf("waiting for thread %u to be released.\n", h);
+# endif
+		while(!(thr->flags&T_USEABLE));
+
+		/*
+			TODO:
+				if the thread that we have here is on the edge of exiting
+				pause it until be are done then tell it to jump to the start
+		*/
+		/*
+			make sure thread is dead before use
+		*/
+		wait4(thr->pid, NULL, __WALL|__WCLONE, NULL);
+	}
+
+# ifdef debug
+	ffly_printf("thread was released.\n");
+# endif
+	if (reused) {
 		thr->arg_p = __arg_p;
 		thr->routine = __p;
 	} else {
 		*thr = (struct ffly_thread) {
-			.tid = *__tid,
 			.sp = (ff_byte_t*)__ffly_mem_alloc(DSS),
 			.tls = (ff_byte_t*)__ffly_mem_alloc(TLS_SIZE),
 			.arg_p = __arg_p,
 			.routine = __p
 		};
 	}
+
+	thr->flags = 0x0;
+	thr->alive = 0;
+	thr->exit = -1;
+	thr->lock = FFLY_COND_LOCK_INIT;
+	thr->h = h;
 
 	*(void**)(thr->sp+(DSS-8)) = (void*)prox;
 	*(void**)(thr->sp+(DSS-16)) = (void*)thr;
@@ -268,8 +389,10 @@ _alloc:
 			*(itr++) = NULL;
 	}
 
-	if (!*(threads+*__tid)) {
-		*(threads+*__tid) = (ffly_threadp)__ffly_mem_alloc(sizeof(struct ffly_thread));
+	if (!*(threads+hget(h))) {
+		ffly_threadp t;
+		t = (*(threads+hget(h)) = (ffly_threadp)__ffly_mem_alloc(sizeof(struct ffly_thread)));
+		t->flags = T_USEABLE|T_NOP;
 	}
 
 	ffly_mutex_unlock(&mutex);
@@ -280,16 +403,15 @@ _fail:
 }
 
 ff_err_t ffly_thread_cleanup() {
-	while(active_threads != 0);
 	ffly_threadp *itr = threads, cur;
 	ffly_threadp *end = threads+off;
-	ffly_fprintf(ffly_log, "thread shutdown, stage 0.\n");
+	ffly_fprintf(ffly_log, "thread/s - shutdown&cleanup, phase{0}.\n");
 	while(itr != end) {
 		ffly_fprintf(ffly_log, "thread with id: %u, cleaning.\n", itr-threads);
 		cur = *(itr++);
-//		if (cur->alive)
-//			ffly_thread_kill(cur->tid); // bad - rethink
-		ffly_thread_wait(cur->tid);
+
+		wait4(cur->pid, NULL, __WALL|__WCLONE, NULL);
+
 		if (cur->sp != NULL) {
 			ffly_fprintf(ffly_log, "\t.- stack release.\n");
 			__ffly_mem_free(cur->sp);
@@ -304,19 +426,20 @@ ff_err_t ffly_thread_cleanup() {
 			ffly_ctl(ffly_malc, _ar_unset, 0);
 		}
 		__ffly_mem_free(cur);
+		
 	}
 
-	ffly_fprintf(ffly_log, "thread shutdown, stage 1.\n");
+	ffly_fprintf(ffly_log, "thread free, phase{1}.\n");
 	if (threads != NULL) {
 		__ffly_mem_free(threads);
 		threads = NULL;
 	}
 
-	ffly_fprintf(ffly_log, "thread shutdown, stage 2.\n");
-	if (uu_ids.p != NULL) {
-		__ffly_mem_free(uu_ids.p);
-		uu_ids.p = NULL;
+	ffly_fprintf(ffly_log, "uu free, phase{2}.\n");
+	if (uu.p != NULL) {
+		__ffly_mem_free(uu.p);
+		uu.p = NULL;
 	}
-	uu_ids.off = uu_ids.page_c = 0;
+	uu.off = uu.page_c = 0;
 	off = page_c = 0;
 }

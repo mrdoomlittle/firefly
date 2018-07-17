@@ -5,7 +5,7 @@
 # define ROW_LEN (1<<ROW_SHIFT)
 
 void ffly_chrdump(ff_u8_t *__p, ff_uint_t __size) {
-	char buf[128];
+	char buf[ROW_LEN+1];
 	char *bufp;
 	ff_uint_t nw;
 
@@ -29,13 +29,13 @@ void ffly_chrdump(ff_u8_t *__p, ff_uint_t __size) {
 		ffly_printf("%s\n", buf);
 	}
 
-	ff_u8_t *ne;
-	if (e != (ne = __p+__size)) {
+	if (p != (e = __p+__size)) {
 		bufp = buf;
-		while(p != ne) {
+		while(p != e) {
 			c = *p;
 			if (!(c>='a' && c <='z')) c = '.';
 			*(bufp++) = c;
+			p++;
 		}
 		*bufp = '\0';
 

@@ -177,48 +177,18 @@ void ff_as_isa(ff_uint_t __by) {
 	bed+=__by;
 }
 
-void op_asb(ff_u8_t __op, ff_addr_t __dst, ff_u8_t __val) {
-	ff_as_oustbyte(__op);
-	oust_addr(__dst);
-	ff_as_oustbyte(__val);
-	iadr(2+sizeof(ff_addr_t));
-}
-
 void op_asw(ff_u8_t __op, ff_addr_t __dst, ff_u16_t __val) {
-	ff_as_oustbyte(__op);
-	oust_addr(__dst);
-	ff_as_oust_16l(__val);
-	iadr(3+sizeof(ff_addr_t));
-}
+	ff_u8_t buf[5];
+	*buf = __op;
+	*(ff_u16_t*)(buf+1) = __dst;
+	*(ff_u16_t*)(buf+3) = __val;
 
-void op_asd(ff_u8_t __op, ff_addr_t __dst, ff_u32_t __val) {
-	ff_as_oustbyte(__op);
-	oust_addr(__dst);
-	ff_as_oust_32l(__val);
-	iadr(5+sizeof(ff_addr_t));
-}
-
-void op_asq(ff_u8_t __op, ff_addr_t __dst, ff_u64_t __val) {
-	ff_as_oustbyte(__op);
-	oust_addr(__dst);
-	ff_as_oust_64l(__val);
-	iadr(9+sizeof(ff_addr_t));
-}
-
-void rgasb(char const *__reg, ff_u8_t __to) {
-	op_asb(_resin_op_asb, getreg(__reg)->addr, __to);
+	fgrowb(curfrag, 5);
+	ff_as_plant(curfrag, buf, 5);
 }
 
 void rgasw(char const *__reg, ff_u16_t __to) {
 	op_asw(_resin_op_asw, getreg(__reg)->addr, __to);
-}
-
-void rgasd(char const *__reg, ff_u32_t __to) {
-	op_asd(_resin_op_asd, getreg(__reg)->addr, __to);
-}
-
-void rgasq(char const *__reg, ff_u64_t __to) {
-	op_asq(_resin_op_asq, getreg(__reg)->addr, __to);
 }
 
 ff_u8_t imm_sz(ff_u16_t __o) {
@@ -258,7 +228,7 @@ locate_op(void) {
 
 ff_i8_t static suffix;
 
-# include "../ffef.h"
+# include "../remf.h"
 void static
 _post(void) {
 	locate_op();
@@ -276,7 +246,7 @@ _post(void) {
 	void **cur = fak_->p;
 	
 	ff_u16_t info;
-	printf("%s, ", op->name);
+	printf("%s, %x, ", op->name, *op->opcode);
 	if (is_flag(op->flags, asto) && suffix>0)
 		oc+=suffix;
 	ff_u8_t i = 0;
@@ -316,20 +286,39 @@ _post(void) {
 				printf("local label, parent: %s\n", curlabel->s);
 				la = curlabel;
 				local_labelp ll = (local_labelp)__label;
-				ll->p_adr = &la->adr;
+				ll->p_f = &la->f;
+				ll->p_foffset = &la->foffset;
 				ll->parent = la;
 			} else {
 				la = (labelp)__label;
 			}
 
-			rgasw(rgname, 0);
-			if (is_flag(la->flags, LA_LOOSE))
-				_ffef_hook(offset-sizeof(ff_addr_t), 2);
-			else
-				_ffef_reloc(offset-sizeof(ff_addr_t), 2);
+			/* LATER:
+					remove 'movw' as we dont need it
+				output:
+				movw addr, %ax {src -> dst}
+				call/jmp %ax
+			*/
 
+			rgasw(rgname, 0x4);
+			ff_u32_t fo = frag_offset(curfrag);
+	
 			*(ff_addr_t*)p = getreg(rgname)->addr;
-			p+=sizeof(ff_addr_t);
+			p+=sizeof(ff_addr_t);	
+
+			memcpy(opbase, oc, op->l);
+
+			ff_uint_t sz = p-buf;
+			fgrowb(curfrag, sz);
+			ff_as_plant(curfrag, buf, sz);
+
+			if (is_flag(la->flags, LA_LOOSE))
+				_remf_hook(curfrag, fo-sizeof(ff_addr_t), frag_offset(curfrag)-sz, 2);
+			else
+				_remf_reloc(curfrag, fo-sizeof(ff_addr_t), frag_offset(curfrag)-sz, 2);
+
+			ff_as_fnew();
+			p = buf;
 		} else {
 			printf("error unknown operand.\n");
 			break;
@@ -340,8 +329,12 @@ _post(void) {
 
 	memcpy(opbase, oc, op->l);
 	printf("\n");
-	ff_as_oust(buf, p-buf);
-	iadr(p-buf);
+	ff_uint_t sz = p-buf;
+	if (sz>0) {
+		// grow frag by X amount
+		fgrowb(curfrag, sz);
+		ff_as_plant(curfrag, buf, sz);
+	}
 }
 
 void static*
@@ -376,6 +369,11 @@ _suffix(ff_u8_t __c) {
 	return 0;
 }
 
+void static
+_fixins(struct fix_s *__fx) {
+
+}
+
 # include "../../dep/str_len.h"
 void
 ff_as_resin(void) {
@@ -406,4 +404,5 @@ ff_as_resin(void) {
 	ff_as_getreg = _getreg;
 	ff_as_regsz = _regsz;
 	ff_as_suffix = _suffix;
+	ff_as_fixins = _fixins;
 }

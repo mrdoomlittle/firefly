@@ -62,6 +62,6 @@ ff_bond_hash_get(hashp __hash, ff_u8_t const *__key, ff_uint_t __len) {
 		cur = cur->next;
 	}
 
-	printf("hash error.\n");
+	printf("hash error, not fatal just cant locate entry nothing to panic about.\n");
 	return NULL;
 }

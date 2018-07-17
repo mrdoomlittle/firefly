@@ -18,6 +18,7 @@ static struct cmd *cmd_tbl[] = {
 	&(struct cmd){"help", _cmd_help},
 	&(struct cmd){"exit", _cmd_exit},
 	&(struct cmd){"info", _cmd_info},
+	&(struct cmd){"ff5", _cmd_ff5},
 	&(struct cmd){"ff6", _cmd_ff6},
 	&(struct cmd){"exec", _cmd_exec},
 	NULL
@@ -47,7 +48,7 @@ _at_eof(void) {
 	return off>=e;
 }
 
-ff_i8_t ffsh_run = 0;
+ff_i8_t static run = 0;
 # include "linux/termios.h"
 /*
 	can break needs fixing and shit.
@@ -55,6 +56,7 @@ ff_i8_t ffsh_run = 0;
 
 # include "line.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	ffsh_run = &run;
 	struct termios term, old;
 	tcgetattr(ffly_in->fd, &term);
 	old = term;
@@ -119,7 +121,7 @@ _out:
 		}
 	}
 	mem_cleanup();
-	if (!ffsh_run)
+	if (!run)
 		goto _again;
 
 	hash_destroy(&cmdmap);

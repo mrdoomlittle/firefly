@@ -27,7 +27,7 @@ typedef ff_uint_t _ff_id_t;
 typedef ff_uint_t __ff_id_t;
 typedef ff_uint_t* ff_id_t;
 
-typedef __ff_id_t ff_tid_t;
+typedef ff_u16_t ff_tid_t;
 
 // atomic
 typedef ff_u64_t ff_atomic_u64_t;

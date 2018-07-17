@@ -140,6 +140,9 @@ typedef struct ff_db_user {
 	ff_u64_t enckey;
 } *ff_db_userp;
 
+/*
+	do we need this ???
+*/
 typedef struct ff_dbd {
 	void **list;
 	struct ffly_map users; 

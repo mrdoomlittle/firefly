@@ -1,7 +1,7 @@
 # include "as.h"
 # include "../string.h"
 # include "../malloc.h"
-# include "../ffef.h"
+# include "../remf.h"
 # include "../stdio.h"
 symbolp syt_head = NULL;
 

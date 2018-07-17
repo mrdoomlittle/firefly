@@ -47,7 +47,7 @@ syt_gut(void) {
 		bzero(&sy, elf64_sym_size);
 		sy.name = stt_off;
 		labelp la = (labelp)ff_as_hash_get(&env, cur->p, cur->len);
-		sy.val = la->adr;
+		sy.val = la->f->adr+la->foffset;
 		sy.info = ELF32_ST_INFO(STB_GLOBAL, STT_NOTYPE);
 		sy.sdx = 1;
 		ff_as_stt(cur->p, 0);	
@@ -97,8 +97,8 @@ forge(void) {
 		ff_as_stt(buf, 0);
 		printf("region: %s\n", rg->name);
 		if (!strcmp(rg->name, "text")) {
-			sec.size = rg->end-rg->beg;
-			sec.offset = rg->beg;
+			sec.size = (rg->end.f->dst+rg->end.offset)-(rg->beg.f->dst+rg->beg.offset);
+			sec.offset = (rg->beg.f->dst+rg->beg.offset);
 			sec.addralign = 1;
 			sec.flags = SHF_EXECINSTR|SHF_ALLOC;
 			sec.type = SHT_PROGBITS;

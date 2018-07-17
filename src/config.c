@@ -6,6 +6,12 @@
 # include "system/io.h"
 # include "system/file.h"
 # include "system/string.h"
+/*
+	TODO:
+		cleanup
+
+*/
+
 enum {
 	_tok_ident,
 	_tok_keyword,
@@ -131,6 +137,10 @@ ff_bool_t static is_eof(struct ffly_conf *__conf) {
 	return (__conf->p+__conf->off) >= __conf->end;
 }
 
+/*
+	TODO:
+		macros
+*/
 void static mk_ident(struct token *__tok, char *__s) {
 	*__tok = (struct token){.kind=_tok_ident, .p=(void*)__s};
 }
@@ -205,6 +215,10 @@ read_str(struct ffly_conf *__conf, char **__end) {
 	return s;
 }
 
+/*
+	TODO:
+		macro
+*/
 char static*
 read_chr(struct ffly_conf *__conf) {
 	__conf->off++;

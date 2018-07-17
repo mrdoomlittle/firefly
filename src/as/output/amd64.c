@@ -3,6 +3,17 @@
 # include "../../stdio.h"
 # include "../opcodes/amd64.h"
 # include "../../string.h" 
+
+# define _suffix_byte 0x0
+# define _suffix_word 0x1
+# define _suffix_dword 0x2
+# define _suffix_qword 0x3
+
+
+struct ins {
+	char buf[24];
+};
+
 typedef struct {
 	char const *name;
 	ff_u8_t enc;
@@ -55,6 +66,8 @@ ff_u8_t static imm_sz(ff_u16_t __o) {
 	return 0;
 }
 
+ff_i8_t static suffix;
+
 void static
 locate_op(void) {
 	while(*(--op_tray) != NULL) {
@@ -79,6 +92,20 @@ locate_op(void) {
 
 void static
 _post(void) {
+	if (suffix>0) {
+		ff_u8_t i = 0;
+		ff_u8_t n = fak_->n;
+		ff_u16_t *ip;
+		while(i != n) {
+			ff_u16_t info = *(ip = fak_->info+i);
+			if ((info&_o_imm)>0) {
+				*ip = _o_imm8<<suffix;
+			} else if ((info&_o_reg)>0) {
+				*ip = _o_reg8<<suffix;
+			}
+			i++;
+		}
+	}
 	locate_op();
 	if (!op) {
 		printf("failed to locate operation.\n");
@@ -105,9 +132,13 @@ _post(void) {
 	if (is_flag(op->flags, modrm))
 		*(mod = p++) = 0x0;
 	void **cur = fak_->p;
+
+	ff_u8_t i = 0;
+	ff_u8_t n = fak_->n;
+
 	printf("; ; ; ; ; %s, ", op->name);
-	while(*cur != NULL) {
-		ff_u8_t off = cur-fak_->p;
+	while(i != n) {
+		ff_u8_t off = i++;
 		ff_u16_t info = getinfo(fak_, off);
 		if ((info&_o_imm)>0) {
 			printf("%u, ", *(ff_u64_t*)fakget(off));
@@ -127,8 +158,15 @@ _post(void) {
 			} else {
 				*opbase = (*(ff_u8_t*)opbase)+reg->enc;
 			}
-		} else if ((info&_o_dis)>0) {
-			
+		} else if ((info&_o_label)>0) {
+			labelp la = (labelp)__label;
+			ff_uint_t sz = p-buf;
+			if (sz>0) {
+				fgrowb(curfrag, sz);
+				ff_as_plant(curfrag, buf, sz);
+			}
+			fix(curfrag, curfrag->offset, la, _fx_jmp, sz, _fx_label);
+			ff_as_fnew(); // new frag
 		}
 		cur++;
 	}
@@ -136,7 +174,12 @@ _post(void) {
 
 	if (is_flag(op->flags, modrm))
 		*mod |= op->ext<<3|3<<6;
-	ff_as_oust(buf, p-buf);
+	ff_uint_t sz = p-buf;
+	if (sz>0) {
+		// grow frag by X amount
+		fgrowb(curfrag, sz);
+		ff_as_plant(curfrag, buf, sz);
+	}
 }
 
 void static*
@@ -155,6 +198,36 @@ _getreg(char const *__name) {
 ff_u8_t static
 _regsz(void *__reg) {
 	return ((reginfo*)__reg)->l;
+}
+
+ff_i8_t static
+_suffix(ff_u8_t __c) {
+	switch(__c) {
+		case 'b':
+			suffix = _suffix_byte;
+		break;
+		case 'w':
+			suffix = _suffix_word;
+		break;
+		case 'd':
+			suffix = _suffix_qword;
+		break;
+		case 'q':
+			suffix = _suffix_qword;
+		break;
+		default:
+			return (suffix = -1);
+	}
+	printf("got suffix.\n");
+	return 0;
+}
+
+void static
+_fixins(struct fix_s *__fx) {
+	if (__fx->type == _fx_jmp) {
+
+
+	}
 }
 
 # include "../../dep/str_len.h"
@@ -185,4 +258,6 @@ ff_as_amd64(void) {
 	post = _post;
 	ff_as_getreg = _getreg;
 	ff_as_regsz = _regsz;
+	ff_as_suffix = _suffix;
+	ff_as_fixins = _fixins;
 }

@@ -17,6 +17,10 @@ void slotput(ff_uint_t, void*);
 
 /*
 	multiclient not done.
+	TODO:
+		move ff_dbdp
+		static ffdbp d;
+		dont pass as arg to function
 */
 
 ff_i8_t static
@@ -621,7 +625,7 @@ void _ff_scrap_slot();
 void _ff_exist();
 void _ff_recstat();
 
-void *jmp[] = {
+static void *jmp[] = {
 	_ff_login,
 	_ff_logout,
 	_ff_pulse,
@@ -742,7 +746,10 @@ ff_db_serve(void *__arg_p) {
 		if (msg.kind > _ff_db_msg_recstat) {
 			jmpexit;
 		}
-
+/*
+	move below to its own function
+	say opexec
+*/
 		jmpto(jmp[msg.kind]);
 
 		__asm__("_ff_creat_pile:\n\t"); {

@@ -80,6 +80,7 @@ ff_uint_t tls_test;
 # include "pallet.h"
 void *tls;
 void* th(void *__arg) {
+
 }
 # include "cache.h"
 # include "resource.h"
@@ -98,6 +99,13 @@ void* th(void *__arg) {
 # include "clock.h"
 # include "brick.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	ff_u8_t i = 0;
+	ff_tid_t t;
+	while(i != 9) {
+		ffly_thread_create(&t, th, NULL);
+		i++;
+	}
+//	ffly_nanosleep(1, 0);
 /*
 	ff_uint_t i = 0;
 	ff_u64_t start;
@@ -107,6 +115,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		ffly_printf("%lu\n", ffly_clock_get()-start);
 	}
 */
+/*
 	ff_uint_t const c = 21;
 	ff_u32_t b_list[c];
 	ff_uint_t i;
@@ -125,6 +134,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_bricks_show();
 	ffly_brick_cleanup();
+*/
 /*
 	struct termios term, old;
 	tcgetattr(ffly_in->fd, &term);

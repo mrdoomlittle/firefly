@@ -20,7 +20,7 @@ ff_uint_t static sz;
 
 ff_uint_t static bsz;
 void static
-get(long __off, void *__p) {
+bread(long __off, void *__p, ff_u8_t __sz) {
 	ff_uint_t left;
 	ff_uint_t size;
 
@@ -56,7 +56,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_br_prep(&br, _ff_brick_32, n);
 	while(i != n) {
 		ffly_printf("%u:\n", i);
-		ffly_br_put(&br, ffly_brick_new(_ff_brick_32, get, i*bsz), i);
+		ffly_br_put(&br, ffly_brick_new(_ff_brick_32, bread, NULL, NULL, i*bsz), i);
 		i++;
 	}
 

@@ -36,23 +36,23 @@ extsrcfl(char const **__p) {
 }
 
 ff_i8_t static
-validate(ffef_hdrp __hdr) {
-	if (*__hdr->ident != FF_EF_MAG0) {
-		printf("mag0 corrupted\n");
+validate(remf_hdrp __hdr) {
+	if (*__hdr->ident != FF_REMF_MAG0) {
+		printf("mag0 corrupted\n"); //<- add somthing else other then corrupted 
 		return -1;
 	}
 
-	if (__hdr->ident[1] != FF_EF_MAG1) {
+	if (__hdr->ident[1] != FF_REMF_MAG1) {
 		printf("mag1 corrupted\n");
 		return -1;
 	}
 
-	if (__hdr->ident[2] != FF_EF_MAG2) {
+	if (__hdr->ident[2] != FF_REMF_MAG2) {
 		printf("mag2 corrupted\n");
 		return -1;
 	}
 
-	if (__hdr->ident[3] != FF_EF_MAG3) {
+	if (__hdr->ident[3] != FF_REMF_MAG3) {
 		printf("mag3 corrupted\n");
 		return -1;
 	}
@@ -61,7 +61,7 @@ validate(ffef_hdrp __hdr) {
 
 # include "../malloc.h"
 # include "../dep/bzero.h"
-ff_uint_t offset = ffef_hdr_size;
+ff_uint_t offset = remf_hdrsz;
 ff_uint_t static
 get_offset() {
 	return offset;
@@ -198,7 +198,7 @@ ff_bond_oust(void *__p, ff_uint_t __size) {
 char const *stt, *stte;
 
 void static
-absorb_symbol(ffef_syp __sy, symbolp *__stp) {
+absorb_symbol(remf_syp __sy, symbolp *__stp) {
 	char name[128];
 	memcpy(name, stte-__sy->name, __sy->l);
 	*(name+(__sy->l-1)) = '\0';
@@ -228,7 +228,7 @@ _sk1:
 }
 
 void static 
-absorb_hook(ffef_hokp __hook) {
+absorb_hook(remf_hokp __hook) {
 	hookp p = (hookp)malloc(sizeof(struct hook));
 	to_free(p);
 	p->next = curhok;
@@ -241,7 +241,7 @@ absorb_hook(ffef_hokp __hook) {
 }
 
 void static
-absorb_segment(ffef_seg_hdrp __seg) {
+absorb_segment(remf_seg_hdrp __seg) {
 	segmentp seg = (segmentp)malloc(sizeof(struct segment));	
 	seg->next = curseg;
 	curseg = seg;
@@ -254,7 +254,7 @@ absorb_segment(ffef_seg_hdrp __seg) {
 
 # include "../rdm.h"
 void static
-absorb_region(ffef_reg_hdrp __reg) {
+absorb_region(remf_reg_hdrp __reg) {
 	char name[128];
 	lseek(s, __reg->name, SEEK_SET);
 	read(s, name, __reg->l);
@@ -269,12 +269,12 @@ absorb_region(ffef_reg_hdrp __reg) {
 
 	if (__reg->type == FF_RG_SYT) {
 		ff_uint_t l;
-		syt = (symbolp*)malloc((l = (size/sizeof(struct ffef_sy)))*sizeof(symbolp));
+		syt = (symbolp*)malloc((l = (size/sizeof(struct remf_sy)))*sizeof(symbolp));
 		to_free(syt);
 		symbolp *p = syt;
 		syt+=(l-1);
-		ffef_syp sy = (ffef_syp)buf;
-		while(sy != (ffef_syp)(buf+size))
+		remf_syp sy = (remf_syp)buf;
+		while(sy != (remf_syp)(buf+size))
 			absorb_symbol(sy++, p++);
 		free(buf);
 		return;
@@ -307,7 +307,7 @@ absorb_region(ffef_reg_hdrp __reg) {
 }
 
 void static
-absorb_relocate(ffef_relp __rel) {
+absorb_relocate(remf_relp __rel) {
 	relocatep rel = (relocatep)malloc(sizeof(struct relocate));
 	to_free(rel);
 	rel->next = currel;
@@ -322,10 +322,10 @@ absorb_relocate(ffef_relp __rel) {
 
 // load string table
 void static
-ldstt(ffef_hdrp __hdr) {
-	struct ffef_reg_hdr reg;
+ldstt(remf_hdrp __hdr) {
+	struct remf_reg_hdr reg;
 	lseek(s, __hdr->sttr, SEEK_SET);
-	read(s, &reg, ffef_reg_hdrsz);
+	read(s, &reg, remf_reghdrsz);
 
 	ff_uint_t size;
 	stt = (char const*)malloc(size = (reg.end-reg.beg));
@@ -336,20 +336,20 @@ ldstt(ffef_hdrp __hdr) {
 
 ff_i8_t static epdeg = -1;
 void static
-process_srcfl(char const *__file, ffef_hdrp __dhdr) {
+process_srcfl(char const *__file, remf_hdrp __dhdr) {
 	if ((s = open(__file, O_RDONLY, 0)) == -1) {
 		printf("failed to open source file.\n");
 		return;
 	}
 
-	struct ffef_hdr hdr;
-	read(s, &hdr, ffef_hdr_size);
+	struct remf_hdr hdr;
+	read(s, &hdr, remf_hdrsz);
 	if (validate(&hdr) == -1) {
-		printf("%s: validation failed ffef header not pressent or is corrupted, skipping file.\n", __file);
+		printf("%s: validation failed remf header not pressent or is corrupted, skipping file.\n", __file);
 		return;
 	}
 
-	if (hdr.routine != FF_EF_NULL) {
+	if (hdr.routine != FF_REMF_NULL) {
 		if (!epdeg) {
 			printf("entry point already designated, skipping.\n");
 			return;
@@ -358,50 +358,50 @@ process_srcfl(char const *__file, ffef_hdrp __dhdr) {
 	}
 
 	ldstt(&hdr);
-	struct ffef_reg_hdr reg;
-	if (hdr.rg != FF_EF_NULL) {
+	struct remf_reg_hdr reg;
+	if (hdr.rg != FF_REMF_NULL) {
 		ff_uint_t i;
 		ff_u64_t offset = hdr.rg;
 //		to_free(rindx = (regionp*)malloc(hdr.nrg*sizeof(regionp)));
-		for(i = 0;i != hdr.nrg;i++,offset-=ffef_reg_hdrsz+reg.l) {
+		for(i = 0;i != hdr.nrg;i++,offset-=remf_reghdrsz+reg.l) {
 			lseek(s, offset, SEEK_SET);
-			read(s, &reg, ffef_reg_hdrsz);
+			read(s, &reg, remf_reghdrsz);
 			absorb_region(&reg);
 //			rindx[i] = curreg;
 		}
 	}
 
 /*
-	struct ffef_seg_hdr seg;
+	struct remf_seg_hdr seg;
 	if (hdr.sg != FF_EF_NULL) {
 		ff_uint_t i;
 		ff_u64_t offset = hdr.sg;
-		for(i = 0;i != hdr.nsg;i++,offset-=ffef_seg_hdrsz) {
+		for(i = 0;i != hdr.nsg;i++,offset-=remf_seghdrsz) {
 			lseek(s, offset, SEEK_SET);
-			read(s, &seg, ffef_reg_hdrsz);
+			read(s, &seg, remf_reg_hdrsz); <- dont know why reghdrsz
 			absorb_segment(&seg);
 		}
 	}
 */
 
-	struct ffef_rel rel;
-	if (hdr.rl != FF_EF_NULL) {
+	struct remf_rel rel;
+	if (hdr.rl != FF_REMF_NULL) {
 		ff_uint_t i = 0;
 		ff_u64_t offset = hdr.rl;
-		for(i = 0;i != hdr.nrl;i++,offset-=ffef_relsz) {
+		for(i = 0;i != hdr.nrl;i++,offset-=remf_relsz) {
 			lseek(s, offset, SEEK_SET);
-			read(s, &rel, ffef_relsz);
+			read(s, &rel, remf_relsz);
 			absorb_relocate(&rel);
 		}
 	}
 
-	struct ffef_hok hok;
-	if (hdr.hk != FF_EF_NULL) {
+	struct remf_hok hok;
+	if (hdr.hk != FF_REMF_NULL) {
 		ff_uint_t i;
 		ff_u64_t offset = hdr.hk;
-		for(i = 0;i != hdr.nhk;i++,offset-=ffef_hoksz) {
+		for(i = 0;i != hdr.nhk;i++,offset-=remf_hoksz) {
 			lseek(s, offset, SEEK_SET);
-			read(s, &hok, ffef_hoksz);
+			read(s, &hok, remf_hoksz);
 			absorb_hook(&hok);
 		}
 	}
@@ -474,27 +474,28 @@ return;
 	char const *p = __s;
 
 	if ((d = open(__dst, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU)) == -1) {
-
+		// error
+		return;
 	}
 
-	struct ffef_hdr dhdr;
-	ffly_bzero(&dhdr, ffef_hdr_size);
+	struct remf_hdr dhdr;
+	ffly_bzero(&dhdr, remf_hdrsz);
 
-	*dhdr.ident = FF_EF_MAG0;
-	dhdr.ident[1] = FF_EF_MAG1;
-	dhdr.ident[2] = FF_EF_MAG2;
-	dhdr.ident[3] = FF_EF_MAG3;
+	*dhdr.ident = FF_REMF_MAG0;
+	dhdr.ident[1] = FF_REMF_MAG1;
+	dhdr.ident[2] = FF_REMF_MAG2;
+	dhdr.ident[3] = FF_REMF_MAG3;
 
 	dhdr.nsg = 0;
 	dhdr.nrg = 0;
 	dhdr.nrl = 0;
 	dhdr.nhk = 0;
-	dhdr.sg = FF_EF_NULL;
-	dhdr.rg = FF_EF_NULL;
-	dhdr.rl = FF_EF_NULL;
-	dhdr.hk = FF_EF_NULL;
+	dhdr.sg = FF_REMF_NULL;
+	dhdr.rg = FF_REMF_NULL;
+	dhdr.rl = FF_REMF_NULL;
+	dhdr.hk = FF_REMF_NULL;
 
-	dhdr.sttr = FF_EF_NULL;
+	dhdr.sttr = FF_REMF_NULL;
 
 	ff_i8_t epdeg = -1;
 	while(*p != '\0') {

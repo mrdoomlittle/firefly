@@ -11,8 +11,8 @@
 		dealloc 'lots' that are not inuse
 */
 
-# define is_sliceable(__no, __by) \
-	!(__no-((__no>>__by)*(1<<__by)))
+# define is_sliceable(__val, __by) \
+	!((1<<(__val))-((1<<(__val-__by))*(1<<(__by))))
 
 ff_uint_t static
 get_cnk_off(ffly_unip __uni, ff_uint_t __cnk_no) {
@@ -108,7 +108,7 @@ ffly_uni_attach_body(ffly_unip __uni, ffly_phy_bodyp __body) {
 	ff_uint_t y = *__body->y;
 	ff_uint_t z = *__body->z;
 	if (x>=__uni->xl || y>=__uni->yl || z>=__uni->zl) {
-		ffly_fprintf(ffly_err, "body is out of bounds, can't attach.\n");
+		ffly_fprintf(ffly_err, "body is out of bounds, can't attach, %u, %u, %u\n", x, y, z);
 		reterr;
 	}
 
@@ -179,11 +179,15 @@ ffly_uni_build(ffly_unip __uni, ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl, 
 		ffly_fprintf(ffly_err, "length of z sliceable by %u.\n", 1<<__splice);
 		return FFLY_FAILURE;
 	}
-	
+
+	ffly_fprintf(ffly_log, "unisize: %u, %u, %u\n", 1<<__xl, 1<<__yl, 1<<__zl);
+	__uni->xl = 1<<__xl;
+	__uni->yl = 1<<__yl;
+	__uni->zl = 1<<__zl;
 	ffly_cnk_man_init(&__uni->chunk_man, 1<<__splice, 1<<__splice, 1<<__splice);
-	__uni->xcnk_c = __xl>>__splice;
-	__uni->ycnk_c = __yl>>__splice;
-	__uni->zcnk_c = __zl>>__splice;
+	__uni->xcnk_c = 1<<(__xl-__splice);
+	__uni->ycnk_c = 1<<(__yl-__splice);
+	__uni->zcnk_c = 1<<(__zl-__splice);
 	ffly_fprintf(ffly_log, "building univirse, xcnk %u, ycnk %u, zcnk %u\n", __uni->xcnk_c, __uni->ycnk_c, __uni->zcnk_c);
 	ff_uint_t size = __uni->xcnk_c*__uni->ycnk_c*__uni->zcnk_c;
 	__uni->chunks = (ff_id_t*)__ffly_mem_alloc(size*sizeof(ff_id_t));

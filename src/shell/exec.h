@@ -3,6 +3,7 @@
 # include "../ffint.h"
 # include "hash.h"
 
+ff_i8_t extern* ffsh_run;
 struct arg_s {
 	char const *p;
 	ff_uint_t l;
@@ -11,6 +12,7 @@ struct arg_s {
 enum {
 	_cmd_help,
 	_cmd_exit,
+	_cmd_ff5,
 	_cmd_ff6,
 	_cmd_info,
 	_cmd_exec

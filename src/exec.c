@@ -20,7 +20,7 @@ void ffexec(void(*__get)(ff_uint_t, ff_uint_t, ff_uint_t, void*), ff_u32_t __end
 # include "linux/fcntl.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
-# include "ffef.h"
+# include "remf.h"
 # include "system/io.h"
 # include "resin.h"
 # include "rdm.h"
@@ -28,7 +28,7 @@ void ffexec(void(*__get)(ff_uint_t, ff_uint_t, ff_uint_t, void*), ff_u32_t __end
 int static fd;
 typedef struct segment {
 	struct segment *next;
-	struct ffef_seg_hdr hdr;
+	struct remf_seg_hdr hdr;
 } *segmentp;
 
 // stack segments
@@ -36,7 +36,7 @@ static segmentp ss = NULL;
 
 void static
 prep(void *__hdr, void *__ctx) {
-	ffef_hdrp hdr = (ffef_hdrp)__hdr;
+	remf_hdrp hdr = (remf_hdrp)__hdr;
 	ffly_resinp ctx = (ffly_resinp)__ctx;
 
 	if (ss != NULL)
@@ -107,25 +107,25 @@ void ffexecf(char const *__file) {
 	struct stat st;
 	fstat(fd, &st);
 
-	struct ffef_hdr hdr;
-	read(fd, &hdr, ffef_hdr_size);
+	struct remf_hdr hdr;
+	read(fd, &hdr, remf_hdrsz);
 
-	if (*hdr.ident != FF_EF_MAG0) {
+	if (*hdr.ident != FF_REMF_MAG0) {
 		ffly_printf("ffexec, mag0 corrupted\n");
 		goto _corrupt;
 	}
 
-	if (hdr.ident[1] != FF_EF_MAG1) {
+	if (hdr.ident[1] != FF_REMF_MAG1) {
 		ffly_printf("ffexec, mag1 corrupted\n");
 		goto _corrupt;
 	}
 
-	if (hdr.ident[2] != FF_EF_MAG2) {
+	if (hdr.ident[2] != FF_REMF_MAG2) {
 		ffly_printf("ffexec, mag2 corrupted\n");
 		goto _corrupt;
 	}
 
-	if (hdr.ident[3] != FF_EF_MAG3) {
+	if (hdr.ident[3] != FF_REMF_MAG3) {
 		ffly_printf("ffexec, mag3 corrupted\n");
 		goto _corrupt;
 	}
@@ -135,13 +135,13 @@ void ffexecf(char const *__file) {
 	ff_uint_t size = 0;
 
 	segmentp seg;
-	if (hdr.sg != FF_EF_NULL) {
+	if (hdr.sg != FF_REMF_NULL) {
 		ff_uint_t i = 0;
 		ff_u64_t offset = hdr.sg;
 	_again:		
 		seg = (segmentp)__ffly_mem_alloc(sizeof(struct segment));
 		lseek(fd, offset, SEEK_SET);
-		read(fd, &seg->hdr, ffef_seg_hdrsz);
+		read(fd, &seg->hdr, remf_seghdrsz);
 		if (seg->hdr.type == FF_SG_STACK) {
 			seg->next = ss;	
 			ss = seg;
@@ -157,11 +157,15 @@ void ffexecf(char const *__file) {
 		}
 
 		if (++i != hdr.nsg) {
-			offset-=ffef_seg_hdrsz;
+			offset-=remf_seghdrsz;
 			goto _again;
 		}	
 	}
 
+	/*
+		TODO:
+			change
+	*/
 	prog = open("resin.temp", O_RDWR|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
 
 	/*

@@ -89,9 +89,12 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	/*
 		build universe
 	*/
-	ffly_uni_build(&uni, _ffly_uni_256, _ffly_uni_256, _ffly_uni_64, 4, _ffly_lotsize_8);
+	ffly_uni_build(&uni, _ffly_uni_256, _ffly_uni_256, 4, 4, _ffly_lotsize_8);
 
-	ffly_gravity_init(_ffly_uni_256, _ffly_uni_256, _ffly_uni_64);
+	if (_err(ffly_gravity_init(_ffly_uni_256, _ffly_uni_256, 4))) {
+		ffly_printf("gravity error.\n");
+		return;
+	}
 /*
 	ff_uint_t x, y = 0;
 	while(y != 70) {

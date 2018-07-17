@@ -32,7 +32,11 @@ static ffly_brickp top = NULL;
 	((*(bricks+(__id&0xfff)))+((__id>>12)&0xfffff))
 void static delink(ffly_brickp);
 
-ff_u32_t ffly_brick_new(ff_u8_t __sz, void(*__get)(long, void*), long __arg) {
+ff_u32_t
+ffly_brick_new(ff_u8_t __sz,
+	void(*__read)(long, void*, ff_u8_t), void(*__write)(long, void*, ff_u8_t),
+	void(*__del)(long), long __arg)
+{
 	ffly_brickp b;
 	if (bin != NULL) {
 		b = bin;
@@ -60,7 +64,9 @@ _sk:
 	b = (*(bricks+page))+pg_off;
 
 	b->arg = __arg;
-	b->get = __get;
+	b->read = __read;
+	b->write = __write;
+	b->del = __del;
 	b->p = NULL;
 	b->flags = 0x0;
 	b->inuse = 0;
@@ -81,13 +87,17 @@ void ffly_brick_open(ff_u32_t __id) {
 void ffly_brick_close(ff_u32_t __id) {
 	ffly_brickp b = get_brick(__id);
 	b->flags ^= BRICK_OPEN;
+	if (b->p != NULL) {
+		if (b->write != NULL)
+			b->write(b->arg, b->p, b->sz);
+	}
 }
 
 void* ffly_brick_get(ff_u32_t __id) {
 	ffly_brickp b = get_brick(__id);
 	if (!b->p) {
 		b->p = __ffly_mem_alloc(1<<b->sz);
-		b->get(b->arg, b->p);
+		b->read(b->arg, b->p, b->sz);
 	}
 	return b->p;
 }
@@ -106,7 +116,9 @@ void ffly_brick_cleanup(void) {
 		__ffly_mem_free(*(bricks+page));
 		page++;
 	}
-	__ffly_mem_free(bricks);
+
+	if (bricks != NULL)
+		__ffly_mem_free(bricks);
 }
 
 void static
@@ -135,6 +147,8 @@ void ffly_bricks_show(void) {
 // get rid of brick
 void ffly_brick_rid(ff_u32_t __id) {
 	ffly_brickp b = get_brick(__id);
+	if (b->del != NULL)
+		b->del(b->arg);
 	ff_u64_t bo = ((__id&0xfff)*PAGE_SIZE)+(__id>>12&0xfffff);
 	if (bo == off-1 && page_c>1) {
 		ffly_printf("....\n");

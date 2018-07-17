@@ -21,6 +21,15 @@
 # include "dep/str_cpy.h"
 # include "system/mutex.h"
 # include "system/errno.h"
+
+/*
+	TODO:
+		pass load type option
+		e.g.
+			independent - load with its own prossess and we will talk back and forth
+		-
+			add dl option
+*/
 # define DSS 262144
 void ffly_mod() {
 	if (!__ffly_sysconf__.root_dir ||

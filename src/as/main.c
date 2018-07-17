@@ -7,7 +7,7 @@
 # include "../stdio.h"
 # include "../linux/stat.h"
 # include "../malloc.h"
-# include "../ffef.h"
+# include "../remf.h"
 # include "../exec.h"
 # include "../opt.h"
 # include "../depart.h"
@@ -18,7 +18,28 @@ struct ins extern* resin[];
 ff_u64_t extern offset;
 
 void ff_as_prepstack(void);
+//# define testing
+# include "frag.h"
+# include "../string.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+# ifdef testing
+	/*
+		ignore
+	*/
+
+	char const s[] = "juhiufuhiufhiuhduihfiuudhifuhdiufhiuidhffshijfhsdofhsojhfosdjhfjdshjfidfjhjfdshjfdshifhsihjfhoshfijsdhfijshdiufhsdiujfhdsihfdhishgfihdshihgfdjdf";
+	char buf[sizeof(s)];
+	memset(buf, 0, sizeof(s));
+	struct frag *f;
+	f = ff_as_falloc();
+
+	ff_as_fgrow(f, sizeof(s));
+	ff_as_fwrite(f, 0, s, sizeof(s));
+	ff_as_fread(f, 0, buf, sizeof(s));
+	ffly_printf("buf: %s\n", buf);
+# endif
+
+# ifndef testing
 	ffoe_prep();
 	char const *infile = NULL;
 	char const *outfile = NULL;
@@ -42,9 +63,9 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	printf("dest: %s, src: %s, format: %s\n", outfile, infile, format);
 
-	if (!strcmp(format, "ffef")) {
-		of = _of_ffef;
-		offset+=ffef_hdr_size;
+	if (!strcmp(format, "remf")) {
+		of = _of_remf;
+		offset+=remf_hdrsz;
 	} else if (!strcmp(format, "elf")) {
 		of = _of_elf;
 		offset+=elf64_hdr_size;
@@ -66,8 +87,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	else if (!strcmp(processor, "amd64"))
 		ff_as_amd64();
 
-	if (of == _of_ffef)
-		ff_as_ffef();
+	if (of == _of_remf)
+		ff_as_remf();
 	else if (of == _of_elf)
 		ff_as_elf();
 	
@@ -89,6 +110,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_as_de_init();
 	close(in);
 	close(out);
+# endif
 	ff_as_al_cu();
 	ffly_depart(NULL);
 }

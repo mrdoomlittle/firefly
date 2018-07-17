@@ -272,6 +272,7 @@ void ts12() {
 
 # include "../system/nanosleep.h"
 ff_uint_t *p;
+
 void* thr0(void *__arg_p) {
 	*p = 0xFFF;
 	ff_u8_t i = 0;
@@ -323,39 +324,66 @@ void copy(void *__dst, void *__src, ff_uint_t __bc);
 # include "../system/tls.h"
 # include "../malloc.h"
 # include "../location.h"
-ff_uint_t a = 0;
-ff_i8_t go = -1;
+# include "../mal.h"
+# include "../ctl.h"
+void *pp;
+ff_i8_t okay = -1;
+void *pot;
+
+ff_uint_t const n = 1204;
 void t0(void *__p) {
-	a++;
-	while(a != 2 && go<0);
+	ffly_ctl(ffly_malc, _ar_setpot, (ff_u64_t)pot);
 	ff_uint_t i = 0;
-	while(i != 2000) {
-	//	free(malloc(1000));
-		//ffly_balloc(1);
-		malloc(1);
+	while(i != n) {
+		pp = ffly_balloc((ffly_rand()%600)+1);
+		*(ff_u8_t*)pp = 212;
+		okay = 0;
+		while(!okay);
 		i++;
 	}
+	ffly_ctl(ffly_malc, _ar_unset, 0);
 }
 
 void t1(void *__p) {
-	a++;
-	while(a != 2 && go<0);
+	ffly_ctl(ffly_malc, _ar_setpot, (ff_u64_t)pot);
 	ff_uint_t i = 0;
-	while(i != 2000) {
-		//ffly_balloc(1);
-	//	free(malloc(1000));
-		malloc(1);
+	while(i != n) {
+		while(okay == -1);
+		if (*(ff_u8_t*)pp != 212)
+			ffly_printf("error.\n");
+		ffly_bfree(pp);
+		okay = -1;
 		i++;
 	}
+	ffly_ctl(ffly_malc, _ar_unset, 0);
 }
 void ffly_dispose(void*, ff_uint_t);
+
 void _start() {
 	ffly_tls_new();
 	ffly_ar_init();
 //	ff_location_init();
 	ffly_io_init();
+	ffly_thread_init();
 	ffset_mode(_ff_mod_debug);
 	ff_rat_put(_ff_rat_2);
+	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&pot);
+	ff_tid_t ta, tb;
+	ffly_thread_create(&ta, t0, NULL);
+	ffly_thread_create(&tb, t1, NULL);
+	ff_uint_t i = 0;
+	while(i != n) {
+		ffly_bfree(ffly_balloc((ffly_rand()%600)+1));
+		struct arinfo info;
+		arinfo(&info);
+		ffly_printf("\e[2Juseage: ar{(%u-bytes), (%u-blocks)} : (%u-bytes)\n", info.used, info.block_c, ffly_mem_alloc_bc-ffly_mem_free_bc);
+		ffly_fdrain(ffly_out);
+		ffly_arstat();
+		ffly_nanosleep(0, 1000);
+		i++;
+	}
+	ffly_twait(ta);
+	ffly_twait(tb);
 /*
 	struct ffly_vec vec;
 	ffly_vec_set_flags(&vec, VEC_AUTO_RESIZE);
@@ -384,11 +412,11 @@ void _start() {
 	ffly_vec_de_init(&vec);
 */
 //	ffly_bfree(p2);
-
-	ff_uint_t const n = 10000;
+/*
+	ff_uint_t const n = 1000;
 	void *list[n];
 
-	void **cur, **end = (void*)((ff_u8_t*)list+(n*sizeof(void*)));
+	void **cur, **end = list+n;
 	ff_uint_t i, size;
 	cur = list;
 	while(cur != end) *(cur++) = NULL;
@@ -402,50 +430,82 @@ void _start() {
 		cur = list;
 		while(cur != end) {
 			if (!*cur) {
-				size = ((ffly_rand()%22)+7);
+				size = ((ffly_rand()%287)+20)+(ffly_rand()%287);
 				clock_gettime(CLOCK_MONOTONIC, &begt);
 				*cur = __ffly_mem_alloc(size);
 				clock_gettime(CLOCK_MONOTONIC, &endt);
-				*(ff_u8_t*)*cur = 21;
-				*cur = __ffly_mem_realloc(*cur, size-=3);
-				if (*(ff_u8_t*)*cur != 21)
+				*(ff_u8_t*)*cur = 212;
+				*cur = __ffly_mem_realloc(*cur, size-10);	
+				if (*(ff_u8_t*)*cur != 212)
 					ffly_printf("error, got: %u\n", *(ff_u8_t*)*cur);
 				nsec+=(endt.tv_nsec-begt.tv_nsec)+((endt.tv_sec-begt.tv_sec)*1000000000);
 				i++;
 				c++;
-				ac++;
 			}
 
-			void **p = (void*)((ff_u8_t*)list+((ffly_rand()%(n-1))*sizeof(void*)));
-			if (*p != NULL) {
-				__ffly_mem_free(*p);
-				ac--;
-				*p = NULL;
+		
+			ff_uint_t l = 0;
+
+			while(l != 6) {
+				void **p = list+(ffly_rand()%(n-1));
+				if (p >= end) {
+					return;
+				}
+				if (*p != NULL) {
+					__ffly_mem_free(*p);
+					*p = NULL;
+					i--;
+				}
+				l++;
 			}
-		cur++;
+
+			cur++;
 		}
+
+		struct arinfo info;
+		arinfo(&info);
+		ffly_printf("\nuseage: ar{(%u-bytes), (%u-blocks)} : (%u-bytes)\n\n", info.used, info.block_c, ffly_mem_alloc_bc-ffly_mem_free_bc);
+		ffly_fdrain(ffly_out);
+		ffly_arstat();
+
+		ffly_nanosleep(0, 100000000);
 	}
-
-//	pr();
-
-	ffly_arstat();
-	struct arinfo info;
-	arinfo(&info);
-	ffly_printf("used: %lu, blocks: %u, mused: %u, %u\n", ffly_mem_alloc_bc-ffly_mem_free_bc, info.block_c, info.used, ac);
-	ff_uint_t used = (ac*33)+(ffly_mem_alloc_bc-ffly_mem_free_bc)+(ac*sizeof(ff_uint_t));
-
-	ffly_printf("pot guess: %u, used? %u\n", (ff_uint_t)(used/39023), used);
+	
 	i = 0;
 	while(i != n) {
 		if (list[i] != NULL)
 			__ffly_mem_free(list[i]);
 		i++;
 	}
+*/
+/*
+	ff_uint_t const n = 100;
+	void *list[n];
 
-	ffly_printf("%luns\n", nsec/c);
+	ff_uint_t i;
+	ff_uint_t ii;
+	ii = 0;
+	while(ii != 1) {
+		i = 0;
+		while(i != n) {
+			list[i] = ffly_balloc((ffly_rand()%40)+12);
+			i++;
+		}
+
+		i = 0;
+		while(i != n) {
+			ffly_bfree(list[i]);
+			i++;
+		}
+		ii++;
+	}
+
+	pr();
+	pf();
+*/
 /*
 	ff_uint_t const c = 200;
-	ff_uint_t i = 0;
+	ff_uint_t i  0;
 	void *p0 = ffly_balloc(12);
 	void *p1 = ffly_balloc(16);
 	void *p2 = ffly_balloc(16);
@@ -469,11 +529,18 @@ void _start() {
 /*
 	void *p0, *p1, *p2, *p3;
 
-	p0 = ffly_balloc(12);
-	p1 = ffly_balloc(12);
-	p2 = ffly_balloc(12);
-	p3 = ffly_balloc(12);
+	p0 = __ffly_mem_alloc(3785);
+	p1 = __ffly_mem_alloc(2874);
+	p2 = __ffly_mem_alloc(2874);
+	p3 = __ffly_mem_alloc(1074);
 
+	__ffly_mem_free(p0);
+	__ffly_mem_free(p1);
+	__ffly_mem_free(p2);
+	pr();
+	pf();
+*/
+/*
 	ffly_bfree(p0);
 	//ffly_bfree(p1);
 

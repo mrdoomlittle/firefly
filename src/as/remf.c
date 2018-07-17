@@ -1,11 +1,11 @@
 # include "as.h"
 # include "../string.h"
 # include "../malloc.h"
-# include "../ffef.h"
+# include "../remf.h"
 # include "../stdio.h"
-# include "../ffef.h"
+# include "../remf.h"
 # include "../exec.h"
-struct ffef_reg_hdr static reg;
+struct remf_reg_hdr static reg;
 void static
 syt_store(void) {
 	reg.name = syt_dst;
@@ -13,13 +13,13 @@ syt_store(void) {
 	reg.type = FF_RG_SYT;
 	lseek(out, syt_dst, SEEK_SET);
 	write(out,"syt", 4);
-	write(out, &reg, ffef_reg_hdrsz);
+	write(out, &reg, remf_reghdrsz);
 }
 
 void static
 syt_drop(void) {
 	syt_dst = offset;
-	offset+=4+ffef_reg_hdrsz;
+	offset+=4+remf_reghdrsz;
 }
 
 void static 
@@ -27,18 +27,18 @@ syt_gut(void) {
 	reg.beg = offset;
 	symbolp cur = syt_head;
 	while(cur != NULL) {
-		struct ffef_sy sy;
+		struct remf_sy sy;
 		sy.name = ff_as_stt(cur->p, cur->len);
 		sy.type = cur->type;
 		sy.reg = 0;
 		if (is_sylabel(cur)) {
 			labelp la = (labelp)ff_as_hash_get(&env, cur->p, cur->len);
 			sy.reg = la->reg->no;
-			sy.loc = la->adr;
+			sy.loc = la->f->adr+la->foffset;
 		}
 
 		sy.l = cur->len+1;
-		ff_as_oust((ff_u8_t*)&sy, ffef_sysz);
+		ff_as_oust((ff_u8_t*)&sy, remf_sysz);
 		symbolp bk = cur;
 		cur = cur->next;
 
@@ -50,7 +50,7 @@ syt_gut(void) {
 
 ff_u64_t static
 stt_drop(void) {
-	struct ffef_reg_hdr reg;
+	struct remf_reg_hdr reg;
 	reg.beg = offset;
 	stp cur = stt_head;
 	while(cur != NULL) {
@@ -70,7 +70,7 @@ stt_drop(void) {
 	ff_as_oust((ff_u8_t*)name, reg.l);
 
 	ret = offset;
-	ff_as_oust((ff_u8_t*)&reg, ffef_reg_hdrsz);
+	ff_as_oust((ff_u8_t*)&reg, remf_reghdrsz);
 	return ret;
 }
 
@@ -79,6 +79,8 @@ extern char const *extrn;
 relocatep extern rel;
 hookp extern hok;
 
+
+// not working not the time at the moment
 void outsegs() {
 	segmentp cur = curseg;
 	while(cur != NULL) {
@@ -91,26 +93,28 @@ void outsegs() {
 }
 
 void
-_ffef_reloc(ff_u64_t __offset, ff_u8_t __l) {
-	printf("reloc, addr: %u\n", curadr());
+_remf_reloc(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob, ff_u8_t __l) {
+	printf("reloc.\n");
 	relocatep rl = (relocatep)ff_as_al(sizeof(struct relocate));
-	rl->offset = __offset;
+	rl->dis = __dis;
 	rl->l = __l;
 	rl->sy = !_local?&((local_labelp)__label)->parent->sy:&((labelp)__label)->sy;
-	rl->adr = curadr();
+	rl->f = __f;
+	rl->ob = __ob;
 	rl->next = rel;
 	rl->ll = !_local?(local_labelp)__label:NULL;
 	rel = rl;
 }
 
 void
-_ffef_hook(ff_u64_t __offset, ff_u8_t __l) {
+_remf_hook(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob, ff_u8_t __l) {
 	printf("hook.\n");
 	hookp hk = (hookp)ff_as_al(sizeof(struct hook));
-
-	hk->offset = __offset;
+	
+	hk->dis = __dis;
 	hk->l = __l;
-	hk->adr = curadr();
+	hk->f = __f;
+	hk->ob = __ob;
 	hk->to = &((labelp)__label)->sy;
 	hk->next = hok;
 	hok = hk;
@@ -118,23 +122,27 @@ _ffef_hook(ff_u64_t __offset, ff_u8_t __l) {
 
 void static
 forge(void) {
-	struct ffef_hdr hdr;
-	*hdr.ident = FF_EF_MAG0;
-	hdr.ident[1] = FF_EF_MAG1;
-	hdr.ident[2] = FF_EF_MAG2;
-	hdr.ident[3] = FF_EF_MAG3;
+	struct remf_hdr hdr;
+	*hdr.ident = FF_REMF_MAG0;
+	hdr.ident[1] = FF_REMF_MAG1;
+	hdr.ident[2] = FF_REMF_MAG2;
+	hdr.ident[3] = FF_REMF_MAG3;
 	hdr.ident[4] = '\0';
-	hdr.routine = ff_as_entry != NULL?ff_as_entry->adr:FF_EF_NULL;
+	hdr.routine = ff_as_entry != NULL?ff_as_entry->f->adr+ff_as_entry->foffset:FF_REMF_NULL;
 	hdr.format = _ffexec_bc;
 	hdr.nsg = 0;
 	hdr.nrg = 0;
 	hdr.nrl = 0;
 	hdr.nhk = 0;
-	hdr.sg = FF_EF_NULL;
-	hdr.rg = FF_EF_NULL;
-	hdr.rl = FF_EF_NULL;
-	hdr.hk = FF_EF_NULL;
-	hdr.adr = curadr();
+	hdr.sg = FF_REMF_NULL;
+	hdr.rg = FF_REMF_NULL;
+	hdr.rl = FF_REMF_NULL;
+	hdr.hk = FF_REMF_NULL;
+
+	/*
+		bottom of program memory - where other data should be placed	
+	*/
+	hdr.adr = adr;
 	outsegs();
 	char const **cur = globl;
 	while(*(--cur) != NULL) {
@@ -151,12 +159,12 @@ forge(void) {
 		while(hk != NULL) {
 			printf("symbol: %s:%p, len: %u\n", (*hk->to)->p, hk->to, hk->l);
 			if (!strcmp((*hk->to)->p, *cur)) {
-				struct ffef_hok hok;
-				hok.offset = hk->offset;
+				struct remf_hok hok;
+				hok.offset = hk->f->dst+hk->dis;
 				hok.l = hk->l;
-				hok.adr = hk->adr;
+				hok.adr = hk->f->adr+hk->ob;
 				hok.to = (*hk->to)->off;
-				ff_as_oust((ff_u8_t*)&hok, ffef_hoksz);
+				ff_as_oust((ff_u8_t*)&hok, remf_hoksz);
 				hdr.nhk++;
 			}
 			hk = hk->next;
@@ -164,54 +172,55 @@ forge(void) {
 	}
 
 	if (hok != NULL)
-		hdr.hk = offset-ffef_hoksz;	
+		hdr.hk = offset-remf_hoksz;	
 
 	relocatep rl = rel;
 	while(rl != NULL) {
-		struct ffef_rel rel;
-		rel.offset = rl->offset;
+		struct remf_rel rel;
+		rel.offset = rl->f->dst+rl->dis;
 		rel.l = rl->l;
-		rel.addto = !rl->ll?0:(rl->ll->adr-(*rl->ll->p_adr));
+		local_labelp ll = rl->ll;
+		rel.addto = !ll?0:(ll->f->dst+ll->foffset)-((*ll->p_f)->dst+*ll->p_foffset);
 		printf("reloc: %s\n", (*rl->sy)->p);
-		rel.adr = rl->adr;
+		rel.adr = rl->f->adr+rl->ob;
 		rel.sy = (*rl->sy)->off;
-		ff_as_oust((ff_u8_t*)&rel, ffef_relsz);
+		ff_as_oust((ff_u8_t*)&rel, remf_relsz);
 		rl = rl->next;
 		hdr.nrl++;
 	}
 
 	if (rel != NULL)
-		hdr.rl = offset-ffef_relsz;
+		hdr.rl = offset-remf_relsz;
 
 	segmentp sg = curseg;
 	while(sg != NULL) {
-		struct ffef_seg_hdr seg;
+		struct remf_seg_hdr seg;
 		seg.adr = sg->adr;
 		seg.offset = sg->offset;
 		seg.sz = sg->size;
-		ff_as_oust((ff_u8_t*)&seg, ffef_seg_hdrsz);
+		ff_as_oust((ff_u8_t*)&seg, remf_seghdrsz);
 		hdr.nsg++;
 		sg = sg->next;
 	}
 
 	if (curseg != NULL)
-		hdr.sg = offset-ffef_seg_hdrsz;
+		hdr.sg = offset-remf_seghdrsz;
 
 	regionp rg = curreg;
 	while(rg != NULL) {
-		struct ffef_reg_hdr reg;
+		struct remf_reg_hdr reg;
 		reg.l = ffly_str_len(rg->name)+1;
 		reg.name = offset;
 		ff_as_oust(rg->name, reg.l);
-		reg.beg = rg->beg;
-		reg.end = rg->end;
+		reg.beg = (rg->beg.f->dst+rg->beg.offset);
+		reg.end = (rg->end.f->dst+rg->end.offset);
 		reg.adr = rg->adr;
 		if (!strcmp(rg->name, "text"))
 			reg.type = FF_RG_PROG;
 		else
 			reg.type = FF_RG_NULL;
 
-		ff_as_oust((ff_u8_t*)&reg, ffef_reg_hdrsz);
+		ff_as_oust((ff_u8_t*)&reg, remf_reghdrsz);
 		hdr.nrg++;
 		rg = rg->next;
 	}
@@ -220,7 +229,7 @@ forge(void) {
 	ff_as_syt_drop();
 
 	if (curreg != NULL)
-		hdr.rg = offset-ffef_reg_hdrsz;
+		hdr.rg = offset-remf_reghdrsz;
 	hdr.nrg++;
 
 	// put contents
@@ -231,10 +240,10 @@ forge(void) {
 	// string table region
 	hdr.sttr = ff_as_stt_drop();
 	lseek(out, 0, SEEK_SET);
-	write(out, &hdr, ffef_hdr_size);
+	write(out, &hdr, remf_hdrsz);
 }
 
-void ff_as_ffef(void) {
+void ff_as_remf(void) {
 	ff_as_syt_store = syt_store;
 	ff_as_syt_drop = syt_drop;
 	ff_as_syt_gut = syt_gut;

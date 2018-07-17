@@ -1,6 +1,6 @@
 	.region text
-	.extern test
 _start:
-	call $test
+.l l0
+	jmp #l0
 	exit %al
 .endof

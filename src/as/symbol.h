@@ -1,5 +1,6 @@
 # ifndef __ffly__as__symbol__h
 # define __ffly__as__symbol__h
+# include "frag.h"
 # include "../ffint.h"
 # define SY_STR 0x1
 # define SY_MAC 0x2
@@ -37,9 +38,6 @@ typedef struct symbol {
 
 	ff_u8_t type;
 
-	/*
-		
-	*/
 	ff_u16_t off;
 } *symbolp;
 

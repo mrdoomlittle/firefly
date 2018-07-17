@@ -85,20 +85,26 @@ float static*
 at(ff_uint_t __x, ff_uint_t __y, ff_uint_t __z, struct page **__page) {
 	ff_uint_t off = ((__x)>>ZONE_SHIFT)+(((__y)>>ZONE_SHIFT)*xl)+(((__z)>>ZONE_SHIFT)*(xl*yl));
 
+	struct page *page;
 	ff_uint_t pg = off>>PAGE_SHIFT;
-	lk(*__page = pages+pg);
+	lk(page = (*__page = pages+pg));
+
+	float *p;
 	if (pg>=page_c) {
-		return NULL;
+		ffly_printf("gravity error: page does not exist.\n");
+		goto _fail;
 	}
 
-
-	float *p = page_get(pg);
+	p = page_get(pg);
 	if (!p) {
-		// error
-		return NULL;
+		ffly_printf("failed to retrieve page.\n");
+		goto _fail;
 	}
 
 	return p+(off-(pg*PAGE_SIZE));
+_fail:
+	ul(page);
+	return NULL;
 }
 
 ff_i8_t static
@@ -121,15 +127,19 @@ update(void *__arg) {
 
 ff_err_t
 ffly_gravity_init(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {	
-	size = (xl = (__xl>>ZONE_SHIFT))*(yl = (__yl>>ZONE_SHIFT))*(zl = (__zl>>ZONE_SHIFT));
+	size = (xl = 1<<(__xl-ZONE_SHIFT))*(yl = 1<<(__yl-ZONE_SHIFT))*(zl = 1<<(__zl-ZONE_SHIFT));
 	page_c = (size>>PAGE_SHIFT)+((size&((~(ff_u64_t)0)>>(64-PAGE_SHIFT)))>0);
 	pages = (struct page*)__ffly_mem_alloc(page_c*sizeof(struct page));
 	map = (float**)__ffly_mem_alloc(page_c*sizeof(float**));
 	end = map+page_c;
 	if (!map) {
+		ffly_printf("gravity error.\n");
 		reterr;
 	}
 
+	/*
+		zeros
+	*/
 	void *empty = __ffly_mem_alloc(PAGE_SIZE*sizeof(float));
 	ffly_mem_set(empty, 0x0, PAGE_SIZE*sizeof(float));
 
@@ -146,6 +156,7 @@ ffly_gravity_init(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {
 	}
 
 	__ffly_mem_free(empty);
+	ffly_printf("gravity init.\n");
 	ffly_schedule(update, NULL, 50);
 	retok;
 }
@@ -325,8 +336,11 @@ float ffly_gravity_at(ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 
 void ffly_gravity_cleanup() {
 	ffly_sched_rm(sched_id);
+	struct page *pg;
 	float **p = map;
 	while(p != end) {
+		pg = pages+(p-map);
+		ffly_reservoir_free(&__ffly_reservoir__, pg->rr);
 		if (*p != NULL) {
 			__ffly_mem_free(*p);
 		}

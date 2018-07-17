@@ -29,6 +29,7 @@ mov %rbp, %rsp
 pop %rbp
 
 xor %rax, %rax
-mov %al, 60
+movq %rax, 60
+
 syscall
 .endof

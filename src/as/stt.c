@@ -1,7 +1,6 @@
 # include "as.h"
 # include "../string.h"
 # include "../malloc.h"
-# include "../ffef.h"
 stp stt_head = NULL;
 stp stt_tail = NULL;
 ff_uint_t stt_off = 0;

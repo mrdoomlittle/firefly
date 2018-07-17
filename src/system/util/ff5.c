@@ -53,10 +53,19 @@ _again:
 	}
 
 	if (in<e) {
-		if ((v = *(in++)) >= 'a')
+		if ((v = *(in++)) >= 'a') {
+			if (v>'z') {
+				// error
+				goto _fail;
+			}
 			buf |= (v-'a')<<n;
-		else
+		} else {
+			if (v<'A' || v>'Z') {
+				// error
+				goto _fail;
+			}
 			buf |= (16+(v-'A'))<<n;
+		}
 		n+=5;
 		goto _again;
 	}
@@ -65,4 +74,6 @@ _again:
 		goto _again;
 
 	return dst-(ff_u8_t*)__dst;
+_fail:
+	return 0;
 }

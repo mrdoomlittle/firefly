@@ -106,6 +106,9 @@ typedef ff_s32_t ar_int_t;
 # define bin_at(__pot, __bc) \
 	((__pot)->bins+bin_no(__bc))
 
+
+# define be_vigilant
+# define barebone
 /*
 	erase block when freed
 */
@@ -119,7 +122,7 @@ void(*ar_erase)(void*, ff_uint_t) = NULL;
 //# define DEBUG
 /* not the best but will do */
 void static
-copy(void *__dst, void *__src, ff_uint_t __bc) {
+copy(void *__dst, void const *__src, ff_uint_t __bc) {
 	ff_u8_t *p = (ff_u8_t*)__dst;
 	ff_u8_t *end = p+__bc;
 	ff_uint_t left;
@@ -206,7 +209,9 @@ typedef struct rod {
 	(((ff_u64_t)(__p))>>32&0xff)^(((ff_u64_t)(__p))>>40&0xff)^(((ff_u64_t)(__p))>>48&0xff)^(((ff_u64_t)(__p))>>56&0xff))>>2)
 # define rod_at(__p) \
 	(rods+rodno(__p))
-rodp rods[64] = {
+
+// used to locate pot by pointer 
+static rodp rods[64] = {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -251,9 +256,11 @@ void static _ffly_bfree(potp, void*);
 
 # define cur_arena \
 	((potp)*(spot+ffly_tls_get(arena_tls)))
+// temp
 void static
 abort(void) {
 	printf("ar, abort.\n");
+	close(arout);
 	exit(SIGKILL);
 }
 
@@ -326,14 +333,15 @@ rfr(potp __pot) {
 			ulpot(r->p);
 		}
 	} else {
-		if (ft != NULL) {
+		if (ft != NULL)
 			lkpot(ft);
-			ft->previous = rr;
-		}
-		if (rr != NULL) {
+		if (rr != NULL)
 			lkpot(rr);
+
+		if (ft != NULL)
+			ft->previous = rr;
+		if (rr != NULL)
 			rr->next = ft;
-		}
 
 		if (ft != NULL)
 			ulpot(ft);
@@ -348,10 +356,14 @@ detatch(potp __pot, blockp __b) {
 	ar_off_t *bin = bin_at(__pot, __b->size);
 	ar_off_t fwd = __b->fd;
 	ar_off_t bck = __b->bk;
+
+	if (is_null(*bin)) {
 # ifdef __ffly_debug
-	if (is_null(*bin))
-		ff_rat(_ff_rat_0, out, "bin at this location is dead.\n");
+		ff_rat(_ff_rat_0, out, "bin at this location is empty.\n");
 # endif
+		printf("bin %u, this location is empty, size: %u, %x, inuse: %u\n", bin-__pot->bins, __b->size, __b->off, is_free(__b));
+		abort();
+	}
 	if (__b->off == *bin) {
 # ifdef __ffly_debug
 		if (not_null(bck))
@@ -364,6 +376,12 @@ detatch(potp __pot, blockp __b) {
 			get_block(__pot, fwd)->bk = bck;
 		if (not_null(bck))
 			get_block(__pot, bck)->fd = fwd;
+# ifdef be_vigilant
+		else {
+			printf("back pointer null.\n");
+			abort();
+		}
+# endif
 	}
 
 	// clear
@@ -376,21 +394,46 @@ recouple(potp __pot, blockp __b) {
 	ar_off_t *top = &__pot->top_blk;
 	ar_off_t *end = &__pot->end_blk;
 	ar_off_t off = __b->off;
+
+	ar_off_t rr, ft;
+
+	rr = __b->prev;
+	ft = __b->next;
+
 	if (not_null(*top)) {
-		if (off < get_block(__pot, *top)->off)
+		if (off < get_block(__pot, *top)->off) {
+# ifdef be_vigilant
+			if (is_null(ft)) {
+				printf("the top block front should never be null.\n");
+				abort();
+			}
+# endif
+
+			get_block(__pot, ft)->prev = off;
 			*top = off;
+			return;
+		}
 	} else if (__pot->end == (void*)__b)
 		*top = off;
 
 	if (not_null(*end)) {
-		if (off > get_block(__pot, *end)->off)
+		if (off > get_block(__pot, *end)->off) {
+# ifdef be_vigilant
+			if (is_null(rr)) {
+				printf("the end block rear shoud never be null.\n");
+				abort();
+			}
+# endif
+			get_block(__pot, rr)->next = off;
 			*end = off;
+			return;
+		}
 	} else if (__pot->off == __b->end)
 		*end = off;
 
-	if (not_null(__b->next))
+	if (not_null(ft))
 		block_next(__pot, __b)->prev = off;
-	if (not_null(__b->prev))
+	if (not_null(rr))
 		block_prev(__pot, __b)->next = off; 
 }
 
@@ -406,23 +449,46 @@ decouple(potp __pot, blockp __b) {
 	if (off == *top) {
 		if (not_null(*top = ft))
 			get_block(__pot, *top)->prev = AR_NULL;
-		else //make sure
+		else {
+			/*
+				if top is null then end should be too
+			*/
 			*end = AR_NULL;
+		}
 		return;
 	}
 
 	if (off == *end) {
 		if (not_null(*end = rr))
 			get_block(__pot, *end)->next = AR_NULL;
-		else
-			*top = AR_NULL;
+# ifdef be_vigilant
+		else {
+			printf("end is null.\n");
+			abort();
+		}
+# endif
 		return;
 	}
 
+# ifdef be_vigilant
 	if (not_null(ft))
+# endif
 		block_next(__pot, __b)->prev = rr;
+# ifdef be_vigilant
+	else {
+		printf("front block is null.\n");
+		abort();
+	}
+
 	if (not_null(rr))
+# endif
 		block_prev(__pot, __b)->next = ft;
+# ifdef be_vigilant
+	else {
+		printf("rear block is null.\n");
+		abort();
+	}
+# endif
 }
 
 /* dead memory */
@@ -558,6 +624,7 @@ ff_err_t ffly_ar_cleanup(void) {
 }
 
 void pot_pr(potp __pot) {
+	ff_uint_t i;
 	potp p = __pot;
 	blockp blk = get_block(p, p->top_blk);
 	ff_uint_t static depth = 0;
@@ -567,9 +634,10 @@ void pot_pr(potp __pot) {
 		pot_pr(p->fd);
 		printf("**end\n");
 	}
+	i = 0;
 _next:
 	printf("/-----------------------\\\n");
-	printf("| size: %u, off: %x, pad: %u, inuse: %s\n",
+	printf("| %u - size: %u, off: %x, pad: %u, inuse: %s\n", i++,
 		blk->size, blk->off, blk->pad, is_used(blk)?"yes":"no");
 
 	printf("| prev: %x{%s}, next: %x{%s}, fd: %x{%s}, bk: %x{%s}\n",
@@ -585,6 +653,7 @@ _next:
 # include "../maths/abs.h"
 void pot_pf(potp __pot) {
 	potp p = __pot;
+	ff_uint_t i;
 	ar_off_t *bin = p->bins;
 	blockp blk, bk;
 	ff_uint_t static depth = 0;
@@ -598,12 +667,16 @@ void pot_pf(potp __pot) {
 
 _next:
 	bk = NULL;
-	if (is_null(*bin)) goto _sk;
+	if (is_null(*bin)) { 
+		printf("bin %u is empty.\n", bin-p->bins);
+		goto _sk;
+	}
 	if (*bin >= p->off) {
 		printf("bin is messed up, at: %u, off: %u\n", bin-p->bins, *bin);
 		goto _sk;
 	}
 
+	i = 0;
 	blk = get_block(p, *bin);
 _fwd:
 	if (bk != NULL) {
@@ -705,24 +778,39 @@ void ffly_arhang(void) {
 		return;
 	}
 
+	potp ft, rr;
 	potp bk;
 	while(p != NULL) {
 		bk = p;
 		lkpot(p);
 		p = p->fd;
 
-		if (bk->fd != NULL)
-			bk->fd->bk = bk->bk;
-		if (bk->bk != NULL)
-			bk->bk->fd = bk->fd;
-		
+		ft = bk->fd;
+		rr = bk->bk;
+
+		if (ft != NULL)
+			lkpot(ft);
+		if (rr != NULL)
+			lkpot(rr);
+
+		if (ft != NULL)
+			ft->bk = rr;
+		if (rr != NULL)
+			rr->fd = ft;
+
+		if (ft != NULL)
+			ulpot(ft);
+		if (rr != NULL)
+			ulpot(rr);
+
 		bk->fd = NULL;
 		bk->bk = NULL;
 		if (!bk->off) {
+			ulpot(bk);
 			rfr(bk);
 			free_pot(bk);
 		} else {
-			dispose(bk, bk->off, (bk->top-bk->end)-bk->off);
+		//	dispose(bk, bk->off, (bk->top-bk->end)-bk->off);
 			ulpot(bk);
 		}
 	}
@@ -991,7 +1079,7 @@ _bk:
 			if ((blk = get_block(__pot, cur))->size >= __bc) {
 				detatch(__pot, blk);
 				blk->pad = blk->size-__bc;
-				blk->flags = (blk->flags&~BLK_FREE)|BLK_USED|BLK_LINKED;
+				blk->flags = (blk->flags&~(BLK_FREE|BLK_LINKED))|BLK_USED;
 				__pot->buried-=blk->size;
 
 				/*
@@ -1016,7 +1104,7 @@ _bk:
 					blk->next = p->off;
 					blk->end = off;
 
-					if (__pot->off == p->end)
+					if (p->end == __pot->off)
 						__pot->end_blk = p->off;
 			  
 					if (not_null(p->next))
@@ -1029,29 +1117,41 @@ _bk:
 			_sk:
 				return (void*)((ff_u8_t*)blk+block_size);
 			}
+# ifndef barebone
+			blockp rr, ft;
 
-			blockp rr = block_prev(__pot, blk);
-			blockp ft = block_next(__pot, blk);
-			ff_uint_t canadd = 0;
-			ff_u8_t flags = 0x0;
+			rr = block_prev(__pot, blk);
+			ft = block_next(__pot, blk);
+
+			ff_uint_t h;
+			ff_u8_t flags;
+			
+			flags = 0x0;
+			h = 0;
 			if (not_null(blk->prev)) {
 				if (is_free(rr)) {
-					canadd+=rr->size+block_size;
+					h+=rr->size+block_size;
 					flags |= 0x1;
 				}
 			}
 			if (not_null(blk->next)) {
 				if (is_free(ft)) {
-					canadd+=ft->size+block_size;
+					h+=ft->size+block_size;
 					flags |= 0x2;
 				}
 			}
 
-			if (blk->size+canadd >= __bc) {
+			/*
+				TODO:
+					if oversized shrink but only if large enough
+			*/
+			if (blk->size+h>=__bc) {
 				detatch(__pot, blk);
+				__pot->buried-=blk->size;
+
 				if (flags&0x1) {
 					__pot->blk_c--;
-					__pot->buried+=block_size;
+					__pot->buried-=rr->size;
 					if (is_flag(rr->flags, BLK_LINKED))
 						detatch(__pot, rr);
 					decouple(__pot, blk);
@@ -1065,18 +1165,19 @@ _bk:
 					if (is_flag(ft->flags, BLK_LINKED))
 						detatch(__pot, ft);
 					__pot->blk_c--;
-					__pot->buried+=block_size;
+					__pot->buried-=ft->size;
 					decouple(__pot, ft);
 					blk->size+=ft->size+block_size;
 					blk->end = ft->end;
 					blk->next = ft->next;
 				}
-		
+
 				blk->pad = blk->size-__bc;
-				blk->flags = (blk->flags&~BLK_FREE)|BLK_USED|BLK_LINKED; 
+				blk->flags = (blk->flags&~(BLK_FREE|BLK_LINKED))|BLK_USED; 
 				ulpot(__pot);
 				return (void*)((ff_u8_t*)blk+block_size);
 			}
+# endif
 			cur = blk->fd;
 		}
 	}
@@ -1121,6 +1222,7 @@ _bk:
 		
 	if (not_null(__pot->end_blk))
 		get_block(__pot, __pot->end_blk)->next = __pot->off;
+
 	__pot->end_blk = __pot->off;
 	__pot->off = top;
 
@@ -1213,7 +1315,7 @@ _ffly_bfree(potp __pot, void *__p) {
 # endif
 		goto _end;
 	}
-
+# ifndef barebone
 	if (blk->size<16) {
 		if (not_null(blk->prev) && not_null(blk->next)) {
 			blockp ft = block_next(__pot, blk);
@@ -1232,7 +1334,7 @@ _ffly_bfree(potp __pot, void *__p) {
 			}
 		}
 	}
-
+# endif
 	decouple(__pot, blk);
 # ifdef __ffly_debug
 	__ffmod_debug
@@ -1304,6 +1406,7 @@ _ffly_bfree(potp __pot, void *__p) {
 # ifdef __ffly_debug
 		printf("somthing is wong.\n");
 # endif
+		abort();
 	}
 
 	if (blk->end == __pot->off) {
@@ -1333,6 +1436,7 @@ _ffly_bfree(potp __pot, void *__p) {
 		get_block(__pot, bin)->bk = blk->off;
 		blk->fd = bin;
 	}
+	blk->bk = AR_NULL;
 	*(__pot->bins+bin_no(blk->size)) = blk->off;
 
 _end:
@@ -1425,6 +1529,10 @@ ffly_bfree(void *__p) {
 
 	p = get_pot(blk);
 
+	/*
+		make sure pointer is within pot
+		should be no error
+	*/
 	lkpot(p);
 	while(!(__p >= p->end && __p < p->top)) {
 		bk = p;
@@ -1443,22 +1551,21 @@ ffly_bfree(void *__p) {
 	if (!p->off && p != arena) {
 		potp ft = p->fd;
 		potp rr = p->bk;
-		if (ft != NULL) {
+		if (ft != NULL)
 			lkpot(ft);
-			ft->bk = rr;
-		}
-
-		if (rr != NULL) {
+		if (rr != NULL)
 			lkpot(rr);
+	
+		if (ft != NULL)
+			ft->bk = rr;
+		if (rr != NULL)
 			rr->fd = ft;
-		}
 
-		if (ft != NULL) {
+		if (ft != NULL)
 			ulpot(ft);
-		}
-		if (rr != NULL) {
+		if (rr != NULL)
 			ulpot(rr);
-		}
+
 		rfr(p);
 		ulpot(p);
 		free_pot(p);
@@ -1482,6 +1589,7 @@ ffly_brealloc(void *__p, ff_uint_t __bc) {
 	ar_uint_t size = blk->size-blk->pad;
 	ar_int_t dif = (ar_int_t)size-(ar_int_t)__bc;
 	void *p;
+# ifndef barebone
 	if (!is_flag(blk->flags, MMAPED)) {
 		if (dif>0) {
 # ifdef __ffly_debug
@@ -1511,7 +1619,7 @@ ffly_brealloc(void *__p, ff_uint_t __bc) {
 # endif
 		}
 	}
-
+# endif
 	if (!(p = ffly_balloc(__bc))) {
 		// failure
 	}

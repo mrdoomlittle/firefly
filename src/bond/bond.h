@@ -1,7 +1,7 @@
 # ifndef __ffly__bond__h
 # define __ffly__bond__h
 # include "../ffint.h"
-# include "../ffef.h"
+# include "../remf.h"
 /*
 	segments will be freed on output
 */
@@ -76,7 +76,7 @@ void ff_bond_hash_destroy(hashp);
 void ff_bond_hash_put(hashp, ff_u8_t const*, ff_uint_t, void*);
 void* const ff_bond_hash_get(hashp, ff_u8_t const*, ff_uint_t);
 void ff_bond(char const*, char const*);
-void ff_bond_output(ffef_hdrp);
+void ff_bond_output(remf_hdrp);
 void ff_bond_write(ff_u64_t, void*, ff_uint_t);
 void ff_bond_mapout(ff_u64_t, ff_uint_t);
 void ff_bond_read(ff_u64_t, void*, ff_uint_t);
