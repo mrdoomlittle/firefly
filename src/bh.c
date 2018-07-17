@@ -7,10 +7,14 @@
 # include "dep/bzero.h"
 # include "inet.h"
 struct ff_bh bh;
-
+/*
+	TODO:
+		way to create x amount of bricks
+*/
 ff_i8_t static to_shut = -1;
 void sig(int __sig) {
 	to_shut = 0;
+	ff_net_shutdown(bh.sock, SHUT_RDWR);
 }
 
 void ff_bhs_prep(void) {
@@ -67,6 +71,7 @@ void static
 bdel(long __arg) {
 	ffly_reservoir_free(&__ffly_reservoir__, (void*)__arg);
 }
+
 
 ff_u32_t ff_bh_bnew(ff_bhp __bh, ff_u8_t __sz, ff_err_t *__err) {
 	struct bhop op = {_bhop_bnew};
@@ -140,7 +145,7 @@ bh_bnew(FF_SOCKET *__sock) {
 	b = ffly_brick_new(sz, bread, bwrite, bdel, ffly_reservoir_alloc(&__ffly_reservoir__, bricksz(sz)));
 
 	ff_net_send(__sock, &b, sizeof(ff_u32_t), &err);
-	ffly_printf("created new brick -%u, size: %u\n", b, bricksz(sz));
+	ffly_printf("created new brick - %u, size: %u\n", b, bricksz(sz));
 }
 
 void static
@@ -149,7 +154,7 @@ bh_brid(FF_SOCKET *__sock) {
 	ff_u32_t b;
 	ff_net_recv(__sock, &b, sizeof(ff_u32_t), &err);
 	ffly_brick_rid(b);
-	ffly_printf("getting rid of brick -%u\n", b);
+	ffly_printf("getting rid of brick - %u\n", b);
 }
 
 void static
@@ -158,7 +163,7 @@ bh_bopen(FF_SOCKET *__sock) {
 	ff_u32_t b;
 	ff_net_recv(__sock, &b, sizeof(ff_u32_t), &err);
 	ffly_brick_open(b);
-	ffly_printf("opening brick -%u\n", b);
+	ffly_printf("opening brick - %u\n", b);
 }
 
 void static
@@ -306,7 +311,9 @@ _again:
 _fail:
 	if (peer != NULL) {
 		ff_net_close(peer);
-	}	
+	}
+
+	while(to_shut<0);
 	return;
 }
 

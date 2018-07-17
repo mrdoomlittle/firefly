@@ -108,11 +108,13 @@ void* ffly_reservoir_alloc(ffly_reservoirp __res, ff_uint_t __size) {
 		*(p++) = ffly_slab_alloc(__res);
 	reg->sc = sc;
 
+	ffly_mutex_lock(&__res->lock);
 	reg->bk = (regionp*)&__res->reg;
 	if (__res->reg != NULL)
 		((regionp)__res->reg)->bk = &reg->next;
 	reg->next = (regionp)__res->reg;
 	__res->reg = reg;
+	ffly_mutex_unlock(&__res->lock);
 	return reg;
 }
 
@@ -123,9 +125,11 @@ ff_err_t ffly_reservoir_free(ffly_reservoirp __res, void *__reg) {
 	while(p != end)
 		ffly_slab_free(__res, *(p++));
 
+	ffly_mutex_lock(&__res->lock);
 	*reg->bk = reg->next;
 	if (reg->next != NULL)
 		reg->next->bk = reg->bk;
+	ffly_mutex_unlock(&__res->lock);
 	__ffly_mem_free(reg->slabs);
 	__ffly_mem_free(__reg);
 }

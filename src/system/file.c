@@ -41,7 +41,7 @@ void ffly_fopt(struct ffly_file *__f, ff_u8_t __flag) {
 	__f->flags |= __flag;
 }
 
-ff_err_t ffly_fdrain(struct ffly_file *__f) {	
+ff_err_t drain(struct ffly_file *__f) {	
 	ff_uint_t size;
 	if (!(size = __f->ob_p-__f->obuf))
 		return FFLY_SUCCESS;
@@ -59,6 +59,14 @@ ff_err_t ffly_fdrain(struct ffly_file *__f) {
 	}
 	__f->ob_p = __f->obuf;
 	return FFLY_SUCCESS;
+}
+
+ff_err_t ffly_fdrain(struct ffly_file *__f) {
+	ff_err_t err;
+	ffly_mutex_lock(&__f->lock);
+	err = drain(__f);
+	ffly_mutex_unlock(&__f->lock);
+	return err;
 }
 
 struct ffly_file*
@@ -144,7 +152,7 @@ ff_err_t ffly_fcreat(char const *__path, ff_u32_t __mode) {
 ff_err_t ffly_fwrites(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	ffly_mutex_lock(&__f->lock);
 	if (__f->ob_p>__f->obuf)
-		ffly_fdrain(__f);
+		drain(__f);
 	if (write(__f->fd, __p, __bc) == -1) {
 
 	}
@@ -167,7 +175,7 @@ ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 		write(__f->fd, __p, __bc);		
 	} else {
 	if (!__f->drain) {
-		ffly_fdrain(__f);
+		drain(__f);
 		__f->bufdst = __f->off;
 		__f->drain = -1;
 	}
@@ -190,7 +198,7 @@ ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 
 	left = OBUFSZ-(__f->ob_p-__f->obuf);
 	if (!left) {
-		ffly_fdrain(__f);
+		drain(__f);
 		left = OBUFSZ;
 	}
 
@@ -198,7 +206,7 @@ ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	__f->off+=__bc;
 	if (overflow>0) {
 		bufput(__f, src, left);
-		ffly_fdrain(__f);
+		drain(__f);
 		src+=left;
 		__bc = overflow;
 	}
@@ -229,7 +237,7 @@ ff_err_t ffly_fclose(struct ffly_file *__f) {
 		return FFLY_FAILURE;
 	}
 
-	ffly_fdrain(__f);
+	drain(__f);
 
 	close(__f->fd);
 # ifndef __fflib

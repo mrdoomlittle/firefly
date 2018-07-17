@@ -11,7 +11,7 @@
 # define RESV_CORRODE 0x1
 typedef struct ffly_slab {
 	ff_u64_t off;
-	struct ffly_slab *fd;
+	struct ffly_slab **bk, *fd;
 	struct ffly_slab *prev, *next;
 
 	ff_u64_t creation;

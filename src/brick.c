@@ -81,8 +81,7 @@ _sk:
 
 void ffly_brick_open(ff_u32_t __id) {
 	ffly_brickp b = get_brick(__id);
-	b->flags |= BRICK_OPEN;
-}
+	b->flags |= BRICK_OPEN;}
 
 void ffly_brick_close(ff_u32_t __id) {
 	ffly_brickp b = get_brick(__id);
@@ -151,7 +150,7 @@ void ffly_brick_rid(ff_u32_t __id) {
 		b->del(b->arg);
 	ff_u64_t bo = ((__id&0xfff)*PAGE_SIZE)+(__id>>12&0xfffff);
 	if (bo == off-1 && page_c>1) {
-		ffly_printf("....\n");
+		ffly_printf(".... next: %p\n", b->next);
 		ffly_brickp cur = b->next;
 		off--;
 		deattach(b);
@@ -162,7 +161,7 @@ void ffly_brick_rid(ff_u32_t __id) {
 				ffly_printf("brick found to be inuse, breaking\n");
 				break;
 			}
-			if ((off-1>>PAGE_SHIFT) == 1)
+			if (!(off-1>>PAGE_SHIFT))
 				break;
 			if (b->p != NULL)
 				__ffly_mem_free(b->p);
@@ -185,8 +184,10 @@ void ffly_brick_rid(ff_u32_t __id) {
 		return;
 	}
 
-	if (b->p != NULL)
+	if (b->p != NULL) {
 		__ffly_mem_free(b->p);
+		b->p = NULL;
+	}
 	b->fd = bin;
 	b->inuse = -1;
 	b->bk = &bin;

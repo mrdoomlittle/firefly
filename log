@@ -6,7 +6,25 @@ pod 0 allocated.
 pod 1 allocated.
 pod 2 allocated.
 pod 3 allocated.
-map block is null, nothing hear.
-entry was not found.
-map block is null, nothing hear.
-entry was not found.
+piston tick
+piston tick
+piston tick
+piston tick
+piston tick
+piston tick
+piston tick
+piston tick
+piston tick
+piston tick
+piston tick
+piston tick
+piston tick
+thread/s - shutdown&cleanup, phase{0}.
+thread with id: 0, cleaning.
+	.- stack release.
+	.- tls release.
+thread with id: 1, cleaning.
+	.- stack release.
+	.- tls release.
+thread free, phase{1}.
+uu free, phase{2}.

@@ -4,6 +4,8 @@ max_threads:20~_64l_u,
 # alloca stack size
 alssize:400~_64l_u,
 # list of modules to execute
+# TODO:
+# ["mod", loadmethod]
 modl:[
 	"a.mod",
 	"b.mod"

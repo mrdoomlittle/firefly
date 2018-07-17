@@ -139,4 +139,23 @@ op(__compiler, "movw", "%rel", reg, NULL);
 op(__compiler, "movd", "%rel", reg, NULL);
 op(__compiler, "movq", "%rel", reg, NULL);
 -. clock get should be added 
--, remove ffly_nanosleep and reput using nanosleep
+-. remove ffly_nanosleep and reput using nanosleep
+-. using elf is inflexible so assembler should output custom
+format and elf but bond wont work with elf but the custom format its output will be elf
+-. clean up 'compile.sh' files are stuck in the past and need updateing
+-. -D__ffly_crucial needs to be added to all 'compile.sh' files as some still dont have it
+-. src/system/barrel needs reworking
+-. database needs working on
+-. BS needs to be added this will work with br
+-. ff/output/regin must fix and have it use resin special registers
+-. lexer needs to be passed a function pointer to get data and not a pointer to an array of data
+-. might be a good idea to rethink and passing of a frame{duct}
+-. work on bond to allow for easy implementation for other formats
+-. for to_free - pageing linked list ???
+-. database,net,etc compare versions
+-. buffer/network/write
+-. for db and bs and other things that send and recv large chunks of data split it up dont send the full thing
+-. daemon change to server i dont care about naming so it happens
+
+-. cleanup locks at currently there only placed to stop errors occurring
+and the way thay have be placed in some spots is very inefficient

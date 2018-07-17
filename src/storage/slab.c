@@ -9,11 +9,14 @@
 # include "../clock.h"
 # include "../system/io.h"
 ffly_slabp ffly_slab_alloc(ffly_reservoirp __res) {
+	ffly_mutex_lock(&__res->lock);
 	ffly_slabp sb;
 	if (__res->bin != NULL) {
 		sb = __res->bin;
-		__res->bin = sb->fd;
+		if ((__res->bin = sb->fd) != NULL)
+			__res->bin->bk = sb->bk;
 		sb->inuse = 0;
+		ffly_mutex_unlock(&__res->lock);
 		return sb;
 	} else {
 		sb = (ffly_slabp)__ffly_mem_alloc(sizeof(struct ffly_slab));
@@ -26,10 +29,12 @@ ffly_slabp ffly_slab_alloc(ffly_reservoirp __res) {
 		__res->top->prev = sb;
 	__res->top = sb;
 	sb->fd = NULL;
+	sb->bk = NULL;
 	sb->inuse = 0;
 	sb->p = NULL;
 	sb->link = NULL;
 	sb->lock = FFLY_MUTEX_INIT;
+	ffly_mutex_unlock(&__res->lock);
 	return sb;
 }
 
@@ -47,23 +52,42 @@ deattach(ffly_reservoirp __res, ffly_slabp __sb) {
 		__sb->next->prev = __sb->prev;
 }
 
+void static
+delink(ffly_reservoirp __res, ffly_slabp __sb) {
+	*__sb->bk = __sb->fd;
+	if (__sb->fd != NULL)
+		__sb->fd->bk = __sb->bk; 
+}
+
 ff_err_t ffly_slab_free(ffly_reservoirp __res, ffly_slabp __sb) {
+	ffly_mutex_lock(&__res->lock);
 	if (__res->off-1 == __sb->off) {
-		ffly_slabp sb = __sb, bk;
-		while(sb != NULL) {
+		ffly_slabp cur, sb;
+		__res->off--;
+		cur = __sb->next;
+		deattach(__res, __sb);
+		__ffly_mem_free(__sb);
+
+		while(cur != NULL) {
+			sb = cur;
+			cur = cur->next;
 			if (!sb->inuse) break;
-			bk = sb;
-			sb = sb->next;
-			deattach(__res, __sb);
+			delink(__res, sb);
+			deattach(__res, sb);
 			__res->off--;
-			__ffly_mem_free(bk);
+			__ffly_mem_free(sb);
 		}
+		ffly_mutex_unlock(&__res->lock);
 		reterr;
 	}
 
 	__sb->inuse = -1;
 	__sb->fd = __res->bin;
+	__sb->bk = &__res->bin;
+	if (__res->bin != NULL)
+		__res->bin->bk = &__sb->fd;
 	__res->bin = __sb;
+	ffly_mutex_unlock(&__res->lock);
 	retok;
 }
 

@@ -18,6 +18,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_bhs_prep();
 	ff_bhs_open();
 
+//	ff_bhs_start();
 	ff_tid_t t;
 	ffly_thread_create(&t, start, NULL);
 
@@ -25,10 +26,12 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	while(1) {
  		ffly_printf("~: ");
 		ffly_fdrain(ffly_out);
-		ffly_rdline(buf, 200, ffly_in);
+		if (!ffly_rdline(buf, 200, ffly_in))
+			continue;
 		if (!ffly_mem_cmp(buf, "end", 3))
 			break;
 	}
+
 
 	ffly_printf("waiting for ctl-c\n");
 	ffly_fdrain(ffly_out);

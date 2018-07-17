@@ -8,9 +8,24 @@ pixel format:
 
 security:
 	dont care, just leads more work when changing things later and can be left until its actually needed.
+	e.g. db msg kind picks from list of pointers to jmp to 
+	major security issue but it can be dont later when the security is needed;
 
 memory:
 	things can break most likely cause would be 'allocr' as it hasent been tested at large,
 	only small tests have been performed.
+
+im using asm labels alot why?
+because functin arguments if say we use functions 
+and not just plane labels then we have an issue as we would 
+need to case the function type on to that function pointer only 
+way to do that would be to use a switch or if and in my eyes its wasteful
+as then its "compare check jump to next" repeat using labels may results
+in issues later on but nothing that cant be fixed, we could uses empty functions
+but then we would have to deal with passing of data and would require the use 
+of tls that i would like to keep away from as much as possible there are other ways
+but fuck who cares, anyway its an unsanitary way of doing thinks but what can you do.
+
+also gcc sets up a stack frame and for small routines its unneeded.
 
 firefly lang for resin is broken.
