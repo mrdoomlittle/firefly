@@ -7,6 +7,7 @@
 # else
 # include <unistd.h>
 # endif
+# include "../linux/signal.h"
 FF_FILE *ffly_out = NULL;
 FF_FILE *ffly_log = NULL;
 FF_FILE *ffly_err = NULL;
@@ -24,12 +25,16 @@ void ppad(char __c, ff_uint_t __n) {
 }
 
 ff_uint_t ffly_rdline(void *__buf, ff_uint_t __size, FF_FILE *__file) {
-	ff_uint_t size;
+	ff_s32_t res;
 _again:
-	if ((size = read(__file->fd, __buf, __size))<=0)
-		goto _again;
-	*((ff_u8_t*)__buf+size-1) = '\0';
-	return size-1;
+	res = read(__file->fd, __buf, __size);
+	if (res<0) {
+		*(ff_u8_t*)__buf = '\0';
+		return 0;
+	}
+
+	*((ff_u8_t*)__buf+res-1) = '\0';
+	return res-1;
 }
 # endif
 /*
