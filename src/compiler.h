@@ -7,6 +7,7 @@
 # include "data/pair.h"
 # include "system/lat.h"
 # include "lexer.h"
+# include "parser.h"
 # include "linux/limits.h"
 # ifdef __ffly_script
 # ifndef ffc_final

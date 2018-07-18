@@ -262,7 +262,7 @@ void static _map(void *__arg) {
 	ffly_map_de_init((ffly_mapp)__arg);
 }
 
-void static cu_task(struct ffly_compiler *__compiler, void *__p, void(*__func)(void*)) {
+void cu_task(struct ffly_compiler *__compiler, void *__p, void(*__func)(void*)) {
 	struct cleanup_task **task;
 	ffly_vec_push_back(&__compiler->clean, (void**)&task);
 	*(*task = (cleanup_taskp)__ffly_mem_alloc(sizeof(struct cleanup_task))) = (struct cleanup_task){
@@ -406,6 +406,7 @@ ff_err_t ffly_compiler_free(struct ffly_compiler *__compiler) {
 	ffly_lat_free(&__compiler->keywd);
 
 	ffly_lexer_cleanup(&__compiler->lexer);
+	ffly_parser_cleanup();
 
 	cleanup_taskp *task;
 	___ffly_vec_nonempty(&__compiler->clean) {
