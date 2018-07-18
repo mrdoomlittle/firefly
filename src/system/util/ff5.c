@@ -1,5 +1,5 @@
 # include "ff5.h"
-ff_uint_t ffly_ff5_enc(void const *__src, char *__dst ,ff_uint_t __len) {
+ff_uint_t ffly_ff5_enc(void const *__src, char *__dst, ff_uint_t __len) {
 	ff_u64_t buf;
 	ff_u8_t n;
 	ff_u8_t const *in = (ff_u8_t const*)__src;

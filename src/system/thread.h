@@ -11,6 +11,10 @@
 # define FFLY_TID_NULL ((ff_tid_t)~0)
 # define ffly_twait(__t) \
 	ffly_thread_wait(__t)
+# define ffly_tcreat(__t, __func, __arg) \
+	ffly_thread_create(__t, __func, __arg)
+# define ffly_tkill(__t) \
+	ffly_thread_kill(__t)
 
 # ifdef __cplusplus
 extern "C" {

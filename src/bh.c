@@ -6,6 +6,9 @@
 # include "storage/reservoir.h"
 # include "dep/bzero.h"
 # include "inet.h"
+# include "memory/mem_alloc.h"
+# include "memory/mem_free.h"
+# include "memory/mem_realloc.h"
 struct ff_bh bh;
 /*
 	TODO:
@@ -72,6 +75,27 @@ bdel(long __arg) {
 	ffly_reservoir_free(&__ffly_reservoir__, (void*)__arg);
 }
 
+ff_err_t ff_bh_bnewm(ff_bhp __bh, ff_u8_t __sz, ff_u32_t *__b, ff_uint_t __n) {
+	struct bhop op = {_bhop_bnewm};
+	ff_bh_opsnd(__bh->sock, &op);
+
+	ff_err_t err;
+	ff_net_send(__bh->sock, &__sz, sizeof(ff_u8_t), &err);
+	ff_net_send(__bh->sock, &__n, sizeof(ff_uint_t), &err);
+
+	ff_net_recv(__bh->sock, __b, __n*sizeof(ff_u32_t), &err);
+	return err;
+}
+
+ff_err_t ff_bh_bridm(ff_bhp __bh, ff_u32_t *__b, ff_uint_t __n) {
+	struct bhop op = {_bhop_bridm};
+	ff_bh_opsnd(__bh->sock, &op);
+
+	ff_err_t err;
+	ff_net_send(__bh->sock, &__n, sizeof(ff_uint_t), &err);
+	ff_net_send(__bh->sock, __b, __n*sizeof(ff_u32_t), &err);
+	return err;
+}
 
 ff_u32_t ff_bh_bnew(ff_bhp __bh, ff_u8_t __sz, ff_err_t *__err) {
 	struct bhop op = {_bhop_bnew};
@@ -133,6 +157,44 @@ ff_err_t ff_bh_bclose(ff_bhp __bh, ff_u32_t __b) {
 	ff_err_t err;
 	ff_net_send(__bh->sock, &__b, sizeof(ff_u32_t), &err);
 	return err;
+}
+
+void static
+bh_bnewm(FF_SOCKET *__sock) {
+	ff_err_t err;
+	ff_u8_t sz;
+	ff_uint_t n;
+	ff_net_recv(__sock, &sz, 1, &err);
+	ff_net_recv(__sock, &n, sizeof(ff_uint_t), &err);
+
+	ff_u32_t *b;
+	b = (ff_u32_t*)__ffly_mem_alloc(n*sizeof(ff_u32_t));
+
+	ff_uint_t i;
+	i = 0;
+
+	while(i != n)
+		b[i++] = ffly_brick_new(sz, bread, bwrite, bdel, ffly_reservoir_alloc(&__ffly_reservoir__, bricksz(sz)));
+	ff_net_send(__sock, b, n*sizeof(ff_u32_t), &err);
+	__ffly_mem_free(b);
+	ffly_printf("created new brick/s - %u, size: %u\n", n, bricksz(sz));
+}
+
+void static
+bh_bridm(FF_SOCKET *__sock) {
+	ff_err_t err;
+	ff_uint_t n;
+	ff_net_recv(__sock, &n, sizeof(ff_uint_t), &err);
+
+	ff_u32_t *b;
+	b = __ffly_mem_alloc(n*sizeof(ff_u32_t));
+	ff_net_recv(__sock, b, n*sizeof(ff_u32_t), &err);
+	ff_uint_t i;
+
+	i = 0;
+	while(i != n)
+		ffly_brick_rid(b[i++]);
+	__ffly_mem_free(b);
 }
 
 void static
@@ -215,6 +277,8 @@ bh_bclose(FF_SOCKET *__sock) {
 	ffly_printf("closing brick -%u\n", b);
 }
 
+void _bnewm();
+void _bridm();
 void _bnew();
 void _brid();
 void _bopen();
@@ -223,6 +287,8 @@ void _bread();
 void _bclose();
 
 static void *jmp[] = {
+	_bnewm,
+	_bridm,
 	_bnew,
 	_brid,
 	_bopen,
@@ -239,6 +305,14 @@ doop(struct bhop *__op, FF_SOCKET *__sock) {
 		cant use return gcc thinks its the end of the funtion if used
 		and then removes anything below and it treated like the function start and stops there
 	*/
+
+	__asm__("_bnewm:\n\t");
+	bh_bnewm(__sock);
+	jmpend;
+
+	__asm__("_bridm:\n\t");
+	bh_bridm(__sock);
+	jmpend;
 
 	__asm__("_bnew:\n\t");
 	bh_bnew(__sock);

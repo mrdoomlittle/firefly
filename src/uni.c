@@ -77,7 +77,7 @@ ffly_uni_frame(ffly_unip __uni, ff_byte_t *__dst,
 							ffly_printf("lot error null body within.\n");
 						} else {
 						if ((*body->x < __x+__xl && *body->x >= __x) && (*body->y < __y+__yl && *body->y >= __y) && (*body->z < __z+__zl && *body->z >= __z)) {
-							ffly_draw_polygon(&body->shape, __dst, body->texture, body->xl, *body->x-__x, *body->y-__y, 0, __xl, __yl, __x+__xl, __y+__yl, 0.0);
+							ffly_draw_polygon(&body->shape, __dst, *body->x-__x, *body->y-__y, __xl, __yl, __x+__xl, __y+__yl);
 							//ffly_light_emit(__dst, __xl, __yl, *body->x-__x, *body->y-__y, 0, *body->light);
 						}
 						}

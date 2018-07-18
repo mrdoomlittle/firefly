@@ -136,6 +136,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/hexdump.o $root_dir/hexdump.c
 $ffly_cc $cc_flags -c -o $dst_dir/brick.o $root_dir/brick.c
 $ffly_cc $cc_flags -c -o $dst_dir/br.o $root_dir/br.c
 $ffly_cc $cc_flags -c -o $dst_dir/chrdump.o $root_dir/chrdump.c
+$ffly_cc $cc_flags -c -o $dst_dir/rasterizer.o $root_dir/rasterizer.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -158,4 +159,4 @@ $dst_dir/piston.o $dst_dir/corrode.o $dst_dir/bog.o \
 $dst_dir/env.o $dst_dir/line.o $dst_dir/db/load.o
 $dst_dir/db/store.o $dst_dir/db/block.o $dst_dir/db/error.o \
 $dst_dir/signal/sigemptyset.o $dst_dir/pulse.o $dst_dir/hexdump.o \
-$dst_dir/brick.o $dst_dir/br.o $dst_dir/chrdump.o"
+$dst_dir/brick.o $dst_dir/br.o $dst_dir/chrdump.o $dst_dir/rasterizer.o"

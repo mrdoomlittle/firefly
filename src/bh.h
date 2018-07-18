@@ -3,15 +3,15 @@
 # include "ffint.h"
 # include "types.h"
 # include "net.h"
-// brick stash
 /*
-	might rename
 	rundown:
 		download/upload centre for bricks
 		bricks can be stored and retrieved.
 */
 
 enum {
+	_bhop_bnewm,
+	_bhop_bridm,
 	// new brick
 	_bhop_bnew,
 	// get rid of brick
@@ -45,6 +45,8 @@ void ff_bhs_start(void);
 void ff_bhs_closedown(void);
 void ff_bhs_cleanup(void);
 
+ff_err_t ff_bh_bnewm(ff_bhp, ff_u8_t, ff_u32_t*, ff_uint_t);
+ff_err_t ff_bh_bridm(ff_bhp, ff_u32_t*, ff_uint_t);
 ff_u32_t ff_bh_bnew(ff_bhp, ff_u8_t, ff_err_t*);
 ff_err_t ff_bh_brid(ff_bhp, ff_u32_t);
 ff_err_t ff_bh_bopen(ff_bhp, ff_u32_t);

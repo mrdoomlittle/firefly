@@ -36,6 +36,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_printf("waiting for ctl-c\n");
 	ffly_fdrain(ffly_out);
 	while(done == -1);
+	ffly_twait(t);
 	ff_bhs_closedown();
  	ff_bhs_cleanup();
 	ffly_brick_cleanup();

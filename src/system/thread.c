@@ -24,6 +24,11 @@
 # define T_USEABLE 0x1
 
 
+/*
+	TODO:
+		do somthing that does not involve {create and kill}
+		have x amount of processes pending or use. 
+*/
 //# define debug
 // no process linked
 # define T_NOP 0x2
@@ -110,20 +115,20 @@ void ffly_trelinquish_hole(ff_u16_t __hole) {
 # define no_threads \
 	(off-uu.off)
 
-static __thread ff_tid_t id = FFLY_TID_NULL;
+static ff_uint_t id;
 ff_tid_t ffly_gettid() {
-	return id;
+	return (ff_tid_t)ffly_tls_get(id);
 }
 
 __linux_pid_t ffly_thread_getpid(ff_tid_t __tid) {
-	return 0;
-	//return get_thr(__tid)->pid;
+	return get_thr(__tid)->pid;
 }
 
 void ffly_thread_init() {
 	/* get current pot for this process
 	*/
 	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&pot);
+	id = ffly_tls_alloc(sizeof(ff_uint_t));
 }
 
 ff_err_t static
@@ -209,21 +214,7 @@ prox(void) {
 # ifdef debug
 	ffly_printf("new thread %u : %u.\n", thr->h, hget(thr->h));
 # endif
-	/*
-	ff_setpid();
-	thr->pid = ff_getpid();
-	id = thr->tid;
-	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&thr->pot);
-	ffly_fprintf(ffly_out, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
-	ffly_atomic_incr(&active_threads);
-	ffly_cond_lock_signal(&thr->lock);
-	thr->alive = 1;*/
-//	ffly_ctl(ffly_malc, _ar_getpot, (ff_u64_t)&thr->pot);
-//	ffly_fprintf(ffly_out, "pid: %ld, tid: %lu\n", thr->pid, thr->tid);
-	thr->routine(thr->arg_p);
-//	thr->alive = 0;
-//	ffly_atomic_decr(&active_threads);
-
+	ffly_tls_set(thr->h, id);
 	thr->exit = 0;
 
 	ffly_thread_del(thr->h);
@@ -309,7 +300,7 @@ _exec:
 
 	if (!(thr->flags&T_NOP)) {
 		/*
-			wait for relese
+			wait for release
 		*/
 # ifdef debug 
 		ffly_printf("waiting for thread %u to be released.\n", h);
@@ -322,7 +313,8 @@ _exec:
 				pause it until be are done then tell it to jump to the start
 		*/
 		/*
-			make sure thread is dead before use
+			make sure thread is dead before use as the stack will be reused and 
+			if we overwrite somthing important its going to cause havoc.
 		*/
 		wait4(thr->pid, NULL, __WALL|__WCLONE, NULL);
 	}

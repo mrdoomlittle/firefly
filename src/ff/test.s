@@ -1,54 +1,29 @@
 	.region text
+	.extern abort
+	.extern ffly_mem_alloc
+	.extern ffly_mem_free
+	.extern ffly_mem_read
+	.extern ffly_mem_write
+	.extern ffly_sched_init
+	.extern ffly_resv_init
 	.globl main
 main:
-	ret
 	;save %bp
+	;push start
 	asq %rlx, 8
 	subq %rlx, %sp
 	ldq %sp, %bp
+	;push end
 	movq %sp, %bp
-	asq %rlx, 1
-	subq %sp, %rlx
-	asq %rel, 0
-	asb %ae, 21
-	asq %rel, 1
-	movq %bp, %rlx
-	subq %rel, %rlx
-	ldb %rlx, %ae
-	asq %rel, 0
-	asq %rel, 0
-	asq %rel, 1
-	movq %bp, %rlx
-	subq %rel, %rlx
-	stb %rlx, %ae
-	asq %rlx, 8
-	subq %rlx, %sp
-	ldq %sp, %rel
-	asq %rel, 0
-	asq %rel, 0
-	asb %ae, 21
-	movq %rel, %xes
-	stq %sp, %rel
-	asq %rlx, 8
-	addq %rlx, %sp
-	cmpq %rel, %xes
-jne #l1
-	asq %rel, 0
-	asq %rel, 1
-	movq %bp, %rlx
-	subq %rel, %rlx
-	stb %rlx, %ae
-	outb %ae
-.l l1
+	call $ffly_sched_init
+	call $ffly_resv_init
 .l l0
 	movq %bp, %sp
 	;reset %bp
+	;pop start
 	stq %sp, %bp
 	asq %rlx, 8
 	addq %rlx, %sp
+	;pop end
 	ret
-_start:
-	rin 0, 0
-	call $main
-	exit %al
 .endof

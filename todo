@@ -159,3 +159,5 @@ format and elf but bond wont work with elf but the custom format its output will
 
 -. cleanup locks at currently there only placed to stop errors occurring
 and the way thay have be placed in some spots is very inefficient
+-. work on the drawing of polygons
+-. work on body texture and the colour assignment to polygons
