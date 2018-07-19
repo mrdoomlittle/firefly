@@ -161,3 +161,6 @@ format and elf but bond wont work with elf but the custom format its output will
 and the way thay have be placed in some spots is very inefficient
 -. work on the drawing of polygons
 -. work on body texture and the colour assignment to polygons
+-. replace ((__val>>PAGE_SHIFT)+((__val&((~(ff_u64_t)0)>>(64-PAGE_SHIFT)))>0))
+with ((__val+(0xffffffffffffffff>>(64-PAGE_SHIFT)))>>PAGE_SHIFT) its to remove the '>0'
+did not realy care about it but needed changing

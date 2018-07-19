@@ -1051,7 +1051,7 @@ potp alloc_pot(ff_uint_t __size) {
 
 	__size+=sizeof(potp*);
 	init_pot(p);
-	p->page_c = (__size>>PAGE_SHIFT)+((__size&((~(ff_u64_t)0)>>(64-PAGE_SHIFT)))>0);
+	p->page_c = ((__size+(0xffffffffffffffff>>(64-PAGE_SHIFT)))>>PAGE_SHIFT);
 	ff_uint_t size = p->page_c*PAGE_SIZE;
 	void *pp = _ffly_balloc(&main_pot, size);
 	*(potp*)pp = p;
@@ -1191,9 +1191,8 @@ _bk:
 	ar_uint_t size = align_to(block_size+__bc, ALIGN);
 	ar_off_t top = __pot->off+size;
 	if (is_flag(__pot->flags, USE_BRK)) {
-		ar_uint_t page_c;
-		if ((page_c = ((top>>PAGE_SHIFT)+((top&((~(ff_u64_t)0)>>(64-PAGE_SHIFT)))>0))) > __pot->page_c) {
-		//if ((page_c = ((top>>PAGE_SHIFT)+((top-((top>>PAGE_SHIFT)*PAGE_SIZE))>0))) > __pot->page_c) {
+		ff_uint_t page_c;
+		if ((page_c = ((top+(0xffffffffffffffff>>(64-PAGE_SHIFT)))>>PAGE_SHIFT)) > __pot->page_c) {
 			if (brk(__pot->top = (void*)((ff_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
 # ifdef __ffly_debug
 				printf("error: brk.\n");
@@ -1414,8 +1413,7 @@ _ffly_bfree(potp __pot, void *__p) {
 		__pot->off = blk->off;
 		if (is_flag(__pot->flags, USE_BRK)) { 
 			ff_uint_t page_c;
-			if ((page_c = ((__pot->off>>PAGE_SHIFT)+((__pot->off&((~(ff_u64_t)0)>>(64-PAGE_SHIFT)))>0))) < __pot->page_c) {
-//			if ((page_c = ((__pot->off>>PAGE_SHIFT)+((__pot->off-((__pot->off>>PAGE_SHIFT)*PAGE_SIZE))>0))) < __pot->page_c) {
+			if ((page_c = ((__pot->off+(0xffffffffffffffff>>(64-PAGE_SHIFT)))>>PAGE_SHIFT)) < __pot->page_c) {
 				if (brk(__pot->top = (void*)((ff_u8_t*)__pot->end+((__pot->page_c = page_c)*PAGE_SIZE))) == (void*)-1) {
 # ifdef __ffly_debug
 					printf("error: brk.\n");
