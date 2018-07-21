@@ -9,21 +9,30 @@
 # include "maths/round.h"
 # include "system/io.h"
 
-void ffly_rasterize(ffly_polygonp *__polylist, ff_byte_t *__dst,
+void ffly_rasterize(ffly_modelp __model, ff_byte_t *__dst,
 	ff_uint_t __x, ff_uint_t __y,
 	ff_uint_t __width, ff_uint_t __height,
 	ff_uint_t __xmax, ff_uint_t __ymax)
 {
-	ffly_polygonp *cur, poly;
+	if (!__model->texture) {
+		ffly_printf("model has no texture.\n");
+		return;
+	}
+
+	ffly_polygonp poly;
 	ffly_vertex v0, v1, v2;
 
-	cur = __polylist;
-	while((poly = *cur) != NULL) {
-	// so we can see
-		poly->r = 0;
-		poly->g = 0;
-		poly->b = 0xff;
-		poly->a = 0xff;
+	ff_uint_t i;
+	ff_uint_t poly_c;
+	poly_c = __model->poly_c;
+
+	i = 0;
+	while(i != poly_c) {
+		poly = __model->poly+i;
+		ff_byte_t *c;
+
+		// *4
+		c = __model->texture+(poly->c<<2);
 
 		v0 = *poly->vertices;
 		v1 = poly->vertices[1];
@@ -41,20 +50,17 @@ void ffly_rasterize(ffly_polygonp *__polylist, ff_byte_t *__dst,
 			x = xmin;
 			while(x != xmax && ffly_abs(xmin-x)+__x < __xmax) {
 				ffly_barycentric(x, y, 0, &v0, &v1, &v2, &a, &b, &g);
-				if ((a>=0.0&&b>=0.0&&g>=0.0) || (x == xmin || y == ymin || x == xmax || y == ymax)) {
+				if (a>=0.0&&b>=0.0&&g>=0.0) {
 					ff_uint_t x0 = ffly_abs(xmin-x);
 					ff_uint_t y0 = ffly_abs(ymin-y);
 					ff_byte_t *dst = __dst+(((__x+x0)+((__y+y0)*__height))*4);
 
-					*dst = poly->r;
-					dst[1] = poly->g;
-					dst[2] = poly->b;
-					dst[3] = poly->a;
+					*(ff_u32_t*)dst = *(ff_u32_t*)c;
 				}
 				x++;
 			}
 			y++;
 		}
-		cur++;
+		i++;
 	}
 }

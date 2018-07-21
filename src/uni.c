@@ -6,6 +6,7 @@
 # include "memory/mem_free.h"
 # include "dep/mem_set.h"
 # include "physics/light.h"
+# include "rasterizer.h"
 /*
 	TODO:
 		dealloc 'lots' that are not inuse
@@ -77,7 +78,7 @@ ffly_uni_frame(ffly_unip __uni, ff_byte_t *__dst,
 							ffly_printf("lot error null body within.\n");
 						} else {
 						if ((*body->x < __x+__xl && *body->x >= __x) && (*body->y < __y+__yl && *body->y >= __y) && (*body->z < __z+__zl && *body->z >= __z)) {
-							ffly_draw_polygon(&body->shape, __dst, *body->x-__x, *body->y-__y, __xl, __yl, __x+__xl, __y+__yl);
+							ffly_rasterize(body->model, __dst, *body->x-__x, *body->y-__y, __xl, __yl, __x+__xl, __y+__yl);
 							//ffly_light_emit(__dst, __xl, __yl, *body->x-__x, *body->y-__y, 0, *body->light);
 						}
 						}

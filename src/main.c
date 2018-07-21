@@ -27,6 +27,7 @@
 # include "storage/reservoir.h"
 # include "physics/contact.h"
 # include "linux/time.h"
+# include "model.h"
 # define WIDTH 448
 # define HEIGHT 448
 /*
@@ -122,14 +123,33 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_phy_bodyp body0 = ffly_get_phy_body(obj0->phy_body);
 	ffly_phy_bodyp body1 = ffly_get_phy_body(obj1->phy_body);
 
-	ff_byte_t *texture = (ff_byte_t*)__ffly_mem_alloc(20*20*4);
-	ffly_mem_set(texture, 0xff, 20*20*4);
+	ff_byte_t *texture = (ff_byte_t*)__ffly_mem_alloc(8);
 
-	ffly_bzero(&body0->shape, sizeof(ffly_polygon));
+	*texture = 255;
+	texture[1] = 0;
+	texture[2] = 0;
+	texture[3] = 255;
+
+	texture[4] = 0;
+	texture[5] = 255;
+	texture[6] = 0;
+	texture[7] = 255;
+
+	ffly_modelp m0, m1;
+
+	m0 = ffly_model_new(2);
+	m1 = ffly_model_new(2);
+
+	body0->model = m0;
 	ffly_body_vertex(body0, -10, -10, 0);
 	ffly_body_vertex(body0, 10, -10, 0);
 	ffly_body_vertex(body0, 10, 10, 0);
-	body0->texture = texture;
+	ffly_model_nextpoly(m0);
+	ffly_body_vertex(body0, -10, -10, 0);
+	ffly_body_vertex(body0, -10, 10, 0);
+	ffly_body_vertex(body0, 10, 10, 0);
+
+	m0->texture = texture;
 	body0->xl = 20;
 	body0->yl = 20;
 	body0->zl = 1;
@@ -138,11 +158,16 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	obj0->y = 0;
 	obj0->z = 0;
 
-	ffly_bzero(&body1->shape, sizeof(ffly_polygon));
+	body1->model = m1;
 	ffly_body_vertex(body1, -10, -10, 0);
 	ffly_body_vertex(body1, 10, -10, 0);
 	ffly_body_vertex(body1, 10, 10, 0);
-	body1->texture = texture;
+	ffly_model_nextpoly(m1);
+	ffly_body_vertex(body1, -10, -10, 0);
+	ffly_body_vertex(body1, -10, 10, 0);
+	ffly_body_vertex(body1, 10, 10, 0);
+
+	m1->texture = texture;
 	body1->xl = 20;
 	body1->yl = 20;
 	body1->zl = 1;
@@ -151,6 +176,16 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	obj1->y = 140;
 	obj1->z = 0;
 
+	ff_u32_t tx0[] = {
+		0, 1
+	};
+
+	ff_u32_t tx1[] = {
+		0, 1
+	};
+
+	ffly_model_tex(m0, 2, tx0);
+	ffly_model_tex(m1, 2, tx1);
 	ffly_uni_attach_body(&uni, body0);
 	ffly_uni_attach_body(&uni, body1);
 
@@ -219,6 +254,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		rps++;
 	}	
 _end:
+	ffly_model_dismantle(m0);
+	ffly_model_dismantle(m1);
 	ffly_queue_de_init(&ffly_event_queue);
 	ff_event_cleanup();
 	__ffly_mem_free(texture);

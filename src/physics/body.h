@@ -2,13 +2,16 @@
 # define __ffly__physics__body__h
 # include "../ffint.h"
 # include "../polygon.h"
+# include "../model.h"
 /*
+	move out of phy* directory
+
 	legal velocity values: for now
 	0.0-0.9
 */
 
 # define ffly_body_vertex(__body, __x, __y, __z) \
-	ffly_vertex3(&(__body)->shape, __x, __y, __z)
+	ffly_vertex3((__body)->model->poly+(__body)->model->off, __x, __y, __z)
 
 typedef struct ffly_uni* ffly_unip;
 typedef struct ffly_lot* ffly_lotp;
@@ -17,8 +20,7 @@ typedef struct ffly_lot* ffly_lotp;
 */
 
 typedef struct ffly_phy_body {
-	ffly_polygon shape;
-	ff_u8_t *texture;
+	ffly_modelp model;
 	ff_uint_t xl, yl, zl;
 	// for now just int
 	ff_uint_t mass;

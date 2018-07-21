@@ -9,6 +9,7 @@
 # include "maths/round.h"
 # include "system/io.h"
 # include "rasterizer.h"
+# include "model.h"
 void static
 rotate_vertex(ffly_vertexp __vertex, ff_uint_t __x, ff_uint_t __y, float __angle) {
 	double x = __vertex->x-(ff_int_t)__x, y = __vertex->y-(ff_int_t)__y;
@@ -25,9 +26,14 @@ ffly_draw_polygon(ffly_polygonp __poly, ff_byte_t *__dst,
 	ff_uint_t __width, ff_uint_t __height,
 	ff_uint_t __xmax, ff_uint_t __ymax)
 {
-	ffly_polygonp list[] = {
-		__poly, NULL
+	ff_u32_t colour = 0;
+	__poly->c = 0;
+	ffly_model model = {
+		__poly,
+		1,
+		&colour,
+		0
 	};
 
-	ffly_rasterize(list, __dst, __x, __y, __width, __height, __xmax, __ymax);
+	ffly_rasterize(&model, __dst, __x, __y, __width, __height, __xmax, __ymax);
 }

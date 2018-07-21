@@ -2,7 +2,7 @@
 # define __ffly__rasterizer__h
 # include "ffint.h"
 # include "types.h"
-# include "polygon.h"
+# include "model.h"
 
-void ffly_rasterize(ffly_polygonp*, ff_byte_t*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
+void ffly_rasterize(ffly_modelp, ff_byte_t*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
 # endif /*__ffly__rasterizer__h*/
