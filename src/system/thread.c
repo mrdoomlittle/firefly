@@ -215,6 +215,7 @@ prox(void) {
 	ffly_printf("new thread %u : %u.\n", thr->h, hget(thr->h));
 # endif
 	ffly_tls_set(thr->h, id);
+	thr->routine(thr->arg_p);
 	thr->exit = 0;
 
 	ffly_thread_del(thr->h);
