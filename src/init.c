@@ -4,6 +4,8 @@
 # include "dep/str_cpy.h"
 # include "exec.h"
 # include "linux/unistd.h"
+# include "system/error.h"
+# include "system/log.h"
 void ffly_init_run() {
 	if (!__ffly_sysconf__.root_dir ||
 		!__ffly_sysconf__.inidir ||
@@ -19,9 +21,9 @@ void ffly_init_run() {
 	char const **ini = __ffly_sysconf__.inil;
 	while(*ini != NULL) {
 		ffly_str_cpy(bufp, *ini);
-		ffly_fprintf(ffly_log, "init path: %s\n", buf);
+		log("init path: %s\n", buf);
 		if (access(buf, F_OK) == -1) {
-			ffly_fprintf(ffly_log, "file access has been denied, or file doesent exist. skipping...\n", buf);
+			log("file access has been denied, or file doesent exist. skipping...\n", buf);
 			goto _sk;
 		}
 		ffexecf(buf);
@@ -32,24 +34,37 @@ void ffly_init_run() {
 
 # include "system/sched.h"
 # include "storage/reservoir.h"
+// remove CORRODE from flags
+
 struct init_arg *__init_arg__;
 void static
 sched_init(void) {
-	ffly_printf("sched init, flags: %u\n", __init_arg__->flags);
+	log("sched init, flags: %u\n", __init_arg__->flags);
 	ffly_scheduler_init(__init_arg__->flags|SCHED_CORRODE);
 }
 
 void static
 resv_init(void) {
-	ffly_printf("resv init, flags: %u\n", __init_arg__->flags);
+	log("resv init, flags: %u\n", __init_arg__->flags);
 	ffly_reservoir_init(&__ffly_reservoir__, __init_arg__->flags|RESV_CORRODE, "temp.resv");
 }
 
+# define MAX 2
 static void(*init[])(void) = {
 	sched_init,
 	resv_init
 };
 
-void ffly_init(ff_u8_t __what) {
+ff_err_t
+ffly_init(ff_u8_t __what) {
+	if (__what>= MAX) {
+		// error
+		return FF_ERR_NEIP;
+	}
+
+	if (!__init_arg__) {
+		log("init arg is null - might cause an error.\n");
+	}
 	init[__what]();
+	retok;
 }

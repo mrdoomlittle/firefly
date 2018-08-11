@@ -3,8 +3,8 @@
 # include "../system/errno.h"
 # ifdef __ffly_debug
 # include "../location.h"
-ff_atomic_uint_t ffly_mem_free_bc = 0;
-ff_atomic_uint_t ffly_mem_free_c = 0;
+ff_u64_t ffly_mem_free_bc = 0;
+ff_u64_t ffly_mem_free_c = 0;
 # endif
 # ifdef __ffly_mal_track
 ff_err_t ffly_mem_free(void *__p, ff_bool_t __track_bypass) {
@@ -34,8 +34,20 @@ ff_err_t ffly_mem_free(void *__p) {
 	ff_u8_t *
 # endif
 	p = (ff_u8_t*)__p-sizeof(ff_uint_t);
-	ffly_atomic_add(&ffly_mem_free_bc, *(ff_uint_t*)p);
-	ffly_atomic_incr(&ffly_mem_free_c);
+	__asm__(
+#if (!defined(__ff32) && !defined(__ff64)) || defined(__ff32)
+		"xorq %%rax, %%rax\n\t"
+		"movl (%2), %%eax\n\t"
+#elif defined(__ff64)
+		"movq (%2), %%rax\n\t"
+#else
+#error "error"
+#endif
+		"lock addq %%rax, %0\n\t"
+		"lock incq %1" :
+			"=m"(ffly_mem_free_bc),
+				"=m"(ffly_mem_free_c) :
+					"r"(p) : "rax");
 # ifndef __ffly_use_allocr
 	free((void*)p);
 # else

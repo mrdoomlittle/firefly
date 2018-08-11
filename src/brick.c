@@ -85,7 +85,12 @@ void ffly_brick_open(ff_u32_t __id) {
 
 void ffly_brick_close(ff_u32_t __id) {
 	ffly_brickp b = get_brick(__id);
+# ifndef be_vigilant
 	b->flags ^= BRICK_OPEN;
+# else
+	b->flags &= ~BRICK_OPEN;
+# endif
+
 	if (b->p != NULL) {
 		if (b->write != NULL)
 			b->write(b->arg, b->p, b->sz);

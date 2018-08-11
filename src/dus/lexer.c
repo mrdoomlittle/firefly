@@ -19,6 +19,9 @@ read_ident(ff_uint_t *__l) {
 	char *bufp = buf;
 	char c = nextc;
 	while((c>='a' && c<='z') || c == '_') {
+		if ((bufp-buf)>=128) {
+			// buffer overflow
+		}
 		*(bufp++) = c;
 		incrp;
 		c = nextc;
@@ -39,6 +42,9 @@ read_dec(ff_uint_t *__l) {
 	char *bufp = buf;
 	char c = nextc;
 	while(c>='0' && c<='9') {
+		if ((bufp-buf)>=128) {
+			// buffer overflow
+		}
 		*(bufp++) = c;
 		incrp;
 		c = nextc;
@@ -59,6 +65,9 @@ read_str(ff_uint_t *__l) {
 	char *bufp = buf;
 	char c = nextc;
 	while(c != '"') {
+		if ((bufp-buf)>=1024) {
+			// buffer overflow
+		}
 		*(bufp++) = c;
 		incrp;
 		c = nextc;

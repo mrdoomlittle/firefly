@@ -1,21 +1,20 @@
 # ifndef __ffly__mem__realloc__h
 # define __ffly__mem__realloc__h
-# ifndef __ffly_use_allocr
-#   include <malloc.h>
-# else
-#   include "allocr.h"
-# endif
+#ifndef __ffly_use_allocr
+# include <malloc.h>
+#else
+# include "allocr.h"
+#endif
 # include "../ffint.h"
 # include "../types.h"
 # include "mem_alloc.h"
 # include "../ffly_def.h"
-# include "../system/atomic.h"
 # ifdef __cplusplus
 extern "C" {
 # endif
-# if defined(__ffly_debug) && !defined(__ffly_mem__alloc__h)
-ff_atomic_uint_t extern ffly_mem_alloc_bc;
-ff_atomic_uint_t extern ffly_mem_alloc_c;
+# if defined(__ffly_debug) && !defined(__ffly__mem__alloc__h)
+ff_u64_t extern ffly_mem_alloc_bc;
+ff_u64_t extern ffly_mem_alloc_c;
 # endif
 # ifdef __ffly_mal_track
 void* ffly_mem_realloc(void*, ff_uint_t, ff_bool_t);
@@ -40,18 +39,22 @@ static void*(*mem_realloc)(void*, uint_t) = &ffly_mem_realloc;
 # endif
 }
 # endif
-# if defined(__ffly_mal_track)
-#	ifdef __cplusplus
-#		define __ffly_mem_realloc(__p, __bc) mdl::firefly::memory::mem_realloc(__p, __bc, ffly_false)
-#	else
-#		define __ffly_mem_realloc(__p, __bc) ffly_mem_realloc(__p, __bc, ffly_false)
-#	endif
+#if defined(__ffly_mal_track)
+# ifdef __cplusplus
+#	define __ffly_mem_realloc(__p, __bc) \
+		mdl::firefly::memory::mem_realloc(__p, __bc, ffly_false)
 # else
-#	ifdef __cplusplus
-#		define __ffly_mem_realloc(__p, __bc) mdl::firefly::memory::mem_realloc(__p, __bc)
-#	else
-#		define __ffly_mem_realloc(__p, __bc) ffly_mem_realloc(__p, __bc)
-#	endif
+#	define __ffly_mem_realloc(__p, __bc) \
+		ffly_mem_realloc(__p, __bc, ffly_false)
 # endif
+#else
+# ifdef __cplusplus
+#	define __ffly_mem_realloc(__p, __bc) \
+		mdl::firefly::memory::mem_realloc(__p, __bc)
+# else
+#	define __ffly_mem_realloc(__p, __bc) \
+		ffly_mem_realloc(__p, __bc)
+# endif
+#endif
 
 # endif /*__ffly__mem__realloc__h*/

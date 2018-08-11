@@ -1,14 +1,13 @@
 # ifndef __ffly__mem__alloc__h
 # define __ffly__mem__alloc__h
-# ifndef __ffly_use_allocr
-#   include <malloc.h>
-# else
-#   include "allocr.h"
-# endif
+#ifndef __ffly_use_allocr
+# include <malloc.h>
+#else
+# include "allocr.h"
+#endif
 # include "../ffint.h"
 # include "../types.h"
 # include "../ffly_def.h"
-# include "../system/atomic.h"
 # ifdef __ffly_mal_track
 #	include "../system/mal_track.h"
 # endif
@@ -18,8 +17,8 @@ extern "C" {
 # endif
 
 # ifdef __ffly_debug
-ff_atomic_uint_t extern ffly_mem_alloc_bc;
-ff_atomic_uint_t extern ffly_mem_alloc_c;
+ff_u64_t extern ffly_mem_alloc_bc;
+ff_u64_t extern ffly_mem_alloc_c;
 # endif
 
 # ifdef __ffly_mal_track
@@ -61,18 +60,21 @@ static void*(*mem_alloc)(uint_t) = &ffly_mem_alloc;
 # endif /*__ffly_mal_track*/
 }
 # endif
-# if defined(__ffly_mal_track)
-# 	ifdef __cplusplus
-#		define __ffly_mem_alloc(__bc) mdl::firefly::memory::mem_alloc(__bc, ffly_false)
-# 	else
-#		define __ffly_mem_alloc(__bc) ffly_mem_alloc(__bc, ffly_false)
-# 	endif
+#if defined(__ffly_mal_track)
+# ifdef __cplusplus
+#	define __ffly_mem_alloc(__bc) \
+		mdl::firefly::memory::mem_alloc(__bc, ffly_false)
 # else
-#   ifdef __cplusplus
-#		define __ffly_mem_alloc(__bc) mdl::firefly::memory::mem_alloc(__bc)
-# 	else
-#		define __ffly_mem_alloc(__bc) ffly_mem_alloc(__bc)
-# 	endif
+#	define __ffly_mem_alloc(__bc) \
+		ffly_mem_alloc(__bc, ffly_false)
 # endif
-
+#else
+# ifdef __cplusplus
+#	define __ffly_mem_alloc(__bc) \
+		mdl::firefly::memory::mem_alloc(__bc)
+# else
+#	define __ffly_mem_alloc(__bc) \
+		ffly_mem_alloc(__bc)
+# endif
+#endif
 # endif /*__ffly__mem__alloc__h*/

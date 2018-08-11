@@ -2,6 +2,9 @@
 # include "../malloc.h"
 # include "../stdio.h"
 ff_uint_t static used = 0;
+/*
+	should rename to area ???
+*/
 struct block {
 	struct block **bk, *next;
 	void *p;
@@ -11,6 +14,9 @@ struct block {
 static struct block *top = NULL;
 
 # define hdrsize sizeof(struct block)
+/*
+	temporary
+*/
 void *ff_dus_mmap(ff_uint_t __size) {
 	ff_u8_t *p = malloc(hdrsize+__size);
 	struct block *b = (struct block*)p;

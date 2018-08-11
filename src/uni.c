@@ -148,7 +148,8 @@ void
 ffly_uni_update(ffly_unip __uni, ff_uint_t __delta) {
 	ffly_phy_bodyp cur = ffly_phy_body_top();
 	while(cur != NULL) {
-		ffly_gravity_apply(__uni, cur, __delta);
+		if ((cur->flags&GRAVITY_ENABLE)>0)
+			ffly_gravity_apply(__uni, cur, __delta);
 		ffly_printf("body: %u, %u:%u:%u\n", cur->id, *cur->x, *cur->y, *cur->z);
 		ffly_phy_body_fd(&cur);
 	}

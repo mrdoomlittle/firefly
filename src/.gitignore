@@ -16,3 +16,4 @@ main*
 renderer*
 sector.c
 sector.h
+carriage*

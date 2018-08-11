@@ -2,6 +2,10 @@
 # define __ffly__hatch__h
 # include "ffint.h"
 # include "types.h"
+# include "m.h"
+/*
+	to get debug info from engine while running
+*/
 enum {
     _ffly_ho_shutdown,
     _ffly_ho_lsvec,
@@ -10,10 +14,6 @@ enum {
     _ffly_ho_login,
     _ffly_ho_logout,
     _ffly_ho_disconnect
-};
-
-struct ffly_meminfo {
-    ff_uint_t used;
 };
 
 ff_err_t ffly_hatch_start();

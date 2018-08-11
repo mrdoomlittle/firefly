@@ -2,34 +2,26 @@
 # define __ffly__image__h
 # include "../ffint.h"
 # include "../types.h"
-struct ffly_image {
+
+# define FF_IM struct ffly_image
+typedef struct ffly_image {
 	ff_byte_t *pixels;
 	ff_u32_t width, height;
 	ff_byte_t bit_depth, chn_c;
-};
-typedef struct ffly_image* ffly_imagep;
+} *ffly_imagep;
+
 typedef struct ffly_image** ffly_imagepp;
+
 enum {
-	_ffly_img_png,
-	_ffly_img_jpeg
+	_ffly_im_png,
+	_ffly_im_jpeg,
+	_ffly_im_p
 };
 
-# ifdef __cplusplus
-extern "C" {
-# endif
-ff_err_t ffly_ld_img(ffly_imagep, char*, char*, ff_uint_t);
-ff_err_t ffly_free_img(ffly_imagep);
-# ifdef __cplusplus
-}
-namespace mdl {
-namespace firefly {
-namespace graphics {
-typedef struct ffly_image image;
-typedef ffly_imagep imagep;
-typedef ffly_imagepp imagepp;
-static ff_err_t(*ld_img)(imagep, char*, char*, uint_t) = &ffly_ld_img;
-}
-}
-}
-# endif
+void ffly_im_save(ffly_imagep, char const*, ff_uint_t);
+void ffly_im_write(ffly_imagep, void*, ff_u32_t, ff_uint_t);
+void ffly_im_read(ffly_imagep, void*, ff_u32_t, ff_uint_t);
+ff_err_t ffly_im_ld(ffly_imagep, char const*, ff_uint_t);
+ffly_imagep ffly_im_creat(ff_uint_t, ff_uint_t);
+void ffly_im_destroy(ffly_imagep);
 # endif /*__ffly__image__h*/

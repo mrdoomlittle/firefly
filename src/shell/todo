@@ -1,1 +1,2 @@
-remove '\0' from toksz in lexer as it includes it
+- remove '\0' from toksz in lexer as it includes it
+- add,sub assign var, etc

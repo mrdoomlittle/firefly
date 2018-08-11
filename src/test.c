@@ -98,30 +98,88 @@ void* th(void *__arg) {
 # include "pulse.h"
 # include "clock.h"
 # include "brick.h"
+# include "graphics/image.h"
+# include "storage/cistern.h"
+# include "gravity.h"
+# include "uni.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+//	ffly_imagep	im;
+
+//	im = ffly_im_creat(100, 100);
+//	ffly_im_save(im, "test.p", _ffly_im_p);	
+
+//	ffly_im_destroy(im);
+
+	ffly_scheduler_init(SCHED_CORRODE);
 	ffly_reservoir_init(&__ffly_reservoir__, RESV_CORRODE, "test.resv");
 	
-	ff_uint_t const c = 25;
+	ffly_gravity_init(_ffly_uni_256, _ffly_uni_256, 4);
+	ffly_gravity_add(200.0, 2, 2, 0);
+	ffly_gravity_add(200.0, 100, 100, 0);
+
+
+	ffly_printf("%u, %u\n", (ff_u64_t)ffly_gravity_at(2, 2, 0), (ff_u64_t)ffly_gravity_at(100, 100, 0));
+	ffly_gravity_cleanup();
+	/*
+	ff_uint_t const c = 256;
 	ff_uint_t n = 0;
-	void *list[26];
+	void *list[c+1];
+	ff_u8_t buf[58];
+
+	void *r;
+# define NUM 21299
+	*(ff_u64_t*)buf = NUM;
 //	voist
-	while(n != 260) {
+	while(n != 1) {
 		ff_uint_t i;
 
 
 		i = 0;
 		while(i != c) {
-			list[i++] = ffly_reservoir_alloc(&__ffly_reservoir__, 100);
+			*(ff_u64_t*)buf = i*n;
+			list[i++] = r = ffly_reservoir_alloc(&__ffly_reservoir__, 24);
+			ffly_reservoir_write(&__ffly_reservoir__, r, buf, 0, 8);
 		}
 
+		ffly_nanosleep(5, 0);
 		i = 0;
 		while(i != c) {
-			ffly_reservoir_free(&__ffly_reservoir__, list[i++]);
+			r = list[i];
+			ffly_reservoir_read(&__ffly_reservoir__, r, buf, 0, 8);
+			if (*(ff_u64_t*)buf != i*n) {
+				ffly_printf("error, got: %u, need: %u\n", *(ff_u64_t*)buf, i*n);
+			} else {
+				ffly_printf("all good.\n");
+			}
+			i++;
+			ffly_reservoir_free(&__ffly_reservoir__, r);
 		}
 
 		n++;
 	}
+	*/
+/*
+	ff_uint_t i;
+	ff_u64_t start;
+	i = 0;
+	while(i != 10) {
+		start = clock;
+		ffly_nanosleep(0, 500000000);
+		ffly_printf("delta: %u\n", clock-start);
+		i++;
+	}
+*/
+//	struct timespec begin;
+//	clock_gettime(CLOCK_MONOTONIC, &begin);
 
+//	ff_u64_t end;
+//	end = clock+1000;
+//	while(clock<end);// {
+//		ffly_printf("%u, %u\n", clock, end);
+//	}
+//	struct timespec now;
+//	clock_gettime(CLOCK_MONOTONIC, &now);
+//	ffly_printf("sec: %u, nsec: %lu\n", now.tv_sec-begin.tv_sec, now.tv_nsec-begin.tv_nsec);
 //	ff_u8_t i = 0;
 //	ff_tid_t t;
 //	while(i != 9) {

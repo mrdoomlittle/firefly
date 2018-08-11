@@ -4,8 +4,8 @@
 # include "../system/io.h"
 # ifdef __ffly_debug
 # include "../location.h"
-ff_atomic_uint_t ffly_mem_alloc_bc = 0;
-ff_atomic_uint_t ffly_mem_alloc_c = 0;
+ff_u64_t ffly_mem_alloc_bc = 0;
+ff_u64_t ffly_mem_alloc_c = 0;
 # endif
 # ifdef __ffly_mal_track
 void* ffly_mem_alloc(ff_uint_t __bc, ff_u8_t __track_bypass) {
@@ -27,8 +27,20 @@ void* ffly_mem_alloc(ff_uint_t __bc) {
 # endif
 
 	*((ff_uint_t*)p) = __bc;
-	ffly_atomic_add(&ffly_mem_alloc_bc, __bc);
-	ffly_atomic_incr(&ffly_mem_alloc_c);
+	__asm__(
+#if (!defined(__ff32) && !defined(__ff64)) || defined(__ff32)
+			"xorq %%rax, %%rax\n\t"
+			"movl %2, %%eax\n\t"
+#elif defined(__ff64)
+			"movq %2, %%rax\n\t"
+#else
+#error "error"
+#endif
+			"lock addq %%rax, %0\n\t"
+			"lock incq %1" :
+				"=m"(ffly_mem_alloc_bc),
+					"=m"(ffly_mem_alloc_c) :
+						"r"(__bc) : "rax");
 	p+=sizeof(ff_uint_t);
 # else
 # ifndef __ffly_use_allocr
@@ -65,28 +77,26 @@ _succ:
 }
 
 void* ffly_mal() {
-	__asm__("push %r8\n\t"
-			"push %r9");
 # ifdef __ffly_mal_track
 	register ff_u8_t bypass __asm__("r8");
 # endif
 	register ff_uint_t bc __asm__("r9") = 0;
 	__asm__(
-# if (!defined(__ff32) && !defined(__ff64)) || defined(__ff32)
+#if (!defined(__ff32) && !defined(__ff64)) || defined(__ff32)
 		"movl 16(%%rbp), %%eax\n\t"
 		"movl %%eax, %0\n\t"
 # ifdef __ffly_mal_track
 		"movb 20(%%rbp), %%bl\n\t"
 # endif
-# else
-# ifdef __ff64
+#elif defined(__ff64)
 		"movq 16(%%rbp), %%rax\n\t"
 		"movq %%rax, %0\n\t"
 # ifdef __ffly_mal_track
 		"movb 24(%%rbp), %%bl\n\t"
 # endif
-# endif
-# endif
+#else
+#error "error"
+#endif
 # ifdef __ffly_mal_track
 		"movb %%bl, %1\n\t"
 # endif
@@ -102,7 +112,5 @@ void* ffly_mal() {
 	, bypass
 # endif
 );
-	__asm__("pop %r8\n\t"
-			"pop %r9");
 	return ret;
 }

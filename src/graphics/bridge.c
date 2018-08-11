@@ -5,6 +5,7 @@
 # include "../system/io.h"
 # include "../system/event.h"
 # include "../duct.h"
+# include "../system/nanosleep.h"
 # define WIDTH 448
 # define HEIGHT 448
 int main() {
@@ -37,6 +38,7 @@ _again:
 
 		ffly_wd_free_event(&window, event);
 		ff_event_free(event);
+		ffly_nanosleep(0, 30000000);
 	}
 
 	ff_duct_get_frame(window.raw.frame_buff, WIDTH, HEIGHT, 4);

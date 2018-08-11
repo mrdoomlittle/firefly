@@ -59,8 +59,8 @@ void ffly_workshop_start() {
 			ffly_printf("event.\n");
 			ff_event_del(event);
 		}
-		// 16 rps
-		ffly_nanosleep(0, 60000000);
+		// 30 rps
+		ffly_nanosleep(0, 30000000);
 		ffly_grp_unload(&__ffly_grp__);
 
 		if (!ff_duct_serve())
@@ -137,9 +137,17 @@ void ffly_workshop_init() {
 	workshop.front = btn;
 	ffly_gui_btn_sched(btn);
 	ffly_gui_window_init(&workshop.window, 64, 64, 128, 128);
+
+	ff_u8_t static pixels[12*12*4];
+	ffly_mem_set(pixels, 255, 12*12*4);
+
+	ffly_gui_window_write(&workshop.window, pixels, 12, 12, 0, 0);
+	ffly_grp_unload(&__ffly_grp__);
+	ffly_gui_window_update(&workshop.window);
 }
 
 void ffly_workshop_de_init() {
+	ffly_tiles_usched();
 	ffly_queue_de_init(&ffly_event_queue);
 	ff_duct_close();
 	ff_graphics_de_init();

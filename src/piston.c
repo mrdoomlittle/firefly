@@ -30,5 +30,6 @@ void ffly_pistons_stall(void) {
 }
 
 ff_err_t ffly_piston(void) {
+	ffly_fprintf(ffly_log, "piston creation.\n");
 	ffly_thread_create(piston++, handle, NULL);
 }

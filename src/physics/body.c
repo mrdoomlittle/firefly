@@ -40,7 +40,7 @@ void ffly_phy_body_fd(ffly_phy_bodyp *__p) {
 	*__p = (*__p)->next;
 }
 
-ff_u32_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z) {
+ff_u32_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z, ff_u8_t __flags) {
 	ffly_phy_bodyp body;
 
 	ff_uint_t page = off>>PAGE_SHIFT;
@@ -72,8 +72,12 @@ _sk:
 	body->x = __x;
 	body->y = __y;
 	body->z = __z;
+	body->nodes = NULL;
+	body->nn = 0;
 	body->mass = 0;
 	body->lot = NULL;
+	body->lock = FFLY_MUTEX_INIT;
+	body->flags = __flags;
 	return (body->id = (page&0xfff)|((pg_off&0xfffff)<<12));
 }
 
@@ -186,20 +190,46 @@ move(ffly_phy_bodyp __body, ff_uint_t __delta) {
 	__asm__("_end:\n\t");
 }
 
+void ffly_pnode(ffly_phy_bodyp __body, ff_int_t __x, ff_int_t __y, ff_int_t __z) {
+	ffly_mutex_lock(&__body->lock);
+	if (!__body->nodes) {
+		__body->nodes = __ffly_mem_alloc(sizeof(struct ffly_pnode));
+		__body->nn++;
+	} else {
+		__body->nodes = __ffly_mem_realloc(__body->nodes, (++__body->nn)*sizeof(struct ffly_pnode));
+	}
+
+	ffly_pnodep n;
+	
+	n = __body->nodes+(__body->nn-1);
+	n->x = __x;
+	n->y = __y;
+	n->z = __z;
+	ffly_mutex_unlock(&__body->lock);
+}
+
 void ffly_physical_body_update(ffly_unip __uni, ff_uint_t __delta, ff_u32_t __id) {
 	ffly_phy_bodyp body = get_body(__id);
 	ff_uint_t *x = body->x;
 	ff_uint_t *y = body->y;
 	ff_uint_t *z = body->z;
+	ff_u8_t grav;
+
+	grav = (body->flags&GRAVITY_ENABLE)^GRAVITY_ENABLE;
+
 	if (_err(ffly_uni_detach_body(__uni, body))) {
 		ffly_printf("failed to detach body.\n");
 	}
-	ffly_gravity_sub(body->gravity, *x, *y, *z);
+	if (!grav)
+		ffly_gravity_sub(body->gravity, *x, *y, *z);
 
 	move(body, __delta);
-	body->gravity = ((float)body->mass)*0.01;
 
-	ffly_gravity_add(body->gravity, *x, *y, *z);
+	if (!grav) {
+		body->gravity = ((float)body->mass)*0.01;
+
+		ffly_gravity_add(body->gravity, *x, *y, *z);
+	}
 	if (_err(ffly_uni_attach_body(__uni, body))) {
 		ffly_printf("failed to attach body.\n");
 	}

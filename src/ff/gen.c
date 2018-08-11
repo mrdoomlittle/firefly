@@ -5,6 +5,7 @@ void(*ffly_ff_gen_start)(ff_compilerp);
 void(*ffly_ff_gen_final)(ff_compilerp);
 void(*ffly_ff_emit)(ff_compilerp, struct node*);
 
+
 ff_err_t
 ffly_ff_gen(ff_compilerp __compiler) {
 	if (!ffly_vec_size(&__compiler->nodes)) return FFLY_FAILURE;

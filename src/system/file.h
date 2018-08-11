@@ -68,6 +68,7 @@ ff_err_t ffly_fclose(struct ffly_file*);
 ff_err_t ffly_fdrain(struct ffly_file*);
 // solid write
 ff_err_t ffly_fwrites(struct ffly_file*, void*, ff_uint_t);
+ff_err_t ffly_fpread(struct ffly_file*, void*, ff_uint_t, ff_uint_t);
 ff_err_t ffly_fpwrite(struct ffly_file*, void*, ff_uint_t, ff_uint_t);
 # ifdef __cplusplus
 }

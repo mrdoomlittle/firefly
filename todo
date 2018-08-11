@@ -164,3 +164,14 @@ and the way thay have be placed in some spots is very inefficient
 -. replace ((__val>>PAGE_SHIFT)+((__val&((~(ff_u64_t)0)>>(64-PAGE_SHIFT)))>0))
 with ((__val+(0xffffffffffffffff>>(64-PAGE_SHIFT)))>>PAGE_SHIFT) its to remove the '>0'
 did not realy care about it but needed changing
+-. compiler/lexer single chars should be put in a growing stack of memory and should not be allocated thru ffly_mem_alloc
+-. src/net needs to be worked on at the moment its temporary
+-. go thru asm code and align stack allocations to 16
+-. system/string.c have buffer size passed thru if overflow occurred return error 
+-. all errors should be detected and then counted if over x amount has occurred over x time then its time to panic
+-. need somthing to sit in the middle of sockets and shm pipes 
+-. find another way to write to frame buffer - are frame buffer
+-. parsing nodes in some places should use a vec and not linked lists not system/vec but its own 
+-. compiler type sizes should not include a 'size' var but to get the size function should be called
+and size will be retrieved from array by id
+-. maps needs to be tested i havent done that so i dont know how good or bad they are 

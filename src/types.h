@@ -42,6 +42,8 @@ typedef ff_u8_t ff_flag_t;
 typedef ff_u32_t ff_fd_t;
 
 typedef ff_u8_t ff_cond_lock_t;
+typedef ff_u32_t ff_cache_t;
+typedef ff_u32_t ff_rs_t;
 # endif
 
 

@@ -1,5 +1,6 @@
 #!/bin/sh
 ffly_cc=/usr/bin/gcc
+# memory scarcity = -D__ffly_mscarcity
 cc_flags="$cc_flags -D__ffly_debug -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr -D__fflib -D__ffly_source"
 dus=$PWD/dus/ffdus
 ffly_objs=$(
@@ -138,6 +139,22 @@ $ffly_cc $cc_flags -c -o $dst_dir/br.o $root_dir/br.c
 $ffly_cc $cc_flags -c -o $dst_dir/chrdump.o $root_dir/chrdump.c
 $ffly_cc $cc_flags -c -o $dst_dir/rasterizer.o $root_dir/rasterizer.c
 $ffly_cc $cc_flags -c -o $dst_dir/model.o $root_dir/model.c
+as -c -o $dst_dir/start.o $root_dir/start.s
+$ffly_cc $cc_flags -c -o $dst_dir/p.o $root_dir/p.c
+$ffly_cc $cc_flags -c -o $dst_dir/panel.o $root_dir/panel.c
+$ffly_cc $cc_flags -c -o $dst_dir/m.o $root_dir/m.c
+
+$ffly_cc $cc_flags -c -o $dst_dir/hs/vec.o $root_dir/hs/vec.c
+$ffly_cc $cc_flags -c -o $dst_dir/hs/hash.o $root_dir/hs/hash.c
+$ffly_cc $cc_flags -c -o $dst_dir/hs/lexer.o $root_dir/hs/lexer.c
+$ffly_cc $cc_flags -c -o $dst_dir/hs/memalloc.o $root_dir/hs/memalloc.c
+$ffly_cc $cc_flags -c -o $dst_dir/hs/parser.o $root_dir/hs/parser.c
+$ffly_cc $cc_flags -c -o $dst_dir/hs/exec.o $root_dir/hs/exec.c
+$ffly_cc $cc_flags -c -o $dst_dir/hs/gen.o $root_dir/hs/gen.c
+$ffly_cc $cc_flags -c -o $dst_dir/hs/mm.o $root_dir/hs/mm.c
+$ffly_cc $cc_flags -c -o $dst_dir/hs.o $root_dir/hs.c
+$ffly_cc $cc_flags -c -o $dst_dir/storage/cistern.o $root_dir/storage/cistern.c
+$ffly_cc $cc_flags -c -o $dst_dir/texture.o $root_dir/texture.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -160,4 +177,8 @@ $dst_dir/piston.o $dst_dir/corrode.o $dst_dir/bog.o \
 $dst_dir/env.o $dst_dir/line.o $dst_dir/db/load.o
 $dst_dir/db/store.o $dst_dir/db/block.o $dst_dir/db/error.o \
 $dst_dir/signal/sigemptyset.o $dst_dir/pulse.o $dst_dir/hexdump.o \
-$dst_dir/brick.o $dst_dir/br.o $dst_dir/chrdump.o $dst_dir/rasterizer.o $dst_dir/model.o"
+$dst_dir/brick.o $dst_dir/br.o $dst_dir/chrdump.o $dst_dir/rasterizer.o
+$dst_dir/model.o $dst_dir/start.o $dst_dir/p.o $dst_dir/panel.o $dst_dir/m.o \
+$dst_dir/hs/vec.o $dst_dir/hs/hash.o $dst_dir/hs/lexer.o $dst_dir/hs/memalloc.o
+$dst_dir/hs/parser.o $dst_dir/hs/exec.o $dst_dir/hs/gen.o $dst_dir/hs/mm.o $dst_dir/hs.o \
+$dst_dir/storage/cistern.o $dst_dir/texture.o"

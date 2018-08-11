@@ -106,6 +106,9 @@ check_conf_version(void) {
 	return ret;
 }
 
+# include "linux/stat.h"
+# include "linux/fcntl.h"
+# include "system/string.h"
 void ffly_string_init(void);
 ff_err_t static
 init() {
@@ -133,6 +136,15 @@ init() {
 	ffly_arcs_init();
 # endif
 	ffly_thread_init();
+# ifndef __ffly_crucial
+	int fd;
+	fd = open("pid", O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR);
+	char buf[24];
+	ff_uint_t n;
+	n = ffly_nots(getpid(), buf);
+	write(fd, buf, n);
+	close(fd);
+# endif
 }
 
 # include "init.h"
@@ -161,9 +173,6 @@ prep() {
 //	ffly_mod();
 }
 
-# include "linux/stat.h"
-# include "linux/fcntl.h"
-# include "system/string.h"
 void static
 fini() {
 # ifndef __ffly_crucial
@@ -216,7 +225,7 @@ fini() {
 }
 
 # include "env.h"
-void _start(void) {
+void _ffstart(void) {
 	init();
 	int long argc;
 	char const **argv;
@@ -350,4 +359,10 @@ _end:
 	envcleanup();
 	fini();
 	exit(0);
+
+	/*
+		function has no return address
+		so if exit fails stay here to prevent error occurring
+	*/
+	while(1);
 }

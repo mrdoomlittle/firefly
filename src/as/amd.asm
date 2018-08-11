@@ -1,6 +1,6 @@
 .region text
 _start:
-
+/
 push %rax
 
 push %eax
@@ -27,7 +27,7 @@ mov %rsp, %rbp
 
 mov %rbp, %rsp
 pop %rbp
-
+/
 xor %rax, %rax
 movq %rax, 60
 

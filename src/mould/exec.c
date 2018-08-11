@@ -9,7 +9,7 @@
 // return buffer
 # define RTBUF_SIZE 20
 
-objp rtbuf[RTBUF_SIZE];
+objp static rtbuf[RTBUF_SIZE];
 objp static *retto = rtbuf;
 static objp _o;
 static objp *_op;

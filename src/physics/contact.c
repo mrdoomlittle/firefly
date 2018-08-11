@@ -6,7 +6,7 @@
 # include "../system/mutex.h"
 typedef struct sentinel {
 	ffly_phy_bodyp a, b;
-	ff_i8_t(*alert)(ff_u8_t, ffly_phy_bodyp, ffly_phy_bodyp);
+	ff_i8_t(*alert)(ff_u8_t, ff_u8_t, ffly_phy_bodyp, ffly_phy_bodyp);
 	ff_u32_t sched_id;
 	ff_uint_t off;
 } *sentinelp;
@@ -22,6 +22,58 @@ tick(void *__arg) {
 	sentinelp se = (sentinelp)__arg;
 	ffly_phy_bodyp a = se->a;
 	ffly_phy_bodyp b = se->b;
+
+	ffly_mutex_lock(&a->lock);	
+	ffly_mutex_lock(&b->lock);
+
+	ffly_pnodep cur;
+
+	cur = a->nodes;
+	ffly_pnodep end;
+
+	end = cur+a->nn;
+
+	ffly_pnodep a0, b0;
+	while(cur < end) {
+		a0 = cur++;
+		b0 = cur;
+
+		ff_uint_t i;
+
+		i = 0;
+		while(i != b->nn) {
+			ffly_pnodep n;
+			n = b->nodes+i;
+
+			ff_int_t v;
+
+			ff_int_t ax, ay;
+			ff_int_t bx, by;
+
+			ax = *a->x;
+			ay = *a->y;
+
+			bx = *b->x;
+			by = *b->y;
+
+			ff_int_t x,y;
+			x = bx+n->x;
+			y = by+n->y;
+
+			v = (((x-(ax+a0->x))*((ay+b0->y)-y))-(((ax+b0->x)-x)*(y-(ay+a0->y))));
+			if (v >= -2 && v <= 2) {
+				se->alert(a0-a->nodes, i, a, b);		
+			}
+
+			
+			i++;
+		}
+	}
+
+	ffly_mutex_unlock(&a->lock);
+	ffly_mutex_unlock(&b->lock);
+	return -1;
+/*
 	ff_uint_t a_x = *a->x;
 	ff_uint_t a_y = *a->y;
 	ff_uint_t a_z = *a->z;
@@ -76,10 +128,11 @@ _alert:
 	se->alert(from, a, b);
 _sk:
 	return -1;
+*/
 }
 
 ff_uint_t
-ffly_phy_contact(ffly_phy_bodyp __a, ffly_phy_bodyp __b, ff_i8_t(*__alert)(ff_u8_t, ffly_phy_bodyp, ffly_phy_bodyp)) {
+ffly_phy_contact(ffly_phy_bodyp __a, ffly_phy_bodyp __b, ff_i8_t(*__alert)(ff_u8_t, ff_u8_t, ffly_phy_bodyp, ffly_phy_bodyp)) {
 	ffly_mutex_lock(&lock);
 	if (!sentinels) {
 		sentinels = (sentinelp*)__ffly_mem_alloc(sizeof(sentinelp));

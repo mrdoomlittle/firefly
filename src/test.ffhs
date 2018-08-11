@@ -1,0 +1,19 @@
+object obj
+body b
+model m
+
+r{0, obj} // create object
+r{1, obj} // prepare object
+r{2, obj, b} // give object a body
+r{3, m, 3} // new model
+r{4, b, m} // attach model to body
+// vertices
+r{6, b, 0, 0, 0}
+r{6, b, 0, 0, 0}
+r{6, b, 0, 0, 0}
+r{5, m} // new polygon
+// vertices
+r{6, b, 0, 0, 0}
+r{6, b, 0, 0, 0}
+r{6, b, 0, 0, 0}
+fset obj, 0, 8

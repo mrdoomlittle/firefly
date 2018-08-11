@@ -27,6 +27,10 @@ ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
 	default: 16x16
 */
 
+/*
+	todo:
+	
+*/
 # define PAGE_DEATH 800//ms
 # define PAGE_SHIFT 2
 # define PAGE_SIZE (1<<PAGE_SHIFT)
@@ -83,7 +87,9 @@ page_get(ff_uint_t __page) {
 
 float static*
 at(ff_uint_t __x, ff_uint_t __y, ff_uint_t __z, struct page **__page) {
-	ff_uint_t off = ((__x)>>ZONE_SHIFT)+(((__y)>>ZONE_SHIFT)*xl)+(((__z)>>ZONE_SHIFT)*(xl*yl));
+	ff_uint_t off;
+
+	off = __x+(__y*xl)+(__z*(xl*yl));
 
 	struct page *page;
 	ff_uint_t pg = off>>PAGE_SHIFT;
@@ -128,7 +134,7 @@ update(void *__arg) {
 ff_err_t
 ffly_gravity_init(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {	
 	size = (xl = 1<<(__xl-ZONE_SHIFT))*(yl = 1<<(__yl-ZONE_SHIFT))*(zl = 1<<(__zl-ZONE_SHIFT));
-	page_c = (size>>PAGE_SHIFT)+((size&((~(ff_u64_t)0)>>(64-PAGE_SHIFT)))>0);
+	page_c = ((size+(0xffffffffffffffff>>(64-PAGE_SHIFT)))>>PAGE_SHIFT);
 	pages = (struct page*)__ffly_mem_alloc(page_c*sizeof(struct page));
 	map = (float**)__ffly_mem_alloc(page_c*sizeof(float**));
 	end = map+page_c;
@@ -177,6 +183,7 @@ void ffly_gravity_apply(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __delt
 		return;
 	}
 
+	ffly_fprintf(ffly_log, "gravity zone: %u :%u :%u\n", x, y, z);
 	float z0;
 	float z1;
 	float z2;
@@ -202,27 +209,35 @@ void ffly_gravity_apply(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __delt
 	struct page *pg;
 	if (y>0) {
 		z1 = *at(x, y-1, z, &pg);
+		ffly_fprintf(ffly_log, "z1 %u\n", (ff_u64_t)z1);
 		ul(pg);
 	}
 //		z1 = *(map+(x+((y-1)*xl)+(z*(xl*yl))));
 
 	if (x>0) {
 		z3 = *at(x-1, y, z, &pg);
+		ffly_fprintf(ffly_log, "z3 %u\n", (ff_u64_t)z3);
 		ul(pg);
 	}
 //		z3 = *(map+((x-1)+(y*xl)+(z*(xl*yl))));
 
 	if (x<xl) {
 		z4 = *at(x+1, y, z, &pg);
+		ffly_fprintf(ffly_log, "z4 %u\n", (ff_u64_t)z4);
 		ul(pg);
 	}
 //		z4 = *(map+((x+1)+(y*xl)+(z*(xl*yl))));
 
 	if (y<yl) {
 		z6 = *at(x, y+1, z, &pg);
+		ffly_fprintf(ffly_log, "z6 %u\n", (ff_u64_t)z6);
 		ul(pg);
 	}
 //		z6 = *(map+(x+((y+1)*xl)+(z*(xl*yl))));
+
+	if (!(z1+z3+z4+z6)) {
+		ffly_printf("no gravity being applyed to body.\n");
+	}
 
 	if (z1>0.0) {
 		float dist = (*__body->y)-((y-1)*ZONE_LENGTH);
@@ -291,12 +306,13 @@ void ffly_gravity_add(float __val, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) 
 		return;
 	}
 	struct page *pg;
-	float *p = at(__x, __y, __z, &pg);
+	float *p = at(__x>>ZONE_SHIFT, __y>>ZONE_SHIFT, __z>>ZONE_SHIFT, &pg);
 	if (!p) {
 		ffly_fprintf(ffly_err, "gravity add error.\n");
 		return;
 	}
 	*p+=__val;
+	ffly_fprintf(ffly_log, "add gravity at: %u, %u, %u. %u\n", __x>>ZONE_SHIFT, __y>>ZONE_SHIFT, __z>>ZONE_SHIFT, (ff_uint_t)(*p));
 	ul(pg);
 }
 
@@ -305,12 +321,13 @@ void ffly_gravity_sub(float __val, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) 
 		return;
 	}
 	struct page *pg;
-	float *p = at(__x, __y, __z, &pg);
+	float *p = at(__x>>ZONE_SHIFT, __y>>ZONE_SHIFT, __z>>ZONE_SHIFT, &pg);
 	if (!p) {
 		ffly_fprintf(ffly_err, "gravity sub error.\n");
 		return;
 	}
 	*p-=__val;
+	ffly_fprintf(ffly_log, "sub gravity at: %u, %u, %u. %u\n", __x>>ZONE_SHIFT, __y>>ZONE_SHIFT, __z>>ZONE_SHIFT, (ff_uint_t)(*p));
 	ul(pg);
 }
 
@@ -319,15 +336,17 @@ void ffly_gravity_sub(float __val, ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) 
 */
 float ffly_gravity_at(ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 	if (!map) {
+		ffly_fprintf(ffly_log, "gravity map is null.\n");
 		return 0.0;
 	}
 	struct page *pg;
-	float *p = at(__x, __y, __z, &pg);
+	float *p = at(__x>>ZONE_SHIFT, __y>>ZONE_SHIFT, __z>>ZONE_SHIFT, &pg);
 	if (!p) {
 		ffly_fprintf(ffly_err, "gravity at error.\n");
 		return 0.0;
 	}
 
+	ffly_fprintf(ffly_log, "gravity at: %u, %u, %u. %u\n", __x>>ZONE_SHIFT, __y>>ZONE_SHIFT, __z>>ZONE_SHIFT, (ff_uint_t)(*p));
 	float ret;
 	ret = *p;
 	ul(pg);

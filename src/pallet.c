@@ -3,6 +3,7 @@
 # include "memory/mem_free.h"
 # include "graphics/draw.h"
 # include "system/io.h"
+# include "system/log.h"
 # define tile_at(__pallet, __x, __y) \
 	(*((__pallet)->tiles+(__x)+((__y)*(__pallet)->xl)))
 # define at(__pallet, __x, __y) \
@@ -14,21 +15,28 @@ ffly_tilep ffly_tile_at(ffly_palletp __pallet, ff_uint_t __x, ff_uint_t __y) {
 void ffly_pallet_copy(ffly_palletp __src, ffly_palletp __dst, ff_uint_t __x, ff_uint_t __y) {
 	ff_uint_t x, y = 0;
 	ffly_tilep src, *dst;
-	ff_uint_t src_tz = 1<<__src->tilesize;
-	ff_uint_t dst_tz = 1<<__dst->tilesize;
-	ff_uint_t xoff = __x-((__x>>__dst->tilesize)*dst_tz);
-	ff_uint_t yoff = __y-((__y>>__dst->tilesize)*dst_tz);
+	ff_uint_t src_tz, dst_tz, xdis, ydis;
+
+	src_tz = 1<<__src->tilesize;
+	dst_tz = 1<<__dst->tilesize;
+
+	// displace it by ...x amount from tile x so tile X + displace
+	xdis = __x-((__x>>__dst->tilesize)*dst_tz);
+	ydis = __y-((__y>>__dst->tilesize)*dst_tz);
 	while(y != __src->yl) {
 		x = 0;
 		while(x != __src->xl) {
-			ffly_fprintf(ffly_log, "tile, %u:%u\n", x, y);
+			log("tile, %u:%u\n", x, y);
 			if (!(src = tile_at(__src, x, y)))
 				goto _sk;
+			if ((src->bits&TILE_BLANK)>0)
+				goto _sk;
 			dst = at(__dst, x+(__x>>__dst->tilesize), y+(__y>>__dst->tilesize));
+
 			src->child = *dst;
 			*dst = src;
-			src->xoff = xoff;
-			src->yoff = yoff;
+			src->xdis = xdis;
+			src->ydis = ydis;
 		_sk:
 			x++;
 		}
@@ -44,7 +52,7 @@ void ffly_pallet_draw(ffly_palletp __src, ff_u8_t *__dst, ff_uint_t __width, ff_
 		x = __x;
 		while(x != __x+__src->xl) {
 # ifdef __ffly_debug
-			ffly_fprintf(ffly_log, "tile, %u:%u\n", x, y);
+			log("tile, %u:%u\n", x, y);
 # endif
 			if (!*(p = at(__src, x, y)))
 				goto _sk;
@@ -57,7 +65,7 @@ void ffly_pallet_draw(ffly_palletp __src, ff_u8_t *__dst, ff_uint_t __width, ff_
 				cur = cur->child;
 				depth++;
 			}
-			ffly_fprintf(ffly_log, "tile depth %u.\n", depth);
+			log("tile depth %u.\n", depth);
 			*p = NULL;
 		_sk:
 			x++;
@@ -67,9 +75,11 @@ void ffly_pallet_draw(ffly_palletp __src, ff_u8_t *__dst, ff_uint_t __width, ff_
 }
 
 void ffly_pallet_init(ffly_palletp __pallet, ff_uint_t __width, ff_uint_t __height, ff_u8_t __tilesize) {
-	ff_uint_t xl = ((__width>>__tilesize)+((__width&((~(ff_u64_t)0)>>(64-__tilesize)))>0));
-	ff_uint_t yl = ((__height>>__tilesize)+((__height&((~(ff_u64_t)0)>>(64-__tilesize)))>0));
-	ff_uint_t size = (__pallet->xl = xl)*(__pallet->yl = yl);
+	ff_uint_t xl, yl, size;
+
+	xl = ((__width+(0xffffffffffffffff>>(64-__tilesize)))>>__tilesize);
+	yl = ((__height+(0xffffffffffffffff>>(64-__tilesize)))>>__tilesize);
+	size = (__pallet->xl = xl)*(__pallet->yl = yl);
 
 	__pallet->tiles = (ffly_tilep*)__ffly_mem_alloc(size*sizeof(ffly_tilep));
 	ffly_tilep *cur = __pallet->tiles;
@@ -98,8 +108,19 @@ void ffly_pallet_update(ffly_palletp __pallet, void *__p, ff_uint_t __width, ff_
 	while(y != __pallet->yl) {
 		x = 0;
 		while(x != __pallet->xl) {		
+			/* get tile at?
+			*/
 			if (!*(dst = at(__pallet, x, y)))
+				/*
+					if no tile is located create one
+				*/
 				*dst = ffly_tile_creat(__pallet->tilesize);
+			// note: *4 is r,g,b,a
+
+			ffly_tilep d;
+			d = *dst;
+			d->bits &= ~TILE_BLANK;
+
 			yy = 0;
 			ff_uint_t xleft = __width-(x*tilesize);
 			while(yy != tilesize && (y*tilesize)+yy < __height) {
@@ -113,7 +134,7 @@ void ffly_pallet_update(ffly_palletp __pallet, void *__p, ff_uint_t __width, ff_
 					return;
 				}
 
-				ffly_mem_cpy((*dst)->p+((yy*tilesize)*4), p, size);
+				ffly_mem_cpy(d->p+((yy*tilesize)*4), p, size);
 				yy++;
 			}
 			x++;

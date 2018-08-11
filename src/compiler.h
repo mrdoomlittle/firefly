@@ -56,7 +56,7 @@ enum {
 
 */
 typedef struct ffly_compiler_file {
-	ff_byte_t *p, *end;
+	FF_FILE *f;
 	char const *path;
 	char dir[PATH_MAX];
 	ff_uint_t line, lo;
@@ -202,8 +202,7 @@ struct exec_reg {
 };
 
 /*
- cleanup also place #ifdef __script / #ifdef __ff
- to remove unneeded junk
+ cleanup also find a way t0 remove uneeded junk
 */
 
 struct node {
@@ -218,6 +217,7 @@ struct node {
 	struct ffly_vec block, args, params;
 	struct ffly_vec _else, _do;
 	// exec region
+	// rename? to area,zone or just keep as it is
 	struct exec_reg er;
 	char const *name;
 	void *p;

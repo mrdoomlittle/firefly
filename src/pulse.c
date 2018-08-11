@@ -52,7 +52,7 @@ pulse(ff_u64_t __nsec) {
 		ent->cur+=np;
 		ent++;
 	}
-	buf+= __nsec-(np*(1<<FUS));
+	buf+=__nsec-(np*(1<<FUS));
 }
 
 void ffly_pengage(void) {

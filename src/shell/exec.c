@@ -7,7 +7,8 @@
 # include "../stdio.h"
 # include "../string.h"
 # include "../exec.h"
-
+# include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
 /*
 	TODO: 
 	put into macros
@@ -37,13 +38,15 @@ void _info();
 void _ff5();
 void _ff6();
 void _exec();
+void _er();
 void *cmds[] = {
 	_help,
 	_exit,
 	_ff5,
 	_ff6,
 	_info,
-	_exec
+	_exec,
+	_er
 };
 
 void ffsh_cmdput(struct hash *__hash, char const *__ident, ff_uint_t __func) {
@@ -56,6 +59,11 @@ void* ffsh_cmdget(struct hash *__hash, char const *__ident) {
 
 # define jmpend __asm__("jmp _end")
 ff_i8_t *ffsh_run = NULL;
+
+void(*ffsh_er)(char const*, ff_uint_t, char const*[]);
+/*
+	inbuild commands
+*/
 void ffsh_exec_cmd(void *__func, ff_uint_t __n, struct arg_s **__args) {
 	char buf[128];
 
@@ -67,6 +75,20 @@ void ffsh_exec_cmd(void *__func, ff_uint_t __n, struct arg_s **__args) {
 
 	__asm__("_exit:\n\t");
 		*ffsh_run = -1;
+	jmpend;
+
+	__asm__("_er:\n\t"); {
+		char const *args[24];
+		char const **cur;
+
+		cur = args;
+		ff_uint_t i;
+		i = 1;
+		for(;i != __n;i++)
+			*(cur++) = __args[i]->p;
+		*cur = NULL;
+		ffsh_er((char const*)(*__args)->p, __n, args);	
+	}
 	jmpend;
 
 	__asm__("_ff5:\n\t"); {

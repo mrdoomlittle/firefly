@@ -118,9 +118,7 @@ _again:
 			
 	} else if (op == _ffly_ho_meminfo) {
 		struct ffly_meminfo info;
-# ifdef __ffly_debug
-		info.used = ffly_mem_alloc_bc-ffly_mem_free_bc;
-# endif
+		ffly_meminfo(&info);
 		if (_err(ffly_pipe_write(&info, sizeof(struct ffly_meminfo), pipe)))
 			goto _end;
 	} else if (op == _ffly_ho_disconnect)

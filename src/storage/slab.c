@@ -28,6 +28,7 @@ ffly_slabp ffly_slab_alloc(ffly_reservoirp __res) {
 	if (__res->top != NULL)
 		__res->top->prev = sb;
 	__res->top = sb;
+	sb->flags = 0x00;
 	sb->fd = NULL;
 	sb->bk = NULL;
 	sb->inuse = 0;
@@ -61,6 +62,17 @@ delink(ffly_reservoirp __res, ffly_slabp __sb) {
 
 ff_err_t ffly_slab_free(ffly_reservoirp __res, ffly_slabp __sb) {
 	ffly_mutex_lock(&__res->lock);
+	if ((__sb->flags&SLAB_OPEN)>0) {
+		*__sb->bk = __sb->link;
+		if (__sb->link != NULL)
+			__sb->link->bk = __sb->bk;
+		__sb->link = NULL;
+	
+		__ffly_mem_free(__sb->p);
+		__sb->p = NULL;
+		__sb->flags &= ~SLAB_OPEN;
+	}
+
 	if (__res->off-1 == __sb->off) {
 		ffly_slabp cur, sb;
 		__res->off--;
@@ -100,6 +112,10 @@ load(ffly_reservoirp __res, ffly_slabp __slab) {
 	__slab->death = SLAB_AGE;
 	ffly_mutex_lock(&__res->lock);
 	__slab->link = __res->open;
+	__slab->bk = &__res->open;
+	__slab->flags = SLAB_OPEN;
+	if (__res->open != NULL)
+		__res->open->bk = &__slab->link;
 	__res->open = __slab;
 	ffly_mutex_unlock(&__res->lock);
 }

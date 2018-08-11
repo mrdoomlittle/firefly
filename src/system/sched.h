@@ -4,7 +4,7 @@
 # include "mutex.h"
 // 1 millisecond
 # define SCHED_TIME_PERIOD 0.001
-# define SCHED_CORRODE 0x1
+# define SCHED_CORRODE 0x01
 typedef struct sched_entity {
 	ff_u64_t interval;
 	ff_u64_t elapsed;

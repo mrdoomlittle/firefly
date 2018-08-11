@@ -4,6 +4,11 @@
 # include "../types.h"
 # define FFLY_BARREL_SIZE 40
 
+
+/*
+	TODO:
+		needs work done on 
+*/
 # define ffly_barrel_link(__barrel, __to) \
 	(__barrel)->link = __to
 typedef struct ffly_barrel {

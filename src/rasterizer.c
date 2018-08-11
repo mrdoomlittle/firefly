@@ -9,6 +9,45 @@
 # include "maths/round.h"
 # include "system/io.h"
 
+
+// need to be worked on but will do for now
+ff_i8_t
+static dim(ff_int_t __x, ff_int_t __y, ffly_vertexp __a, ffly_vertexp __b, ffly_vertexp __c) {
+	ffly_vertex v0 = {
+		.x=__b->x-__a->x,
+		.y=__b->y-__a->y
+	};
+
+	ffly_vertex v1 = {
+		.x=__c->x-__a->x,
+		.y=__c->y-__a->y
+	};
+
+	ffly_vertex v2 = {
+		.x=__x-__a->x,
+		.y=__y-__a->y
+	};
+
+	float x, y;
+	x = v2.x;
+	y = v2.y;
+
+	float f0, f1, f2, f3, f4, f5;
+
+	f0 = x*(__c->y-__a->y);
+	f1 = (__c->x-__a->x)*y;
+
+	f2 = x*(__a->y-__b->y);
+	f3 = (__a->x-__b->x)*y;
+
+	f4 = (v1.x-x)*(__c->y-__b->y);
+	f5 = (__c->x-__b->x)*(v1.y-y);
+
+	if ((f0-f1)*(f2-f3) >= 0 && (f2-f3)*(f4-f5) >= 0 && (f0-f1)*(f4-f5) >= 0)
+		return 0;
+	return -1;
+}
+//# define use_barycentric
 void ffly_rasterize(ffly_modelp __model, ff_byte_t *__dst,
 	ff_uint_t __x, ff_uint_t __y,
 	ff_uint_t __width, ff_uint_t __height,
@@ -49,8 +88,15 @@ void ffly_rasterize(ffly_modelp __model, ff_byte_t *__dst,
 		while(y != ymax && ffly_abs(ymin-y)+__y < __ymax) {
 			x = xmin;
 			while(x != xmax && ffly_abs(xmin-x)+__x < __xmax) {
+# ifdef use_barycentric
+				float a, b, g;
 				ffly_barycentric(x, y, 0, &v0, &v1, &v2, &a, &b, &g);
-				if (a>=0.0&&b>=0.0&&g>=0.0) {
+# else
+				if (!dim(x, y, &v0, &v1, &v2)) {
+# endif
+# ifdef use_barycentric
+				if (a>=0 && b>=0 && c>=0) {
+# endif
 					ff_uint_t x0 = ffly_abs(xmin-x);
 					ff_uint_t y0 = ffly_abs(ymin-y);
 					ff_byte_t *dst = __dst+(((__x+x0)+((__y+y0)*__height))*4);

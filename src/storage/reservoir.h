@@ -8,7 +8,13 @@
 # define RESU_RATE 100 // update rate
 # define SLAB_AGE 100 // ms
 
-# define RESV_CORRODE 0x1
+# define SLAB_OPEN 0x01
+# define RESV_CORRODE 0x01
+/*
+	TODO:
+		depending on resv alloc size the slab size should change
+*/
+
 typedef struct ffly_slab {
 	ff_u64_t off;
 	struct ffly_slab **bk, *fd;
@@ -18,6 +24,7 @@ typedef struct ffly_slab {
 	ff_u32_t death;
 	struct ffly_slab *link;
 	ff_i8_t inuse;
+	ff_u8_t flags;
 	void *p;
 	ff_mlock_t lock;
 } *ffly_slabp;

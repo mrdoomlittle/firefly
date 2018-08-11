@@ -160,6 +160,10 @@ ff_err_t ffly_fwrites(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	return FFLY_SUCCESS;
 }
 
+ff_err_t ffly_fpread(struct ffly_file *__f, void *__p, ff_uint_t __bc, ff_uint_t __offset) {
+	pread(__f->fd, __p, __bc, __offset);
+}
+
 ff_err_t ffly_fpwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc, ff_uint_t __offset) {
 	pwrite(__f->fd, __p, __bc, __offset);
 }

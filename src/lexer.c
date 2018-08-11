@@ -12,6 +12,8 @@
 # include "memory/mem_free.h"
 # include "system/nanosleep.h"
 # define hdrsize sizeof(struct hdr)
+
+# define CHUNK_LOADED 0x1
 typedef struct hdr {
 	struct hdr *prev, *next;
 	ff_uint_t bc;
@@ -213,34 +215,39 @@ void ff_token_destroy(ff_tokenp __tok) {
 }
 
 # define incp \
-	(__lexer)->p++
+	(__lexer)->off++
 # define decp \
-	(__lexer)->p--
+	(__lexer)->off--
 
+char static get(ff_lexerp, ff_int_t);
 ff_bool_t
 at_eof(ff_lexerp __lexer) {
-	return(__lexer->p>=__lexer->end);
+	return(__lexer->off>=__lexer->end);
 }
 
 char static
 fetchc(ff_lexerp __lexer) {
 	if (at_eof(__lexer)) return '\0';
-	return *__lexer->p;
+	return get(__lexer, 0);
 }
 
 char static
 nextc(ff_lexerp __lexer) {
-	return *(__lexer->p+1);
+	return get(__lexer, 1);
 }
 
 ff_bool_t static
 is_next(ff_lexerp __lexer, char __c) {
-	return (*(__lexer->p+1) == __c);
+	char c;
+	c = get(__lexer, 1);
+	return (c == __c);
 }
 
 ff_bool_t static
 is_prev(ff_lexerp __lexer, char __c) {
-	return (*(__lexer->p-1) == __c);
+	char c;
+	c = get(__lexer, -1);
+	return (c == __c);
 }
 
 ff_bool_t static
@@ -278,25 +285,50 @@ at_nl(ff_lexerp __lexer) {
 }
 
 void static
-escape_chr(char *__c, char *__p) {
-	switch(*__p) {
+escape_chr(char *__d, char __c) {
+	switch(__c) {
 		case 'n':
-			*__c = '\n';
+			*__d = '\n';
 		break;
 		case 't':
-			*__c = '\t';
+			*__d = '\t';
 		break;
 	}
 }
 
+char
+get(ff_lexerp __lexer, ff_int_t __offset) {
+	ff_u32_t off = __lexer->off+__offset;
+	if (!(__lexer->flags&CHUNK_LOADED) || off < __lexer->c_off || off >= __lexer->c_off+LCS) {
+		__lexer->c_off = off;
+		ff_uint_t sz;
+		if (off+LCS >= __lexer->end)
+			sz = __lexer->end-off;
+		else
+			sz = LCS;
+		__lexer->get(__lexer->c_off, 0, sz, __lexer->c, __lexer->arg);
+		__lexer->flags |= CHUNK_LOADED;
+	}
+
+	return __lexer->c[(off-__lexer->c_off)];
+}
+
+void ff_lexer_reset(ff_lexerp __lexer) {
+	__lexer->c_off = 0;
+	__lexer->flags &= ~CHUNK_LOADED;
+}
+
 char static*
 read_ident(ff_lexerp __lexer) {
-	char *p = (char*)__lexer->p;
-	char c = *p;
+	char c;
+	ff_uint_t off;
+
+	off = 0;
+	c = get(__lexer, off);
 	while((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || (c >= '0' && c <= '9')) {
-		ffly_buff_put(&__lexer->sbuf, p++);
+		ffly_buff_put(&__lexer->sbuf, &c);
 		ffly_buff_incr(&__lexer->sbuf);
-		c = *p;
+		c = get(__lexer, ++off);
 	}
 
 	char end = '\0';
@@ -306,21 +338,24 @@ read_ident(ff_lexerp __lexer) {
 	char *s = (char*)ff_lexer_alloc(__lexer, l+1);
 	ffly_mem_cpy(s, ffly_buff_begin(&__lexer->sbuf), l+1);
 
-	__lexer->p = (ff_u8_t*)p;
+	__lexer->off+=off;
 	ffly_buff_off_reset(&__lexer->sbuf);
 	return s;
 }
 
 char static* 
 read_no(ff_lexerp __lexer, ff_u8_t *__is_hex, ff_u8_t *__is_float) {
-	char *p = (char*)__lexer->p;
-	char c = *p;
+	char c;
+	ff_uint_t off;
+
+	off = 0;
+	c = get(__lexer, off);
 	while((c >= '0' && c <= '9') || c == '.' || c == '-' || ffly_tolow(c) == 'x' || (ffly_tolow(c) >= 'a' && ffly_tolow(c) <= 'f')) {
-		if (ffly_tolow(*p) == 'x') *__is_hex = 1;
-		if (*p == '.') *__is_float = 1;
-		ffly_buff_put(&__lexer->sbuf, p++);
+		if (ffly_tolow(c) == 'x') *__is_hex = 1;
+		if (c == '.') *__is_float = 1;
+		ffly_buff_put(&__lexer->sbuf, &c);
 		ffly_buff_incr(&__lexer->sbuf);
-		c = *p;
+		c = get(__lexer, ++off);
 	}
 
 	char end = '\0';
@@ -330,27 +365,30 @@ read_no(ff_lexerp __lexer, ff_u8_t *__is_hex, ff_u8_t *__is_float) {
 	char *s = (char*)ff_lexer_alloc(__lexer, l+1);
 	ffly_mem_cpy(s, ffly_buff_begin(&__lexer->sbuf), l+1);
 
-	__lexer->p = (ff_u8_t*)p;
+	__lexer->off+=off;
 	ffly_buff_off_reset(&__lexer->sbuf);
 	return s;
 }
 
 char static* 
 read_str(ff_lexerp __lexer, ff_uint_t *__l) {
-	char *p = (char*)__lexer->p;
-	while(*p != '"') {
-		if (*p == 0x5c) {
-			p++;
-			char c;
-			escape_chr(&c, p);
-			p++;
+	char c;
+	ff_uint_t off;
+
+	off = 0;
+	c = get(__lexer, off);
+	while(c != '"') {
+		if (c == 0x5c) {
+			c = get(__lexer, ++off);
+			escape_chr(&c, c);
 			ffly_buff_put(&__lexer->sbuf, &c);
 			ffly_buff_incr(&__lexer->sbuf);
-			continue;
+			goto _sk;
 		}
-
-		ffly_buff_put(&__lexer->sbuf, p++);
+		ffly_buff_put(&__lexer->sbuf, &c);
 		ffly_buff_incr(&__lexer->sbuf);
+	_sk:
+		c = get(__lexer, ++off);
 	}
 
 	char end = '\0';
@@ -360,7 +398,7 @@ read_str(ff_lexerp __lexer, ff_uint_t *__l) {
 	char *s = (char*)ff_lexer_alloc(__lexer, l+1);
 	ffly_mem_cpy(s, ffly_buff_begin(&__lexer->sbuf), l+1);
 
-	__lexer->p = (ff_u8_t*)p;
+	__lexer->off+=off;
 	ffly_buff_off_reset(&__lexer->sbuf);
 	*__l = l;
 	return s;
@@ -374,12 +412,44 @@ mk_keywd(struct token *__tok, ff_u8_t __id) {
 
 char static*
 read_chr(ff_lexerp __lexer) {
-	return (char*)(__lexer->p++);
+	char *c;
+
+	c = (char*)ff_lexer_alloc(__lexer, 1);
+	*c = get(__lexer, 0);
+	__lexer->off++;
+	return c;
 }
 
 # define register_line(__lexer) \
 	(*__lexer->line)++; \
-	(*__lexer->lo) = __lexer->p-__lexer->bed;
+	(*__lexer->lo) = __lexer->off;
+
+# ifndef __ffly_mscarcity
+# define _ 0xff
+ff_u8_t static map[] = {
+/*	0	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	*/
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,												// 0 
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	// 1
+/*	0	1	2	3	4	5			6	7	8			9			10			11	12		13	14	15	*/
+	_,	_,	_,	_,	_,	_percent,	_,	_,	_l_paren,	_r_paren,	_astrisk,	_,	_comma,	_,	_,	_,			// 2
+/*	0	1	2	3	4	5	6	7	8	9	10		11			12	13	14	15	*/
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_colon,	_semicolon,	_,	_,	_,	_,									// 3
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,												// 4
+/*	0	1	2	3	4	5	6	7	8	9	10	11			12	13			14	15	*/
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_l_bracket,	_,	_r_bracket,	_,	_,								// 5
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,												// 6
+/*	0	1	2	3	4	5	6	7	8	9	10	11			12	13			14	15	*/
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_l_brace,	_,	_r_brace,	_,	_,								// 7
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,												// 8
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,												// 9
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,												// 10
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,												// 11
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,												// 12
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,												// 13
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,												// 14
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,												// 15
+};
+# endif
 
 struct token static*
 read_token(ff_lexerp __lexer) {
@@ -397,15 +467,16 @@ read_token(ff_lexerp __lexer) {
 	}
 
 	char c;
-	switch(c = fetchc(__lexer)) {
-		case '[':
-			mk_keywd(tok, _l_bracket);
-			incp;
-		break;
-		case ']':
-			mk_keywd(tok, _r_bracket);
-			incp;
-		break;
+	c = fetchc(__lexer);
+# ifndef __ffly_mscarcity
+	ff_u8_t i;
+	if ((i = map[(ff_u8_t)c]) != _) {
+		mk_keywd(tok, i);
+		incp;
+		goto _sk;
+	}
+# endif
+	switch(c) {
 		case '&':
 			if (is_next(__lexer, '&')) {
 				mk_keywd(tok, _and);
@@ -420,10 +491,6 @@ read_token(ff_lexerp __lexer) {
 			tok->p = (void*)read_chr(__lexer);
 			incp;
 		break;
-		case '*':
-			mk_keywd(tok, _astrisk);
-			incp;
-		break;
 		case '+':
 			if (is_next(__lexer, '+')) {
 				mk_keywd(tok, _incr);
@@ -436,14 +503,6 @@ read_token(ff_lexerp __lexer) {
 			incp;
 			tok->kind = _tok_str;
 			tok->p = (void*)read_str(__lexer, &tok->l);
-			incp;
-		break;
-		case '%':
-			mk_keywd(tok, _percent);
-			incp;
-		break;
-		case ':':
-			mk_keywd(tok, _colon);
 			incp;
 		break;
 		case '.':
@@ -469,10 +528,6 @@ read_token(ff_lexerp __lexer) {
 				mk_keywd(tok, _minus);
 			incp;
 		break;
-		case ',':
-			mk_keywd(tok, _comma);
-			incp;
-		break;
 		case '<':
 			if (is_next(__lexer, '-')) {
 				mk_keywd(tok, _l_arrow);
@@ -485,6 +540,14 @@ read_token(ff_lexerp __lexer) {
 			mk_keywd(tok, _gt);
 			incp;
 		break;
+		case '=':
+			if (is_next(__lexer, '=')) {
+				mk_keywd(tok, _eqeq);
+				incp;
+			} else
+				mk_keywd(tok, _eq);
+			incp;
+		break;
 		case '!':
 			if (is_next(__lexer, '=')) {
 				mk_keywd(tok, _neq);
@@ -492,16 +555,33 @@ read_token(ff_lexerp __lexer) {
 			}
 			incp;
 		break;
-		case ';':
-			mk_keywd(tok, _semicolon);
+# ifdef __ffly_mscarcity
+		case '[':
+			mk_keywd(tok, _l_bracket);
 			incp;
 		break;
-		case '=':
-			if (is_next(__lexer, '=')) {
-				mk_keywd(tok, _eqeq);
-				incp;
-			} else
-				mk_keywd(tok, _eq);
+		case ']':
+			mk_keywd(tok, _r_bracket);
+			incp;
+		break;
+		case '*':
+			mk_keywd(tok, _astrisk);
+			incp;
+		break;
+		case ':':
+			mk_keywd(tok, _colon);
+			incp;
+		break;
+		case ',':
+			mk_keywd(tok, _comma);
+			incp;
+		break;
+		case '%':
+			mk_keywd(tok, _percent);
+			incp;
+		break;
+		case ';':
+			mk_keywd(tok, _semicolon);
 			incp;
 		break;
 		case '(':
@@ -520,6 +600,7 @@ read_token(ff_lexerp __lexer) {
 			mk_keywd(tok, _r_brace);
 			incp;
 		break;
+# endif
 		default:
 		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
 			tok->kind = _tok_ident;
@@ -539,9 +620,11 @@ read_token(ff_lexerp __lexer) {
 			tok->is_hex = is_hex;
 		}
 	}
-	
+# ifndef __ffly_mscarcity
+_sk:
+# endif
 	tok->line = *__lexer->line;
-	tok->off = (__lexer->p-__lexer->bed)-1;
+	tok->off = __lexer->off;//(__lexer->p-__lexer->bed)-1;
 	tok->lo = *__lexer->lo;
 	return tok;
 }
@@ -556,6 +639,8 @@ void ffly_lexer_init(ff_lexerp __lexer) {
 	ffly_buff_init(&__lexer->tokbuf, 100, sizeof(struct token*));
 	ffly_buff_init(&__lexer->sbuf, 246, 1);
 	__lexer->top = NULL;
+	__lexer->c_off = 0;
+	__lexer->flags = 0;
 }
 
 void ffly_lexer_cleanup(ff_lexerp __lexer) {
@@ -602,17 +687,21 @@ ffly_lex(ff_lexerp __lexer, ff_err_t *__err) {
 	while(!(tok = read_token(__lexer)) && !at_eof(__lexer));
 	return tok;
 }
-
 /*
+# include "dep/mem_cpy.h"
+char const static *s = "hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123";
+void static _get(ff_uint_t __from, ff_uint_t __offset, ff_uint_t __size, void *__buf) {
+	ffly_mem_cpy(__buf, s+__from, __size);
+}
+
 ff_err_t ffmain(int __argc, char const *__argv[]) {
-	char const *s = "hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123";
 	ff_uint_t line, lo;
 	struct ff_lexer lexer = {
-		.p = s,
-		.end = s+ffly_str_len(s)-1,
-		.bed = s,
+		.off = 0,
+		.end = ffly_str_len(s)-1,
 		.line = &line,
-		.lo = &lo
+		.lo = &lo,
+		.get = _get
 	};
 
 	ff_tokenp toks[128];
@@ -627,4 +716,5 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	}
 
 	ffly_lexer_cleanup(&lexer);
-}*/
+}
+*/

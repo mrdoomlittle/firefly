@@ -30,6 +30,7 @@ enum {
 	_r_brace
 };
 
+// macro?
 ff_bool_t static is_space(char __c) {
 	return (__c == ' ' || __c == '\n' || __c == '\t');
 }
@@ -67,18 +68,21 @@ void ffly_conf_depos(struct ffly_conf *__conf, ffconfp __d) {
 	__d->env = __conf->env;
 }
 
-void const* ffly_conf_get(ffconfp __conf, char const *__name) {
+void const*
+ffly_conf_get(ffconfp __conf, char const *__name) {
 	ff_err_t err;
 	return ffly_map_get(&__conf->env, (ff_u8_t const*)__name, ffly_str_len(__name), &err);
 }
 
-void const* ffly_conf_struc_get(void const *__p, char const *__name) {
+void const*
+ffly_conf_struc_get(void const *__p, char const *__name) {
 	ff_err_t err;
 	struct ffly_conf_struct *p = (struct ffly_conf_struct*)__p;
 	return ffly_map_get(&p->fields, (ff_u8_t const*)__name, ffly_str_len(__name), &err);
 }
 
-void const* ffly_conf_arr_elem(void const *__p, ff_uint_t __no) {
+void const*
+ffly_conf_arr_elem(void const *__p, ff_uint_t __no) {
 	return *(void**)ffly_vec_at(&((struct ffly_conf_arr*)__p)->data, __no);
 }
 
@@ -238,6 +242,32 @@ fetchc(struct ffly_conf *__conf) {
 	return *(__conf->p+__conf->off);
 }
 
+# ifndef __ffly_mscarcity
+# define _ 0xff
+ff_u8_t static map[] = {
+/*	0	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	*/
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 0
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 1
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_comma,	_,	_,	_,					// 2
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_colon,	_,	_,	_,	_,	_,					// 3
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 4
+/*	0	1	2	3	4	5	6	7	8	9	10	11			12	13			14	15	*/
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_l_bracket,	_,	_r_bracket,	_,	_,		// 5
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 6
+/*	0	1	2	3	4	5	6	7	8	9	10	11			12	13			14		15	*/
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_l_brace,	_,	_r_brace,	_tilde,	_,	// 7
+
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 8
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 9
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 10
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 11
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 12
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 13
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 14
+	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,	_,						// 15
+};
+# endif
+
 struct token static*
 read_token(struct ffly_conf *__conf, ff_err_t *__err) {
 	ff_err_t err;
@@ -249,6 +279,7 @@ read_token(struct ffly_conf *__conf, ff_err_t *__err) {
 		return tok;
 	}
 
+	char c, *end;
 _again:
 	while(is_space(fetchc(__conf)) && !is_eof(__conf)) __conf->off++;
 	if (fetchc(__conf) == '#' && !is_eof(__conf)) {
@@ -265,13 +296,32 @@ _again:
 		return NULL;
 	}
 
-	struct token *tok;
+	struct token *tok, **p;
 	if (!(tok = (struct token*)__ffly_mem_alloc(sizeof(struct token)))) {
 		//err
 	}
 
-	char *end;
-	switch(fetchc(__conf)) {
+	c = fetchc(__conf);
+# ifndef __ffly_mscarcity
+	ff_u8_t i;
+	if ((i = map[(ff_u8_t)c]) != _) {
+		mk_keyword(tok, i);
+		__conf->off++;
+		goto _sk;
+	}
+# endif
+	switch(c) {
+		case '"':
+			__conf->off++;
+			mk_str(tok, read_str(__conf, &end));
+			__conf->off++;
+		break;
+		case '\x27':
+			__conf->off++;
+			mk_chr(tok, read_chr(__conf));
+			__conf->off++;
+		break;
+# ifdef __ffly_mscarcity
 		case '~':
 			mk_keyword(tok, _tilde);
 			__conf->off++;
@@ -282,16 +332,6 @@ _again:
 		break;
 		case '}':
 			mk_keyword(tok, _r_brace);
-			__conf->off++;
-		break;
-		case '"':
-			__conf->off++;
-			mk_str(tok, read_str(__conf, &end));
-			__conf->off++;
-		break;
-		case '\x27':
-			__conf->off++;
-			mk_chr(tok, read_chr(__conf));
 			__conf->off++;
 		break;
 		case ':':
@@ -310,10 +350,11 @@ _again:
 			mk_keyword(tok, _r_bracket);
 			__conf->off++;
 		break;
+# endif
 		default:
-			if ((fetchc(__conf) >= 'a' && fetchc(__conf) <= 'z') || fetchc(__conf) == '_')
+			if ((c >= 'a' && c <= 'z') || c == '_')
 				mk_ident(tok, read_ident(__conf, &end));
-			else if ((fetchc(__conf) >= '0' && fetchc(__conf) <= '9') || fetchc(__conf) == '-')
+			else if ((c >= '0' && c <= '9') || c == '-')
 				mk_no(tok, read_no(__conf, &end));
 			else {
 				__ffly_mem_free(tok);
@@ -321,9 +362,10 @@ _again:
 				return NULL;
 			}
 	}
-
+# ifndef __ffly_mscarcity
+_sk:
+# endif
 	tok->end = end;
-	struct token **p;
 	ffly_vec_push_back(&__conf->toks, (void**)&p);
 	*p = tok;
 	*__err = FFLY_SUCCESS;

@@ -23,6 +23,7 @@
 #	define FFLY_FAILURE -1
 # endif
 
+// remove
 # ifndef FFLY_NOP
 #	define FFLY_NOP 1
 # endif
@@ -31,6 +32,12 @@
 #	define FF_ERR_NULL 0
 # endif
 
+// non existent init procedure
+# define FF_ERR_NEIP 1
+
+/*
+	TODO remove
+*/
 # ifndef FF_ERR_CFTCM
 #	define FF_ERR_CFTCM 1 /*cuda failed to copy memory*/
 # endif

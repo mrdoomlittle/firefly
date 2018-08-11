@@ -113,8 +113,8 @@ gen(ff_size_t __n, char const *__format, va_list __args) {
 				char c = va_arg(__args, int);
 				drain(&c, 1, cut, off++);
 			} else if (*p == 'f') {
-	//			double v = va_arg(__args, double);
-	//			bufp+=ffly_floatts(v, bufp);
+				double v = va_arg(__args, double);
+				_ffly_floatts(v, &cut, &off, drain);
 			} else if (*p == 'p') {
 				void *v = va_arg(__args, void*);
 				_ffly_noths((ff_u64_t)v, &cut, &off, drain);

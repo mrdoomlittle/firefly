@@ -17,7 +17,7 @@ ff_mlock_t static lock = FFLY_MUTEX_INIT;
 void ffly_tile_draw(ffly_tilep __tile, ff_u8_t *__dst,
 	ff_u16_t __width, ff_u16_t __height, ff_u16_t __x, ff_u16_t __y)
 {
-	ffly_pixdraw(__x+__tile->xoff, __y+__tile->yoff, __dst, __width, __tile->p, 1<<__tile->size, 1<<__tile->size);
+	ffly_pixdraw(__x+__tile->xdis, __y+__tile->ydis, __dst, __width, __tile->p, 1<<__tile->size, 1<<__tile->size);
 }
 
 ffly_tilep ffly_tile_creat(ff_u8_t __size) {
@@ -26,9 +26,9 @@ ffly_tilep ffly_tile_creat(ff_u8_t __size) {
 	tile->size = __size;
 	tile->p = __ffly_mem_alloc((1<<__size)*(1<<__size)*4);
 	ffly_mem_set(tile->p, 255, (1<<__size)*(1<<__size)*4);
-	tile->blank = 0;
-	tile->xoff = 0;
-	tile->yoff = 0;
+	tile->bits = TILE_BLANK;
+	tile->xdis = 0;
+	tile->ydis = 0;
 	tile->child = NULL;
 	lk;
 	if (top != NULL)
@@ -51,9 +51,8 @@ void ffly_tile_del(ffly_tilep __tile) {
 }
 
 ff_u32_t static sched_id;
-void static
+ff_i8_t static
 update(void) {
-/*
 	lk;
 	ffly_tilep cur = top;
 	while(cur != NULL) {
@@ -61,15 +60,15 @@ update(void) {
 		cur = cur->next;
 	}
 	ul;
-*/
+	return -1;
 }
 
 void ffly_tiles_sched(void) {
-//	sched_id = ffly_schedule(update, NULL, 2);
+	sched_id = ffly_schedule(update, NULL, 2);
 }
 
 void ffly_tiles_usched(void) {
-//	ffly_sched_rm(sched_id);
+	ffly_sched_rm(sched_id);
 }
 
 void ffly_tile_cleanup(void) {

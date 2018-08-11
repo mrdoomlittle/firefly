@@ -3,6 +3,10 @@
 # include "ffint.h"
 # include "types.h"
 # include "driver.h"
+
+/*
+	for later
+*/
 struct ff_context {
 	struct ff_driver driver;
 };

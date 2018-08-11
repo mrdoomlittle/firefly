@@ -13,6 +13,17 @@ out_s(ff_compilerp __compiler, char const *__s) {
 }
 
 void static
+emit_func(ff_compilerp __compiler, struct node *__node) {
+	char buf[128];
+	char *p = buf;
+ 
+	p+=ffly_str_cpy(p, __node->p);
+	*(p++) = ':';
+	*p = '\n';
+	__compiler->out(buf, (p-buf)+1);
+}
+
+void static
 emit(ff_compilerp __compiler, struct node *__node) {
 
 

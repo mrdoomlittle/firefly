@@ -16,6 +16,8 @@
 # include "../mode.h"
 # include "err.h"
 # include "mutex.h"
+# include "nanosleep.h"
+# define delay ffly_nanosleep(0, 1000);
 // needs testing
 /*
 	NOTE: cleanup
@@ -165,6 +167,7 @@ ffly_pipe_write(void *__buf, ff_uint_t __size, ff_uint_t __id) {
 	while(is_bit(pi->bits, STRT)) {
 		if (!*to_shut)
 			reterr;
+		delay
 	}
 
 	ff_u8_t *p = (ff_u8_t*)__buf;
@@ -194,6 +197,7 @@ ffly_pipe_write(void *__buf, ff_uint_t __size, ff_uint_t __id) {
 	while(!is_bit(pi->bits, OK)) {
 		if (!*to_shut)
 			reterr;
+		delay
 	}
 	clr_bit(pi->bits, OK);
 	retok;
@@ -206,6 +210,7 @@ ffly_pipe_read(void *__buf, ff_uint_t __size, ff_uint_t __id) {
 	while(is_bit(pi->bits, OK)) {
 		if (!*to_shut)
 			reterr;
+		delay
 	}
 	__ffmod_debug
 		ffly_printf("read. %u\n", *pi->bits);
@@ -240,6 +245,7 @@ ffly_pipe_read(void *__buf, ff_uint_t __size, ff_uint_t __id) {
 	while(is_bit(pi->bits, OK)) {
 		if (!*to_shut)
 			reterr;
+		delay
 	}
 	retok;
 }

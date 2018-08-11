@@ -1,14 +1,6 @@
 just copy from whats already here.
 camelcase - no it's cancer.
 
-whats the difference? ffly_, ff_, ff
-
-ffly_obj - not product
-
-ffobj - product
-
-ff_obj - partially a product
-
 function args - double underscore each arg.
 
 comments:

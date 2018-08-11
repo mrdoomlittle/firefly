@@ -13,6 +13,7 @@
 # include "../system/errno.h"
 # include "../env.h"
 # include "mm.h"
+
 static struct hash sy;
 char const *opstr(ff_u8_t __op) {
 	switch(__op) {

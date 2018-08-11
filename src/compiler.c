@@ -124,6 +124,12 @@ getpath(char *__dir, char *__buf, char const *__file) {
 	ffly_str_cpy(p, br);
 }
 
+void static
+_get(ff_uint_t __from, ff_uint_t __offset, ff_uint_t __size, void *__buf, void *__arg) {
+	FF_FILE *f = (FF_FILE*)__arg;
+	ffly_fpread(f, __buf, __size, __from);
+}
+
 ff_err_t
 ffly_compiler_ld(struct ffly_compiler *__compiler, char const *__file) {
 	ff_err_t err;
@@ -145,20 +151,16 @@ ffly_compiler_ld(struct ffly_compiler *__compiler, char const *__file) {
 	struct ffly_stat st;
 	ffly_fstat(path, &st);
 
-	ff_byte_t *p = (ff_byte_t*)__ffly_mem_alloc(st.size);
-	ff_byte_t *end = p+st.size;
 	ffly_compiler_filep file = __compiler->file;
 	ff_lexerp lexer = &__compiler->lexer;
 
-	file->p = p;
-	file->end = end;
-	lexer->p = p;
-	lexer->end = end;
-	lexer->bed = p;
+	file->f = f;
+	lexer->arg = (void*)f;
+	lexer->off = 0;
+	lexer->end = st.size;
 	lexer->line = &file->line;
 	lexer->lo = &file->lo;
-	ffly_fread(f, p, st.size);
-	ffly_fclose(f);
+	lexer->get = _get;
 	return FFLY_SUCCESS;
 }
 /*
@@ -313,11 +315,14 @@ ff_uint_t tokcol(struct token *__tok) {
 }
 
 void print_line(struct ffly_compiler *__compiler, ff_uint_t __off) {
-	char *p = (char*)__compiler->file->p+__off;
-	while(*p != '\n' && *p != '\0') {
-		if (*p != '\t')
-			ffly_printf("%c", *p);
-		p++;
+	ff_u32_t off = __off;
+	char c;
+
+	_get(off, 0, 1, &c, __compiler->file->f); 
+	while(c != '\n' && c != '\0') {
+		if (c != '\t')
+			ffly_printf("%c", c);
+		_get(++off, 0, 1, &c, __compiler->file->f);
 	}
 	ffly_printf("\n");
 }
@@ -397,7 +402,9 @@ keywdp get_keyword(struct ffly_compiler *__compiler, char const *__key) {
 
 ff_err_t ffly_compiler_free(struct ffly_compiler *__compiler) {
 	FF_ERR err;
-	void *cur = ffly_lat_head(&__compiler->keywd);
+	void *cur;
+
+	cur = ffly_lat_head(&__compiler->keywd);
 	while(cur != NULL) {
 		__ffly_mem_free(ffly_lat_getp(cur));	
 		ffly_lat_fd(&cur);
@@ -442,8 +449,9 @@ ff_err_t ffly_compiler_free(struct ffly_compiler *__compiler) {
 		errmsg("failed to de-init vector.\n");
 	}
 
-	if (__compiler->file->p != NULL)
-		__ffly_mem_free(__compiler->file->p);
+	if (__compiler->file->f != NULL) {
+		ffly_fclose(__compiler->file->f);
+	}
 
 	if (_err(err = ffly_map_de_init(&__compiler->macros))) {
 		errmsg("failed to de-init map.\n");
@@ -459,15 +467,27 @@ ff_err_t ffly_compiler_free(struct ffly_compiler *__compiler) {
 	retok;
 }
 
-struct token* peek_token(struct ffly_compiler *__compiler) {
-	struct token *tok = next_token(__compiler);
+ff_tokenp
+peek_token(ffly_compilerp __compiler) {
+	ff_tokenp tok;
+	if (!(tok = next_token(__compiler))) {
+		// error
+		return NULL;
+	}
 	ffly_ulex(&__compiler->lexer, tok);
 	return tok;
 }
 
-ff_bool_t next_tok_nl(struct ffly_compiler *__compiler) {
+
+/*
+	is next token a new line
+*/
+ff_bool_t
+next_tok_nl(ffly_compilerp __compiler) {
 	ff_err_t err;
-	struct token *tok = ffly_lex(&__compiler->lexer, &err);
+	ff_tokenp tok;
+	tok = ffly_lex(&__compiler->lexer, &err);
+
 	if (tok != NULL) {
 		if (tok->kind == _tok_newline) {
 			ff_token_free(tok);
@@ -478,45 +498,67 @@ ff_bool_t next_tok_nl(struct ffly_compiler *__compiler) {
 	return 0;
 }
 
-void read_define(struct ffly_compiler *__compiler) {
-	struct token *name = next_token(__compiler);
+ff_err_t static
+read_define(ffly_compilerp __compiler) {
+	ff_tokenp name;	
+	if (!(name = next_token(__compiler))) {
+		// error
+	}
+
 	void *p = NULL;
 	if (!next_tok_nl(__compiler)) {
-		struct ffly_vec *toks = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
+		struct ffly_vec *toks;
+		toks = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
+
 		ffly_vec_set_flags(toks, VEC_AUTO_RESIZE);
-		ffly_vec_init(toks, sizeof(struct token*));
+		ffly_vec_init(toks, sizeof(ff_tokenp));
 		p = toks;
-		struct token **tok;
+		ff_tokenp *tok;
 	_next:
 		ffly_vec_push_back(toks, (void**)&tok);
-		*tok = next_token(__compiler); 
+		if (!(*tok = next_token(__compiler))) {
+			// error
+		}
  
 		if (!next_tok_nl(__compiler))
 			goto _next;
 		vec_cleanup(__compiler, toks);
 		cleanup(__compiler, toks);
-	}
+	}/* else {
+
+	}*/
+
 	ffly_map_put(&__compiler->macros, name->p, ffly_str_len((char*)name->p), p);
+	retok;
 }
 
-ff_bool_t is_endif(struct ffly_compiler *__compiler, struct token *__tok) {
+ff_bool_t
+is_endif(ffly_compilerp __compiler, ff_tokenp __tok) {
 	if (is_keyword(__tok, _percent)) {
 		ff_err_t err;
-		struct token *tok = ffly_lex(&__compiler->lexer, &err);
-		ff_u8_t res = !ffly_str_cmp(tok->p, "endif");
-		if (!res)
+		ff_tokenp tok;		
+		if (!(tok = ffly_lex(&__compiler->lexer, &err))) {
+			// error
+		}
+
+		ff_u8_t res;
+		if (!(res = !ffly_str_cmp(tok->p, "endif")))
 			ffly_ulex(&__compiler->lexer, tok);
 		return res;
 	}
 	return 0;
 }
 
-ff_bool_t is_else(struct ffly_compiler *__compiler, struct token *__tok) {
+ff_bool_t
+is_else(ffly_compilerp __compiler, ff_tokenp __tok) {
 	if (is_keyword(__tok, _percent)) {
 		ff_err_t err;
-		struct token *tok = ffly_lex(&__compiler->lexer, &err);
-		ff_u8_t res = !ffly_str_cmp(tok->p, "else");
-		if (!res)
+		ff_tokenp tok;
+		if (!(tok = ffly_lex(&__compiler->lexer, &err))) {
+			// error
+		}
+		ff_u8_t res;
+		if (!(res = !ffly_str_cmp(tok->p, "else")))
 			ffly_ulex(&__compiler->lexer, tok);
 		return res;
 	}
@@ -546,7 +588,7 @@ sk_to_else(struct ffly_compiler *__compiler) {
 void static
 sk_to_endif(struct ffly_compiler *__compiler) {
 	ff_err_t err;
-	struct token *tok = NULL;
+	ff_tokenp tok = NULL;
 	for(;;) {
 		if (!(tok = ffly_lex(&__compiler->lexer, &err))) break;
 		if (_err(err)) {
@@ -559,46 +601,75 @@ sk_to_endif(struct ffly_compiler *__compiler) {
 	}
 }
 
-void static
-read_ifdef(struct ffly_compiler *__compiler) {
-	struct token *name;
+ff_err_t static
+read_ifdef(ffly_compilerp __compiler) {
+	ff_tokenp name;
 	ff_err_t err;
 _again:
-	name = next_token(__compiler);
+	if (!(name = next_token(__compiler))) {
+		// error
+	}
+
+	if (!is_tokident(name)) {
+		// error
+	}
+
 	ffly_map_get(&__compiler->macros, name->p, ffly_str_len((char*)name->p), &err);
 	if (_err(err)) {
 		sk_to_else(__compiler);
-		return;
+		retok;
 	}
 
 	if (next_token_is(__compiler, _tok_keywd, _and))
 		goto _again;
+	retok;
 }
 
-void static
-read_ifndef(struct ffly_compiler *__compiler) {
-	struct token *name;
+ff_err_t static
+read_ifndef(ffly_compilerp __compiler) {
+	ff_tokenp name;
 	ff_err_t err;
 _again:
-	name = next_token(__compiler);
+	if (!(name = next_token(__compiler))) {
+		// error
+	}
+
+	if (!is_tokident(name)) {
+		// error
+	}
+
 	ffly_map_get(&__compiler->macros, name->p, ffly_str_len((char*)name->p), &err);
 	if (_ok(err)) {
 		sk_to_else(__compiler);
-		return;
+		retok;
 	}
 
 	if (next_token_is(__compiler, _tok_keywd, _and))
 		goto _again;
+	retok;
 }
 
-void static
-read_include(struct ffly_compiler *__compiler) {
-	struct token *path = next_token(__compiler);
+ff_err_t static
+read_include(ffly_compilerp __compiler) {
+	ff_tokenp path;
+	if (!(path = next_token(__compiler))) {
+		// error
+	}
+
+	if (!is_tokstr(path)) {
+		// error
+	}
+
 	ffly_printf("include: %s\n", (char*)path->p);
 
-	ff_lexerp lexer = &__compiler->lexer;
+	ff_lexerp lexer;
+	
+	lexer = &__compiler->lexer;
 
-	ff_off_t off = lexer->p-lexer->bed;
+	ff_u32_t off, end;
+	off = lexer->off;
+	end = lexer->end;
+
 	ffly_compiler_filep file;
 	file = ++__compiler->file;
 
@@ -607,6 +678,11 @@ read_include(struct ffly_compiler *__compiler) {
 	__compiler->dir = file->dir;
 	file->line = 0;
 	file->lo = 0;
+
+	/*
+		get rid loaded chunk if not it will read the wrong data
+	*/
+	ff_lexer_reset(lexer);
 	if (_err(ffly_compiler_ld(__compiler, (char*)path->p))) {
 		ffly_printf("failed to load.\n");
 		goto _sk;
@@ -622,20 +698,23 @@ read_include(struct ffly_compiler *__compiler) {
 			ffly_script_parse(__compiler);
 		break;
 # endif
+		default:
+			// error
+			break;
 	}
 
 	__ffly_mem_free(file->path);
-	__ffly_mem_free(file->p);
+	ffly_fclose(file->f);
 _sk:
 	file = --__compiler->file;
-
 	__compiler->dir = file->dir;
 
-	lexer->p = file->p+off;
-	lexer->end = file->end;
-	lexer->bed = file->p;
+	lexer->arg = file->f;
+	lexer->off = off;
+	lexer->end = end;
 	lexer->line = &file->line;
 	lexer->lo = &file->lo;
+	retok;
 }
 
 void read_macro(struct ffly_compiler *__compiler) {
@@ -646,27 +725,36 @@ void read_macro(struct ffly_compiler *__compiler) {
 		return;
 	}
 
-	if (!ffly_str_cmp(tok->p, "define"))
-		read_define(__compiler);
-	else if (!ffly_str_cmp(tok->p, "ifdef"))
-		read_ifdef(__compiler);
-	else if (!ffly_str_cmp(tok->p, "ifndef"))
-		read_ifndef(__compiler);
-	else if (!ffly_str_cmp(tok->p, "include"))
-		read_include(__compiler);
-	else if (!ffly_str_cmp(tok->p, "else"))
+	if (!ffly_str_cmp(tok->p, "define")) {
+		if (_err(err = read_define(__compiler))) {
+			ffly_printf("failed to read 'define'.\n");
+		}
+	} else if (!ffly_str_cmp(tok->p, "ifdef")) {
+		if (_err(err = read_ifdef(__compiler))) {
+			ffly_printf("failed to read 'ifdef'.\n");
+		}
+	} else if (!ffly_str_cmp(tok->p, "ifndef")) {
+	 	if (_err(err = read_ifndef(__compiler))) {
+			ffly_printf("failed to read 'ifndef'.\n");
+		}
+	} else if (!ffly_str_cmp(tok->p, "include")) {
+		if (_err(err = read_include(__compiler))) {
+			ffly_printf("failed to read 'include'.\n");
+		}
+	} else if (!ffly_str_cmp(tok->p, "else"))
 		sk_to_endif(__compiler);
 	else {
-		ffly_printf("unknown macro: %s\n", tok->p);
+		if (ffly_str_cmp(tok->p, "endif") == -1)
+			ffly_printf("unknown macro: %s\n", tok->p);
 	}
 }
 
-struct token* next_token(struct ffly_compiler *__compiler) {
+ff_tokenp
+next_token(ffly_compilerp __compiler) {
 	ff_err_t err;
-	struct token *tok;
+	ff_tokenp tok;
 _bk:
-	tok = ffly_lex(&__compiler->lexer, &err);
-	if (!tok) {
+	if (!(tok = ffly_lex(&__compiler->lexer, &err))) {
 		ffly_printf("got null token.\n");
 		return NULL;
 	}
@@ -853,7 +941,7 @@ ff_err_t ffly_compiler_prepare(struct ffly_compiler *__compiler) {
 	__compiler->file->line = 0;
 	__compiler->file->lo = 0;
 	__compiler->local = NULL;
-	__compiler->file->p = NULL;
+	__compiler->file->f = NULL;
 	__compiler->file->path = NULL;
 	if (_err(err = ffly_map_init(&__compiler->macros, _ffly_map_127))) {
 		errmsg("failed to initialize map.\n");

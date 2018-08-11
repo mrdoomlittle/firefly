@@ -10,7 +10,7 @@
 */
 
 # define HOLDUP_SEC 0
-# define HOLDUP_NSEC 100000000
+# define HOLDUP_NSEC 9805
 ff_i8_t static stop = -1;
 /*
 	not just for the clock.
@@ -24,10 +24,9 @@ _again:
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	delay = (end.tv_sec-start.tv_sec)*1000000000;
 	delay+=end.tv_nsec-start.tv_nsec;
-
 	clock_gettime(CLOCK_MONOTONIC, &start);
 	/*
-		bigger delay less accurate by less cpu usage
+		bigger delay less accurate but less cpu usage
 	*/
 	ffly_nanosleep(HOLDUP_SEC, HOLDUP_NSEC);
 	if (ffly_pulse != NULL)

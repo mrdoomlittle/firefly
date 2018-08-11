@@ -26,10 +26,18 @@ void* ffly_mem_realloc(void *__p, ff_uint_t __nbc) {
     p = (ff_u8_t*)ffly_brealloc(p, __nbc+sizeof(ff_uint_t));
 # endif
 
-	if (__nbc > mem_size)
-		ffly_atomic_add(&ffly_mem_alloc_bc, __nbc-mem_size);
-	else if (__nbc < mem_size)
-		ffly_atomic_sub(&ffly_mem_alloc_bc, mem_size-__nbc);
+	ff_u64_t v;
+	if (__nbc > mem_size) {
+		v = __nbc-mem_size;
+		__asm__("lock addq %1, %0" :
+			"=m"(ffly_mem_alloc_bc) :
+				"r"(v));
+	} else if (__nbc < mem_size) {
+		v = mem_size-__nbc;
+		__asm__("lock subq %1, %0" :
+			"=m"(ffly_mem_alloc_bc) :
+				"r"(v));
+	}
 	*(ff_uint_t*)p = __nbc;
 	p+=sizeof(ff_uint_t);
 # else

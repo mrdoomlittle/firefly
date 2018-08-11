@@ -1,3 +1,4 @@
+# define __ffly_debug
 # include "ffint.h"
 # include "types.h"
 # include "system/io.h"
@@ -6,6 +7,7 @@
 # include "dep/str_dup.h"
 # include "dep/str_len.h"
 # include "dep/mem_cpy.h"
+# include "dep/str_cmp.h"
 # include "shell.h"
 static struct hash cmdmap;
 
@@ -21,6 +23,7 @@ static struct cmd *cmd_tbl[] = {
 	&(struct cmd){"ff5", _cmd_ff5},
 	&(struct cmd){"ff6", _cmd_ff6},
 	&(struct cmd){"exec", _cmd_exec},
+	&(struct cmd){"p", _cmd_er},
 	NULL
 };
 
@@ -48,6 +51,25 @@ _at_eof(void) {
 	return off>=e;
 }
 
+# include "system/string.h"
+# include "panel.h"
+# include "m.h"
+void static 
+_er(char const *__cmd, ff_uint_t __argc, char const *__argv[]) {	
+	if (!ffly_str_cmp(__cmd, "connect")) {
+		ff_uint_t shm_id;
+		shm_id = ffly_stno(*__argv);
+		ff_p_connect(shm_id);
+	} else if (!ffly_str_cmp(__cmd, "disconnect")) {
+		ff_p_disconnect();
+	} else if (!ffly_str_cmp(__cmd, "meminfo")) {
+		struct ffly_meminfo info;
+		ff_p_meminfo(&info);
+		ffly_dmi(&info);	
+	}
+}
+
+// will be set to -1 if exit command is executed
 ff_i8_t static run = 0;
 # include "linux/termios.h"
 /*
@@ -62,7 +84,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	old = term;
 	term.c_lflag &= ~(ICANON|ECHO);
 	tcsetattr(ffly_in->fd, &term);
-
+	
+	ffsh_er = _er;
 	get = _get;
 	at_eof = _at_eof;
 	ff_err_t err;
@@ -120,6 +143,10 @@ _out:
 				ffsh_exec_cmd(p, n->argc, (struct arg_s**)n->args);
 		}
 	}
+
+	/*
+		cleanup memory
+	*/
 	mem_cleanup();
 	if (!run)
 		goto _again;

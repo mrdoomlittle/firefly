@@ -25,7 +25,7 @@ ff_i8_t static
 update(void *__arg_p) {
 	ffly_reservoirp r = (ffly_reservoirp)__arg_p;
 	ffly_mutex_lock(&r->lock);
-	ffly_slabp sb = r->open, *bk = &r->open;
+	ffly_slabp sb = r->open;
 	ffly_fprintf(ffly_log, "reservoir update.\n");
 	while(sb != NULL) {
 		ff_int_t tl = ((ff_int_t)(sb->creation+sb->death))-(ff_int_t)clock;
@@ -36,17 +36,21 @@ update(void *__arg_p) {
 			if (!sb->p) {
 				ffly_printf("error.\n");
 			}
-			*bk = sb->link;
+			
+			*sb->bk = sb->link;
+			if (sb->link != NULL)
+				sb->link->bk = sb->bk;
 			ffly_mutex_lock(&sb->lock);
 			ffly_fprintf(ffly_log, "saving slab : %u\n", sb->off);
 			pwrite(r->fd, sb->p, SLAB_SIZE, sb->off*SLAB_SIZE);
 			__ffly_mem_free(sb->p);
 			sb->p = NULL;
 			sb->link = NULL;
+			sb->bk = NULL;
+			sb->flags &= ~SLAB_OPEN;
 			ffly_mutex_unlock(&sb->lock);
 		}
 	_sk:
-		bk = &sb->link;
 		sb = sb->link;
 	}
 	ffly_mutex_unlock(&r->lock);
@@ -61,7 +65,7 @@ corrode(void *__arg) {
 }
 
 ff_err_t ffly_reservoir_init(ffly_reservoirp __res, ff_u8_t __flags, char const *__file) {
-	if ((__res->fd = open(__file, O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR)) == -1) {
+	if ((__res->fd = open(__file, O_RDWR|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR)) == -1) {
 
 	}
 	
@@ -100,7 +104,9 @@ void ffly_reservoir_info(ffly_reservoirp __res) {
 
 void* ffly_reservoir_alloc(ffly_reservoirp __res, ff_uint_t __size) {
 	regionp reg = (regionp)__ffly_mem_alloc(sizeof(struct region));
-	ff_uint_t sc = (__size>>SLAB_SHIFT)+((__size&((~(ff_u64_t)0)>>(64-SLAB_SHIFT)))>0);
+	ff_uint_t sc;
+
+	sc = (__size+(0xffffffffffffffff>>(64-SLAB_SHIFT)))>>SLAB_SHIFT;
 	ffly_slabp *p = (ffly_slabp*)__ffly_mem_alloc(sc*sizeof(ffly_slabp));
 	reg->slabs = p;
 	ffly_slabp *end = p+sc;
@@ -141,24 +147,34 @@ ffly_reservoir_write(ffly_reservoirp __res, void *__reg,
 	ffly_fprintf(ffly_log, "writing to region.\n");
 	regionp reg = (regionp)__reg;
 	ffly_slabp *sb = reg->slabs;
+	ffly_slabp *end;
+
+	end = sb+(__size>>SLAB_SHIFT);
 	ff_u8_t *p = (ff_u8_t*)__p;
-	while(__size-(p-(ff_u8_t*)__p) >= SLAB_SIZE) {
+
+	ff_uint_t ss;
+	ss = __offset>>SLAB_SHIFT;
+	sb+=ss;
+	ff_uint_t offset;
+
+	offset = __offset-(ss*SLAB_SIZE);
+
+	if (offset>0 && __size>=SLAB_SIZE) {
+		ff_uint_t sz;
+		ffly_slab_write(__res, *sb, p, offset, sz = (SLAB_SIZE-offset));
+		p+=sz;
+		sb++;
+		offset = 0;
+	}
+
+	while(sb<end) {
 		ffly_slab_write(__res, *(sb++), p, 0, SLAB_SIZE);
 		p+=SLAB_SIZE;
 	}
 
 	ff_uint_t left = __size-(p-(ff_u8_t*)__p);
 	if (left>0)
-		ffly_slab_write(__res, *sb, p, 0, left);
-/*
-	ff_uint_t junk;
-	if ((junk = (SLAB_SIZE-left))>0) {
-		void *p = __ffly_mem_alloc(junk);
-		ffly_mem_set(p, 0x0, junk);
-		ffly_slab_write(__res, *sb, p, left, junk);
-		__ffly_mem_free(p);
-	}
-*/
+		ffly_slab_write(__res, *sb, p, offset, left);
 }
 
 ff_err_t
@@ -168,13 +184,31 @@ ffly_reservoir_read(ffly_reservoirp __res, void *__reg,
 	ffly_fprintf(ffly_log, "reading from region.\n");
 	regionp reg = (regionp)__reg;
 	ffly_slabp *sb = reg->slabs;
+	ffly_slabp *end;
+
+	end = sb+(__size>>SLAB_SHIFT);
 	ff_u8_t *p = (ff_u8_t*)__p;
-	while(__size-(p-(ff_u8_t*)__p) >= SLAB_SIZE) {
+
+	ff_uint_t ss;
+	ss = __offset>>SLAB_SHIFT;
+	sb+=ss;
+	ff_uint_t offset;
+	offset = __offset-(ss*SLAB_SIZE);
+
+	if (offset>0 && __size>=SLAB_SIZE) {
+		ff_uint_t sz;
+		ffly_slab_read(__res, *sb, p, offset, sz = (SLAB_SIZE-offset));
+		p+=sz;
+		sb++;
+		offset = 0;
+	}
+
+	while(sb<end) {
 		ffly_slab_read(__res, *(sb++), p, 0, SLAB_SIZE);
 		p+=SLAB_SIZE;
 	}
 
 	ff_uint_t left = __size-(p-(ff_u8_t*)__p);
 	if (left>0)
-		ffly_slab_read(__res, *sb, p, 0, left);
+		ffly_slab_read(__res, *sb, p, offset, left);
 }

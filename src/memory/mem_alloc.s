@@ -9,7 +9,7 @@
  .text
 
 __ffly_mal:
- push %rbp
+ pushq %rbp
  movq %rsp, %rbp
  movq 16(%rbp), %rax
 
@@ -17,7 +17,7 @@ __ffly_mal:
 
 
 
- sub $4, %rsp
+ subq $4, %rsp
  movl %eax, (%rsp)
 
 
@@ -27,5 +27,5 @@ __ffly_mal:
 
  call ffly_mal
  movq %rbp, %rsp
- pop %rbp
+ popq %rbp
  ret

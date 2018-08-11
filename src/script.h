@@ -1,6 +1,5 @@
 # ifndef __ffly__script__h
 # define __ffly__script__h
-# define __ffly_compiler_internal
 # include "types.h"
 # include "compiler.h"
 # include "system/map.h"
@@ -47,7 +46,6 @@ enum {
 typedef struct {
 /*
 	-----------------
-	| static memory |
 	| other.........|
 	-----------------
 	-----------------
@@ -62,7 +60,7 @@ typedef struct {
 	void*(*call)(ff_u8_t, void*, void**);
 	struct ffly_map symbols;
 } ffscript, *ffscriptp;
-
+# ifdef __ffly_script_internal
 struct ffly_script {	
 	//compiler context
 	struct ffly_compiler c_ctx;
@@ -77,13 +75,19 @@ typedef struct symbol {
 	struct symbol *next;
 } *symbolp;
 
-/* clean this up */
+/* clean this up 
+	and params should be removed for a pointer to the stack
+
+	rename opno to just op add flags and murge it with cond
+*/
 struct obj {
 	ff_uint_t off;
 	ff_u8_t opno, cond;
 	void *p;
 	ff_uint_t size;
 	ff_u8_t _type;
+
+	// clean up also 'check update cache' pointers 
 	struct obj *objpp, *frame;
 	struct obj **dst, **src, *_obj, **no;
 	struct obj **to, **from, **l, **r, **by;
@@ -95,10 +99,9 @@ struct obj {
 ff_err_t ffly_script_build(struct ffly_script*, void**, ff_byte_t**);
 ff_err_t ffly_script_prepare(struct ffly_script*);
 ff_err_t ffly_script_free(struct ffly_script*);
-
+# endif
 ff_err_t ffscript_init(ffscriptp, ff_uint_t);
 ff_err_t ffscript_exec(ffscriptp, void*(*)(ff_u8_t, void*, void**), void*, void*, void*);
 void* ffscript_call(ffscriptp, char const*);
 ff_err_t ffscript_free(ffscriptp);
-ff_err_t ffly_script_free(struct ffly_script*);
 # endif /*__ffly__script__h*/

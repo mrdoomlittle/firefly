@@ -481,33 +481,37 @@ op_div(ffscriptp __script, struct obj *__obj) {
 }
 
 static void(*op[])(ffscriptp, struct obj*) = {
-	&op_fresh,
-    &op_free,
-	&op_assign,
-	&op_copy,
-	&op_print,
-    &op_compare,
-    &op_jump,
-    &op_cond_jump,
-    &op_zero,
-    &op_push,
-    &op_pop,
-    &op_incr,
-    &op_decr,
-    &op_call,
+	op_fresh,
+    op_free,
+	op_assign,
+	op_copy,
+	op_print,
+    op_compare,
+    op_jump,
+    op_cond_jump,
+    op_zero,
+    op_push,
+    op_pop,
+    op_incr,
+    op_decr,
+    op_call,
     NULL,
-    &op_frame,
-    &op_free_frame,
-    &op_conv,
-    &op_add,
-    &op_sub,
-    &op_mul,
-    &op_div
+    op_frame,
+    op_free_frame,
+    op_conv,
+    op_add,
+    op_sub,
+    op_mul,
+    op_div
 };
 
 ff_err_t ffscript_exec(ffscriptp __script, void*(*__call)(ff_u8_t, void*, void**), void *__arg_p, void *__entry, void *__end) {
     __script->call = __call;
     __script->arg_p = __arg_p;
+	/*
+		todo - clean up and remove if statments and use a static flag to say back to top and reloop
+	*/
+
 	struct obj *_obj = (struct obj*)(!__entry?__script->top:__entry);
 	while(_obj != (struct obj*)__end) {
         ffly_fprintf(ffly_log, "op: %s\n", opst(_obj->opno));

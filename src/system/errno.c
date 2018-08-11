@@ -126,12 +126,8 @@ char const* strerror(int __no) {
 	return s[no];
 }
 
-/*
-	find diffrent way to set errno
-	as compiler is setting up the stack
-	when its not needed.
-*/
-void __set_errno(void) {
-	__asm__("mov %%eax, %0\n\t" : "=m"(errno));
-}
+__asm__(".globl __set_errno\n"
+		"__set_errno:\n\t"
+		"movl %eax, errno(%rip)\n\t"
+		"ret");
 # endif

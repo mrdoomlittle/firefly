@@ -27,7 +27,9 @@ struct type static *u8_t = &(struct type){.kind=_u8_t, .size=1};
 struct type static *i8_t = &(struct type){.kind=_i8_t, .size=1};
 
 struct type static *ptr = &(struct type){.kind=_u64_t, .size=8};
-
+/*
+	change to macros also make them better
+*/
 void static
 mk_arrtype(ffly_compilerp __compiler, struct type **__type, struct type *__base, ff_uint_t __len) {
 	ffc_build_type(__compiler, __type, &(struct type){.kind=_array, .ptr=__base, .size=(__len*__base->size), .len=__len});

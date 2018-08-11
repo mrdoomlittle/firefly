@@ -1,30 +1,19 @@
-
-# include "str_len.h"
-# include "mem_cpy.h"
 # include "str_cmb.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
-char* ffly_str_cmb(char *__s1, char *__s2, mdl_u8_t __opt) {
-    if (!__s1 && !__s2) return NULL;
-    mdl_uint_t s1_len = !__s1?0:ffly_str_len(__s1), s2_len = !__s2?0:ffly_str_len(__s2);
-    mdl_uint_t n_len = s1_len+s2_len+1;
+# include "../dep/str_len.h"
+# include "../dep/mem_cpy.h"
+char const*
+ffly_str_cmb(char const *__s0, char const *__s1) {
+	ff_uint_t s0_len, s1_len, l;
 
-    char *s = (char*)__ffly_mem_alloc(n_len);
-    if (__s1 != NULL) ffly_mem_cpy(s, __s1, s1_len);
-    if (__s2 != NULL) ffly_mem_cpy(s+s1_len, __s2, s2_len);
-    *(s+n_len-1) = '\0';
-    switch(__opt) {
-        case _ffly_stc_free_both:
-            if (__s1 != NULL) __ffly_mem_free(__s1);
-            if (__s2 != NULL) __ffly_mem_free(__s2);
-            break;
-        case _ffly_stc_free_lhs:
-            if (__s1 != NULL) __ffly_mem_free(__s1);
-        break;
-        case _ffly_stc_free_rhs:
-            if (__s2 != NULL) __ffly_mem_free(__s2);
-        break;
-    }
-    return s;
+	l = (s0_len = ffly_str_len(__s0))
+		+(s1_len = ffly_str_len(__s1));
+
+	char *p;
+	p = (char*)__ffly_mem_alloc(l+1);
+	ffly_mem_cpy(p, __s0, s0_len);
+	ffly_mem_cpy(p+s0_len, __s1, s1_len);
+	*(p+l) = '\0';
+	return (char const*)p;
 }
-

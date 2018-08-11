@@ -1,19 +1,16 @@
 # include "png.h"
 # include "../system/file.h"
 # include "../system/errno.h"
-# include "../system/err.h"
+# include "../system/error.h"
 # include "../system/io.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
-# include "../data/str_cmb.h"
-# include "../types/byte_t.h"
 # include <unistd.h>
 # include <png.h>
-ffly_err_t ffly_ld_png_img(char *__dir, char *__name, ffly_imagep __image) {
-	char *path = ffly_str_cmb(__dir, ffly_str_cmb("/", ffly_str_cmb(__name, ".png", 0), _ffly_stc_free_rhs), _ffly_stc_free_rhs);
-	ffly_fprintf(ffly_log, "going to load png file %s\n", path);
-	ffly_err_t err;
-	FF_FILE *file = ffly_fopen(path, FF_O_RDONLY, 0, &err);
+ff_err_t ffly_im_png_ld(char const *__path, ffly_imagep __image) {
+	ffly_fprintf(ffly_log, "going to load png file %s\n", __path);
+	ff_err_t err;
+	FF_FILE *file = ffly_fopen(__path, FF_O_RDONLY, 0, &err);
 	if (_err(err)) {
 		ffly_fprintf(ffly_err, "failed to open file.\n");
 		return err;
@@ -44,15 +41,14 @@ ffly_err_t ffly_ld_png_img(char *__dir, char *__name, ffly_imagep __image) {
 	__image->height = png_get_image_height(png_p, info_p);
 	__image->chn_c = png_get_channels(png_p, info_p);
 	__image->bit_depth = png_get_bit_depth(png_p, info_p);
-	__image->pixels = (ffly_byte_t*)__ffly_mem_alloc(__image->width*__image->height*__image->chn_c);
+	__image->pixels = (ff_byte_t*)__ffly_mem_alloc(__image->width*__image->height*__image->chn_c);
 
-	mdl_u32_t row = 0;
+	ff_u32_t row = 0;
 	for(;row != __image->height;row++)
 		png_read_row(png_p, __image->pixels+(row*(__image->width*__image->chn_c)), NULL);
 
 	fclose(f);
 	ffly_fclose(file);
-	__ffly_mem_free(path);
 	png_destroy_info_struct(png_p, &info_p);
 	png_destroy_read_struct(&png_p, (png_infopp)NULL, (png_infopp)NULL);
 	ffly_fprintf(ffly_log, "loaded png image, width: %u, height: %u, chn_c: %u\n", __image->width, __image->height, __image->chn_c);

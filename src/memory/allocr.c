@@ -108,7 +108,7 @@ typedef ff_s32_t ar_int_t;
 
 
 # define be_vigilant
-# define barebone
+//# define barebone
 /*
 	erase block when freed
 */
@@ -197,6 +197,7 @@ typedef struct pot {
 	ff_mlock_t lock;
 } *potp;
 
+
 typedef struct rod {
 	struct rod *next;
 	ff_mlock_t lock;
@@ -253,10 +254,15 @@ typedef struct block {
 # define block_size sizeof(struct block)
 void static* _ffly_balloc(potp, ff_uint_t);
 void static _ffly_bfree(potp, void*);
-
+ff_u64_t static ff_ar_dead(potp);
+ff_u64_t static ff_ar_used(potp);
+ff_u64_t static ff_ar_buried(potp);
 # define cur_arena \
 	((potp)*(spot+ffly_tls_get(arena_tls)))
-// temp
+/*
+	TODO:
+		free all memory - dont realy care for now but later this will need to be done.
+*/
 void static
 abort(void) {
 	printf("ar, abort.\n");
@@ -298,9 +304,11 @@ void ffly_arctl(ff_u8_t __req, ff_u64_t __val) {
 	*temp_spot = temp;
 }
 
-void arinfo(struct arinfo *__p) {
+void ff_ar_info(struct ff_ar_info *__p) {
 	__p->block_c = main_pot.blk_c;
-	__p->used = (ff_u8_t*)main_pot.top-(ff_u8_t*)main_pot.end;
+	__p->dead = ff_ar_dead(&main_pot);
+	__p->used = ff_ar_used(&main_pot);
+	__p->buried = ff_ar_buried(&main_pot);
 }
 
 // add to rod
@@ -495,14 +503,14 @@ decouple(potp __pot, blockp __b) {
 /*
 	memory that hasent been touched yet
 */
-ff_u64_t static
-ffly_ardead(potp __pot) {
+ff_u64_t
+ff_ar_dead(potp __pot) {
 	return __pot->top-(__pot->end+__pot->off);
 }
 
 /* used memory */
-ff_u64_t static
-ffly_arused(potp __pot) {
+ff_u64_t
+ff_ar_used(potp __pot) {
 	return __pot->off-((__pot->blk_c*block_size)+__pot->buried);
 }
 
@@ -510,8 +518,8 @@ ffly_arused(potp __pot) {
 /*
 	memory that is occupied but not being used at this moment
 */
-ff_u64_t static
-ffly_arburied(potp __pot) {
+ff_u64_t
+ff_ar_buried(potp __pot) {
 	return __pot->buried;
 }
 
@@ -525,7 +533,7 @@ void ffly_arstat(void) {
 _next:
 	if (cur != NULL) {
 		printf("potno: %u, rodno: %u - %s, off{%u}, no mans land{from: 0x%x, to: 0x%x}, pages{%u}, blocks{%u}, used{%u}, buried{%u}, dead{%u}\n",
-			no++, !cur->r?0:cur->r->no, !cur->r?"bad":"ok", cur->off, cur->off, cur->top-cur->end, cur->page_c, cur->blk_c, ffly_arused(cur), ffly_arburied(cur), ffly_ardead(cur));
+			no++, !cur->r?0:cur->r->no, !cur->r?"bad":"ok", cur->off, cur->off, cur->top-cur->end, cur->page_c, cur->blk_c, ff_ar_used(cur), ff_ar_buried(cur), ff_ar_dead(cur));
 
 		if ((cur = cur->next) != NULL)
 			goto _next;
@@ -716,7 +724,7 @@ _next:
 		if (p == &main_pot)
 			printf("~: main pot, no{%u}\n", no);
 		printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u, pages: %u, blocks: %u, total: %u\n",
-			no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off, p->page_c, p->blk_c, p->total);
+			no++, ff_ar_used(p), ff_ar_buried(p), ff_ar_dead(p), p->off, p->page_c, p->blk_c, p->total);
 		pot_pr(p);
 		if ((p = p->next) != NULL)
 			goto _next;
@@ -742,7 +750,7 @@ void pf(void) {
 _next:
 	if (p != NULL) {
 		printf("\npot, %u, used: %u, buried: %u, dead: %u, off: %u, pages: %u, blocks: %u, total: %u\n",
-			no++, ffly_arused(p), ffly_arburied(p), ffly_ardead(p), p->off, p->page_c, p->blk_c, p->total);
+			no++, ff_ar_used(p), ff_ar_buried(p), ff_ar_dead(p), p->off, p->page_c, p->blk_c, p->total);
 		pot_pf(p);
 
 		if ((p = p->next) != NULL)

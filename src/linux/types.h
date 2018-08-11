@@ -1,7 +1,10 @@
 # ifndef __ffly__linux__types__h
 # define __ffly__linux__types__hq
 # include "../ffint.h"
-
+/*
+	TODO:
+		remove __linux and just use __size_t or __ksize_t
+*/
 typedef long __slong_t;
 typedef long unsigned __ulong_t;
 // remove linux so __pid_t
