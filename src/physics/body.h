@@ -36,6 +36,10 @@ typedef struct ffly_phy_body {
 
 	ff_u8_t velocity;
 	ff_uint_t *x, *y, *z;
+
+/*
+	should rename??? remove velocity part?
+*/
 	float angular_velocity;
 	float gravity;
 

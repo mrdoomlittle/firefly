@@ -16,6 +16,7 @@
 # include "system/io.h"
 # include "system/sched.h"
 # include "event.h"
+# include "carriage.h"
 struct ff_workshop workshop;
 
 ff_i16_t pt_x = 0, pt_y = 0;
@@ -49,6 +50,9 @@ void ffly_workshop_start() {
 			if (event->kind == _ffly_wd_ek_btn_press || event->kind == _ffly_wd_ek_btn_release) {
 				pt_x = ((ffly_wd_event_t*)event->data)->x;
 				pt_y = ((ffly_wd_event_t*)event->data)->y;
+				ffly_carriage_put(_ff_carr0);
+				ffly_carriage_wait(_ff_carr0);
+				ffly_carriage_reset(_ff_carr0);
 				if (event->kind == _ffly_wd_ek_btn_press) {
 					pt_state = 0;
 				} else if (event->kind == _ffly_wd_ek_btn_release) {
@@ -125,7 +129,7 @@ void ffly_workshop_init() {
 	btn->id = _bt_opt;
 	workshop.opt = btn;
 	ffly_gui_btn_sched(btn);
-
+	ffly_gui_btn_enable(btn);
 	btn = ffly_gui_btn_creat(tex1, 76, 76, 76, 0);
 	btn->pt_x = &pt_x;
 	btn->pt_y = &pt_y;
@@ -136,6 +140,7 @@ void ffly_workshop_init() {
 	btn->id = _bt_front;
 	workshop.front = btn;
 	ffly_gui_btn_sched(btn);
+	ffly_gui_btn_enable(btn);
 	ffly_gui_window_init(&workshop.window, 64, 64, 128, 128);
 
 	ff_u8_t static pixels[12*12*4];

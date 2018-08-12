@@ -155,6 +155,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/hs/mm.o $root_dir/hs/mm.c
 $ffly_cc $cc_flags -c -o $dst_dir/hs.o $root_dir/hs.c
 $ffly_cc $cc_flags -c -o $dst_dir/storage/cistern.o $root_dir/storage/cistern.c
 $ffly_cc $cc_flags -c -o $dst_dir/texture.o $root_dir/texture.c
+$ffly_cc $cc_flags -c -o $dst_dir/carriage.o $root_dir/carriage.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -181,4 +182,4 @@ $dst_dir/brick.o $dst_dir/br.o $dst_dir/chrdump.o $dst_dir/rasterizer.o
 $dst_dir/model.o $dst_dir/start.o $dst_dir/p.o $dst_dir/panel.o $dst_dir/m.o \
 $dst_dir/hs/vec.o $dst_dir/hs/hash.o $dst_dir/hs/lexer.o $dst_dir/hs/memalloc.o
 $dst_dir/hs/parser.o $dst_dir/hs/exec.o $dst_dir/hs/gen.o $dst_dir/hs/mm.o $dst_dir/hs.o \
-$dst_dir/storage/cistern.o $dst_dir/texture.o"
+$dst_dir/storage/cistern.o $dst_dir/texture.o $dst_dir/carriage.o"

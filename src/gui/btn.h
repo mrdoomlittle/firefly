@@ -6,6 +6,7 @@
 # include "../ffly_def.h"
 # include "../event.h"
 # include "../pallet.h"
+# define FFLY_GUI_BT_ENABLED 0x02
 struct ffly_gui_btn {
 	ff_u8_t id;
 	struct ffly_pallet texture;
@@ -19,6 +20,7 @@ struct ffly_gui_btn {
    	ff_i8_t enabled;
 	ff_u8_t flags;
 	ff_u32_t sched_id;
+	ff_i8_t c;
 	void *arg_p;
 	void(*press)(struct ffly_gui_btn*, void*);
 	void(*release)(struct ffly_gui_btn*, void*);
@@ -30,6 +32,8 @@ typedef struct ffly_gui_btn* ffly_gui_btnp;
 # ifdef __cplusplus
 extern "C" {
 # endif
+void ffly_gui_btn_enable(ffly_gui_btnp);
+void ffly_gui_btn_disable(ffly_gui_btnp);
 ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t*, ff_u16_t, ff_u16_t, ff_u16_t, ff_u16_t);
 void ffly_gui_btn_sched(ffly_gui_btnp);
 void ffly_gui_btn_destroy(ffly_gui_btnp);

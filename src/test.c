@@ -102,14 +102,53 @@ void* th(void *__arg) {
 # include "storage/cistern.h"
 # include "gravity.h"
 # include "uni.h"
+# include "carriage.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	ff_uint_t i, n;
+
+	i = 0;
+	ffly_carriage_add(_ff_carr0);
+	ffly_carriage_add(_ff_carr0);
+	ffly_carriage_add(_ff_carr0);
+	ffly_carriage_add(_ff_carr0);
+	while(i != 26) {
+		ffly_carriage_put(_ff_carr0, (void*)0);
+		n  = 0;
+		while(n++ != 26) {
+		if (ffly_carriage_turn(_ff_carr0, 0) == -1) continue;
+		ffly_carriage_done(_ff_carr0, 0);
+		}
+		n = 0;
+		while(n++ != 26) {
+		if (ffly_carriage_turn(_ff_carr0, 1) == -1) continue;
+		ffly_carriage_done(_ff_carr0, 1);
+		}
+		ffly_printf("%d\n", ffly_carriage_turn(_ff_carr0, 2));
+
+		n = 0;
+		while(n++ != 26) {
+		if (ffly_carriage_turn(_ff_carr0, 2) == -1) continue;
+		ffly_carriage_done(_ff_carr0, 2);
+		}
+
+		n = 0;
+		while(n++ != 26) {
+		if (ffly_carriage_turn(_ff_carr0, 3) == -1) continue;
+		ffly_carriage_done(_ff_carr0, 3);
+		}
+		ffly_printf("%d\n", ffly_carriage_turn(_ff_carr0, 2));
+		ffly_carriage_wait(_ff_carr0);
+		ffly_printf("%d\n", ffly_carriage_turn(_ff_carr0, 2));
+		ffly_carriage_reset(_ff_carr0);
+	i++;
+}
 //	ffly_imagep	im;
 
 //	im = ffly_im_creat(100, 100);
 //	ffly_im_save(im, "test.p", _ffly_im_p);	
 
 //	ffly_im_destroy(im);
-
+/*
 	ffly_scheduler_init(SCHED_CORRODE);
 	ffly_reservoir_init(&__ffly_reservoir__, RESV_CORRODE, "test.resv");
 	
@@ -120,7 +159,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_printf("%u, %u\n", (ff_u64_t)ffly_gravity_at(2, 2, 0), (ff_u64_t)ffly_gravity_at(100, 100, 0));
 	ffly_gravity_cleanup();
-	/*
+*/
+/*
 	ff_uint_t const c = 256;
 	ff_uint_t n = 0;
 	void *list[c+1];

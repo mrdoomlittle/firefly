@@ -83,21 +83,21 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_duct_listen();
 
 	struct ffly_camera camera;
-	ffly_camera_init(&camera, 256, 256);
+	ffly_camera_init(&camera, WIDTH, HEIGHT);
 
 	/*
 		clear camera memory
 	*/
-	ffly_mem_set(camera.pixels, 0, 256*256*4);
+	ffly_mem_set(camera.pixels, 0, WIDTH*HEIGHT*4);
 
 	struct ffly_uni uni;
 
 	/*
 		build universe
 	*/
-	ffly_uni_build(&uni, _ffly_uni_256, _ffly_uni_256, 4, 4, _ffly_lotsize_8);
+	ffly_uni_build(&uni, _ffly_uni_1024, _ffly_uni_1024, 4, 4, _ffly_lotsize_8);
 
-	if (_err(ffly_gravity_init(_ffly_uni_256, _ffly_uni_256, 4))) {
+	if (_err(ffly_gravity_init(_ffly_uni_1024, _ffly_uni_1024, 4))) {
 		ffly_printf("gravity error.\n");
 		return;
 	}
@@ -199,7 +199,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	body1->zl = 1;
 
 	obj1->x = 40;
-	obj1->y = 40;
+	obj1->y = 100;
 	obj1->z = 0;
 
 	/*
@@ -256,9 +256,10 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		if (c == '!')
 			goto _end;
 	_sk:
+		ffly_camera_mov(&camera, obj0->x, obj0->y);
 		old_x = obj0->x;
 		old_y = obj0->y;
-		if (obj0->y >= 100) {
+		if (obj0->y >= HEIGHT-8) {
 			ffly_set_direction(obj0->phy_body, _ff_dir_a0);		
 		} else if (!obj0->y)
 			ffly_set_direction(obj0->phy_body, _ff_dir_a2);

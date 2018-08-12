@@ -11,9 +11,8 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../system/flags.h"
-# define BTN_SCHED 0x1
-
-
+# include "../carriage.h"
+# define BTN_SCHED 0x01
 
 void
 ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
@@ -29,11 +28,24 @@ ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
 	__btn->height = __height;
 	__btn->pt_x = NULL;
 	__btn->pt_y = NULL;
-	__btn->enabled = 0;
 	__btn->arg_p = NULL;
 	__btn->press = NULL;
 	__btn->hover = NULL;
-	__btn->flags = 0x0;
+	__btn->flags = 0x00;
+	__btn->release = NULL;
+	__btn->pt_state = NULL;
+	__btn->c = ffly_carriage_add(_ff_carr0);
+	ffly_carriage_dud(_ff_carr0);	
+}
+
+void ffly_gui_btn_enable(ffly_gui_btnp __btn) {
+	ffly_carriage_udud(_ff_carr0);
+	__btn->flags |= FFLY_GUI_BT_ENABLED;
+}
+
+void ffly_gui_btn_disable(ffly_gui_btnp __btn) {
+	__btn->flags ^= FFLY_GUI_BT_ENABLED;
+	ffly_carriage_dud(_ff_carr0);
 }
 
 ff_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn, ffly_palletp __pallet, ff_u16_t __width, ff_u16_t __height) {
@@ -53,6 +65,7 @@ ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t *__texture, ff_u16_t __width,
 
 	btn = (ffly_gui_btnp)__ffly_mem_alloc(sizeof(struct ffly_gui_btn));
 	ffly_gui_btn_init(btn, __texture, __width, __height, __x, __y);
+	return btn;
 }
 
 void ffly_gui_btn_sched(ffly_gui_btnp __btn) {
@@ -70,12 +83,20 @@ void ffly_gui_btn_destroy(ffly_gui_btnp __btn) {
 
 ff_i8_t ffly_gui_btn_handle(void *__arg_p) {
 	ffly_gui_btnp btn = (ffly_gui_btnp)__arg_p;
-	if (btn->enabled == -1) return FFLY_SUCCESS;
+	if (!(btn->flags&FFLY_GUI_BT_ENABLED))
+		return -1;
 	ff_i16_t pt_x, pt_y;
 
+	if (ffly_carriage_turn(_ff_carr0, btn->c) == -1)
+		return -1;
+
+	if (ffly_carriage_ready(_ff_carr0) == -1)
+		return -1;
+	
 	pt_x = *btn->pt_x;
 	pt_y = *btn->pt_y;	
 
+	ffly_carriage_done(_ff_carr0, btn->c);
 	/*
 		if press or hover ... is detected pass the call 
 		to task_pool to keep the sched from clogging up.

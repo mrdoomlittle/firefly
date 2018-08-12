@@ -4,10 +4,13 @@
 # include "../types.h"
 # include "../uni.h"
 # include "../types/pixelmap_t.h"
-# define ffly_set_camerax(__camera, __x) \
-    __camera.x = __x;
-# define ffly_set_cameray(__camera, __y) \
-    __camera.y = __y;
+# define ffly_camera_setx(__cam, __x) \
+    (__cam).x = __x
+# define ffly_camera_sety(__cam, __y) \
+    (__cam).y = __y
+# define ffly_camera_mov(__cam, __x, __y) \
+	(__cam)->x = __x; \
+	(__cam)->y = __y
 struct ffly_camera {
     ff_uint_t width, height;
     ffly_pixelmap_t pixels;
