@@ -174,4 +174,6 @@ did not realy care about it but needed changing
 -. parsing nodes in some places should use a vec and not linked lists not system/vec but its own 
 -. compiler type sizes should not include a 'size' var but to get the size function should be called
 and size will be retrieved from array by id
--. maps needs to be tested i havent done that so i dont know how good or bad they are 
+-. maps needs to be tested i havent done that so i dont know how good or bad they are
+-. coding style/fix hexd - 0x01 not 0x1 etc
+-. find another word to use other then 'end' for some things
