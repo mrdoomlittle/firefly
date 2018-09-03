@@ -23,6 +23,8 @@ crypto: clean
 	gcc -Wall -o main crypto.c $(ffly_objs)
 hatch: clean
 	gcc $(cc_flags) -Wall -o hatch hatch.c $(ffly_objs) -nostdlib
+typo: clean
+	 gcc $(cc_flags) -Wall $(ffly_objs) -nostdlib
 terminal: clean
 	gcc $(cc_flags) -Wall -o terminal terminal.c $(ffly_objs) -nostdlib
 mat: clean

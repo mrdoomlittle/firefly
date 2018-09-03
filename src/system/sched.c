@@ -174,11 +174,12 @@ void ffly_sched_clock_tick(ff_u32_t __delta) {
 # define is_flag(__flags, __flag) \
 	((__flags&__flag)==__flag)
 
-# define STOP 0x1
-# define INIT 0x2
-# define OKAY 0x4
-ff_i8_t static flags = 0x0;
+# define STOP 0x01
+# define INIT 0x02
+# define OKAY 0x04
+ff_i8_t static flags = 0x00;
 ff_u64_t static last_time = 0;
+
 void ffly_scheduler_tick(void) {	
 	if (!is_flag(flags, INIT)) {
 		return;
@@ -225,6 +226,7 @@ void ffly_scheduler_init(ff_u8_t __flags) {
 void ffly_scheduler_de_init(void) {
 	ffly_fprintf(ffly_log, "sched de-init.\n");
 	set_flag(STOP);
+	// decomment ??????
 //	while(!is_flag(flags, OKAY));
 	sched_entityp *cur = entities;
 	sched_entityp *end = cur+page_c;

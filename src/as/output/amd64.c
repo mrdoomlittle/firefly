@@ -130,7 +130,7 @@ _post(void) {
 	p+=op->l;
 	*p = 0;
 	if (is_flag(op->flags, modrm))
-		*(mod = p++) = 0x0;
+		*(mod = p++) = 0x00;
 	void **cur = fak_->p;
 
 	ff_u8_t i = 0;
@@ -165,7 +165,10 @@ _post(void) {
 				fgrowb(curfrag, sz);
 				ff_as_plant(curfrag, buf, sz);
 			}
-			fix(curfrag, curfrag->offset, la, _fx_jmp, sz, _fx_label);
+			fix(curfrag, la, _fx_dis, 0x00);
+			pf_flags |= FR_FIX;
+			curfrag->bs = 8;
+			ff_as_fdone(curfrag);
 			ff_as_fnew(); // new frag
 		}
 		cur++;
@@ -224,9 +227,16 @@ _suffix(ff_u8_t __c) {
 
 void static
 _fixins(struct fix_s *__fx) {
-	if (__fx->type == _fx_jmp) {
+	if (__fx->type == _fx_dis) {
+		ffly_printf("instruction fix.\n");
+		ff_u8_t buf[8];
+		labelp l = (labelp)__fx->arg;
 
+		ff_u8_t n;
 
+		n = (l->f->adr+l->foffset)-(__fx->adr+__fx->size);
+
+		__fx->f->bs = 
 	}
 }
 

@@ -38,6 +38,7 @@ void front() {
 
 static void(*draw)(void) = front;
 
+# include "m.h"
 # include "types/wd_event_t.h"
 void ffly_workshop_start() {
 	ff_u64_t cc = 0; //cycle count
@@ -63,13 +64,18 @@ void ffly_workshop_start() {
 			ffly_printf("event.\n");
 			ff_event_del(event);
 		}
+
 		// 30 rps
 		ffly_nanosleep(0, 30000000);
 		ffly_grp_unload(&__ffly_grp__);
 
 		if (!ff_duct_serve())
 			break;
-		ffly_printf("%u, memusage: %u\n", cc++, ffly_mem_alloc_bc-ffly_mem_free_bc);
+		ffly_printf("\e[1Jcycle count: %u\n", cc++);
+		struct ffly_meminfo mi;
+		ffly_meminfo(&mi);
+		ffly_dmi(&mi);
+		ffly_fdrain(ffly_out);
 	}
 }
 
@@ -168,6 +174,7 @@ void ffly_workshop_de_init() {
 	ffly_pallet_de_init(&workshop.frame);
 	ffly_tile_cleanup();
 	ffly_scheduler_de_init();
+	ffly_carriage_cleanup();
 }
 
 ff_err_t ffmain(int __argc, char const *__argv[]) {

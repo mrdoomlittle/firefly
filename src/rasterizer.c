@@ -9,7 +9,6 @@
 # include "maths/round.h"
 # include "system/io.h"
 
-
 // need to be worked on but will do for now
 ff_i8_t
 static dim(ff_int_t __x, ff_int_t __y, ffly_vertexp __a, ffly_vertexp __b, ffly_vertexp __c) {
@@ -47,6 +46,7 @@ static dim(ff_int_t __x, ff_int_t __y, ffly_vertexp __a, ffly_vertexp __b, ffly_
 		return 0;
 	return -1;
 }
+
 //# define use_barycentric
 void ffly_rasterize(ffly_modelp __model, ff_byte_t *__dst,
 	ff_uint_t __x, ff_uint_t __y,

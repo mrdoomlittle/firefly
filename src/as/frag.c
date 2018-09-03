@@ -1,20 +1,34 @@
 # include "frag.h"
 # include "as.h"
 # include "../stdio.h"
-static struct frag *head = NULL;
+struct frag *fr_head = NULL;
 struct frag *curfrag = NULL;
 
 # define PAGE_SHIFT 4
 # define PAGE_SIZE (1<<PAGE_SHIFT)
+
+/*
+	fragments from top to bottom
+
+	AUTD:
+		find fragment inbetween jump and label
+*/
+struct frag ***fr_tbl = NULL;
+
+# define FRT_PAGE_SHIFT 4
+# define FRT_PAGE_SIZE (1<<FRT_PAGE_SHIFT)
 /*
 	MIGHTDO:
 		store pointers of frags in array
 */
 
+// fragment number
+ff_uint_t static fr_nr = 0;
+ff_uint_t static frt_page_c = 0;
 struct frag* ff_as_fnew(void) {
 	struct frag *f = (struct frag*)ff_as_al(sizeof(struct frag));	
-	if (!head)
-		head = f;
+	if (!fr_head)
+		fr_head = f;
 	if (curfrag != NULL)
 		curfrag->next = f;
 	curfrag = f;
@@ -24,6 +38,29 @@ struct frag* ff_as_fnew(void) {
 	f->size = 0;
 	f->offset = 0;
 	f->adr = 0;
+	f->bs = 0;
+	f->flags = 0x00;
+
+	struct frag ***page;
+	ff_uint_t pg, pg_off;
+	f->f = fr_nr++;
+	pg = f->f>>PAGE_SHIFT;
+	pg_off = f->f-(pg*PAGE_SIZE);
+
+	if (!fr_tbl) {
+		fr_tbl = (struct frag***)ff_as_al(sizeof(struct frag**));
+		frt_page_c++;
+	} else {
+		if (pg>= frt_page_c) {
+			fr_tbl = (struct frag***)ff_as_ral((++frt_page_c)*sizeof(struct frag**));
+		} else
+			goto _sk;
+	}
+
+	*(frt_tbl+pg) = (struct frag**)ff_as_al(FRT_PAGE_SIZE*sizeof(struct frag*));
+_sk:
+	page = frt_tbl+pg;
+	*((*page)+pg_off) = f;
 	return f;
 }
 
@@ -89,7 +126,8 @@ void ff_as_fgrow(struct frag *__f, ff_u32_t __size) {
 	__f->size = __size;
 	if (__f->page_c*PAGE_SIZE<__size) {
 		printf("new frag pages.\n");
-		ff_u32_t pg_c = ((__size>>PAGE_SHIFT)+((__size-((__size>>PAGE_SHIFT)*PAGE_SIZE))>0));
+		ff_u32_t pg_c;		
+		pg_c = ((__size+(0xffffffffffffffff>>(64-PAGE_SHIFT)))>>PAGE_SHIFT);;
 		if (!__f->p) {
 			__f->p = (void**)ff_as_al(pg_c*sizeof(void*));
 		} else
@@ -104,19 +142,37 @@ void ff_as_fgrow(struct frag *__f, ff_u32_t __size) {
 	}
 }
 
+static ff_u32_t fr_adr = 0;
+
+// we are done with this fragment and are moving onto a new one
+void ff_as_fdone(struct frag *__f) {
+	__f->adr = fr_adr;
+	fr_adr+=__f->size+__f->bs;
+	adr = fr_adr;
+}
+
+struct frag *ff_as_fbn(ff_uint_t __n) {
+	ff_uint_t pg, pg_off;
+
+	pg = __n>>FRT_PAGE_SHIFT;
+	pg_off = __n-(pg*FRT_PAGE_SIZE);
+	return *((*(frt_tbl+pg))+pg_off);
+}
+
 # include "../hexdump.h"
 # include "../chrdump.h"
 
+extern void(*ff_as_fixins)(struct fix_s*);
 void ff_as_foutput(void) {
-	struct frag *f = head;
+	struct frag *f = fr_head;
 	ff_u32_t page, pg_c;
 	void *p;
 	ff_u16_t left;
-	adr = 0;
 	lseek(out, offset, SEEK_SET);
 	while(f != NULL) {
 		printf("outputing frag, size: %u\n", f->size);
 		f->dst = offset;
+
 		page = 0;
 		pg_c = f->size>>PAGE_SHIFT;
 		while(page != pg_c) {
@@ -142,8 +198,6 @@ void ff_as_foutput(void) {
 		}
 
 		offset+=f->size;
-		f->adr = adr;
-		adr+=f->size;
 		f = f->next;
 	}
 }

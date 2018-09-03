@@ -103,7 +103,14 @@ void* th(void *__arg) {
 # include "gravity.h"
 # include "uni.h"
 # include "carriage.h"
+# include "tools.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	ff_u64_t b;
+
+	b = 21299;
+	ffly_prbin(&b, 64);
+	
+/*
 	ff_uint_t i, n;
 
 	i = 0;
@@ -142,6 +149,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		ffly_carriage_reset(_ff_carr0);
 	i++;
 }
+*/
 //	ffly_imagep	im;
 
 //	im = ffly_im_creat(100, 100);

@@ -6,6 +6,7 @@ int extern in;
 # include "../resin.h"
 # include "../ffint.h"
 # include "frag.h"
+# include "fix_struc.h"
 # define fakget(__off) \
 	(*((fak_)->p+__off))
 //# define inssize struct(ins)
@@ -61,22 +62,8 @@ typedef struct region* regionp;
 # define _o_dis32 0x800
 # define _o_dis64 0x1000
 
-# define _fx_label 0x1
-# define _fx_ll 0x2
 enum {
-	_fx_jmp
-};
-
-struct label;
-struct fix_s {
-	struct fix_s *next;
-	void *arg;
-	ff_u32_t offset;
-
-	ff_u8_t type;
-	ff_u8_t start;
-	ff_u8_t flags;
-	struct frag *f;
+	_fx_dis
 };
 
 struct point {
@@ -212,7 +199,7 @@ ff_u64_t(*ff_as_stt_drop)(void);
 labelp extern ff_as_entry;
 // alloca.c
 // cleanup
-void fix(struct frag*, ff_u32_t, void*, ff_u8_t, ff_u8_t, ff_u8_t);
+void fix(struct frag*, void*, ff_u8_t, ff_u8_t);
 void ff_as_al_cu();
 // allocate
 void *ff_as_al(ff_uint_t);

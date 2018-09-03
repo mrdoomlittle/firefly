@@ -213,6 +213,8 @@ fini() {
 		char buf[512];
 		char *p = buf;
 		p+=ffly_str_cpy(p, "memory leakage, ");
+
+		// replace nots????
 		p+=ffly_nots(leak, p);
 		p+=ffly_str_cpy(p, "-bytes.");
 		*p = '\n';
@@ -230,6 +232,7 @@ void _ffstart(void) {
 	int long argc;
 	char const **argv;
 	char const **envp;
+	// add prefix to instructions
 	__asm__("mov 8(%%rbp), %0\t\n"
 			"mov %%rbp, %%rdi\n\t"
 			"add $16, %%rdi\n\t"
@@ -362,7 +365,7 @@ _end:
 
 	/*
 		function has no return address
-		so if exit fails stay here to prevent error occurring
+		so if exit fails stay here to prevent fatal error occurring
 	*/
 	while(1);
 }

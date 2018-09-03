@@ -199,7 +199,6 @@ ff_bool_t ffly_thread_dead(ff_tid_t __t) {
 	return !get_thr(h)->alive;
 }
 
-# include "../tools/printbin.c"
 void static
 prox(void) {
 	void *arg_p;

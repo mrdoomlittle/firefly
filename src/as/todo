@@ -1,0 +1,13 @@
+remove _o_label
+
+for multiple fixes say
+call $test0
+call $test1
+
+we should keep track of prev fixes to keep them within the same fragment as we dont want 
+a large amount of small fragments because it would be a wast of memory
+
+local labels:
+	.l 0
+	.l 1
+store local labels in array 0-... and not in hash table

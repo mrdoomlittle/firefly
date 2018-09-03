@@ -15,5 +15,6 @@ struct ff_as_op const *amd64_optab[] = {
 	op_{"push", 4, {0x50}, 1, noprefix, 0, ot(_o_reg16|_o_reg32|_o_reg64, 0, 0, 0), 1},
 	op_{"push", 4, {0x68}, 1, noprefix, 0, ot(_o_imm16|_o_imm32|_o_imm64, 0, 0, 0), 1},
 	op_{"syscall", 7, {0x0f, 0x05}, 2, 0, 0, 0},
+	op_{"call", 4, {0xe8}, 1, 0, 0, ot(_o_label, 0, 0, 0), 1},
 	NULL
 };

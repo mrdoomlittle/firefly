@@ -41,7 +41,7 @@ char const **extrn;
 
 struct flask *fak_;
 
-
+struct fix_s *fx = NULL;
 segmentp curseg = NULL;
 regionp curreg = NULL;
 relocatep rel = NULL;
@@ -60,15 +60,11 @@ ff_u32_t adr;
 ff_u8_t of = _of_null;
 
 # define OBSIZE 60
-struct fix_s *fx = NULL;
-
-void fix(struct frag *__f, ff_u32_t __offset, void *__arg, ff_u8_t __type, ff_u8_t __start, ff_u8_t __flags) {
+void fix(struct frag *__f, void *__arg, ff_u8_t __type, ff_u8_t __flags) {
 	struct fix_s *s = (struct fix_s*)ff_as_al(sizeof(struct fix_s));
-	s->offset = __offset;
 	s->f = __f;
 	s->arg = __arg;
 	s->type = __type;
-	s->start = __start;
 	s->flags = __flags;
 	s->next = fx;
 	fx = s;
@@ -378,7 +374,7 @@ ff_as(char *__p, char *__end) {
 								_local = -1;
 								if (!__label)
 									ff_as_hash_put(&env, cur->p, cur->len, __label = ff_as_al(sizeof(struct label)));
-								((labelp)__label)->flags = 0x0;
+								((labelp)__label)->flags = 0x00;
 							}
 
 							info = _o_label;
@@ -408,15 +404,26 @@ void static drain();
 
 labelp ff_as_entry;
 void ff_as_final(void) {
-	struct fix_s *cur = fx;
-	while(cur != NULL) {
-		ff_as_fixins(cur);
-		cur = cur->next;
+	ff_as_fdone(curfrag);
+	if (outbuf.off>0) {
+		drain();
 	}
 
-	 if (outbuf.off>0) {
-		drain();
-	 }
+	struct fix_s *fx;
+
+	fx = f->fx;
+	while(fx != NULL) { 
+		ff_as_fixins(fx);
+		fx = fx->next;
+	}
+
+	struct frag *f;
+	f = fr_head;
+	while(f != NULL) {
+		f->adr+=f->bs-8;
+		fgrowb(f, f->bs);
+		f = f->next;
+	}
 
 	ff_as_foutput();
 	if (of == _of_raw)

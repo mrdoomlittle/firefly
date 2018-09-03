@@ -15,7 +15,7 @@ struct carriage {
 	ff_u16_t dud;
 };
 
-
+# define N 1
 # define BUSY 0x01
 static struct carriage cr[] = {
 	{0, 0, 0x02, 0, 0, NULL, 0}
@@ -134,4 +134,15 @@ void ffly_carriage_reset(ff_uint_t __c) {
 	c->i = 0;
 	c->bits = 0x02;
 	c->done = 0;
+}
+
+void ffly_carriage_cleanup(void) {
+	struct carriage *c, *end;
+	c = cr;
+	end = c+N;
+	while(c != end) {
+		if (c->ib != NULL)
+			__ffly_mem_free(c->ib);
+		c++;
+	}
 }

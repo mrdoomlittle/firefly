@@ -15,4 +15,5 @@ void ffly_carriage_wait(ff_uint_t);
 void ffly_carriage_reset(ff_uint_t);
 void ffly_carriage_dud(ff_uint_t);
 void ffly_carriage_udud(ff_uint_t);
+void ffly_carriage_cleanup(void);
 # endif /*__ffly__carriage__h*/

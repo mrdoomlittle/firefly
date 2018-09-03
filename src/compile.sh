@@ -156,6 +156,13 @@ $ffly_cc $cc_flags -c -o $dst_dir/hs.o $root_dir/hs.c
 $ffly_cc $cc_flags -c -o $dst_dir/storage/cistern.o $root_dir/storage/cistern.c
 $ffly_cc $cc_flags -c -o $dst_dir/texture.o $root_dir/texture.c
 $ffly_cc $cc_flags -c -o $dst_dir/carriage.o $root_dir/carriage.c
+$ffly_cc $cc_flags -c -o $dst_dir/tools.o $root_dir/tools.c
+$ffly_cc $cc_flags -c -o $dst_dir/typo.o $root_dir/typo.c
+$ffly_cc $cc_flags -c -o $dst_dir/typo/raster.o $root_dir/typo/raster.c
+$ffly_cc $cc_flags -c -o $dst_dir/typo/raise.o $root_dir/typo/raise.c
+$ffly_cc $cc_flags -c -o $dst_dir/typo/memalloc.o $root_dir/typo/memalloc.c
+$ffly_cc $cc_flags -c -o $dst_dir/drivers/typo/mcd/driver.o $root_dir/drivers/typo/mcd/driver.c
+$ffly_cc $cc_flags -c -o $dst_dir/drivers/typo/mcd/load.o $root_dir/drivers/typo/mcd/load.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -182,4 +189,6 @@ $dst_dir/brick.o $dst_dir/br.o $dst_dir/chrdump.o $dst_dir/rasterizer.o
 $dst_dir/model.o $dst_dir/start.o $dst_dir/p.o $dst_dir/panel.o $dst_dir/m.o \
 $dst_dir/hs/vec.o $dst_dir/hs/hash.o $dst_dir/hs/lexer.o $dst_dir/hs/memalloc.o
 $dst_dir/hs/parser.o $dst_dir/hs/exec.o $dst_dir/hs/gen.o $dst_dir/hs/mm.o $dst_dir/hs.o \
-$dst_dir/storage/cistern.o $dst_dir/texture.o $dst_dir/carriage.o"
+$dst_dir/storage/cistern.o $dst_dir/texture.o $dst_dir/carriage.o $dst_dir/tools.o \
+$dst_dir/typo.o $dst_dir/typo/raster.o $dst_dir/typo/raise.o $dst_dir/drivers/typo/mcd/driver.o
+$dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o"
