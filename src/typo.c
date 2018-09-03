@@ -59,7 +59,7 @@ void ffly_typo_face(ffly_typo_sheetp __sheet, char const *__path, struct typo_fa
 void ffly_typo_char_load(ffly_typo_sheetp __sheet, struct typo_face *__face, char __c) {
 	driver.load_glyph(__c);
 	// build it
-	ffly_typo_raise(__face->glyph);
+	ffly_typo_raise(__face->glyph->film);
 }
 
 void ffly_typo_face_scale(ffly_typo_sheetp __sheet, struct typo_face *__face, ff_u8_t __scale) {
@@ -89,7 +89,10 @@ void static dbm(void) {
 	while(y != typo_raster_height) {
 		x = 0;
 		while(x != typo_raster_width) {
-			ffly_printf("%c", !typo_raster_bm[x+(y*typo_raster_width)]?' ':'#');
+			if (!x || !y || x == typo_raster_width-1 || y == typo_raster_height-1) {
+				ffly_printf("+");
+			} else
+				ffly_printf("%c", !typo_raster_bm[x+(y*typo_raster_width)]?' ':'#');
 			x++;
 		}
 		ffly_printf("\n");

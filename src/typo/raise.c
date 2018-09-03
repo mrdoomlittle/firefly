@@ -32,22 +32,29 @@ ff_uint_t static os[] = {
 void ffly_traise_prime(void) {
 	ffly_typo_raster(op);
 }
+# define EDGE 2
 
 /*
 	non driver control
 */
-void ffly_typo_raise(struct typo_glyph *__glyph) {
+void ffly_typo_raise(struct typo_film *__film) {
 	ff_u8_t *end;
+	ff_u8_t *rest;
 
-	raise_p = (ff_u8_t*)__glyph->code;
-	end = raise_p+__glyph->len;
+	rest = raise_p;
+	raise_p = (ff_u8_t*)__film->area;
+	end = raise_p+__film->len;
+	ffly_printf("film size: %u\n", __film->len);
 	ff_u8_t on;
 	ff_uint_t i;
+
+	if (!__film->len)
+		goto _end;
 	i = 0;
 _again:
 	ffly_printf("operation : %u\n", i++);
 	on = *(raise_p++);
-	if (on >0) {
+	if (on>=EDGE) {
 		ffly_printf("operation number illegal, got: %u\n", on);
 		return;
 	}
@@ -56,4 +63,6 @@ _again:
 	raise_p+=os[on];
 	if (raise_p != end)
 		goto _again;
+_end:
+	raise_p = rest;
 }

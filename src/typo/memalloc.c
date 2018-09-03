@@ -51,7 +51,9 @@ void* ffly_trealloc(void *__p, ff_uint_t __size) {
 
 	h = (hdrp)p;
 	delink(h);
-	h = (hdrp)__ffly_mem_realloc(h, __size+hdrsize);
+	p = (ff_u8_t*)__ffly_mem_realloc(h, __size+hdrsize);
+
+	h = (hdrp)p;
 	link(h);
 
 	return (h->p = (void*)(p+hdrsize));

@@ -19,22 +19,12 @@ struct header {
 	ff_uint_t width, height;
 };
 
-struct line {
-	struct typo_point p0, p1;	
-};
-
-# define N 1
-struct line lines[] = {
-/*
-	{{3, 0}, {1, 3}},
-	{{3, 0}, {4, 3}},
-	{{1, 3}, {0, 5}},
-	{{4, 3}, {5, 5}},
-	{{1, 3}, {4, 3}},
-*/
-//	{{5, 17}, {12, 17}},
-//	{{17, 0}, {12, 17}},
-//	{{17, 0}, {5, 17}}
+# define N 4
+struct typo_point points[] = {
+	{0, 0},
+	{32, 32},
+	{24, 6},
+	{0, 0}
 };
 
 int main() {
@@ -46,32 +36,37 @@ int main() {
 	struct header hdr;
 	hdr.glyph_table = sizeof(struct header);
 	hdr.glyph_c = 1;
-	hdr.width = 6;
-	hdr.height = 6;
+	hdr.width = 32;
+	hdr.height = 32;
 
 	struct glyph g;
 	g.idx = 0;
 	g.code = sizeof(struct header)+sizeof(struct glyph);
-	g.len = N*((2*sizeof(struct typo_point))+1);
+	g.len = (N*(sizeof(struct typo_point)+2))+2+2;
+	printf("film size: %u\n", g.len);
 	write(fd, &hdr, sizeof(struct header));
 	write(fd, &g, sizeof(struct glyph));
 	ff_uint_t i;
+	ff_u8_t op;
+	op = 1;
+	write(fd, &op, 1);
+	op = 1;
+	write(fd, &op, 1);
 
 	i = 0;
 	while(i != N) {
-	ff_u8_t op;
-	op = 0;
-	write(fd, &op, 1);
+		op = 1;
+		write(fd, &op, 1);
+		op = 0;
+		write(fd, &op, 1);
 
-	struct typo_point p;
-	p.x = lines[i].p0.x;
-	p.y = lines[i].p0.y;
-	write(fd, &p, sizeof(struct typo_point));
-
-	p.x = lines[i].p1.x;
-	p.y = lines[i].p1.y;
-	write(fd, &p, sizeof(struct typo_point));
-	i++;
+		write(fd, points+i, sizeof(struct typo_point));
+		i++;
 	}
+
+	op = 1;
+	write(fd, &op, 1);
+	op = 2;
+	write(fd, &op, 1);
 	close (fd);
 }

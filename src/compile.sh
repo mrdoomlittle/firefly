@@ -161,6 +161,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/typo.o $root_dir/typo.c
 $ffly_cc $cc_flags -c -o $dst_dir/typo/raster.o $root_dir/typo/raster.c
 $ffly_cc $cc_flags -c -o $dst_dir/typo/raise.o $root_dir/typo/raise.c
 $ffly_cc $cc_flags -c -o $dst_dir/typo/memalloc.o $root_dir/typo/memalloc.c
+$ffly_cc $cc_flags -c -o $dst_dir/typo/film.o $root_dir/typo/film.c
 $ffly_cc $cc_flags -c -o $dst_dir/drivers/typo/mcd/driver.o $root_dir/drivers/typo/mcd/driver.c
 $ffly_cc $cc_flags -c -o $dst_dir/drivers/typo/mcd/load.o $root_dir/drivers/typo/mcd/load.c
 else
@@ -191,4 +192,4 @@ $dst_dir/hs/vec.o $dst_dir/hs/hash.o $dst_dir/hs/lexer.o $dst_dir/hs/memalloc.o
 $dst_dir/hs/parser.o $dst_dir/hs/exec.o $dst_dir/hs/gen.o $dst_dir/hs/mm.o $dst_dir/hs.o \
 $dst_dir/storage/cistern.o $dst_dir/texture.o $dst_dir/carriage.o $dst_dir/tools.o \
 $dst_dir/typo.o $dst_dir/typo/raster.o $dst_dir/typo/raise.o $dst_dir/drivers/typo/mcd/driver.o
-$dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o"
+$dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o $dst_dir/typo/film.o"

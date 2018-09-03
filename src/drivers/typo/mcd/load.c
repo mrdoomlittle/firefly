@@ -4,6 +4,7 @@
 # include "../../../typo.h"
 # include "../../../system/io.h"
 # include "../../../hexdump.h"
+# include "../../../typo/film.h"
 extern struct typo_face *mcd_face;
 
 struct glyph {
@@ -56,9 +57,13 @@ mcd_load(struct ffly_typo_sheet *__sheet, struct typo_face *__face) {
 
 		gg = ffly_typo_glyph_new(g->idx);
 
-		gg->code = code;
-		gg->len = g->len;
+		struct typo_film *film;
+
+		film = typo_film_new();
+		typo_film_insert(film, code, g->len);
 		ffly_hexdump(code, g->len);
+		ffly_tfree(code);
+		gg->film = film;
 	}
 	ffly_tfree(table);
 }
