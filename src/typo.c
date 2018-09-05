@@ -99,7 +99,7 @@ void static dbm(void) {
 		y++;
 	}
 }
-# define DEBUG
+//# define DEBUG
 # ifdef DEBUG
 
 # include "system/string.h"

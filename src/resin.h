@@ -4,33 +4,56 @@
 # include "ffint.h"
 # include "get_bit.h"
 # include "ffly_def.h"
+
+/*
+	TODO:
+		add op to run rosin code
+
+		why? to add function to it resin is more bone and more flex
+		but rosin is for running internal engine function like alloc free from allocr or
+		graphics functions etc.  
+
+		the only things that resin and rosin should share is minimal operations like 'assign', 'out' for debug
+		operations like mov, and, or, div, etc would only be within resin so basically work them together and
+		it makes things abit more interesting.
+
+		also add way for rosin and resin to access the stack of each other to allow for flow
+		between them
+
+		NOTE:
+			resin will run rosin code
+			or rosin will execute resin code
+
+			but only if needed as to many calls
+			will slow thigs down if doing so in small parts
+*/
 /*
 	_op_asb
 	_op_asw
 	...
 */
 
-# define _op_exit 0x0
+# define _op_exit 0x00
 // assign
-# define _op_asb 0x1
-# define _op_asw 0x2
-# define _op_asd 0x3
-# define _op_asq 0x4
+# define _op_asb 0x01
+# define _op_asw 0x02
+# define _op_asd 0x03
+# define _op_asq 0x04
 
-# define _op_jmp 0x5
+# define _op_jmp 0x05
 // store
-# define _op_stb 0x6
-# define _op_stw 0x7
-# define _op_std 0x8
-# define _op_stq 0x9
+# define _op_stb 0x06
+# define _op_stw 0x07
+# define _op_std 0x08
+# define _op_stq 0x09
 // load
-# define _op_ldb 0xa
-# define _op_ldw 0xb
-# define _op_ldd 0xc
-# define _op_ldq 0xd
+# define _op_ldb 0x0a
+# define _op_ldw 0x0b
+# define _op_ldd 0x0c
+# define _op_ldq 0x0d
 // out
-# define _op_outb 0xe
-# define _op_outw 0xf
+# define _op_outb 0x0e
+# define _op_outw 0x0f
 # define _op_outd 0x10
 # define _op_outq 0x11
 // move
@@ -243,33 +266,60 @@
 # define _op_exit2r0 0xb8
 # define _op_exit2r1 0xb9
 
-# define _gt 0x1
-# define _lt 0x2
-# define _eq 0x4
+# define _gt 0x01
+# define _lt 0x02
+# define _eq 0x04
 
 // resin byte code interp
 
+/*
+	TODO:
+		no use of ff_off_t, ff_addr_t, etc
+		use own.
+		also remove getbit mabey? can it be used for somthing else ???
+*/
 typedef struct ffly_resin {
 	struct ffly_getbit bit;
 	ff_uint_t stack_size;
 	ff_u8_t *stack;
 	ff_u64_t bp, sp;
+	/*
+		registers pointers
+
+		or rp0, rp1, rp2, rp3
+
+		pointers to registers r0, r1, ...
+	*/
 	ff_u64_t *r[4];
+	/*
+		condition flags, {cmp, and ...}
+	*/
 	ff_u8_t cflags;
-	// registers
+
+	// register data
 	ff_u64_t r0, r1, r2, r3;
 	ff_u8_t(*fetch_byte)(ff_off_t);
 	void(*ip_incr)(ff_uint_t);
-	ff_addr_t(*get_ip)();
+	ff_addr_t(*get_ip)(void);
 	void(*set_ip)(ff_addr_t);
 	ff_off_t ip_off;
 	void*(*rin)(ff_u8_t, void*);
 	ff_addr_t rtbuf[22];//return buffer
 	ff_addr_t *retto;
 } *ffly_resinp;
-
+/*
+	operation size
+	TODO:
+		rename??? to operation magnitude or weight?? or just opcs for operation code size
+	used by:
+		resin dismantler - rdm
+*/
 ff_u8_t ff_resin_ops(ff_u8_t);
 void* ff_resin_resolv_adr(ffly_resinp, ff_addr_t);
+/*
+	TODO:
+		i think names are switched to lazy to check
+*/
 void ff_resin_sst(ffly_resinp, void*, ff_addr_t, ff_uint_t);
 void ff_resin_sld(ffly_resinp, ff_addr_t, void*, ff_uint_t);
 

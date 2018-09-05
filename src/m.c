@@ -12,6 +12,10 @@ ff_u64_t ffly_mem_usage(void) {
 # endif	
 }
 
+void ffly_dmu(void) {
+	ffly_printf("memory usage: %u-bytes.\n", ffly_mem_usage());
+}
+
 void ffly_meminfo(struct ffly_meminfo *__info) {
 # ifdef __ffly_debug
 	__info->used = ffly_mem_alloc_bc-ffly_mem_free_bc;

@@ -7,6 +7,14 @@
 # include "memory/mem_free.h"
 # define is_flag(__flags, __flag) \
 	((__flags&__flag)==__flag)
+/*
+	make stack put and get better somehow
+	also more error detection
+
+	TODO: COULDDO
+		add lock memory - a range from X to X within stack where memory can be locked
+		and can only be unlocked by an external source
+*/
 ff_err_t static
 stack_put(ffly_resinp __resin, ff_u8_t *__src, ff_uint_t __bc, ff_addr_t __addr) {
 	ff_u8_t *p = __src;
@@ -93,10 +101,10 @@ ff_err_t ff_resin_init(ffly_resinp __resin) {
 	__resin->retto = __resin->rtbuf;
 
 	ff_u64_t **r = __resin->r;
-	*(r++) = &__resin->r0;
-	*(r++) = &__resin->r1;
-	*(r++) = &__resin->r2;
-	*(r++) = &__resin->r3;
+	*r = &__resin->r0;
+	*(r+1) = &__resin->r1;
+	*(r+2) = &__resin->r2;
+	*(r+3) = &__resin->r3;
 	return FFLY_SUCCESS;
 }
 
@@ -115,7 +123,10 @@ get(ffly_resinp __resin, ff_u8_t *__dst, ff_u8_t __n, ff_err_t *__err) {
 }
 
 /*
-
+	TODO:
+		prestore instruction ^
+		so we dont need to read byte per byte thru instruction
+		also could do this a few steps ahead
 */
 ff_u8_t static ops[] = {
 	sizeof(ff_addr_t),		// exit
@@ -654,7 +665,10 @@ static void(*op[])() = {
 	also registers might cause issues with all the jmps 
 	i dont know how gcc would react so could break.
 	
-	so using push and pop if using registers
+	using registers r8, r9, ... im hoping that gcc does not
+	use them, it seems to be okay for now...
+	its so we dont need to use push and pop to make sure the contents
+	of the register stay the same and wont cause issues
 */
 
 /*
@@ -664,6 +678,9 @@ static void(*op[])() = {
 
 	if we did it diffrently it would be slower and speed
 	is the most important thing for this.
+
+	TODO:
+		error detection
 */
 
 // for debug
@@ -672,14 +689,14 @@ static void(*op[])() = {
 	get_16l(__resin, __err)
 
 # define fi __asm__("jmp _res_fi"); // finished
-# define next __asm__("jmp _next")
+# define next __asm__("jmp _res_next")
 # define end __asm__("jmp _res_end")
 # define jmpto(__p) __asm__("jmp *%0" : : "r"(__p))
 # define errjmp if (_err(err)) jmpend
 # include "system/io.h"
 # include "system/nanosleep.h"
-__asm__("\t.globl _res_fi");
-__asm__("\t.globl _res_end");
+__asm__("\t.globl _res_fi\n"
+		"\t.globl _res_end");
 /*
 	register pointers
 */
@@ -693,7 +710,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	ff_err_t code;
 
 	// not used directly
-	// get put in res_r0 or res_r1
+	// gets put in res_r0 or res_r1
 	ff_u64_t *r0 = &__resin->r0;
 	ff_u64_t *r1 = &__resin->r1;
 	ff_u64_t *r2 = &__resin->r2;
@@ -704,11 +721,11 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	res_stack = __resin->stack;
 	res_bp = bp;
 	res_sp = sp;
-	*sp = 100;
+	*sp = 100;//ignore only for testing
 
 	ff_u64_t *r;
 
-	__asm__("_next:\n\t");
+	__asm__("_res_next:\n\t");
 	__resin->ip_off = 0;
 	if ((opno = get_8l(__resin, &err)) > MAX) {
 		ffly_printf("opno invalid, got: %u\n", opno);

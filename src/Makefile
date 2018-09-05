@@ -98,6 +98,8 @@ uni: clean
 	gcc $(cc_flags) main.c $(ffly_objs) -nostdlib
 panel: clean
 	gcc $(cc_flags) $(ffly_objs) -nostdlib
+ros: clean
+	gcc $(cc_flags) $(ffly_objs) -nostdlib
 bh: clean
 	gcc $(cc_flags) -c bh.c
 	gcc $(cc_flags) -c bh/input.c

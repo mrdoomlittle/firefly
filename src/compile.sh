@@ -143,7 +143,8 @@ as -c -o $dst_dir/start.o $root_dir/start.s
 $ffly_cc $cc_flags -c -o $dst_dir/p.o $root_dir/p.c
 $ffly_cc $cc_flags -c -o $dst_dir/panel.o $root_dir/panel.c
 $ffly_cc $cc_flags -c -o $dst_dir/m.o $root_dir/m.c
-
+$ffly_cc $cc_flags -c -o $dst_dir/rosin.o $root_dir/rosin.c
+$ffly_cc $cc_flags -c -o $dst_dir/rosin/exec.o $root_dir/rosin/exec.c
 $ffly_cc $cc_flags -c -o $dst_dir/hs/vec.o $root_dir/hs/vec.c
 $ffly_cc $cc_flags -c -o $dst_dir/hs/hash.o $root_dir/hs/hash.c
 $ffly_cc $cc_flags -c -o $dst_dir/hs/lexer.o $root_dir/hs/lexer.c
@@ -193,4 +194,4 @@ $dst_dir/hs/vec.o $dst_dir/hs/hash.o $dst_dir/hs/lexer.o $dst_dir/hs/memalloc.o
 $dst_dir/hs/parser.o $dst_dir/hs/exec.o $dst_dir/hs/gen.o $dst_dir/hs/mm.o $dst_dir/hs.o \
 $dst_dir/storage/cistern.o $dst_dir/texture.o $dst_dir/carriage.o $dst_dir/tools.o \
 $dst_dir/typo.o $dst_dir/typo/raster.o $dst_dir/typo/raise.o $dst_dir/drivers/typo/mcd/driver.o
-$dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o $dst_dir/tape.o $dst_dir/resin/tape.o"
+$dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o $dst_dir/tape.o $dst_dir/resin/tape.o $dst_dir/rosin.o $dst_dir/rosin/exec.o"

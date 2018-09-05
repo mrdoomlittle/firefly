@@ -312,7 +312,7 @@ static void(*out[])(ff_u8_t*, char const*) = {
 		__get() by chunks
 */
 // used by rdm with file
-void ffly_rdm(void(*__get)(ff_uint_t, ff_uint_t, ff_uint_t, void*), ff_u32_t __offset, ff_u32_t __end) {
+void ffly_rdm(void(*__get)(ff_uint_t, ff_uint_t, void*), ff_u32_t __offset, ff_u32_t __end) {
 	ff_u8_t buf[64];
 
 	ff_u32_t cur = __offset;
@@ -320,14 +320,14 @@ void ffly_rdm(void(*__get)(ff_uint_t, ff_uint_t, ff_uint_t, void*), ff_u32_t __o
 	ff_uint_t i = 0;
 	while(cur-__offset < __end) {
 		ff_u8_t op;
-		__get(cur, 0, 1, &op);	
+		__get(cur, 1, &op);	
 		if (op > MAX) {
 			ffly_printf("error malformed opno, got{%u}\n", op);
 			break;
 		}
 		cur++;
 
-		__get(cur, 0, s = ff_resin_ops(op), buf);
+		__get(cur, s = ff_resin_ops(op), buf);
 		ffly_printf("%u-%u:(%x)\t\t", i++, cur-__offset, op);
 		out[op](buf, ident[op]);
 		cur+=s;
@@ -356,8 +356,8 @@ void ffly_rdmp(ff_u8_t *__p, ff_u32_t __end) {
 # include "linux/stat.h"
 int static fd;
 void static
-get(ff_uint_t __from, ff_uint_t __offset, ff_uint_t __size, void *__buf) {
-	pread(fd, (ff_u8_t*)__buf+__offset, __size, __from);
+get(ff_uint_t __from, ff_uint_t __size, void *__buf) {
+	pread(fd, __buf, __size, __from);
 }
 
 void ffly_rdmf(char const *__file, ff_u32_t __offset, ff_uint_t __size) {

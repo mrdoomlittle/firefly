@@ -13,8 +13,8 @@
 
 ff_u8_t static *bin;
 void static
-get(ff_uint_t __from, ff_uint_t __offset, ff_uint_t __size, void *__buf) {
-	memcpy((ff_u8_t*)__buf+__offset, bin+__from, __size);
+get(ff_uint_t __from, ff_uint_t __size, void *__buf) {
+	memcpy(__buf, bin+__from, __size);
 }
 
 ff_err_t ffmain(int __argc, char const *__argv[]) {

@@ -49,7 +49,7 @@ struct arg_s {
 
 # include "../dep/mem_cpy.h"
 # include "../init.h"
-struct ffly_resin ctx;
+static struct ffly_resin ctx;
 
 // needs cleaning
 void* ring(ff_u8_t __no, void *__arg_p) {
@@ -99,7 +99,7 @@ void* ring(ff_u8_t __no, void *__arg_p) {
 	printf("ring ring hello?, %u, %p\n", __no, __arg_p);
 }
 
-struct ffly_resin ctx = {
+static struct ffly_resin ctx = {
 	.stack_size = 700,
 	.fetch_byte = fetch_byte,
 	.ip_incr = ip_incr,
