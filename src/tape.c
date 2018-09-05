@@ -12,17 +12,22 @@
 	TODO:
 		alloc,re,free should go thru function points if needed
 */
-struct ffly_tape *ffly_tape_new(void) {
-	struct ffly_tape *tape;
+ffly_tapep ffly_tape_new(void) {
+	ffly_tapep tape;
 
-	tape = (struct ffly_tape*)__ffly_mem_alloc(sizeof(struct ffly_tape));
+	tape = (ffly_tapep)__ffly_mem_alloc(sizeof(struct ffly_tape));
 	tape->len = 0;
 	tape->area = NULL;
 	tape->page_c = 0;
 	return tape;
 }
+
+void ffly_tape_get(ffly_tapep __tape, ff_uint_t __where, void *__buf, ff_uint_t __size) {
+	ffly_mem_cpy(__buf, ((ff_u8_t*)__tape->area)+__where, __size);
+}
+
 // rename
-void ffly_tape_raze(struct ffly_tape *__tape) {
+void ffly_tape_raze(ffly_tapep __tape) {
 	void *area;
 
 	area = __tape->area;

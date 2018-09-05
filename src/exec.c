@@ -3,7 +3,7 @@
 	this is to used for ffscript as well
 */
 
-void ffexec(void(*__get)(ff_uint_t, ff_uint_t, ff_uint_t, void*), ff_u32_t __end, ff_u8_t __format, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
+void ffexec(void(*__get)(ff_uint_t, ff_uint_t, void*), ff_u32_t __end, ff_u8_t __format, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
 	switch(__format) {
 		case _ffexec_bc:
 			ffres_exec(__get, __end, __prep, __hdr, __entry);
@@ -64,12 +64,14 @@ prep(void *__hdr, void *__ctx) {
 
 static int prog;
 void static
-get(ff_uint_t __from, ff_uint_t __offset, ff_uint_t __size, void *__buf) {
-	pread(prog, (ff_u8_t*)__buf+__offset, __size, __from);
+get(ff_uint_t __from, ff_uint_t __size, void *__buf) {
+	pread(prog, __buf, __size, __from);
 }
 
 /*
-	load program segments into its own file
+	load program segments into its own file.
+	TODO:
+		move to cistern file
 */
 # define CHUNK_SIZE 20
 void static
@@ -103,7 +105,7 @@ void ffexecf(char const *__file) {
 		ffly_fprintf(ffly_err, "failed to open file, %s\n", __file);
 		return;
 	}
-
+// TODO: error checking
 	struct stat st;
 	fstat(fd, &st);
 

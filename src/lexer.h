@@ -12,7 +12,7 @@ typedef struct ff_lexer {
 	struct ffly_buff sbuf;
 	void *top;
 	void *arg;
-	void(*get)(ff_uint_t, ff_uint_t, ff_uint_t, void*, void*);
+	void(*get)(ff_uint_t, ff_uint_t, void*, void*);
 
 	ff_u8_t c[LCS];
 	ff_u32_t c_off;

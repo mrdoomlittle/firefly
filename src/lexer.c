@@ -306,7 +306,7 @@ get(ff_lexerp __lexer, ff_int_t __offset) {
 			sz = __lexer->end-off;
 		else
 			sz = LCS;
-		__lexer->get(__lexer->c_off, 0, sz, __lexer->c, __lexer->arg);
+		__lexer->get(__lexer->c_off,sz, __lexer->c, __lexer->arg);
 		__lexer->flags |= CHUNK_LOADED;
 	}
 
@@ -690,7 +690,7 @@ ffly_lex(ff_lexerp __lexer, ff_err_t *__err) {
 /*
 # include "dep/mem_cpy.h"
 char const static *s = "hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123 hello hi abc 123";
-void static _get(ff_uint_t __from, ff_uint_t __offset, ff_uint_t __size, void *__buf) {
+void static _get(ff_uint_t __from, ff_uint_t __size, void *__buf) {
 	ffly_mem_cpy(__buf, s+__from, __size);
 }
 

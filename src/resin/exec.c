@@ -4,15 +4,23 @@
 # include "../linux/stat.h"
 # include "../remf.h"
 # include "mm.h"
-static void(*get)(ff_uint_t, ff_uint_t, ff_uint_t, void*);
+static void(*get)(ff_uint_t, ff_uint_t, void*);
 ff_u32_t static end;
 ff_u32_t static ip;
+/*
+	TODO:
+		read by page and not single bytes
+
+		keep pages until limit is reached and oldest page or least touched
+		should be removed to make space for new one
+*/
+
 ff_u8_t static
 fetch_byte(ff_off_t __off) {
 	if (ip+__off >= end) return 0x0;
 
 	ff_u8_t byte;
-	get(ip+__off, 0, 1, &byte);
+	get(ip+__off, 1, &byte);
 	return byte;
 }
 
@@ -42,6 +50,8 @@ struct arg_s {
 # include "../dep/mem_cpy.h"
 # include "../init.h"
 struct ffly_resin ctx;
+
+// needs cleaning
 void* ring(ff_u8_t __no, void *__arg_p) {
 	struct arg_s *arg;
 	if (__arg_p != NULL)
@@ -98,7 +108,7 @@ struct ffly_resin ctx = {
 	.rin = ring
 };
 
-void ffres_exec(void(*__get)(ff_uint_t, ff_uint_t, ff_uint_t, void*), ff_u32_t __end, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
+void ffres_exec(void(*__get)(ff_uint_t, ff_uint_t, void*), ff_u32_t __end, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
 	get = __get;
 	end = __end;
 	ip = __entry;

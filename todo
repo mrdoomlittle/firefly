@@ -177,3 +177,9 @@ and size will be retrieved from array by id
 -. maps needs to be tested i havent done that so i dont know how good or bad they are
 -. coding style/fix hexd - 0x01 not 0x1 etc
 -. find another word to use other then 'end' for some things
+
+
+NEED TO DO:
+-. remove offset from function 'get'
+-. pass arg thru get function 'void*'
+-. work on naming
