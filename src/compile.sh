@@ -137,7 +137,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/hexdump.o $root_dir/hexdump.c
 $ffly_cc $cc_flags -c -o $dst_dir/brick.o $root_dir/brick.c
 $ffly_cc $cc_flags -c -o $dst_dir/br.o $root_dir/br.c
 $ffly_cc $cc_flags -c -o $dst_dir/chrdump.o $root_dir/chrdump.c
-$ffly_cc $cc_flags -c -o $dst_dir/rasterizer.o $root_dir/rasterizer.c
+$ffly_cc $cc_flags -c -o $dst_dir/raster.o $root_dir/raster.c
 $ffly_cc $cc_flags -c -o $dst_dir/model.o $root_dir/model.c
 as -c -o $dst_dir/start.o $root_dir/start.s
 $ffly_cc $cc_flags -c -o $dst_dir/p.o $root_dir/p.c
@@ -161,7 +161,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/typo.o $root_dir/typo.c
 $ffly_cc $cc_flags -c -o $dst_dir/typo/raster.o $root_dir/typo/raster.c
 $ffly_cc $cc_flags -c -o $dst_dir/typo/raise.o $root_dir/typo/raise.c
 $ffly_cc $cc_flags -c -o $dst_dir/typo/memalloc.o $root_dir/typo/memalloc.c
-$ffly_cc $cc_flags -c -o $dst_dir/typo/film.o $root_dir/typo/film.c
+$ffly_cc $cc_flags -c -o $dst_dir/tape.o $root_dir/tape.c
 $ffly_cc $cc_flags -c -o $dst_dir/drivers/typo/mcd/driver.o $root_dir/drivers/typo/mcd/driver.c
 $ffly_cc $cc_flags -c -o $dst_dir/drivers/typo/mcd/load.o $root_dir/drivers/typo/mcd/load.c
 else
@@ -186,10 +186,10 @@ $dst_dir/piston.o $dst_dir/corrode.o $dst_dir/bog.o \
 $dst_dir/env.o $dst_dir/line.o $dst_dir/db/load.o
 $dst_dir/db/store.o $dst_dir/db/block.o $dst_dir/db/error.o \
 $dst_dir/signal/sigemptyset.o $dst_dir/pulse.o $dst_dir/hexdump.o \
-$dst_dir/brick.o $dst_dir/br.o $dst_dir/chrdump.o $dst_dir/rasterizer.o
+$dst_dir/brick.o $dst_dir/br.o $dst_dir/chrdump.o $dst_dir/raster.o
 $dst_dir/model.o $dst_dir/start.o $dst_dir/p.o $dst_dir/panel.o $dst_dir/m.o \
 $dst_dir/hs/vec.o $dst_dir/hs/hash.o $dst_dir/hs/lexer.o $dst_dir/hs/memalloc.o
 $dst_dir/hs/parser.o $dst_dir/hs/exec.o $dst_dir/hs/gen.o $dst_dir/hs/mm.o $dst_dir/hs.o \
 $dst_dir/storage/cistern.o $dst_dir/texture.o $dst_dir/carriage.o $dst_dir/tools.o \
 $dst_dir/typo.o $dst_dir/typo/raster.o $dst_dir/typo/raise.o $dst_dir/drivers/typo/mcd/driver.o
-$dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o $dst_dir/typo/film.o"
+$dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o $dst_dir/tape.o"

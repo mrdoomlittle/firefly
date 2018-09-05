@@ -6,7 +6,7 @@
 # include "memory/mem_free.h"
 # include "dep/mem_set.h"
 # include "physics/light.h"
-# include "rasterizer.h"
+# include "raster.h"
 /*
 	TODO:
 		dealloc 'lots' that are not inuse

@@ -8,7 +8,7 @@
 # include "maths/abs.h"
 # include "maths/round.h"
 # include "system/io.h"
-# include "rasterizer.h"
+# include "raster.h"
 # include "model.h"
 void static
 rotate_vertex(ffly_vertexp __vertex, ff_uint_t __x, ff_uint_t __y, float __angle) {

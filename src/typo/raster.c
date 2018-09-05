@@ -3,6 +3,7 @@
 # include "../maths/min.h"
 # include "../maths/abs.h"
 # include "../system/io.h"
+# include "raise.h"
 ff_u8_t *typo_raster_bm;
 ff_uint_t typo_raster_width;
 ff_uint_t typo_raster_height;
@@ -78,8 +79,8 @@ line_asc(struct typo_point *__p0, struct typo_point *__p1) {
 
 void static line(void) {
 	struct typo_point *p0, *p1;
-	p0 = (struct typo_point*)raise_p;
-	p1 = (struct typo_point*)(raise_p+sizeof(struct typo_point));
+	p0 = (struct typo_point*)(raise_stack+*(ff_u16_t*)raise_p);
+	p1 = (struct typo_point*)(raise_stack+*(ff_u16_t*)(raise_p+sizeof(ff_u16_t)));
 
 	p0->x<<=typo_raster_scale;
 	p0->y<<=typo_raster_scale;

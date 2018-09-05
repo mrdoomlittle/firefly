@@ -1,4 +1,4 @@
-# include "rasterizer.h"
+# include "raster.h"
 # include "maths/max.h"
 # include "maths/min.h"
 # include "maths/barycentric.h"
@@ -10,6 +10,10 @@
 # include "system/io.h"
 
 // need to be worked on but will do for now
+/*
+	only can rasterize tri
+	or any other simple shapes if repurposed
+*/
 ff_i8_t
 static dim(ff_int_t __x, ff_int_t __y, ffly_vertexp __a, ffly_vertexp __b, ffly_vertexp __c) {
 	ffly_vertex v0 = {

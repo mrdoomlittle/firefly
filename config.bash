@@ -13,6 +13,7 @@ dirs=(
 	ui
 	data
 	memory
+	typo
 	.
 )
 

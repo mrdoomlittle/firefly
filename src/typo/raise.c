@@ -11,6 +11,8 @@ ff_u8_t *raise_p;
 
 ff_u8_t *raise_eo_sz;
 void(**raise_eo)(void);
+ff_u8_t raise_stack[256];
+ff_u16_t raise_sp = 256;
 
 void static eo(void) {
 	ff_u8_t on;
@@ -25,7 +27,7 @@ static void(*op[])(void) = {
 };
 
 ff_uint_t static os[] = {
-    sizeof(struct typo_point)*2,
+    sizeof(ff_u16_t)*2,
 	0
 };
 
@@ -37,22 +39,22 @@ void ffly_traise_prime(void) {
 /*
 	non driver control
 */
-void ffly_typo_raise(struct typo_film *__film) {
+void ffly_typo_raise(struct ffly_tape *__tape) {
 	ff_u8_t *end;
 	ff_u8_t *rest;
 
 	rest = raise_p;
-	raise_p = (ff_u8_t*)__film->area;
-	end = raise_p+__film->len;
-	ffly_printf("film size: %u\n", __film->len);
+	raise_p = (ff_u8_t*)__tape->area;
+	end = raise_p+__tape->len;
+	ffly_printf("tape size: %u\n", __tape->len);
 	ff_u8_t on;
 	ff_uint_t i;
 
-	if (!__film->len)
+	if (!__tape->len)
 		goto _end;
 	i = 0;
 _again:
-	ffly_printf("operation : %u\n", i++);
+	ffly_printf("operation : %u, at %u\n", i++, raise_p-(ff_u8_t*)__tape->area);
 	on = *(raise_p++);
 	if (on>=EDGE) {
 		ffly_printf("operation number illegal, got: %u\n", on);

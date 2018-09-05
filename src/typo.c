@@ -59,7 +59,7 @@ void ffly_typo_face(ffly_typo_sheetp __sheet, char const *__path, struct typo_fa
 void ffly_typo_char_load(ffly_typo_sheetp __sheet, struct typo_face *__face, char __c) {
 	driver.load_glyph(__c);
 	// build it
-	ffly_typo_raise(__face->glyph->film);
+	ffly_typo_raise(__face->glyph->tape);
 }
 
 void ffly_typo_face_scale(ffly_typo_sheetp __sheet, struct typo_face *__face, ff_u8_t __scale) {
@@ -108,8 +108,10 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_typo_init(&sheet, 0);
 	ffly_traise_prime();
 	ff_uint_t scale;
-
-	scale = ffly_stno(__argv[1]);
+	if (__argc>1)
+		scale = ffly_stno(__argv[1]);
+	else
+		scale = 0;
 	struct typo_face face;
 	ffly_typo_face(&sheet, "tools/test.mcd", &face);
 	ffly_typo_face_scale(&sheet, &face, scale);

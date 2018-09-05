@@ -1,19 +1,24 @@
 # ifndef __ffly__typo__h
 # define __ffly__typo__h
 # include "ffint.h"
-# include "typo/film.h"
+# include "tape.h"
 // put within define
 struct typo_point {
 	ff_int_t x, y;
 };
 
 struct typo_glyph {
-	struct typo_film *film;
+	struct ffly_tape *tape;
 };
 
 struct typo_face {
 	ff_uint_t width, height;
 	struct typo_glyph *glyph;
+};
+
+struct typo_area {
+	struct typo_point *points;
+	ff_uint_t n;
 };
 
 struct ffly_typo_sheet;
