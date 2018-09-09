@@ -14,6 +14,7 @@ dirs=(
 	data
 	memory
 	typo
+	typo/mcd
 	.
 )
 

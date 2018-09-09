@@ -26,7 +26,7 @@ struct header {
 	ff_uint_t seg;
 };
 
-# define N 9
+# define N 5
 struct typo_point points[] = {
 /*
 	{0, 32},
@@ -38,6 +38,7 @@ struct typo_point points[] = {
 	{24, 16},
 	{8, 16}
 */
+/*
     {29, 29},
     {16, 2},
     {2, 29},
@@ -53,7 +54,12 @@ struct typo_point points[] = {
 
     {25, 29},
     {29, 29}
-
+*/
+	{29, 29},
+	{29, 2},
+	{2, 2},
+	{2, 29},
+	{29, 29}
 };
 
 int main() {

@@ -167,6 +167,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/drivers/typo/mcd/driver.o $root_dir/drivers/ty
 $ffly_cc $cc_flags -c -o $dst_dir/drivers/typo/mcd/load.o $root_dir/drivers/typo/mcd/load.c
 $ffly_cc $cc_flags -c -o $dst_dir/resin/tape.o $root_dir/resin/tape.c
 $ffly_cc $cc_flags -c -o $dst_dir/typo/mcd/concoct.o $root_dir/typo/mcd/concoct.c
+$ffly_cc $cc_flags -c -o $dst_dir/typo/mcd/gen/classic.o $root_dir/typo/mcd/gen/classic.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -196,4 +197,4 @@ $dst_dir/hs/parser.o $dst_dir/hs/exec.o $dst_dir/hs/gen.o $dst_dir/hs/mm.o $dst_
 $dst_dir/storage/cistern.o $dst_dir/texture.o $dst_dir/carriage.o $dst_dir/tools.o \
 $dst_dir/typo.o $dst_dir/typo/raster.o $dst_dir/typo/raise.o $dst_dir/drivers/typo/mcd/driver.o
 $dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o $dst_dir/tape.o $dst_dir/resin/tape.o
-$dst_dir/rosin.o $dst_dir/rosin/exec.o $dst_dir/typo/mcd/concoct.o"
+$dst_dir/rosin.o $dst_dir/rosin/exec.o $dst_dir/typo/mcd/concoct.o $dst_dir/typo/mcd/gen/classic.o"
