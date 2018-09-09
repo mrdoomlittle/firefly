@@ -7,7 +7,7 @@
 ff_u8_t *typo_raster_bm;
 ff_uint_t typo_raster_width;
 ff_uint_t typo_raster_height;
-ff_u8_t typo_raster_scale;
+// ffly_typo_translate not work on line
 ff_u8_t extern *raise_p;
 void static
 line_dsc(struct typo_point *__p0, struct typo_point *__p1) {
@@ -81,12 +81,6 @@ void static line(void) {
 	struct typo_point *p0, *p1;
 	p0 = (struct typo_point*)(raise_stack+*(ff_u16_t*)raise_p);
 	p1 = (struct typo_point*)(raise_stack+*(ff_u16_t*)(raise_p+sizeof(ff_u16_t)));
-
-	p0->x<<=typo_raster_scale;
-	p0->y<<=typo_raster_scale;
-	p1->x<<=typo_raster_scale;
-	p1->y<<=typo_raster_scale;
-
 
 	if (p0->y<p1->y) {
 		line_dsc(p0, p1);
@@ -219,9 +213,8 @@ poly_draw(void) {
 	while(y != typo_raster_height) {
 		x = 0;
 		while(x != typo_raster_width) {
-			if (!poly(b, n, x, y)) {
+			if (!poly(b, n, ffly_typo_translate_from(x), ffly_typo_translate_from(y))) {
 				char *p;
-
 				 p = typo_raster_bm+x+(y*typo_raster_width);
 				 *p = ~*p;
 			}

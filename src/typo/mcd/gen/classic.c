@@ -1,7 +1,10 @@
 # include "../../../types.h"
 # include "../concoct.h"
 # include "../../../typo.h"
+# define A 20
+# define SZ 34+A
 # define N 34
+
 static struct typo_point points[] = {
 // LETTER: A
 	{29, 29},
@@ -55,13 +58,15 @@ static int fd;
 void static _write(void *__buf, ff_uint_t __size, ff_u32_t __offset) {
 	pwrite(fd, __buf, __size, __offset);
 }
-/*
+
+//# define ENABLE
+# ifdef ENABLE
 ff_err_t ffmain(int __argc, char const *__argv[]) { 
 	ffly_mcd_cc_write = _write;
 	ffly_mcd_cc_prime();
 	struct cc_glyph *g[0x100];
-	g['A'] = ffly_mcd_cc_glyph_new();
-	g['0'] = ffly_mcd_cc_glyph_new();
+	g['A'] = ffly_mcd_cc_glyph_new('A');
+	g['0'] = ffly_mcd_cc_glyph_new('0');
 
 	struct cc_segment *s;
 	s = ffly_mcd_cc_seg_new();
@@ -69,6 +74,20 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	struct typo_point *p;
 	p = (struct typo_point*)ffly_mcd_cc_seg_alloc(s, N*sizeof(struct typo_point));
 	ffly_mem_cpy(p, points, N*sizeof(struct typo_point));
+
+	ff_uint_t i;
+	i = 0;
+	while(i != N-1) {
+		struct typo_point *p0;	
+		p0 = p+(i++);
+
+		if (p0->x > 16) {
+//			p0->x+=A;
+		}
+		if (p0->y > 16) {
+			p0->y+=A;
+		}
+	}
 
 	g['A']->tape = ffly_tape_new();
 	g['0']->tape = ffly_tape_new();
@@ -116,7 +135,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	fd = open ("test.mcd", O_RDWR|O_TRUNC|O_CREAT, S_IRUSR|S_IWUSR);
 
 
-	ffly_mcd_cc_face_size(32, 32);
+	ffly_mcd_cc_face_size(SZ, SZ);
 	ffly_mcd_cc();
 	close(fd);
-}*/
+}
+# endif

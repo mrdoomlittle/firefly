@@ -11,6 +11,8 @@ void(*driver_load[])(struct typo_driver*) = {
 	ffly_typo_mcd
 };
 
+static ff_u8_t typo_scale = 0;
+
 static struct typo_driver driver;
 void(*typo_read)(void*, ff_uint_t);
 void(*typo_write)(void*, ff_uint_t);
@@ -30,6 +32,29 @@ void static _write(void *__buf, ff_uint_t __size) {
 }
 
 struct typo_glyph **glyph_table;
+
+
+// rename
+/*
+	translate to default xy coords
+*/
+
+/*
+	TODO:
+		reduct typoscale 
+
+		so __s-(1<<typo_scale);
+*/
+ff_uint_t ffly_typo_translate_to(ff_uint_t __s) {
+	return (__s>>2)<<typo_scale;
+}
+
+/*
+	translate xy coords into the one we use
+*/
+ff_uint_t ffly_typo_translate_from(ff_uint_t __s) {
+	return (__s<<2)>>typo_scale;
+}
 
 struct typo_glyph*
 ffly_typo_glyph_new(ff_u16_t __idx) {
@@ -58,6 +83,7 @@ void ffly_typo_face(ffly_typo_sheetp __sheet, char const *__path, struct typo_fa
 }
 
 void ffly_typo_char_load(ffly_typo_sheetp __sheet, struct typo_face *__face, char __c) {
+	ffly_mem_set(typo_raster_bm, 0, typo_raster_width*typo_raster_height);
 	driver.load_glyph(__c);
 	// build it
 	ffly_typo_raise(__face->glyph->tape);
@@ -66,17 +92,17 @@ void ffly_typo_char_load(ffly_typo_sheetp __sheet, struct typo_face *__face, cha
 void ffly_typo_face_scale(ffly_typo_sheetp __sheet, struct typo_face *__face, ff_u8_t __scale) {
 	ff_uint_t size;
 
-	size = (typo_raster_width = (__sheet->f_width<<__scale))
-		*(typo_raster_height = (__sheet->f_height<<__scale));
+	typo_scale = __scale;
+	typo_raster_width = ffly_typo_translate_to(__sheet->f_width);
+	typo_raster_height = ffly_typo_translate_to(__sheet->f_height);
+
+	size = typo_raster_width*typo_raster_height;
 	if (!typo_raster_bm) {
 		typo_raster_bm = (ff_u8_t*)ffly_tmalloc(size);
-		goto _sk;
+		return;
 	}
 
 	typo_raster_bm = (ff_u8_t*)ffly_trealloc(typo_raster_bm, size);
-_sk:
-	ffly_mem_set(typo_raster_bm, 0, size);
-	typo_raster_scale = __scale;
 }
 
 void ffly_typo_done(ffly_typo_sheetp __sheet) {
@@ -100,7 +126,7 @@ void static dbm(void) {
 		y++;
 	}
 }
-# define DEBUG
+//# define DEBUG
 # ifdef DEBUG
 
 # include "system/string.h"

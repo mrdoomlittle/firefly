@@ -58,12 +58,13 @@ ffly_mcd_cc_seg_new(void) {
 }
 
 struct cc_glyph*
-ffly_mcd_cc_glyph_new(void) {
+ffly_mcd_cc_glyph_new(ff_u8_t __idx) {
 	struct cc_glyph **g;
 	g = (struct cc_glyph**)vec_new(&cc_glyphs);
 	struct cc_glyph *p;
 	p = (struct cc_glyph*)__ffly_mem_alloc(sizeof(struct cc_glyph));
 	p->tape = NULL;
+	p->text.idx = __idx;
 	*g = p;
 	return p;
 }
@@ -134,7 +135,6 @@ void ffly_mcd_cc(void) {
 	idx = 0;
 	off+=cc_glyphs.n*sizeof(struct glyph);
 	while(g != ge) {
-		(*g)->text.idx = idx;
 		glyph_out(*g);
 		cc_header.glyph_c++;
 		idx++;

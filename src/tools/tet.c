@@ -8,14 +8,15 @@ struct point {
 # define _abs(__val) \
 	((__val)<0?-(__val):__val)
 
-# define WIDTH 32
-# define HEIGHT 32
-//# define CPX
+# define A 10
+# define WIDTH 64
+# define HEIGHT 64
+# define CPX
 
 # ifdef CPX
 # define N 7
 # else
-# define N 18
+# define N 9
 # endif
 static char buf[WIDTH*HEIGHT];
 
@@ -247,6 +248,19 @@ int main() {
 	};
 
 	ff_int_t x, y;
+
+	ff_uint_t i;
+	i = 0;
+	while(i != N-1) {
+		struct point *p;
+		p = points+(i++);
+		if (p->x > 32/2) {
+			p->x+=A;
+		}
+		if (p->y > 32/2) {
+			p->y+=A;
+		}
+	}
 
 _again:
 	memset(buf, '.', WIDTH*HEIGHT);

@@ -26,7 +26,7 @@ struct cc_glyph {
 };
 
 struct cc_segment* ffly_mcd_cc_seg_new(void);
-struct cc_glyph* ffly_mcd_cc_glyph_new(void);
+struct cc_glyph* ffly_mcd_cc_glyph_new(ff_u8_t);
 void* ffly_mcd_cc_seg_alloc(struct cc_segment*, ff_uint_t);
 void ffly_mcd_cc_prime(void);
 

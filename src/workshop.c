@@ -105,6 +105,8 @@ void static bt_hover(ffly_gui_btnp __btn, void *__arg) {
 }
 
 ff_u8_t *tex0, *tex1;
+# include "ui/text.h"
+# include "font.h"
 void ffly_workshop_init() {
 	ffly_pallet_init(&workshop.frame, WIDTH, HEIGHT, _ffly_tile_64);
 	ffly_grp_prepare(&__ffly_grp__, 100);
@@ -149,10 +151,23 @@ void ffly_workshop_init() {
 	ffly_gui_btn_enable(btn);
 	ffly_gui_window_init(&workshop.window, 64, 64, 128, 128);
 
-	ff_u8_t static pixels[12*12*4];
-	ffly_mem_set(pixels, 255, 12*12*4);
+	ff_u8_t static pixels[64*64*4];
+	ffly_mem_set(pixels, 255, 64*64*4);
+	ffly_fontp font;
+	ffly_ui_textp text;
+	text = ffly_ui_text_creat("A0");
+	font = ffly_font_new();
+	ffly_font_init(font, _font_driver_typo);
 
-	ffly_gui_window_write(&workshop.window, pixels, 12, 12, 0, 0);
+	ffly_font_face(font, "test.mcd");
+	font->driver.scale(0);
+	ffly_ui_text_font(text, font);
+
+	ffly_ui_text_draw(text, pixels, 0, 0, 64, 64);
+
+	ffly_font_destroy(font);
+	ffly_ui_text_destroy(text);
+	ffly_gui_window_write(&workshop.window, pixels, 64, 64, 0, 0);
 	ffly_grp_unload(&__ffly_grp__);
 	ffly_gui_window_update(&workshop.window);
 }
