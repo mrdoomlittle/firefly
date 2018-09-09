@@ -26,9 +26,9 @@ struct header {
 	ff_uint_t seg;
 };
 
-# define E 2
-# define N 6
+# define N 9
 struct typo_point points[] = {
+/*
 	{0, 32},
 	{8, 16},
 	{16, 0},
@@ -37,6 +37,23 @@ struct typo_point points[] = {
 	{16, 0},
 	{24, 16},
 	{8, 16}
+*/
+    {29, 29},
+    {16, 2},
+    {2, 29},
+
+    {6, 29},
+
+    {10, 24}, // mid inner
+//  {12, 28},
+
+    {16, 8},
+
+    {20, 20}, // mid inner
+
+    {25, 29},
+    {29, 29}
+
 };
 
 int main() {
@@ -54,8 +71,8 @@ int main() {
 	struct segment seg;
 	struct glyph g;
 	g.idx = 0;
-	g.code = sizeof(struct header)+sizeof(struct glyph)+((N+E)*sizeof(struct typo_point))+sizeof(struct segment);
-	g.len = (N*(sizeof(ff_u16_t)+2))+2+2+1+(2*sizeof(ff_u16_t));
+	g.code = sizeof(struct header)+sizeof(struct glyph)+(N*sizeof(struct typo_point))+sizeof(struct segment);
+	g.len = (1+sizeof(ff_u16_t)+sizeof(ff_u16_t))+4;
 	printf("film size: %u, addr: %u\n", g.len, g.code);
 	hdr.seg = sizeof(struct header)+sizeof(struct glyph);
 	write(fd, &hdr, sizeof(struct header));
@@ -63,9 +80,9 @@ int main() {
 
 	seg.dst = 0;
 	seg.src = hdr.seg+sizeof(struct segment);
-	seg.size = (N+E)*sizeof(struct typo_point);
+	seg.size = N*sizeof(struct typo_point);
 	write(fd, &seg, sizeof(struct segment));
-	write(fd, points, (N+E)*sizeof(struct typo_point));
+	write(fd, points, N*sizeof(struct typo_point));
 	ff_uint_t i;
 	ff_u8_t op;
 	op = 1;
@@ -73,28 +90,14 @@ int main() {
 	op = 1;
 	write(fd, &op, 1);
 
-	i = 0;
-	while(i != N) {
-		op = 1;
-		write(fd, &op, 1);
-		op = 0;
-		write(fd, &op, 1);
-
-		ff_uint_t addr;
-		addr = i*sizeof(struct typo_point);
-		write(fd, &addr, sizeof(ff_u16_t));
-		i++;
-	}
-
-	op = 0;
+	op = 2;
 	write(fd, &op, 1);
 
-	ff_u16_t p0, p1;
-
-	p0 = N*sizeof(struct typo_point);
-	p1 = p0+sizeof(struct typo_point);
-	write(fd, &p0, sizeof(ff_u16_t));
-	write(fd, &p1, sizeof(ff_u16_t));
+	ff_u16_t n, adr;
+	n = N;
+	adr = 0;
+	write(fd, &n, 2);
+	write(fd, &adr, 2);
 
 	op = 1;
 	write(fd, &op, 1);

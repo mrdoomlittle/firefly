@@ -41,6 +41,7 @@ void ffros_exec(ffly_tapep __tape) {
 	ff_rosin_de_init(&ctx);
 }
 
+/*
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_tapep tape;
 
@@ -58,4 +59,4 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffros_exec(tape);
 
 	ffly_tape_raze(tape);
-}
+}*/

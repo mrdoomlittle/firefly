@@ -23,18 +23,20 @@ void static eo(void) {
 
 static void(*op[])(void) = {
     NULL,
-	eo
+	eo,
+	NULL
 };
 
 ff_uint_t static os[] = {
     sizeof(ff_u16_t)*2,
-	0
+	0,
+	sizeof(ff_u16_t)*2
 };
 
 void ffly_traise_prime(void) {
 	ffly_typo_raster(op);
 }
-# define EDGE 2
+# define EDGE 3
 
 /*
 	non driver control
@@ -54,8 +56,8 @@ void ffly_typo_raise(struct ffly_tape *__tape) {
 		goto _end;
 	i = 0;
 _again:
-	ffly_printf("operation : %u, at %u\n", i++, raise_p-(ff_u8_t*)__tape->area);
 	on = *(raise_p++);
+	ffly_printf("operation : %u : %u, at %u\n", on, i++, raise_p-(ff_u8_t*)__tape->area);
 	if (on>=EDGE) {
 		ffly_printf("operation number illegal, got: %u\n", on);
 		return;
