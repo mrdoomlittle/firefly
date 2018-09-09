@@ -7,26 +7,9 @@
 # include "../../../tape.h"
 # include "../../../dep/mem_cpy.h"
 # include "../../../typo/raise.h"
+# include "../../../typo/mcd/struc.h"
 extern struct typo_face *mcd_face;
 
-struct glyph {
-	ff_u16_t idx;
-	ff_u32_t code;
-	ff_uint_t len;
-};
-
-struct segment {
-	ff_u16_t dst;
-	ff_u16_t src;
-	ff_u16_t size;
-};
-
-struct header {
-	ff_u32_t glyph_table;
-	ff_uint_t glyph_c;
-	ff_uint_t width, height;
-	ff_uint_t seg;
-};
 
 void static
 load_segs(struct segment *__segs, ff_uint_t __n) {

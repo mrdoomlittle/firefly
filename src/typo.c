@@ -99,7 +99,7 @@ void static dbm(void) {
 		y++;
 	}
 }
-# define DEBUG
+//# define DEBUG
 # ifdef DEBUG
 
 # include "system/string.h"
@@ -113,7 +113,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	else
 		scale = 0;
 	struct typo_face face;
-	ffly_typo_face(&sheet, "tools/test.mcd", &face);
+	ffly_typo_face(&sheet, "test.mcd", &face);
 	ffly_typo_face_scale(&sheet, &face, scale);
 	ffly_typo_char_load(&sheet, &face, 0);
 	dbm();
