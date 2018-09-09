@@ -188,9 +188,17 @@ poly(struct typo_point *__b, ff_uint_t __n, ff_int_t __x, ff_int_t __y) {
 			t2+=s>0;
 			t3+=s<0;
 		}
+
+		// debug
+		if ((__x == p0->x && __y == p0->y) || (__x == p1->x && __y == p1->y)) {
+			return -1;
+		}
 	}
 
 	if (t0-t1 > 0 && t2-t3 > 0) {
+		return 0;
+	}
+	if (t0-t1 < 0 && t2-t3 < 0) {
 		return 0;
 	}
 
