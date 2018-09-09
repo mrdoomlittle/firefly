@@ -35,6 +35,7 @@ struct typo_glyph*
 ffly_typo_glyph_new(ff_u16_t __idx) {
 	struct typo_glyph *g;
 
+	ffly_printf("glyph with idx: %u\n", __idx);
 	g = (struct typo_glyph*)ffly_tmalloc(sizeof(struct typo_glyph));
 	*(glyph_table+__idx) = g;
 
@@ -46,7 +47,7 @@ void ffly_typo_init(ffly_typo_sheetp __sheet, ff_u8_t __driver) {
 	typo_read = _read;
 	typo_write = _write;
 	typo_seek = _seek;
-	glyph_table = (struct typo_glyph**)ffly_tmalloc(0x100);
+	glyph_table = (struct typo_glyph**)ffly_tmalloc(0x100*sizeof(struct typo_glyph*));
 	ffly_mem_set(glyph_table, 0, 0x100*sizeof(struct typo_glyph*));
 }
 
@@ -115,7 +116,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	struct typo_face face;
 	ffly_typo_face(&sheet, "test.mcd", &face);
 	ffly_typo_face_scale(&sheet, &face, scale);
-	ffly_typo_char_load(&sheet, &face, 1);
+	ffly_typo_char_load(&sheet, &face, '0');
 	dbm();
 	ffly_typo_done(&sheet);
 }
