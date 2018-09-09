@@ -220,7 +220,10 @@ poly_draw(void) {
 		x = 0;
 		while(x != typo_raster_width) {
 			if (!poly(b, n, x, y)) {
-				*(typo_raster_bm+x+(y*typo_raster_width)) = 255;			
+				char *p;
+
+				 p = typo_raster_bm+x+(y*typo_raster_width);
+				 *p = ~*p;
 			}
 			x++;
 		}

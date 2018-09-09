@@ -143,7 +143,7 @@ void ffly_mcd_cc(void) {
 
 	cc_header.width = ffly_mcd_cc_face_width;
 	cc_header.height = ffly_mcd_cc_face_height;
-	ffly_printf("header: width: %u, height: %u\nglyph table: %u, glyph count: %u, segments: %u\n", cc_header.width, cc_header.height,
+	ffly_printf("header: width: %u, height: %u\nglyph table: %u, glyph count: %u, segment table: %u\n", cc_header.width, cc_header.height,
 		cc_header.glyph_table, cc_header.glyph_c, cc_header.seg);
 	cc_write(&cc_header, sizeof(struct header), 0);
 }

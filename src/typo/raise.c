@@ -11,8 +11,8 @@ ff_u8_t *raise_p;
 
 ff_u8_t *raise_eo_sz;
 void(**raise_eo)(void);
-ff_u8_t raise_stack[256];
-ff_u16_t raise_sp = 256;
+ff_u8_t raise_stack[STACK_SIZE];
+ff_u16_t raise_sp = STACK_SIZE;
 
 void static eo(void) {
 	ff_u8_t on;

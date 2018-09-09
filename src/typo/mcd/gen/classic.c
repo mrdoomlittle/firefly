@@ -55,7 +55,7 @@ static int fd;
 void static _write(void *__buf, ff_uint_t __size, ff_u32_t __offset) {
 	pwrite(fd, __buf, __size, __offset);
 }
-
+/*
 ff_err_t ffmain(int __argc, char const *__argv[]) { 
 	ffly_mcd_cc_write = _write;
 	ffly_mcd_cc_prime();
@@ -119,4 +119,4 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_mcd_cc_face_size(32, 32);
 	ffly_mcd_cc();
 	close(fd);
-}
+}*/

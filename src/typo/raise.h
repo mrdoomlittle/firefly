@@ -2,11 +2,12 @@
 # define __ffly__typo__raise__h
 # include "../typo.h"
 # include "../tape.h"
+# define STACK_SIZE 2048
 // get everything ready so we can build shit
 void ffly_traise_prime(void);
 void ffly_typo_raise(struct ffly_tape*);
 
-extern ff_u8_t raise_stack[256];
+extern ff_u8_t raise_stack[STACK_SIZE];
 ff_u8_t extern *raise_p;
 ff_u16_t extern raise_sp;
 ff_u8_t extern *raise_eo_sz;
