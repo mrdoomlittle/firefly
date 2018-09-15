@@ -171,6 +171,27 @@ $ffly_cc $cc_flags -c -o $dst_dir/typo/mcd/gen/classic.o $root_dir/typo/mcd/gen/
 $ffly_cc $cc_flags -c -o $dst_dir/drivers/font/typo.o $root_dir/drivers/font/typo.c
 $ffly_cc $cc_flags -c -o $dst_dir/font.o $root_dir/font.c
 $ffly_cc $cc_flags -c -o $dst_dir/ui/text.o $root_dir/ui/text.c
+
+$ffly_cc $cc_flags -c -o $dst_dir/driver.o $root_dir/driver.c
+
+$ffly_cc $cc_flags -c -o $dst_dir/sr/context.o $root_dir/sr/context.c
+$ffly_cc $cc_flags -c -o $dst_dir/drivers/sr/driver.o $root_dir/drivers/sr/driver.c
+
+
+$ffly_cc $cc_flags -c -o $dst_dir/sr/framebuff.o $root_dir/sr/framebuff.c
+$ffly_cc $cc_flags -c -o $dst_dir/sr/raise.o $root_dir/sr/raise.c
+$ffly_cc $cc_flags -c -o $dst_dir/sr/tri.o $root_dir/sr/tri.c
+$ffly_cc $cc_flags -c -o $dst_dir/tri.o $root_dir/tri.c
+$ffly_cc $cc_flags -c -o $dst_dir/tex.o $root_dir/tex.c
+$ffly_cc $cc_flags -c -o $dst_dir/context.o $root_dir/context.c
+$ffly_cc $cc_flags -c -o $dst_dir/dc.o $root_dir/dc.c
+$ffly_cc $cc_flags -c -o $dst_dir/sr/draw.o $root_dir/sr/draw.c
+$ffly_cc $cc_flags -c -o $dst_dir/sr/copy.o $root_dir/sr/copy.c
+$ffly_cc $cc_flags -c -o $dst_dir/sr/fill.o $root_dir/sr/fill.c
+$ffly_cc $cc_flags -c -o $dst_dir/pixel.o $root_dir/pixel.c
+$ffly_cc $cc_flags -c -o $dst_dir/frame_buff.o $root_dir/frame_buff.c
+$ffly_cc $cc_flags -c -o $dst_dir/mo.o $root_dir/mo.c
+$ffly_cc $cc_flags -c -o $dst_dir/sr/tile.o $root_dir/sr/tile.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -201,4 +222,9 @@ $dst_dir/storage/cistern.o $dst_dir/texture.o $dst_dir/carriage.o $dst_dir/tools
 $dst_dir/typo.o $dst_dir/typo/raster.o $dst_dir/typo/raise.o $dst_dir/drivers/typo/mcd/driver.o
 $dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o $dst_dir/tape.o $dst_dir/resin/tape.o
 $dst_dir/rosin.o $dst_dir/rosin/exec.o $dst_dir/typo/mcd/concoct.o $dst_dir/typo/mcd/gen/classic.o \
-$dst_dir/drivers/font/typo.o $dst_dir/font.o $dst_dir/ui/text.o"
+$dst_dir/drivers/font/typo.o $dst_dir/font.o $dst_dir/ui/text.o $dst_dir/sr/context.o \
+$dst_dir/drivers/sr/driver.o $dst_dir/sr/framebuff.o $dst_dir/sr/raise.o \
+$dst_dir/sr/tri.o $dst_dir/tri.o $dst_dir/tex.o $dst_dir/sr/draw.o \
+$dst_dir/driver.o $dst_dir/context.o $dst_dir/dc.o $dst_dir/sr/copy.o \
+$dst_dir/sr/fill.o $dst_dir/pixel.o $dst_dir/frame_buff.o $dst_dir/mo.o \
+$dst_dir/sr/tile.o"

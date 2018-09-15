@@ -2,6 +2,7 @@
 # define __ffly__copy__h
 # include "../ffint.h"
 # include "../types.h"
+# include "../pallet.h"
 # ifdef __cplusplus
 # ifndef __NVCC__
 #	include "pipe.h"
@@ -20,8 +21,8 @@ types::err_t static pixelcopy(types::pixelmap_t __dst, types::pixelmap_t __src, 
 }
 extern "C" {
 # endif
-ff_err_t ffly_pixcopy(ff_byte_t*, ff_byte_t*, ff_uint_t);
-ff_err_t __ffly_pixcopy(ff_byte_t*, ff_byte_t*, ff_uint_t);
+ff_err_t ffly_pixcopy(ff_u32_t, ff_u32_t, ff_u32_t, ff_u32_t);
+ff_err_t __ffly_pixcopy(ff_u32_t, ff_u32_t, ff_u32_t, ff_u32_t);
 # ifdef __cplusplus
 }
 # endif

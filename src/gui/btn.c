@@ -19,7 +19,7 @@ ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
 	ff_u16_t __height, ff_u16_t __x, ff_u16_t __y)
 {
 	ffly_pallet_init(&__btn->texture, __width, __height, _ffly_tile_64);
-	ffly_pallet_update(&__btn->texture, __texture, __width, __height);
+//	ffly_pallet_update(&__btn->texture, __texture, __width, __height);
 	__btn->pressed = -1;
 	__btn->hovering = -1;
 	__btn->x = __x;

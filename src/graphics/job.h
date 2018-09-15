@@ -3,12 +3,12 @@
 # include "../ffint.h"
 # include "../types.h"
 # include "colour.h"
-
-enum {
-    _grj_pixfill,
-    _grj_pixcopy,
-	_grj_pixdraw
-};
+# include "../pallet.h"
+# include "../tile.h"
+# define _grj_pixfill 0
+# define _grj_pixcopy 1
+# define _grj_pixdraw 2
+# define _grj_tdraw 3
 
 struct ffly_grj {
 	ff_u8_t kind;
@@ -21,9 +21,10 @@ struct ffly_grj {
 extern "C" {
 # endif
 struct ffly_grj* ffly_grj_mk(ff_u8_t, void*);
-struct ffly_grj* ffly_grj_pixfill(ff_byte_t*, ff_uint_t, ffly_colour_t);
-struct ffly_grj* ffly_grj_pixdraw(ff_uint_t, ff_uint_t, ff_byte_t*, ff_uint_t, ff_byte_t*, ff_uint_t, ff_uint_t);
-struct ffly_grj* ffly_grj_pixcopy(ff_byte_t*, ff_byte_t*, ff_uint_t);
+struct ffly_grj* ffly_grj_pixfill(ff_u32_t, ffly_colour_t, ff_u32_t);
+struct ffly_grj* ffly_grj_pixdraw(ff_u32_t, ff_u32_t, ffly_palletp, ff_u32_t, ff_u32_t);
+struct ffly_grj* ffly_grj_pixcopy(ff_u32_t, ff_u32_t, ff_u32_t, ff_u32_t);
+struct ffly_grj* ffly_grj_tdraw(ffly_tilep, ff_u32_t, ff_u32_t, ff_u32_t, ff_u32_t);
 ff_err_t ffly_grj_prosess(struct ffly_grj*);
 void ffly_grj_cleanup();
 # ifdef __cplusplus

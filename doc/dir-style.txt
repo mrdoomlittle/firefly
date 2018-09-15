@@ -1,0 +1,13 @@
+external projects:
+	
+	{project name}/project_name.c/h
+
+inner projects or shit:
+	{project name}/all files.c/h
+	{project_name}../project_name.c/h
+
+if the main file is going to be accessed from inside the engine then the core file
+so {project}.h/c should be placed back a directory
+
+for things that are external like 'src/as' in this case its okay to place the main as.h/c file 
+within the main directory.

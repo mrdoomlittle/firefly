@@ -1,5 +1,7 @@
 # include <stdio.h>
 # include <string.h>
+# include <unistd.h>
+# include <fcntl.h>
 # include "../ffint.h"
 struct point {
 	ff_int_t x, y;
@@ -8,25 +10,22 @@ struct point {
 # define _abs(__val) \
 	((__val)<0?-(__val):__val)
 
-# define A 10
-# define WIDTH 64
-# define HEIGHT 64
-# define CPX
+# define A 0
+# define WIDTH 243
+# define HEIGHT 243
+//# define CPX
 
 # ifdef CPX
 # define N 7
 # else
-# define N 9
+# define N 5
 # endif
-static char buf[WIDTH*HEIGHT];
 
-void fix(struct point *__points, ff_int_t __x, ff_int_t __y) {
+ff_i8_t fix(struct point *__points, ff_int_t __x, ff_int_t __y) {
 	ff_uint_t i;
 
 	i = 0;
 	ff_int_t t0, t1, t2, t3;
-	char *p;
-	p = buf+(__x+(__y*WIDTH));
 	t0 = 0;
 	t1 = 0;
 	t2 = 0;
@@ -71,107 +70,26 @@ void fix(struct point *__points, ff_int_t __x, ff_int_t __y) {
 			t3+=s<=0;
 		}
 
-		if ((__x == p0->x || __y == p0->y) && *p != '@') {
-		//	*p = '^';
-		}
-		if ((__x == p0->x && __y == p0->y) || (__x == p1->x && __y == p1->y)) {
-			*p = '@';
-		}
+	}		
+	
+	if (t0-t1 < 0 && t2-t3 < 0) {		
+		return 0;
+	}
+		
+	if (t0-t1 > 0 && t2-t3 > 0) {
+		return 0;
 	}
 
-//	if ((t1-t0 > 0 && t2-t3 < 0) || (t0-t1 > 0 && t3-t2 < 0) && *p != '@') {
-//		*p = '#';
-//	}
-
-	if (*p != '@') {
-		char c;
-		
-		c = *p;
-
-	//	if (!(t1>0) && t0>0) {
-	//		c = '#';
-	//	}
-
-
-//		c = '0'+(t1&t3);
-//		c = '0'+(t0&t2);
-
-//		c = '0'+(!((t0&t1)&1));
-		//c = '0'+t1
-
-		ff_i8_t i, m;
-		m = 0;
-		if ((i = (t0-t1)) >=0) {
-		//	m++;
-		}
-
-		if ((i = (t2-t3)) >=0) {
-		//	m++;
-		}
-
-
-		if (m >0) {
-			c = '0'+m;
-		}
-
-		ff_u8_t d0, d1;
-		d0 = (t0^t1)&1;
-		d1 = (t2^t3)&1;
-
-		if (t0-t1 < 0 && t2-t3 < 0) {		
-			c = '#';
-		}
-		
-		if (t0-t1 > 0 && t2-t3 > 0) {
-			c = '#';
-		}
-/*
-		if (t0>t1 && t2>t3) {
-			c = '#';
-		}
-		if (t0>t1 && t2>t3) {
-			c = '$';
-		}
-*/
-		*p = c;
-	}	
+	return -1;
 }
 
-# include <unistd.h>
+# define scale 0
+# define tdown(__x) \
+	(((__x))<<scale)
+# define tup(__x) \
+	((__x>>scale))
 int main() {
 	struct point points[] = {
-/*
-		{4, 4},
-		{27, 4},
-		{27, 27},
-		{4, 4},
-		{27, 12}
-*/
-/*
-		{4, 4},
-		{16, 8},
-		{27, 4},
-		{16, 16},
-		{4, 27},
-		{4, 16},
-		{4, 4},
-*/
-/*
-		{2, 16},
-		{29, 2},
-		{29, 29},
-		{2, 29},
-		{23, 11},
-		{2, 16}
-*/
-/*
-		{2, 12},
-		{29, 2},
-		{29, 29},
-		{2, 29},
-		{26, 8},
-		{2, 12}
-*/
 # ifdef CPX
 		{2, 2},
 		{29, 16},
@@ -181,112 +99,53 @@ int main() {
 		{2, 20},
 		{2, 2}
 # else
-/*
-	{29, 29},
-	{29, 2},
-	{2, 12},
-	{23, 7},
-	{20, 10},
-	{23, 13},
-	{2, 14},
-	{29, 29}
-*/
-/*
-    {29, 29},
-    {16, 2},
-    {2, 29},
-    {6, 29},
-    {13, 16}, // mid inner
-    {13, 18},
-
-    {16, 8},
-    {18, 16}, // mid inner
-    {18, 18},
-
-    {25, 29},
-    {29, 29},
-*/
-
-    {6, 2},
-	{25, 2},
-	{29, 6},
-	{29, 25},
-	{25, 29},
-	{6, 29},
-	{2, 25},
-	{2, 6},
-	{6, 2},
-	
-	{10, 6},
-    {21, 6},
-    {25, 10},
-    {25, 21},
-    {21, 25},
-
-    {10, 25},
-    {6, 21},
-    {6, 10},
-    {10, 6}
-/*
-    {29, 29},
-    {16, 2},
-    {2, 29},
-
-    {6, 29},
-
-    {10, 24}, // mid inner
-//  {12, 28},
-
-    {16, 8},
-
-    {20, 20}, // mid inner
-
-    {25, 29},
-    {29, 29}
-*/
+# define PAD 2
+# define TAL 166
+# define THIC TAL/6
+	{PAD, PAD},
+	{THIC-PAD, PAD},
+	{THIC-PAD, TAL-PAD},
+	{PAD, TAL-PAD},
+	{PAD, PAD}
 # endif
 	};
 
 	ff_int_t x, y;
 
-	ff_uint_t i;
-	i = 0;
-	while(i != N-1) {
-		struct point *p;
-		p = points+(i++);
-		if (p->x > 32/2) {
-			p->x+=A;
-		}
-		if (p->y > 32/2) {
-			p->y+=A;
-		}
-	}
-
-_again:
-	memset(buf, '.', WIDTH*HEIGHT);
-/*
-	if (points[4].y >= 27) {
-		points[4].y = 12;
-	} else
-		points[4].y++;
-*/
+	int out;
+	out = open("test.ppm", O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
+	char header[64];
+	char buf[128];
+	ff_uint_t size;
+	size = sprintf(buf, "P6\n%u %u\n255\n", tdown(WIDTH), tdown(HEIGHT));
+	write(out, buf, size);
+	ff_u8_t row[tdown(WIDTH)*3];
 	y = 0;
-	while(y != HEIGHT) {
+	while(y != tdown(HEIGHT)) {
 		x = 0;
-		while(x != WIDTH) {
-			fix(points, x, y);
-			char c;
-			c = buf[x+(y*WIDTH)];
-			if (c == '@') {
-				printf("\e[0;41m@\e[0;0m");
-			} else
-				printf("\e[0;40m%c\e[0;0m", c);
+		while(x != tdown(WIDTH)) {
+			ff_u8_t in;
+			in = fix(points, tup(x), tup(y));
+			ff_u8_t *dst;
+
+			dst = row+(x*3);
+			ff_u8_t *r, *g, *b;
+			r = dst;
+			g = dst+1;
+			b = dst+2;
+			if (!in) {
+				*r = 255;
+				*g = 0;
+				*b = 0;
+			} else {
+				*r = 0;
+				*g = 0;
+				*b = 0;
+			}
 			x++;
 		}
-		printf("\n");
+		write(out, row, tdown(WIDTH)*3);
 		y++;
 	}
-	usleep(100000);
-	printf("\e[1J");
-	goto _again;
+	close(out);
 }

@@ -7,6 +7,8 @@
 # include "system/io.h"
 # include "system/sched.h"
 # include "system/mutex.h"
+# include "graphics/job.h"
+# include "graphics/pipe.h"
 static struct ffly_tile *top = NULL;
 ff_mlock_t static lock = FFLY_MUTEX_INIT;
 
@@ -14,18 +16,28 @@ ff_mlock_t static lock = FFLY_MUTEX_INIT;
 	ffly_mutex_lock(&lock)
 # define ul \
 	ffly_mutex_unlock(&lock)
-void ffly_tile_draw(ffly_tilep __tile, ff_u8_t *__dst,
-	ff_u16_t __width, ff_u16_t __height, ff_u16_t __x, ff_u16_t __y)
+void ffly_tile_draw(ffly_tilep __tile,
+	ff_u16_t __width, ff_u16_t __height,
+	ff_u16_t __x, ff_u16_t __y)
 {
-	ffly_pixdraw(__x+__tile->xdis, __y+__tile->ydis, __dst, __width, __tile->p, 1<<__tile->size, 1<<__tile->size);
+	ffly_grp_inject(&__ffly_grp__, ffly_grj_tdraw(__tile, __width, __height, __x, __y));
+
+//	ffly_pixdraw(__x+__tile->xdis, __y+__tile->ydis, __dst, __width, __tile->p, 1<<__tile->size, 1<<__tile->size);
 }
 
 ffly_tilep ffly_tile_creat(ff_u8_t __size) {
 	ffly_printf("new tile.\n");
-	ffly_tilep tile = (ffly_tilep)__ffly_mem_alloc(sizeof(struct ffly_tile));
+	ffly_tilep tile;
+	
+	tile = (ffly_tilep)__ffly_mem_alloc(sizeof(struct ffly_tile));
 	tile->size = __size;
-	tile->p = __ffly_mem_alloc((1<<__size)*(1<<__size)*4);
-	ffly_mem_set(tile->p, 255, (1<<__size)*(1<<__size)*4);
+	tile->m = ffly_mo_new();
+
+	ff_uint_t sb;
+	sb = (1<<__size)*(1<<__size)*4;
+	ffly_mo_map(tile->m, sb);
+
+
 	tile->bits = TILE_BLANK;
 	tile->xdis = 0;
 	tile->ydis = 0;
@@ -46,7 +58,8 @@ void ffly_tile_del(ffly_tilep __tile) {
 	if (__tile->next != NULL)
 		__tile->next->bk = __tile->bk;
 	ul;
-	__ffly_mem_free(__tile->p);
+	ffly_mo_unmap(__tile->m);
+	ffly_mo_destroy(__tile->m);
 	__ffly_mem_free(__tile);
 }
 

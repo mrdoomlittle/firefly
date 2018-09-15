@@ -39,21 +39,15 @@ struct typo_glyph **glyph_table;
 	translate to default xy coords
 */
 
-/*
-	TODO:
-		reduct typoscale 
-
-		so __s-(1<<typo_scale);
-*/
 ff_uint_t ffly_typo_translate_to(ff_uint_t __s) {
-	return (__s>>2)<<typo_scale;
+	return (__s/20)<<typo_scale;
 }
 
 /*
 	translate xy coords into the one we use
 */
 ff_uint_t ffly_typo_translate_from(ff_uint_t __s) {
-	return (__s<<2)>>typo_scale;
+	return ((__s>>typo_scale)*20);
 }
 
 struct typo_glyph*

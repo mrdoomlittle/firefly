@@ -3,7 +3,7 @@
 # include "../ffint.h"
 # include "../types.h"
 # include "../uni.h"
-# include "../types/pixelmap_t.h"
+# include "../pallet.h"
 # define ffly_camera_setx(__cam, __x) \
     (__cam).x = __x
 # define ffly_camera_sety(__cam, __y) \
@@ -13,7 +13,8 @@
 	(__cam)->y = __y
 struct ffly_camera {
     ff_uint_t width, height;
-    ffly_pixelmap_t pixels;
+	struct ffly_pallet vis;
+  
     ff_uint_t x, y, z;
     ffly_unip uni;
 };
@@ -57,5 +58,5 @@ struct camera {
 }
 }
 }
-# endif
+#endif
 # endif /*__ffly__camera__h*/

@@ -233,6 +233,7 @@ ff_i8_t ff_duct_serve() {
 	__asm__("jmp _duct_again");
 
 	__asm__("_duct_get_frame:\n\t"); {
+		ffly_fb_gen(__frame_buff__);
 		ffly_pipe_write(ffly_frame(__frame_buff__), __frame_buff__->width*__frame_buff__->height*__frame_buff__->chn_c, pipe);
 	}
 	__asm__("jmp _duct_again");

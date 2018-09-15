@@ -10,6 +10,7 @@
 /*
 	TODO:
 		dealloc 'lots' that are not inuse
+	
 */
 
 # define is_sliceable(__val, __by) \
@@ -52,7 +53,7 @@ ffly_uni_body_move(ffly_unip __uni, ffly_phy_bodyp __body, ff_uint_t __x, ff_uin
 /* should to rename to copy or somthing along that line. 
 */
 ff_err_t
-ffly_uni_frame(ffly_unip __uni, ff_byte_t *__dst,
+ffly_uni_frame(ffly_unip __uni, ffly_palletp __dst,
 	ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl,
 	ff_uint_t __x, ff_uint_t __y, ff_uint_t __z)
 {
@@ -78,7 +79,7 @@ ffly_uni_frame(ffly_unip __uni, ff_byte_t *__dst,
 							ffly_printf("lot error null body within.\n");
 						} else {
 						if ((*body->x < __x+__xl && *body->x >= __x) && (*body->y < __y+__yl && *body->y >= __y) && (*body->z < __z+__zl && *body->z >= __z)) {
-							ffly_rasterize(body->model, __dst, *body->x-__x, *body->y-__y, __xl, __yl, __x+__xl, __y+__yl);
+	//						ffly_rasterize(body->model, __dst, *body->x-__x, *body->y-__y, __xl, __yl, __x+__xl, __y+__yl);
 							//ffly_light_emit(__dst, __xl, __yl, *body->x-__x, *body->y-__y, 0, *body->light);
 						}
 						}

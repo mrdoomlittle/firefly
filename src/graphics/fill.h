@@ -2,6 +2,7 @@
 # define __ffly__fill__h
 # include "../ffint.h"
 # include "colour.h"
+# include "../pallet.h"
 # ifdef __cplusplus
 # ifndef __NVCC__
 #	include "pipe.h"
@@ -20,8 +21,8 @@ types::err_t static pixelfill(types::pixelmap_t __dst, mdl_uint_t __nopix, types
 }
 extern "C" {
 # endif
-ff_err_t ffly_pixfill(ff_byte_t*, ff_uint_t, ffly_colour_t);
-ff_err_t __ffly_pixfill(ff_byte_t*, ff_uint_t, ffly_colour_t);
+ff_err_t ffly_pixfill(ff_u32_t, ffly_colour_t, ff_u32_t);
+ff_err_t __ffly_pixfill(ff_u32_t, ffly_colour_t, ff_u32_t);
 # ifdef __cplusplus
 }
 # endif

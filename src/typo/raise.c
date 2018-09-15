@@ -9,6 +9,10 @@
 */
 ff_u8_t *raise_p;
 
+
+/*
+	rename eo to so for suboperation
+*/
 ff_u8_t *raise_eo_sz;
 void(**raise_eo)(void);
 ff_u8_t raise_stack[STACK_SIZE];

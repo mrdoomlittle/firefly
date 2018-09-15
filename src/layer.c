@@ -20,5 +20,5 @@ void ffly_layer_del(ffly_layerp __layer) {
 # include "graphics/draw.h"
 ff_err_t
 ffly_layer_draw(ffly_layerp __layer, ff_u8_t *__dst, ff_uint_t __width) {
-	ffly_pixdraw(__layer->x, __layer->y, __dst, __width, __layer->pixels, __layer->width, __layer->height);
+//	ffly_pixdraw(__layer->x, __layer->y, __dst, __width, __layer->pixels, __layer->width, __layer->height);
 }

@@ -104,12 +104,162 @@ void* th(void *__arg) {
 # include "uni.h"
 # include "carriage.h"
 # include "tools.h"
-ff_err_t ffmain(int __argc, char const *__argv[]) {
-	ff_u64_t b;
+# include "driver.h"
+# include "context.h"
+# include "tri.h"
+# include "tex.h"
+# include "dc.h"
+# include "prim.h"
+# include "pixel.h"
+# include "frame_buff.h"
+# include "pallet.h"
+# include "graphics/pipe.h"
+# include "graphics/fill.h"
+# include "graphics/copy.h"
+# include "graphics/draw.h"
+# include "graphics/frame_buff.h"
+void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_uint_t __height, ff_uint_t __x, ff_uint_t __y) {
+	ff_u8_t buf[__width*__height*4];
+	ffly_mem_set(buf, 0, __width*__height*4);
+	ffly_fb_read(__fb, buf, __width, __height, __x, __y);
 
-	b = 21299;
-	ffly_prbin(&b, 64);
+	ff_u8_t *d, *s;
+	ff_uint_t x, y;
+	y = 0;
+	while(y != __height) {
+		x = 0;
+		while(x != __width) {
+			d = ((ff_u8_t*)__dst)+((x+(y*__width))*3);
+			s = buf+((x+(y*__width))*4);
+			d[0] = s[0];
+			d[1] = s[1];
+			d[2] = s[2];
+//			ffly_printf("%u.%u.%u\n", d[0], d[1], d[2]);
+			x++;
+		}
+		y++;
+	}
+}
+ff_err_t ffmain(int __argc, char const *__argv[]) {	
+/*
+	ffly_driver(_driver_sr, &G_CONTEXT->driver);
+	G_CONTEXT->stack = 0;
+
+	struct ffly_tex tex;
+	tex.inn[0] = 255;
+	tex.inn[1] = 255;
+	tex.inn[2] = 255;
+	tex.inn[3] = 255;
+	struct ffly_tri2 tri;
+	tri.v0.x = -10;
+	tri.v0.y = 0;
+	tri.v1.x = 10;
+	tri.v1.y = 4;
+	tri.v2.x = 10;
+	tri.v2.y = 10;
+
+	ff_u16_t fb;
+	ffly_g_setctx(ffly_g_ctx_new());
+	fb = ffly_g_fb_new(76, 76);
+	ffly_g_fb_set(fb);
+
+	ffly_g_start();
+
+	ff_u8_t dfc[4] = {20, 21, 22, 23};
+	ffly_g_pixfill(10*76, dfc);
+	ffly_g_tri2(&tri, ffly_g_tex(&tex));
+	ff_u8_t dst[76*76*4];
+	ffly_mem_set(dst, 0, 76*76*4);
+	G_CONTEXT->driver.frame(dst, 0, 0, 76, 76);
+
+	ffly_g_finish();
+	ffly_g_fb_destroy(fb);
+	ffly_g_done();
+
+	ffly_printf("dst: %p\n", dst);
+	ff_uint_t x, y;
+	y = 0;
+	while(y != 76) {
+		x = 0;
+		while(x != 76) {
+			ff_u32_t v;
+			v = *(ff_u32_t*)(dst+((x+(y*76))*4));
+			ff_u8_t r,g,b,a;
+			r = v&0xff;
+			g = v>>8&0xff;
+			b = v>>16&0xff;
+			a = v>>24&0xff;
+			char c;
+			//ffly_printf("%u.%u.%u.%u\n", r, g, b, a);
+			if (r == 20 && g == 21 && b == 22 && a == 23) {
+				c = '@';
+			} else {
+				if (v == 21) {
+					c = '!';
+				} else if (v>0) {
+					c = '#';
+				} else {
+					c = ' ';
+				}
+			}
+			ffly_printf("%c", c);
+			x++;
+		}
+		ffly_printf("\n");
+		y++;
+	}
+*/
+# define WIDTH 128
+# define HEIGHT 128
+	ffly_driver(_driver_sr, &G_CONTEXT->driver);
+	G_CONTEXT->stack = 0;
+
+	ff_err_t err;
+	__frame_buff__ = ffly_frame_buff_creat(WIDTH, HEIGHT, 4, &err);
+	int out;
+	out = open("test.ppm", O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
+    char buf[128];
+	ff_uint_t size;
+	size = ffly_sprintf(buf, "P6\n%u %u\n255\n", WIDTH, HEIGHT);
+	write(out, buf, size);
+	ff_u8_t row[WIDTH*3];
+
+	ff_u8_t src[WIDTH*HEIGHT*4];
+	ffly_mem_set(src, 0, WIDTH*HEIGHT*4);
+
+	ffly_palletp pt;
+	pt = ffly_pallet_new(WIDTH, HEIGHT, _ffly_tile_16);
+	ff_uint_t y;
+	ffly_pallet_write(pt, src, WIDTH, HEIGHT, 0, 0);
+
+	ffly_grp_prepare(&__ffly_grp__, 100);
+	ff_u16_t fb;
+	ffly_g_setctx(ffly_g_ctx_new());
+	fb = ffly_g_fb_new(WIDTH, HEIGHT);
+	ffly_g_fb_set(fb);
+
+	ffly_g_start();
+
+	ffly_colour_t c = {37, 53, 255, 0};
+	ffly_pixfill(WIDTH*HEIGHT, c, 0);
+	ffly_grp_unload(&__ffly_grp__);
 	
+	ffly_fb_copy(__frame_buff__);
+	ffly_g_finish();
+	ffly_g_fb_destroy(fb);
+	ffly_g_done();
+	ffly_fb_yank(__frame_buff__);
+	y = 0;
+	while(y != HEIGHT) {
+		ffly_mem_set(row, 0, WIDTH*3);
+		frame_read_rgb(__frame_buff__, row, WIDTH, 1, 0, y);
+		write(out, row, WIDTH*3);
+		y++;
+	}	
+
+	ffly_pallet_distroy(pt);
+	ffly_frame_buff_del(__frame_buff__);
+	close(out);
 /*
 	ff_uint_t i, n;
 

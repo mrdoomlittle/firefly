@@ -68,6 +68,7 @@ void _ros_dmu();
 void _ros_exit();
 void _ros_mi();
 void _ros_dmi();
+void _ros_rin();
 static void(*op[])() = {
 	_ros_asb,
 	_ros_asw,
@@ -81,7 +82,14 @@ static void(*op[])() = {
 	_ros_dmu,
 	_ros_exit,
 	_ros_mi,
-	_ros_dmi
+	_ros_dmi,
+	_ros_rin
+};
+
+
+# include "raster.h"
+static void(*rin[])(struct rr_struc*) = {
+	ffly_rraster
 };
 
 # define fi __asm__("jmp _ros_fi"); // finished
@@ -115,6 +123,21 @@ void ff_rosin_run(ffly_rosinp __ros) {
 		ff_u64_t val;
 		get(__ros, &val, l);
 		stack_put(__ros, &val, l, to);
+	}
+	fi;
+
+	__asm__("_ros_rin:\n\t"); {
+		ff_u8_t r, n;
+		get(__ros, &r, 1);
+		get(__ros, &n, 1);
+		ff_addr_t args, struc;
+		get(__ros, &struc, sizeof(ff_addr_t));
+		get(__ros, &args, sizeof(ff_addr_t));
+		struct rr_struc *s;
+		s = (struct rr_struc*)stack_at(__ros, struc);
+		s->n = n;
+		s->args = (void**)stack_at(__ros, args);
+		rin[r](s);
 	}
 	fi;
 

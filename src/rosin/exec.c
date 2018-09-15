@@ -40,8 +40,8 @@ void ffros_exec(ffly_tapep __tape) {
 	ff_rosin_run(&ctx);
 	ff_rosin_de_init(&ctx);
 }
-
-/*
+//# define DEBUG
+# ifdef DEBUG
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_tapep tape;
 
@@ -52,6 +52,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		0x09,
 		0x0b, 0x00, 0x00,
 		0x0c, 0x00, 0x00,
+		0x00, 0x00, 0x18, 0x00,
+		0x0d, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00,
 		0x0a
 	};
 
@@ -59,4 +61,5 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffros_exec(tape);
 
 	ffly_tape_raze(tape);
-}*/
+}
+# endif

@@ -1,5 +1,6 @@
 #!/bin/bash
 dirs=(
+	sr
 	dep
 	audio
 	graphics
