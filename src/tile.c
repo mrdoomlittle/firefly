@@ -16,13 +16,48 @@ ff_mlock_t static lock = FFLY_MUTEX_INIT;
 	ffly_mutex_lock(&lock)
 # define ul \
 	ffly_mutex_unlock(&lock)
-void ffly_tile_draw(ffly_tilep __tile,
-	ff_u16_t __width, ff_u16_t __height,
-	ff_u16_t __x, ff_u16_t __y)
-{
-	ffly_grp_inject(&__ffly_grp__, ffly_grj_tdraw(__tile, __width, __height, __x, __y));
 
-//	ffly_pixdraw(__x+__tile->xdis, __y+__tile->ydis, __dst, __width, __tile->p, 1<<__tile->size, 1<<__tile->size);
+void static
+pt_get(ff_u8_t __what, long long __dst, void *__tile) {
+	ffly_tilep t;
+
+	t = (ffly_tilep)__tile;
+	switch(__what) {
+		case 0x00: // get bits
+			*(ff_u8_t*)__dst = t->bits;	
+		break;
+		case 0x01: // get memory map
+			*(void**)__dst = t->m->map;
+		break;
+		case 0x02: // get size by shift index
+			*(ff_u8_t*)__dst = t->size;
+		break;
+	}
+}
+
+# include "context.h"
+ff_u16_t ffly_g_ptile_new(void(*__get)(ff_u8_t, long long, void*), void *__tile) {
+	ff_u16_t pt;
+
+	struct ff_context *ctx;
+	ctx = G_CONTEXT;
+	pt = ctx->stack;
+	ctx->stack+=8;
+	ctx->driver.ptile_new(pt, __get, __tile);
+	return pt;
+}
+
+void ffly_g_ptile_destroy(ff_u16_t __pt) {
+	G_CONTEXT->driver.ptile_destroy(__pt);
+}
+
+void ffly_tile_draw(ffly_tilep __tile, ff_u32_t __x, ff_u32_t __y) {
+	if (!(__tile->bits&TILE_PH)) {
+		__tile->pt = ffly_g_ptile_new(pt_get, __tile);
+		__tile->bits |= TILE_PH;
+	}
+
+	G_CONTEXT->driver.tdraw(__tile->pt, __x, __y);	
 }
 
 ffly_tilep ffly_tile_creat(ff_u8_t __size) {
@@ -53,6 +88,9 @@ ffly_tilep ffly_tile_creat(ff_u8_t __size) {
 }
 
 void ffly_tile_del(ffly_tilep __tile) {
+	if ((__tile->bits&TILE_PH)>0) {
+		ffly_g_ptile_destroy(__tile->pt);
+	}
 	lk;
 	*__tile->bk = __tile->next;
 	if (__tile->next != NULL)

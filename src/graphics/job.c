@@ -77,14 +77,14 @@ ffly_grj_pixfill(ff_u32_t __npix, ffly_colour_t __colour, ff_u32_t __off) {
 }
 
 struct ffly_grj*
-ffly_grj_pixdraw(ff_u32_t __x, ff_u32_t __y, ffly_palletp __src,
+ffly_grj_pixdraw(ff_u32_t __x, ff_u32_t __y, void *__src,
 	ff_u32_t __width, ff_u32_t __height)
 {
 	ffly_fprintf(ffly_log, "pixdraw job.\n");
 	ff_u8_t *p;
 	ff_uint_t sz;
 
-	sz = parsz5(ff_u32_t, ff_u32_t, ffly_palletp, ff_u32_t, ff_u32_t);
+	sz = parsz5(ff_u32_t, ff_u32_t, void*, ff_u32_t, ff_u32_t);
 	p = (ff_u8_t*)__ffly_mem_alloc(sz);
 
 	struct ffly_grj *j = ffly_grj_mk(_grj_pixdraw, p);
@@ -99,7 +99,7 @@ ffly_grj_pixdraw(ff_u32_t __x, ff_u32_t __y, ffly_palletp __src,
 
 	put(x, __x, ff_u32_t);
 	put(y, __y, ff_u32_t);
-	put(src, __src, ffly_palletp);
+	put(src, __src, void*);
 	put(width, __width, ff_u32_t);
 	put(height, __height, ff_u32_t);
 
@@ -143,38 +143,30 @@ ffly_grj_pixcopy(ff_u32_t __x, ff_u32_t __y, ff_u32_t __width, ff_u32_t __height
 }
 
 struct ffly_grj*
-ffly_grj_tdraw(ffly_tilep __tile,
-	ff_u32_t __width, ff_u32_t __height,
-	ff_u32_t __x, ff_u32_t __y)
+ffly_grj_tdraw(ffly_tilep __tile, ff_u32_t __x, ff_u32_t __y)
 {
 	ffly_fprintf(ffly_log, "tdraw job.\n");
 	ff_u8_t *p;
 	ff_uint_t sz;
 
-	sz = parsz5(ffly_tilep, ff_u32_t, ff_u32_t, ff_u32_t, ff_u32_t);
+	sz = parsz3(ffly_tilep, ff_u32_t, ff_u32_t);
 	p = (ff_u8_t*)__ffly_mem_alloc(sz);
 
 	struct ffly_grj *j = ffly_grj_mk(_grj_tdraw, p);
 	void **par = j->par;
 
-	ff_u8_t *tile, *width, *height, *x, *y;
+	ff_u8_t *tile, *x, *y;
 	tile = p;
-	width = p+8;
-	height = p+12;
-	x = p+16;
-	y = p+20;
+	x = p+8;
+	y = p+12;
 
 	put(tile, __tile,  ffly_tilep);
-	put(width, __width, ff_u32_t);
-	put(height, __height, ff_u32_t);
 	put(x, __x, ff_u32_t);
 	put(y, __y, ff_u32_t);
 
 	*par = tile;
-	par[1] = width;
-	par[2] = height;
-	par[3] = x;
-	par[4] = y;
+	par[1] = x;
+	par[2] = y;
 	return j;
 }
 
@@ -239,12 +231,12 @@ _pixdraw(struct ffly_grj *__job) {
 	void **par = __job->par;
 
 	ff_u32_t x, y;
-	ffly_palletp src;
+	void *src;
 	ff_u32_t width, height;
 
 	x = *(ff_u32_t*)*par;
 	y = *(ff_u32_t*)par[1];
-	src = *(ffly_palletp*)par[2];
+	src = *(void**)par[2];
 	width = *(ff_u32_t*)par[3];
 	height = *(ff_u32_t*)par[4];
 	__ffly_pixdraw(x, y, src, width, height);
@@ -252,7 +244,16 @@ _pixdraw(struct ffly_grj *__job) {
 
 void static
 _tdraw(struct ffly_grj *__job) {
+	void **par = __job->par;
 
+	ffly_tilep t;
+	ff_u32_t x, y;
+
+	t = *(ffly_tilep*)*par;
+	x = *(ff_u32_t*)par[1];
+	y = *(ff_u32_t*)par[2];
+
+	__ffly_tdraw(t, x, y);
 }
 
 static void(*funcs[])(struct ffly_grj*) = {

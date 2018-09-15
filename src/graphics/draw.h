@@ -3,6 +3,7 @@
 # include "../ffint.h"
 # include "../types.h"
 # include "../pallet.h"
+# include "../tile.h"
 # ifdef __cplusplus
 # ifndef __NVCC__
 #	include "pipe.h"
@@ -21,8 +22,10 @@ types::err_t static pixeldraw(uint_t __x, uint_t __y, types::byte_t *__dst, uint
 }
 extern "C" {
 # endif
-ff_err_t ffly_pixdraw(ff_u32_t, ff_u32_t, ffly_palletp, ff_u32_t, ff_u32_t);
-ff_err_t __ffly_pixdraw(ff_u32_t, ff_u32_t, ffly_palletp, ff_u32_t, ff_u32_t);
+void ffly_tdraw(ffly_tilep, ff_u32_t, ff_u32_t);
+void __ffly_tdraw(ffly_tilep, ff_u32_t, ff_u32_t);
+ff_err_t ffly_pixdraw(ff_u32_t, ff_u32_t, void*, ff_u32_t, ff_u32_t);
+ff_err_t __ffly_pixdraw(ff_u32_t, ff_u32_t, void*, ff_u32_t, ff_u32_t);
 # ifdef __cplusplus
 }
 # endif

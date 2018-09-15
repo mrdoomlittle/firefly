@@ -58,7 +58,7 @@ void ffly_pallet_copy(ffly_palletp __src, ffly_palletp __dst, ff_uint_t __x, ff_
 	}
 }
 
-void ffly_pallet_draw(ffly_palletp __src, ff_uint_t __width, ff_uint_t __height, ff_uint_t __x, ff_uint_t __y) {
+void ffly_pallet_draw(ffly_palletp __src, ff_uint_t __x, ff_uint_t __y, ff_u8_t __r) {
 	ff_uint_t x, y = __y;
 	ffly_tilep src, cur, *p;
 	ff_u16_t depth;
@@ -75,12 +75,13 @@ void ffly_pallet_draw(ffly_palletp __src, ff_uint_t __width, ff_uint_t __height,
 			cur = src;
 			depth = 0;
 			while(cur != NULL) {
-				ffly_tile_draw(cur, __width, __height, x*(1<<__src->tilesize), y*(1<<__src->tilesize));
+				ffly_tdraw(cur, x*(1<<__src->tilesize), y*(1<<__src->tilesize));
 				cur = cur->child;
 				depth++;
 			}
 			log("tile depth %u.\n", depth);
-			*p = NULL;
+			if (__r)
+				*p = NULL;
 		_sk:
 			x++;
 		}
@@ -94,6 +95,7 @@ void ffly_pallet_init(ffly_palletp __pallet, ff_uint_t __width, ff_uint_t __heig
 	wt = ((__width+(0xffffffffffffffff>>(64-__tilesize)))>>__tilesize);
 	ht = ((__height+(0xffffffffffffffff>>(64-__tilesize)))>>__tilesize);
 	size = (__pallet->wt = wt)*(__pallet->ht = ht);
+
 
 	__pallet->tiles = (ffly_tilep*)__ffly_mem_alloc(size*sizeof(ffly_tilep));
 	ffly_tilep *cur = __pallet->tiles;
@@ -194,8 +196,9 @@ void ffly_pallet_de_init(ffly_palletp __pallet) {
 	ffly_tilep *cur = __pallet->tiles;
 	ffly_tilep *end = cur+(__pallet->wt*__pallet->ht);
 	while(cur != end) {
-		if (*cur != NULL)
+		if (*cur != NULL) {
 			ffly_tile_del(*cur);
+		}
 		cur++;
 	}
 	__ffly_mem_free(__pallet->tiles);

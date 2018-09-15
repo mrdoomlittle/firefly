@@ -225,7 +225,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_u8_t row[WIDTH*3];
 
 	ff_u8_t src[WIDTH*HEIGHT*4];
-	ffly_mem_set(src, 0, WIDTH*HEIGHT*4);
+	ffly_mem_set(src, 255, WIDTH*HEIGHT*4);
 
 	ffly_palletp pt;
 	pt = ffly_pallet_new(WIDTH, HEIGHT, _ffly_tile_16);
@@ -242,6 +242,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_colour_t c = {37, 53, 255, 0};
 	ffly_pixfill(WIDTH*HEIGHT, c, 0);
+	ffly_pallet_draw(pt, 0, 0, 0);
 	ffly_grp_unload(&__ffly_grp__);
 	
 	ffly_fb_copy(__frame_buff__);
@@ -260,6 +261,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_pallet_distroy(pt);
 	ffly_frame_buff_del(__frame_buff__);
 	close(out);
+//	ffly_tile_cleanup();
 /*
 	ff_uint_t i, n;
 

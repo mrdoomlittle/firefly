@@ -7,7 +7,7 @@
 ff_u8_t *sr_raise_p;
 ff_u8_t sr_raise_stack[STACK_SIZE];
 ff_u16_t sr_raise_sp;
-# define MAX 13
+# define MAX 16
 static void(*op[])(void) = {
 	sr_raster_tri2,
 	sr_ctx_new,
@@ -21,7 +21,10 @@ static void(*op[])(void) = {
 	sr_pixfill,
 	sr_fb_set,
 	sr_fb_new,
-	sr_fb_destroy
+	sr_fb_destroy,
+	sr_ptile_new,
+	sr_ptile_destroy,
+	sr_tdraw
 };
 
 ff_uint_t static os[] = {
@@ -37,7 +40,10 @@ ff_uint_t static os[] = {
 	sizeof(ff_u8_t*)+sizeof(ff_u32_t),
 	sizeof(ff_u16_t),
 	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),
-	sizeof(ff_u16_t)
+	sizeof(ff_u16_t),
+	sizeof(ff_u16_t)+(sizeof(void*)*2),
+	sizeof(ff_u16_t),
+	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2)
 };
 
 void sr_raise(ff_u8_t *__bin, ff_uint_t __size) {

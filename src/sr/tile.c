@@ -3,6 +3,31 @@
 # include "../memory/mem_free.h"
 # include "def.h"
 # include "../dep/mem_set.h"
+# include "raise.h"
+void sr_ptile_new(void) {
+	void **d;
+	d = (void**)stack_at(*(ff_u16_t*)sr_raise_p);
+
+	void *g, *t;
+	g = *(void**)(sr_raise_p+2);
+	t = *(void**)(sr_raise_p+10);
+
+	struct sr_ptile *pt;
+
+	pt = (struct sr_ptile*)__ffly_mem_alloc(sizeof(struct sr_ptile));
+
+	*d = pt;
+
+	pt->get = (void(*)(ff_u8_t, long long, void*))g;
+	pt->tile = t;
+}
+
+void sr_ptile_destroy(void) {
+	struct sr_ptile *pt;
+	pt = *(struct sr_ptile**)stack_at(*(ff_u16_t*)sr_raise_p);
+	__ffly_mem_free(pt);
+}
+
 struct sr_tile* sr_tile_new(ff_u8_t __sz) {
 	struct sr_tile *t;
 	t = (struct sr_tile*)__ffly_mem_alloc(sizeof(struct sr_tile));

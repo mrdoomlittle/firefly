@@ -7,7 +7,8 @@
 # define ffly_tile_set(__tile, __p) \
 	(__tile)->p = __p;
 
-#define TILE_BLANK 0x1
+#define TILE_BLANK 0x01
+#define TILE_PH 0x02
 typedef struct ffly_pallet* ffly_palletp;
 
 enum {
@@ -24,9 +25,13 @@ typedef struct ffly_tile {
 	struct ffly_tile *child;
 	struct ffly_tile **bk, *next;
 	ff_u8_t bits;
+	ff_u16_t pt;
 } *ffly_tilep;
 
-void ffly_tile_draw(ffly_tilep, ff_u16_t, ff_u16_t, ff_u16_t, ff_u16_t);
+ff_u16_t ffly_g_ptile_new(void(*)(ff_u8_t, long long, void*), void*);
+void ffly_g_ptile_destroy(ff_u16_t);
+
+void ffly_tile_draw(ffly_tilep, ff_u32_t, ff_u32_t);
 ffly_tilep ffly_tile_creat(ff_u8_t);
 void ffly_tile_del(ffly_tilep);
 void ffly_tile_cleanup(void);

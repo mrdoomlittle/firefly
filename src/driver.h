@@ -4,6 +4,9 @@
 # include "types.h"
 # include "prim.h"
 struct ff_driver {
+	void(*tdraw)(ff_u16_t, ff_u32_t, ff_u32_t);
+	void(*ptile_new)(ff_u16_t, void(*)(ff_u8_t, long long, void*), void*);
+	void(*ptile_destroy)(ff_u16_t);
 	void(*fb_set)(ff_u16_t);
 	void(*fb_new)(ff_u32_t, ff_u32_t, ff_u16_t);
 	void(*fb_destroy)(ff_u16_t);

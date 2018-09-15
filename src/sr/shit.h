@@ -4,7 +4,7 @@
 /*
 	rename
 */
-
+void sr_tdraw(void);
 void sr_pixcopy(void);
 void sr_pixdraw(void);
 void sr_pixfill(void);

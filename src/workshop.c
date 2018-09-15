@@ -32,12 +32,12 @@ enum {
 };
 
 void opt() {
-//	ffly_gui_window_draw(&workshop.window, &workshop.frame, WIDTH, HEIGHT);
+	ffly_gui_window_draw(&workshop.window, &workshop.frame, WIDTH, HEIGHT);
 //	ffly_gui_btn_draw(workshop.front, &workshop.frame, WIDTH, HEIGHT);
 }
 
 void front() {
-//	ffly_gui_window_draw(&workshop.window, &workshop.frame, WIDTH, HEIGHT);
+	ffly_gui_window_draw(&workshop.window, &workshop.frame, WIDTH, HEIGHT);
 //	ffly_gui_btn_draw(workshop.opt, &workshop.frame, WIDTH, HEIGHT);
 }
 
@@ -50,8 +50,8 @@ void ffly_workshop_start() {
 	while(1) {
 		ffly_g_start();
 		ffly_pixfill(WIDTH*HEIGHT, ffly_colour(63, 60, 255, 255), 0);
-//		draw();
-//		ffly_pallet_draw(&workshop.frame, ffly_frame(__frame_buff__), WIDTH, HEIGHT, 0, 0);
+		draw();
+		ffly_pallet_draw(&workshop.frame, 0, 0, 1);
 		ff_eventp event;
 		while(!ff_event_poll(&event)) {
 			if (event->kind == _ffly_wd_ek_btn_press || event->kind == _ffly_wd_ek_btn_release) {
@@ -126,7 +126,7 @@ void ffly_workshop_init() {
     ffly_g_fb_set(fb);
 	ffly_g_done();
 
-//	ffly_pallet_init(&workshop.frame, WIDTH, HEIGHT, _ffly_tile_64);
+	ffly_pallet_init(&workshop.frame, WIDTH, HEIGHT, _ffly_tile_64);
 	ffly_grp_prepare(&__ffly_grp__, 100);
 	ff_set_frame_size(WIDTH, HEIGHT);
 	ff_graphics_init();
@@ -170,13 +170,14 @@ void ffly_workshop_init() {
 	ffly_gui_btn_sched(btn);
 	ffly_gui_btn_enable(btn);
 */	
-//	ffly_gui_window_init(&workshop.window, 64, 64, 128, 128);
-/*
+	ffly_gui_window_init(&workshop.window, 64, 64, 128, 128);
+
 	ff_u8_t static pixels[64*64*4];
 	ffly_mem_set(pixels, 255, 64*64*4);
+
 	ffly_fontp font;
 	ffly_ui_textp text;
-	text = ffly_ui_text_creat("01");
+	text = ffly_ui_text_creat("010110");
 	font = ffly_font_new();
 	ffly_font_init(font, _font_driver_typo);
 
@@ -188,8 +189,8 @@ void ffly_workshop_init() {
 
 	ffly_font_destroy(font);
 	ffly_ui_text_destroy(text);
-*/
-//	ffly_gui_window_write(&workshop.window, pixels, 64, 64, 0, 0);
+
+	ffly_gui_window_write(&workshop.window, pixels, 64, 64, 0, 0);
 //	ffly_grp_unload(&__ffly_grp__);
 //	ffly_gui_window_update(&workshop.window);
 }
@@ -204,13 +205,13 @@ void ffly_workshop_de_init() {
 	ffly_plate_cleanup();
 //	__ffly_mem_free(tex0);
 //	__ffly_mem_free(tex1);
-//	ffly_gui_window_de_init(&workshop.window);
+	ffly_gui_window_de_init(&workshop.window);
 //	ffly_gui_btn_destroy(workshop.opt);
 //	ffly_gui_btn_destroy(workshop.front);
 	ff_event_cleanup();
 	ffly_grp_cleanup(&__ffly_grp__);
 	ffly_grj_cleanup();
-//	ffly_pallet_de_init(&workshop.frame);
+	ffly_pallet_de_init(&workshop.frame);
 	ffly_tile_cleanup();
 	ffly_scheduler_de_init();
 //	ffly_carriage_cleanup();

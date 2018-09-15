@@ -3,7 +3,7 @@
 # include "../../prim.h"
 # include "../../sr/types.h"
 # include "../../sr/context.h"
-static ff_u8_t cb[512];
+static ff_u8_t cb[2048];
 static ff_u8_t *cb_p = cb;
 
 void static
@@ -94,7 +94,8 @@ _sr_finish(void) {
 	*(cb_p++) = sr_op_finish;
 }
 
-void _sr_pixdraw(ff_u32_t __x, ff_u32_t __y, ff_u8_t *__pixels, ff_u32_t __width, ff_u32_t __height) {
+void static
+_sr_pixdraw(ff_u32_t __x, ff_u32_t __y, ff_u8_t *__pixels, ff_u32_t __width, ff_u32_t __height) {
 	*cb_p = sr_op_pixdraw;
 	*(ff_u32_t*)(cb_p+1) = __x; 
 	*(ff_u32_t*)(cb_p+5) = __y;
@@ -105,20 +106,23 @@ void _sr_pixdraw(ff_u32_t __x, ff_u32_t __y, ff_u8_t *__pixels, ff_u32_t __width
 	cb_p+=24;
 }
 
-void _sr_pixfill(ff_u32_t __npix, ff_u8_t *__colour) {
+void static
+_sr_pixfill(ff_u32_t __npix, ff_u8_t *__colour) {
 	*cb_p = sr_op_pixfill;
 	*(ff_u32_t*)(cb_p+1) = __npix;
 	*(ff_u8_t**)(cb_p+5) = __colour;
 	cb_p+=13;
 }
 
-void _sr_fb_set(ff_u16_t __fb) {
+void static
+_sr_fb_set(ff_u16_t __fb) {
 	*cb_p = sr_op_fb_set;
 	*(ff_u16_t*)(cb_p+1) = __fb;
 	cb_p+=3;
 }
 
-void _sr_fb_new(ff_u32_t __width, ff_u32_t __height, ff_u16_t __fb) {
+void static
+_sr_fb_new(ff_u32_t __width, ff_u32_t __height, ff_u16_t __fb) {
 	*cb_p = sr_op_fb_new;
 	*(ff_u32_t*)(cb_p+1) = __width;
 	*(ff_u32_t*)(cb_p+5) = __height;
@@ -126,14 +130,43 @@ void _sr_fb_new(ff_u32_t __width, ff_u32_t __height, ff_u16_t __fb) {
 	cb_p+=11;
 }
 
-void _sr_fb_destroy(ff_u16_t __fb) {
+void static
+_sr_fb_destroy(ff_u16_t __fb) {
 	*cb_p = sr_op_fb_destroy;
 	*(ff_u16_t*)(cb_p+1) = __fb;
 	cb_p+=3;
 }
 
+void static
+_sr_ptile_new(ff_u16_t __pt, void(*__get)(ff_u8_t, long long, void*), void *__tile) {
+	*cb_p = sr_op_ptile_new;
+	*(ff_u16_t*)(cb_p+1) = __pt;
+	*(void**)(cb_p+3) = (void*)__get;
+	*(void**)(cb_p+11) = __tile;
+	cb_p+=19;
+}
+
+void static
+_sr_ptile_destroy(ff_u16_t __pt) {
+	*cb_p = sr_op_ptile_destroy;
+	*(ff_u16_t*)(cb_p+1) = __pt;
+	cb_p+=3;
+}
+
+void static
+_sr_tdraw(ff_u16_t __tile, ff_u32_t __x, ff_u32_t __y) {
+	*cb_p = sr_op_tdraw;
+	*(ff_u16_t*)(cb_p+1) = __tile;
+	*(ff_u32_t*)(cb_p+3) = __x;
+	*(ff_u32_t*)(cb_p+7) = __y;
+	cb_p+=11;
+}
+
 # include "../../driver.h"
 void ffly_sr(struct ff_driver *__driver) {
+	__driver->tdraw = _sr_tdraw;
+	__driver->ptile_new = _sr_ptile_new;
+	__driver->ptile_destroy = _sr_ptile_destroy;
 	__driver->fb_set = _sr_fb_set;
 	__driver->fb_new = _sr_fb_new;
 	__driver->fb_destroy = _sr_fb_destroy;

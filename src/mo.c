@@ -10,7 +10,6 @@ ffly_mop ffly_mo_new(void) {
 }
 
 void ffly_mo_destroy(ffly_mop __mo) {
-
 	__ffly_mem_free(__mo);
 }
 

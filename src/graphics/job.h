@@ -22,9 +22,9 @@ extern "C" {
 # endif
 struct ffly_grj* ffly_grj_mk(ff_u8_t, void*);
 struct ffly_grj* ffly_grj_pixfill(ff_u32_t, ffly_colour_t, ff_u32_t);
-struct ffly_grj* ffly_grj_pixdraw(ff_u32_t, ff_u32_t, ffly_palletp, ff_u32_t, ff_u32_t);
+struct ffly_grj* ffly_grj_pixdraw(ff_u32_t, ff_u32_t, void*, ff_u32_t, ff_u32_t);
 struct ffly_grj* ffly_grj_pixcopy(ff_u32_t, ff_u32_t, ff_u32_t, ff_u32_t);
-struct ffly_grj* ffly_grj_tdraw(ffly_tilep, ff_u32_t, ff_u32_t, ff_u32_t, ff_u32_t);
+struct ffly_grj* ffly_grj_tdraw(ffly_tilep, ff_u32_t, ff_u32_t);
 ff_err_t ffly_grj_prosess(struct ffly_grj*);
 void ffly_grj_cleanup();
 # ifdef __cplusplus

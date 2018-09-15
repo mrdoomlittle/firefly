@@ -10,6 +10,7 @@
 
 struct ff_workshop {
 	struct ffly_pallet frame;
+
 	ffly_gui_btnp opt, front;
 	struct ffly_gui_window window;
 };

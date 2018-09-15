@@ -1,8 +1,7 @@
 # ifndef __ffly__sr__raise__h
 # define __ffly__sr__raise__h
 # include "../ffint.h"
-# define STACK_SIZE 256
-
+# define STACK_SIZE 2048
 # define sr_op_raster_tri2 0x00
 # define sr_op_ctx_new 0x01
 # define sr_op_ctx_destroy 0x02
@@ -16,6 +15,9 @@
 # define sr_op_fb_set 0x0a
 # define sr_op_fb_new 0x0b
 # define sr_op_fb_destroy 0x0c
+# define sr_op_ptile_new 0x0d
+# define sr_op_ptile_destroy 0x0e
+# define sr_op_tdraw 0x0f
 # define stack_at(__adr) \
 	(sr_raise_stack+(__adr))
 extern ff_u8_t *sr_raise_p;
