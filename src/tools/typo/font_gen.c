@@ -7,67 +7,22 @@ struct point {
 struct point *points[0x100];
 ff_uint_t np[0x100];
 
-struct point one_points[] = {
-# define PAD 2
-# define TAL 166
-# define THIC TAL/6
-	{PAD, PAD},
-	{THIC-PAD, PAD},
-	{THIC-PAD, TAL-PAD},
-	{PAD, TAL-PAD},
-	{PAD, PAD}
-# undef PAD
-# undef TAL
-# undef THIC
-};
-
-# define PAD 2
-# define COR 14
-# define TAL 166
-# define THIC TAL/2
-# define INNER 27
-struct point zero_points[] = {
-	{THIC-PAD, TAL-PAD-COR}, // right
-	{THIC-PAD, PAD+COR},
-
-	{THIC-PAD-COR, PAD}, // top
-	{PAD+COR, PAD},
-
-	{PAD, PAD+COR}, // left
-	{PAD, TAL-PAD-COR},
-
-	{PAD+COR, TAL-PAD}, // bottom
-	{THIC-PAD-COR, TAL-PAD},
-
-	{THIC-PAD, TAL-PAD-COR},
-
-// inner part
-	{(THIC-PAD)-INNER, (TAL-PAD-COR)-INNER}, // right
-	{(THIC-PAD)-INNER, (PAD+COR)+INNER},
-
-	{(THIC-PAD-COR)-INNER, PAD+INNER}, // top
-	{(PAD+COR)+INNER, PAD+INNER},
-
-	{PAD+INNER, (PAD+COR)+INNER}, // left
-	{PAD+INNER, (TAL-PAD-COR)-INNER},
-
-	{(PAD+COR)+INNER, (TAL-PAD)-INNER}, // bottom
-	{(THIC-PAD-COR)-INNER, (TAL-PAD)-INNER},
-
-	{(THIC-PAD)-INNER, (TAL-PAD-COR)-INNER},
-};
-# undef PAD
-# undef COR
-# undef TAL
-# undef THIC
-
+# include "zero.h"
+# include "one.h"
+# include "two.h"
 # include <stdio.h>
 # include <string.h>
 # include <unistd.h>
 # include <fcntl.h>
 
+void two(void) {
+# define N2 31
+	np['2'] = 31;
+	points['2'] = two_points;
+}
+
 void one(void) {
-# define N1 5
+# define N1 N2+5
 	np['1'] = 5;
 	points['1'] = one_points;
 }
@@ -78,6 +33,7 @@ void zero(void) {
 	points['0'] = zero_points;
 }
 
+
 int main() {
 	int out;
 	out = open("test.h", O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
@@ -86,6 +42,7 @@ int main() {
 
 	zero();
 	one();
+	two();
 	ff_uint_t len;
 
 	len = sprintf(buf, "# define N %u\n", N);

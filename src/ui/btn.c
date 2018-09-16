@@ -16,7 +16,7 @@
 
 void
 ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
-	ff_u16_t __height, ff_u16_t __x, ff_u16_t __y)
+	ff_u16_t __height, ff_u16_t __x, ff_u16_t __y, void(*__get)(ff_u8_t, long long, void*), void *__gt_arg)
 {
 	ffly_pallet_init(&__btn->texture, __width, __height, _ffly_tile_16);
 //	ffly_pallet_update(&__btn->texture, __texture, __width, __height);
@@ -26,25 +26,32 @@ ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
 	__btn->y = __y;
 	__btn->width = __width;
 	__btn->height = __height;
-	__btn->pt_x = NULL;
-	__btn->pt_y = NULL;
 	__btn->arg_p = NULL;
 	__btn->press = NULL;
 	__btn->hover = NULL;
 	__btn->flags = 0x00;
 	__btn->release = NULL;
-	__btn->pt_state = NULL;
 	__btn->c = ffly_carriage_add(_ff_carr0);
 	ffly_carriage_dud(_ff_carr0);	
+	__btn->get = __get;
+	__btn->gt_arg = __gt_arg;
+
+	__get(0x00, (long long)&__btn->pt_x, __gt_arg);
+	__get(0x01, (long long)&__btn->pt_y, __gt_arg);
+	__get(0x02, (long long)&__btn->pt_state, __gt_arg);
+}
+
+void ffly_ui_btn_text(ffly_gui_btnp __btn, char const *__text) {
+
 }
 
 void ffly_gui_btn_enable(ffly_gui_btnp __btn) {
 	ffly_carriage_udud(_ff_carr0);
-	__btn->flags |= FFLY_GUI_BT_ENABLED;
+	__btn->flags |= FFLY_UI_BT_ENABLED;
 }
 
 void ffly_gui_btn_disable(ffly_gui_btnp __btn) {
-	__btn->flags ^= FFLY_GUI_BT_ENABLED;
+	__btn->flags ^= FFLY_UI_BT_ENABLED;
 	ffly_carriage_dud(_ff_carr0);
 }
 
@@ -56,12 +63,12 @@ ff_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn) {
 }
 
 ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t *__texture, ff_u16_t __width,
-	ff_u16_t __height, ff_u16_t __x, ff_u16_t __y)
+	ff_u16_t __height, ff_u16_t __x, ff_u16_t __y,  void(*__get)(ff_u8_t, long long, void*), void *__gt_arg)
 {
 	ffly_gui_btnp btn;
 
 	btn = (ffly_gui_btnp)__ffly_mem_alloc(sizeof(struct ffly_gui_btn));
-	ffly_gui_btn_init(btn, __texture, __width, __height, __x, __y);
+	ffly_gui_btn_init(btn, __texture, __width, __height, __x, __y, __get, __gt_arg);
 	return btn;
 }
 
@@ -84,7 +91,7 @@ void ffly_gui_btn_destroy(ffly_gui_btnp __btn) {
 
 ff_i8_t ffly_gui_btn_handle(void *__arg_p) {
 	ffly_gui_btnp btn = (ffly_gui_btnp)__arg_p;
-	if (!(btn->flags&FFLY_GUI_BT_ENABLED))
+	if (!(btn->flags&FFLY_UI_BT_ENABLED))
 		return -1;
 	ff_i16_t pt_x, pt_y;
 

@@ -32,11 +32,10 @@ mcd_load(struct ffly_typo_sheet *__sheet, struct typo_face *__face) {
 	__sheet->f_width = hdr.width;
 	__sheet->f_height = hdr.height;
 	typo_seek(hdr.glyph_table, SEEK_SET);
-	ffly_printf("mcd header: glyph count: %u\n", hdr.glyph_c);
-
-	if (hdr.glyph_c > 2) {
-		return;
-	}
+	ffly_printf("mcd header:\n\tglyph table: %u\n\tglyph count: %u\n\twidth: %u\n\theight: %u\n", hdr.glyph_table, hdr.glyph_c, hdr.width, hdr.height);
+//	if (hdr.glyph_c > 2) {
+//		return;
+//	}
 
 	struct glyph *table;
 

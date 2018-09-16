@@ -18,6 +18,8 @@
 # define sr_op_ptile_new 0x0d
 # define sr_op_ptile_destroy 0x0e
 # define sr_op_tdraw 0x0f
+# define sr_op_sput 0x10
+# define sr_op_sget 0x11
 # define stack_at(__adr) \
 	(sr_raise_stack+(__adr))
 extern ff_u8_t *sr_raise_p;

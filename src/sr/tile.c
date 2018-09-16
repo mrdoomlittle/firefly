@@ -4,9 +4,10 @@
 # include "def.h"
 # include "../dep/mem_set.h"
 # include "raise.h"
+# include "plate.h"
 void sr_ptile_new(void) {
-	void **d;
-	d = (void**)stack_at(*(ff_u16_t*)sr_raise_p);
+	ff_u16_t *d;
+	d = (ff_u16_t*)stack_at(*(ff_u16_t*)sr_raise_p);
 
 	void *g, *t;
 	g = *(void**)(sr_raise_p+2);
@@ -16,15 +17,19 @@ void sr_ptile_new(void) {
 
 	pt = (struct sr_ptile*)__ffly_mem_alloc(sizeof(struct sr_ptile));
 
-	*d = pt;
+	*d = sr_plate_alloc();
+	sr_plate_put(*d, pt);
 
 	pt->get = (void(*)(ff_u8_t, long long, void*))g;
 	pt->tile = t;
 }
 
 void sr_ptile_destroy(void) {
+	ff_u16_t plate;
+	plate = *(ff_u16_t*)sr_raise_p;
+
 	struct sr_ptile *pt;
-	pt = *(struct sr_ptile**)stack_at(*(ff_u16_t*)sr_raise_p);
+	pt = (struct sr_ptile*)sr_plate_get(plate);
 	__ffly_mem_free(pt);
 }
 

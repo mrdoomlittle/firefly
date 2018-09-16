@@ -4,11 +4,16 @@
 // needs testing
 # include "tile.h"
 # include "../system/io.h"
+# include "plate.h"
 void
 sr_tdraw(void) {
-	struct sr_ptile *pt;
+	ff_u16_t plate;
 
-	pt = *(struct sr_ptile**)stack_at(*(ff_u16_t*)sr_raise_p);
+	plate = *(ff_u16_t*)sr_raise_p;
+
+	struct sr_ptile *pt;
+	pt = (struct sr_ptile*)sr_plate_get(plate);
+
 	ff_u32_t _x, _y;
 
 	_x = *(ff_u32_t*)(sr_raise_p+2);
@@ -20,6 +25,7 @@ sr_tdraw(void) {
 	/*
 		{pt->get} for now 
 	*/
+
 	pt->get(0x02, (long long)&tsz, pt->tile);
 
 	ff_u8_t *src, *d, *s;
@@ -54,8 +60,10 @@ sr_tdraw(void) {
 			}
 
 			d = tilepx(t, txo, tyo);
-			*(ff_u32_t*)d = *(ff_u32_t*)s;
-
+			d[0] = (d[0]+s[0])>>1;
+			d[1] = (d[1]+s[1])>>1;
+			d[2] = (d[2]+s[2])>>1;
+			d[3] = (d[3]+s[3])>>1;
 			x++;
 		}
 		y++;

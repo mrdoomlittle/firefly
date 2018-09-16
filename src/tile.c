@@ -42,7 +42,7 @@ ff_u16_t ffly_g_ptile_new(void(*__get)(ff_u8_t, long long, void*), void *__tile)
 	struct ff_context *ctx;
 	ctx = G_CONTEXT;
 	pt = ctx->stack;
-	ctx->stack+=8;
+	ctx->stack+=2;
 	ctx->driver.ptile_new(pt, __get, __tile);
 	return pt;
 }
@@ -53,9 +53,12 @@ void ffly_g_ptile_destroy(ff_u16_t __pt) {
 
 void ffly_tile_draw(ffly_tilep __tile, ff_u32_t __x, ff_u32_t __y) {
 	if (!(__tile->bits&TILE_PH)) {
-		__tile->pt = ffly_g_ptile_new(pt_get, __tile);
+		G_CONTEXT->driver.sget(&__tile->pt, 2, ffly_g_ptile_new(pt_get, __tile));
 		__tile->bits |= TILE_PH;
+		return;
 	}
+
+
 
 	G_CONTEXT->driver.tdraw(__tile->pt, __x, __y);	
 }
@@ -67,6 +70,7 @@ ffly_tilep ffly_tile_creat(ff_u8_t __size) {
 	tile = (ffly_tilep)__ffly_mem_alloc(sizeof(struct ffly_tile));
 	tile->size = __size;
 	tile->m = ffly_mo_new();
+	tile->bits = 0x00;
 
 	ff_uint_t sb;
 	sb = (1<<__size)*(1<<__size)*4;

@@ -91,6 +91,10 @@ ff_err_t ffly_x11_wd_open(struct ffly_x11_wd *__wd) {
 
 	XSetWMNormalHints(__wd->d, __wd->w, &size_hints);
 */
+	/*
+		TODO:
+			store gl context in struct as it need to be Destoryed
+	*/
 	GLXContext glx_ct = glXCreateContext(__wd->d, vis_info, NULL, GL_TRUE);
 	if (!glx_ct) {
 		return FFLY_FAILURE;

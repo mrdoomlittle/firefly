@@ -14,6 +14,7 @@ struct ff_driver {
 	void(*pixdraw)(ff_u32_t, ff_u32_t, ff_u8_t*, ff_u32_t, ff_u32_t);
 	void(*pixfill)(ff_u32_t, ff_u8_t*);
 	void(*sput)(void*, ff_uint_t, ff_u16_t);
+	void(*sget)(void*, ff_uint_t, ff_u16_t);
 	void(*ctx_new)(ff_u16_t);
 	void(*ctx_destroy)(ff_u16_t);
 	void(*raster_tri2)(ff_u16_t, ff_u16_t, ff_u32_t, ff_u32_t);

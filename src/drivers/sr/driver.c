@@ -39,9 +39,23 @@ _sr_raster_tri2(ff_u16_t __tri, ff_u16_t __tex, ff_u32_t __x, ff_u32_t __y) {
 # include "../../dep/mem_cpy.h"
 # define sr_stack(__at) \
 	(sr_raise_stack+(__at))
+
 void static
-sr_sput(void *__buf, ff_uint_t __size, ff_u16_t __adr) {
-	ffly_mem_cpy(sr_stack(__adr), __buf, __size);
+_sr_sput(void *__buf, ff_u32_t __size, ff_u16_t __adr) {
+	*cb_p = sr_op_sput;
+	*(void**)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+9) = __size;
+	*(ff_u16_t*)(cb_p+13) = __adr;
+	cb_p+=15;
+}
+
+void static
+_sr_sget(void *__buf, ff_u32_t __size, ff_u16_t __adr) {
+	*cb_p = sr_op_sget;
+	*(void**)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+9) = __size;
+	*(ff_u16_t*)(cb_p+13) = __adr;
+	cb_p+=15;
 }
 
 void static
@@ -175,7 +189,8 @@ void ffly_sr(struct ff_driver *__driver) {
 	__driver->pixcopy = (void*)0;
 	__driver->pixdraw = _sr_pixdraw;
 	__driver->pixfill = _sr_pixfill;
-	__driver->sput = sr_sput;
+	__driver->sput = _sr_sput;
+	__driver->sget = _sr_sget;
 	__driver->ctx_new = _sr_ctx_new;
 	__driver->ctx_destroy = _sr_ctx_destroy;
 	__driver->raster_tri2 = _sr_raster_tri2;

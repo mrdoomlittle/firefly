@@ -9,13 +9,11 @@
 # define HEIGHT 448
 
 struct ff_workshop {
-	struct ffly_pallet frame;
-
-	ffly_gui_btnp opt, front;
+	ffly_gui_btnp fontforge;
 	struct ffly_gui_window window;
 };
 
-void options();
+extern void(*tick)(void);
 struct ff_workshop extern workshop;
 void ffly_workshop_start();
 void ffly_workshop_init();

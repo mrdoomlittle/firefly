@@ -4,10 +4,38 @@
 # include "framebuff.h"
 # include "../system/io.h"
 # include "shit.h"
+# include "../dep/mem_cpy.h"
 ff_u8_t *sr_raise_p;
 ff_u8_t sr_raise_stack[STACK_SIZE];
 ff_u16_t sr_raise_sp;
-# define MAX 16
+# define MAX 18
+
+void static
+sr_sput(void) {
+	void *buf;
+	ff_u32_t size;
+	ff_u16_t dst;
+
+	buf = *(void**)sr_raise_p;
+	size = *(ff_u32_t*)(sr_raise_p+8);
+	dst = *(ff_u16_t*)(sr_raise_p+12);
+
+	ffly_mem_cpy(sr_raise_stack+dst, buf, size);
+}
+
+void static
+sr_sget(void) {
+	void *buf;
+	ff_u32_t size;
+	ff_u16_t src;
+
+	buf = *(void**)sr_raise_p;
+	size = *(ff_u32_t*)(sr_raise_p+8);
+	src = *(ff_u16_t*)(sr_raise_p+12);
+
+	ffly_mem_cpy(buf, sr_raise_stack+src, size);
+}
+
 static void(*op[])(void) = {
 	sr_raster_tri2,
 	sr_ctx_new,
@@ -24,7 +52,9 @@ static void(*op[])(void) = {
 	sr_fb_destroy,
 	sr_ptile_new,
 	sr_ptile_destroy,
-	sr_tdraw
+	sr_tdraw,
+	sr_sput,
+	sr_sget
 };
 
 ff_uint_t static os[] = {
@@ -43,7 +73,9 @@ ff_uint_t static os[] = {
 	sizeof(ff_u16_t),
 	sizeof(ff_u16_t)+(sizeof(void*)*2),
 	sizeof(ff_u16_t),
-	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2)
+	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),
+	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t),
+	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t)
 };
 
 void sr_raise(ff_u8_t *__bin, ff_uint_t __size) {

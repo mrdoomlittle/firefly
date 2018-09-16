@@ -192,6 +192,8 @@ $ffly_cc $cc_flags -c -o $dst_dir/pixel.o $root_dir/pixel.c
 $ffly_cc $cc_flags -c -o $dst_dir/frame_buff.o $root_dir/frame_buff.c
 $ffly_cc $cc_flags -c -o $dst_dir/mo.o $root_dir/mo.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/tile.o $root_dir/sr/tile.c
+$ffly_cc $cc_flags -c -o $dst_dir/sr/plate.o $root_dir/sr/plate.c
+$ffly_cc $cc_flags -c -o $dst_dir/workshop/font_forge.o $root_dir/workshop/font_forge.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -227,4 +229,4 @@ $dst_dir/drivers/sr/driver.o $dst_dir/sr/framebuff.o $dst_dir/sr/raise.o \
 $dst_dir/sr/tri.o $dst_dir/tri.o $dst_dir/tex.o $dst_dir/sr/draw.o \
 $dst_dir/driver.o $dst_dir/context.o $dst_dir/dc.o $dst_dir/sr/copy.o \
 $dst_dir/sr/fill.o $dst_dir/pixel.o $dst_dir/frame_buff.o $dst_dir/mo.o \
-$dst_dir/sr/tile.o"
+$dst_dir/sr/tile.o $dst_dir/sr/plate.o $dst_dir/workshop/font_forge.o"

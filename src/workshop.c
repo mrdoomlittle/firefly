@@ -22,36 +22,51 @@
 # include "dc.h"
 # include "pixel.h"
 # include "frame_buff.h"
+# include "workshop/font_forge.h"
 struct ff_workshop workshop;
 
-ff_i16_t pt_x = 0, pt_y = 0;
-ff_i8_t pt_state;
+ff_i16_t static pt_x = 0, pt_y = 0;
+ff_i8_t static pt_state;
 enum {
-	_bt_opt,
-	_bt_front
+	_bt_fontforge
 };
-
-void opt() {
-	ffly_gui_window_draw(&workshop.window);
-	ffly_gui_btn_draw(workshop.front);
+/*
+	TODO:
+		add ff_i8_t for return is no such 'what?' is possible
+	obtain crap that the user controls like mouse pointer coords,state, etc
+*/
+void static
+_get(ff_u8_t __what, long long __d, void *__arg) {
+	switch(__what) {
+		case 0x00:
+			*(ff_i16_t**)__d = &pt_x;
+		break;
+		case 0x01:
+			*(ff_i16_t**)__d = &pt_y;
+		break;
+		case 0x02:
+			*(ff_i8_t**)__d = &pt_state;
+		break;
+	}
 }
 
-void front() {
+void front(void) {
 	ffly_gui_window_draw(&workshop.window);
-	ffly_gui_btn_draw(workshop.opt);
+	ffly_gui_btn_draw(workshop.fontforge);
 }
 
-static void(*draw)(void) = front;
+void(*tick)(void) = front;
 ff_u16_t sf;
 
 # include "m.h"
 # include "types/wd_event_t.h"
 void ffly_workshop_start() {
+	sf = G_CONTEXT->stack;
 	ff_u64_t cc = 0; //cycle count
 	while(1) {
 		ffly_g_start();
-		ffly_pixfill(WIDTH*HEIGHT, ffly_colour(63, 60, 255, 255), 0);
-		draw();
+		ffly_pixfill(WIDTH*HEIGHT, ffly_colour(255, 255, 255, 255), 0);
+		tick();
 		ff_eventp event;
 		while(!ff_event_poll(&event)) {
 			if (event->kind == _ffly_wd_ek_btn_press || event->kind == _ffly_wd_ek_btn_release) {
@@ -93,22 +108,16 @@ void ffly_workshop_start() {
 void static
 bt_press(ffly_gui_btnp __btn, void *__arg) {
 	ffly_printf("button press.\n");
-	if (__btn->id == _bt_opt) {
-		//ffly_pixfill(btn->texture, 20*20, ffly_colour(66, 194, 224, 255));
-		ffly_printf("switching to opt menu.\n");
-		draw = opt;
-	} else if (__btn->id == _bt_front) {
-		ffly_printf("switching to front menu.\n");
-		draw = front;
+	if (__btn->id == _bt_fontforge) {
+		ffly_printf("fontforge.\n");
+		ws_fontforge_init();
+		tick = ws_fontforge_tick;
 	}
 }
 
 void static
 bt_release(ffly_gui_btnp __btn, void *__arg) {
 	ffly_printf("button, release.\n");
-	if (__btn->id == _bt_opt) {
-		//ffly_pixfill(btn->texture, 20*20, ffly_colour(2, 52, 132, 255));
-	}
 }
 
 void static bt_hover(ffly_gui_btnp __btn, void *__arg) {
@@ -126,9 +135,7 @@ void ffly_workshop_init() {
     fb = ffly_g_fb_new(WIDTH, HEIGHT);
     ffly_g_fb_set(fb);
 	ffly_g_done();
-	sf = G_CONTEXT->stack;
-
-	ffly_grp_prepare(&__ffly_grp__, 100);
+	ffly_grp_prepare(&__ffly_grp__, 200);
 	ff_set_frame_size(WIDTH, HEIGHT);
 	ff_graphics_init();
 
@@ -140,47 +147,28 @@ void ffly_workshop_init() {
 	ffly_scheduler_init(0);
 
 	tex0 = (ff_u8_t*)__ffly_mem_alloc(76*76*4);
-	tex1 = (ff_u8_t*)__ffly_mem_alloc(76*76*4);
-	ffly_mem_set(tex0, 100, 76*76*4);
-	ffly_mem_set(tex1, 255, 76*76*4);
+	ffly_mem_set(tex0, 0, 76*76*4);
 
 	ffly_gui_btnp btn;
-	btn = ffly_gui_btn_creat(tex0, 76, 76, 0, 0);
-	btn->pt_x = &pt_x;
-	btn->pt_y = &pt_y;
+	btn = ffly_gui_btn_creat(tex0, 76, 76, 0, 0, _get, NULL);
 	btn->press = bt_press;
 	btn->hover = bt_hover;
 	btn->release = bt_release;
-	btn->pt_state = &pt_state;
-	btn->id = _bt_opt;
-	workshop.opt = btn;
+	btn->id = _bt_fontforge;
+	workshop.fontforge = btn;
 	ffly_gui_btn_sched(btn);
 	ffly_gui_btn_enable(btn);
 	
 	ffly_pallet_write(&btn->texture, tex0, 76, 76, 0, 0);
 
-	btn = ffly_gui_btn_creat(tex1, 76, 76, 76, 0);
-	btn->pt_x = &pt_x;
-	btn->pt_y = &pt_y;
-	btn->press = bt_press;
-	btn->hover = bt_hover;
-	btn->release = bt_release;
-	btn->pt_state = &pt_state;
-	btn->id = _bt_front;
-	workshop.front = btn;
-	ffly_gui_btn_sched(btn);
-	ffly_gui_btn_enable(btn);
-	
-	ffly_pallet_write(&btn->texture, tex1, 76, 76, 0, 0);
-
 	ffly_gui_window_init(&workshop.window, 64, 64, 128, 128);
 
 	ff_u8_t static pixels[64*64*4];
-	ffly_mem_set(pixels, 255, 64*64*4);
+	ffly_mem_set(pixels, 144, 64*64*4);
 
 	ffly_fontp font;
 	ffly_ui_textp text;
-	text = ffly_ui_text_creat("010110");
+	text = ffly_ui_text_creat("012");
 	font = ffly_font_new();
 	ffly_font_init(font, _font_driver_typo);
 
@@ -194,6 +182,7 @@ void ffly_workshop_init() {
 	ffly_ui_text_destroy(text);
 
 	ffly_gui_window_write(&workshop.window, pixels, 64, 64, 0, 0);
+
 }
 
 void ffly_workshop_de_init() {
@@ -205,10 +194,8 @@ void ffly_workshop_de_init() {
 	ff_graphics_de_init();
 	ffly_plate_cleanup();
 	__ffly_mem_free(tex0);
-	__ffly_mem_free(tex1);
 	ffly_gui_window_de_init(&workshop.window);
-	ffly_gui_btn_destroy(workshop.opt);
-	ffly_gui_btn_destroy(workshop.front);
+	ffly_gui_btn_destroy(workshop.fontforge);
 	ff_event_cleanup();
 	ffly_grp_cleanup(&__ffly_grp__);
 	ffly_grj_cleanup();
