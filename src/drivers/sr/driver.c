@@ -27,11 +27,13 @@ _sr_ctx_destroy(ff_u16_t __p) {
 }
 
 void static
-_sr_raster_tri2(ff_u16_t __tri, ff_u16_t __tex) {
+_sr_raster_tri2(ff_u16_t __tri, ff_u16_t __tex, ff_u32_t __x, ff_u32_t __y) {
 	*cb_p = sr_op_raster_tri2;
 	*(ff_u16_t*)(cb_p+1) = __tri;
 	*(ff_u16_t*)(cb_p+3) = __tex;
-	cb_p+=5;
+	*(ff_u32_t*)(cb_p+5) = __x;
+	*(ff_u32_t*)(cb_p+9) = __y;
+	cb_p+=13;
 }
 
 # include "../../dep/mem_cpy.h"

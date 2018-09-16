@@ -21,8 +21,6 @@ enum {
 typedef struct ffly_tile {
 	ff_u8_t size;
 	ffly_mop m;
-	ff_u16_t xdis, ydis;
-	struct ffly_tile *child;
 	struct ffly_tile **bk, *next;
 	ff_u8_t bits;
 	ff_u16_t pt;

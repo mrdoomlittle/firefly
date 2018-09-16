@@ -1,8 +1,0 @@
-*.swp
-*.o
-*.exec
-*.fuse_hidden*
-log
-err
-main
-window*

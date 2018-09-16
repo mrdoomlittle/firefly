@@ -74,9 +74,6 @@ ffly_tilep ffly_tile_creat(ff_u8_t __size) {
 
 
 	tile->bits = TILE_BLANK;
-	tile->xdis = 0;
-	tile->ydis = 0;
-	tile->child = NULL;
 	lk;
 	if (top != NULL)
 		top->bk = &tile->next;

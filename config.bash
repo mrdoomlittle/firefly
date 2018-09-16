@@ -10,7 +10,6 @@ dirs=(
 	maths
 	system
 	system/util
-	gui
 	ui
 	data
 	memory

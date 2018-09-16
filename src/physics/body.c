@@ -40,7 +40,7 @@ void ffly_phy_body_fd(ffly_phy_bodyp *__p) {
 	*__p = (*__p)->next;
 }
 
-ff_u32_t ffly_physical_body(ff_uint_t *__x, ff_uint_t *__y, ff_uint_t *__z, ff_u8_t __flags) {
+ff_u32_t ffly_physical_body(void(*__get)(ff_u8_t, long long, void*), ff_u8_t __flags, void *__arg) {
 	ffly_phy_bodyp body;
 
 	ff_uint_t page = off>>PAGE_SHIFT;
@@ -69,9 +69,11 @@ _sk:
 	body->angular_velocity = 0.0;
 	body->gravity = 0.0;
 	body->dir = 26;
-	body->x = __x;
-	body->y = __y;
-	body->z = __z;
+	__get(0x00, (long long)&body->x, __arg);
+	__get(0x01, (long long)&body->y, __arg);
+	__get(0x02, (long long)&body->z, __arg);
+	body->arg = __arg;
+	body->get = __get;
 	body->nodes = NULL;
 	body->nn = 0;
 	body->mass = 0;
@@ -85,7 +87,7 @@ _sk:
 	there are 26 diffrent direction that we can take,
 	so we are going to use this as it would be slower if we used c function,
 	as gcc sets up the stack for it and its extra instructions that we dont need,
-	and thus more time being taken up.
+	and thus more time being taken up it may not make much diffrens but it compacks the code and is easer to work with.
 */
 
 // not all directions

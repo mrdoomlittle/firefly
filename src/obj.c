@@ -16,6 +16,29 @@
 ffly_objp fastpool[FASTSIZE];
 ffly_objp static *fast = fastpool;
 
+void static
+_get(ff_u8_t __what, long long __arg, void *__p) {
+	ffly_objp obj;
+
+	obj = (ffly_objp)__p;
+	switch(__what) {
+		case 0x00:
+			*(ff_uint_t**)__arg = &obj->x;
+		break;
+		case 0x01:
+			*(ff_uint_t**)__arg = &obj->y;
+		break;
+		case 0x02:
+			*(ff_uint_t**)__arg = &obj->z;
+		break;
+	};
+}
+
+# include "physics/body.h"
+void ffly_obj_body(ffly_objp __obj, ff_u8_t __flags) {
+	__obj->phy_body = ffly_physical_body(_get, __flags, __obj);
+}
+
 ffly_objp static top = NULL;
 void ffly_obj_rotate(ffly_objp __obj, float __angle) {
 	__obj->angle = __angle;

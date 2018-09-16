@@ -21,7 +21,7 @@ rotate_vertex(ffly_vertexp __vertex, ff_uint_t __x, ff_uint_t __y, float __angle
 }
 
 void
-ffly_draw_polygon(ffly_polygonp __poly, ff_byte_t *__dst,
+ffly_draw_polygon(ffly_polygonp __poly,
 	ff_uint_t __x, ff_uint_t __y,
 	ff_uint_t __width, ff_uint_t __height,
 	ff_uint_t __xmax, ff_uint_t __ymax)
@@ -35,5 +35,5 @@ ffly_draw_polygon(ffly_polygonp __poly, ff_byte_t *__dst,
 		0
 	};
 
-	ffly_rasterize(&model, __dst, __x, __y, __width, __height, __xmax, __ymax);
+	ffly_rasterize(&model, __x, __y, __width, __height, __xmax, __ymax);
 }

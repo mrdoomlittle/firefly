@@ -3,7 +3,6 @@
 # include "../ffint.h"
 # include "../types.h"
 # include "../uni.h"
-# include "../pallet.h"
 # define ffly_camera_setx(__cam, __x) \
     (__cam).x = __x
 # define ffly_camera_sety(__cam, __y) \
@@ -12,9 +11,7 @@
 	(__cam)->x = __x; \
 	(__cam)->y = __y
 struct ffly_camera {
-    ff_uint_t width, height;
-	struct ffly_pallet vis;
-  
+    ff_uint_t width, height;  
     ff_uint_t x, y, z;
     ffly_unip uni;
 };
@@ -25,9 +22,8 @@ extern "C" {
 # endif
 ff_err_t ffly_camera_init(ffly_camerap, ff_uint_t, ff_uint_t);
 ff_err_t ffly_camera_print(ffly_camerap);
-ff_err_t ffly_camera_handle(ffly_camerap);
 ff_err_t ffly_camera_bind(ffly_camerap, ffly_unip);
-ff_err_t ffly_camera_draw(ffly_camerap, ff_byte_t*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
+ff_err_t ffly_camera_draw(ffly_camerap, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
 void ffly_camera_de_init(ffly_camerap);
 # ifdef __cplusplus
 }

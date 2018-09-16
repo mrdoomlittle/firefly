@@ -15,5 +15,5 @@ struct rcontext {
 };
 
 void ffly_rraster(struct rr_struc*);
-void ffly_rasterize(ffly_modelp, ff_byte_t*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
+void ffly_rasterize(ffly_modelp, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
 # endif /*__ffly__raste__h*/

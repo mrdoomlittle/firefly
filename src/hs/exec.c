@@ -85,7 +85,7 @@ void static
 obj_body(ff_hs_objp **__params) {
 	struct ffly_obj *obj = *(struct ffly_obj**)(**__params)->p;
 	ff_u8_t flags = *(ff_u8_t*)(*__params[1])->p;
-	obj->phy_body = ffly_physical_body(&obj->x, &obj->y, &obj->z, flags);
+	ffly_obj_body(obj, flags);
 	ffly_printf("gave object a body, %p, %u\n", obj->phy_body, flags);
 }
 

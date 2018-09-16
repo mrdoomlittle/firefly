@@ -32,6 +32,13 @@
 # include "hs/exec.h"
 # include "texture.h"
 # include "pixel.h"
+# include "driver.h"
+# include "driver.h"
+# include "context.h"
+# include "dc.h"
+# include "pixel.h"
+# include "frame_buff.h"
+# include "graphics/fill.h"
 # define WIDTH 448
 # define HEIGHT 448
 /*
@@ -55,13 +62,21 @@ ff_i8_t contact(ff_u8_t __loca, ff_u8_t __locb, ffly_phy_bodyp __a, ffly_phy_bod
 //	}
 	ffly_printf("############################# body contact, nodes{%u & %u ^ %u}\n", __loca, __loca+1, __locb);
 }
-
+ff_u16_t static fb, sf;
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	ffly_driver(_driver_sr, &G_CONTEXT->driver);
+	G_CONTEXT->stack = 0;
+	ffly_g_setctx(ffly_g_ctx_new());
+	fb = ffly_g_fb_new(WIDTH, HEIGHT);
+	ffly_g_fb_set(fb);
+	ffly_g_done();
+	sf = G_CONTEXT->stack;
+
 	ffly_scheduler_init(SCHED_CORRODE);
 	ffly_reservoir_init(&__ffly_reservoir__, RESV_CORRODE, "test.resv");
 
 	ff_err_t err;
-	ffly_grp_prepare(&__ffly_grp__, 20);
+	ffly_grp_prepare(&__ffly_grp__, 200);
 
 	int fd;
 	/*
@@ -84,11 +99,6 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	struct ffly_camera camera;
 	ffly_camera_init(&camera, WIDTH, HEIGHT);
-
-	/*
-		clear camera memory
-	*/
-	ffly_mem_set(camera.pixels, 0, WIDTH*HEIGHT*4);
 
 	struct ffly_uni uni;
 
@@ -256,10 +266,12 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		if (c == '!')
 			goto _end;
 	_sk:
-		ffly_camera_mov(&camera, obj0->x, obj0->y);
+		ffly_g_start();
+		ffly_pixfill(WIDTH*HEIGHT, ffly_colour(63, 60, 255, 255), 0);
+		//ffly_camera_mov(&camera, obj0->x, obj0->y);
 		old_x = obj0->x;
 		old_y = obj0->y;
-		if (obj0->y >= HEIGHT-8) {
+		if (obj0->y >= 128) {
 			ffly_set_direction(obj0->phy_body, _ff_dir_a0);		
 		} else if (!obj0->y)
 			ffly_set_direction(obj0->phy_body, _ff_dir_a2);
@@ -269,9 +281,14 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		ffly_printf("-------------- x: %u{%d}:%u, y: %u{%d}:%u ------------- memusage: %u, clock pulse: %u\n",
 			obj0->x, (ff_int_t)obj0->x-old_x, obj1->x,
 			obj0->y, (ff_int_t)obj0->y-old_y, obj1->y, ffly_mem_alloc_bc-ffly_mem_free_bc, phy_clock);
-		ffly_camera_handle(&camera);
-		ffly_camera_draw(&camera, ffly_frame(__frame_buff__), WIDTH, HEIGHT, 0, 0);
 		ffly_grp_unload(&__ffly_grp__);
+		ffly_camera_draw(&camera, WIDTH, HEIGHT, 0, 0);
+		ffly_fb_copy(__frame_buff__);
+		ffly_g_finish();
+		ffly_g_done();
+		G_CONTEXT->stack = sf;
+		ffly_fb_yank(__frame_buff__);
+
 		if (!ff_duct_serve())
 			goto _end;
 		ffly_nanosleep(0, 100000000);//800000000);
@@ -284,6 +301,9 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		rps++;
 	}	
 _end:
+	ffly_g_fb_destroy(fb);
+	ffly_g_done();
+
 	ffly_sentinel_cleanup();
 	ffly_model_dismantle(m0);
 	ffly_model_dismantle(m1);

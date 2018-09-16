@@ -62,7 +62,7 @@ ffly_objs="$ffly_objs $(
 dst_dir=$PWD
 root_dir=.
 if ! [ -f $dus ]; then
-$ffly_cc $cc_flags -c -o $dst_dir/gui/window.o $root_dir/gui/window.c
+$ffly_cc $cc_flags -c -o $dst_dir/ui/window.o $root_dir/ui/window.c
 $ffly_cc $cc_flags -c -o $dst_dir/copy.o $root_dir/copy.c
 $ffly_cc $cc_flags -c -o $dst_dir/clock.o $root_dir/clock.c
 $ffly_cc $cc_flags -c -o $dst_dir/tile.o $root_dir/tile.c
@@ -118,7 +118,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/mod/port.o $root_dir/mod/port.c
 $ffly_cc $cc_flags -c -o $dst_dir/call.o $root_dir/call.c
 $ffly_cc $cc_flags -c -o $dst_dir/mod.o $root_dir/mod.c
 $ffly_cc $cc_flags -c -o $dst_dir/layer.o $root_dir/layer.c
-$ffly_cc $cc_flags -c -o $dst_dir/gui/btn.o $root_dir/gui/btn.c
+$ffly_cc $cc_flags -c -o $dst_dir/ui/btn.o $root_dir/ui/btn.c
 $ffly_cc $cc_flags -c -o $dst_dir/location.o $root_dir/location.c
 $ffly_cc $cc_flags -c -o $dst_dir/storage/slab.o $root_dir/storage/slab.c
 $ffly_cc $cc_flags -c -o $dst_dir/storage/reservoir.o $root_dir/storage/reservoir.c
@@ -206,9 +206,9 @@ $dst_dir/lot.o $dst_dir/chunk_manager.o $dst_dir/uni.o $dst_dir/chunk.o \
 $dst_dir/obj.o $dst_dir/obj_pool.o $dst_dir/obj_manager.o $dst_dir/polygon.o \
 $dst_dir/ui/camera.o $dst_dir/graphics.o $dst_dir/gravity.o $dst_dir/duct.o \
 $dst_dir/terrain.o $dst_dir/compactor.o $dst_dir/stores.o $dst_dir/db.o \
-$dst_dir/db/connect.o $dst_dir/layer.o $dst_dir/gui/btn.o $dst_dir/tile.o \
+$dst_dir/db/connect.o $dst_dir/layer.o $dst_dir/ui/btn.o $dst_dir/tile.o \
 $dst_dir/pallet.o $dst_dir/resource.o $dst_dir/cache.o $dst_dir/clock.o \
-$dst_dir/copy.o $dst_dir/gui/window.o $dst_dir/location.o \
+$dst_dir/copy.o $dst_dir/ui/window.o $dst_dir/location.o \
 $dst_dir/storage/slab.o $dst_dir/storage/reservoir.o \
 $dst_dir/piston.o $dst_dir/corrode.o $dst_dir/bog.o \
 $dst_dir/env.o $dst_dir/line.o $dst_dir/db/load.o

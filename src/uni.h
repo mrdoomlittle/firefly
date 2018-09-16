@@ -57,7 +57,7 @@ ff_err_t ffly_uni_attach_body(ffly_unip, ffly_phy_bodyp);
 ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
 ff_err_t ffly_uni_body_move(ffly_unip, ffly_phy_bodyp, ff_uint_t, ff_uint_t, ff_uint_t);
 /* capture frame */
-ff_err_t ffly_uni_frame(ffly_unip, ffly_palletp, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
+ff_err_t ffly_uni_frame(ffly_unip, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
 ff_id_t ffly_uni_chunk(ffly_unip, ff_off_t, ff_off_t, ff_off_t);
 ff_err_t ffly_uni_build(ffly_unip, ff_uint_t, ff_uint_t, ff_uint_t, ff_u8_t, ff_u8_t);
 ff_err_t ffly_uni_free(ffly_unip);

@@ -14,6 +14,6 @@ typedef struct {
 } ffly_polygon;
 
 typedef ffly_polygon* ffly_polygonp;
-void ffly_draw_polygon(ffly_polygonp, ff_byte_t*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
+void ffly_draw_polygon(ffly_polygonp, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
 
 # endif /*__ffly__polygon__h*/

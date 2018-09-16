@@ -32,16 +32,17 @@ enum {
 };
 
 void opt() {
-	ffly_gui_window_draw(&workshop.window, &workshop.frame, WIDTH, HEIGHT);
-//	ffly_gui_btn_draw(workshop.front, &workshop.frame, WIDTH, HEIGHT);
+	ffly_gui_window_draw(&workshop.window);
+	ffly_gui_btn_draw(workshop.front);
 }
 
 void front() {
-	ffly_gui_window_draw(&workshop.window, &workshop.frame, WIDTH, HEIGHT);
-//	ffly_gui_btn_draw(workshop.opt, &workshop.frame, WIDTH, HEIGHT);
+	ffly_gui_window_draw(&workshop.window);
+	ffly_gui_btn_draw(workshop.opt);
 }
 
 static void(*draw)(void) = front;
+ff_u16_t sf;
 
 # include "m.h"
 # include "types/wd_event_t.h"
@@ -51,15 +52,14 @@ void ffly_workshop_start() {
 		ffly_g_start();
 		ffly_pixfill(WIDTH*HEIGHT, ffly_colour(63, 60, 255, 255), 0);
 		draw();
-		ffly_pallet_draw(&workshop.frame, 0, 0, 1);
 		ff_eventp event;
 		while(!ff_event_poll(&event)) {
 			if (event->kind == _ffly_wd_ek_btn_press || event->kind == _ffly_wd_ek_btn_release) {
 				pt_x = ((ffly_wd_event_t*)event->data)->x;
 				pt_y = ((ffly_wd_event_t*)event->data)->y;
-			//	ffly_carriage_put(_ff_carr0);
-			//	ffly_carriage_wait(_ff_carr0);
-			//	ffly_carriage_reset(_ff_carr0);
+				ffly_carriage_put(_ff_carr0);
+				ffly_carriage_wait(_ff_carr0);
+				ffly_carriage_reset(_ff_carr0);
 				if (event->kind == _ffly_wd_ek_btn_press) {
 					pt_state = 0;
 				} else if (event->kind == _ffly_wd_ek_btn_release) {
@@ -78,6 +78,7 @@ void ffly_workshop_start() {
 		ffly_fb_copy(__frame_buff__);
 		ffly_g_finish();
 		ffly_g_done();
+		G_CONTEXT->stack = sf;
 		ffly_fb_yank(__frame_buff__);
 		if (!ff_duct_serve())
 			break;
@@ -125,26 +126,23 @@ void ffly_workshop_init() {
     fb = ffly_g_fb_new(WIDTH, HEIGHT);
     ffly_g_fb_set(fb);
 	ffly_g_done();
+	sf = G_CONTEXT->stack;
 
-	ffly_pallet_init(&workshop.frame, WIDTH, HEIGHT, _ffly_tile_64);
 	ffly_grp_prepare(&__ffly_grp__, 100);
 	ff_set_frame_size(WIDTH, HEIGHT);
 	ff_graphics_init();
 
 	ff_duct_open(FF_PIPE_CREAT);
-
-//	ffly_mem_set(ffly_frame(__frame_buff__), 255, (WIDTH*HEIGHT)*4);
 	ff_duct_listen();
 
 	ffly_queue_init(&ffly_event_queue, sizeof(ff_eventp));
 
 	ffly_scheduler_init(0);
-/*
+
 	tex0 = (ff_u8_t*)__ffly_mem_alloc(76*76*4);
 	tex1 = (ff_u8_t*)__ffly_mem_alloc(76*76*4);
-	ffly_pixfill(tex0, 76*76, ffly_colour(255, 52, 132, 255));
-	ffly_pixfill(tex1, 76*76, ffly_colour(244, 206, 66, 255));
-	ffly_grp_unload(&__ffly_grp__);	
+	ffly_mem_set(tex0, 100, 76*76*4);
+	ffly_mem_set(tex1, 255, 76*76*4);
 
 	ffly_gui_btnp btn;
 	btn = ffly_gui_btn_creat(tex0, 76, 76, 0, 0);
@@ -158,6 +156,9 @@ void ffly_workshop_init() {
 	workshop.opt = btn;
 	ffly_gui_btn_sched(btn);
 	ffly_gui_btn_enable(btn);
+	
+	ffly_pallet_write(&btn->texture, tex0, 76, 76, 0, 0);
+
 	btn = ffly_gui_btn_creat(tex1, 76, 76, 76, 0);
 	btn->pt_x = &pt_x;
 	btn->pt_y = &pt_y;
@@ -169,7 +170,9 @@ void ffly_workshop_init() {
 	workshop.front = btn;
 	ffly_gui_btn_sched(btn);
 	ffly_gui_btn_enable(btn);
-*/	
+	
+	ffly_pallet_write(&btn->texture, tex1, 76, 76, 0, 0);
+
 	ffly_gui_window_init(&workshop.window, 64, 64, 128, 128);
 
 	ff_u8_t static pixels[64*64*4];
@@ -191,8 +194,6 @@ void ffly_workshop_init() {
 	ffly_ui_text_destroy(text);
 
 	ffly_gui_window_write(&workshop.window, pixels, 64, 64, 0, 0);
-//	ffly_grp_unload(&__ffly_grp__);
-//	ffly_gui_window_update(&workshop.window);
 }
 
 void ffly_workshop_de_init() {
@@ -203,18 +204,17 @@ void ffly_workshop_de_init() {
 	ff_duct_close();
 	ff_graphics_de_init();
 	ffly_plate_cleanup();
-//	__ffly_mem_free(tex0);
-//	__ffly_mem_free(tex1);
+	__ffly_mem_free(tex0);
+	__ffly_mem_free(tex1);
 	ffly_gui_window_de_init(&workshop.window);
-//	ffly_gui_btn_destroy(workshop.opt);
-//	ffly_gui_btn_destroy(workshop.front);
+	ffly_gui_btn_destroy(workshop.opt);
+	ffly_gui_btn_destroy(workshop.front);
 	ff_event_cleanup();
 	ffly_grp_cleanup(&__ffly_grp__);
 	ffly_grj_cleanup();
-	ffly_pallet_de_init(&workshop.frame);
 	ffly_tile_cleanup();
 	ffly_scheduler_de_init();
-//	ffly_carriage_cleanup();
+	ffly_carriage_cleanup();
 }
 
 ff_err_t ffmain(int __argc, char const *__argv[]) {

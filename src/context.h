@@ -8,6 +8,10 @@
 
 /*
 	for later
+
+	TODO:
+		remove .stack from context???
+		or make it easer to manage 
 */
 struct ff_context {
 	struct ff_driver driver;

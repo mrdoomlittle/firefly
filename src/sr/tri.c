@@ -62,8 +62,13 @@ void sr_raster_tri2(void) {
 	/*
 		texture will be loaded diffrently but for now
 	*/
-	tex = (struct sr_tex*)(sr_raise_stack+(*(ff_u16_t*)(sr_raise_p+sizeof(ff_u16_t))));
+	tex = (struct sr_tex*)(sr_raise_stack+(*(ff_u16_t*)(sr_raise_p+2)));
+	ff_u32_t _x, _y;
 
+	_x = *(ff_u32_t*)(sr_raise_p+4);
+	_y = *(ff_u32_t*)(sr_raise_p+8);
+
+	ffly_printf("--------> %ux%u\n", _x, _y);
 	struct sr_vertex2 v0, v1, v2;
 
 	v0 = tri->v0;
@@ -103,8 +108,8 @@ void sr_raster_tri2(void) {
 #ifdef use_barycentric
 			if (a>=0 && b>=0 && g>=0) {
 #endif
-				ff_uint_t x0 = abs(xmin-x);
-				ff_uint_t y0 = abs(ymin-y);
+				ff_uint_t x0 = _x+abs(xmin-x);
+				ff_uint_t y0 = _y+abs(ymin-y);
 				tx = x0>>TILESZ;
 				ty = y0>>TILESZ;
 				if (!(t = *(tp = tile_at(tx, ty, fb)))) {

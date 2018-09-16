@@ -16,8 +16,7 @@ struct ff_driver {
 	void(*sput)(void*, ff_uint_t, ff_u16_t);
 	void(*ctx_new)(ff_u16_t);
 	void(*ctx_destroy)(ff_u16_t);
-	void(*raster_tri2)(ff_u16_t, ff_u16_t);
-
+	void(*raster_tri2)(ff_u16_t, ff_u16_t, ff_u32_t, ff_u32_t);
 	void(*tri2)(struct ffly_tri2*, ff_u16_t);
 	void(*tex)(struct ffly_tex*, ff_u16_t);
 	void(*done)(void);

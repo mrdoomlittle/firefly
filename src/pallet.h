@@ -20,7 +20,6 @@ void ffly_pallet_distroy(ffly_palletp);
 void ffly_pallet_init(ffly_palletp, ff_uint_t, ff_uint_t, ff_u8_t);
 void ffly_pallet_de_init(ffly_palletp);
 void ffly_pallet_write(ffly_palletp, void*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
-void ffly_pallet_copy(ffly_palletp, ffly_palletp, ff_uint_t, ff_uint_t);
-void ffly_pallet_draw(ffly_palletp, ff_uint_t, ff_uint_t, ff_u8_t);
+void ffly_pallet_draw(ffly_palletp, ff_uint_t, ff_uint_t);
 void ffly_pallet_read(ffly_palletp, void*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);
 # endif /*__ffly__pallet__h*/

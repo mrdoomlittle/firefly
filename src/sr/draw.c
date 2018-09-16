@@ -31,7 +31,6 @@ sr_tdraw(void) {
 	struct sr_context *ctx;
 	ctx = sr_ctx;
 
-
 	struct sr_tile *t, **tp;
 	ff_uint_t x, y;
 	y = 0;

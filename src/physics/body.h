@@ -35,6 +35,8 @@ typedef struct ffly_phy_body {
 	ff_uint_t mass;
 
 	ff_u8_t velocity;
+	void(*get)(ff_u8_t, long long, void*);
+	void *arg;
 	ff_uint_t *x, *y, *z;
 
 /*
@@ -65,7 +67,7 @@ ffly_phy_bodyp ffly_phy_body_top();
 void ffly_phy_body_fd(ffly_phy_bodyp*);
 
 ffly_phy_bodyp ffly_get_phy_body(ff_u32_t);
-ff_u32_t ffly_physical_body(ff_uint_t*, ff_uint_t*, ff_uint_t*, ff_u8_t);
+ff_u32_t ffly_physical_body(void(*)(ff_u8_t, long long, void*), ff_u8_t, void*);
 void ffly_body_cleanup();
 void ffly_physical_body_update(ffly_unip, ff_uint_t, ff_u32_t);
 void ffly_set_direction(ff_u32_t, ff_u8_t);

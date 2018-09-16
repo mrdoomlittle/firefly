@@ -28,7 +28,7 @@ static void(*op[])(void) = {
 };
 
 ff_uint_t static os[] = {
-	sizeof(ff_u16_t)*2,
+	(sizeof(ff_u16_t)*2)+(sizeof(ff_u32_t)*2),
 	sizeof(ff_u16_t),
 	sizeof(ff_u16_t),
 	sizeof(ff_u8_t*)+(sizeof(ff_u32_t)*4),

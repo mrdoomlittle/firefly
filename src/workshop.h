@@ -2,8 +2,8 @@
 # define __ffly__workshop__h
 # include "ffint.h"
 # include "types.h"
-# include "gui/btn.h"
-# include "gui/window.h"
+# include "ui/btn.h"
+# include "ui/window.h"
 # include "pallet.h"
 # define WIDTH 448
 # define HEIGHT 448

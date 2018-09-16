@@ -18,7 +18,7 @@ void
 ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
 	ff_u16_t __height, ff_u16_t __x, ff_u16_t __y)
 {
-	ffly_pallet_init(&__btn->texture, __width, __height, _ffly_tile_64);
+	ffly_pallet_init(&__btn->texture, __width, __height, _ffly_tile_16);
 //	ffly_pallet_update(&__btn->texture, __texture, __width, __height);
 	__btn->pressed = -1;
 	__btn->hovering = -1;
@@ -48,13 +48,10 @@ void ffly_gui_btn_disable(ffly_gui_btnp __btn) {
 	ffly_carriage_dud(_ff_carr0);
 }
 
-ff_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn, ffly_palletp __pallet, ff_u16_t __width, ff_u16_t __height) {
+ff_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn) {
 	ff_err_t err;
 	ffly_fprintf(ffly_log, "button draw.\n");
-//	if (_err(err = ffly_pixdraw(__btn->x, __btn->y, __dst, __width, __btn->texture, __btn->width, __btn->height))) {
-//		return err;
-//	}
-	ffly_pallet_copy(&__btn->texture, __pallet, __btn->x, __btn->y);
+	ffly_pallet_draw(&__btn->texture, __btn->x, __btn->y);
 	return FFLY_SUCCESS;
 }
 
@@ -69,8 +66,12 @@ ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t *__texture, ff_u16_t __width,
 }
 
 void ffly_gui_btn_sched(ffly_gui_btnp __btn) {
-	__btn->sched_id = ffly_schedule(ffly_gui_btn_handle, __btn, 2);
-	__btn->flags |= BTN_SCHED;
+	if (!(__btn->flags&BTN_SCHED)) {
+		__btn->sched_id = ffly_schedule(ffly_gui_btn_handle, __btn, 2);
+		__btn->flags |= BTN_SCHED;
+	} else {
+		// warning
+	}
 }
 
 void ffly_gui_btn_destroy(ffly_gui_btnp __btn) {
@@ -98,6 +99,7 @@ ff_i8_t ffly_gui_btn_handle(void *__arg_p) {
 
 	ffly_carriage_done(_ff_carr0, btn->c);
 	/*
+		TODO:
 		if press or hover ... is detected pass the call 
 		to task_pool to keep the sched from clogging up.
 	*/
