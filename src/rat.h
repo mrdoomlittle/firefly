@@ -2,6 +2,7 @@
 # define __ffly__rat__h
 # include "ffint.h"
 # include <stdarg.h>
+
 enum {
 	_ff_rat_0,
 	_ff_rat_1,

@@ -91,7 +91,8 @@ void output(void) {
 	struct array *arr;
 
 	arr = arr_head;
-	ff_uint_t i;
+	ff_uint_t i, n;
+	n = 0;
 
 	while(arr != NULL) {
 		i = 0;
@@ -107,9 +108,11 @@ void output(void) {
 		write(fd, buf, len);
 
 		write(fd, "\n", 1);
+		n+=arr->i+1;
 		arr = arr->link;
 	}
-	write(fd, "};", 2);
+	len = sprintf(buf, "};//%u", n);
+	write(fd, buf, len);
 	close(fd);
 }
 
