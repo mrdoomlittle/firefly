@@ -5,7 +5,7 @@
 # include "system/io.h"
 # include "system/thread.h"
 # include "system/config.h"
-# include "arcs.h"
+# include "ss.h"
 # include "memory/alloca.h"
 # include "dep/str_cmp.h"
 # include "dep/mem_dup.h"
@@ -133,7 +133,7 @@ init() {
 # endif
 	ffly_io_init();
 # ifndef __ffly_crucial
-	ffly_arcs_init();
+	ffly_ss_prime();
 # endif
 	ffly_thread_init();
 # ifndef __ffly_crucial
@@ -156,10 +156,10 @@ prep() {
 # ifndef __ffly_crucial
 	void **p = ffly_alloca(sizeof(void*), NULL);
 	*p = (void*)by;
-	ffly_arcs_creatarc("info");
-	ffly_arcs_tun("info");
-	ffly_arcs_creatrec("created-by", NULL, _ffly_rec_def, 0);
-	ffly_arcs_bk();
+	ss_dir_creat("info");
+	ss_tun("info");
+	ss_file_creat("created-by", NULL, _ffly_ss_def, 0);
+	ss_bk;
 	ffly_init_run();
 
 	/* pistons are on even if sched has not been inited
@@ -183,7 +183,7 @@ fini() {
 # endif
 //	ff_mod_de_init();
 # ifndef __ffly_crucial
-	ffly_arcs_de_init();
+	ffly_ss_fin();
 # endif
 	ffly_alloca_cleanup();
 	ffly_thread_cleanup();

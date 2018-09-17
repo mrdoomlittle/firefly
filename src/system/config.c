@@ -1,5 +1,5 @@
 # include "config.h"
-# include "../config.h"
+# include "../bole.h"
 # include "errno.h"
 # include "err.h"
 # include "io.h"
@@ -39,50 +39,50 @@ void ffly_ld_sysconf_def() {
 }
 
 void static
-ld_max_threads(ffconf *__cf) {
+ld_max_threads(ffbole *__cf) {
 	void const *p;
-	if (!(p = ffly_conf_get(__cf, "max_threads")))
+	if (!(p = ffly_bole_get(__cf, "max_threads")))
 		ld_def_max_threads();
 	else
-		__ffly_sysconf__.max_threads = ffly_conf_int_u(p);
+		__ffly_sysconf__.max_threads = ffly_bole_int_u(p);
 	ffly_fprintf(ffly_log, "max threads: %u\n", __ffly_sysconf__.max_threads);
 }
 
 void static
-ld_alssize(ffconf *__cf) {
+ld_alssize(ffbole *__cf) {
 	void const *p;
-	if (!(p = ffly_conf_get(__cf, "alssize")))
+	if (!(p = ffly_bole_get(__cf, "alssize")))
 		ld_def_alssize();
 	else
-		__ffly_sysconf__.alssize = ffly_conf_int_u(p);
+		__ffly_sysconf__.alssize = ffly_bole_int_u(p);
 	ffly_fprintf(ffly_log, "alloca ssize: %u\n", __ffly_sysconf__.alssize);
 }
 
 void static
-ld_moddir(ffconf *__cf) {
+ld_moddir(ffbole *__cf) {
 	void const *p;
-	if ((p = ffly_conf_get(__cf, "moddir")) != NULL)
-		__ffly_sysconf__.moddir = (char const*)ffly_str_dupe(ffly_conf_str(p));	
+	if ((p = ffly_bole_get(__cf, "moddir")) != NULL)
+		__ffly_sysconf__.moddir = (char const*)ffly_str_dupe(ffly_bole_str(p));	
 }
 
 void static
-ld_inidir(ffconf *__cf) {
+ld_inidir(ffbole *__cf) {
 	void const *p;
-	if ((p = ffly_conf_get(__cf, "inidir")) != NULL)
-		__ffly_sysconf__.inidir = (char const*)ffly_str_dupe(ffly_conf_str(p));		
+	if ((p = ffly_bole_get(__cf, "inidir")) != NULL)
+		__ffly_sysconf__.inidir = (char const*)ffly_str_dupe(ffly_bole_str(p));		
 }
 
 void static
-ld_modl(ffconf *__cf) {
+ld_modl(ffbole *__cf) {
 	void const *p;
-	if ((p = ffly_conf_get(__cf, "modl")) != NULL) {
-		ffly_printf("module list len: %u\n", ffly_conf_arr_len(p));
-		ff_u8_t i = 0, l = ffly_conf_arr_len(p);
+	if ((p = ffly_bole_get(__cf, "modl")) != NULL) {
+		ffly_printf("module list len: %u\n", ffly_bole_arr_len(p));
+		ff_u8_t i = 0, l = ffly_bole_arr_len(p);
 		__ffly_sysconf__.modl = (char const**)__ffly_mem_alloc((l+1)*sizeof(char const*));
 
 		while(i != l) {
-			__ffly_sysconf__.modl[i] = (char const*)ffly_str_dupe(ffly_conf_str(ffly_conf_arr_elem(p, i)));
-			ffly_printf("module: %s\n", ffly_conf_str(ffly_conf_arr_elem(p, i)));
+			__ffly_sysconf__.modl[i] = (char const*)ffly_str_dupe(ffly_bole_str(ffly_bole_arr_elem(p, i)));
+			ffly_printf("module: %s\n", ffly_bole_str(ffly_bole_arr_elem(p, i)));
 			i++;
 		}
 		__ffly_sysconf__.modl[i] = NULL;
@@ -90,19 +90,19 @@ ld_modl(ffconf *__cf) {
 }
 
 void static
-ld_inil(ffconf *__cf) {
+ld_inil(ffbole *__cf) {
 	void const *p;
-	if ((p = ffly_conf_get(__cf, "inil")) != NULL) {
-		ffly_printf("init list len: %u\n", ffly_conf_arr_len(p));
-		ff_u8_t i = 0, l = ffly_conf_arr_len(p);
+	if ((p = ffly_bole_get(__cf, "inil")) != NULL) {
+		ffly_printf("init list len: %u\n", ffly_bole_arr_len(p));
+		ff_u8_t i = 0, l = ffly_bole_arr_len(p);
 		if (!(__ffly_sysconf__.inil = (char const**)__ffly_mem_alloc((l+1)*sizeof(char const*)))) {
 			ffly_printf("error.\n");
 			return;
 		}
 
 		while(i != l) {
-			__ffly_sysconf__.inil[i] = (char const*)ffly_str_dupe(ffly_conf_str(ffly_conf_arr_elem(p, i)));
-			ffly_printf("init: %s\n", ffly_conf_str(ffly_conf_arr_elem(p, i)));
+			__ffly_sysconf__.inil[i] = (char const*)ffly_str_dupe(ffly_bole_str(ffly_bole_arr_elem(p, i)));
+			ffly_printf("init: %s\n", ffly_bole_str(ffly_bole_arr_elem(p, i)));
 			i++;
 		}
 		__ffly_sysconf__.inil[i] = NULL;
@@ -117,31 +117,31 @@ ld_db(void const *__db) {
 	void const *user;
 	void const *passwd;
 
-	if ((ip_addr = ffly_conf_struc_get(__db, "ip_addr")) != NULL) {
-		__ffly_sysconf__.db.ip_addr =  (char const*)ffly_str_dupe(ffly_conf_str(ip_addr));
+	if ((ip_addr = ffly_bole_struc_get(__db, "ip_addr")) != NULL) {
+		__ffly_sysconf__.db.ip_addr =  (char const*)ffly_str_dupe(ffly_bole_str(ip_addr));
 		ffly_printf("ip addr: %s\n", __ffly_sysconf__.db.ip_addr);
 	} else
 		__ffly_sysconf__.db.ip_addr = NULL;
 
-	if ((port = ffly_conf_struc_get(__db, "port")) != NULL) {
-		__ffly_sysconf__.db.port = ffly_conf_16l_u(port);
+	if ((port = ffly_bole_struc_get(__db, "port")) != NULL) {
+		__ffly_sysconf__.db.port = ffly_bole_16l_u(port);
 		ffly_printf("port: %u\n", __ffly_sysconf__.db.port);
 	}
 
-	if ((enckey = ffly_conf_struc_get(__db, "enckey")) != NULL) {
-		__ffly_sysconf__.db.enckey = (char const*)ffly_str_dupe(ffly_conf_str(enckey));
+	if ((enckey = ffly_bole_struc_get(__db, "enckey")) != NULL) {
+		__ffly_sysconf__.db.enckey = (char const*)ffly_str_dupe(ffly_bole_str(enckey));
 		ffly_printf("enckey: %s\n", __ffly_sysconf__.db.enckey);
 	} else
 		__ffly_sysconf__.db.enckey = NULL;
 
-	if ((user = ffly_conf_struc_get(__db, "user")) != NULL) {
-		__ffly_sysconf__.db.user = (char const*)ffly_str_dupe(ffly_conf_str(user));
+	if ((user = ffly_bole_struc_get(__db, "user")) != NULL) {
+		__ffly_sysconf__.db.user = (char const*)ffly_str_dupe(ffly_bole_str(user));
 		ffly_printf("user: %s\n", __ffly_sysconf__.db.user);
 	} else
 		__ffly_sysconf__.db.user = NULL;
 
-	if ((passwd = ffly_conf_struc_get(__db, "passwd")) != NULL) {
-		__ffly_sysconf__.db.passwd = (char const*)ffly_str_dupe(ffly_conf_str(passwd));
+	if ((passwd = ffly_bole_struc_get(__db, "passwd")) != NULL) {
+		__ffly_sysconf__.db.passwd = (char const*)ffly_str_dupe(ffly_bole_str(passwd));
 		ffly_printf("password: %s\n", __ffly_sysconf__.db.passwd);
 	} else
 		__ffly_sysconf__.db.passwd = NULL;
@@ -149,39 +149,39 @@ ld_db(void const *__db) {
 }
 
 ff_err_t ffly_ld_sysconf(char const *__path) {
-	struct ffly_conf conf;
+	struct ffly_bole conf;
 	ff_err_t err = FFLY_SUCCESS;
-	if (_err(err = ffly_conf_init(&conf))) {
+	if (_err(err = ffly_bole_init(&conf))) {
 		ffly_fprintf(ffly_err, "failed to init config.\n");
 		return err;
 	}
 
-	if (_err(err = ffly_conf_ld(&conf, __path))) {
+	if (_err(err = ffly_bole_ld(&conf, __path))) {
 		ffly_fprintf(ffly_err, "failed to load config.\n");
 		return err;
 	}
 	
-	if (_err(err = ffly_conf_read(&conf))) {
+	if (_err(err = ffly_bole_read(&conf))) {
 		ffly_fprintf(ffly_err, "failed to read config.\n");
 		return err;
 	}
 
-	ffconf cf;
-	ffly_conf_depos(&conf, &cf);
+	ffbole cf;
+	ffly_bole_depos(&conf, &cf);
 
-	void const *version = ffly_conf_get(&cf, "version");
-	if (!ffly_conf_is_str(version)) {
+	void const *version = ffly_bole_get(&cf, "version");
+	if (!ffly_bole_is_str(version)) {
 		ffly_fprintf(ffly_err, "can't read version as type does not match.\n");
 		err = FFLY_FAILURE;
 		goto _fail;
 	}
 
-	void const *root_dir = ffly_conf_get(&cf, "root_dir");
-	if (!ffly_conf_is_str(root_dir)) {
+	void const *root_dir = ffly_bole_get(&cf, "root_dir");
+	if (!ffly_bole_is_str(root_dir)) {
 
 	}
 
-	void const *db = ffly_conf_get(&cf, "db");
+	void const *db = ffly_bole_get(&cf, "db");
 	if (db != NULL)
 		ld_db(db);
 
@@ -192,16 +192,16 @@ ff_err_t ffly_ld_sysconf(char const *__path) {
 	ld_modl(&cf);
 	ld_inil(&cf);
 
-	__ffly_sysconf__.version = (char const*)ffly_str_dupe(ffly_conf_str(version));
-	__ffly_sysconf__.root_dir = (char const*)ffly_str_dupe(ffly_conf_str(root_dir));
+	__ffly_sysconf__.version = (char const*)ffly_str_dupe(ffly_bole_str(version));
+	__ffly_sysconf__.root_dir = (char const*)ffly_str_dupe(ffly_bole_str(root_dir));
 	__ffly_sysconf__.loaded = 0;
 _fail:
-	if (_err(err = ffly_conf_free(&conf))) {
+	if (_err(err = ffly_bole_free(&conf))) {
 		ffly_fprintf(ffly_err, "failed to free config:0.\n");
 		return err;
 	}
 
-	if (_err(err = ffconf_free(&cf))) {
+	if (_err(err = ffbole_free(&cf))) {
 		ffly_fprintf(ffly_err, "failed to free config:1.\n");
 		return err;
 	}

@@ -204,7 +204,23 @@ void ffly_workshop_de_init() {
 	ffly_carriage_cleanup();
 }
 
+ff_uint_t ws_width;
+ff_uint_t ws_height;
+# include "clay.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	struct ffly_clay clay;
+	ffly_clay_init(&clay);
+	ffly_clay_load(&clay, "../clay/workshop.clay");
+	ffly_clay_read(&clay);
+
+	void *screen;
+	screen = ffly_clay_get("screen", &clay);
+
+	ws_width = clay_16(ffly_clay_tget("width", screen));
+	ws_height = clay_16(ffly_clay_tget("height", screen));
+	ffly_printf("screen, width: %u, height: %u\n", ws_width, ws_height);
+	ffly_clay_de_init(&clay);
+
 	ffly_workshop_init();
 	ffly_workshop_start();
 	ffly_workshop_de_init();

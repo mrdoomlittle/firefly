@@ -7,12 +7,9 @@ alssize:400~_64l_u,
 # TODO:
 # ["mod", loadmethod]
 modl:[
-	"a.mod",
-	"b.mod"
 ],
 # list of scripts for init - not finished
 inil:[
-	"a.out"
 ],
 # directory from root dir
 moddir:"modules",

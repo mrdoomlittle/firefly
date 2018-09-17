@@ -8,6 +8,11 @@
 # include "err.h"
 # include "io.h"
 # define map_mask(__map) ((~(ff_u64_t)0)>>(64-__map->size))
+
+/*
+	TODO:
+		remove any trace of vec and use pages of pointers
+*/
 /*still working on this*/
 typedef struct {
 	ff_u64_t val;

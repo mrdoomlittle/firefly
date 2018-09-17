@@ -209,6 +209,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		y++;
 	}
 */
+/*
 # define WIDTH 128
 # define HEIGHT 128
 	ffly_driver(_driver_sr, &G_CONTEXT->driver);
@@ -262,6 +263,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_frame_buff_del(__frame_buff__);
 	close(out);
 //	ffly_tile_cleanup();
+*/
 /*
 	ff_uint_t i, n;
 

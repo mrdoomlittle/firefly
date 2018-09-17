@@ -1,1 +1,1 @@
-./main -proc "-sysconf:../config/sys.ffc"
+./main -proc "-sysconf:../config/sys.bole"

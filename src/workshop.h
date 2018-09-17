@@ -5,9 +5,10 @@
 # include "ui/btn.h"
 # include "ui/window.h"
 # include "pallet.h"
-# define WIDTH 448
-# define HEIGHT 448
-
+# define WIDTH ws_width
+# define HEIGHT ws_height
+extern ff_uint_t ws_width;
+extern ff_uint_t ws_height;
 struct ff_workshop {
 	ffly_gui_btnp fontforge;
 	struct ffly_gui_window window;

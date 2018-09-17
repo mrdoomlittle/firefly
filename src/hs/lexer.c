@@ -55,6 +55,10 @@ struct token {
 	void *data;
 };
 
+/*
+	for debug tok_data might be printed as a string
+	so to make sure theres no fault occurs ^this empy_str
+*/
 static char const *empty_str = "nothing";
 static struct token tokbuf[20];
 static struct token *btok = tokbuf;

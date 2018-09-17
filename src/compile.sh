@@ -103,14 +103,14 @@ $ffly_cc $cc_flags -c -o $dst_dir/net.o $root_dir/net.c
 $ffly_cc $cc_flags -c -o $dst_dir/rand.o $root_dir/rand.c
 $ffly_cc $cc_flags -c -o $dst_dir/lib.o $root_dir/lib.c
 $ffly_cc $cc_flags -c -o $dst_dir/mode.o $root_dir/mode.c
-$ffly_cc $cc_flags -c -o $dst_dir/config.o $root_dir/config.c
+$ffly_cc $cc_flags -c -o $dst_dir/bole.o $root_dir/bole.c
 $ffly_cc $cc_flags -c -o $dst_dir/ffly_system.o $root_dir/ffly_system.c
 $ffly_cc $cc_flags -c -o $dst_dir/firefly.o $root_dir/firefly.c
 $ffly_cc $cc_flags -c -o $dst_dir/put_bit.o $root_dir/put_bit.c
 $ffly_cc $cc_flags -c -o $dst_dir/get_bit.o $root_dir/get_bit.c
 $ffly_cc $cc_flags -c -o $dst_dir/exec.o $root_dir/exec.c
 $ffly_cc $cc_flags -c -o $dst_dir/resin/exec.o $root_dir/resin/exec.c
-$ffly_cc $cc_flags -c -o $dst_dir/arcs.o $root_dir/arcs.c
+$ffly_cc $cc_flags -c -o $dst_dir/ss.o $root_dir/ss.c
 $ffly_cc $cc_flags -c -o $dst_dir/resin.o.0 $root_dir/resin.c
 as -c -o $dst_dir/resin.o.1 $root_dir/resin.s
 $ffly_cc $cc_flags -c -o $dst_dir/resin/mm.o $root_dir/resin/mm.c
@@ -194,13 +194,20 @@ $ffly_cc $cc_flags -c -o $dst_dir/mo.o $root_dir/mo.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/tile.o $root_dir/sr/tile.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/plate.o $root_dir/sr/plate.c
 $ffly_cc $cc_flags -c -o $dst_dir/workshop/font_forge.o $root_dir/workshop/font_forge.c
+$ffly_cc $cc_flags -c -o $dst_dir/clay.o $root_dir/clay.c
+$ffly_cc $cc_flags -c -o $dst_dir/clay/memalloc.o $root_dir/clay/memalloc.c
+$ffly_cc $cc_flags -c -o $dst_dir/clay/lexer.o $root_dir/clay/lexer.c
+$ffly_cc $cc_flags -c -o $dst_dir/clay/input.o $root_dir/clay/input.c
+$ffly_cc $cc_flags -c -o $dst_dir/clay/parser.o $root_dir/clay/parser.c
+$ffly_cc $cc_flags -c -o $dst_dir/clay/hash.o $root_dir/clay/hash.c
+$ffly_cc $cc_flags -c -o $dst_dir/clay/solidify.o $root_dir/clay/solidify.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
 export ffly_objs="$dst_dir/event.o $ffly_objs $dst_dir/resin.o.0 $dst_dir/resin.o.1 $dst_dir/exec.o \
 $dst_dir/resin/exec.o $dst_dir/resin/mm.o $dst_dir/mode.o \
-$dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/config.o $dst_dir/put_bit.o  $dst_dir/get_bit.o \
-$dst_dir/arcs.o $dst_dir/call.o $dst_dir/rand.o $dst_dir/lib.o $dst_dir/mod.o $dst_dir/mod/port.o \
+$dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/bole.o $dst_dir/put_bit.o  $dst_dir/get_bit.o \
+$dst_dir/ss.o $dst_dir/call.o $dst_dir/rand.o $dst_dir/lib.o $dst_dir/mod.o $dst_dir/mod/port.o \
 $dst_dir/net.o $dst_dir/crypto.o $dst_dir/in.o $dst_dir/inet_addr.o $dst_dir/init.o \
 $dst_dir/opt.o $dst_dir/depart.o $dst_dir/rdm.o $dst_dir/pellet.o $dst_dir/crypto/frazzle.o \
 $dst_dir/signal.o $dst_dir/hatch.o $dst_dir/rat.o \
@@ -229,4 +236,6 @@ $dst_dir/drivers/sr/driver.o $dst_dir/sr/framebuff.o $dst_dir/sr/raise.o \
 $dst_dir/sr/tri.o $dst_dir/tri.o $dst_dir/tex.o $dst_dir/sr/draw.o \
 $dst_dir/driver.o $dst_dir/context.o $dst_dir/dc.o $dst_dir/sr/copy.o \
 $dst_dir/sr/fill.o $dst_dir/pixel.o $dst_dir/frame_buff.o $dst_dir/mo.o \
-$dst_dir/sr/tile.o $dst_dir/sr/plate.o $dst_dir/workshop/font_forge.o"
+$dst_dir/sr/tile.o $dst_dir/sr/plate.o $dst_dir/workshop/font_forge.o \
+$dst_dir/clay.o $dst_dir/clay/memalloc.o $dst_dir/clay/lexer.o $dst_dir/clay/input.o \
+$dst_dir/clay/parser.o $dst_dir/clay/hash.o $dst_dir/clay/solidify.o"
