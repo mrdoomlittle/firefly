@@ -85,7 +85,8 @@ void output(void) {
 	}
 	char buf[1024];
 
-	write(fd, "struct point %s_points[] = {\n", ib, 26);
+	len = sprintf(buf, "struct point %s_points[] = {\n", ib);
+	write(fd, buf, len);
 
 	struct array *arr;
 
