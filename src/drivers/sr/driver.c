@@ -1,6 +1,6 @@
 # include "../../ffint.h"
 # include "../../sr/raise.h"
-# include "../../prim.h"
+# include "../../bron/prim.h"
 # include "../../sr/types.h"
 # include "../../sr/context.h"
 static ff_u8_t cb[2048];
@@ -59,7 +59,7 @@ _sr_sget(void *__buf, ff_u32_t __size, ff_u16_t __adr) {
 }
 
 void static
-sr_tri2(struct ffly_tri2 *__tri, ff_u16_t __dst) {
+sr_tri2(struct bron_tri2 *__tri, ff_u16_t __dst) {
 	struct sr_tri2 *tri;
 
 	tri = (struct sr_tri2*)sr_stack(__dst);
@@ -74,7 +74,7 @@ sr_tri2(struct ffly_tri2 *__tri, ff_u16_t __dst) {
 }
 
 void static
-sr_tex(struct ffly_tex *__tex, ff_u16_t __dst) {
+sr_tex(struct bron_tex *__tex, ff_u16_t __dst) {
 	struct sr_tex *tx;
 	tx = (struct sr_tex*)sr_stack(__dst);
 	*(ff_u32_t*)tx->inn = *(ff_u32_t*)__tex->inn;
@@ -178,8 +178,23 @@ _sr_tdraw(ff_u16_t __tile, ff_u32_t __x, ff_u32_t __y) {
 	cb_p+=11;
 }
 
-# include "../../driver.h"
-void ffly_sr(struct ff_driver *__driver) {
+void static
+_sr_sb(ff_u8_t __bits) {
+	*cb_p = sr_op_sb;
+	*(cb_p+1) = __bits;
+	cb_p+=2;
+}
+void static
+_sr_cb(ff_u8_t __bits) {
+	*cb_p = sr_op_cb;
+	*(cb_p+1) = __bits;
+	cb_p+=2;
+}
+
+# include "../../bron/driver.h"
+void ffly_sr(struct bron_driver *__driver) {
+	__driver->sb = _sr_sb;
+	__driver->cb = _sr_cb;
 	__driver->tdraw = _sr_tdraw;
 	__driver->ptile_new = _sr_ptile_new;
 	__driver->ptile_destroy = _sr_ptile_destroy;

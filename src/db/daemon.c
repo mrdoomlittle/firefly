@@ -15,12 +15,20 @@ void scrap_slot(ff_uint_t);
 void *slotget(ff_uint_t);
 void slotput(ff_uint_t, void*);
 
+
+ff_u8_t static stack[512];
+# define stackat(__ad) \
+	(stack+(__ad))
 /*
 	multiclient not done.
 	TODO:
 		move ff_dbdp
 		static ffdbp d;
 		dont pass as arg to function
+
+		rename to dserver
+
+		move most to exec.c or run.c 
 */
 
 ff_i8_t static
@@ -652,28 +660,28 @@ static void *jmp[] = {
 
 char const *msgstr(ff_u8_t __kind) {
 	switch(__kind) {
-		case _ff_db_msg_login:		return "login";
-		case _ff_db_msg_logout:		return "logout";
-		case _ff_db_msg_pulse:		return "pulse";
-		case _ff_db_msg_shutdown:	return "shutdown";
-		case _ff_db_msg_disconnect:	return "disconnect";
-		case _ff_db_msg_req_errno:	return "request error number";
-		case _ff_db_msg_creat_pile:	return "create pile";
-		case _ff_db_msg_del_pile:	return "delete pile";
-		case _ff_db_msg_creat_record: return "create record";
-		case _ff_db_msg_del_record:	return "delete record";
-		case _ff_db_msg_write:		return "write";
-		case _ff_db_msg_read:		return "read";
+		case _ff_db_msg_login:			return "login";
+		case _ff_db_msg_logout:			return "logout";
+		case _ff_db_msg_pulse:			return "pulse";
+		case _ff_db_msg_shutdown:		return "shutdown";
+		case _ff_db_msg_disconnect:		return "disconnect";
+		case _ff_db_msg_req_errno:		return "request error number";
+		case _ff_db_msg_creat_pile:		return "create pile";
+		case _ff_db_msg_del_pile:		return "delete pile";
+		case _ff_db_msg_creat_record:	return "create record";
+		case _ff_db_msg_del_record:		return "delete record";
+		case _ff_db_msg_write:			return "write";
+		case _ff_db_msg_read:			return "read";
 		case _ff_db_msg_record_alloc:	return "record alloc";
 		case _ff_db_msg_record_free:	return "record free";
-		case _ff_db_msg_rivet:		return "rivet";
-		case _ff_db_msg_derivet:	return "derivet";
-		case _ff_db_msg_rivetto:	return "rivetto";
-		case _ff_db_msg_bind:		return "bind";
+		case _ff_db_msg_rivet:			return "rivet";
+		case _ff_db_msg_derivet:		return "derivet";
+		case _ff_db_msg_rivetto:		return "rivetto";
+		case _ff_db_msg_bind:			return "bind";
 		case _ff_db_msg_acquire_slot:	return "acquire slot";
-		case _ff_db_msg_scrap_slot:	return "scrap slot";
-		case _ff_db_msg_exist:		return "exist";
-		case _ff_db_msg_recstat:	return "record stat";
+		case _ff_db_msg_scrap_slot:		return "scrap slot";
+		case _ff_db_msg_exist:			return "exist";
+		case _ff_db_msg_recstat:		return "record stat";
 	}
 	return "unknown";
 }
@@ -707,6 +715,12 @@ void static sig(int __sig) {
 	ff_net_shutdown(sock, SHUT_RDWR);
 }
 
+void static
+texec(ff_db_tapep __t) {
+
+}
+
+
 void*
 ff_db_serve(void *__arg_p) {
 	ffly_atomic_incr(&live);
@@ -726,7 +740,14 @@ ff_db_serve(void *__arg_p) {
 
 	alive = 0;
 	ffly_ctl(ffly_malc, _ar_setpot, (ff_u64_t)main_pot);	
+	
+	ff_db_tapep t;
 	while(!alive && to_shut<0) {
+//		ff_uint_t tsz;
+//		ff_net_recv(peer, &tsz, sizeof(ff_uint_t), &err);		
+//		t = ff_db_tape_new(tsz);
+//		ff_net_recv(peer, t->text, tsz, &err);
+
 		if (_err(err = ff_db_rcvmsg(peer, &msg))) {
 			ffly_printf("failed to recv message.\n");
 			jmpexit;
@@ -749,6 +770,8 @@ ff_db_serve(void *__arg_p) {
 /*
 	move below to its own function
 	say opexec
+
+
 */
 		jmpto(jmp[msg.kind]);
 

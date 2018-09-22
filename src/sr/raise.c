@@ -8,8 +8,7 @@
 ff_u8_t *sr_raise_p;
 ff_u8_t sr_raise_stack[STACK_SIZE];
 ff_u16_t sr_raise_sp;
-# define MAX 18
-
+# define MAX 19
 void static
 sr_sput(void) {
 	void *buf;
@@ -54,28 +53,32 @@ static void(*op[])(void) = {
 	sr_ptile_destroy,
 	sr_tdraw,
 	sr_sput,
-	sr_sget
+	sr_sget,
+	sr_sb,
+	sr_cb
 };
 
 ff_uint_t static os[] = {
-	(sizeof(ff_u16_t)*2)+(sizeof(ff_u32_t)*2),
-	sizeof(ff_u16_t),
-	sizeof(ff_u16_t),
-	sizeof(ff_u8_t*)+(sizeof(ff_u32_t)*4),
-	sizeof(ff_u16_t),
-	0,
-	0,
-	0,
-	(sizeof(ff_u32_t)*4)+sizeof(ff_u8_t*),
-	sizeof(ff_u8_t*)+sizeof(ff_u32_t),
-	sizeof(ff_u16_t),
-	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),
-	sizeof(ff_u16_t),
-	sizeof(ff_u16_t)+(sizeof(void*)*2),
-	sizeof(ff_u16_t),
-	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),
-	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t),
-	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t)
+	(sizeof(ff_u16_t)*2)+(sizeof(ff_u32_t)*2),			//sr_raster_tri2
+	sizeof(ff_u16_t),									//sr_ctx_new
+	sizeof(ff_u16_t),									//sr_ctx_destroy
+	sizeof(ff_u8_t*)+(sizeof(ff_u32_t)*4),				//sr_putframe
+	sizeof(ff_u16_t),									//sr_setctx
+	0,													//sr_start
+	0,													//sr_finish
+	0,													//sr_pixcopy
+	(sizeof(ff_u32_t)*4)+sizeof(ff_u8_t*),				//sr_pixdraw
+	sizeof(ff_u8_t*)+sizeof(ff_u32_t),					//sr_pixfill
+	sizeof(ff_u16_t),									//sr_fb_set
+	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),				//sr_fb_new
+	sizeof(ff_u16_t),									//sr_fb_destroy
+	sizeof(ff_u16_t)+(sizeof(void*)*2),					//sr_ptile_new
+	sizeof(ff_u16_t),									//sr_ptile_destroy
+	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),				//sr_tdraw
+	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t),	//sr_sput
+	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t),	//sr_sget
+	1,													//sr_sb
+	1													//sr_cb
 };
 
 void sr_raise(ff_u8_t *__bin, ff_uint_t __size) {

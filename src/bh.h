@@ -7,6 +7,10 @@
 	rundown:
 		download/upload centre for bricks
 		bricks can be stored and retrieved.
+
+	TODO:
+		remove bhop and replace with microcode
+		as its easer to manage at a lower level
 */
 
 enum {

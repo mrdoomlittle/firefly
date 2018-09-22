@@ -2,7 +2,7 @@
 # include "pipe.h"
 # include "../dep/bcopy.h"
 # include "../context.h"
-# include "../pixel.h"
+# include "../bron/pixel.h"
 # include "../system/errno.h"
 # include "../tile.h"
 void ffly_tdraw(ffly_tilep __t, ff_u32_t __x, ff_u32_t __y) {
@@ -22,6 +22,6 @@ ff_err_t ffly_pixdraw(ff_u32_t __x, ff_u32_t __y, void *__src,
 ff_err_t __ffly_pixdraw(ff_u32_t __x, ff_u32_t __y, void *__src,
 	ff_u32_t __width, ff_u32_t __height)
 {
-	ffly_g_pixdraw(__x, __y, __src, __width, __height);
+	bron_pixdraw(__x, __y, __src, __width, __height);
 	return FFLY_SUCCESS;
 }

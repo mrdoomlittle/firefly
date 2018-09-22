@@ -19,6 +19,12 @@
 // needs testing
 
 /*
+	TODO:
+		remove message and use microcode as its easer
+
+*/
+
+/*
 	TODO
 	ffdb_off_t - not ff_uint_t
 */
@@ -84,7 +90,6 @@ struct ff_db_rep {
 	ff_u8_t type;
 };
 
-
 struct ffdb_record_hdr {
 	ff_u32_t p;
 	ff_uint_t size;
@@ -97,6 +102,11 @@ struct ffdb_pile_hdr {
 	ff_uint_t no;
 	ff_u32_t next;
 };
+
+typedef struct ff_db_tape {
+	void *text;
+	ff_uint_t len;
+} *ff_db_tapep;
 
 struct ffdb_hdr {
 	char ident[4];

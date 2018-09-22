@@ -3,6 +3,8 @@
 # include "context.h"
 # include "../system/io.h"
 # include "tile.h"
+# include "shit.h"
+# include "pixel.h"
 void
 sr_pixfill(void) {
 	ffly_printf("pixfill.\n");
@@ -12,6 +14,7 @@ sr_pixfill(void) {
 
 	n = *(ff_u32_t*)sr_raise_p;
 	colour = *(ff_u8_t**)(sr_raise_p+4);
+	ffly_printf("fill colour: %u.%u.%u.%u\n", colour[0], colour[1], colour[2], colour[3]);
 
 	struct sr_context *ctx;
 	ctx = sr_ctx;
@@ -19,6 +22,7 @@ sr_pixfill(void) {
 	struct sr_tile *t, **tp;
 	ff_uint_t i;
 
+	ff_u8_t *d;
 	ff_uint_t tx, ty;
 	ff_uint_t txo, tyo;
 	ff_uint_t x, y;
@@ -37,8 +41,10 @@ sr_pixfill(void) {
 			sr_tile_map(t);
 		}
 
-		*(ff_u32_t*)tilepx(t, txo, tyo) = *(ff_u32_t*)colour;
 		
+		d = tilepx(t, txo, tyo);
+		sr_setpix(colour, d);
+
 		if ((i-(y*ctx->fb->rw)) >= ctx->fb->rw-1) {
 			y++;
 			x = 0;

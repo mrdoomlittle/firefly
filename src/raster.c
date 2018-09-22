@@ -8,8 +8,9 @@
 # include "maths/abs.h"
 # include "maths/round.h"
 # include "system/io.h"
-# include "tri.h"
-# include "tex.h"
+# include "bron/tri.h"
+# include "bron/tex.h"
+
 void ffly_rraster(struct rr_struc *__s) {
 	switch(__s->op) {
 		case 0x00:
@@ -50,13 +51,13 @@ void ffly_rasterize(ffly_modelp __model,
 		v1 = poly->vertices[1];
 		v2 = poly->vertices[2];
 
-		struct ffly_tri2 tri = {
+		struct bron_tri2 tri = {
 			.v0 = {v0.x, v0.y},
 			.v1 = {v1.x, v1.y},
 			.v2 = {v2.x, v2.y}
 		};
 
-		struct ffly_tex tx;
+		struct bron_tex tx;
 		tx.inn[0] = c[0];
 		tx.inn[1] = c[1];
 		tx.inn[2] = c[2];
@@ -65,8 +66,8 @@ void ffly_rasterize(ffly_modelp __model,
 		ff_u16_t tex;
 
 		ffly_printf("#}}}}}}}}} %u, %u\n", __x, __y);
-		tex = ffly_g_tex(&tx);
-		ffly_g_tri2(&tri, tex, __x, __y);
+		tex = bron_tex(&tx);
+		bron_tri2(&tri, tex, __x, __y);
 		i++;
 	}
 }

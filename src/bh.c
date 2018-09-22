@@ -9,6 +9,10 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "memory/mem_realloc.h"
+
+/*
+	store bricks in there own cistern
+*/
 struct ff_bh bh;
 /*
 	TODO:
@@ -301,10 +305,6 @@ static void *jmp[] = {
 void static
 doop(struct bhop *__op, FF_SOCKET *__sock) {
 	__asm__("jmp *%0" : : "r"(jmp[__op->kind]));
-	/*
-		cant use return gcc thinks its the end of the funtion if used
-		and then removes anything below and it treated like the function start and stops there
-	*/
 
 	__asm__("_bnewm:\n\t");
 	bh_bnewm(__sock);

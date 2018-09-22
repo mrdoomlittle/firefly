@@ -7,5 +7,6 @@ $ffly_cc $cc_flags -c -o $dst_dir/copy.o $root_dir/copy.c
 $ffly_cc $cc_flags -c -o $dst_dir/fill.o $root_dir/fill.c
 $ffly_cc $cc_flags -c -o $dst_dir/p.o $root_dir/p.c
 $ffly_cc $cc_flags -c -o $dst_dir/image.o $root_dir/image.c
+$ffly_cc $cc_flags -c -o $dst_dir/mutate.o $root_dir/mutate.c
 export ffly_objs="$dst_dir/frame_buff.o $dst_dir/job.o $dst_dir/pipe.o \
-$dst_dir/draw.o $dst_dir/copy.o $dst_dir/fill.o $dst_dir/p.o $dst_dir/image.o"
+$dst_dir/draw.o $dst_dir/copy.o $dst_dir/fill.o $dst_dir/p.o $dst_dir/image.o $dst_dir/mutate.o"

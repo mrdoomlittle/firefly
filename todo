@@ -183,3 +183,10 @@ NEED TO DO:
 -. remove offset from function 'get'
 -. pass arg thru get function 'void*'
 -. work on naming
+
+NETWORKING:
+TODO:
+	on some things like db,bh,slurry microcode should be sent and executed
+	so no structs
+
+	- why? easer to manage

@@ -17,11 +17,7 @@
 # include "system/sched.h"
 # include "event.h"
 # include "carriage.h"
-# include "driver.h"
-# include "context.h"
-# include "dc.h"
-# include "pixel.h"
-# include "frame_buff.h"
+# include "graphics.h"
 # include "workshop/font_forge.h"
 struct ff_workshop workshop;
 
@@ -61,10 +57,10 @@ ff_u16_t sf;
 # include "m.h"
 # include "types/wd_event_t.h"
 void ffly_workshop_start() {
-	sf = G_CONTEXT->stack;
+	sf = BRON_CONTEXT->stack;
 	ff_u64_t cc = 0; //cycle count
 	while(1) {
-		ffly_g_start();
+		bron_start();
 		ffly_pixfill(WIDTH*HEIGHT, ffly_colour(255, 255, 255, 255), 0);
 		tick();
 		ff_eventp event;
@@ -91,9 +87,9 @@ void ffly_workshop_start() {
 		ffly_grp_unload(&__ffly_grp__);
 
 		ffly_fb_copy(__frame_buff__);
-		ffly_g_finish();
-		ffly_g_done();
-		G_CONTEXT->stack = sf;
+		bron_finish();
+		bron_done();
+		BRON_CONTEXT->stack = sf;
 		ffly_fb_yank(__frame_buff__);
 		if (!ff_duct_serve())
 			break;
@@ -129,12 +125,12 @@ ff_u8_t *tex0, *tex1;
 # include "font.h"
 ff_u16_t static fb;
 void ffly_workshop_init() {
-	ffly_driver(_driver_sr, &G_CONTEXT->driver);
-	G_CONTEXT->stack = 0;
-    ffly_g_setctx(ffly_g_ctx_new());
-    fb = ffly_g_fb_new(WIDTH, HEIGHT);
-    ffly_g_fb_set(fb);
-	ffly_g_done();
+	ffly_bron_driver(_bron_dd_sr, &BRON_CONTEXT->driver);
+	BRON_CONTEXT->stack = 0;
+    bron_setctx(bron_ctx_new());
+    fb = bron_fb_new(WIDTH, HEIGHT);
+    bron_fb_set(fb);
+	bron_done();
 	ffly_grp_prepare(&__ffly_grp__, 200);
 	ff_set_frame_size(WIDTH, HEIGHT);
 	ff_graphics_init();
@@ -186,8 +182,8 @@ void ffly_workshop_init() {
 }
 
 void ffly_workshop_de_init() {
-	ffly_g_fb_destroy(fb);
-	ffly_g_done();
+	bron_fb_destroy(fb);
+	bron_done();
 //	ffly_tiles_usched();
 	ffly_queue_de_init(&ffly_event_queue);
 	ff_duct_close();

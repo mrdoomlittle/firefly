@@ -4,6 +4,7 @@
 # include "types.h"
 # include "mo.h"
 # include "pallet.h"
+# include "bron/tile.h"
 # define ffly_tile_set(__tile, __p) \
 	(__tile)->p = __p;
 
@@ -25,9 +26,6 @@ typedef struct ffly_tile {
 	ff_u8_t bits;
 	ff_u16_t pt;
 } *ffly_tilep;
-
-ff_u16_t ffly_g_ptile_new(void(*)(ff_u8_t, long long, void*), void*);
-void ffly_g_ptile_destroy(ff_u16_t);
 
 void ffly_tile_draw(ffly_tilep, ff_u32_t, ff_u32_t);
 ffly_tilep ffly_tile_creat(ff_u8_t);

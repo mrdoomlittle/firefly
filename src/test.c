@@ -104,43 +104,30 @@ void* th(void *__arg) {
 # include "uni.h"
 # include "carriage.h"
 # include "tools.h"
-# include "driver.h"
-# include "context.h"
-# include "tri.h"
-# include "tex.h"
-# include "dc.h"
-# include "prim.h"
-# include "pixel.h"
-# include "frame_buff.h"
+# include "bron/driver.h"
+# include "bron/context.h"
+# include "bron/tri.h"
+# include "bron/tex.h"
+# include "bron/dc.h"
+# include "bron/prim.h"
+# include "bron/pixel.h"
+# include "bron/frame_buff.h"
 # include "pallet.h"
 # include "graphics/pipe.h"
 # include "graphics/fill.h"
 # include "graphics/copy.h"
 # include "graphics/draw.h"
 # include "graphics/frame_buff.h"
+# include "graphics/mutate.h"
 void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_uint_t __height, ff_uint_t __x, ff_uint_t __y) {
 	ff_u8_t buf[__width*__height*4];
 	ffly_mem_set(buf, 0, __width*__height*4);
 	ffly_fb_read(__fb, buf, __width, __height, __x, __y);
-
-	ff_u8_t *d, *s;
-	ff_uint_t x, y;
-	y = 0;
-	while(y != __height) {
-		x = 0;
-		while(x != __width) {
-			d = ((ff_u8_t*)__dst)+((x+(y*__width))*3);
-			s = buf+((x+(y*__width))*4);
-			d[0] = s[0];
-			d[1] = s[1];
-			d[2] = s[2];
-//			ffly_printf("%u.%u.%u\n", d[0], d[1], d[2]);
-			x++;
-		}
-		y++;
-	}
+	ffly_rgba_to_rgb(buf, __dst, __width*__height);
+	
 }
 ff_err_t ffmain(int __argc, char const *__argv[]) {	
+	
 /*
 	ffly_driver(_driver_sr, &G_CONTEXT->driver);
 	G_CONTEXT->stack = 0;
@@ -209,11 +196,10 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		y++;
 	}
 */
-/*
 # define WIDTH 128
 # define HEIGHT 128
-	ffly_driver(_driver_sr, &G_CONTEXT->driver);
-	G_CONTEXT->stack = 0;
+	bron_dd(_bron_dd_sr, &BRON_CONTEXT->driver);
+	BRON_CONTEXT->stack = 0;
 
 	ff_err_t err;
 	__frame_buff__ = ffly_frame_buff_creat(WIDTH, HEIGHT, 4, &err);
@@ -222,35 +208,33 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
     char buf[128];
 	ff_uint_t size;
 	size = ffly_sprintf(buf, "P6\n%u %u\n255\n", WIDTH, HEIGHT);
-	write(out, buf, size);
+	write(out, buf, size-1);
 	ff_u8_t row[WIDTH*3];
 
 	ff_u8_t src[WIDTH*HEIGHT*4];
 	ffly_mem_set(src, 255, WIDTH*HEIGHT*4);
 
-	ffly_palletp pt;
-	pt = ffly_pallet_new(WIDTH, HEIGHT, _ffly_tile_16);
-	ff_uint_t y;
-	ffly_pallet_write(pt, src, WIDTH, HEIGHT, 0, 0);
-
 	ffly_grp_prepare(&__ffly_grp__, 100);
 	ff_u16_t fb;
-	ffly_g_setctx(ffly_g_ctx_new());
-	fb = ffly_g_fb_new(WIDTH, HEIGHT);
-	ffly_g_fb_set(fb);
+	bron_setctx(bron_ctx_new());
+	fb = bron_fb_new(WIDTH, HEIGHT);
+	bron_fb_set(fb);
 
-	ffly_g_start();
+	bron_start();
 
-	ffly_colour_t c = {37, 53, 255, 0};
-	ffly_pixfill(WIDTH*HEIGHT, c, 0);
-	ffly_pallet_draw(pt, 0, 0, 0);
+	ffly_colour_t ca = {122, 34, 4, 255};
+	ffly_colour_t cb = {41, 65, 104, 255};
+	ffly_pixfill(WIDTH*HEIGHT, ca, 0);	
 	ffly_grp_unload(&__ffly_grp__);
-	
+//	BRON_CONTEXT->driver.sb(0x01);
+	ffly_pixfill(WIDTH*64, cb, 0);
+	ffly_grp_unload(&__ffly_grp__);
 	ffly_fb_copy(__frame_buff__);
-	ffly_g_finish();
-	ffly_g_fb_destroy(fb);
-	ffly_g_done();
+	bron_finish();
+	bron_fb_destroy(fb);
+	bron_done();
 	ffly_fb_yank(__frame_buff__);
+	ff_uint_t y;
 	y = 0;
 	while(y != HEIGHT) {
 		ffly_mem_set(row, 0, WIDTH*3);
@@ -259,11 +243,10 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		y++;
 	}	
 
-	ffly_pallet_distroy(pt);
 	ffly_frame_buff_del(__frame_buff__);
 	close(out);
 //	ffly_tile_cleanup();
-*/
+
 /*
 	ff_uint_t i, n;
 

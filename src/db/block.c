@@ -10,6 +10,9 @@
 
 	2 or more files for diffrent threads
 	after disconnect will be murged with main file
+
+
+	also 
 */
 // not the best but for now its okay 
 

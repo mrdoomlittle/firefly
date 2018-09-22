@@ -36,31 +36,14 @@ pt_get(ff_u8_t __what, long long __dst, void *__tile) {
 }
 
 # include "context.h"
-ff_u16_t ffly_g_ptile_new(void(*__get)(ff_u8_t, long long, void*), void *__tile) {
-	ff_u16_t pt;
-
-	struct ff_context *ctx;
-	ctx = G_CONTEXT;
-	pt = ctx->stack;
-	ctx->stack+=2;
-	ctx->driver.ptile_new(pt, __get, __tile);
-	return pt;
-}
-
-void ffly_g_ptile_destroy(ff_u16_t __pt) {
-	G_CONTEXT->driver.ptile_destroy(__pt);
-}
-
 void ffly_tile_draw(ffly_tilep __tile, ff_u32_t __x, ff_u32_t __y) {
 	if (!(__tile->bits&TILE_PH)) {
-		G_CONTEXT->driver.sget(&__tile->pt, 2, ffly_g_ptile_new(pt_get, __tile));
+		BRON_CONTEXT->driver.sget(&__tile->pt, 2, bron_ptile_new(pt_get, __tile));
 		__tile->bits |= TILE_PH;
 		return;
 	}
 
-
-
-	G_CONTEXT->driver.tdraw(__tile->pt, __x, __y);	
+	bron_tdraw(__tile->pt, __x, __y);
 }
 
 ffly_tilep ffly_tile_creat(ff_u8_t __size) {
@@ -90,7 +73,7 @@ ffly_tilep ffly_tile_creat(ff_u8_t __size) {
 
 void ffly_tile_del(ffly_tilep __tile) {
 	if ((__tile->bits&TILE_PH)>0) {
-		ffly_g_ptile_destroy(__tile->pt);
+		bron_ptile_destroy(__tile->pt);
 	}
 	lk;
 	*__tile->bk = __tile->next;

@@ -29,3 +29,9 @@ but fuck who cares, anyway its an unsanitary way of doing thinks but what can yo
 also gcc sets up a stack frame and for small routines its unneeded.
 
 firefly lang for resin is broken.
+
+naming:
+	i cant name for shit so i just pick a word that has a correlation with the thing im trying to build,
+	e.g. slurry <- {i dont know}{fluid composed of a pulverized solid/mixture of pulverized solids}{mixture}
+	so a mixture of things. i dont realy care about naming shit because it can be renamed later might take some 
+	work but it beats doing nothing while trying to pick a name.

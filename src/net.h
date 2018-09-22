@@ -7,6 +7,12 @@
 # define FF_MTU 20000
 // add udp
 
+/*
+	TODO:
+		begin work on this
+
+*/
+
 ff_err_t ff_net_shutdown(FF_SOCKET*, int);
 FF_SOCKET* ff_net_creat(ff_err_t*, int, int, int);
 ff_err_t ff_net_connect(FF_SOCKET*, struct sockaddr*, socklen_t);

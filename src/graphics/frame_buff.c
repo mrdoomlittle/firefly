@@ -21,7 +21,7 @@ ffly_frame_buff_del(ffly_frame_buffp __fb) {
 ff_u8_t static *tmp;
 void ffly_fb_copy(ffly_frame_buffp __fb) {
 	tmp = __ffly_mem_alloc(__fb->width*__fb->height*4);
-	G_CONTEXT->driver.frame(tmp, 0, 0, __fb->width, __fb->height);
+	BRON_CONTEXT->driver.frame(tmp, 0, 0, __fb->width, __fb->height);
 
 }
 

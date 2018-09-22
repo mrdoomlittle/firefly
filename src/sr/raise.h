@@ -20,6 +20,8 @@
 # define sr_op_tdraw 0x0f
 # define sr_op_sput 0x10
 # define sr_op_sget 0x11
+# define sr_op_sb 0x12
+# define sr_op_cb 0x13
 # define stack_at(__adr) \
 	(sr_raise_stack+(__adr))
 extern ff_u8_t *sr_raise_p;

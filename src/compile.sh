@@ -172,8 +172,8 @@ $ffly_cc $cc_flags -c -o $dst_dir/drivers/font/typo.o $root_dir/drivers/font/typ
 $ffly_cc $cc_flags -c -o $dst_dir/font.o $root_dir/font.c
 $ffly_cc $cc_flags -c -o $dst_dir/ui/text.o $root_dir/ui/text.c
 
-$ffly_cc $cc_flags -c -o $dst_dir/driver.o $root_dir/driver.c
-
+$ffly_cc $cc_flags -c -o $dst_dir/bron/driver.o $root_dir/bron/driver.c
+$ffly_cc $cc_flags -c -o $dst_dir/bron/tile.o $root_dir/bron/tile.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/context.o $root_dir/sr/context.c
 $ffly_cc $cc_flags -c -o $dst_dir/drivers/sr/driver.o $root_dir/drivers/sr/driver.c
 
@@ -181,18 +181,19 @@ $ffly_cc $cc_flags -c -o $dst_dir/drivers/sr/driver.o $root_dir/drivers/sr/drive
 $ffly_cc $cc_flags -c -o $dst_dir/sr/framebuff.o $root_dir/sr/framebuff.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/raise.o $root_dir/sr/raise.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/tri.o $root_dir/sr/tri.c
-$ffly_cc $cc_flags -c -o $dst_dir/tri.o $root_dir/tri.c
-$ffly_cc $cc_flags -c -o $dst_dir/tex.o $root_dir/tex.c
-$ffly_cc $cc_flags -c -o $dst_dir/context.o $root_dir/context.c
-$ffly_cc $cc_flags -c -o $dst_dir/dc.o $root_dir/dc.c
+$ffly_cc $cc_flags -c -o $dst_dir/bron/tri.o $root_dir/bron/tri.c
+$ffly_cc $cc_flags -c -o $dst_dir/bron/tex.o $root_dir/bron/tex.c
+$ffly_cc $cc_flags -c -o $dst_dir/bron/context.o $root_dir/bron/context.c
+$ffly_cc $cc_flags -c -o $dst_dir/bron/dc.o $root_dir/bron/dc.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/draw.o $root_dir/sr/draw.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/copy.o $root_dir/sr/copy.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/fill.o $root_dir/sr/fill.c
-$ffly_cc $cc_flags -c -o $dst_dir/pixel.o $root_dir/pixel.c
-$ffly_cc $cc_flags -c -o $dst_dir/frame_buff.o $root_dir/frame_buff.c
+$ffly_cc $cc_flags -c -o $dst_dir/bron/pixel.o $root_dir/bron/pixel.c
+$ffly_cc $cc_flags -c -o $dst_dir/bron/frame_buff.o $root_dir/bron/frame_buff.c
 $ffly_cc $cc_flags -c -o $dst_dir/mo.o $root_dir/mo.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/tile.o $root_dir/sr/tile.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/plate.o $root_dir/sr/plate.c
+$ffly_cc $cc_flags -c -o $dst_dir/sr/shit.o $root_dir/sr/shit.c
 $ffly_cc $cc_flags -c -o $dst_dir/workshop/font_forge.o $root_dir/workshop/font_forge.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay.o $root_dir/clay.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay/memalloc.o $root_dir/clay/memalloc.c
@@ -201,6 +202,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/clay/input.o $root_dir/clay/input.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay/parser.o $root_dir/clay/parser.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay/hash.o $root_dir/clay/hash.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay/solidify.o $root_dir/clay/solidify.c
+$ffly_cc $cc_flags -c -o $dst_dir/sr/pixel.o $root_dir/sr/pixel.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -233,9 +235,10 @@ $dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o $dst_dir/tape.o $dst_d
 $dst_dir/rosin.o $dst_dir/rosin/exec.o $dst_dir/typo/mcd/concoct.o $dst_dir/typo/mcd/gen/classic.o \
 $dst_dir/drivers/font/typo.o $dst_dir/font.o $dst_dir/ui/text.o $dst_dir/sr/context.o \
 $dst_dir/drivers/sr/driver.o $dst_dir/sr/framebuff.o $dst_dir/sr/raise.o \
-$dst_dir/sr/tri.o $dst_dir/tri.o $dst_dir/tex.o $dst_dir/sr/draw.o \
-$dst_dir/driver.o $dst_dir/context.o $dst_dir/dc.o $dst_dir/sr/copy.o \
-$dst_dir/sr/fill.o $dst_dir/pixel.o $dst_dir/frame_buff.o $dst_dir/mo.o \
+$dst_dir/sr/tri.o $dst_dir/bron/tri.o $dst_dir/bron/tex.o $dst_dir/sr/draw.o \
+$dst_dir/bron/driver.o $dst_dir/bron/context.o $dst_dir/bron/dc.o $dst_dir/sr/copy.o \
+$dst_dir/sr/fill.o $dst_dir/bron/pixel.o $dst_dir/bron/frame_buff.o $dst_dir/mo.o \
 $dst_dir/sr/tile.o $dst_dir/sr/plate.o $dst_dir/workshop/font_forge.o \
 $dst_dir/clay.o $dst_dir/clay/memalloc.o $dst_dir/clay/lexer.o $dst_dir/clay/input.o \
-$dst_dir/clay/parser.o $dst_dir/clay/hash.o $dst_dir/clay/solidify.o"
+$dst_dir/clay/parser.o $dst_dir/clay/hash.o $dst_dir/clay/solidify.o \
+$dst_dir/bron/tile.o $dst_dir/sr/shit.o $dst_dir/sr/pixel.o"

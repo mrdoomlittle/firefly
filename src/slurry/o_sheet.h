@@ -1,0 +1,10 @@
+# ifndef __ffly__o__sheet__h
+# define __ffly__o__sheet__h
+#define _op_window_new		0x00
+#define _op_read			0x01
+#define _op_write			0x02
+#define _op_window_init		0x03
+#define _op_window_open		0x04
+#define _op_window_close	0x05
+#define _op_window_destroy	0x06
+# endif /*__ffly__o__sheet__h*/

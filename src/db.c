@@ -15,6 +15,10 @@
 	 make thread safe
 */
 
+/*
+	remove obtain number system and use obtain chip like in a poker chip 
+	as we can store extra infomation
+*/
 
 /*
 	not tested at all.
@@ -121,6 +125,20 @@ ff_err_t ffdb_init(ffdbp __db) {
 		_ret;
 	}
 	retok;
+}
+
+ff_db_tapep ff_db_tape_new(ff_uint_t __size) {
+	ff_db_tapep t;
+	t = (ff_db_tapep)__ffly_mem_alloc(sizeof(struct fff_db_tape));
+	t->text = __ffly_mem_alloc(__size);
+	t->len = __size;
+	return t;
+}
+
+
+void ff_db_tape_destroy(ff_db_tapep __tape) {
+	__ffly_mem_free(__tape->text);
+	__ffly_mem_free(__tape);
 }
 
 ff_err_t ffdb_open(ffdbp __db, char const *__file) {

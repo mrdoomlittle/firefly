@@ -5,6 +5,8 @@
 # include "tile.h"
 # include "../system/io.h"
 # include "plate.h"
+# include "shit.h"
+# include "pixel.h"
 void
 sr_tdraw(void) {
 	ff_u16_t plate;
@@ -60,10 +62,7 @@ sr_tdraw(void) {
 			}
 
 			d = tilepx(t, txo, tyo);
-			d[0] = (d[0]+s[0])>>1;
-			d[1] = (d[1]+s[1])>>1;
-			d[2] = (d[2]+s[2])>>1;
-			d[3] = (d[3]+s[3])>>1;
+			sr_setpix(s, d);
 			x++;
 		}
 		y++;
@@ -109,7 +108,7 @@ sr_pixdraw(void) {
 
 			d = tilepx(t, txo, tyo);
 
-			*(ff_u32_t*)d = *(ff_u32_t*)s;
+			sr_setpix(s, d);
 			x++;
 		}
 		y++;

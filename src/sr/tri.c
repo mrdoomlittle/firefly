@@ -5,6 +5,7 @@
 # include "raise.h"
 # include "context.h"
 # include "../system/io.h"
+# include "pixel.h"
 // need to be worked on but will do for now
 /*
 	only can rasterize tri
@@ -121,7 +122,7 @@ void sr_raster_tri2(void) {
 
 				ff_byte_t *dst;
 				dst = tilepx(t, txo, tyo);
-				*(ff_u32_t*)dst = *(ff_u32_t*)tex->inn;
+				sr_setpix(tex->inn, dst);
 			}
 			
 			x++;
