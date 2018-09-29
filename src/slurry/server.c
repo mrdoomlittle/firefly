@@ -127,8 +127,8 @@ window_frame(void) {
 	f = ffly_wd_frame_buff(&wd->fw);
 
 	ff_uint_t width, height;
-	mare_get(wd->fw.m, 0x01, &width);
-	mare_get(wd->fw.m, 0x02, &height);
+	mare_get(wd->fw.m, _MARE_GET_WIDTH, &width);
+	mare_get(wd->fw.m, _MARE_GET_HEIGHT, &height);
 
 	printf("width: %u, height: %u\n", width, height);
 

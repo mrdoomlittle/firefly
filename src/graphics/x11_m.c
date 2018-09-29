@@ -158,13 +158,13 @@ x11_get(ff_u8_t __what, long long __arg, void *__ctx) {
 	ctx = (struct ffly_x11_ctx*)__ctx;
 
 	switch(__what) {
-		case 0x00:
+		case _MARE_GET_FRAME_BUFF:
 			*(void**)__arg = ctx->frame_buff;
 		break;
-		case 0x01:
+		case _MARE_GET_WIDTH:
 			*(ff_uint_t*)__arg = ctx->width;
 		break;
-		case 0x02:
+		case _MARE_GET_HEIGHT:
 			*(ff_uint_t*)__arg = ctx->height;
 		break;
 	}

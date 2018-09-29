@@ -39,6 +39,9 @@ typedef struct ffly_mctx {
 # define mare_get(__ctx, __what, __arg) \
 	mare_func(__ctx, get)(__what, (long long)(__arg), (__ctx)->context)
 
+# define _MARE_GET_FRAME_BUFF	0x00
+# define _MARE_GET_WIDTH		0x01
+# define _MARE_GET_HEIGHT		0x02
 
 # define mare(__driver) \
 	ffly_mare(__driver)

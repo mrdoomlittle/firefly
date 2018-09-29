@@ -14,7 +14,7 @@
 
 ff_byte_t* ffly_wd_frame_buff(struct ffly_wd *__wd) {
 	ff_byte_t *frame_buff;
-	mare_get(__wd->m, 0x00, &frame_buff);
+	mare_get(__wd->m, _MARE_GET_FRAME_BUFF, &frame_buff);
 	return frame_buff;
 }
 
