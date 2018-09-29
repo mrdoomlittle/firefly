@@ -108,6 +108,27 @@ window_close(void) {
 }
 
 void static
+window_display(void) {
+	printf("window display.\n");
+	struct s_window *wd;
+
+	wd = *(struct s_window**)stackat(*(ff_u16_t*)p);
+	ffly_wd_display(&wd->fw);
+}
+
+void static
+window_frame(void) {
+	printf("window frame.\n");
+	struct s_window *wd;
+
+	wd = *(struct s_window**)stackat(*(ff_u16_t*)p);
+	
+	ff_u8_t *f;
+	f = ffly_wd_frame_buff(&wd->fw);
+	recv(client.sock, f, wd->fw.raw.width*wd->fw.raw.height*4, 0);
+}
+
+void static
 window_destroy(void) {
 	printf("window destroy.\n");
 	ff_u16_t wd;
@@ -134,7 +155,9 @@ void(*op[])(void) = {
 	window_open,
 	window_close,
 	window_destroy,
-	disconnect
+	disconnect,
+	window_display,
+	window_frame
 };
 
 void ox(void *__op) {
@@ -149,7 +172,9 @@ ff_u8_t static osz[] = {
 	2,		//window_open
 	2,		//window_close
 	2,		//window_destroy
-	0		//disconnect
+	0,		//disconnect
+	2,		//window_display
+	2		//window_frame
 };
 
 void texec(s_tapep __t) {

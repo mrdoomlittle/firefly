@@ -314,6 +314,8 @@ ff_i8_t ff_duct_serve(ff_dcp __c) {
 		duct_read();
 	jmpfi;
 
+	OP("_duct_window_new");
+
 	OP("_duct_alloc"); {
 		ff_u32_t size;
 		void *plate;

@@ -42,7 +42,7 @@ _again:
 		ffly_nanosleep(0, 30000000);
 	}
 
-	ff_duct_get_frame(c, window.raw.frame_buff, WIDTH, HEIGHT, 4);
+	ff_duct_get_frame(c, mare_frame_buff(window.m), WIDTH, HEIGHT, 4);
 	ff_duct_done(c);
 	ffly_wd_display(&window);
 	goto _again;

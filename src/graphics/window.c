@@ -6,9 +6,16 @@
 # include "../system/nanosleep.h"
 # include "../dep/mem_set.h"
 # include "../types/wd_event_t.h"
+# include <malloc.h>
+/*
+	TODO:
+		split into drivers
+*/
+
 ff_byte_t* ffly_wd_frame_buff(struct ffly_wd *__wd) {
-	return __wd->raw.frame_buff;
+	return mare_frame_buff(__wd->m);
 }
+
 ff_flag_t* ffly_wd_flags(struct ffly_wd *__wd) {
 	return &__wd->flags;
 }
@@ -16,10 +23,10 @@ ff_flag_t* ffly_wd_flags(struct ffly_wd *__wd) {
 ff_err_t ffly_wd_query_pointer(struct ffly_wd *__wd, ff_i16_t *__root_xa, ff_i16_t *__root_ya, ff_i16_t *__wd_xa, ff_i16_t *__wd_ya) {
     ff_err_t err;
 # ifdef __ffly_use_x11
-    err = ffly_x11_query_pointer(&__wd->raw, __root_xa, __root_ya, __wd_xa, __wd_ya);
+    err = ffly_x11_query_pointer((struct ffly_x11_ctx*)__wd->m->context, __root_xa, __root_ya, __wd_xa, __wd_ya);
 # endif
 # ifdef __ffly_use_xcb 
-    err = ffly_xcb_query_pointer(&__wd->raw, __root_xa, __root_ya, __wd_xa, __wd_ya);
+    err = ffly_xcb_query_pointer((struct ffly_xcb_ctx*)__wd->m->context, __root_xa, __root_ya, __wd_xa, __wd_ya);
 # endif
     if (_err(err)) {
         ffly_fprintf(ffly_err, "failed to query pointer.\n");
@@ -30,11 +37,7 @@ ff_err_t ffly_wd_query_pointer(struct ffly_wd *__wd, ff_i16_t *__root_xa, ff_i16
 
 ff_err_t ffly_wd_open(struct ffly_wd *__wd) {
 	ff_err_t err;
-# ifdef __ffly_use_x11
-	err = ffly_x11_wd_open(&__wd->raw);
-# elif __ffly_use_xcb
-	err = ffly_xcb_wd_open(&__wd->raw);
-# endif
+	err = FFLY_SUCCESS;
 	if (_err(err)) {
 		ffly_fprintf(ffly_err, "failed to open window.\n");
 		return err;
@@ -44,11 +47,7 @@ ff_err_t ffly_wd_open(struct ffly_wd *__wd) {
 
 ff_err_t ffly_wd_close(struct ffly_wd *__wd) {
 	ff_err_t err;
-# ifdef __ffly_use_x11
-	err = ffly_x11_wd_close(&__wd->raw);
-# elif __ffly_use_xcb
-	err = ffly_xcb_wd_close(&__wd->raw);
-# endif
+	err = FFLY_SUCCESS;
 	if (_err(err)) {
 		ffly_fprintf(ffly_err, "failed to close window.\n");
 		return err;
@@ -59,11 +58,18 @@ ff_err_t ffly_wd_close(struct ffly_wd *__wd) {
 ff_err_t ffly_wd_init(struct ffly_wd *__wd, ff_u16_t __width, ff_u16_t __height, char const *__title) {
 	ffly_mem_set(__wd, 0x0, sizeof(struct ffly_wd));
 	ff_err_t err;
+	__wd->m = ffly_mare(
 # ifdef __ffly_use_x11
-	err = ffly_x11_wd_init(&__wd->raw, __width, __height, __title);
+		_mare_x11
 # elif __ffly_use_xcb
-	err = ffly_xcb_wd_init(&__wd->raw, __width, __height, __title);
+		_mare_xcb
 # endif
+	);
+
+	mare_init(__wd->m);
+	mare_display_open(__wd->m);
+	mare_window_creat(__wd->m, __width, __height, __title);
+	err = FFLY_SUCCESS;
 	if (_err(err)) {
 		ffly_fprintf(ffly_err, "failure to init window.\n");
 		return err;
@@ -75,11 +81,11 @@ ff_err_t ffly_wd_init(struct ffly_wd *__wd, ff_u16_t __width, ff_u16_t __height,
 
 ff_err_t ffly_wd_cleanup(struct ffly_wd *__wd) {
 	ff_err_t err;
-# ifdef __ffly_use_x11
-	err = ffly_x11_wd_cleanup(&__wd->raw);
-# elif __ffly_use_xcb
-	err = ffly_xcb_wd_cleanup(&__wd->raw);
-# endif
+	err = FFLY_SUCCESS;
+	mare_window_destroy(__wd->m);
+	mare_display_close(__wd->m);
+	mare_de_init(__wd->m);
+	mare_cleanup(__wd->m);
 	if (_err(err)) {
 		ffly_fprintf(ffly_err, "failed to cleanup window.\n");
 		return err;
@@ -89,12 +95,7 @@ ff_err_t ffly_wd_cleanup(struct ffly_wd *__wd) {
 }
 
 ff_err_t ffly_wd_display(struct ffly_wd *__wd) {
-	glDrawPixels(__wd->raw.width, __wd->raw.height, GL_RGBA, GL_UNSIGNED_BYTE, __wd->raw.frame_buff);
-# ifdef __ffly_use_x11
-	glXSwapBuffers(__wd->raw.d, __wd->raw.w);
-# elif __ffly_use_xcb
-	glXSwapBuffers(__wd->raw.d, __wd->raw.glx_dr);
-# endif
+	mare_window_display(__wd->m);
 }
 
 void static
@@ -107,14 +108,16 @@ mk_event(ffly_event_t **__event, ffly_event_t __tmpl) {
 ff_err_t 
 ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
 	ff_err_t err;
+	struct ffly_x11_ctx *ctx;
+	ctx = (struct ffly_x11_ctx*)__wd->m->context;
 	XEvent event;
-	if (XPending(__wd->raw.d) > 0) {
+	if (XPending(ctx->d) > 0) {
 		*__event = ff_event_alloc(&err);
 		if (_err(err)) {
 			ffly_fprintf(ffly_err, "failed to allocate event.\n");
 			return err;
 		}
-		XNextEvent(__wd->raw.d, &event);
+		XNextEvent(ctx->d, &event);
 		switch(event.type) {
 			case ClientMessage:
 				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_closed});
@@ -147,7 +150,9 @@ ff_err_t
 ffly_xcb_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
     ff_err_t err;
 	xcb_generic_event_t *event;
-	if ((event = xcb_poll_for_event(__wd->raw.conn)) != NULL) {
+	struct ffly_xcb_ctx *ctx;
+	ctx = (struct ffly_xcb_ctx*)__wd->m->context;
+	if ((event = xcb_poll_for_event(ctx->conn)) != NULL) {
 		*__event = ff_event_alloc(&err);
         if (_err(err)) {
             free(event);

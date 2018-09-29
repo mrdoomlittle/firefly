@@ -7,18 +7,15 @@
 # include "../system/mutex.h"
 # include "../event.h"
 # ifdef __ffly_use_x11
-#	include "x11_wd.h"
+#	include "x11_m.h"
 #	include "x11.h"
 # elif __ffly_use_xcb
-#	include "xcb_wd.h"
+#	include "xcb_m.h"
 #	include "xcb.h"
 # endif
+# include "mare.h"
 struct ffly_wd {
-# ifdef __ffly_use_x11
-	struct ffly_x11_wd raw;
-# elif __ffly_use_xcb
-	struct ffly_xcb_wd raw;
-# endif
+	ffly_mctxp m;
 	ff_flag_t flags;
 	struct ffly_pool events;
 };

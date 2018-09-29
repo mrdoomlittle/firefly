@@ -86,6 +86,26 @@ void s_window_destroy(s_connp __conn, ff_u16_t __wd) {
 	tape(__conn, code, 3);
 }
 
+void s_window_display(s_connp __conn, ff_u16_t __wd) {
+	ff_u8_t code[3];
+	*code = _op_window_display;
+	*(ff_u16_t*)(code+1) = __wd;
+	tape(__conn, code, 3);
+}
+
+void s_window_frame(s_connp __conn, ff_u16_t __wd, ff_u8_t *__frame, ff_uint_t __width, ff_uint_t __height) {
+	ff_u8_t code[3];
+	*code = _op_window_frame;
+	*(ff_u16_t*)(code+1) = __wd;
+	tape(__conn, code, 3);
+	/*
+		using tcp for this is bad
+		TODO:
+			change
+	*/
+	send(__conn->sock, __frame, __width*__height*4, 0);
+}
+
 ff_u16_t rtn(ff_uint_t __sz) {
 	ff_u16_t r;
 	r = stack;
@@ -119,7 +139,6 @@ void s_test(void) {
 	s_window_close(con, wd);
 	s_window_destroy(con, wd);
 	s_disconnect(con);
-	shutdown(con->sock, SHUT_RDWR);	
 	s_close(con);
 }
 # endif

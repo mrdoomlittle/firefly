@@ -41,5 +41,6 @@ void s_connect(s_connp __conn, ff_u16_t __port, char const *__addr) {
 }
 
 void s_close(s_connp __conn) {
+	shutdown(__conn->sock, SHUT_RDWR);
 	close(__conn->sock);
 }

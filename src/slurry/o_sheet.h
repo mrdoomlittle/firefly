@@ -8,4 +8,6 @@
 #define _op_window_close	0x05
 #define _op_window_destroy	0x06
 #define _op_disconnect		0x07
+#define _op_window_display	0x08
+#define _op_window_frame	0x09
 # endif /*__ffly__o__sheet__h*/

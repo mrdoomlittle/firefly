@@ -1,5 +1,5 @@
-# ifndef __ffly__xcb__wd__h
-# define __ffly__xcb__wd__h
+# ifndef __ffly__xcb__m__h
+# define __ffly__xcb__m__h
 # include "../ffint.h"
 # include "../types.h"
 # include "../system/errno.h"
@@ -10,7 +10,7 @@
 # include <xcb/xcb_icccm.h>
 # include <GL/glx.h>
 # include <GL/gl.h>
-struct ffly_xcb_wd {
+struct ffly_xcb_ctx {
 	char const *title;
 	ff_uint_t width, height;
 	ff_u16_t mn_width, mn_height;
@@ -28,11 +28,8 @@ struct ffly_xcb_wd {
 # ifdef __cplusplus
 extern "C" {
 # endif
-ff_err_t ffly_xcb_wd_init(struct ffly_xcb_wd*, ff_u16_t, ff_u16_t, char const*);
-ff_err_t ffly_xcb_wd_open(struct ffly_xcb_wd*);
-ff_err_t ffly_xcb_wd_close(struct ffly_xcb_wd*);
-ff_err_t ffly_xcb_wd_cleanup(struct ffly_xcb_wd*);
+
 # ifdef __cplusplus
 }
 # endif
-# endif /*__ffly__xcb__wd__h*/
+# endif /*__ffly__xcb__m__h*/
