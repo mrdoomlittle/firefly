@@ -4,7 +4,7 @@
 # include "types.h"
 
 # define ff_event_build(__kind, __field, __data, __size, __p) \
-    *(__p) = (ff_event_t){.kind=__kind, .field=__field, .data=__data, .size=__size}
+    *(__p) = (ff_event_t){.kind=(__kind), .field=(__field), .data=(__data), .size=(__size)}
 
 enum ffly_event_kind {
 	_ffly_wd_ek_key_press,
@@ -21,6 +21,11 @@ enum ffly_event_field {
 
 typedef struct ff_event {
 	ff_u8_t kind;
+/*
+	TODO:
+		rename field to sector or .... somthing that specifies a location from where
+		within the engine its come from, window, ...
+*/
 	ff_u8_t field;
 	void *data;
 	ff_uint_t size;

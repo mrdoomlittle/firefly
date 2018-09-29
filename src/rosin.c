@@ -140,7 +140,10 @@ void ff_rosin_run(ffly_rosinp __ros) {
 		rin[r](s);
 	}
 	fi;
-
+	/*
+		TODO:
+			move out of function as call has no args
+	*/
 	__asm__("_ros_dmu:\n\t"); {
 		ffly_dmu();
 	}

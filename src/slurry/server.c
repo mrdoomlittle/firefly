@@ -120,6 +120,12 @@ window_destroy(void) {
 	s_window_destroy(sw);
 }
 
+ff_i8_t static dc;
+void disconnect();
+__asm__("disconnect:\n\t"
+		"movb $0, dc(%rip)\n\t"
+		"ret");
+
 void(*op[])(void) = {
 	window_new,
 	_read,
@@ -127,7 +133,8 @@ void(*op[])(void) = {
 	window_init,
 	window_open,
 	window_close,
-	window_destroy
+	window_destroy,
+	disconnect
 };
 
 void ox(void *__op) {
@@ -141,7 +148,8 @@ ff_u8_t static osz[] = {
 	8,		//window_init
 	2,		//window_open
 	2,		//window_close
-	2		//window_destroy
+	2,		//window_destroy
+	0		//disconnect
 };
 
 void texec(s_tapep __t) {
@@ -169,6 +177,7 @@ void sse_run(void) {
 	ff_uint_t len;
 	s_tapep t;
 	while(!run) {
+		dc = -1;
 		if (listen(sock, 1)<0) {
 			printf("failed to listen.\n");
 			break;
@@ -199,7 +208,12 @@ void sse_run(void) {
 		texec(t);
 		s_tape_destroy(t);
 		printf("\n\n");
-		goto _again;
+
+		if (!dc) {
+			printf("client disconnected.\n");
+			close(client.sock);
+		} else
+			goto _again;
 	}
 	printf("\ngoodbye, sad to see you go :(\n");
 }

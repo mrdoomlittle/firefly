@@ -703,6 +703,12 @@ __asm__("\t.globl _res_fi\n"
 ff_u64_t *res_r0, *res_r1;
 ff_u64_t *res_bp, *res_sp;
 ff_u8_t *res_stack;
+/*
+	rename opno to just on for opn or whatever fits
+
+	TODO:
+		"allow" for copy of all code so we can append finish at end
+*/
 ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	ff_err_t err;
 	ff_u16_t opno;
@@ -727,6 +733,11 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 
 	__asm__("_res_next:\n\t");
 	__resin->ip_off = 0;
+	/*
+		TODO:
+			put if statment within define so we dont need to compile with it,
+			only for debugging to remove unneed shit
+	*/
 	if ((opno = get_8l(__resin, &err)) > MAX) {
 		ffly_printf("opno invalid, got: %u\n", opno);
 		return FFLY_FAILURE;

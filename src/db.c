@@ -129,7 +129,7 @@ ff_err_t ffdb_init(ffdbp __db) {
 
 ff_db_tapep ff_db_tape_new(ff_uint_t __size) {
 	ff_db_tapep t;
-	t = (ff_db_tapep)__ffly_mem_alloc(sizeof(struct fff_db_tape));
+	t = (ff_db_tapep)__ffly_mem_alloc(sizeof(struct ff_db_tape));
 	t->text = __ffly_mem_alloc(__size);
 	t->len = __size;
 	return t;

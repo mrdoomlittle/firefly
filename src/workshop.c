@@ -53,7 +53,7 @@ void front(void) {
 
 void(*tick)(void) = front;
 ff_u16_t sf;
-
+ff_dcp static dc;
 # include "m.h"
 # include "types/wd_event_t.h"
 void ffly_workshop_start() {
@@ -91,7 +91,7 @@ void ffly_workshop_start() {
 		bron_done();
 		BRON_CONTEXT->stack = sf;
 		ffly_fb_yank(__frame_buff__);
-		if (!ff_duct_serve())
+		if (!ff_duct_serve(dc))
 			break;
 		ffly_printf("\e[1Jcycle count: %u\n", cc++);
 		struct ffly_meminfo mi;
@@ -135,8 +135,8 @@ void ffly_workshop_init() {
 	ff_set_frame_size(WIDTH, HEIGHT);
 	ff_graphics_init();
 
-	ff_duct_open(FF_PIPE_CREAT);
-	ff_duct_listen();
+	dc = ff_duct_open(FF_PIPE_CREAT);
+	ff_duct_listen(dc);
 
 	ffly_queue_init(&ffly_event_queue, sizeof(ff_eventp));
 
@@ -186,7 +186,7 @@ void ffly_workshop_de_init() {
 	bron_done();
 //	ffly_tiles_usched();
 	ffly_queue_de_init(&ffly_event_queue);
-	ff_duct_close();
+	ff_duct_close(dc);
 	ff_graphics_de_init();
 	ffly_plate_cleanup();
 	__ffly_mem_free(tex0);

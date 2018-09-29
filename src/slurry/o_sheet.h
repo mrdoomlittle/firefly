@@ -7,4 +7,5 @@
 #define _op_window_open		0x04
 #define _op_window_close	0x05
 #define _op_window_destroy	0x06
+#define _op_disconnect		0x07
 # endif /*__ffly__o__sheet__h*/

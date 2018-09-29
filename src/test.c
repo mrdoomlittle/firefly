@@ -119,6 +119,7 @@ void* th(void *__arg) {
 # include "graphics/draw.h"
 # include "graphics/frame_buff.h"
 # include "graphics/mutate.h"
+# include "slurry/connection.h"
 void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_uint_t __height, ff_uint_t __x, ff_uint_t __y) {
 	ff_u8_t buf[__width*__height*4];
 	ffly_mem_set(buf, 0, __width*__height*4);
@@ -127,7 +128,7 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 	
 }
 ff_err_t ffmain(int __argc, char const *__argv[]) {	
-	
+	s_test();	
 /*
 	ffly_driver(_driver_sr, &G_CONTEXT->driver);
 	G_CONTEXT->stack = 0;
@@ -196,6 +197,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		y++;
 	}
 */
+/*
 # define WIDTH 128
 # define HEIGHT 128
 	bron_dd(_bron_dd_sr, &BRON_CONTEXT->driver);
@@ -246,7 +248,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_frame_buff_del(__frame_buff__);
 	close(out);
 //	ffly_tile_cleanup();
-
+*/
 /*
 	ff_uint_t i, n;
 

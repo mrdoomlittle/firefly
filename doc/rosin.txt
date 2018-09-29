@@ -1,0 +1,2 @@
+addon to resin or just easy access to engine functions mostly to reduce the rin calls in resin as its an extra opcode that we dont need
+and its easer to pass rosin code and say so and resin will exec it but also has other uses

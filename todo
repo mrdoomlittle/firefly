@@ -190,3 +190,11 @@ TODO:
 	so no structs
 
 	- why? easer to manage
+-. simple texture method being used at the moment because workshop is not finished and gpu computing 
+has not been implemented so using this method speeds things up abit
+-. okay the as needs finishing "fragments" calulating the number of bits needed to store the displacment has been a bit tricky 
+well i dont know how to do it i gave up and moved on to somhing else as it was taking up all my time yea to that needs to be done.
+
+-. rename and repurpose call.c its to be used by modules using shm or other....
+
+-. microcode finish opcode should be appended at end of tape so we can remove if statment

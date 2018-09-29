@@ -1,4 +1,8 @@
 # include "../ffint.h"
+/*
+	TODO:
+		remove and use timespec
+*/
 ff_s32_t ffly_nanosleep(ff_u64_t __sec, ff_u64_t __nsec) {
 	ff_s32_t ret;
 	__asm__("movq %1, %%rdi\n\t"
