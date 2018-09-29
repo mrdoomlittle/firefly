@@ -23,7 +23,7 @@ void sse_open(void) {
 	}
 	adr.sin_family = AF_INET;
 	adr.sin_addr.s_addr = htons(INADDR_ANY);
-	adr.sin_port = htons(21299);
+	adr.sin_port = htons(10198);
 	int val = 1;		
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int));
 
@@ -125,7 +125,34 @@ window_frame(void) {
 	
 	ff_u8_t *f;
 	f = ffly_wd_frame_buff(&wd->fw);
-	recv(client.sock, f, wd->fw.raw.width*wd->fw.raw.height*4, 0);
+
+	ff_uint_t width, height;
+	mare_get(wd->fw.m, 0x01, &width);
+	mare_get(wd->fw.m, 0x02, &height);
+
+	printf("width: %u, height: %u\n", width, height);
+
+	ff_uint_t n, c;
+
+	n = width*height*4;
+	c = n>>14;
+
+	ff_uint_t i;
+	ff_u8_t ack;
+	i = 0;
+	while(i != c) {
+		recv(client.sock, f, 1<<14, 0);
+		send(client.sock, &ack, 1, 0);
+		f+=(1<<14);
+		i++;
+	}
+
+	ff_uint_t left;
+	left = n-(c*(1<<14));
+	if (left>0) {
+		recv(client.sock, f, left, 0);
+		send(client.sock, &ack, 1, 0);
+	}
 }
 
 void static

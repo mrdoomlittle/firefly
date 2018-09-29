@@ -6,6 +6,7 @@
 # include "../system/event.h"
 # include "../duct.h"
 # include "../system/nanosleep.h"
+# include "../dep/mem_set.h"
 # define WIDTH 448
 # define HEIGHT 448
 int main() {
@@ -24,7 +25,11 @@ int main() {
 	ffly_printf("waiting.\n");
 	ff_duct_connect(c);
 	ffly_printf("connected.\n");
+	ffly_wd_display(&window);
+//	ff_u8_t i;
+//	i = 0;
 _again:		
+/*
 	while(1) {
 		event = ffly_wd_poll_event(&window, &err);
 		if (!event) break;
@@ -41,10 +46,20 @@ _again:
 		ff_event_free(event);
 		ffly_nanosleep(0, 30000000);
 	}
-
-	ff_duct_get_frame(c, mare_frame_buff(window.m), WIDTH, HEIGHT, 4);
+*/
+	ff_duct_get_frame(c, ffly_wd_frame_buff(&window), WIDTH, HEIGHT, 4);
 	ff_duct_done(c);
 	ffly_wd_display(&window);
+
+
+/*
+	ffly_mem_set(ffly_wd_frame_buff(&window), i, WIDTH*HEIGHT*4);
+	if (i>=255) {
+		i = 0;
+	} else
+		i++;
+	ffly_wd_display(&window);
+*/
 	goto _again;
 _end:
 	ffly_wd_close(&window);

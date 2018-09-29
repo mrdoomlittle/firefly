@@ -21,7 +21,7 @@
 		build tape then allow user to run it not like ....
 */
 
-ff_u16_t static stack;
+ff_u16_t static stack = 0;
 ff_u16_t s_window_new(s_connp __conn) {
 	ff_u16_t w;
 	w = stack;
@@ -103,13 +103,36 @@ void s_window_frame(s_connp __conn, ff_u16_t __wd, ff_u8_t *__frame, ff_uint_t _
 		TODO:
 			change
 	*/
-	send(__conn->sock, __frame, __width*__height*4, 0);
+
+	ff_u8_t *f;
+	f = __frame;
+	ff_uint_t n, c;
+	n = __width*__height*4;
+	c = n>>14;
+
+	ff_u8_t ack;
+	ff_uint_t i;
+	i = 0;
+	while(i != c) {
+		send(__conn->sock, f, 1<<14, 0);
+		recv(__conn->sock, &ack, 1, 0);
+		f+=(1<<14);
+		i++;
+	}
+
+	ff_uint_t left;
+	left = n-(c*(1<<14));
+	if (left>0) {
+		send(__conn->sock, f, left, 0);
+		recv(__conn->sock, &ack, 1, 0);
+	}
 }
 
-ff_u16_t rtn(ff_uint_t __sz) {
+ff_u16_t s_rtn(ff_uint_t __sz) {
 	ff_u16_t r;
 	r = stack;
 	stack+=__sz;
+	return r;
 }
 
 void s_disconnect(s_connp __conn) {
@@ -129,7 +152,7 @@ void s_test(void) {
 	char const *tstr = "MEH";
 
 	ff_u16_t title;
-	title = rtn(strlen(tstr)+1);
+	title = s_rtn(strlen(tstr)+1);
 	s_write(con, title, strlen(tstr)+1, tstr);
 	s_window_init(con, wd, 600, 600, title);
 	s_window_open(con, wd);

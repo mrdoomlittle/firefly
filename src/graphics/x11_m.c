@@ -73,7 +73,7 @@ void static
 x11_window_creat(void *__ctx, ff_uint_t __width, ff_uint_t __height, char const *__title) {
 	struct ffly_x11_ctx *ctx;
 	ctx = (struct ffly_x11_ctx*)__ctx;
-	ctx->frame_buff = __ffly_mem_alloc(__width*__height*4);
+	ctx->frame_buff = (ff_u8_t*)__ffly_mem_alloc(__width*__height*4);
 
 	ctx->width =  __width;
 	ctx->height = __height;
@@ -152,9 +152,22 @@ x11_window_display(void *__ctx) {
 	glXSwapBuffers(ctx->d, ctx->w);
 }
 
-ff_u8_t static*
-x11_frame_buff(void *__ctx) {
-	return ((struct ffly_x11_ctx*)__ctx)->frame_buff;
+void static
+x11_get(ff_u8_t __what, long long __arg, void *__ctx) {
+	struct ffly_x11_ctx *ctx;
+	ctx = (struct ffly_x11_ctx*)__ctx;
+
+	switch(__what) {
+		case 0x00:
+			*(void**)__arg = ctx->frame_buff;
+		break;
+		case 0x01:
+			*(ff_uint_t*)__arg = ctx->width;
+		break;
+		case 0x02:
+			*(ff_uint_t*)__arg = ctx->height;
+		break;
+	}
 }
 
 static struct ffly_x11_ctx x11_ctx;
@@ -167,6 +180,6 @@ void ffly_mare_x11(ffly_mctxp __m) {
 	__m->driver.window_creat = x11_window_creat;
 	__m->driver.window_destroy = x11_window_destroy;
 	__m->driver.window_display = x11_window_display;
-	__m->driver.frame_buff = x11_frame_buff;
+	__m->driver.get = x11_get;
 	__m->context = (void*)&x11_ctx;
 }

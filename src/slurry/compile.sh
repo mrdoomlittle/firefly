@@ -1,4 +1,4 @@
-cc_flags="-D__ffly_has_libpng -D__ffly_has_libjpeg -D__ffly_use_x11 -D__ffly_bridge -D__ffly_source"
+cc_flags="-Wall -D__ffly_has_libpng -D__ffly_has_libjpeg -D__ffly_use_x11 -D__ffly_bridge -D__ffly_source"
 rm -f *.o
 gcc $cc_flags -c ../system/file.c
 gcc $cc_flags -c ../graphics/window.c
@@ -9,10 +9,8 @@ gcc $cc_flags -c ../dep/str_len.c
 gcc $cc_flags -c ../dep/mem_cpy.c
 gcc $cc_flags -c ../dep/bcopy.c
 gcc $cc_flags -c ../graphics/x11.c
-gcc $cc_flags -c ../graphics/x11_wd.c
+gcc $cc_flags -c ../graphics/x11_m.c
 
-#gcc $cc_flags -c xcb.c
-#gcc $cc_flags -c xcb_wd.c
 as_inc="-I$(realpath ../)/system/asm/"
 
 nasm -f elf64 $as_inc -o mutex.o.0 ../system/asm/mutex.asm
@@ -42,12 +40,13 @@ gcc $cc_flags -c ../graphics/jpeg.c
 gcc $cc_flags -c slurry.c
 gcc $cc_flags -c server.c
 gcc $cc_flags -c window.c -o window.o.0
-objs="window.o io.o x11.o x11_wd.o file.o mem_dup.o mem_set.o str_len.o mem_cpy.o \
+gcc $cc_flags -c ../graphics/mare.c
+objs="window.o io.o x11.o x11_m.o file.o mem_dup.o mem_set.o str_len.o mem_cpy.o \
 mutex.o.0 mutex.o.1 atomic_op.o.0 atomic_op.o.1 \
 mem_alloc.o mem_free.o mem_realloc.o pool.o event.o.0 event.o.1 queue.o \
 pipe.o shm.o mode.o bcopy.o duct.o image.o png.o jpeg.o sys_nanosleep.o.0 \
-sys_nanosleep.o.1 slurry.o server.o window.o.0"
+sys_nanosleep.o.1 slurry.o server.o window.o.0 mare.o"
 
-gcc $cc_flags -c connection.c
-gcc $cc_flags client.c connection.o -o client
+#gcc $cc_flags -c connection.c
+#gcc $cc_flags client.c connection.o -o client
 gcc $cc_flags main.c $objs -lpng -ljpeg -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm 

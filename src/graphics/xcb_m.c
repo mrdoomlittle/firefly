@@ -39,7 +39,7 @@ xcb_window_creat(void *__ctx, ff_uint_t __width, ff_uint_t __height, char const 
 	struct ffly_xcb_ctx *ctx;
 	ctx = (struct ffly_xcb_ctx*)__ctx;
 
-	ctx->frame_buff = __ffly_mem_alloc(__width*__height*4);
+	ctx->frame_buff = (ff_u8_t*)__ffly_mem_alloc(__width*__height*4);
 	ctx->width = __width;
 	ctx->height = __height;
 	ctx->title = __title;
@@ -190,9 +190,21 @@ xcb_cleanup(void *__ctx) {
 	ctx = (struct ffly_xcb_ctx*)__ctx;
 }
 
-ff_u8_t static*
-xcb_frame_buff(void *__ctx) {
-	return ((struct ffly_xcb_ctx*)__ctx)->frame_buff;
+void static
+xcb_get(ff_u8_t __what, long long __arg, void *__ctx) {
+	struct ffly_xcb_ctx *ctx;
+	ctx = (struct ffly_xcb_ctx*)__ctx;
+	switch(__what) {
+		case 0x00:
+			*(void**)__arg = ctx->frame_buff;
+		break;
+		case 0x01:
+			*(ff_uint_t*)__arg = ctx->width;
+		break;
+		case 0x02:
+			*(ff_uint_t*)__arg = ctx->height;
+		break;
+	}
 }
 
 static struct ffly_xcb_ctx xcb_ctx;
@@ -205,6 +217,6 @@ void ffly_mare_xcb(ffly_mctxp __m) {
 	__m->driver.window_creat = xcb_window_creat;
 	__m->driver.window_destroy = xcb_window_destroy;
 	__m->driver.window_display = xcb_window_display;
-	__m->driver.frame_buff = xcb_frame_buff;
+	__m->driver.get = xcb_get;
 	__m->context = (void*)&xcb_ctx;
 }

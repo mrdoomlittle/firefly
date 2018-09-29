@@ -13,7 +13,9 @@
 */
 
 ff_byte_t* ffly_wd_frame_buff(struct ffly_wd *__wd) {
-	return mare_frame_buff(__wd->m);
+	ff_byte_t *frame_buff;
+	mare_get(__wd->m, 0x00, &frame_buff);
+	return frame_buff;
 }
 
 ff_flag_t* ffly_wd_flags(struct ffly_wd *__wd) {
@@ -59,11 +61,13 @@ ff_err_t ffly_wd_init(struct ffly_wd *__wd, ff_u16_t __width, ff_u16_t __height,
 	ffly_mem_set(__wd, 0x0, sizeof(struct ffly_wd));
 	ff_err_t err;
 	__wd->m = ffly_mare(
-# ifdef __ffly_use_x11
+#ifdef __ffly_use_x11
 		_mare_x11
-# elif __ffly_use_xcb
+#elif __ffly_use_xcb
 		_mare_xcb
-# endif
+#elif __ffly_use_slurry
+		_mare_slurry
+#endif
 	);
 
 	mare_init(__wd->m);

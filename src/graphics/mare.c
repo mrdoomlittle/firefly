@@ -9,9 +9,14 @@ static void(*load[])(ffly_mctxp) = {
 	ffly_mare_x11,
 #endif
 #ifndef __ffly_use_xcb
+	NULL,
+#else
+	ffly_mare_xcb,
+# endif
+#ifndef __ffly_use_slurry
 	NULL
 #else
-	ffly_mare_xcb
+	ffly_mare_slurry
 # endif
 };
 

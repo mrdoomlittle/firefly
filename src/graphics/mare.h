@@ -10,7 +10,7 @@ struct ffly_mdd {
 	void(*window_creat)(void*, ff_uint_t, ff_uint_t, char const*);
 	void(*window_destroy)(void*);
 	void(*window_display)(void*);
-	ff_u8_t*(*frame_buff)(void*);
+	void(*get)(ff_u8_t, long long, void*);
 };
 
 typedef struct ffly_mctx {
@@ -36,17 +36,19 @@ typedef struct ffly_mctx {
 	mare_func(__ctx, window_destroy)((__ctx)->context)
 # define mare_window_display(__ctx) \
 	mare_func(__ctx, window_display)((__ctx)->context)
-# define mare_frame_buff(__ctx) \
-	mare_func(__ctx, frame_buff)((__ctx)->context)
+# define mare_get(__ctx, __what, __arg) \
+	mare_func(__ctx, get)(__what, (long long)(__arg), (__ctx)->context)
 
 
 # define mare(__driver) \
 	ffly_mare(__driver)
 void ffly_mare_x11(ffly_mctxp);
 void ffly_mare_xcb(ffly_mctxp);
+void ffly_mare_slurry(ffly_mctxp);
 enum {
 	_mare_x11,
-	_mare_xcb
+	_mare_xcb,
+	_mare_slurry
 };
 
 ffly_mctxp ffly_mare(ff_u8_t);

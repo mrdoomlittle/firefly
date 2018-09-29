@@ -25,4 +25,5 @@ void s_window_destroy(s_connp, ff_u16_t);
 void s_window_display(s_connp, ff_u16_t);
 void s_window_frame(s_connp, ff_u16_t, ff_u8_t*, ff_uint_t, ff_uint_t);
 void s_disconnect(s_connp);
+ff_u16_t s_rtn(ff_uint_t);
 # endif /*__ffly__slurry__connection__h*/
