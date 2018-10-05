@@ -1,3 +1,4 @@
+# define __slurry_client
 # include "slurry.h"
 # include "connection.h"
 # include "o_sheet.h"

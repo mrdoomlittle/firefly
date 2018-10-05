@@ -1,7 +1,7 @@
 # ifndef __ffly__slurry__connection__h
 # define __ffly__slurry__connection__h
 # include "../ffint.h"
-# include "slurry.h"
+# include "event.h"
 # ifndef __fflib
 # include <netinet/in.h>
 # else
