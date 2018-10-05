@@ -1,77 +1,87 @@
-# include "../ffint.h"
-# include "../types.h"
 # include "../net.h"
 # include "../system/io.h"
 # include "../system/err.h"
 # include "../dep/mem_cpy.h"
-ff_size_t
-ff_net_recvfrom(FF_SOCKET *__sock, struct sockaddr *__addr, socklen_t *__len,
-	void *__buf, ff_uint_t __size, ff_err_t *__err)
-{
-	FF_NET_HDR *hdr;
+# include "../malloc.h"
+
+struct udp_context {
+	FF_SOCKET *sock;
+	struct sockaddr *adr;
+	socklen_t *len;
+};
+
+struct tcp_context {
+	FF_SOCKET *sock;
+};
+
+void static
+udp_recv(struct udp_context *__ctx, void *__seg, int __flags) {
+	ff_i8_t err;
+	__ctx->sock->prot.recvfrom(__ctx->sock->prot_ctx, __seg, FF_MTU, __flags, __ctx->adr, __ctx->len, &err);
+}
+
+void static
+tcp_recv(struct tcp_context *__ctx, void *__seg, int __flags) {
+	ff_i8_t err;
+	__ctx->sock->prot.recv(__ctx->sock->prot_ctx, __seg, FF_MTU, __flags, &err);
+}
+
+ff_uint_t static
+__in(void(*__func)(void*, void*, int), void *__ctx, int __flags, ff_uint_t __size, void *__buf) {
+	ff_u8_t *buf;
+	ff_uint_t bsz;
+
+	buf = (ff_u8_t*)malloc(__size+sizeof(FF_NET_HDR));
 	ff_u8_t seg[FF_MTU];
-	hdr = (FF_NET_HDR*)seg;
-	ff_u8_t *p = seg+sizeof(FF_NET_HDR);
-	ff_u8_t *bufp = (ff_u8_t*)__buf;
-	ff_uint_t togo = __size;
-_next:
-	ffly_sock_recvfrom(__sock, seg, FF_MTU, 0, __addr, __len, __err);
-	if (_err(*__err)) {
-		ffly_fprintf(ffly_err, "failed to receive segment.\n");
-		return 0;
+
+	struct ff_net_sins *si = (struct ff_net_sins*)seg;
+	ff_u8_t *st = seg+sizeof(struct ff_net_sins);
+
+	FF_NET_HDR *hdr;
+	ff_i8_t hh;
+	hh = -1;
+	ff_uint_t n;
+	n = 0;
+_again:
+	__func(__ctx, seg, __flags);
+	ffly_mem_cpy(buf+(si->seg*FF_STC), st, si->len);
+	if (!si->seg) {
+		hh = 0;
+		hdr = (FF_NET_HDR*)buf;
 	}
- 
-	ffly_mem_cpy(bufp+(hdr->seg_no*(FF_MTU-sizeof(FF_NET_HDR))), p, hdr->size);
-	togo-=hdr->size;
-	if (togo>0)
-		goto _next;
+
+	if (!hh) {
+		if (n >= hdr->size) {
+			goto _end;
+		}
+	}
+	n+=si->len;
+	goto _again;
+_end:
+	ffly_mem_cpy(__buf, buf+sizeof(FF_NET_HDR), hdr->size);
+	return hdr->size;
 }
 
 ff_size_t
-ff_net_recv(FF_SOCKET *__sock, void *__buf, ff_uint_t __size, ff_err_t *__err) {
-	*__err = FFLY_SUCCESS;
-	FF_NET_HDR hdr;
+ff_net_recvfrom(FF_SOCKET *__sock, struct sockaddr *__addr, socklen_t *__len,
+    void *__buf, ff_uint_t __size, int __flags, ff_err_t *__err)
+{
+	ff_i8_t err;
+	struct udp_context ctx = {
+		.sock = __sock,
+		.adr = __addr,
+		.len = __len
+	};
+	return __in((void(*)(void*, void*, int))udp_recv, (void*)&ctx, __flags, __size, __buf);
+}
 
-	if (_err(*__err = ff_net_rcvhdr(__sock, &hdr))) {
-		ffly_fprintf(ffly_err, "failed to receive header.\n");
-		return 0;
-	}
-
-	ff_uint_t seq = 0, recved = 0;
-	ff_size_t res;
-	ff_u8_t *p = (ff_u8_t*)__buf;
-	ff_uint_t left = 0;
-	goto _sk;
-_recv:
-	ffly_printf("seq: %u\n", seq++);
-	if ((res = ffly_sock_recv(__sock, p, FF_MTU, 0, __err))<FF_MTU) {
-		if (_err(*__err)) {
-			ffly_fprintf(ffly_err, "failed to receive segment.\n");
-			return 0;
-		} else {
-			recved+=res;
-			goto _fault;
-		}
-	} 
-	p+=FF_MTU;
-_sk:
-	if (__size-(p-(ff_u8_t*)__buf) >= FF_MTU) {
-		goto _recv;
-	}
-
-	left = __size-(p-(ff_u8_t*)__buf);
-	if (left>0) {
-		if ((res = ffly_sock_recv(__sock, p, left, 0, __err))<left) {
-			if (_err(*__err)) {
-				ffly_fprintf(ffly_err, "failed to receive leftover.\n");
-				return 0;
-			} else {
-				recved+=res;
-				goto _fault;
-			}
-		}
-	}
-	return hdr.size;
-_fault:
-	return recved; 
+ff_size_t
+ff_net_recv(FF_SOCKET *__sock, void *__buf,
+	ff_uint_t __size, int __flags, ff_err_t *__err)
+{
+	ff_i8_t err;
+	struct tcp_context ctx = {
+		.sock = __sock
+	};
+	return __in((void(*)(void*, void*, int))tcp_recv, (void*)&ctx, __flags, __size, __buf);
 }

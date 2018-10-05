@@ -1,1 +1,6 @@
-remove message struct and replace with requst,command or operation etc
+-. remove message struct and replace with requst,command or operation etc
+
+NEEDS TO BE DONE IMMEDIATELY
+-. all network send and recv should go thrugh extra function thats db specific
+because if args/params or what ever there fucking called change its going to take
+a long tike to change/edit them all. macro function?????.

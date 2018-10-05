@@ -205,6 +205,8 @@ $ffly_cc $cc_flags -c -o $dst_dir/clay/solidify.o $root_dir/clay/solidify.c
 $ffly_cc $cc_flags -c -o $dst_dir/sr/pixel.o $root_dir/sr/pixel.c
 $ffly_cc $cc_flags -c -o $dst_dir/slurry/client.o $root_dir/slurry/client.c
 $ffly_cc $cc_flags -c -o $dst_dir/slurry/connection.o $root_dir/slurry/connection.c
+$ffly_cc $cc_flags -c -o $dst_dir/slurry/proto.o $root_dir/slurry/proto.c
+$ffly_cc $cc_flags -c -o $dst_dir/slurry/slurry.o $root_dir/slurry/slurry.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -244,4 +246,5 @@ $dst_dir/sr/tile.o $dst_dir/sr/plate.o $dst_dir/workshop/font_forge.o \
 $dst_dir/clay.o $dst_dir/clay/memalloc.o $dst_dir/clay/lexer.o $dst_dir/clay/input.o \
 $dst_dir/clay/parser.o $dst_dir/clay/hash.o $dst_dir/clay/solidify.o \
 $dst_dir/bron/tile.o $dst_dir/sr/shit.o $dst_dir/sr/pixel.o \
-$dst_dir/slurry/client.o $dst_dir/slurry/connection.o"
+$dst_dir/slurry/client.o $dst_dir/slurry/connection.o \
+$dst_dir/slurry/proto.o $dst_dir/slurry/slurry.o"

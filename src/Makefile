@@ -68,12 +68,12 @@ db_daemon: clean
 #	gcc $(cc_flags) -o client db/test.c $(ffly_objs) connect.o db.o user.o key.o -nostdlib
 	gcc $(cc_flags) -o daemon db/daemon.c $(ffly_objs) client.o user.o key.o slot.o -nostdlib
 net: clean
-	gcc -Wall -c network/sock.c
-	gcc -Wall -c network/input.c
-	gcc -Wall -c network/output.c
-	gcc -Wall -c net.c
-	gcc -Wall -o client client.c $(ffly_objs) net.o input.o output.o sock.o
-	gcc -Wall -o server server.c $(ffly_objs) net.o input.o output.o sock.o
+#	gcc $(cc_flags) -Wall -c network/sock.c
+#	gcc $(cc_flags) -Wall -c network/input.c
+#	gcc $(cc_flags) -Wall -c network/output.c
+#	gcc $(cc_flags) -Wall -c net.c
+	gcc $(cc_flags) -Wall -o client client.c $(ffly_objs) -nostdlib
+	gcc $(cc_flags) -Wall -o server server.c $(ffly_objs) -nostdlib
 ca: clean
 	gcc -c memory/mem_alloc.c
 	gcc -c memory/mem_free.c

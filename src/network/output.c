@@ -4,85 +4,110 @@
 # include "../system/io.h"
 # include "../system/err.h"
 # include "../dep/mem_cpy.h"
-ff_size_t
-ff_net_sendto(FF_SOCKET *__sock, struct sockaddr *__addr, socklen_t __len,
-	void const *__buf, ff_uint_t __size, ff_err_t *__err)
-{
-	FF_NET_HDR *hdr;
+# include "../malloc.h"
+
+struct udp_context {
+	FF_SOCKET *sock;
+	struct sockaddr *adr;
+	socklen_t len;
+};
+
+struct tcp_context {
+	FF_SOCKET *sock;
+};
+
+struct context {
 	ff_u8_t seg[FF_MTU];
-	hdr = (FF_NET_HDR*)seg;
-	ff_u8_t *bufp = (ff_u8_t*)__buf;
-	ff_u8_t *bufend = bufp+__size;
-	ff_u8_t *p = seg+sizeof(FF_NET_HDR);
-	ff_u8_t *end = seg+FF_MTU;
-	ff_uint_t seg_no = 0, left = 0;
-_next:
-	left = __size-(bufp-(ff_u8_t*)__buf);
+	struct ff_net_sins *si;
+	ff_uint_t sd;
+	ff_u8_t *st;
+	ff_uint_t sn;
+};
 
-	hdr->seg_no = seg_no++;
-	hdr->size = left>=(end-p)?(end-p):left;
-	ffly_mem_cpy(p, bufp, hdr->size);
-	bufp+= hdr->size;
+void static
+udp_send(struct udp_context *__ctx, void *__seg, int __flags) {
+	ff_i8_t err;
+	__ctx->sock->prot.sendto(__ctx->sock->prot_ctx, __seg, FF_MTU, __flags, __ctx->adr, __ctx->len, &err);
+}
 
-	ff_uint_t size = hdr->size+sizeof(FF_NET_HDR);
+void static
+tcp_send(struct tcp_context *__ctx, void *__seg, int __flags) {
+	ff_i8_t err;
+	__ctx->sock->prot.send(__ctx->sock->prot_ctx, __seg, FF_MTU, __flags, &err);
+}
 
-	ffly_sock_sendto(__sock, seg, size, 0, __addr, __len, __err);
-	if (_err(*__err)) {
-		ffly_fprintf(ffly_err, "failed to send segment.\n");
-		return 0;
+void static
+__out(void(*__func)(void*, void*, int), void *__ctx0, int __flags, ff_uint_t __size, void *__buf, struct context *__ctx, ff_err_t *__err) {
+	ff_i8_t err;
+	ff_uint_t ri;
+	ff_uint_t n;
+	n = __size;
+	ff_u8_t *bufp;
+
+	bufp = (ff_u8_t*)__buf;
+	struct ff_net_sins *si;
+
+	si = __ctx->si;
+_again:
+	ri = FF_STC-__ctx->sd;
+	if (ri<=n) {
+		ffly_mem_cpy(__ctx->st+__ctx->sd, bufp, ri);
+		__ctx->sd = 0;
+		si->seg = __ctx->sn++;
+		si->len = FF_STC;
+		__func(__ctx0, __ctx->seg, __flags);
+		n-=ri;
+		bufp+=ri;
+		goto _again;
 	}
 
-	if (bufp != bufend)
-		goto _next;
+	if (n>0) {
+		ffly_mem_cpy(__ctx->st+__ctx->sd, bufp, n);
+		__ctx->sd+=__size;
+	}
+}
+
+void static
+__bleed(void(*__func)(void*, void*, int), void *__ctx0, int __flags, struct context *__ctx, ff_err_t *__err) {
+	__ctx->si->seg = __ctx->sn;
+	__ctx->si->len = __ctx->sd;
+	ff_i8_t err;
+	__func(__ctx0, __ctx->seg, __flags);
+}
+
+#define FC (void(*)(void*, void*, int))
+#define UDP (FC udp_send)
+#define TCP (FC tcp_send)
+
+ff_size_t
+ff_net_sendto(FF_SOCKET *__sock, struct sockaddr *__addr, socklen_t __len,
+	void const *__buf, ff_uint_t __size, int __flags, ff_err_t *__err)
+{
+	ff_i8_t err;
 }
 
 ff_size_t
-ff_net_send(FF_SOCKET *__sock, void const *__buf, ff_uint_t __size, ff_err_t *__err) {
-	*__err = FFLY_SUCCESS;
+ff_net_send(FF_SOCKET *__sock, void const *__buf,
+	ff_uint_t __size, int __flags, ff_err_t *__err)
+{
+	ff_i8_t err;
 	FF_NET_HDR hdr = {
 		.size = __size
 	};
 
-	if (_err(*__err = ff_net_sndhdr(__sock, &hdr))) {
-		ffly_fprintf(ffly_err, "failed to send header.\n");
-		return 0; 
-	}
+	struct context ctx;
+	ctx.si = (struct ff_net_sins*)ctx.seg;
+	ctx.st = ctx.seg+sizeof(struct ff_net_sins);
+	ctx.sd = 0;
+	ctx.sn = 0;
 
-	ff_uint_t seq = 0, sent = 0;
-	ff_size_t res;
-	ff_uint_t left = 0;
-	ff_u8_t *p = (ff_u8_t*)__buf;
-	goto _sk;
-_send:
-	ffly_printf("seq: %u\n", seq++);
-	if ((res = ffly_sock_send(__sock, p, FF_MTU, 0, __err))<FF_MTU) {
-		if (_err(*__err)) {
-			ffly_fprintf(ffly_err, "failed to send segment.\n");
-			return 0;
-		} else {
-			sent+=res;
-			goto _fault;
-		}
-	}
-	p+= FF_MTU;
-_sk:
-	if (__size-(p-(ff_u8_t*)__buf) >= FF_MTU) {
-		goto _send;
-	}
+	struct tcp_context ctx0 = {
+		.sock = __sock
+	};
+	__out(TCP, (void*)&ctx0, __flags, sizeof(FF_NET_HDR), &hdr, &ctx, &err);
+	__out(TCP, (void*)&ctx0, __flags, __size, __buf, &ctx, &err);
 
-	left = __size-(p-(ff_u8_t*)__buf);
-	if (left>0) {
-		if ((res = ffly_sock_send(__sock, p, left, 0, __err))<left) {
-			if (_err(*__err)) {
-				ffly_fprintf(ffly_err, "failed to send leftover.\n");
-				return 0;
-			} else {
-				sent+=res;
-				goto _fault;
-			}
-		}
+	if (ctx.sd>0) {
+		__bleed(TCP, (void*)&ctx0, __flags, &ctx, &err);
 	}
-	return __size;
-_fault:
-	return sent;
 }

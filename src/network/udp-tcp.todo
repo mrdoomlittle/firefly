@@ -1,0 +1,2 @@
+-. buffer data from send till packet size is met and then send
+if recv is called then buffer will be drained

@@ -26,6 +26,7 @@ gcc $cc_flags -c ../memory/mem_alloc.c
 gcc $cc_flags -c ../memory/mem_free.c
 gcc $cc_flags -c ../memory/mem_realloc.c
 
+gcc $cc_flags -c proto.c
 gcc $cc_flags -c ../duct.c
 gcc $cc_flags -c ../system/pool.c
 gcc $cc_flags -c -o event.o.0 ../system/event.c
@@ -45,7 +46,7 @@ objs="window.o io.o x11.o x11_m.o file.o mem_dup.o mem_set.o str_len.o mem_cpy.o
 mutex.o.0 mutex.o.1 atomic_op.o.0 atomic_op.o.1 \
 mem_alloc.o mem_free.o mem_realloc.o pool.o event.o.0 event.o.1 queue.o \
 pipe.o shm.o mode.o bcopy.o duct.o image.o png.o jpeg.o sys_nanosleep.o.0 \
-sys_nanosleep.o.1 slurry.o server.o window.o.0 mare.o"
+sys_nanosleep.o.1 slurry.o server.o window.o.0 mare.o proto.o"
 
 #gcc $cc_flags -c connection.c
 #gcc $cc_flags client.c connection.o -o client

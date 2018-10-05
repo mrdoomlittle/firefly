@@ -26,6 +26,8 @@ if [ $use_slurry -eq 1 ]; then
 	cc_flags="$cc_flags -D__ffly_use_slurry"
 	gcc $cc_flags -c ../slurry/connection.c
 	gcc $cc_flags -c ../slurry/client.c
+	gcc $cc_flags -c ../slurry/slurry.c
+	gcc $cc_flags -c ../slurry/proto.c
 	gcc $cc_flags -c slurry_m.c
 fi
 
@@ -70,6 +72,6 @@ if [ $use_xcb -eq 1 ]; then
 	objs="$objs xcb.o xcb_m.o" 
 fi
 if [ $use_slurry -eq 1 ]; then
-	objs="$objs slurry_m.o client.o connection.o"
+	objs="$objs slurry_m.o client.o connection.o slurry.o proto.o"
 fi
 gcc $cc_flags bridge.c $objs -lpng -ljpeg -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm 

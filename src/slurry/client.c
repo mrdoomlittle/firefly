@@ -1,3 +1,4 @@
+# include "slurry.h"
 # include "connection.h"
 # include "o_sheet.h"
 # ifndef __fflib
@@ -103,29 +104,7 @@ void s_window_frame(s_connp __conn, ff_u16_t __wd, ff_u8_t *__frame, ff_uint_t _
 		TODO:
 			change
 	*/
-
-	ff_u8_t *f;
-	f = __frame;
-	ff_uint_t n, c;
-	n = __width*__height*4;
-	c = n>>14;
-
-	ff_u8_t ack;
-	ff_uint_t i;
-	i = 0;
-	while(i != c) {
-		send(__conn->sock, f, 1<<14, 0);
-		recv(__conn->sock, &ack, 1, 0);
-		f+=(1<<14);
-		i++;
-	}
-
-	ff_uint_t left;
-	left = n-(c*(1<<14));
-	if (left>0) {
-		send(__conn->sock, f, left, 0);
-		recv(__conn->sock, &ack, 1, 0);
-	}
+	s_send(__frame, __width*__height*4, __conn->sock);
 }
 
 ff_u16_t s_rtn(ff_uint_t __sz) {
@@ -146,7 +125,7 @@ void s_test(void) {
 	stack = 0;
 	s_connp con;
 	con = s_open();
-	s_connect(con, 21299, "127.0.0.1");
+	s_connect(con, 10198, "127.0.0.1");
 	ff_u16_t wd;
 	wd = s_window_new(con);
 	char const *tstr = "MEH";

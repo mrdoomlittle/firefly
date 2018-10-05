@@ -21,11 +21,15 @@ void ffly_br_prep(ffly_brp __br, ff_u8_t __bsz, ff_uint_t __n) {
 	__br->brick_c = __n;
 }
 
+/*
+	NOTE:
+		only a sketch
+*/
+
 // for testing
 void ffly_br_retrieve(ff_u8_t __bsz, ff_uint_t __n, void *__buf) {
 	ff_err_t err;
-	FF_SOCKET *sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
-
+	FF_SOCKET *sock = ff_net_creat(&err, _NET_PROT_TCP);
 	struct sockaddr_in addr;
 	ffly_bzero(&addr, sizeof(struct sockaddr_in));
 	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -35,7 +39,7 @@ void ffly_br_retrieve(ff_u8_t __bsz, ff_uint_t __n, void *__buf) {
 
 	ff_net_connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));
 
-	ff_net_send(sock, &__n, sizeof(ff_uint_t), &err);
+	ff_net_send(sock, &__n, sizeof(ff_uint_t), 0, &err);
 	if (_err(err)) {
 		ffly_printf("failed to send.\n");
 	}
@@ -48,8 +52,8 @@ void ffly_br_retrieve(ff_u8_t __bsz, ff_uint_t __n, void *__buf) {
 			TODO:
 				replace, get brick number from list
 		*/
-		ff_net_send(sock, &i, sizeof(ff_uint_t), &err);
-		ff_net_recv(sock, (ff_u8_t*)__buf+(i*bsz), bsz, &err);
+		ff_net_send(sock, &i, sizeof(ff_uint_t), 0, &err);
+		ff_net_recv(sock, (ff_u8_t*)__buf+(i*bsz), bsz, 0, &err);
 		i++;
 	}
 
@@ -69,14 +73,9 @@ void ffly_br_open(ffly_brp __br) {
 	addr.sin_port = htons(21299);
 	FF_SOCKET *sock;
 
-	sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
+	sock = ff_net_creat(&err, _NET_PROT_TCP);
 	if (_err(err))
 		return;
-
-	int val = 1;
-	if (setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int)) == -1) {
-		return;
-	}
 
 	if (_err(err = ff_net_bind(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in)))) {
 		return;
@@ -116,13 +115,16 @@ _again:
 	if (_err(err))	
 		return;
 
-	ff_net_recv(peer, &n, sizeof(ff_uint_t), &err);
+	ff_net_recv(peer, &n, sizeof(ff_uint_t), 0, &err);
 	ffly_printf("client requested %u bricks.\n", n);
 
 	bsz = 1<<__br->bricksize;
 	void *p;
 	while(n>0) {
-		ff_net_recv(peer, &b, sizeof(ff_uint_t), &err);
+/*
+		might be better to use a more flexible method later
+*/
+		ff_net_recv(peer, &b, sizeof(ff_uint_t), 0, &err);
 		ffly_printf("sending out brick %u\n", b);
 		if (b>__br->brick_c) {
 			ffly_printf("error.\n");
@@ -133,7 +135,7 @@ _again:
 			ffly_printf("error.\n");
 			break;
 		}
-		ff_net_send(peer, p, bsz, &err);
+		ff_net_send(peer, p, bsz, 0, &err);
 		n--;
 	}
 

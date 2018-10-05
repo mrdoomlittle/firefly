@@ -2,9 +2,13 @@
 # define __ffly__header__h
 # include "../ffint.h"
 # define FF_NET_HDR struct ff_net_hdr
+struct ff_net_sins {
+	ff_u32_t seg;
+	ff_uint_t len;
+};
+
 struct ff_net_hdr {
     ff_uint_t size; 
-    ff_u16_t seg_no;
 } __attribute__((packed));
 // keep packed
 

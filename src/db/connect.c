@@ -45,7 +45,7 @@ ff_db_ctr(ff_u64_t __enckey, char const *__ip_adr, ff_u16_t __port, ff_err_t *__
 	ret->enckey = __enckey;
 	ff_err_t err;
 	struct sockaddr_in adr;
-	ret->sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
+	ret->sock = ff_net_creat(&err, _NET_PROT_TCP);
 	if (_err(err)) {
 		*__err = err;
 		goto _fail;
@@ -289,12 +289,12 @@ ff_db_login(FF_SOCKET *__sock, ff_u8_t const *__id, ff_uint_t __il,
 	}
 
 	ffly_printf("sent message.\n");
-	ff_net_send(__sock, &__il, sizeof(ff_uint_t), &err);
+	ff_net_send(__sock, &__il, sizeof(ff_uint_t), 0, &err);
 	ffly_printf("sent id length.\n");
 
-	ff_net_send(__sock, __id, __il, &err);
+	ff_net_send(__sock, __id, __il, 0, &err);
 	ffly_printf("sent id.\n");
-	ff_net_send(__sock, &__passkey, sizeof(ff_u32_t), &err);
+	ff_net_send(__sock, &__passkey, sizeof(ff_u32_t), 0, &err);
 	ffly_printf("sent passkey.\n");
 
 	ff_db_rcv_err(__sock, &err);
@@ -358,7 +358,7 @@ ff_db_creat_pile(FF_SOCKET *__sock, ff_u8_t *__key,
 		reterr;
 	}
 
-	ff_net_recv(__sock, __slotno, sizeof(ff_uint_t), &err);
+	ff_net_recv(__sock, __slotno, sizeof(ff_uint_t), 0, &err);
 	if (_err(err)) {
 		ffly_printf("failed to recv slotno.\n");
 	}
@@ -388,7 +388,7 @@ ff_db_del_pile(FF_SOCKET *__sock, ff_u8_t *__key,
 		reterr;
 	}
 
-	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), &err);
+	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), 0, &err);
 	if (_err(err)) {
 		ffly_printf("failed to send slotno.\n");
 	}
@@ -417,9 +417,9 @@ ff_db_creat_record(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey,
 		reterr;
 	}
 
-	ff_net_send(__sock, &__pile, sizeof(ff_uint_t), &err);
-	ff_net_send(__sock, &__size, sizeof(ff_uint_t), &err);
-	ff_net_recv(__sock, __slotno, sizeof(ff_uint_t), &err);
+	ff_net_send(__sock, &__pile, sizeof(ff_uint_t), 0, &err);
+	ff_net_send(__sock, &__size, sizeof(ff_uint_t), 0, &err);
+	ff_net_recv(__sock, __slotno, sizeof(ff_uint_t), 0, &err);
 	retok;
 }
 
@@ -445,8 +445,8 @@ ff_db_del_record(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey,
 		reterr;
 	}
 
-	ff_net_send(__sock, &__pile, sizeof(ff_uint_t), &err);
-	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), &err);
+	ff_net_send(__sock, &__pile, sizeof(ff_uint_t), 0, &err);
+	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), 0, &err);
 	retok;
 }
 
@@ -469,11 +469,11 @@ ff_db_write(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey, ff_uint_t __pi
 		reterr;
 	}
 
-	ff_net_send(__sock, &__pile, sizeof(ff_uint_t), &err);
-	ff_net_send(__sock, &__rec, sizeof(ff_uint_t), &err);
-	ff_net_send(__sock, &__offset, sizeof(ff_u32_t), &err);
-	ff_net_send(__sock, &__size, sizeof(ff_uint_t), &err);
-	ff_net_send(__sock, __buf, __size, &err);
+	ff_net_send(__sock, &__pile, sizeof(ff_uint_t), 0, &err);
+	ff_net_send(__sock, &__rec, sizeof(ff_uint_t), 0, &err);
+	ff_net_send(__sock, &__offset, sizeof(ff_u32_t), 0, &err);
+	ff_net_send(__sock, &__size, sizeof(ff_uint_t), 0, &err);
+	ff_net_send(__sock, __buf, __size, 0, &err);
 	retok;
 }
 
@@ -496,11 +496,11 @@ ff_db_read(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey, ff_uint_t __pil
 		reterr;
 	}
 
-	ff_net_send(__sock, &__pile, sizeof(ff_uint_t), &err);
-	ff_net_send(__sock, &__rec, sizeof(ff_uint_t), &err);
-	ff_net_send(__sock, &__offset, sizeof(ff_u32_t), &err);
-	ff_net_send(__sock, &__size, sizeof(ff_uint_t), &err);
-	ff_net_recv(__sock, __buf, __size, &err);
+	ff_net_send(__sock, &__pile, sizeof(ff_uint_t), 0, &err);
+	ff_net_send(__sock, &__rec, sizeof(ff_uint_t), 0, &err);
+	ff_net_send(__sock, &__offset, sizeof(ff_u32_t), 0, &err);
+	ff_net_send(__sock, &__size, sizeof(ff_uint_t), 0, &err);
+	ff_net_recv(__sock, __buf, __size, 0, &err);
 	retok;
 }
 
@@ -523,7 +523,7 @@ ff_db_record_alloc(FF_SOCKET *__sock, ff_u8_t *__key,
 		reterr;
 	}
 
-	ff_net_send(__sock, &__rec, sizeof(ff_uint_t), &err);
+	ff_net_send(__sock, &__rec, sizeof(ff_uint_t), 0, &err);
 	retok;
 }
 
@@ -546,7 +546,7 @@ ff_db_record_free(FF_SOCKET *__sock, ff_u8_t *__key,
 		reterr;
 	}
 
-	ff_net_send(__sock, &__rec, sizeof(ff_uint_t), &err);
+	ff_net_send(__sock, &__rec, sizeof(ff_uint_t), 0, &err);
 	retok;
 }
 
@@ -569,8 +569,8 @@ ff_db_rivet(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey,
 		reterr;
 	}
 
-	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), &err);
-	ff_net_send(__sock, &__rivetno, sizeof(ff_u16_t), &err);
+	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), 0, &err);
+	ff_net_send(__sock, &__rivetno, sizeof(ff_u16_t), 0, &err);
 	retok;
 }
 
@@ -593,7 +593,7 @@ ff_db_derivet(FF_SOCKET *__sock, ff_u8_t *__key,
 		reterr;
 	}
 
-	ff_net_send(__sock, &__rivetno, sizeof(ff_u16_t), &err);
+	ff_net_send(__sock, &__rivetno, sizeof(ff_u16_t), 0, &err);
 	retok;
 }
 
@@ -616,8 +616,8 @@ ff_db_rivetto(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey,
 		reterr;
 	}
 
-	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), &err);
-	ff_net_send(__sock, &__rivetno, sizeof(ff_u16_t), &err);
+	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), 0, &err);
+	ff_net_send(__sock, &__rivetno, sizeof(ff_u16_t), 0, &err);
 	retok;
 }
 
@@ -640,9 +640,9 @@ ff_db_bind(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey,
 		reterr;
 	}
 
-	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), &err);
-	ff_net_send(__sock, &__rivetno, sizeof(ff_u16_t), &err);
-	ff_net_send(__sock, &__offset, sizeof(ff_u8_t), &err);
+	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), 0, &err);
+	ff_net_send(__sock, &__rivetno, sizeof(ff_u16_t), 0, &err);
+	ff_net_send(__sock, &__offset, sizeof(ff_u8_t), 0, &err);
 	retok;
 }
 
@@ -665,7 +665,7 @@ ff_db_acquire_slot(FF_SOCKET *__sock, ff_u8_t *__key,
 		reterr;
 	}
 
-	ff_net_recv(__sock, __slotno, sizeof(ff_uint_t), &err);
+	ff_net_recv(__sock, __slotno, sizeof(ff_uint_t), 0, &err);
 	retok;
 }
 
@@ -688,7 +688,7 @@ ff_db_scrap_slot(FF_SOCKET *__sock, ff_u8_t *__key,
 		reterr;
 	}
 
-	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), &err);
+	ff_net_send(__sock, &__slotno, sizeof(ff_uint_t), 0, &err);
 	retok;
 }
 
@@ -711,10 +711,10 @@ ff_db_exist(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey,
 		return -1;
 	}
 
-	ff_net_send(__sock, &__rivetno, sizeof(ff_u16_t), &err);
+	ff_net_send(__sock, &__rivetno, sizeof(ff_u16_t), 0, &err);
 
 	ff_i8_t ret;
-	ff_net_recv(__sock, &ret, sizeof(ff_u8_t), &err);
+	ff_net_recv(__sock, &ret, sizeof(ff_u8_t), 0, &err);
 	return ret;
 }
 
@@ -737,6 +737,6 @@ ff_db_record_stat(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey,
 		reterr;
 	}
 
-	ff_net_send(__sock, &__rec, sizeof(ff_uint_t), &err);
-	ff_net_recv(__sock, __st, sizeof(struct ffdb_recstat), &err);
+	ff_net_send(__sock, &__rec, sizeof(ff_uint_t), 0, &err);
+	ff_net_recv(__sock, __st, sizeof(struct ffdb_recstat), 0, &err);
 }

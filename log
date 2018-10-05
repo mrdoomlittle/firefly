@@ -6,6 +6,7 @@ pod 0 allocated.
 pod 1 allocated.
 pod 2 allocated.
 pod 3 allocated.
+piston creation.
 piston tick
 thread/s - shutdown&cleanup, phase{0}.
 thread with id: 0, cleaning.

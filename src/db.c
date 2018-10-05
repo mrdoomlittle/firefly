@@ -166,38 +166,38 @@ ff_err_t ff_db_snd_key(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey) {
 	ff_u8_t tmp[KEY_SIZE];
 	ffly_mem_cpy(tmp, __key, KEY_SIZE);
 	ffly_encrypt(tmp, KEY_SIZE, __enckey);
-	ff_net_send(__sock, tmp, KEY_SIZE, &err);
+	ff_net_send(__sock, tmp, KEY_SIZE, 0, &err);
 	return err;
 }
 
 ff_err_t ff_db_rcv_key(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey) {
 	ff_err_t err; 
-	ff_net_recv(__sock, __key, KEY_SIZE, &err);
+	ff_net_recv(__sock, __key, KEY_SIZE, 0, &err);
 	ffly_decrypt(__key, KEY_SIZE, __enckey);
 	return err;
 }
 
 ff_err_t ff_db_snd_err(FF_SOCKET *__sock, ff_err_t __err) {
 	ff_err_t err;
-	ff_net_send(__sock, &__err, sizeof(ff_err_t), &err);
+	ff_net_send(__sock, &__err, sizeof(ff_err_t), 0, &err);
 	return err;
 }
 
 ff_err_t ff_db_rcv_err(FF_SOCKET *__sock, ff_err_t *__err) {
 	ff_err_t err;
-	ff_net_recv(__sock, __err, sizeof(ff_err_t), &err);
+	ff_net_recv(__sock, __err, sizeof(ff_err_t), 0, &err);
 	return err;
 }
 
 ff_err_t ff_db_snd_errno(FF_SOCKET *__sock, ff_db_err __err) {
 	ff_err_t err;
-	ff_net_send(__sock, &__err, sizeof(ff_db_err), &err);
+	ff_net_send(__sock, &__err, sizeof(ff_db_err), 0, &err);
 	return err;
 }
 
 ff_err_t ff_db_rcv_errno(FF_SOCKET *__sock, ff_db_err *__err) {
 	ff_err_t err;
-	ff_net_recv(__sock, __err, sizeof(ff_db_err), &err);
+	ff_net_recv(__sock, __err, sizeof(ff_db_err), 0, &err);
 	return err;
 }
 
@@ -205,7 +205,7 @@ ff_err_t ff_db_sndmsg(FF_SOCKET *__sock, ff_db_msgp __msg) {
 	ff_err_t err;
 	ff_uint_t sent;
 
-	sent = ff_net_send(__sock, __msg, msgsize, &err); 
+	sent = ff_net_send(__sock, __msg, msgsize, 0, &err); 
 	if (_err(err)) {
 		ffly_fprintf(ffly_err, "failed to send message.\n");
 		return err;
@@ -222,7 +222,7 @@ ff_err_t ff_db_rcvmsg(FF_SOCKET *__sock, ff_db_msgp __msg) {
 	ff_err_t err;
 	ff_uint_t recved;
 
-	recved = ff_net_recv(__sock, __msg, msgsize, &err); 
+	recved = ff_net_recv(__sock, __msg, msgsize, 0, &err); 
 	if (_err(err)) {
 		ffly_fprintf(ffly_err, "failed to recv message.\n");
 		return err;

@@ -16,8 +16,9 @@ ff_err_t ff_net_shutdown(FF_SOCKET *__sock, int __how) {
 	ffly_sock_shutdown(__sock, __how);
 	retok;
 } 
-
-FF_SOCKET* ff_net_creat(ff_err_t *__err, int __family, int __type, int __proto) {
+void ffly_tcp_prot(struct ffly_sock_proto*);
+void ffly_udp_prot(struct ffly_sock_proto*);
+FF_SOCKET* ff_net_creat(ff_err_t *__err, ff_u8_t __proto) {
 # ifdef __ffly_debug
 	ff_location_push(_ff_loc_net_creat);
 # endif
@@ -29,7 +30,16 @@ FF_SOCKET* ff_net_creat(ff_err_t *__err, int __family, int __type, int __proto) 
 		goto _fail;
 	}
 
-	if (_err(err = ffly_socket(sock, __family, __type, __proto))) {
+	switch(__proto) {
+		case _NET_PROT_TCP:
+			ffly_tcp_prot(&sock->prot);
+		break;
+		case _NET_PROT_UDP:
+			ffly_udp_prot(&sock->prot);
+		break;
+	}
+
+	if (_err(err = ffly_socket(sock))) {
 		ffly_fprintf(ffly_out, "failed to create socket.\n");
 		*__err = err;
 		goto _fail;
@@ -71,7 +81,8 @@ FF_SOCKET* ff_net_accept(FF_SOCKET *__sock, struct sockaddr *__addr, socklen_t *
 		return NULL;
 	}
 
-	sock->fd = ffly_sock_accept(__sock, __addr, __len, __err);
+	ff_err_t err;
+	ffly_sock_accept(__sock, sock, NULL, NULL, &err);
 	if (_err(*__err)) {
 		__ffly_mem_free(sock);
 		ffly_fprintf(ffly_out, "failed to accept.\n");
@@ -94,29 +105,6 @@ ff_err_t ff_net_bind(FF_SOCKET *__sock, struct sockaddr *__addr, socklen_t __len
 		ffly_fprintf(ffly_out, "failed to bind.\n");
 		return err;
 	}
-	retok;
-}
-
-ff_err_t ff_net_sndhdr(FF_SOCKET *__sock, FF_NET_HDR *__hdr) {
-	ff_err_t err;
-	ff_size_t res;
-	if ((res = ffly_sock_send(__sock, __hdr, sizeof(FF_NET_HDR), 0, &err)) < sizeof(FF_NET_HDR)) {
-		reterr;
-	}
-
-	if (_err(err))
-		return err;
-	retok;
-}
-
-ff_err_t ff_net_rcvhdr(FF_SOCKET *__sock, FF_NET_HDR *__hdr) {
-	ff_err_t err;
-	ff_size_t res;
-	if ((res = ffly_sock_recv(__sock, __hdr, sizeof(FF_NET_HDR), 0, &err)) < sizeof(FF_NET_HDR)) {
-		reterr;
-	}
-	if (_err(err))
-		return err;
 	retok;
 }
 

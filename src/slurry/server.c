@@ -12,7 +12,7 @@
 /*
 	TODO:
 		lock address within stack that a pointer may be stored or plate them like /memory/plate
-		to avoid giving the user the pointer
+		to avoid giving the user the pointer or dont.... as i dont realy care.
 */
 static struct sockaddr_in adr;
 int static sock;
@@ -53,7 +53,7 @@ window_new(void) {
 	printf("new window.\n");
 	ff_u16_t dst;
 	dst = *(ff_u16_t*)p;
-	*(struct s_window**)stackat(dst) = s_window_new();
+	*(struct s_window**)stackat(dst) = _s_window_new();
 }
 
 void static
@@ -132,27 +132,7 @@ window_frame(void) {
 
 	printf("width: %u, height: %u\n", width, height);
 
-	ff_uint_t n, c;
-
-	n = width*height*4;
-	c = n>>14;
-
-	ff_uint_t i;
-	ff_u8_t ack;
-	i = 0;
-	while(i != c) {
-		recv(client.sock, f, 1<<14, 0);
-		send(client.sock, &ack, 1, 0);
-		f+=(1<<14);
-		i++;
-	}
-
-	ff_uint_t left;
-	left = n-(c*(1<<14));
-	if (left>0) {
-		recv(client.sock, f, left, 0);
-		send(client.sock, &ack, 1, 0);
-	}
+	s_recv(f, width*height*4, client.sock);
 }
 
 void static
@@ -165,7 +145,7 @@ window_destroy(void) {
 	sw = *(struct s_window**)stackat(wd);
 
 	ffly_wd_cleanup(&sw->fw);
-	s_window_destroy(sw);
+	_s_window_destroy(sw);
 }
 
 ff_i8_t static dc;
