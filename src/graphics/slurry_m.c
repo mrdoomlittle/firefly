@@ -8,12 +8,14 @@ _s_display_open(void *__ctx) {
 	ctx = (struct ffly_slurry_ctx*)__ctx;
 	ctx->conn = s_open();
 	s_connect(ctx->conn, 10198, "127.0.0.1");
+	ctx->d = s_display_open(ctx->conn);
 }
 
 void static
 _s_display_close(void *__ctx) {
 	struct ffly_slurry_ctx *ctx;
 	ctx = (struct ffly_slurry_ctx*)__ctx;
+	s_display_close(ctx->conn, ctx->d);
 	s_disconnect(ctx->conn);
 	s_close(ctx->conn);
 }
@@ -44,18 +46,16 @@ _s_window_creat(void *__ctx, ff_uint_t __width, ff_uint_t __height, char const *
 	ctx->frame_buff = (ff_u8_t*)__ffly_mem_alloc(__width*__height*4);
 	ctx->width = __width;
 	ctx->height = __height;
-	ctx->w = s_window_new(ctx->conn);
+	ctx->w = s_window_new(ctx->conn, ctx->d);
 	ctx->title =  s_rtn(ffly_str_len(__title)+1);
 	s_write(ctx->conn, ctx->title, ffly_str_len(__title)+1, __title);
 	s_window_init(ctx->conn, ctx->w, __width, __height, ctx->title);
-	s_window_open(ctx->conn, ctx->w);
 }
 
 void static
 _s_window_destroy(void *__ctx) {
 	struct ffly_slurry_ctx *ctx;
 	ctx = (struct ffly_slurry_ctx*)__ctx;
-	s_window_close(ctx->conn, ctx->w);
 	s_window_destroy(ctx->conn, ctx->w);
 	__ffly_mem_free(ctx->frame_buff);
 }

@@ -4,9 +4,17 @@
 # include "proto.h"
 # include "window.h"
 # include "../graphics/window.h"
+# include <X11/Xlib.h>
+# include <GL/glx.h>
+#define EVBS 20
 struct s_window {
 	struct s_window *next;
 	struct ffly_wd fw;
+	ff_u8_t *frame_buff;
+	Display *d;
+	ff_uint_t width, height;
+	Window w;
+	GLXContext glx_ct;
 };
 
 typedef struct s_tape {
@@ -18,6 +26,22 @@ typedef struct s_buff {
 	void *data;
 	ff_uint_t len;
 } *s_buffp;
+
+struct s_button {
+	ff_int_t x, y;
+};
+
+typedef struct s_event {
+	ff_u8_t type;
+	struct s_button button;
+} *s_eventp;
+
+enum {
+	_s_event_msg,
+	_s_button_press,
+	_s_button_release,
+	_s_event_unknown
+};
 
 void(*s_io_send)(void*, ff_uint_t, long long);
 void(*s_io_recv)(void*, ff_uint_t, long long);

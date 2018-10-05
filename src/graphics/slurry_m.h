@@ -7,6 +7,7 @@ struct ffly_slurry_ctx {
 	ff_u8_t *frame_buff;
 	ff_u16_t w, title;
 	ff_uint_t width, height;
+	ff_u16_t d;
 };
 
 # endif /*__ffly__graphics__slurry__m__h*/

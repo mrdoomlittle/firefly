@@ -60,10 +60,17 @@ void* ffsh_cmdget(struct hash *__hash, char const *__ident) {
 # define jmpend __asm__("jmp _end")
 ff_i8_t *ffsh_run = NULL;
 
+/*
+external routines
+*/
 void(*ffsh_er)(char const*, ff_uint_t, char const*[]);
 /*
 	inbuild commands
 */
+/*
+	move ff5 and ff6 into function
+*/
+
 void ffsh_exec_cmd(void *__func, ff_uint_t __n, struct arg_s **__args) {
 	char buf[128];
 

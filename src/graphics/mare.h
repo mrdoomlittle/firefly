@@ -1,6 +1,7 @@
 # ifndef __ffly__graphics__mare__h
 # define __ffly__graphics__mare__h
 # include "../ffint.h"
+
 struct ffly_mdd {
 	void(*display_open)(void*);
 	void(*display_close)(void*);
@@ -36,6 +37,10 @@ typedef struct ffly_mctx {
 	mare_func(__ctx, window_destroy)((__ctx)->context)
 # define mare_window_display(__ctx) \
 	mare_func(__ctx, window_display)((__ctx)->context)
+
+/*
+	get infomation from the driver e.g. window width, height, frame buffer, etc
+*/
 # define mare_get(__ctx, __what, __arg) \
 	mare_func(__ctx, get)(__what, (long long)(__arg), (__ctx)->context)
 

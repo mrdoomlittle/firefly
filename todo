@@ -201,3 +201,5 @@ well i dont know how to do it i gave up and moved on to somhing else as it was t
 
 -. move over to writev and readv for networking for large chunks that need to be sent over,
 been using send and recv as its quick to implement
+
+-. use 'get' function for init e.g. object it may be slower but more flexible so changes can be done quicker

@@ -108,6 +108,52 @@ mk_event(ffly_event_t **__event, ffly_event_t __tmpl) {
 	(*__event)->field = _ffly_ef_wd;
 }
 
+# define MKEVENT(__ev, __tmpl) \
+	*__ev = __tmpl;			\
+	__ev->field = _ffly_ef_wd
+
+# ifdef __ffly_use_slurry
+# include "slurry_m.h"
+# include "../slurry/connection.h"
+ff_err_t
+ffly_s_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
+	struct ffly_slurry_ctx *ctx;
+	ctx = (struct ffly_slurry_ctx*)__wd->m->context;
+
+	ff_err_t err;
+	ffly_event_t *fe;
+	struct s_event *ev;
+	if (!s_pending(ctx->conn, ctx->d)) {
+		s_event(ctx->conn, ctx->d, &ev);
+		if (!ev) {
+			goto _end;
+		}
+		fe = (*__event = ff_event_alloc(&err));
+		switch(ev->type) {
+			case _s_event_msg:
+				MKEVENT(fe, (ffly_event_t){.kind=_ffly_wd_ek_closed});
+			break;
+			case _s_button_press: case _s_button_release:
+				mk_event(__event, (ffly_event_t){
+					.kind=ev->type == _s_button_press?_ffly_wd_ek_btn_press:_ffly_wd_ek_btn_release,
+					.data=ffly_pool_alloc(&__wd->events),
+					.size=sizeof(ffly_wd_event_t)	
+				});
+
+				*((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
+					.x = ev->button.x,
+					.y = ev->button.y
+				};
+			break;
+			default:
+				MKEVENT(fe, (ffly_event_t){.kind=_ffly_ek_unknown});
+		}
+	}
+_end:
+	return FFLY_SUCCESS;
+}
+
+# endif
 # ifdef __ffly_use_x11
 ff_err_t 
 ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
@@ -127,7 +173,12 @@ ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
 				mk_event(__event, (ffly_event_t){.kind=_ffly_wd_ek_closed});
 			break;
             case ButtonPress: case ButtonRelease:
-                mk_event(__event, (ffly_event_t){.kind=event.type == ButtonPress?_ffly_wd_ek_btn_press:_ffly_wd_ek_btn_release, .data=ffly_pool_alloc(&__wd->events), .size=sizeof(ffly_wd_event_t)});
+                mk_event(__event, (ffly_event_t){
+					.kind=event.type == ButtonPress?_ffly_wd_ek_btn_press:_ffly_wd_ek_btn_release,
+					.data=ffly_pool_alloc(&__wd->events),
+					.size=sizeof(ffly_wd_event_t)
+				});
+
                 *((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
                     .btn = ffly_x11_convert_btnno(event.xbutton.button),
                     .x = event.xbutton.x,
@@ -135,7 +186,11 @@ ffly_x11_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
                 };
             break;
 			case KeyPress: case KeyRelease:
-				mk_event(__event, (ffly_event_t){.kind=event.type == KeyPress?_ffly_wd_ek_key_press:_ffly_wd_ek_key_release, .data=ffly_pool_alloc(&__wd->events), .size=sizeof(ffly_wd_event_t)});
+				mk_event(__event, (ffly_event_t){
+					.kind=event.type == KeyPress?_ffly_wd_ek_key_press:_ffly_wd_ek_key_release,
+					.data=ffly_pool_alloc(&__wd->events),
+					.size=sizeof(ffly_wd_event_t)	
+				});
 				*((ffly_wd_event_t*)(*__event)->data) = (ffly_wd_event_t){
                     .keycode = ffly_x11_convert_keycode(event.xkey.keycode),
                     .x = event.xkey.x,
@@ -180,7 +235,9 @@ ffly_xcb_wd_poll_event(struct ffly_wd *__wd, ffly_event_t **__event) {
 ffly_event_t*
 ffly_wd_poll_event(struct ffly_wd *__wd, ff_err_t *__err) {
 	ffly_event_t *event = NULL;
-# ifdef __ffly_use_x11
+# ifdef __ffly_use_slurry
+	*__err = ffly_s_wd_poll_event(__wd, &event);
+# elif __ffly_use_x11
 	*__err = ffly_x11_wd_poll_event(__wd, &event);
 # elif __ffly_use_xcb
 	*__err = ffly_xcb_wd_poll_event(__wd, &event);

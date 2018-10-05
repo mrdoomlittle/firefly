@@ -8,7 +8,6 @@
 # include <stdio.h>
 # include <string.h>
 # include <signal.h>
-
 /*
 	TODO:
 		lock address within stack that a pointer may be stored or plate them like /memory/plate
@@ -37,6 +36,7 @@ void sse_open(void) {
 ff_u8_t static *p;
 ff_i8_t static run;
 
+static struct s_event evbuf[EVBS];
 struct {int sock;} client;
 
 
@@ -50,10 +50,10 @@ ff_u8_t static stack[512];
 	(stack+(__ad))
 void static
 window_new(void) {
-	printf("new window.\n");
+	printf("new window, %u, %u\n", *(ff_u16_t*)p, *(ff_u16_t*)(p+2));
 	ff_u16_t dst;
 	dst = *(ff_u16_t*)p;
-	*(struct s_window**)stackat(dst) = _s_window_new();
+	*(struct s_window**)stackat(dst) = __s_window_new(*(Display**)(stackat(*(ff_u16_t*)(p+2))));
 }
 
 void static
@@ -86,25 +86,9 @@ window_init(void) {
 	height = *(ff_u16_t*)(p+4);
 	title = *(ff_u16_t*)(p+6);
 
-	struct s_window *sw;
-	sw = *(struct s_window**)stackat(wd);
-	ffly_wd_init(&sw->fw, width, height, (char const*)stackat(title));
-}
-
-void static
-window_open(void) {
-	printf("window open.\n");
-	ff_u16_t wd;
-	wd = *(ff_u16_t*)p;
-	ffly_wd_open(&(*(struct s_window**)stackat(wd))->fw);
-}
-
-void static
-window_close(void) {
-	printf("window close.\n");
-	ff_u16_t wd;
-	wd = *(ff_u16_t*)p;
-	ffly_wd_close(&(*(struct s_window**)stackat(wd))->fw);
+	struct s_window *w;
+	w = *(struct s_window**)stackat(wd);
+	__s_window_init(w, width, height, (char const*)stackat(title));
 }
 
 void static
@@ -113,7 +97,7 @@ window_display(void) {
 	struct s_window *wd;
 
 	wd = *(struct s_window**)stackat(*(ff_u16_t*)p);
-	ffly_wd_display(&wd->fw);
+	__s_window_display(wd);
 }
 
 void static
@@ -124,15 +108,9 @@ window_frame(void) {
 	wd = *(struct s_window**)stackat(*(ff_u16_t*)p);
 	
 	ff_u8_t *f;
-	f = ffly_wd_frame_buff(&wd->fw);
+	f = wd->frame_buff;
 
-	ff_uint_t width, height;
-	mare_get(wd->fw.m, _MARE_GET_WIDTH, &width);
-	mare_get(wd->fw.m, _MARE_GET_HEIGHT, &height);
-
-	printf("width: %u, height: %u\n", width, height);
-
-	s_recv(f, width*height*4, client.sock);
+	s_recv(f, wd->width*wd->height*4, client.sock);
 }
 
 void static
@@ -141,11 +119,72 @@ window_destroy(void) {
 	ff_u16_t wd;
 	wd = *(ff_u16_t*)p;
 
-	struct s_window *sw;
-	sw = *(struct s_window**)stackat(wd);
+	struct s_window *w;
+	w = *(struct s_window**)stackat(wd);
+	__s_window_destroy(w);
+}
 
-	ffly_wd_cleanup(&sw->fw);
-	_s_window_destroy(sw);
+void static
+display_open(void) {
+	printf("display open, %u\n", *(ff_u16_t*)p);
+	*(Display**)stackat(*(ff_u16_t*)p) = XOpenDisplay(NULL);
+}
+
+void static
+display_close(void) {
+	printf("display close.\n");
+	Display *d = *(Display**)stackat(*(ff_u16_t*)p);
+	XSetCloseDownMode(d, DestroyAll);
+	XCloseDisplay(d);
+}
+
+void static
+event(void) {
+	printf("event.\n");
+	Display *d = *(Display**)stackat(*(ff_u16_t*)p);
+	XEvent event;
+	ff_u8_t *t;
+	s_eventp ev;
+	ev = evbuf;
+_again:
+	t = &ev->type;
+	if (XPending(d) > 0 && ev<(evbuf+EVBS)) {
+		XNextEvent(d, &event);
+		switch(event.type) {
+			case ClientMessage:
+				*t = _s_event_msg;
+			break;
+			case ButtonPress: case ButtonRelease:
+				*t = (event.type == ButtonPress?_s_button_press:_s_button_release);
+				
+				ev->button.x = event.xbutton.x;
+				ev->button.y = event.xbutton.y;
+			break;
+			default:
+				*t = _s_event_unknown;
+		}
+		ev++;
+		goto _again;
+	}
+	
+	ff_uint_t n;
+	n = ev-evbuf;
+	printf("number: %u\n", n);
+	send(client.sock, &n, sizeof(ff_uint_t), 0);
+	if (n>0)
+		send(client.sock, evbuf, n*sizeof(struct s_event), 0);
+}
+
+void static
+pending(void) {
+	printf("pending.\n");
+	Display *d = *(Display**)stackat(*(ff_u16_t*)p);
+	ff_i8_t res;
+	res = -1;
+	if (XPending(d)>0) {
+		res = 0;
+	}
+	send(client.sock, &res, 1, 0);
 }
 
 ff_i8_t static dc;
@@ -154,17 +193,19 @@ __asm__("disconnect:\n\t"
 		"movb $0, dc(%rip)\n\t"
 		"ret");
 
-void(*op[])(void) = {
+static void(*op[])(void) = {
 	window_new,
 	_read,
 	_write,
 	window_init,
-	window_open,
-	window_close,
 	window_destroy,
 	disconnect,
 	window_display,
-	window_frame
+	window_frame,
+	display_open,
+	display_close,
+	event,
+	pending
 };
 
 void ox(void *__op) {
@@ -172,16 +213,18 @@ void ox(void *__op) {
 }
 
 ff_u8_t static osz[] = {
-	2,		//window_new
+	4,		//window_new
 	4,		//write
 	4,		//read
 	8,		//window_init
-	2,		//window_open
-	2,		//window_close
 	2,		//window_destroy
 	0,		//disconnect
 	2,		//window_display
-	2		//window_frame
+	2,		//window_frame
+	2,		//display_open
+	2,		//display_close
+	2,		//event
+	2		//pending
 };
 
 void texec(s_tapep __t) {

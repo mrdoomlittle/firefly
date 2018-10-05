@@ -6,6 +6,10 @@
 # define ff_event_build(__kind, __field, __data, __size, __p) \
     *(__p) = (ff_event_t){.kind=(__kind), .field=(__field), .data=(__data), .size=(__size)}
 
+/*
+	needs work on
+*/
+
 enum ffly_event_kind {
 	_ffly_wd_ek_key_press,
 	_ffly_wd_ek_key_release,
