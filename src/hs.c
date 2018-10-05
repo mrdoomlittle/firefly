@@ -44,7 +44,7 @@ ff_hs_objp ff_hs_build(ff_hsp __hs) {
 	ff_hs_nodep n;
 	ff_hs_nodep top = NULL;
 	ff_hs_nodep end = NULL;
-	hash_init(&__hs->env);
+	hs_hash_init(&__hs->env);
 	ffly_printf("building.\n");
 	while(!ff_hs_at_eof(__hs)) {
 		if (!(n = ff_hs_parse(__hs))) {
@@ -108,57 +108,57 @@ ff_u8_t ff_hs_tsize(ff_u8_t __id) {
 ff_u8_t ff_hs_nexttokis(ff_hsp __hs, ff_u8_t __kind, ff_u8_t __id) {
 	ff_u8_t tok;
 
-	tok = nexttok(__hs);
+	tok = hs_nexttok(__hs);
 
-	if (tok == __kind && tok_val == __id) {
+	if (tok == __kind && hs_tok_val == __id) {
 		return 1;
 	}
-	rtok(tok);
+	hs_rtok(tok);
 	return 0;
 }
 
 ff_u8_t ff_hs_reckon(ff_hsp __hs, ff_u8_t __kind, ff_u8_t __id) {
 	ff_u8_t tok;
 
-	tok = nexttok(__hs);
-	if (tok == __kind && tok_val == __id)
+	tok = hs_nexttok(__hs);
+	if (tok == __kind && hs_tok_val == __id)
 		return 1;
-	ffly_printf("%u ? %u - %u ? %u\n", tok, __kind, tok_val, __id);
+	ffly_printf("%u ? %u - %u ? %u\n", tok, __kind, hs_tok_val, __id);
 	return 0;
 }
 
 # include "dep/str_cmp.h"
 ff_u8_t ff_hs_perhaps_keywd(ff_u8_t __tok) {
 	if (__tok == _tok_ident) {
-		if (!ffly_str_cmp(tok_data, "func")) {
-			tok_val = _keywd_func;
+		if (!ffly_str_cmp(hs_tok_data, "func")) {
+			hs_tok_val = _keywd_func;
 			goto _aff;
-		} else if (!ffly_str_cmp(tok_data, "object")) {
-			tok_val = _keywd_object;
+		} else if (!ffly_str_cmp(hs_tok_data, "object")) {
+			hs_tok_val = _keywd_object;
 			goto _aff;
-		} else if (!ffly_str_cmp(tok_data, "model")) {
-			tok_val = _keywd_model;
+		} else if (!ffly_str_cmp(hs_tok_data, "model")) {
+			hs_tok_val = _keywd_model;
 			goto _aff;
-		} else if (!ffly_str_cmp(tok_data, "ret")) {
-			tok_val = _keywd_ret;
+		} else if (!ffly_str_cmp(hs_tok_data, "ret")) {
+			hs_tok_val = _keywd_ret;
 			goto _aff;
-		} else if (!ffly_str_cmp(tok_data, "struct")) {
-			tok_val = _keywd_struct;
+		} else if (!ffly_str_cmp(hs_tok_data, "struct")) {
+			hs_tok_val = _keywd_struct;
 			goto _aff;
-		} else if (!ffly_str_cmp(tok_data, "uint_t")) {
-			tok_val = _keywd_uint_t;
+		} else if (!ffly_str_cmp(hs_tok_data, "uint_t")) {
+			hs_tok_val = _keywd_uint_t;
 			goto _aff;
-		} else if (!ffly_str_cmp(tok_data, "int_t")) {
-			tok_val = _keywd_int_t;
+		} else if (!ffly_str_cmp(hs_tok_data, "int_t")) {
+			hs_tok_val = _keywd_int_t;
 			goto _aff;
-		} else if (!ffly_str_cmp(tok_data, "body")) {
-			tok_val = _keywd_body;
+		} else if (!ffly_str_cmp(hs_tok_data, "body")) {
+			hs_tok_val = _keywd_body;
 			goto _aff;
-		} else if (!ffly_str_cmp(tok_data, "fset")) {
-			tok_val = _keywd_fset;
+		} else if (!ffly_str_cmp(hs_tok_data, "fset")) {
+			hs_tok_val = _keywd_fset;
 			goto _aff;
-		} else if (!ffly_str_cmp(tok_data, "fget")) {
-			tok_val = _keywd_fget;
+		} else if (!ffly_str_cmp(hs_tok_data, "fget")) {
+			hs_tok_val = _keywd_fget;
 			goto _aff;
 		}
 	}

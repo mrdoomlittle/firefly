@@ -4,9 +4,9 @@
 # include "../system/io.h"
 # define is_space(__c) \
 	((__c) == ' ' || (__c) == '\t' || (__c) == '\n')
-ff_uint_t tok_sz;
-ff_u8_t tok_val;
-void *tok_data;
+ff_uint_t hs_tok_sz;
+ff_u8_t hs_tok_val;
+void *hs_tok_data;
 
 void static
 read_ident(ff_hsp __hs) {
@@ -24,9 +24,9 @@ read_ident(ff_hsp __hs) {
 	ff_hs_ugetc(__hs, c);
 
 	*p = '\0';
-	tok_sz = (p-buf)+1;
-	tok_data = ff_hs_mem_alloc(tok_sz);
-	ffly_mem_cpy(tok_data, buf, tok_sz);
+	hs_tok_sz = (p-buf)+1;
+	hs_tok_data = ff_hs_mem_alloc(hs_tok_sz);
+	ffly_mem_cpy(hs_tok_data, buf, hs_tok_sz);
 }
 
 void static
@@ -44,9 +44,9 @@ read_no(ff_hsp __hs) {
 
 	ff_hs_ugetc(__hs, c);
 	*p = '\0';
-	tok_sz = (p-buf)+1;
-	tok_data = ff_hs_mem_alloc(tok_sz);
-	ffly_mem_cpy(tok_data, buf, tok_sz);
+	hs_tok_sz = (p-buf)+1;
+	hs_tok_data = ff_hs_mem_alloc(hs_tok_sz);
+	ffly_mem_cpy(hs_tok_data, buf, hs_tok_sz);
 }
 
 struct token {
@@ -62,17 +62,17 @@ struct token {
 static char const *empty_str = "nothing";
 static struct token tokbuf[20];
 static struct token *btok = tokbuf;
-ff_u8_t nexttok(ff_hsp __hs) {
+ff_u8_t hs_nexttok(ff_hsp __hs) {
 	if (btok>tokbuf) {
 		struct token *t;
 		t = --btok;
-		tok_sz = t->sz;
-		tok_val = t->val;
-		tok_data = t->data;
+		hs_tok_sz = t->sz;
+		hs_tok_val = t->val;
+		hs_tok_data = t->data;
 		return t->kind;
 	}
 
-	tok_data = empty_str;
+	hs_tok_data = empty_str;
 	char c;
 _skc:
 	if (ff_hs_at_eof(__hs))
@@ -105,31 +105,31 @@ _skc:
 	} else {
 		switch(c) {
 			case '=':
-				tok_val = _eq;
+				hs_tok_val = _eq;
 			return _tok_keywd;
 			case '.':
-				tok_val = _period;
+				hs_tok_val = _period;
 			return _tok_keywd;
 			case ',':
-				tok_val = _comma;
+				hs_tok_val = _comma;
 			return _tok_keywd;
 			case '[':
-				tok_val = _l_bracket;
+				hs_tok_val = _l_bracket;
 			return _tok_keywd;
 			case ']':
-				tok_val = _r_bracket;
+				hs_tok_val = _r_bracket;
 			return _tok_keywd;
 			case ';':
-				tok_val = _semicolon;
+				hs_tok_val = _semicolon;
 			return _tok_keywd;
 			case '{':
-				tok_val = _l_brace;
+				hs_tok_val = _l_brace;
 			return _tok_keywd;
 			case '}':
-				tok_val = _r_brace;
+				hs_tok_val = _r_brace;
 			return _tok_keywd;
 			case '#':
-				tok_val = _pound;
+				hs_tok_val = _pound;
 			return _tok_keywd;
 		}
 		ffly_printf("unknown.\n");
@@ -137,17 +137,18 @@ _skc:
 	return _null;
 }
 
-void rtok(ff_u8_t __tok) {
+// retract token
+void hs_rtok(ff_u8_t __tok) {
 	struct token *t;
 	t = btok++;
 	t->kind = __tok;
-	t->val = tok_val;
-	t->sz = tok_sz;
-	t->data = tok_data;
+	t->val = hs_tok_val;
+	t->sz = hs_tok_sz;
+	t->data = hs_tok_data;
 }
 
-ff_u8_t peektok(ff_hsp __hs) {
+ff_u8_t hs_peektok(ff_hsp __hs) {
 	ff_u8_t tok;
-	rtok(tok = nexttok(__hs));
+	hs_rtok(tok = hs_nexttok(__hs));
 	return tok;
 }

@@ -15,8 +15,8 @@ struct ff_hs_type static *int_t = &(struct ff_hs_type){.id=_int_t, .size=sizeof(
 
 ff_u8_t static
 is_type(void) {
-	return (tok_val == _keywd_object || tok_val == _keywd_model
-		|| tok_val == _keywd_struct || tok_val == _keywd_body);
+	return (hs_tok_val == _keywd_object || hs_tok_val == _keywd_model
+		|| hs_tok_val == _keywd_struct || hs_tok_val == _keywd_body);
 }
 
 void static decl_spec(ff_hsp, ff_hs_typep*, ff_u8_t);
@@ -41,14 +41,14 @@ parser_compound_stmt(ff_hsp __hs, ff_hs_vecp __vec) {
 		if (ff_hs_nexttokis(__hs, _tok_keywd, _r_brace)) {
 			return;
 		}
-    	tok = ff_hs_perhaps_keywd(nexttok(__hs));
+    	tok = ff_hs_perhaps_keywd(hs_nexttok(__hs));
 		if (tok == _tok_keywd) {
 			if (is_type()) {
-				rtok(tok);
+				hs_rtok(tok);
 				n = parser_decl(__hs);
 			}
 
-			switch(tok_val) {
+			switch(hs_tok_val) {
 				case _keywd_ret:
 					n = parser_ret_stmt(__hs);
 				break;
@@ -64,11 +64,11 @@ ff_hs_nodep static
 parser_func(ff_hsp __hs) {
 	char const *name;
 
-	nexttok(__hs);
-	name = (char const*)tok_data;
+	hs_nexttok(__hs);
+	name = (char const*)hs_tok_data;
 	ff_hs_nodep n;
 	n = newnode;
-	hash_put(&__hs->env, name, tok_sz-1, n);
+	hs_hash_put(&__hs->env, name, hs_tok_sz-1, n);
 	struct ff_hs_vec body;
 
 	ffly_printf("func: %s\n", name);
@@ -97,7 +97,7 @@ parser_func(ff_hsp __hs) {
 }
 
 void
-parser_struct_decl(ff_hsp __hs, struct hash *__fields, ff_uint_t *__size) {
+parser_struct_decl(ff_hsp __hs, struct hs_hash *__fields, ff_uint_t *__size) {
 	if (!ff_hs_reckon(__hs, _tok_keywd, _l_brace)) {
 		ffly_printf("missing left side brace.\n");
 	}
@@ -109,15 +109,15 @@ parser_struct_decl(ff_hsp __hs, struct hash *__fields, ff_uint_t *__size) {
 		ff_hs_typep t;
 		ff_u8_t tok;
 	_again:
-		decl_spec(__hs, &t, ff_hs_perhaps_keywd(nexttok(__hs)));
+		decl_spec(__hs, &t, ff_hs_perhaps_keywd(hs_nexttok(__hs)));
 		t->offset = size;
 		size+=t->size;
 
-		nexttok(__hs);
-		hash_put(__fields, (ff_u8_t const*)tok_data, tok_sz-1, t);
+		hs_nexttok(__hs);
+		hs_hash_put(__fields, (ff_u8_t const*)hs_tok_data, hs_tok_sz-1, t);
 		
 
-		ffly_printf("field: %s\n", tok_data);
+		ffly_printf("field: %s\n", hs_tok_data);
 		if (ff_hs_nexttokis(__hs, _tok_keywd, _comma)) {
 			goto _again;
 		}
@@ -132,11 +132,11 @@ parser_struct_decl(ff_hsp __hs, struct hash *__fields, ff_uint_t *__size) {
 
 void
 parser_struct_spec(ff_hsp __hs, ff_hs_typep __t) {
-	nexttok(__hs);
-	ffly_printf("struct %s\n", tok_data);
-	hash_put(&__hs->env, (ff_u8_t const*)tok_data, tok_sz-1, __t);
-	struct hash fields;
-	hash_init(&fields);
+	hs_nexttok(__hs);
+	ffly_printf("struct %s\n", hs_tok_data);
+	hs_hash_put(&__hs->env, (ff_u8_t const*)hs_tok_data, hs_tok_sz-1, __t);
+	struct hs_hash fields;
+	hs_hash_init(&fields);
 	
 	ff_uint_t size;
 	parser_struct_decl(__hs, &fields, &size);
@@ -150,7 +150,7 @@ decl_spec(ff_hsp __hs, ff_hs_typep *__ty, ff_u8_t __tok) {
 	if (__tok == _tok_keywd) {
 		ff_hs_typep t;
 		*__ty = (t = newtype);
-		switch(tok_val) {
+		switch(hs_tok_val) {
 			case _keywd_int_t:
 				t->id = _int_t;
 				t->size = ff_hs_tsize(t->id);
@@ -185,7 +185,7 @@ parser_decl(ff_hsp __hs) {
 	ff_hs_typep t;
 
 	t = NULL;
-	decl_spec(__hs, &t, ff_hs_perhaps_keywd(nexttok(__hs)));
+	decl_spec(__hs, &t, ff_hs_perhaps_keywd(hs_nexttok(__hs)));
 	if (ff_hs_nexttokis(__hs, _tok_keywd, _semicolon))
 		return NULL;
 	if (!t) {
@@ -194,8 +194,8 @@ parser_decl(ff_hsp __hs) {
 	}
 
 	char const *name;
-	nexttok(__hs);
-	name = (char const*)tok_data;
+	hs_nexttok(__hs);
+	name = (char const*)hs_tok_data;
 
 	ffly_printf("func: %s, type: %s, name: %s\n", nks(_decl), tids(t->id), name);
 
@@ -205,7 +205,7 @@ parser_decl(ff_hsp __hs) {
 	n->var->kind = _var;
 	n->var->t = t;
 	n->kind = _decl;
-	hash_put(&__hs->env, name, tok_sz-1, n->var);
+	hs_hash_put(&__hs->env, name, hs_tok_sz-1, n->var);
 	return n;
 }
 
@@ -213,19 +213,19 @@ ff_hs_nodep
 parser_func_call(ff_hsp __hs) {
 	char const *name;
 	ff_u8_t tok;
-	tok = nexttok(__hs);
+	tok = hs_nexttok(__hs);
 
-	name = (char const*)tok_data;
+	name = (char const*)hs_tok_data;
 	ff_hs_nodep n;
 	n = newnode;
-	n->func = (ff_hs_nodep)hash_get(&__hs->env, name, tok_sz-1);
+	n->func = (ff_hs_nodep)hs_hash_get(&__hs->env, name, hs_tok_sz-1);
 	n->kind = _func_call;
 	return n;
 }
 
 ff_u8_t static
 is_rin(ff_hsp __hs) {
-	if (tok_sz == 2 && *(char*)tok_data == 'r') {
+	if (hs_tok_sz == 2 && *(char*)hs_tok_data == 'r') {
 		if (!ff_hs_reckon(__hs, _tok_keywd, _l_brace)) {
 			return 0;
 		}
@@ -240,18 +240,18 @@ read_no(ff_hsp __hs, ff_hs_nodep *__n) {
 	n = newnode;
 	n->kind = _literal;
 	*(n->t = newtype) = *uint_t;
-	n->val = ffly_stno((char const*)tok_data);
+	n->val = ffly_stno((char const*)hs_tok_data);
 	*__n = n;
 }
 
 ff_hs_nodep
 parser_primary_exp(ff_hsp __hs) {
 	ff_u8_t tok;
-	tok = nexttok(__hs);
+	tok = hs_nexttok(__hs);
 
 	ff_hs_nodep n;
 	if (tok == _tok_ident) {
-		n = (ff_hs_nodep)hash_get(&__hs->env, (ff_u8_t const*)tok_data, tok_sz-1);
+		n = (ff_hs_nodep)hs_hash_get(&__hs->env, (ff_u8_t const*)hs_tok_data, hs_tok_sz-1);
 		if (!n) {
 			// error
 			ffly_printf("no such function or var.\n");
@@ -265,7 +265,7 @@ parser_primary_exp(ff_hsp __hs) {
 	}
 	return n;
 _fail:
-	rtok(tok);
+	hs_rtok(tok);
 	return NULL;
 }
 
@@ -274,11 +274,11 @@ parser_struct_field(ff_hsp __hs, ff_hs_nodep *__n, ff_hs_nodep __struc) {
 	if (!__struc) {
 		ffly_printf("error.\n");
 	}
-	nexttok(__hs);
+	hs_nexttok(__hs);
 	ff_hs_typep t;
-	t = (ff_hs_typep)hash_get(&__struc->t->fields, (ff_u8_t const*)tok_data, tok_sz-1);
+	t = (ff_hs_typep)hs_hash_get(&__struc->t->fields, (ff_u8_t const*)hs_tok_data, hs_tok_sz-1);
 	if (!t) {
-		ffly_printf("no field called %s found.\n", tok_data);
+		ffly_printf("no field called %s found.\n", hs_tok_data);
 	}
 
 	ff_hs_nodep n;
@@ -306,8 +306,8 @@ ff_hs_nodep
 parser_exp(ff_hsp __hs) {
 	ff_hs_nodep n;
 	ff_u8_t tok;
-	tok = nexttok(__hs);
-	ffly_printf("---> %s\n", tok_data);
+	tok = hs_nexttok(__hs);
+	ffly_printf("---> %s\n", hs_tok_data);
 	if (is_rin(__hs)) {
 		n = newnode;
 		n->kind = _rin;
@@ -329,7 +329,7 @@ parser_exp(ff_hsp __hs) {
 		}
 		goto _again;
 	}
-	rtok(tok);
+	hs_rtok(tok);
 
 	n = parser_primary_exp(__hs);
 
@@ -383,12 +383,12 @@ ff_hs_parse(ff_hsp __hs) {
 	ff_u8_t tok;
 	ff_hs_nodep n;
 
-	tok = ff_hs_perhaps_keywd(nexttok(__hs));
+	tok = ff_hs_perhaps_keywd(hs_nexttok(__hs));
 	if (tok == _null)
 		return NULL;
-	ffly_printf("tok, %u, %u, %u, %s\n", tok, tok_val, tok_sz, (char const*)tok_data);	
+	ffly_printf("tok, %u, %u, %u, %s\n", tok, hs_tok_val, hs_tok_sz, (char const*)hs_tok_data);	
 	if (tok == _tok_keywd) {
-		switch(tok_val) {
+		switch(hs_tok_val) {
 			case _keywd_func:
 				n = parser_func(__hs);
 				goto _sk;
@@ -404,12 +404,12 @@ ff_hs_parse(ff_hsp __hs) {
 		}
 
 		if (is_type()) {
-			rtok(tok);
+			hs_rtok(tok);
 			n = parser_decl(__hs);
 		} else
-			ffly_printf("unknown, %u\n", tok_val);
+			ffly_printf("unknown, %u\n", hs_tok_val);
 	} else {
-		rtok(tok);
+		hs_rtok(tok);
 		n = parser_exp(__hs);
 		if (!n) {
 			ffly_printf("error.\n");

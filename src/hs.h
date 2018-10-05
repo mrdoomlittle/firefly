@@ -2,12 +2,14 @@
 # define __ffly__hs__h
 # include "ffint.h"
 # include "types.h"
+
 # include "hs/hash.h"
 # include "hs/vec.h"
+
 typedef struct ff_hs {
 	ff_u8_t *p;
 	ff_u32_t off, end;
-	struct hash env;
+	struct hs_hash env;
 } *ff_hsp;
 
 enum {
@@ -93,7 +95,7 @@ typedef struct ff_hs_obj {
 
 typedef struct ff_hs_type {
 	ff_u8_t id;
-	struct hash fields;
+	struct hs_hash fields;
 	ff_uint_t offset, size;
 } *ff_hs_typep;
 
@@ -114,6 +116,7 @@ typedef struct ff_hs_node {
 
 char const* nks(ff_u8_t);
 char const* tids(ff_u8_t);
+
 ff_u8_t ff_hs_tsize(ff_u8_t);
 ff_u8_t ff_hs_perhaps_keywd(ff_u8_t);
 char ff_hs_getc(ff_hsp);

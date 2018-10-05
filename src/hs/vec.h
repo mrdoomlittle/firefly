@@ -1,6 +1,10 @@
 # ifndef __ffly__hs__vec__h
 # define __ffly__hs__vec__h
 # include "../ffint.h"
+
+/*
+	remove ff_ and just stick with hs_vec_init
+*/
 typedef struct ff_hs_vec {
 	void *p;
 	ff_u16_t blksize;

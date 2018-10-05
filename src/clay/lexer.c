@@ -53,7 +53,7 @@ read_ident(void) {
 
 	bp = buf;
 	c = clay_getc();
-	while((c >= 'a' && c <= 'z') || c == '_' | (c>='0'&& c<='9')) {
+	while((c >= 'a' && c <= 'z') || c == '_' || (c>='0'&& c<='9')) {
 		*(bp++) = c;
 		c = clay_getc();
 	}
@@ -96,7 +96,7 @@ _again:
 		clay_ugetc(c);
 		read_no();
 		return _clay_tok_no;
-	} else if ((c>='a' && c<='z') | c == '_' | (c>='0'&& c<='9')) {
+	} else if ((c>='a' && c<='z') || c == '_' || (c>='0'&& c<='9')) {
 		clay_ugetc(c);
 		read_ident();
 		return _clay_tok_ident;

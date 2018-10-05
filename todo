@@ -203,3 +203,5 @@ well i dont know how to do it i gave up and moved on to somhing else as it was t
 been using send and recv as its quick to implement
 
 -. use 'get' function for init e.g. object it may be slower but more flexible so changes can be done quicker
+
+-. look over code where 'OR' get used, as i've quick coded alot i sometimes place a single '|' and not a double - FIX
