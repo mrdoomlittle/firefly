@@ -31,6 +31,14 @@ __in(void(*__func)(void*, void*, int), void *__ctx, int __flags, ff_uint_t __siz
 	ff_u8_t *buf;
 	ff_uint_t bsz;
 
+	/*
+		TODO:
+			allocate pointers to pages of x size,
+			and only allocate them when written to.
+
+			buffer size may not match x amount of data comming in
+			so theres no point in allocating space unless needed.
+	*/
 	buf = (ff_u8_t*)malloc(__size+sizeof(FF_NET_HDR));
 	ff_u8_t seg[FF_MTU];
 
@@ -50,14 +58,17 @@ _again:
 		hdr = (FF_NET_HDR*)buf;
 	}
 
+	n+=si->len;
 	if (!hh) {
 		if (n >= hdr->size) {
 			goto _end;
 		}
 	}
-	n+=si->len;
 	goto _again;
 _end:
+	/*
+		i dont like this way but i dont see anyother way YET!
+	*/
 	ffly_mem_cpy(__buf, buf+sizeof(FF_NET_HDR), hdr->size);
 	return hdr->size;
 }
@@ -72,6 +83,7 @@ ff_net_recvfrom(FF_SOCKET *__sock, struct sockaddr *__addr, socklen_t *__len,
 		.adr = __addr,
 		.len = __len
 	};
+	*__err = FFLY_SUCCESS;
 	return __in((void(*)(void*, void*, int))udp_recv, (void*)&ctx, __flags, __size, __buf);
 }
 
@@ -83,5 +95,7 @@ ff_net_recv(FF_SOCKET *__sock, void *__buf,
 	struct tcp_context ctx = {
 		.sock = __sock
 	};
+	// to appease the higher levels
+	*__err = FFLY_SUCCESS;
 	return __in((void(*)(void*, void*, int))tcp_recv, (void*)&ctx, __flags, __size, __buf);
 }
