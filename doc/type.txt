@@ -1,4 +1,4 @@
-command and control approch engine it to be controled by sending operations over shm,sock, etc
+command and control approch, its to be controled by sending operations over shm,sock, etc
 
-well that should be a way, why?? because compile time its easyer to debug somthings without needing to compile or link
-them to your project so the engine is pre compiled and the game will interface with the engine
+well that should be a way, why?? because compile time its easyer to debug somthings without needing to compile or relink file objects,
+so the engine is to be pre compiled and the game will interface with the engine as such.
