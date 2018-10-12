@@ -6,6 +6,9 @@
 # include "opt.h"
 # include "depart.h"
 
+/*
+	need to work on
+*/
 # ifndef __ffly_compactor_bin
 void prb(ff_u8_t __v) {
 	ff_u8_t i = 0;

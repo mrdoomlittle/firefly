@@ -10,6 +10,7 @@
 	later on we need to download files for shit to work e.g. config files
 	but if the client cuts out downloading the file over again is wastful
 	soo once the client is back online next try will start off at the brick it left on.
+	may be slower but brick size is adjustable and its all about flexibility
 */
 
 /*
@@ -34,8 +35,8 @@ void static delink(ffly_brickp);
 
 ff_u32_t
 ffly_brick_new(ff_u8_t __sz,
-	void(*__read)(long, void*, ff_u8_t), void(*__write)(long, void*, ff_u8_t),
-	void(*__del)(long), long __arg)
+	void(*__read)(long long, void*, ff_u8_t), void(*__write)(long long, void*, ff_u8_t),
+	void(*__del)(long long), long long __arg)
 {
 	ffly_brickp b;
 	if (bin != NULL) {
@@ -80,16 +81,20 @@ _sk:
 }
 
 void ffly_brick_open(ff_u32_t __id) {
-	ffly_brickp b = get_brick(__id);
+	ffly_brickp b;
+
+	b = get_brick(__id);
 	b->flags |= BRICK_OPEN;}
 
 void ffly_brick_close(ff_u32_t __id) {
-	ffly_brickp b = get_brick(__id);
-# ifndef be_vigilant
+	ffly_brickp b;
+	
+	b = get_brick(__id);
+#ifndef be_vigilant
 	b->flags ^= BRICK_OPEN;
-# else
+#else
 	b->flags &= ~BRICK_OPEN;
-# endif
+#endif
 
 	if (b->p != NULL) {
 		if (b->write != NULL)

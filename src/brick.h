@@ -14,11 +14,11 @@ enum {
 # define BRICK_OPEN 0x1
 typedef struct ffly_brick {
 	struct ffly_brick *next, **pn, *fd, **bk;
-	void(*read)(long, void*, ff_u8_t);
-	void(*write)(long, void*, ff_u8_t);
-	void(*del)(long);
+	void(*read)(long long, void*, ff_u8_t);
+	void(*write)(long long, void*, ff_u8_t);
+	void(*del)(long long);
 	void *p;
-	long arg;
+	long long arg;
 	ff_u8_t sz;
 	ff_i8_t inuse;
 	ff_u32_t id;
@@ -26,7 +26,7 @@ typedef struct ffly_brick {
 } *ffly_brickp;
 
 void ffly_bricks_show(void);
-ff_u32_t ffly_brick_new(ff_u8_t, void(*)(long, void*, ff_u8_t), void(*)(long, void*, ff_u8_t), void(*)(long), long);
+ff_u32_t ffly_brick_new(ff_u8_t, void(*)(long long, void*, ff_u8_t), void(*)(long long, void*, ff_u8_t), void(*)(long long), long long);
 void ffly_brick_rid(ff_u32_t);
 void ffly_brick_cleanup(void);
 void ffly_brick_open(ff_u32_t);

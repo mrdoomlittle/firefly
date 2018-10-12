@@ -15,16 +15,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_net_listen(sock);
 	FF_SOCKET *peer = ff_net_accept(sock, NULL, NULL, &err);
 
-	char const *s = "ff_err_t err;\n"
-					"struct sockaddr_in addr;\n"
-					"ffly_bzero(&addr, sizeof(struct sockaddr_in));\n"
-					"addr.sin_family = AF_INET;\n"
-					"addr.sin_addr.s_addr = htons(INADDR_ANY);\n"
-					"addr.sin_port = htons(21299);\n"
-					"FF_SOCKET *sock = ff_net_creat(&err, _NET_PROT_TCP);\n"
-					"ff_net_bind(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr_in));\n"
-					"ff_net_listen(sock);\n"
-					"FF_SOCKET *peer = ff_net_accept(sock, NULL, NULL, &err);";
+	char const *s = "hhh\n";
 	ff_net_send(peer, s, ffly_str_len(s)+1, 0, &err);
 	ff_net_close(peer);
 	ff_net_close(sock);

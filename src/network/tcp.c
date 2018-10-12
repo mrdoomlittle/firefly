@@ -5,14 +5,17 @@
 # include "../linux/fcntl.h"
 # include "../system/error.h"
 # include "../system/io.h"
+# include "../system/errno.h"
 struct tcp_context {
 	int fd;
 };
 
 ff_i8_t static
 tcp_socket(struct tcp_context *__ctx) {
-	__ctx->fd = socket(AF_INET, SOCK_STREAM, 0);
+	if ((__ctx->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+		return FFLY_FAILURE;
 
+	ffly_printf("net socket: %d\n", __ctx->fd);
 	int val = 1;
 	setsockopt(__ctx->fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int));
 	return FFLY_SUCCESS;
@@ -29,6 +32,7 @@ tcp_bind(struct tcp_context *__ctx, struct sockaddr *__addr, socklen_t __len) {
 
 ff_i8_t static
 tcp_listen(struct tcp_context *__ctx) {
+	ffly_printf("listen. %d\n", __ctx->fd);
 	if (listen(__ctx->fd, 24) == -1) {
 		ffly_printf("tcp; failed to listen.\n");
 		return FFLY_FAILURE;
@@ -104,6 +108,15 @@ ctx_destroy(void *__ctx) {
 	__ffly_mem_free(__ctx);
 }
 
+void static
+get(ff_u8_t __what, long long __arg, struct tcp_context *__ctx) {
+	switch(__what) {
+		case 0x00:
+			*(int*)__arg = __ctx->fd;
+		break;
+	}
+}
+
 void ffly_tcp_prot(struct ffly_sock_proto *__prot) {
 	__prot->ctx_new = ctx_new;
 	__prot->ctx_destroy = ctx_destroy;
@@ -116,4 +129,5 @@ void ffly_tcp_prot(struct ffly_sock_proto *__prot) {
 	__prot->accept = (ff_i8_t(*)(void*, void*, struct sockaddr*, socklen_t*))tcp_accept;
 	__prot->shutdown = (ff_i8_t(*)(void*, int))tcp_shutdown;
 	__prot->connect = (ff_i8_t(*)(void*, struct sockaddr*, socklen_t))tcp_connect;
+	__prot->get = (void(*)(ff_u8_t, long long, void*))get;
 }

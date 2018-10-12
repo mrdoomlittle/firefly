@@ -255,14 +255,14 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	__asm__("_creat_pile:\n\t"); {
 		ff_uint_t slotno;
-		ff_db_ctr_creat_pile(ctor, &slotno);
+		ff_db_ctr_pile_creat(ctor, &slotno);
 		ffly_printf("pile-slotno: %u\n", slotno);
 	}
 	jmpagain;
 
 	__asm__("_del_pile:\n\t"); {
 		ff_uint_t slotno = ffly_stno(*cur->params);
-		ff_db_ctr_del_pile(ctor, slotno);
+		ff_db_ctr_pile_del(ctor, slotno);
 	}
 	jmpagain;
 
@@ -270,7 +270,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		ff_uint_t pile = ffly_stno(*cur->params);
 		ff_uint_t size = ffly_stno(cur->params[1]);
 		ff_uint_t slotno;
-		ff_db_ctr_creat_record(ctor, pile, &slotno, size);
+		ff_db_ctr_record_creat(ctor, pile, &slotno, size);
 		ffly_printf("record-slotno: %u\n", slotno);
 	}
 	jmpagain;
@@ -278,7 +278,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	__asm__("_del_record:\n\t"); {
 		ff_uint_t pile = ffly_stno(*cur->params);
 		ff_uint_t slotno = ffly_stno(cur->params[1]);
-		ff_db_ctr_del_record(ctor, pile, slotno);
+		ff_db_ctr_record_del(ctor, pile, slotno);
 	}
 	jmpagain;
 

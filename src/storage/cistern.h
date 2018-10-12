@@ -1,6 +1,12 @@
 # ifndef __ffly__cistern__h
 # define __ffly__cistern__h
 # include "../ffint.h"
+/*
+	diff from resv
+
+	- more personalized idk its because resv is being used 
+	for game gravity shit and other higher level crap.
+*/
 typedef struct ffly_cis_slab {
 	ff_u64_t off;
 	struct ffly_cis_slab **bk, *fd;

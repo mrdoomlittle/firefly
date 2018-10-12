@@ -16,11 +16,39 @@
 # define FFDBF_MAG1 'f'
 # define FFDBF_MAG2 'd'
 # define FFDBF_MAG3 'b'
+
+#define _FF_S(__NAME) \
+	_FF_ ## __NAME ## _S
+#define _FF_LOGIN_S				8
+#define _FF_LOGOUT_S			0
+#define _FF_STORE_S				4
+#define _FF_LOAD_S				4
+#define _FF_RATIFYKEY_S			KEY_SIZE
+#define _FF_SHUTDOWN_S			0	
+#define _FF_PILE_CREAT_S		0
+#define _FF_PILE_DEL_S			4
+#define _FF_RECORD_CREAT_S		8
+#define _FF_RECORD_DEL_S		8
+#define _FF_WRITE_S				16
+#define _FF_READ_S				16
+#define _FF_RECORD_ALLOC_S		4
+#define _FF_RECORD_FREE_S		4
+#define _FF_RIVET_S				6
+#define _FF_DERIVET_S			2
+#define _FF_RIVETTO_S			6
+#define _FF_BIND_S				7
+#define _FF_ACQUIRE_SLOT_S		0
+#define _FF_SCRAP_SLOT_S		4
+#define _FF_EXIST_S				2
+#define _FF_RECORD_STAT_S		4
 // needs testing
 
 /*
 	TODO:
 		remove message and use microcode as its easer
+	
+		rename to oyster well the replace db with oys
+
 
 */
 
@@ -28,6 +56,8 @@
 	TODO
 	ffdb_off_t - not ff_uint_t
 */
+
+#define _FFDB_REC_SIZE 0x00
 
 # define ffdb_hdrsize sizeof(struct ffdb_hdr)
 # define FFDB_NULL ((ff_uint_t)~0)
@@ -37,31 +67,35 @@ enum {
 	_ff_db_auth_null
 };
 
-enum {
-	_ff_db_msg_login,
-	_ff_db_msg_logout,
-	_ff_db_msg_pulse,
-	_ff_db_msg_shutdown,
-	_ff_db_msg_disconnect,
-	_ff_db_msg_req_errno,
-	_ff_db_msg_creat_pile,
-	_ff_db_msg_del_pile,
-	_ff_db_msg_creat_record,
-	_ff_db_msg_del_record,
-	_ff_db_msg_write,
-	_ff_db_msg_read,
-	_ff_db_msg_record_alloc,
-	_ff_db_msg_record_free,
-	_ff_db_msg_rivet,
-	_ff_db_msg_derivet,
-	_ff_db_msg_rivetto,
-	_ff_db_msg_bind,
-	_ff_db_msg_acquire_slot,
-	_ff_db_msg_scrap_slot,
-	_ff_db_msg_exist,
-	_ff_db_msg_recstat
-};
-
+#define ff_db_rcv_error(__sock, __err, __err0) \
+	ff_net_recv(__sock, __err, sizeof(ff_err_t), 0, __err);
+#define ff_db_rcv_errno(__sock, __ern, __err) \
+	ff_net_recv(__sock, __ern, sizeof(ff_db_err), 0, __err);
+#define _ff_db_op_login 			0x00
+#define _ff_db_op_logout			0x01
+#define _ff_db_op_store				0x02
+#define _ff_db_op_load				0x03
+#define _ff_db_op_ratifykey			0x04
+#define _ff_db_op_shutdown			0x05
+#define _ff_db_op_pile_creat		0x06
+#define _ff_db_op_pile_del			0x07
+#define _ff_db_op_record_creat		0x08
+#define _ff_db_op_record_del		0x09
+#define _ff_db_op_write				0x0a
+#define _ff_db_op_read				0x0b
+#define _ff_db_op_record_alloc		0x0c
+#define _ff_db_op_record_free		0x0d
+#define _ff_db_op_rivet				0x0e
+#define _ff_db_op_derivet			0x0f
+#define _ff_db_op_rivetto			0x10
+#define _ff_db_op_bind				0x11
+#define _ff_db_op_acquire_slot		0x12
+#define _ff_db_op_scrap_slot		0x13
+#define _ff_db_op_exist				0x14
+#define _ff_db_op_recstat			0x15
+#define _ff_db_op_disconnect		0x16
+#define _ff_db_op_req_errno			0x17
+#define _ff_db_op_pulse				0x18
 /*
 	put this within define so only db.c and files that define somthing may be allowed to access,
 	so with err value dont mix
@@ -107,6 +141,9 @@ typedef struct ff_db_tape {
 	void *text;
 	ff_uint_t len;
 } *ff_db_tapep;
+
+ff_db_tapep ff_db_tape_new(ff_uint_t);
+void ff_db_tape_destroy(ff_db_tapep);
 
 struct ffdb_hdr {
 	char ident[4];
@@ -183,6 +220,7 @@ typedef struct ffdb_blkd* ffdb_blkdp;
 typedef struct ffdb* ffdbp;
 typedef struct ff_db_msg* ff_db_msgp;
 
+char const* ff_db_ostr(ff_u8_t);
 void ff_db_keygen(ff_u8_t*);
 void ff_db_add_key(ff_dbdp, ff_u8_t*);
 void ff_db_rm_key(ff_dbdp, ff_u8_t*);
@@ -192,23 +230,14 @@ ff_db_userp ff_db_get_user(ff_dbdp, ff_u8_t const*, ff_uint_t, ff_err_t*);
 ff_db_userp ff_db_add_user(ff_dbdp, ff_u8_t const*, ff_uint_t, ff_u32_t);
 void ff_db_del_user(ff_dbdp, ff_u8_t const*, ff_uint_t, ff_u32_t);
 
-ff_err_t ff_db_snd_key(FF_SOCKET*, ff_u8_t*, ff_u64_t);
-ff_err_t ff_db_rcv_key(FF_SOCKET*, ff_u8_t*, ff_u64_t);
-
 char const* ff_db_errst(ff_db_err);
-ff_err_t ff_db_snd_err(FF_SOCKET*, ff_err_t);
-ff_err_t ff_db_rcv_err(FF_SOCKET*, ff_err_t*);
-
-ff_err_t ff_db_snd_errno(FF_SOCKET*, ff_db_err);
-ff_err_t ff_db_rcv_errno(FF_SOCKET*, ff_db_err*);
-ff_err_t ff_db_sndmsg(FF_SOCKET*, ff_db_msgp);
-ff_err_t ff_db_rcvmsg(FF_SOCKET*, ff_db_msgp);
 ffdb_recordp ffdb_record_creat(ffdbp, ffdb_pilep, ff_uint_t);
 ffdb_recordp ffdb_record_fetch(ffdbp, char const*, char const*);
 void ffdb_record_del(ffdbp, ffdb_pilep, ffdb_recordp);
 void ffdb_record_alloc(ffdbp, ffdb_recordp);
 void ffdb_record_free(ffdbp, ffdb_recordp);
 void ffdb_record_stat(ffdbp, ffdb_recordp, ffdb_recstatp);
+void ff_db_record_info(ff_u8_t, long long, ffdb_recordp);
 ff_i8_t ffdb_exist(ff_u16_t);
 
 void ffdb_write(ffdbp, ffdb_pilep, ffdb_recordp, ff_off_t, void*, ff_uint_t);
@@ -226,7 +255,7 @@ void ffdb_record_alias(ffdbp, ffdb_pilep, char const*, ffdb_recordp);
 void ffdb_pile_alias(ffdbp, char const*, ffdb_pilep);
 ffdb_pilep ffdb_pile_fetch(ffdbp, char const*);
 void ffdb_pile_del(ffdbp, ffdb_pilep);
-
+void ff_db_pile_info(ff_u8_t, long long, ffdb_pilep);
 ff_uint_t ffdb_alloc(ffdbp, ff_uint_t);
 void ffdb_free(ffdbp, ff_uint_t);
 ff_err_t ffdb_init(ffdbp);

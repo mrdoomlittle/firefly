@@ -10,34 +10,13 @@ work will be done on them.
 
 this engine is for a game im wanting to make.
 
-compile & run:
-- src/main.c -
-this is for testing object, universe, camera.
-cd src && make uni
+compile & run: for testing
 
-execute: ./a.out 
+cd src && make test
+file: src/test.c
 
-then go to /src/graphics
-do sh bridge.sh
-
-and then ./a.out and a window should pop up
-to exit click any where with mouse
-
-NOTE: this is only for debugging until everything is done
-
-- src/ff-lang.c -
-firefly language.
-cd src && make ffc
-
-execute: ./ffc
-
-- src/script.c -
-firefly script
-cd src && make script
-
-execute: ./main
-
-look for compile.sh as i use it to compile src/as, src/bond, etc
+execute:
+	./main
 
 system:
 

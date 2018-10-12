@@ -8,7 +8,6 @@
 /*
 	so we dont need to give the pointers to clients
 */
-
 ff_mlock_t static lock = FFLY_MUTEX_INIT;
 
 void static *slot[NO_SLOTS];

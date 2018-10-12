@@ -18,12 +18,19 @@ void print_bin(ff_u64_t __val) {
 	for rvw
 */
 
-// rvt 100% random but will do
+// not 100% random but will do for now
+
+// random value
 ff_u64_t static rv = 0x355A3A4B1C311A4A;
 //# define a
 //# define v
+/*
+	TODO:
+		make use of hardware instruction that generate random values
 
-ff_u8_t ffgen_rand8l() {
+		remove #l bit
+*/
+ff_u8_t ffgen_rand8l(void) {
 	rv = rv>>60|rv<<4;
 
 	ff_u64_t a0, a1, a2, a3, a4, a5, a6, a7;
@@ -50,17 +57,26 @@ ff_u8_t ffgen_rand8l() {
 	return rv;
 }
 
-ff_u16_t ffgen_rand16l() {
+ff_u16_t ffgen_rand16l(void) {
 	return (ff_u16_t)ffgen_rand8l()|(ff_u16_t)ffgen_rand8l()<<8;
 }
 
-ff_u32_t ffgen_rand32l() {
-	return (ff_u32_t)ffgen_rand16l()|(ff_u32_t)ffgen_rand16l()<<16;
+ff_u32_t ffgen_rand32l(void) {
+	return (ff_u32_t)ffgen_rand8l()|(ff_u32_t)ffgen_rand8l()<<8
+		|(ff_u32_t)ffgen_rand8l()<<16|(ff_u32_t)ffgen_rand8l()<<24;
 }
 
-ff_u64_t ffgen_rand64l() {
-	return (ff_u64_t)ffgen_rand32l()|(ff_u64_t)ffgen_rand32l()<<32;
+ff_u64_t ffgen_rand64l(void) {
+	return (ff_u64_t)ffgen_rand8l()|(ff_u64_t)ffgen_rand8l()<<8
+		|(ff_u64_t)ffgen_rand8l()<<16|(ff_u64_t)ffgen_rand8l()<<24
+		|(ff_u64_t)ffgen_rand8l()<<32|(ff_u64_t)ffgen_rand8l()<<40
+		|(ff_u64_t)ffgen_rand8l()<<48|(ff_u64_t)ffgen_rand8l()<<56;
 }
+
+/*
+	TODO:
+		add 128, 512, 1024 ...
+*/
 
 ff_u64_t ffly_rand() {
 	return ffgen_rand64l();

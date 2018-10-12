@@ -120,6 +120,8 @@ void* th(void *__arg) {
 # include "graphics/frame_buff.h"
 # include "graphics/mutate.h"
 # include "slurry/connection.h"
+# include "db/connect.h"
+# include "system/util/hash.h"
 void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_uint_t __height, ff_uint_t __x, ff_uint_t __y) {
 	ff_u8_t buf[__width*__height*4];
 	ffly_mem_set(buf, 0, __width*__height*4);
@@ -128,7 +130,14 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 	
 }
 ff_err_t ffmain(int __argc, char const *__argv[]) {	
-	s_test();	
+	ff_db_ctrp ctr;
+	ff_err_t err;
+	ctr = ff_db_ctr(ffly_hash("firefly", 7), "127.0.0.1", 21299, &err);
+	ff_db_ctr_login(ctr, "mrdoomlittle", ffly_hash("none", 4));
+	ff_db_ctr_logout(ctr);
+	ff_db_ctr_shutdown(ctr);
+	ff_db_ctr_destroy(ctr);
+//	s_test();	
 /*
 	ffly_driver(_driver_sr, &G_CONTEXT->driver);
 	G_CONTEXT->stack = 0;

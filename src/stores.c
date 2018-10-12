@@ -29,6 +29,7 @@ ff_err_t ff_stores_connect(char const *__ip_addr, ff_u16_t __port, char const *_
 }
 
 ff_err_t ff_stores_login(char const *__user, char const *__passwd) {
+/*
 # ifdef __ffly_debug
 	ff_location_push(_ff_loc_stores_login);
 # endif
@@ -40,10 +41,12 @@ ff_err_t ff_stores_login(char const *__user, char const *__passwd) {
 	ff_location_pop();
 # endif
 	return err;
+*/
 }
 
 void static*
 motd(void) {
+/*
 	ff_uint_t pile, rec;
 	ff_db_ctr_acquire_slot(ct, &pile);
 	ff_db_ctr_acquire_slot(ct, &rec);
@@ -57,6 +60,7 @@ motd(void) {
 	ff_db_ctr_scrap_slot(ct, pile);
 	ff_db_ctr_scrap_slot(ct, rec);
 	return p;
+*/
 }
 
 void* ff_stores_get(ff_u8_t __id) {
@@ -66,6 +70,7 @@ void* ff_stores_get(ff_u8_t __id) {
 }
 
 ff_err_t ff_stores_logout(void) {
+/*
 # ifdef __ffly_debug
 	ff_location_push(_ff_loc_stores_login);
 # endif
@@ -79,9 +84,11 @@ ff_err_t ff_stores_logout(void) {
 	ff_location_pop();
 # endif
 	return err;
+*/
 }
 
 ff_err_t ff_stores_disconnect(void) {
+/*
 # ifdef __ffly_debug
 	ff_location_push(_ff_loc_stores_login);
 # endif
@@ -91,7 +98,8 @@ ff_err_t ff_stores_disconnect(void) {
 		ffly_fprintf(ffly_err, "failed to disconnect.\n");
 # endif
 	}
-
+*/
+	ff_err_t err;
 	if (_err(err = ff_db_ctr_destroy(ct))) {
 # ifdef __ffly_debug
 		ffly_fprintf(ffly_err, "failed to destory.\n");

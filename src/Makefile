@@ -102,10 +102,11 @@ ros: clean
 	gcc $(cc_flags) $(ffly_objs) -nostdlib
 bh: clean
 	gcc $(cc_flags) -c bh.c
-	gcc $(cc_flags) -c bh/input.c
-	gcc $(cc_flags) -c bh/output.c
-	gcc $(cc_flags) -o ffbhs bh/server.c bh.o input.o output.o $(ffly_objs) -nostdlib
-	gcc $(cc_flags) -o ffbhc bh/client.c bh.o input.o output.o $(ffly_objs) -nostdlib
+	gcc $(cc_flags) -c -o bh/tape.o bh/tape.c
+	gcc $(cc_flags) -c -o bh/input.o bh/input.c
+	gcc $(cc_flags) -c -o bh/output.o bh/output.c
+	gcc $(cc_flags) -o ffbhs bh/server.c bh.o bh/input.o bh/output.o bh/tape.o $(ffly_objs) -nostdlib
+	gcc $(cc_flags) -o ffbhc bh/client.c bh.o bh/input.o bh/output.o bh/tape.o $(ffly_objs) -nostdlib
 workshop: clean
 	gcc $(cc_flags) workshop.c $(ffly_objs) -nostdlib
 all:

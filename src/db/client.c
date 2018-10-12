@@ -6,6 +6,11 @@
 void* ff_db_serve(void*);
 # define MAX 20
 
+/*
+	NOTE:
+		for later
+*/
+
 ff_db_clp static client[MAX];
 ff_db_clp static *fresh = client;
 ff_db_clp static *devoid[MAX];

@@ -16,7 +16,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	char s[2048];
 	ffly_bzero(s, 2048);
-	ff_net_recv(sock, s, 2048, 0, &err); 
+	ff_net_recv(sock, s, 4, 0, &err); 
 	ffly_printf("%s\n", s);
 	ff_net_close(sock);
 

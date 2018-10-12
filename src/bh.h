@@ -11,26 +11,28 @@
 	TODO:
 		remove bhop and replace with microcode
 		as its easer to manage at a lower level
+
+		at the moment its free for all
+		- FIX
 */
 
-enum {
-	_bhop_bnewm,
-	_bhop_bridm,
-	// new brick
-	_bhop_bnew,
-	// get rid of brick
-	_bhop_brid,
-	_bhop_bopen,
-	_bhop_bwrite,
-	_bhop_bread,
-	_bhop_bclose,
-	_bhop_disconnect
-};
+#define _bhop_bnewm			0x00
+#define _bhop_bridm			0x01
+#define _bhop_bnew			0x02
+#define _bhop_brid			0x03
+#define _bhop_bopen			0x04
+#define _bhop_bwrite		0x05
+#define _bhop_bread			0x06
+#define _bhop_bclose		0x07
+#define _bhop_disconnect	0x08
 
-struct bhop {
-	ff_u8_t kind;
+typedef struct bh_tape {
+	void *text;
+	ff_uint_t len;
+} *bh_tapep;
 
-};
+bh_tapep bh_tape_new(ff_uint_t);
+void bh_tape_destroy(bh_tapep);
 
 typedef struct ff_bh {
 	FF_SOCKET *sock;
@@ -57,7 +59,4 @@ ff_err_t ff_bh_bopen(ff_bhp, ff_u32_t);
 ff_err_t ff_bh_bwrite(ff_bhp, ff_u32_t, void*, ff_uint_t, ff_uint_t);
 ff_err_t ff_bh_bread(ff_bhp, ff_u32_t, void*, ff_uint_t, ff_uint_t);
 ff_err_t ff_bh_bclose(ff_bhp, ff_u32_t);
-
-ff_err_t ff_bh_oprcv(FF_SOCKET*, struct bhop*);
-ff_err_t ff_bh_opsnd(FF_SOCKET*, struct bhop*);
 # endif /*__ffly__bh__h*/

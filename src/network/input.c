@@ -14,23 +14,23 @@ struct tcp_context {
 	FF_SOCKET *sock;
 };
 
+
+ff_i8_t static error;
 void static
 udp_recv(struct udp_context *__ctx, void *__seg, int __flags) {
-	ff_i8_t err;
-	__ctx->sock->prot.recvfrom(__ctx->sock->prot_ctx, __seg, FF_MTU, __flags, __ctx->adr, __ctx->len, &err);
+	__ctx->sock->prot.recvfrom(__ctx->sock->prot_ctx, __seg, FF_MTU, __flags, __ctx->adr, __ctx->len, &error);
 }
 
 void static
 tcp_recv(struct tcp_context *__ctx, void *__seg, int __flags) {
-	ff_i8_t err;
-	__ctx->sock->prot.recv(__ctx->sock->prot_ctx, __seg, FF_MTU, __flags, &err);
+	__ctx->sock->prot.recv(__ctx->sock->prot_ctx, __seg, FF_MTU, __flags, &error);
 }
 
 ff_uint_t static
 __in(void(*__func)(void*, void*, int), void *__ctx, int __flags, ff_uint_t __size, void *__buf) {
 	ff_u8_t *buf;
 	ff_uint_t bsz;
-
+	ff_uint_t rt;
 	/*
 		TODO:
 			allocate pointers to pages of x size,
@@ -52,6 +52,10 @@ __in(void(*__func)(void*, void*, int), void *__ctx, int __flags, ff_uint_t __siz
 	n = 0;
 _again:
 	__func(__ctx, seg, __flags);
+	if (error == -1) {
+		rt = 0;
+		goto _fail;	
+	}
 	ffly_mem_cpy(buf+(si->seg*FF_STC), st, si->len);
 	if (!si->seg) {
 		hh = 0;
@@ -70,7 +74,10 @@ _end:
 		i dont like this way but i dont see anyother way YET!
 	*/
 	ffly_mem_cpy(__buf, buf+sizeof(FF_NET_HDR), hdr->size);
-	return hdr->size;
+	rt = hdr->size;
+_fail:
+	free(buf);
+	return rt;
 }
 
 ff_size_t
@@ -83,8 +90,11 @@ ff_net_recvfrom(FF_SOCKET *__sock, struct sockaddr *__addr, socklen_t *__len,
 		.adr = __addr,
 		.len = __len
 	};
-	*__err = FFLY_SUCCESS;
-	return __in((void(*)(void*, void*, int))udp_recv, (void*)&ctx, __flags, __size, __buf);
+
+	ff_uint_t rcd;
+	rcd = __in((void(*)(void*, void*, int))udp_recv, (void*)&ctx, __flags, __size, __buf);
+	*__err = error;
+	return rcd;
 }
 
 ff_size_t
@@ -95,7 +105,8 @@ ff_net_recv(FF_SOCKET *__sock, void *__buf,
 	struct tcp_context ctx = {
 		.sock = __sock
 	};
-	// to appease the higher levels
-	*__err = FFLY_SUCCESS;
-	return __in((void(*)(void*, void*, int))tcp_recv, (void*)&ctx, __flags, __size, __buf);
+	ff_uint_t rcd;
+	rcd = __in((void(*)(void*, void*, int))tcp_recv, (void*)&ctx, __flags, __size, __buf);
+	*__err = error;
+	return rcd;
 }

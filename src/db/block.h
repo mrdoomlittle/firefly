@@ -6,6 +6,11 @@
 # define blkd_size sizeof(struct ffdb_blkd)
 # define PAGE_SHIFT 6
 # define PAGE_SIZE (1<<PAGE_SHIFT)
+/*
+	i was going to use slabs decided for this way as slabs can use this.
+	and then it can be an option to the user what to use.
+*/
+
 // block
 struct ffdb_blkd {
 	ff_uint_t size;

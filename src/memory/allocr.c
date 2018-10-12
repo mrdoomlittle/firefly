@@ -22,8 +22,19 @@
 */
 
 /*
+	TOD:
+		remove mmap and brk and push it to an function that will i will choose
+		what to use. why to allow the user to divert it.
+
+	TONOTE:
+		needs to be worked on 
+*/
+
+/*
 	not using this until finished
 	as it may hide issues.
+
+	also not fully done so using wont do much but mess up alot
 */
 # define ALIGN 1
 # define align_to(__no, __to)(((__no)+((__to)-1))&((~(__to))+1))
@@ -53,13 +64,13 @@ typedef ff_s32_t ar_int_t;
 /*
 	min about that can be trimed from oversized block
 */
-# define TRIM_MIN 0x13
+#define TRIM_MIN 0x13
 
 // MAX SHRINK
-# define MAX_SH 0xf
+#define MAX_SH 0xf
 
 // MAX GROW
-# define MAX_GR 0xf
+#define MAX_GR 0xf
 
 # define get_pot(__b) \
 	*(potp*)(((ff_u8_t*)(__b)-(__b)->off)-sizeof(potp*))
@@ -182,6 +193,10 @@ printf(char const *__format, ...) {
 }
 
 typedef struct rod *rodp;
+
+/*
+	rename???? soup???? stew??
+*/
 typedef struct pot {
 	rodp r;
 	ar_uint_t page_c, blk_c;

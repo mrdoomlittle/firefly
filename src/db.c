@@ -25,6 +25,11 @@
 */
 
 // rivet table
+/*
+	bind file pile or record to pile or record when loading
+
+	rivets are get loaded from file
+*/
 static ffdb_rivetp rt[64] = {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -75,6 +80,35 @@ void* ffdb_rivetto(ff_u16_t __no) {
 	if (!(rivet = lookup(__no)))
 		return NULL;
 	return rivet->to;
+}
+
+char const static *ostr_tbl[] = {
+	"login",
+	"logout",
+	"pulse",
+	"shutdown",
+	"disconnect",
+	"req_errno",
+	"pile_creat",
+	"pile_del",
+	"record_creat",
+	"record_del",
+	"write",
+	"read",
+	"record_alloc",
+	"record_free",
+	"rivet",
+	"derivet",
+	"rivetto",
+	"bind",
+	"acquire_slot",
+	"scrap_slot",
+	"exist",
+	"recstat"
+};
+
+char const* ff_db_ostr(ff_u8_t __op) {
+	return ostr_tbl[__op];
 }
 
 static struct ffdb_rivet *rtop = NULL;
@@ -135,6 +169,17 @@ ff_db_tapep ff_db_tape_new(ff_uint_t __size) {
 	return t;
 }
 
+void ff_db_record_info(ff_u8_t __what, long long __arg, ffdb_recordp __rec) {
+	switch(__what) {
+		case _FFDB_REC_SIZE:
+			*(ff_uint_t*)__arg = __rec->size;
+		break;
+	}
+}
+
+void ff_db_pile_info(ff_u8_t __what, long long __arg, ffdb_pilep __pile) {
+
+}
 
 void ff_db_tape_destroy(ff_db_tapep __tape) {
 	__ffly_mem_free(__tape->text);
@@ -158,80 +203,6 @@ ff_err_t ffdb_open(ffdbp __db, char const *__file) {
 
 	if (!load)
 		ffdb_load(__db);
-	retok;
-}
-
-ff_err_t ff_db_snd_key(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey) {
-	ff_err_t err;
-	ff_u8_t tmp[KEY_SIZE];
-	ffly_mem_cpy(tmp, __key, KEY_SIZE);
-	ffly_encrypt(tmp, KEY_SIZE, __enckey);
-	ff_net_send(__sock, tmp, KEY_SIZE, 0, &err);
-	return err;
-}
-
-ff_err_t ff_db_rcv_key(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey) {
-	ff_err_t err; 
-	ff_net_recv(__sock, __key, KEY_SIZE, 0, &err);
-	ffly_decrypt(__key, KEY_SIZE, __enckey);
-	return err;
-}
-
-ff_err_t ff_db_snd_err(FF_SOCKET *__sock, ff_err_t __err) {
-	ff_err_t err;
-	ff_net_send(__sock, &__err, sizeof(ff_err_t), 0, &err);
-	return err;
-}
-
-ff_err_t ff_db_rcv_err(FF_SOCKET *__sock, ff_err_t *__err) {
-	ff_err_t err;
-	ff_net_recv(__sock, __err, sizeof(ff_err_t), 0, &err);
-	return err;
-}
-
-ff_err_t ff_db_snd_errno(FF_SOCKET *__sock, ff_db_err __err) {
-	ff_err_t err;
-	ff_net_send(__sock, &__err, sizeof(ff_db_err), 0, &err);
-	return err;
-}
-
-ff_err_t ff_db_rcv_errno(FF_SOCKET *__sock, ff_db_err *__err) {
-	ff_err_t err;
-	ff_net_recv(__sock, __err, sizeof(ff_db_err), 0, &err);
-	return err;
-}
-
-ff_err_t ff_db_sndmsg(FF_SOCKET *__sock, ff_db_msgp __msg) {
-	ff_err_t err;
-	ff_uint_t sent;
-
-	sent = ff_net_send(__sock, __msg, msgsize, 0, &err); 
-	if (_err(err)) {
-		ffly_fprintf(ffly_err, "failed to send message.\n");
-		return err;
-	}
-
-	if (sent != msgsize) {
-		ffly_fprintf(ffly_err, "message was not fully sent.\n");
-		reterr;
-	}
-	retok;
-}
-
-ff_err_t ff_db_rcvmsg(FF_SOCKET *__sock, ff_db_msgp __msg) {
-	ff_err_t err;
-	ff_uint_t recved;
-
-	recved = ff_net_recv(__sock, __msg, msgsize, 0, &err); 
-	if (_err(err)) {
-		ffly_fprintf(ffly_err, "failed to recv message.\n");
-		return err;
-	}
-
-	if (recved != msgsize) {
-		ffly_fprintf(ffly_err, "message was not fully recved.\n");
-		reterr;
-	}
 	retok;
 }
 

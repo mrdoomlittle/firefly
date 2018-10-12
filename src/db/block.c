@@ -15,6 +15,16 @@
 	also 
 */
 // not the best but for now its okay 
+/*
+	TODO:
+		ffdb_bbin static
+
+		add get functions to get ffdb_bbin
+		also remove fseek and use pread pwrite
+
+	TONOTE:
+		this is an extremely shit and i know that
+*/
 
 // top block
 ff_u32_t ffdb_btop = FFDB_NULL;

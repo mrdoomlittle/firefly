@@ -81,8 +81,7 @@ FF_SOCKET* ff_net_accept(FF_SOCKET *__sock, struct sockaddr *__addr, socklen_t *
 		return NULL;
 	}
 
-	ff_err_t err;
-	ffly_sock_accept(__sock, sock, NULL, NULL, &err);
+	*__err = ffly_sock_accept(__sock, sock, NULL, NULL);
 	if (_err(*__err)) {
 		__ffly_mem_free(sock);
 		ffly_fprintf(ffly_out, "failed to accept.\n");

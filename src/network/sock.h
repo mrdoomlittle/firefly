@@ -24,6 +24,7 @@ struct ffly_sock_proto {
 	ff_i8_t(*connect)(void*, struct sockaddr*, socklen_t);
 	void*(*ctx_new)(void);
 	void(*ctx_destroy)(void*);
+	void(*get)(ff_u8_t, long long, void*);
 };
 
 struct ffly_socket {
@@ -41,7 +42,7 @@ ff_size_t ffly_sock_recv(struct ffly_socket*, void*, ff_size_t, int, ff_err_t*);
 ff_size_t ffly_sock_sendto(struct ffly_socket*, void const*, ff_size_t, int, struct sockaddr*, socklen_t, ff_err_t*);
 ff_size_t ffly_sock_recvfrom(struct ffly_socket*, void*, ff_size_t, int, struct sockaddr*, socklen_t*, ff_err_t*);
 ff_err_t ffly_sock_listen(struct ffly_socket*);
-ff_int_t ffly_sock_accept(struct ffly_socket*, struct ffly_socket*, struct sockaddr*, socklen_t*, ff_err_t*);
+ff_err_t ffly_sock_accept(struct ffly_socket*, struct ffly_socket*, struct sockaddr*, socklen_t*);
 ff_err_t ffly_sock_bind(struct ffly_socket*, struct sockaddr*, socklen_t);
 ff_err_t ffly_sock_connect(struct ffly_socket*, struct sockaddr*, socklen_t);
 ff_err_t ffly_sock_close(struct ffly_socket*);

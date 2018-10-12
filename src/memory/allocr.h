@@ -61,6 +61,36 @@ void* ffly_brealloc(void*, ff_uint_t);
 	TODO:
 		rename arsh argr - why because there for getting rid of small amount
 		of space no larger then 16 i think?
+
+		what it does?
+			puts the spare space up for sale to the upper or lower block, or
+			if the u or l block is freed?? or alloced it will become apart of that
+			block and not this
+
+		TODO:
+			allow for space to float up or down when alloc or free
+
+
+
+			-----------------------------
+			|							|	block 0
+			-----------------------------
+			-----------------------------
+			|							|	block 1
+			-----------------------------
+
+			XXXXXXXXXXXXXXXXXXXXXXXXXXXXX	<- free space after alloc or free
+			-----------------------------
+			|							|	block 2
+			-----------------------------
+
+			if upper block get freed or alloced push free space up to where X <- if needed
+			this should depend on other things
+
+			*****************************	extra space thats left over after resize
+			-----------------------------
+			|							|	block 3
+			-----------------------------
 */
 
 /*should only be used for trimming small amount off*/

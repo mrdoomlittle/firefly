@@ -1,7 +1,11 @@
 #!/bin/sh
 ffly_cc=/usr/bin/gcc
 # memory scarcity = -D__ffly_mscarcity
-cc_flags="$cc_flags -Wall -D__ffly_debug -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr -D__fflib -D__ffly_source"
+cc_flags="$cc_flags -D__ffly_debug -fno-builtin -D__ffly_no_task_pool -D__ffly_use_allocr -D__fflib -D__ffly_source"
+# takes to much time if it works it works
+# fixing warning can be done later
+# even if there very bad
+#cc_flags="$cc_flags -Wall"
 dus=$PWD/dus/ffdus
 ffly_objs=$(
 	dst_dir=$PWD/dep
