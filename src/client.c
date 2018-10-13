@@ -11,12 +11,12 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_bzero(&addr, sizeof(struct sockaddr_in));
 	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(21299);
+	addr.sin_port = htons(10198);
 	ff_net_connect(sock, (struct sockaddr*)&addr, sizeof(struct sockaddr));
 
-	char s[2048];
-	ffly_bzero(s, 2048);
-	ff_net_recv(sock, s, 4, 0, &err); 
+	char s[128];
+	ffly_bzero(s, 128);
+	ff_net_recv(sock, s, 128, 0, &err); 
 	ffly_printf("%s\n", s);
 	ff_net_close(sock);
 

@@ -130,6 +130,21 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 	
 }
 ff_err_t ffmain(int __argc, char const *__argv[]) {	
+	ff_stores_connect("127.0.0.1", 21299, "firefly");
+
+	ff_stores_login("mrdoomlittle", "none");
+	char const *motd;
+	motd = (char const*)ff_stores_get(0x00);
+	if (motd != NULL) {
+		ffly_printf("motd: %s\n", motd);
+
+		__ffly_mem_free(motd);
+	} else {
+		ffly_printf("error, null motd.\n");
+	}
+	ff_stores_logout();
+	ff_stores_disconnect();
+/*
 	ff_db_ctrp ctr;
 	ff_err_t err;
 	ctr = ff_db_ctr(ffly_hash("firefly", 7), "127.0.0.1", 21299, &err);
@@ -137,6 +152,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_db_ctr_logout(ctr);
 	ff_db_ctr_shutdown(ctr);
 	ff_db_ctr_destroy(ctr);
+*/
 //	s_test();	
 /*
 	ffly_driver(_driver_sr, &G_CONTEXT->driver);

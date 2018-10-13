@@ -64,7 +64,7 @@ _again:
 
 	n+=si->len;
 	if (!hh) {
-		if (n >= hdr->size) {
+		if (n >= hdr->size+sizeof(FF_NET_HDR)) {
 			goto _end;
 		}
 	}

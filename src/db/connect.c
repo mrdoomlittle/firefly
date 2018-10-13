@@ -12,9 +12,9 @@
 # include "../dep/mem_cpy.h"
 # include "../dep/str_len.h"
 # include "../crypto.h"
-# ifdef __ffly_debug
+#ifdef __ffly_debug
 # include "../location.h"
-# endif
+#endif
 
 ff_u16_t static stack = 0;
 ff_db_err static get_errno(FF_SOCKET*, ff_err_t*);
@@ -83,6 +83,11 @@ _succ:
 	ff_location_pop();
 # endif
 	return ret;
+}
+
+void
+ff_db_ctr_done(void) {
+	stack = 0;
 }
 
 ff_err_t ff_db_ctr_destroy(ff_db_ctrp __ctr) {
@@ -539,6 +544,10 @@ ff_db_exist(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey,
 	*code = _ff_db_op_exist;
 	*(ff_u16_t*)(code+1) = __rivet;
 	tape(__sock, code, 1+_FF_EXIST_S, &err);
+
+	ff_i8_t r;
+	ff_net_recv(__sock, &r, sizeof(ff_i8_t), 0, &err);
+	return r;
 }
 
 ff_err_t

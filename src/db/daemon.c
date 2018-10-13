@@ -284,7 +284,7 @@ ff_db_read(void) {
 	ffly_printf("offset: %u, size: %u\n", offset, size);
 	ffdb_read(&d->db, pile, rec, offset, buf, size);
 	ff_net_send(client.sock, buf, size, 0, &err);
-	__ffly_mem_free(size);
+	__ffly_mem_free(buf);
 	return;
 _fail:
 	return;
