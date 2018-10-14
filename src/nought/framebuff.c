@@ -4,11 +4,11 @@
 # include "context.h"
 # include "raise.h"
 # include "../system/io.h"
-struct sr_framebuff*
-sr_framebuff_creat(ff_uint_t __width, ff_uint_t __height) {
-	struct sr_framebuff *fb;
+struct nt_framebuff*
+nt_framebuff_creat(ff_uint_t __width, ff_uint_t __height) {
+	struct nt_framebuff *fb;
 
-	fb = (struct sr_framebuff*)__ffly_mem_alloc(sizeof(struct sr_framebuff));
+	fb = (struct nt_framebuff*)__ffly_mem_alloc(sizeof(struct nt_framebuff));
 	ff_uint_t width, height;
 	width = (__width+((1<<TILESZ)-1))>>TILESZ;
 	height = (__height+((1<<TILESZ)-1))>>TILESZ;
@@ -17,12 +17,12 @@ sr_framebuff_creat(ff_uint_t __width, ff_uint_t __height) {
 	fb->rh = __height;
 	fb->width = width;
 	fb->height = height;
-	fb->tiles = (struct sr_tile**)__ffly_mem_alloc((width*height)*sizeof(struct sr_tile*));
+	fb->tiles = (struct nt_tile**)__ffly_mem_alloc((width*height)*sizeof(struct nt_tile*));
 	ff_uint_t n;
 	n = width*height;
 	fb->n = n;
 
-	struct sr_tile **t, **e;
+	struct nt_tile **t, **e;
 	t = fb->tiles;
 	e = t+n;
 	while(t != e)
@@ -30,17 +30,17 @@ sr_framebuff_creat(ff_uint_t __width, ff_uint_t __height) {
 	return fb;
 }
 
-void sr_framebuff_del(struct sr_framebuff *__fb) {
-	struct sr_tile **t, **e;
+void nt_framebuff_del(struct nt_framebuff *__fb) {
+	struct nt_tile **t, **e;
 	t = __fb->tiles;
 	e = t+__fb->n;
 
-	struct sr_tile *p;
+	struct nt_tile *p;
 
 	while(t != e) {
 		if ((p = *(t++)) != NULL) {
-			sr_tile_unmap(p);
-			sr_tile_destroy(p);
+			nt_tile_unmap(p);
+			nt_tile_destroy(p);
 		}
 	}
 	__ffly_mem_free(__fb->tiles);
@@ -48,39 +48,39 @@ void sr_framebuff_del(struct sr_framebuff *__fb) {
 }
 
 
-void sr_fb_set(void) {
-	struct sr_framebuff *fb;
+void nt_fb_set(void) {
+	struct nt_framebuff *fb;
 
-	fb = *(struct sr_framebuff**)stack_at(*(ff_u16_t*)sr_raise_p);
-	sr_ctx->fb = fb;
+	fb = *(struct nt_framebuff**)stack_at(*(ff_u16_t*)nt_raise_p);
+	nt_ctx->fb = fb;
 }
 
-void sr_fb_new(void) {
-	struct sr_framebuff **fb;
+void nt_fb_new(void) {
+	struct nt_framebuff **fb;
 
 	ff_u32_t width, height;
 
-	width = *(ff_u32_t*)sr_raise_p;
-	height = *(ff_u32_t*)(sr_raise_p+4);
-	fb = ((struct sr_framebuff**)stack_at(*(ff_u16_t*)(sr_raise_p+8)));
+	width = *(ff_u32_t*)nt_raise_p;
+	height = *(ff_u32_t*)(nt_raise_p+4);
+	fb = ((struct nt_framebuff**)stack_at(*(ff_u16_t*)(nt_raise_p+8)));
 
-	*fb = sr_framebuff_creat(width, height);
+	*fb = nt_framebuff_creat(width, height);
 }
 
-void sr_fb_destroy(void) {
-	struct sr_framebuff *fb;
+void nt_fb_destroy(void) {
+	struct nt_framebuff *fb;
 
-	fb = *(struct sr_framebuff**)stack_at(*(ff_u16_t*)sr_raise_p);
-	sr_framebuff_del(fb);
+	fb = *(struct nt_framebuff**)stack_at(*(ff_u16_t*)nt_raise_p);
+	nt_framebuff_del(fb);
 }
 
-void sr_putframe(void) {
+void nt_putframe(void) {
 	ff_u8_t *dst;
 	ff_uint_t sc_x, sc_y;
 	ff_uint_t width, height;
 	
 	ff_u8_t *p;
-	p = sr_raise_p;
+	p = nt_raise_p;
 	dst = *(ff_u8_t**)p;
 
 	p+=sizeof(ff_u8_t*);
@@ -90,13 +90,13 @@ void sr_putframe(void) {
 	width = *(ff_u32_t*)(p+8);
 	height = *(ff_u32_t*)(p+12);
 
-	ffly_printf("%p : %u, %u, %u, %u, %p\n", dst, sc_x, sc_y, width, height, sr_ctx->fb);
+	ffly_printf("%p : %u, %u, %u, %u, %p\n", dst, sc_x, sc_y, width, height, nt_ctx->fb);
 
-	struct sr_context *ctx;
-	ctx = sr_ctx;
+	struct nt_context *ctx;
+	ctx = nt_ctx;
 	ffly_printf("fb, width: %ut, height: %ut\n", ctx->fb->width, ctx->fb->height);
 
-	struct sr_tile *t;
+	struct nt_tile *t;
 	ff_uint_t tx, ty;
 	ff_uint_t txo, tyo;
 

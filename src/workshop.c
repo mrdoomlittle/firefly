@@ -90,6 +90,7 @@ void ffly_workshop_start() {
 		bron_finish();
 		bron_done();
 		BRON_CONTEXT->stack = sf;
+
 		ffly_fb_yank(__frame_buff__);
 		if (!ff_duct_serve(dc))
 			break;
@@ -125,7 +126,8 @@ ff_u8_t *tex0, *tex1;
 # include "font.h"
 ff_u16_t static fb;
 void ffly_workshop_init() {
-	ffly_bron_driver(_bron_dd_sr, &BRON_CONTEXT->driver);
+	workshop.cu = workshop.cubuf;
+	ffly_bron_driver(_bron_dd_nought, &BRON_CONTEXT->driver);
 	BRON_CONTEXT->stack = 0;
     bron_setctx(bron_ctx_new());
     fb = bron_fb_new(WIDTH, HEIGHT);
@@ -182,6 +184,11 @@ void ffly_workshop_init() {
 }
 
 void ffly_workshop_de_init() {
+	void(**cu)(void);
+	cu = workshop.cubuf;
+	while(cu != workshop.cu) {
+		(*(cu++))();
+	}
 	bron_fb_destroy(fb);
 	bron_done();
 //	ffly_tiles_usched();

@@ -12,18 +12,18 @@
 	or any other simple shapes if repurposed
 */
 ff_i8_t
-static dim(ff_int_t __x, ff_int_t __y, struct sr_vertex2 *__a, struct sr_vertex2 *__b, struct sr_vertex2 *__c) {
-	struct sr_vertex2 v0 = {
+static dim(ff_int_t __x, ff_int_t __y, struct nt_vertex2 *__a, struct nt_vertex2 *__b, struct nt_vertex2 *__c) {
+	struct nt_vertex2 v0 = {
 		.x=__b->x-__a->x,
 		.y=__b->y-__a->y
 	};
 
-	struct sr_vertex2 v1 = {
+	struct nt_vertex2 v1 = {
 		.x=__c->x-__a->x,
 		.y=__c->y-__a->y
 	};
 
-	struct sr_vertex2 v2 = {
+	struct nt_vertex2 v2 = {
 		.x=__x-__a->x,
 		.y=__y-__a->y
 	};
@@ -49,28 +49,28 @@ static dim(ff_int_t __x, ff_int_t __y, struct sr_vertex2 *__a, struct sr_vertex2
 }
 
 //ff_i8_t static
-//barycentric(ff_int_t __x, ff_int_t __y, struct sr_vertex2 *__a, struct sr_vertex2 *__b, struct sr_vertex2 *__c) {
+//barycentric(ff_int_t __x, ff_int_t __y, struct nt_vertex2 *__a, struct nt_vertex2 *__b, struct nt_vertex2 *__c) {
 
 //}
 
-void sr_raster_tri2(void) {
-	struct sr_tri2 *tri;
+void nt_raster_tri2(void) {
+	struct nt_tri2 *tri;
 
-	tri = (struct sr_tri2*)(sr_raise_stack+(*(ff_u16_t*)sr_raise_p));
+	tri = (struct nt_tri2*)(nt_raise_stack+(*(ff_u16_t*)nt_raise_p));
 
-	struct sr_tex *tex;
+	struct nt_tex *tex;
 
 	/*
 		texture will be loaded diffrently but for now
 	*/
-	tex = (struct sr_tex*)(sr_raise_stack+(*(ff_u16_t*)(sr_raise_p+2)));
+	tex = (struct nt_tex*)(nt_raise_stack+(*(ff_u16_t*)(nt_raise_p+2)));
 	ff_u32_t _x, _y;
 
-	_x = *(ff_u32_t*)(sr_raise_p+4);
-	_y = *(ff_u32_t*)(sr_raise_p+8);
+	_x = *(ff_u32_t*)(nt_raise_p+4);
+	_y = *(ff_u32_t*)(nt_raise_p+8);
 
 	ffly_printf("--------> %ux%u\n", _x, _y);
-	struct sr_vertex2 v0, v1, v2;
+	struct nt_vertex2 v0, v1, v2;
 
 	v0 = tri->v0;
 	v1 = tri->v1;
@@ -86,15 +86,15 @@ void sr_raster_tri2(void) {
 	ff_int_t ymax = ffly_max3(v0.y, v1.y, v2.y);
 	ffly_printf("xmin: %d, ymin: %d, xmax: %d, ymax: %d\n", xmin, ymin, xmax, ymax);
 
-	struct sr_framebuff *fb;
+	struct nt_framebuff *fb;
 
-	fb = sr_ctx->fb;
+	fb = nt_ctx->fb;
 
 #ifdef use_barycentric
 	float a, b, g;
 #endif
 
-	struct sr_tile *t, **tp;
+	struct nt_tile *t, **tp;
 	ff_uint_t tx, ty;
 	ff_uint_t txo, tyo;
 	ff_int_t x, y = ymin;
@@ -114,15 +114,15 @@ void sr_raster_tri2(void) {
 				tx = x0>>TILESZ;
 				ty = y0>>TILESZ;
 				if (!(t = *(tp = tile_at(tx, ty, fb)))) {
-					t = (*tp = sr_tile_new(TILESZ));
-					sr_tile_map(t);
+					t = (*tp = nt_tile_new(TILESZ));
+					nt_tile_map(t);
 				}	
 				txo = x0-(tx*(1<<TILESZ));
 				tyo = y0-(ty*(1<<TILESZ));
 
 				ff_byte_t *dst;
 				dst = tilepx(t, txo, tyo);
-				sr_setpix(tex->inn, dst);
+				nt_setpix(tex->inn, dst);
 			}
 			
 			x++;

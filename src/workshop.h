@@ -12,6 +12,9 @@ extern ff_uint_t ws_height;
 struct ff_workshop {
 	ffly_gui_btnp fontforge;
 	struct ffly_gui_window window;
+
+	void(*cubuf[20])(void);
+	void(**cu)(void);
 };
 
 extern void(*tick)(void);

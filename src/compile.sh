@@ -178,26 +178,26 @@ $ffly_cc $cc_flags -c -o $dst_dir/ui/text.o $root_dir/ui/text.c
 
 $ffly_cc $cc_flags -c -o $dst_dir/bron/driver.o $root_dir/bron/driver.c
 $ffly_cc $cc_flags -c -o $dst_dir/bron/tile.o $root_dir/bron/tile.c
-$ffly_cc $cc_flags -c -o $dst_dir/sr/context.o $root_dir/sr/context.c
-$ffly_cc $cc_flags -c -o $dst_dir/drivers/sr/driver.o $root_dir/drivers/sr/driver.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/context.o $root_dir/nought/context.c
+$ffly_cc $cc_flags -c -o $dst_dir/drivers/nought/driver.o $root_dir/drivers/nought/driver.c
 
 
-$ffly_cc $cc_flags -c -o $dst_dir/sr/framebuff.o $root_dir/sr/framebuff.c
-$ffly_cc $cc_flags -c -o $dst_dir/sr/raise.o $root_dir/sr/raise.c
-$ffly_cc $cc_flags -c -o $dst_dir/sr/tri.o $root_dir/sr/tri.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/framebuff.o $root_dir/nought/framebuff.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/raise.o $root_dir/nought/raise.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/tri.o $root_dir/nought/tri.c
 $ffly_cc $cc_flags -c -o $dst_dir/bron/tri.o $root_dir/bron/tri.c
 $ffly_cc $cc_flags -c -o $dst_dir/bron/tex.o $root_dir/bron/tex.c
 $ffly_cc $cc_flags -c -o $dst_dir/bron/context.o $root_dir/bron/context.c
 $ffly_cc $cc_flags -c -o $dst_dir/bron/dc.o $root_dir/bron/dc.c
-$ffly_cc $cc_flags -c -o $dst_dir/sr/draw.o $root_dir/sr/draw.c
-$ffly_cc $cc_flags -c -o $dst_dir/sr/copy.o $root_dir/sr/copy.c
-$ffly_cc $cc_flags -c -o $dst_dir/sr/fill.o $root_dir/sr/fill.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/draw.o $root_dir/nought/draw.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/copy.o $root_dir/nought/copy.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/fill.o $root_dir/nought/fill.c
 $ffly_cc $cc_flags -c -o $dst_dir/bron/pixel.o $root_dir/bron/pixel.c
 $ffly_cc $cc_flags -c -o $dst_dir/bron/frame_buff.o $root_dir/bron/frame_buff.c
 $ffly_cc $cc_flags -c -o $dst_dir/mo.o $root_dir/mo.c
-$ffly_cc $cc_flags -c -o $dst_dir/sr/tile.o $root_dir/sr/tile.c
-$ffly_cc $cc_flags -c -o $dst_dir/sr/plate.o $root_dir/sr/plate.c
-$ffly_cc $cc_flags -c -o $dst_dir/sr/shit.o $root_dir/sr/shit.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/tile.o $root_dir/nought/tile.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/plate.o $root_dir/nought/plate.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/shit.o $root_dir/nought/shit.c
 $ffly_cc $cc_flags -c -o $dst_dir/workshop/font_forge.o $root_dir/workshop/font_forge.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay.o $root_dir/clay.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay/memalloc.o $root_dir/clay/memalloc.c
@@ -206,7 +206,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/clay/input.o $root_dir/clay/input.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay/parser.o $root_dir/clay/parser.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay/hash.o $root_dir/clay/hash.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay/solidify.o $root_dir/clay/solidify.c
-$ffly_cc $cc_flags -c -o $dst_dir/sr/pixel.o $root_dir/sr/pixel.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/pixel.o $root_dir/nought/pixel.c
 $ffly_cc $cc_flags -c -o $dst_dir/slurry/client.o $root_dir/slurry/client.c
 $ffly_cc $cc_flags -c -o $dst_dir/slurry/connection.o $root_dir/slurry/connection.c
 $ffly_cc $cc_flags -c -o $dst_dir/slurry/proto.o $root_dir/slurry/proto.c
@@ -241,14 +241,14 @@ $dst_dir/storage/cistern.o $dst_dir/texture.o $dst_dir/carriage.o $dst_dir/tools
 $dst_dir/typo.o $dst_dir/typo/raster.o $dst_dir/typo/raise.o $dst_dir/drivers/typo/mcd/driver.o
 $dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o $dst_dir/tape.o $dst_dir/resin/tape.o
 $dst_dir/rosin.o $dst_dir/rosin/exec.o $dst_dir/typo/mcd/concoct.o $dst_dir/typo/mcd/gen/classic.o \
-$dst_dir/drivers/font/typo.o $dst_dir/font.o $dst_dir/ui/text.o $dst_dir/sr/context.o \
-$dst_dir/drivers/sr/driver.o $dst_dir/sr/framebuff.o $dst_dir/sr/raise.o \
-$dst_dir/sr/tri.o $dst_dir/bron/tri.o $dst_dir/bron/tex.o $dst_dir/sr/draw.o \
-$dst_dir/bron/driver.o $dst_dir/bron/context.o $dst_dir/bron/dc.o $dst_dir/sr/copy.o \
-$dst_dir/sr/fill.o $dst_dir/bron/pixel.o $dst_dir/bron/frame_buff.o $dst_dir/mo.o \
-$dst_dir/sr/tile.o $dst_dir/sr/plate.o $dst_dir/workshop/font_forge.o \
+$dst_dir/drivers/font/typo.o $dst_dir/font.o $dst_dir/ui/text.o $dst_dir/nought/context.o \
+$dst_dir/drivers/nought/driver.o $dst_dir/nought/framebuff.o $dst_dir/nought/raise.o \
+$dst_dir/nought/tri.o $dst_dir/bron/tri.o $dst_dir/bron/tex.o $dst_dir/nought/draw.o \
+$dst_dir/bron/driver.o $dst_dir/bron/context.o $dst_dir/bron/dc.o $dst_dir/nought/copy.o \
+$dst_dir/nought/fill.o $dst_dir/bron/pixel.o $dst_dir/bron/frame_buff.o $dst_dir/mo.o \
+$dst_dir/nought/tile.o $dst_dir/nought/plate.o $dst_dir/workshop/font_forge.o \
 $dst_dir/clay.o $dst_dir/clay/memalloc.o $dst_dir/clay/lexer.o $dst_dir/clay/input.o \
 $dst_dir/clay/parser.o $dst_dir/clay/hash.o $dst_dir/clay/solidify.o \
-$dst_dir/bron/tile.o $dst_dir/sr/shit.o $dst_dir/sr/pixel.o \
+$dst_dir/bron/tile.o $dst_dir/nought/shit.o $dst_dir/nought/pixel.o \
 $dst_dir/slurry/client.o $dst_dir/slurry/connection.o \
 $dst_dir/slurry/proto.o $dst_dir/slurry/slurry.o"

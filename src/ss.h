@@ -3,7 +3,10 @@
 # include "ffint.h"
 # include "system/dict.h"
 # define SS_TOFREE 0x01
-
+/*
+	TODO:
+		rename again
+*/
 # define ss_dir_creat(__name) \
 	*ffly_ss_alias(__name) = ffly_ss_dir_creat()
 # define ss_dir_del(__name) \
