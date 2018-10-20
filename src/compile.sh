@@ -198,7 +198,6 @@ $ffly_cc $cc_flags -c -o $dst_dir/mo.o $root_dir/mo.c
 $ffly_cc $cc_flags -c -o $dst_dir/nought/tile.o $root_dir/nought/tile.c
 $ffly_cc $cc_flags -c -o $dst_dir/nought/plate.o $root_dir/nought/plate.c
 $ffly_cc $cc_flags -c -o $dst_dir/nought/shit.o $root_dir/nought/shit.c
-$ffly_cc $cc_flags -c -o $dst_dir/workshop/font_forge.o $root_dir/workshop/font_forge.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay.o $root_dir/clay.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay/memalloc.o $root_dir/clay/memalloc.c
 $ffly_cc $cc_flags -c -o $dst_dir/clay/lexer.o $root_dir/clay/lexer.c
@@ -246,7 +245,7 @@ $dst_dir/drivers/nought/driver.o $dst_dir/nought/framebuff.o $dst_dir/nought/rai
 $dst_dir/nought/tri.o $dst_dir/bron/tri.o $dst_dir/bron/tex.o $dst_dir/nought/draw.o \
 $dst_dir/bron/driver.o $dst_dir/bron/context.o $dst_dir/bron/dc.o $dst_dir/nought/copy.o \
 $dst_dir/nought/fill.o $dst_dir/bron/pixel.o $dst_dir/bron/frame_buff.o $dst_dir/mo.o \
-$dst_dir/nought/tile.o $dst_dir/nought/plate.o $dst_dir/workshop/font_forge.o \
+$dst_dir/nought/tile.o $dst_dir/nought/plate.o \
 $dst_dir/clay.o $dst_dir/clay/memalloc.o $dst_dir/clay/lexer.o $dst_dir/clay/input.o \
 $dst_dir/clay/parser.o $dst_dir/clay/hash.o $dst_dir/clay/solidify.o \
 $dst_dir/bron/tile.o $dst_dir/nought/shit.o $dst_dir/nought/pixel.o \

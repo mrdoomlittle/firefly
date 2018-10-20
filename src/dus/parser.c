@@ -2,12 +2,12 @@
 # include "../malloc.h"
 # include "../stdio.h"
 void static
-parser_decl(nodep *__node) {
-	tokenp name = ff_dus_nexttok();
+parser_decl(dus_nodep *__node) {
+	dus_tokenp name = ff_dus_nexttok();
 
-	nodep init = NULL, var;
-	nodep nod = (*__node = new_node);
-	if (!ff_dus_next_token_is(_tok_keywd, _eq)) {
+	dus_nodep init = NULL, var;
+	dus_nodep nod = (*__node = new_node);
+	if (!ff_dus_next_token_is(_dus_tok_keywd, _dus_eq)) {
 		goto _sk;
 	}
 
@@ -19,72 +19,72 @@ parser_decl(nodep *__node) {
 //	printf("decl, %s\n", name->p);
 _sk:
 	var = new_node;
-	var->kind = _var;
-	hash_put(&env, name->p, name->l, var);
+	var->kind = _dus_var;
+	dus_hash_put(&dus_env, name->p, name->l, var);
 	nod->init = init;
 	nod->var = var;
-	nod->kind = _decl;
+	nod->kind = _dus_decl;
 }
 
 void static
-parser_out(nodep *__node) {
-	nodep nod = (*__node = new_node);
+parser_out(dus_nodep *__node) {
+	dus_nodep nod = (*__node = new_node);
 
-	nod->kind = _out;
+	nod->kind = _dus_out;
 	nod->p = ff_dus_exp();
 }
 
 void static
-parser_syput(nodep *__node) {
-	nodep nod = (*__node = new_node);
-	nod->kind = _syput;
-	tokenp name = ff_dus_nexttok();
+parser_syput(dus_nodep *__node) {
+	dus_nodep nod = (*__node = new_node);
+	nod->kind = _dus_syput;
+	dus_tokenp name = ff_dus_nexttok();
 	nod->name = name->p;
 	nod->len = name->l;
 	nod->p = ff_dus_exp();
 }
 
 void static
-parser_shell(nodep *__node) {
-	nodep nod = (*__node = new_node);
-	nod->kind = _shell;
+parser_shell(dus_nodep *__node) {
+	dus_nodep nod = (*__node = new_node);
+	nod->kind = _dus_shell;
 	nod->p = ff_dus_exp();
 }
 
 void static
-parser_set(nodep *__node) {
-	nodep nod = (*__node = new_node);
-	nod->kind = _set;
-	tokenp l;
+parser_set(dus_nodep *__node) {
+	dus_nodep nod = (*__node = new_node);
+	nod->kind = _dus_set;
+	dus_tokenp l;
 	l = ff_dus_nexttok();
 	ff_dus_nexttok();
 
-	nod->l = (nodep)hash_get(&env, l->p, l->l);
+	nod->l = (dus_nodep)dus_hash_get(&dus_env, l->p, l->l);
 	nod->r = ff_dus_exp();
 }
 
-void ff_dus_parse(nodep *__top) {
-	nodep p, end = NULL;
-	while(!at_eof()) {
-		tokenp tok;
+void ff_dus_parse(dus_nodep *__top) {
+	dus_nodep p, end = NULL;
+	while(!dus_at_eof()) {
+		dus_tokenp tok;
 		tok = ff_dus_nexttok();
 		p = NULL;
 		if (!tok) goto _end;
-		if (tok->sort == _tok_ident) {
+		if (tok->sort == _dus_tok_ident) {
 			ff_dus_ulex(tok);
-			if (hash_get(&env, tok->p, tok->l) != NULL) {	
+			if (dus_hash_get(&dus_env, tok->p, tok->l) != NULL) {	
 				p = ff_dus_exp();
 			} else {
 				parser_decl(&p);
 			}
-		} else if (tok->sort == _tok_keywd) {
-			if (tok->val == _keywd_out) {
+		} else if (tok->sort == _dus_tok_keywd) {
+			if (tok->val == _dus_keywd_out) {
 				parser_out(&p);
-			} else if (tok->val == _keywd_syput) {
+			} else if (tok->val == _dus_keywd_syput) {
 				parser_syput(&p);
-			} else if (tok->val == _keywd_shell) {
+			} else if (tok->val == _dus_keywd_shell) {
 				parser_shell(&p);
-			} else if (tok->val == _keywd_set) {
+			} else if (tok->val == _dus_keywd_set) {
 				parser_set(&p);
 			}
 		}

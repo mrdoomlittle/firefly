@@ -14,68 +14,69 @@
 # include "../env.h"
 # include "mm.h"
 
-static struct hash sy;
-char const *opstr(ff_u8_t __op) {
+static struct dus_hash sy;
+static char const *opstr(ff_u8_t __op) {
 	switch(__op) {
-		case _op_copy:		return "copy";
-		case _op_assign:	return "assign";
-		case _op_push:		return "push";
-		case _op_pop:		return "pop";
-		case _op_fresh:		return "fresh";
-		case _op_free:		return "free";
-		case _op_out:		return "out";
+		case _dus_op_copy:		return "copy";
+		case _dus_op_assign:	return "assign";
+		case _dus_op_push:		return "push";
+		case _dus_op_pop:		return "pop";
+		case _dus_op_fresh:		return "fresh";
+		case _dus_op_free:		return "free";
+		case _dus_op_out:		return "out";
 	}
 	return "unknown";
 }
 
-objp static objs[20];
-objp static* top = objs;
+dus_objp static objs[20];
+dus_objp static* top = objs;
 
 void static
-op_copy(objp __obj) {
-	ff_u8_t *src = (*(objp*)__obj->src)->p;
-	ff_u8_t *dst = (*(objp*)__obj->dst)->p;
+op_copy(dus_objp __obj) {
+	ff_u8_t *src = (*(dus_objp*)__obj->src)->p;
+	ff_u8_t *dst = (*(dus_objp*)__obj->dst)->p;
 	memcpy(dst, src, __obj->len);
 }
 
 void static
-op_fresh(objp __obj) {
+op_fresh(dus_objp __obj) {
 	__obj->p = ff_dus_mmap(__obj->size);
 }
 
 void static
-op_free(objp __obj) {
+op_free(dus_objp __obj) {
 	ff_dus_munmap(__obj->p);
 }
 
 void static
-op_push(objp __obj) {
+op_push(dus_objp __obj) {
 	*(top++) = __obj->p;
 }
 
 void static
-op_pop(objp __obj) {
+op_pop(dus_objp __obj) {
 	__obj->p = *(--top);
 }
 
 void static
-op_assign(objp __obj) {
+op_assign(dus_objp __obj) {
 	ff_u8_t *dst;
 	dst = __obj->to->p;
 	memcpy(dst, __obj->p, __obj->len);
 }
 
 void static
-op_out(objp __obj) {
-	objp src = *(objp*)__obj->p;
+op_out(dus_objp __obj) {
+	dus_objp src = *(dus_objp*)__obj->p;
 	char *p = (char*)src->p;
 	printf("%s\n", p);
 }
 
+// construct a string
 void static
-op_cas(objp __obj) {
-	objp dst = __obj->dst;
-	objp src = *(objp*)__obj->p;
+op_cas(dus_objp __obj) {
+	dus_objp dst = __obj->dst;
+	dus_objp src = *(dus_objp*)__obj->p;
 	dst->p = ff_dus_mmap(1048);
 	char *p = src->p;
 	ff_u8_t *dp = dst->p;
@@ -88,7 +89,7 @@ _again:
 		while(*p != ' ' && *p != '\0' && ((*p >= 'a' && *p <= 'z') || *p == '_'))
 			*(bufp++) = *(p++);
 		*bufp = '\0';
-		objp o = (objp)hash_get(&sy, buf, bufp-buf);
+		dus_objp o = (dus_objp)dus_hash_get(&sy, buf, bufp-buf);
 		if (!o) {
 			printf("error, %s\n", buf);
 		} else {
@@ -109,14 +110,14 @@ _again:
 }
 
 void static
-op_syput(objp __obj) {
-	hash_put(&sy, __obj->name, __obj->len, __obj->p);
+op_syput(dus_objp __obj) {
+	dus_hash_put(&sy, __obj->name, __obj->len, __obj->p);
 //	printf("put symbol, %s\n", __obj->name);
 }
 # include "../system/nanosleep.h"
 void static
-op_shell(objp __obj) {
-	char *p = (*(objp*)__obj->p)->p;
+op_shell(dus_objp __obj) {
+	char *p = (*(dus_objp*)__obj->p)->p;
 //	printf("shell command: %s\n", p);
 	char const *argv[100];
 	char const **cur = argv;
@@ -177,16 +178,16 @@ _again:
 }
 
 void static
-op_set(objp __obj) {
-	objp src = *(objp*)__obj->src;
-	objp dst = *(objp*)__obj->dst;
+op_set(dus_objp __obj) {
+	dus_objp src = *(dus_objp*)__obj->src;
+	dus_objp dst = *(dus_objp*)__obj->dst;
 
 	
 	dst->p = ff_dus_mmap(dst->size = src->size);
 	memcpy(dst->p, src->p, src->size);
 }
 
-static void(*op[])(objp) = {	
+static void(*op[])(dus_objp) = {	
 	op_copy,
 	op_assign,
 	op_push,
@@ -200,13 +201,13 @@ static void(*op[])(objp) = {
 	op_set
 };
 
-void ff_dus_run(objp __top) {
-	hash_init(&sy);
-	objp cur = __top;
+void ff_dus_run(dus_objp __top) {
+	dus_hash_init(&sy);
+	dus_objp cur = __top;
 	while(cur != NULL) {
 		op[cur->op](cur);
 //		printf("op: %s\n", opstr(cur->op));
 		cur = cur->next;
 	}
-	hash_destroy(&sy);
+	dus_hash_destroy(&sy);
 }

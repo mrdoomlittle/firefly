@@ -8,8 +8,14 @@
 # define ffly_tile_set(__tile, __p) \
 	(__tile)->p = __p;
 
-#define TILE_BLANK 0x01
-#define TILE_PH 0x02
+#define TILE_BLANK		0x01
+/*
+	phantom tile
+
+	tile is here but graphics driver 'nought' will get the tile memory, size, etc thru 'get' function
+
+*/
+#define TILE_PH			0x02
 typedef struct ffly_pallet* ffly_palletp;
 
 enum {

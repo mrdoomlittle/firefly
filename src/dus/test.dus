@@ -1,5 +1,8 @@
+spa="fuck"
+spb="you"
 cc="Hello"
 cc_flags="Good"
-syput "ccf" cc_flags
-set cc=cas "Hello $ccf"
+syput "pa" spa
+syput "pb" spb
+set cc=cas "$pa $pb"
 out cc

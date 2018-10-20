@@ -2,7 +2,7 @@
 # include "../malloc.h"
 # include "../stdio.h"
 # include "../string.h"
-# define nextc (*p)
+#define nextc (*dus_p)
 
 ff_u8_t is_space(char __c) {
 	return __c == ' ' || __c == '\n' || __c == '\t';
@@ -30,7 +30,7 @@ read_ident(ff_uint_t *__l) {
 	*bufp = '\0';
 	ff_uint_t l;
 	char *p = (char*)malloc((l = (bufp-buf))+1);
-	to_free(p);
+	dus_to_free(p);
 	memcpy(p, buf, l+1);
 	*__l = l;
 	return p;
@@ -53,7 +53,7 @@ read_dec(ff_uint_t *__l) {
 	*bufp = '\0';
 	ff_uint_t l;
 	char *p = (char*)malloc((l = (bufp-buf))+1);
-	to_free(p);
+	dus_to_free(p);
 	memcpy(p, buf, l+1);
 	*__l = l;
 	return p;
@@ -76,50 +76,55 @@ read_str(ff_uint_t *__l) {
 	*bufp = '\0';
 	ff_uint_t l;
 	char *p = (char*)malloc((l = (bufp-buf))+1);
-	to_free(p);
+	dus_to_free(p);
 	memcpy(p, buf, l+1);
 	*__l = l;
 	return p;
 }
 
-tokenp peektok(void) {
-	tokenp ret;
+dus_tokenp dus_peektok(void) {
+	dus_tokenp ret;
 	ff_dus_ulex(ret = ff_dus_nexttok());
 	return ret;
 }
 
-# define BUFSIZE 20
-tokenp static buf[BUFSIZE];
-tokenp static* end = buf;
+#define BUFSIZE 20
+dus_tokenp static buf[BUFSIZE];
+dus_tokenp static* end = buf;
 
-void ff_dus_ulex(tokenp __p) {
+void ff_dus_ulex(dus_tokenp __p) {
 	*(end++) = __p;
 }
 
-# define BACK 10
-tokenp static head = NULL;
-tokenp static next = NULL;
+/*
+	if any token issues occur this should be the first suspect
+
+	after x tokens oldest one will be freed
+*/
+#define BACK 10
+dus_tokenp static head = NULL;
+dus_tokenp static next = NULL;
 ff_uint_t static len = 0;
 
-tokenp ff_dus_lex(void) {
+dus_tokenp ff_dus_lex(void) {
 	if (end>buf)
 		return *(--end);
-	if (len > BACK && head != NULL) {
+	if (len>BACK && head != NULL) {
 		len--;
-		tokenp bk = head;
+		dus_tokenp bk = head;
 		head = head->next;
 		free(bk);
 	}
 
 _bk:
 	sk_white_space();
-	if (at_eof()) {
+	if (dus_at_eof()) {
 		return NULL;
 	}
 
-	if (*p == '#') {
-		while(*p != '\n') {
-			if (at_eof())
+	if (*dus_p == '#') {
+		while(*dus_p != '\n') {
+			if (dus_at_eof())
 				return NULL;
 			incrp;
 		}
@@ -127,8 +132,8 @@ _bk:
 		goto _bk;
 	}
 
-	tokenp tok;
-	tok = (tokenp)malloc(sizeof(struct token));
+	dus_tokenp tok;
+	tok = (dus_tokenp)malloc(sizeof(struct dus_token));
 	tok->p = NULL;
 	tok->next = NULL;
 	if (!head)
@@ -139,27 +144,27 @@ _bk:
 
 	char c = nextc;
 	if ((c>='a' && c<='z') || c == '_') {
-		tok->sort = _tok_ident;
+		tok->sort = _dus_tok_ident;
 		tok->p = read_ident(&tok->l);
 	} else if (c>='0' && c<='9') {
-		tok->sort = _tok_dec;
+		tok->sort = _dus_tok_dec;
 		tok->p = read_dec(&tok->l);
 	} else {
 		switch(c) {
 			case '$':
-				tok->sort = _tok_keywd;
-				tok->val = _dollar;
+				tok->sort = _dus_tok_keywd;
+				tok->val = _dus_dollar;
 				incrp;
 			break;
 			case '"':
 				incrp;
-				tok->sort = _tok_str;
+				tok->sort = _dus_tok_str;
 				tok->p = read_str(&tok->l);
 				incrp;
 			break;
 			case '=':
-				tok->sort = _tok_keywd;
-				tok->val = _eq;
+				tok->sort = _dus_tok_keywd;
+				tok->val = _dus_eq;
 				incrp;				
 			break;
 			default:
@@ -171,7 +176,7 @@ _bk:
 }
 
 void ff_dus_lexer_cleanup(void) {
-	tokenp cur = head, tmp;
+	dus_tokenp cur = head, tmp;
 	while(cur != NULL) {
 		tmp = cur->next;
 		free(cur);

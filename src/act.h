@@ -5,6 +5,11 @@
 # define NO_TASKS 100
 # include <mdlint.h>
 # include "types/err_t.h"
+/*
+	TODO:
+		repurpose for actions in specific areas of engine
+*/
+
 typedef mdl_uint_t ffly_act_gid_t;
 
 struct ffly_act_task {

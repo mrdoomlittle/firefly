@@ -2,127 +2,145 @@
 # define __ffly__dus__h
 # include "../ffint.h"
 # define new_node ff_dus_node_alloc()
-# define incrp p++
-extern ff_u8_t *p;
+# define incrp dus_p++
+extern ff_u8_t *dus_p;
 void ff_dus_init(void);
 void ff_dus_cleanup(void);
-ff_u8_t at_eof(void);
+ff_u8_t dus_at_eof(void);
 
-typedef struct obj {
-	struct obj *next;
+/*
+	cluster of shit
+*/
+struct dus_clus_s {
+	void(*init)(void);
+};
+
+extern struct dus_clus_s dus_clus;
+
+typedef struct dus_obj {
+	struct dus_obj *next;
     ff_u8_t op;
 	ff_uint_t size, len;
 	// change to void
-	struct obj *to, *dst, *src;
-	struct obj *objpp;
+	struct dus_obj *to, *dst, *src;
+	struct dus_obj *objpp;
 	char *name;
 	void *p;
-} *objp;
+} *dus_objp;
 
-typedef struct token {
-	struct token *next;
+typedef struct dus_token {
+	struct dus_token *next;
 	ff_u8_t sort, val;
 	void *p;
 	ff_uint_t l;
-} *tokenp;
+} *dus_tokenp;
 
-typedef struct node {
-	struct node *next;
+typedef struct dus_node {
+	struct dus_node *next;
 	ff_u64_t intval;
 	void *p;
 	ff_uint_t len;
 	ff_u8_t kind;
-	struct node *var, *init;
-	struct node *l, *r;
-	struct node *src;
+	struct dus_node *var, *init;
+	struct dus_node *l, *r;
+	struct dus_node *src;
 	char *name;
-	objp _obj;
-} *nodep;
+	dus_objp _obj;
+} *dus_nodep;
 
-struct hash_entry {
-	struct hash_entry *fd, *next;
+struct dus_hash_entry {
+	struct dus_hash_entry *fd, *next;
 	ff_u8_t const *key;
 	ff_uint_t len;
 	void *p;
 };
 
-struct hash {
-	struct hash_entry **table;
-	struct hash_entry *top;
+struct dus_hash {
+	struct dus_hash_entry **table;
+	struct dus_hash_entry *top;
 };
 
-struct frag {
-	struct frag *next;
+/*
+	string fragment
+
+	% used for args
+
+	% = new fragment
+	hello%test
+
+*/
+struct dus_frag {
+	struct dus_frag *next;
 	void *p;
 	ff_uint_t len;
 };
 
-void hash_init(struct hash*);
-void hash_destroy(struct hash*);
-void hash_put(struct hash*, ff_u8_t const*, ff_uint_t, void*);
-void* hash_get(struct hash*, ff_u8_t const*, ff_uint_t);
+void dus_hash_init(struct dus_hash*);
+void dus_hash_destroy(struct dus_hash*);
+void dus_hash_put(struct dus_hash*, ff_u8_t const*, ff_uint_t, void*);
+void* dus_hash_get(struct dus_hash*, ff_u8_t const*, ff_uint_t);
 
-extern struct hash env;
+extern struct dus_hash dus_env;
 
-tokenp ff_dus_nexttok(void);
+dus_tokenp ff_dus_nexttok(void);
 
 ff_u8_t ff_dus_next_token_is(ff_u8_t, ff_u8_t);
 ff_u8_t ff_dus_expect_token(ff_u8_t, ff_u8_t);
 void ff_dus_lexer_cleanup(void);
-tokenp peektok(void);
-void ff_dus_parse(nodep*);
-objp ff_dus_gen(nodep);
-void ff_dus_run(objp);
+dus_tokenp peektok(void);
+void ff_dus_parse(dus_nodep*);
+dus_objp ff_dus_gen(dus_nodep);
+void ff_dus_run(dus_objp);
 
-nodep ff_dus_exp(void);
-void ff_dus_ulex(tokenp);
-tokenp ff_dus_lex(void);
+dus_nodep ff_dus_exp(void);
+void ff_dus_ulex(dus_tokenp);
+dus_tokenp ff_dus_lex(void);
 
 enum {
-	_op_copy,
-	_op_assign,
-	_op_push,
-	_op_pop,
-	_op_fresh,
-	_op_free,
-	_op_out,
-	_op_cas,
-	_op_syput,
-	_op_shell,
-	_op_set
+	_dus_op_copy,
+	_dus_op_assign,
+	_dus_op_push,
+	_dus_op_pop,
+	_dus_op_fresh,
+	_dus_op_free,
+	_dus_op_out,
+	_dus_op_cas,
+	_dus_op_syput,
+	_dus_op_shell,
+	_dus_op_set
 };
 
 enum {
-	_decl,
-	_var,
-	_str,
-	_int,
-	_assign,
-	_out,
-	_cas,
-	_syput,
-	_shell,
-	_set
+	_dus_decl,
+	_dus_var,
+	_dus_str,
+	_dus_int,
+	_dus_assign,
+	_dus_out,
+	_dus_cas,
+	_dus_syput,
+	_dus_shell,
+	_dus_set
 };
 
 enum {
-	_eq,
-	_dollar,
-	_keywd_out,
-	_keywd_cas,
-	_keywd_syput,
-	_keywd_shell,
-	_keywd_set
+	_dus_eq,
+	_dus_dollar,
+	_dus_keywd_out,
+	_dus_keywd_cas,
+	_dus_keywd_syput,
+	_dus_keywd_shell,
+	_dus_keywd_set
 };
 
 enum {
-	_tok_ident,
-	_tok_keywd,
-	_tok_str,
-	_tok_dec
+	_dus_tok_ident,
+	_dus_tok_keywd,
+	_dus_tok_str,
+	_dus_tok_dec
 };
 
-nodep ff_dus_node_alloc(void);
-objp ff_dus_obj_alloc(void);
-void to_free(void*);
+dus_nodep ff_dus_node_alloc(void);
+dus_objp ff_dus_obj_alloc(void);
+void dus_to_free(void*);
 # endif /*__ffly__dus__h*/

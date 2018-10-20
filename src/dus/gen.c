@@ -2,13 +2,13 @@
 # include "../ffly_def.h"
 # include "../stdio.h"
 # include "../malloc.h"
-void static emit(nodep);
+void static emit(dus_nodep);
 
-objp static top = NULL;
-objp static end = NULL;
-objp static
+dus_objp static top = NULL;
+dus_objp static end = NULL;
+dus_objp static
 next_obj(void) {
-	objp o = ff_dus_obj_alloc();
+	dus_objp o = ff_dus_obj_alloc();
 	if (!top)
 		top = o;
 	if (end != NULL)
@@ -19,119 +19,119 @@ next_obj(void) {
 }
 
 void static
-op_copy(objp *__src, objp *__dst, ff_uint_t __len) {
-	objp o = next_obj();
-	o->op = _op_copy;
+op_copy(dus_objp *__src, dus_objp *__dst, ff_uint_t __len) {
+	dus_objp o = next_obj();
+	o->op = _dus_op_copy;
 	o->dst = __dst;
 	o->src = __src;
 	o->len = __len;
 }
 
 void static
-op_assign(objp __to, ff_u8_t *__from, ff_uint_t __len) {
-	objp o = next_obj();
-	o->op = _op_assign;
+op_assign(dus_objp __to, ff_u8_t *__from, ff_uint_t __len) {
+	dus_objp o = next_obj();
+	o->op = _dus_op_assign;
 	o->to = __to;
 	o->p = __from;
 	o->len = __len;
 }
 
-objp static
+dus_objp static
 op_fresh(ff_uint_t __size) {
-	objp o = next_obj();
-	o->op = _op_fresh;
+	dus_objp o = next_obj();
+	o->op = _dus_op_fresh;
 	o->size = __size;
 	return o;
 }
 
 void static
-op_free(objp __obj) {
-	objp o = next_obj();
-	o->op = _op_free;
+op_free(dus_objp __obj) {
+	dus_objp o = next_obj();
+	o->op = _dus_op_free;
 }
 
 void static
-op_push(objp __obj) {
-	objp o = next_obj();
-	o->op = _op_push;
+op_push(dus_objp __obj) {
+	dus_objp o = next_obj();
+	o->op = _dus_op_push;
 	o->p = __obj;
 }
 
 void static
-op_pop(objp **__obj) {
-	objp o = next_obj();
-	o->op = _op_pop;
-	*__obj = (objp*)&o->p;
+op_pop(dus_objp **__obj) {
+	dus_objp o = next_obj();
+	o->op = _dus_op_pop;
+	*__obj = (dus_objp*)&o->p;
 }
 
 void static
-op_out(objp *__p) {
-	objp o = next_obj();
-	o->op = _op_out;
+op_out(dus_objp *__p) {
+	dus_objp o = next_obj();
+	o->op = _dus_op_out;
 	o->p = __p;
 }
 
 void static
-op_cas(objp *__obj, objp __m) {
-	objp o = next_obj();
-	o->op = _op_cas;
+op_cas(dus_objp *__obj, dus_objp __m) {
+	dus_objp o = next_obj();
+	o->op = _dus_op_cas;
 	o->p = __obj;
 	o->dst = __m;
 }
 
 void static
-op_set(objp *__src, objp *__dst) {
-	objp o = next_obj();
-	o->op = _op_set;
+op_set(dus_objp *__src, dus_objp *__dst) {
+	dus_objp o = next_obj();
+	o->op = _dus_op_set;
 	o->src = __src;
 	o->dst = __dst;
 }
 
 void static
-op_syput(char *__name, ff_uint_t __len, objp __obj) {
-	objp o = next_obj();
-	o->op = _op_syput;
+op_syput(char *__name, ff_uint_t __len, dus_objp __obj) {
+	dus_objp o = next_obj();
+	o->op = _dus_op_syput;
 	o->len = __len;
 	o->p = __obj;
 	o->name = __name;
 }
 
 void static
-op_shell(objp *__obj) {
-	objp o = next_obj();
-	o->op = _op_shell;
+op_shell(dus_objp *__obj) {
+	dus_objp o = next_obj();
+	o->op = _dus_op_shell;
 	o->p = __obj;
 }
 
-void push(objp __obj) {
+void push(dus_objp __obj) {
 	op_push(__obj);
 }
 
-objp* pop(void) {
-	objp *ret;
+dus_objp* pop(void) {
+	dus_objp *ret;
 	op_pop(&ret);
 	return ret;
 }
 
-objp static*
-objpp(objp  __obj) {
+dus_objp static*
+dus_objpp(dus_objp  __obj) {
 	__obj->objpp = __obj;
 	return &__obj->objpp;
 }
 
 void static
-emit_decl_init(nodep __node, objp __to) {
+emit_decl_init(dus_nodep __node, dus_objp __to) {
 	emit(__node);
-	objp *src;
+	dus_objp *src;
 	src = pop();
-	op_copy(src, objpp(__to), __node->len);
+	op_copy(src, dus_objpp(__to), __node->len);
 }
 
 void static
-emit_decl(nodep __node) {
-	nodep init = __node->init;
-	nodep var = __node->var;
-	objp m;
+emit_decl(dus_nodep __node) {
+	dus_nodep init = __node->init;
+	dus_nodep var = __node->var;
+	dus_objp m;
 	if (init != NULL) {
 		m = op_fresh(init->len);
 		emit_decl_init(init, m);
@@ -141,57 +141,57 @@ emit_decl(nodep __node) {
 }
 
 void static
-emit_var(nodep __node) {
+emit_var(dus_nodep __node) {
 	push(__node->_obj);
 }
 
 void static
-emit_out(nodep __node) {
-	emit((nodep)__node->p);
-	objp *o;
+emit_out(dus_nodep __node) {
+	emit((dus_nodep)__node->p);
+	dus_objp *o;
 	o = pop();
 	op_out(o);
 }
 
 void static
-emit_assign(nodep __node) {
-	nodep r = __node->r;
+emit_assign(dus_nodep __node) {
+	dus_nodep r = __node->r;
 	emit(r);
-	objp *src;
+	dus_objp *src;
 	src = pop();
 	ff_uint_t len;
-	objp m = op_fresh(len = r->_obj->size);
-	op_copy(src, objpp(m), len);
+	dus_objp m = op_fresh(len = r->_obj->size);
+	op_copy(src, dus_objpp(m), len);
 	__node->l->_obj = m;
 }
 
 void static
-emit_cas(nodep __node) {
-	objp *o;
-	emit((nodep)__node->p);
+emit_cas(dus_nodep __node) {
+	dus_objp *o;
+	emit((dus_nodep)__node->p);
 	o = pop();
-	objp m = ff_dus_obj_alloc(); 
+	dus_objp m = ff_dus_obj_alloc(); 
 	op_cas(o, m);
 	push(m);
 	__node->_obj = m;
 }
 
 void static 
-emit_syput(nodep __node) {
-	op_syput(__node->name, __node->len, ((nodep)__node->p)->_obj);	
+emit_syput(dus_nodep __node) {
+	op_syput(__node->name, __node->len, ((dus_nodep)__node->p)->_obj);	
 }
 
 void static
-emit_shell(nodep __node) {
-	emit((nodep)__node->p);
-	objp *o;
+emit_shell(dus_nodep __node) {
+	emit((dus_nodep)__node->p);
+	dus_objp *o;
 	o = pop();
 	op_shell(o);
 }
 
 void static
-emit_str(nodep __node) {
-	objp m = op_fresh(__node->len);
+emit_str(dus_nodep __node) {
+	dus_objp m = op_fresh(__node->len);
 	op_assign(m, __node->p, __node->len);
 	push(m);
 	__node->_obj = m;
@@ -199,69 +199,69 @@ emit_str(nodep __node) {
 
 char const *nkstr(ff_u8_t __kind) {
 	switch(__kind) {
-		case _str:		return "str";
-		case _decl:		return "decl";
-		case _var:		return "var";
-		case _assign:	return "assign";
-		case _out:		return "out";
-		case _cas:		return "cas";
-		case _syput:	return "syput";
-		case _shell:	return "shell";
+		case _dus_str:		return "str";
+		case _dus_decl:		return "decl";
+		case _dus_var:		return "var";
+		case _dus_assign:	return "assign";
+		case _dus_out:		return "out";
+		case _dus_cas:		return "cas";
+		case _dus_syput:	return "syput";
+		case _dus_shell:	return "shell";
 	}
 	return "unknown";
 }
 
 
 void static
-emit_set(nodep __node) {
-	nodep l = __node->l;
-	nodep r = __node->r;
+emit_set(dus_nodep __node) {
+	dus_nodep l = __node->l;
+	dus_nodep r = __node->r;
 	emit(r);
 	emit(l);
 
-	objp *src;
-	objp *dst;
+	dus_objp *src;
+	dus_objp *dst;
 	dst = pop();
 	src = pop();
 	op_set(src, dst);
 }
 
 void
-emit(nodep __node) {
+emit(dus_nodep __node) {
 	switch(__node->kind) {
-		case _set:
+		case _dus_set:
 			emit_set(__node);
 		break;
-		case _str:
+		case _dus_str:
 			emit_str(__node);
 		break;
-		case _decl:
+		case _dus_decl:
 			emit_decl(__node);
 		break;
-		case _var:
+		case _dus_var:
 			emit_var(__node);
 		break;
-		case _assign:
+		case _dus_assign:
 			emit_assign(__node);
 		break;
-		case _out:
+		case _dus_out:
 			emit_out(__node);
 		break;
-		case _cas:
+		case _dus_cas:
 			emit_cas(__node);
 		break;
-		case _syput:
+		case _dus_syput:
 			emit_syput(__node);
 		break;
-		case _shell:
+		case _dus_shell:
 			emit_shell(__node);
 		break;
 	}
 	//printf("%s\n", nkstr(__node->kind));
 }
 
-objp ff_dus_gen(nodep __top) {
-	nodep cur = __top;
+dus_objp ff_dus_gen(dus_nodep __top) {
+	dus_nodep cur = __top;
 	while(cur != NULL) {
 		emit(cur);
 		cur = cur->next;
