@@ -3,7 +3,7 @@
 # include "../system/err.h"
 # include "../dep/mem_cpy.h"
 # include "../malloc.h"
-
+# include "../tc.h"
 struct udp_context {
 	FF_SOCKET *sock;
 	struct sockaddr *adr;
@@ -60,6 +60,9 @@ _again:
 	if (!si->seg) {
 		hh = 0;
 		hdr = (FF_NET_HDR*)buf;
+		struct tc_spec t;
+		ff_tc_gettime(&t);
+		ffly_printf("time since: %u-sec, %u-ns\n", t.sec-hdr->ts.tv_sec, t.nsec-hdr->ts.tv_nsec);
 	}
 
 	n+=si->len;

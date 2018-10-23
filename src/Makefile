@@ -18,7 +18,8 @@ mod: clean
 pkg: clean
 	gcc -c extract.c
 	gcc -c build.c
-	gcc -Wall -o main pkg.c build.o extract.o $(ffly_objs)
+	gcc $(cc_flags) -Wall -o pkg extract.c build.c $(ffly_objs) -nostdlib
+#	gcc -Wall -o main pkg.c build.o extract.o $(ffly_objs)
 crypto: clean
 	gcc -Wall -o main crypto.c $(ffly_objs)
 hatch: clean

@@ -35,7 +35,7 @@ ffly_printf("hello.\n");
 # include "linux/sched.h"
 # include "linux/unistd.h"
 # include "linux/wait.h"
-ff_i8_t run = -1;
+static ff_i8_t run = -1;
 void sig(int __no) {
 	run = 0;
 }
@@ -129,7 +129,28 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 	ffly_rgba_to_rgb(buf, __dst, __width*__height);
 	
 }
-ff_err_t ffmain(int __argc, char const *__argv[]) {	
+# include "tc.h"
+ff_err_t ffmain(int __argc, char const *__argv[]) {
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(struct sigaction));
+	sa.sa_handler = sig;
+	sigaction(SIGINT, &sa, NULL);   
+ 
+	struct tc_spec now;
+_again:
+	ff_tc_gettime(&now);
+	ff_u64_t h, m, s;
+	h = now.sec/3600;
+	m = now.sec/60;
+	s = now.sec;
+
+	ffly_printf("time: %u-hour : %u-min %u-sec : %u\n", h, m, s, now.nsec);
+	ffly_fdrain(ffly_out);
+	ffly_nanosleep(1, 0);
+	if (run == -1) {
+		goto _again;
+	}
+/*
 	ff_stores_connect("127.0.0.1", 21299, "firefly");
 
 	ff_stores_login("mrdoomlittle", "none");
@@ -144,6 +165,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	}
 	ff_stores_logout();
 	ff_stores_disconnect();
+*/
 /*
 	ff_db_ctrp ctr;
 	ff_err_t err;

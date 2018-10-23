@@ -15,13 +15,13 @@
 #define S_ISGID 0002000
 #define S_ISVTX 0001000
 
-#define S_ISLNK(__m)  (((__m)&S_IFMT) == S_IFLNK)
-#define S_ISREG(__m)  (((__m)&S_IFMT) == S_IFREG)
-#define S_ISDIR(__m)  (((__m)&S_IFMT) == S_IFDIR)
-#define S_ISCHR(__m)  (((__m)&S_IFMT) == S_IFCHR)
-#define S_ISBLK(__m)  (((__m)&S_IFMT) == S_IFBLK)
-#define S_ISFIFO(__m) (((__m)&S_IFMT) == S_IFIFO)
-#define S_ISSOCK(__m) (((__m)&S_IFMT) == S_IFSOCK)
+#define S_ISLNK(__m)	(((__m)&S_IFMT) == S_IFLNK)
+#define S_ISREG(__m)	(((__m)&S_IFMT) == S_IFREG)
+#define S_ISDIR(__m)	(((__m)&S_IFMT) == S_IFDIR)
+#define S_ISCHR(__m)	(((__m)&S_IFMT) == S_IFCHR)
+#define S_ISBLK(__m)	(((__m)&S_IFMT) == S_IFBLK)
+#define S_ISFIFO(__m)	(((__m)&S_IFMT) == S_IFIFO)
+#define S_ISSOCK(__m)	(((__m)&S_IFMT) == S_IFSOCK)
 
 # define S_IRWXU 00700 // user: r/w/x
 # define S_IRUSR 00400 // user: r

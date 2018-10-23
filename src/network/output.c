@@ -5,7 +5,8 @@
 # include "../system/err.h"
 # include "../dep/mem_cpy.h"
 # include "../malloc.h"
-
+# include "../linux/time.h"
+# include "../tc.h"
 struct udp_context {
 	FF_SOCKET *sock;
 	struct sockaddr *adr;
@@ -97,6 +98,12 @@ ff_net_send(FF_SOCKET *__sock, void const *__buf,
 		.size = __size
 	};
 
+	struct tc_spec t;
+	ff_tc_gettime(&t);
+	hdr.ts.tv_sec = t.sec;
+	hdr.ts.tv_nsec = t.nsec;
+	ffly_printf("sec %u\n", t.sec);
+
 	struct context ctx;
 	ctx.si = (struct ff_net_sins*)ctx.seg;
 	ctx.st = ctx.seg+sizeof(struct ff_net_sins);
@@ -106,6 +113,7 @@ ff_net_send(FF_SOCKET *__sock, void const *__buf,
 	struct tcp_context ctx0 = {
 		.sock = __sock
 	};
+
 	__out(TCP, (void*)&ctx0, __flags, sizeof(FF_NET_HDR), &hdr, &ctx);
 	if (error == -1) {
 		*__err = FFLY_FAILURE;

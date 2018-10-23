@@ -9,6 +9,11 @@
 # include "system/io.h"
 # define CHUNK_SHIFT 8
 # define CHUNK_SIZE (1<<CHUNK_SHIFT)
+
+/*
+	NOTE:
+		
+*/
 ff_err_t
 ff_fcopy(char const *__src, char const *__dst) {
 	ff_u8_t *buf = (ff_u8_t*)__ffly_mem_alloc(CHUNK_SIZE);
