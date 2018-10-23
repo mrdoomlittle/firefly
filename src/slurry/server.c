@@ -22,7 +22,7 @@ void sse_open(void) {
 	}
 	adr.sin_family = AF_INET;
 	adr.sin_addr.s_addr = htons(INADDR_ANY);
-	adr.sin_port = htons(10198);
+	adr.sin_port = htons(*(ff_uint_t*)s_ov[OV_PORTN]);
 	int val = 1;		
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int));
 

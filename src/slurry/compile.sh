@@ -36,9 +36,10 @@ gcc $cc_flags -c ../graphics/image.c
 gcc $cc_flags -c ../graphics/png.c
 gcc $cc_flags -c ../graphics/jpeg.c
 gcc $cc_flags -c slurry.c
+gcc $cc_flags -c config.c
 gcc $cc_flags -c server.c
 gcc $cc_flags -c window.c -o window.o.0
-objs="io.o file.o mem_dup.o mem_set.o str_len.o mem_cpy.o \
+objs="config.o io.o file.o mem_dup.o mem_set.o str_len.o mem_cpy.o \
 mutex.o.0 mutex.o.1 atomic_op.o.0 atomic_op.o.1 \
 mem_alloc.o mem_free.o mem_realloc.o pool.o event.o.0 event.o.1 queue.o \
 pipe.o shm.o mode.o bcopy.o duct.o image.o png.o jpeg.o sys_nanosleep.o.0 \

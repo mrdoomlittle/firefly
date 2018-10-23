@@ -6,6 +6,30 @@
 # include "../memory/mem_free.h"
 # include "../system/err.h"
 # include "../system/io.h"
+# include "../dep/str_len.h"
+
+void* ffly_mtp_req(FF_SOCKET *__sock, char const *__file, ff_uint_t *__size) {
+	ff_uint_t len;
+	ff_err_t err;
+	len = ffly_str_len(__file);
+
+	ff_u8_t code[10];
+	*code = 0x01;
+	*(ff_u16_t*)(code+1) = 0;
+	*(ff_u16_t*)(code+3) = len;
+	*(code+5) = 0x00;
+	*(ff_u16_t*)(code+6) = 0;
+	*(ff_u16_t*)(code+8) = len;
+
+	ff_u32_t tsz;
+	tsz = 10;
+	ff_net_send(__sock, &tsz, sizeof(ff_u32_t), 0, &err);
+	ff_net_send(__sock, code, 10, 0, &err);
+
+	ff_net_send(__sock, __file, len, 0, &err);
+	return ffly_mtp_rcv(__sock, __size, &err);
+}
+
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	if (__argc<2) {
 		ffly_printf("please provide file.\n");
@@ -13,7 +37,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	}
 
 	ff_err_t err;
-	FF_SOCKET *sock = ff_net_creat(&err, AF_INET, SOCK_STREAM, 0);
+	FF_SOCKET *sock = ff_net_creat(&err, _NET_PROT_TCP);
 	if (_err(err)) {
 		ffly_fprintf(ffly_err, "failed to crate socket.\n");
 		_ret;
@@ -30,41 +54,10 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		goto _end;
 	}
 
-	struct ffly_mtp_hdr hdr;
-	hdr.file = __argv[1];
-
-	if (_err(err = ffly_mtp_sndhdr(sock, &hdr))) {
-		ffly_fprintf(ffly_err, "failed to recv header.\n");
-		goto _end;
-	}
-
-	ff_err_t fault;
-	if (_err(err = ffly_mtp_rcverr(&fault, sock))) {
-		ffly_fprintf(ffly_err, "failed to recv error.\n");
-		goto _end;
-	}
-
-	if (_err(fault)) {
-		ffly_fprintf(ffly_err, "got error.\n");
-		goto _end;
-	}
-
-	ff_uint_t size;
 	void *p;
-
-	p = ffly_mtp_rcv(sock, &size, &err);
-	if (_err(err)) {
-		ffly_fprintf(ffly_err, "failed to recv.\n");
-		if (p != NULL)
-			__ffly_mem_free(p);
-		goto _end;
-	}
-
-	if (!p) {
-		err = FFLY_FAILURE;
-		ffly_fprintf(ffly_err, "got null pointer.\n");
-		goto _end;
-	}
+	ff_uint_t size;
+	
+	p = ffly_mtp_req(sock, __argv[1], &size);
 
 	struct ffly_mat mat;
 	mat.p = p;
@@ -73,7 +66,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_matact(&mat);
 
 	__ffly_mem_free(p);	
-	_end:
+_end:
 	ff_net_close(sock);
 	_ret;
 }

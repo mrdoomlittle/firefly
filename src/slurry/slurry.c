@@ -6,6 +6,10 @@
 # include "../malloc.h"
 # include "../linux/socket.h"
 # endif
+void *s_ov[] = {
+	NULL
+};
+
 void static
 _send(void *__buf, ff_uint_t __size, long long __sock) {
 	send(__sock, __buf, __size, 0);

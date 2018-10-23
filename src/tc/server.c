@@ -16,7 +16,7 @@ int main() {
 	struct sockaddr_in adr, cli;
 	adr.sin_family = AF_INET;
 	adr.sin_addr.s_addr = htons(INADDR_ANY);
-	adr.sin_port = htons(10198);
+	adr.sin_port = htons(33216);
 	int val = 1;
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int));
 	bind(sock, (struct sockaddr*)&adr, sizeof(struct sockaddr_in));

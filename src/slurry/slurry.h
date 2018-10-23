@@ -9,6 +9,8 @@
 # endif
 
 #define EVBS 20
+#define OV_PORTN	0
+
 # include "event.h"
 
 # ifndef __slurry_client
@@ -21,6 +23,12 @@ struct s_window {
 	GLXContext glx_ct;
 };
 # endif
+
+
+/*
+operational variables
+*/
+extern void *s_ov[];
 
 typedef struct s_tape {
 	void *text;
@@ -37,7 +45,7 @@ void(*s_io_recv)(void*, ff_uint_t, long long);
 
 s_tapep s_tape_new(ff_uint_t);
 void s_tape_destroy(s_tapep);
-
+void s_confload(void);
 # ifndef __slurry_client
 void sse_open(void);
 void sse_run(void);
