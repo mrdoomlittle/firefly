@@ -8,7 +8,7 @@
 # include "atomic.h"
 # include "cond_lock.h"
 # if !defined(__ffly_no_sysconf) && !defined(__ffly_crucial)
-# define MAX_THREADS __ffly_sysconf__.max_threads
+# define MAX_THREADS (*sysconf_get(max_threads))
 # else
 # define MAX_THREADS 20
 # endif

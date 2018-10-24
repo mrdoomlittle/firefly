@@ -37,6 +37,7 @@ stdec(char *__buf, ff_uint_t __len) {
 	}
 	return r;
 }
+
 char static *g_buf;
 ff_uint_t static g_len;
 
@@ -44,6 +45,7 @@ ff_uint_t static port_n;
 void static
 port_num(void) {
 	port_n = stdec(g_buf, g_len);
+	// set
 	s_ov[OV_PORTN] = &port_n;
 }
 

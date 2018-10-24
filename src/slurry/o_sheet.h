@@ -1,5 +1,6 @@
 # ifndef __ffly__o__sheet__h
 # define __ffly__o__sheet__h
+// operation sheet
 #define _op_window_new		0x00
 #define _op_read			0x01
 #define _op_write			0x02

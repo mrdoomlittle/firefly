@@ -32,20 +32,19 @@
 */
 # define DSS 262144
 void ffly_mod() {
-	if (!__ffly_sysconf__.root_dir ||
-		!__ffly_sysconf__.moddir ||
-		!__ffly_sysconf__.modl) return;
+	char const **modl;
+	modl = *sysconf_get(modl);
 
-	if (!*__ffly_sysconf__.modl) return;
+	if (!*modl) return;
 
 	char buf[1024];
 	char *bufp = buf;
-	bufp+=ffly_str_cpy(bufp, __ffly_sysconf__.root_dir);
+	bufp+=ffly_str_cpy(bufp, *sysconf_get(root_dir));
 	*(bufp++) = '/';
-	bufp+=ffly_str_cpy(bufp, __ffly_sysconf__.moddir);
+	bufp+=ffly_str_cpy(bufp, *sysconf_get(moddir));
 	*(bufp++) = '/';
-	char const **mod = __ffly_sysconf__.modl;
-	
+	char const **mod = modl;
+
 	while(*mod != NULL) {		
 		ffly_str_cpy(bufp, *mod);	
 		ffly_fprintf(ffly_log, "module path: %s\n", buf);

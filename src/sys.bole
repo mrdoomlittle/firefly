@@ -1,0 +1,26 @@
+version:"a7e0a0a0a0a0a0a0a0a0a0c0",
+# max no. of threads
+max_threads:20~_64l_u,
+# alloca stack size
+alssize:400~_64l_u,
+# list of modules to execute
+# TODO:
+# ["mod", loadmethod]
+modl:[
+],
+# list of scripts for init - not finished
+inil:[
+],
+# directory from root dir
+moddir:"modules",
+inidir:"init",
+# where are we installed
+root_dir:"/home/daniel-robson/mount/firefly",
+cache_dir:"/home/daniel-robson/mount/firefly/cache",
+db:{
+	ip_addr:"127.0.0.1",
+	port:21299~_16l_u,
+	enckey:"firefly",
+	user:"root",
+	passwd:"none",
+},

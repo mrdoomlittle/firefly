@@ -29,6 +29,13 @@ int main() {
 	if (err<0) {
 		printf("error.\n");
 	}
-	printf("sec: %u, nsec: %u, %d:%f, %u\n", t.sec, t.nsec, tv.tv_sec-ts.tv_sec, ((float)(tv.tv_usec-(ts.tv_nsec/1000)))/1000000.0, tv.tv_sec);
+	ff_u64_t h, m, s;
+	h = t.sec/3600;
+	m = t.sec/60;
+	s = t.sec;
+
+    printf("time: %u-hour : %u-min %u-sec : %u\n", h, m, s, t.nsec);
+//	printf("sec: %u, nsec: %u, %d:%f, %u\n", t.sec, t.nsec, tv.tv_sec-ts.tv_sec, ((float)(tv.tv_usec-(ts.tv_nsec/1000)))/1000000.0, tv.tv_sec);
+
 	close(sock);
 }

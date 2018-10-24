@@ -45,9 +45,9 @@ void ffly_alsld(void *__p, ff_uint_t __size) {
 }
 
 void ffly_alrig() {
-	p = (ff_u8_t*)__ffly_mem_alloc(__ffly_sysconf__.alssize);
+	p = (ff_u8_t*)__ffly_mem_alloc(*sysconf_get(alssize));
 	fresh = p;
-	end = p+__ffly_sysconf__.alssize;
+	end = p+*sysconf_get(alssize);
 }
 
 void ffly_alss(void *__p, ff_uint_t __size) {

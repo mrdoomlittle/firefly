@@ -6,31 +6,33 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../mode.h"
+# include "../dep/mem_set.h"
 # define DEF_MAX_THREADS 20
 # define ALLOCA_SSIZE 400
-struct ffly_sysconf __ffly_sysconf__ = {
-	.version = NULL, .root_dir = NULL,
-	.moddir = NULL, .inidir = NULL,
-	.modl = NULL, .inil = NULL,
-	.db = {
-		.loaded = -1,
-		.ip_addr = NULL,
-		.port = 0,
-		.enckey = NULL,
-		.user = NULL,
-		.passwd = NULL
-	},
-	.loaded = -1
-};
+
+ff_u8_t ffly_sysconf[256];
+#define _MAX_THREADS		0x0000000000000001
+#define _ALSSIZE			0x0000000000000002
+static ff_u64_t flags = 0;
+#define isset(__what) \
+	((flags&(__what)) == (__what))
+#define isnset(__what) \
+	!isset(__what)
+void static
+init(void) {
+	ffly_mem_set(ffly_sysconf, 0, 256);
+	*sysconf_get(loaded) = -1;
+	*sysconf_get(db_loaded) = -1;
+}
 
 void static
 ld_def_max_threads(void) {
-	__ffly_sysconf__.max_threads = DEF_MAX_THREADS;
+	*sysconf_get(max_threads) = DEF_MAX_THREADS;
 }
 
 void static
 ld_def_alssize(void) {
-	__ffly_sysconf__.alssize = ALLOCA_SSIZE;
+	*sysconf_get(alssize) = ALLOCA_SSIZE;
 }
 
 void ffly_ld_sysconf_def() {
@@ -41,35 +43,35 @@ void ffly_ld_sysconf_def() {
 void static
 ld_max_threads(ffbole *__cf) {
 	void const *p;
-	if (!(p = ffly_bole_get(__cf, "max_threads")))
-		ld_def_max_threads();
-	else
-		__ffly_sysconf__.max_threads = ffly_bole_int_u(p);
-	ffly_fprintf(ffly_log, "max threads: %u\n", __ffly_sysconf__.max_threads);
+	if ((p = ffly_bole_get(__cf, "max_threads")) != NULL) {
+		*sysconf_get(max_threads) = ffly_bole_int_u(p);
+		flags |= _MAX_THREADS;
+	}
+	ffly_fprintf(ffly_log, "max threads: %u\n", *sysconf_get(max_threads));
 }
 
 void static
 ld_alssize(ffbole *__cf) {
 	void const *p;
-	if (!(p = ffly_bole_get(__cf, "alssize")))
-		ld_def_alssize();
-	else
-		__ffly_sysconf__.alssize = ffly_bole_int_u(p);
-	ffly_fprintf(ffly_log, "alloca ssize: %u\n", __ffly_sysconf__.alssize);
+	if ((p = ffly_bole_get(__cf, "alssize")) != NULL) {
+		*sysconf_get(alssize) = ffly_bole_int_u(p);
+		flags |= _ALSSIZE;
+	}
+	ffly_fprintf(ffly_log, "alloca ssize: %u\n", *sysconf_get(alssize));
 }
 
 void static
 ld_moddir(ffbole *__cf) {
 	void const *p;
 	if ((p = ffly_bole_get(__cf, "moddir")) != NULL)
-		__ffly_sysconf__.moddir = (char const*)ffly_str_dupe(ffly_bole_str(p));	
+		*sysconf_get(moddir) = (char const*)ffly_str_dupe(ffly_bole_str(p));	
 }
 
 void static
 ld_inidir(ffbole *__cf) {
 	void const *p;
 	if ((p = ffly_bole_get(__cf, "inidir")) != NULL)
-		__ffly_sysconf__.inidir = (char const*)ffly_str_dupe(ffly_bole_str(p));		
+		*sysconf_get(inidir) = (char const*)ffly_str_dupe(ffly_bole_str(p));		
 }
 
 void static
@@ -78,14 +80,14 @@ ld_modl(ffbole *__cf) {
 	if ((p = ffly_bole_get(__cf, "modl")) != NULL) {
 		ffly_printf("module list len: %u\n", ffly_bole_arr_len(p));
 		ff_u8_t i = 0, l = ffly_bole_arr_len(p);
-		__ffly_sysconf__.modl = (char const**)__ffly_mem_alloc((l+1)*sizeof(char const*));
+		*sysconf_get(modl) = (char const**)__ffly_mem_alloc((l+1)*sizeof(char const*));
 
 		while(i != l) {
-			__ffly_sysconf__.modl[i] = (char const*)ffly_str_dupe(ffly_bole_str(ffly_bole_arr_elem(p, i)));
+			(*sysconf_get(modl))[i] = (char const*)ffly_str_dupe(ffly_bole_str(ffly_bole_arr_elem(p, i)));
 			ffly_printf("module: %s\n", ffly_bole_str(ffly_bole_arr_elem(p, i)));
 			i++;
 		}
-		__ffly_sysconf__.modl[i] = NULL;
+		(*sysconf_get(modl))[i] = NULL;
 	}
 }
 
@@ -95,17 +97,17 @@ ld_inil(ffbole *__cf) {
 	if ((p = ffly_bole_get(__cf, "inil")) != NULL) {
 		ffly_printf("init list len: %u\n", ffly_bole_arr_len(p));
 		ff_u8_t i = 0, l = ffly_bole_arr_len(p);
-		if (!(__ffly_sysconf__.inil = (char const**)__ffly_mem_alloc((l+1)*sizeof(char const*)))) {
+		if (!(*sysconf_get(inil) = (char const**)__ffly_mem_alloc((l+1)*sizeof(char const*)))) {
 			ffly_printf("error.\n");
 			return;
 		}
 
 		while(i != l) {
-			__ffly_sysconf__.inil[i] = (char const*)ffly_str_dupe(ffly_bole_str(ffly_bole_arr_elem(p, i)));
+			(*sysconf_get(inil))[i] = (char const*)ffly_str_dupe(ffly_bole_str(ffly_bole_arr_elem(p, i)));
 			ffly_printf("init: %s\n", ffly_bole_str(ffly_bole_arr_elem(p, i)));
 			i++;
 		}
-		__ffly_sysconf__.inil[i] = NULL;
+		(*sysconf_get(inil))[i] = NULL;
 	}
 }
 
@@ -117,38 +119,36 @@ ld_db(void const *__db) {
 	void const *user;
 	void const *passwd;
 
+	ffly_printf("*db-composition:\n");
 	if ((ip_addr = ffly_bole_struc_get(__db, "ip_addr")) != NULL) {
-		__ffly_sysconf__.db.ip_addr =  (char const*)ffly_str_dupe(ffly_bole_str(ip_addr));
-		ffly_printf("ip addr: %s\n", __ffly_sysconf__.db.ip_addr);
-	} else
-		__ffly_sysconf__.db.ip_addr = NULL;
+		*sysconf_get(db_ip_addr) = (char const*)ffly_str_dupe(ffly_bole_str(ip_addr));
+		ffly_printf("\t-ip addr: %s\n", *sysconf_get(db_ip_addr));
+	}
 
 	if ((port = ffly_bole_struc_get(__db, "port")) != NULL) {
-		__ffly_sysconf__.db.port = ffly_bole_16l_u(port);
-		ffly_printf("port: %u\n", __ffly_sysconf__.db.port);
+		*sysconf_get(db_port) = ffly_bole_16l_u(port);
+		ffly_printf("\t-port: %u\n", *sysconf_get(db_port));
 	}
 
 	if ((enckey = ffly_bole_struc_get(__db, "enckey")) != NULL) {
-		__ffly_sysconf__.db.enckey = (char const*)ffly_str_dupe(ffly_bole_str(enckey));
-		ffly_printf("enckey: %s\n", __ffly_sysconf__.db.enckey);
-	} else
-		__ffly_sysconf__.db.enckey = NULL;
+		*sysconf_get(db_enckey) = (char const*)ffly_str_dupe(ffly_bole_str(enckey));
+		ffly_printf("\t-enckey: %s\n", *sysconf_get(db_enckey));
+	}
 
 	if ((user = ffly_bole_struc_get(__db, "user")) != NULL) {
-		__ffly_sysconf__.db.user = (char const*)ffly_str_dupe(ffly_bole_str(user));
-		ffly_printf("user: %s\n", __ffly_sysconf__.db.user);
-	} else
-		__ffly_sysconf__.db.user = NULL;
+		*sysconf_get(db_user) = (char const*)ffly_str_dupe(ffly_bole_str(user));
+		ffly_printf("\t-username: %s\n", *sysconf_get(db_user));
+	}
 
 	if ((passwd = ffly_bole_struc_get(__db, "passwd")) != NULL) {
-		__ffly_sysconf__.db.passwd = (char const*)ffly_str_dupe(ffly_bole_str(passwd));
-		ffly_printf("password: %s\n", __ffly_sysconf__.db.passwd);
-	} else
-		__ffly_sysconf__.db.passwd = NULL;
-	__ffly_sysconf__.db.loaded = 0;
+		*sysconf_get(db_passwd) = (char const*)ffly_str_dupe(ffly_bole_str(passwd));
+		ffly_printf("\t-password: %s\n", *sysconf_get(db_passwd));
+	}
+	*sysconf_get(db_loaded) = 0;
 }
 
 ff_err_t ffly_ld_sysconf(char const *__path) {
+	init();
 	struct ffly_bole conf;
 	ff_err_t err = FFLY_SUCCESS;
 	if (_err(err = ffly_bole_init(&conf))) {
@@ -167,22 +167,27 @@ ff_err_t ffly_ld_sysconf(char const *__path) {
 	}
 
 	ffbole cf;
+	// deposit
 	ffly_bole_depos(&conf, &cf);
 
-	void const *version = ffly_bole_get(&cf, "version");
+	void const *version;
+	
+	version = ffly_bole_get(&cf, "version");
 	if (!ffly_bole_is_str(version)) {
 		ffly_fprintf(ffly_err, "can't read version as type does not match.\n");
 		err = FFLY_FAILURE;
 		goto _fail;
 	}
 
-	void const *root_dir = ffly_bole_get(&cf, "root_dir");
+	void const *root_dir;
+	
+	root_dir = ffly_bole_get(&cf, "root_dir");
 	if (!ffly_bole_is_str(root_dir)) {
 
 	}
 
-	void const *db = ffly_bole_get(&cf, "db");
-	if (db != NULL)
+	void const *db;
+	if ((db = ffly_bole_get(&cf, "db")) != NULL)
 		ld_db(db);
 
 	ld_max_threads(&cf);
@@ -192,9 +197,20 @@ ff_err_t ffly_ld_sysconf(char const *__path) {
 	ld_modl(&cf);
 	ld_inil(&cf);
 
-	__ffly_sysconf__.version = (char const*)ffly_str_dupe(ffly_bole_str(version));
-	__ffly_sysconf__.root_dir = (char const*)ffly_str_dupe(ffly_bole_str(root_dir));
-	__ffly_sysconf__.loaded = 0;
+	
+	*sysconf_get(version) = (char const*)ffly_str_dupe(ffly_bole_str(version));
+	*sysconf_get(root_dir) = (char const*)ffly_str_dupe(ffly_bole_str(root_dir));
+	*sysconf_get(loaded) = 0;
+
+	if (isnset(_MAX_THREADS)) {
+		ffly_printf("'max threads' not specified in config, loading default.\n");
+		ld_def_max_threads();
+	}
+
+	if (isnset(_ALSSIZE)) {
+		ffly_printf("'alloca stack size' not specified in config, loading default.\n");
+		ld_def_alssize();
+	}
 _fail:
 	if (_err(err = ffly_bole_free(&conf))) {
 		ffly_fprintf(ffly_err, "failed to free config:0.\n");
@@ -210,32 +226,37 @@ _fail:
 }
 
 # include "../macros.h"
-void ffly_free_sysconf() {
-	__ffly_finn(__ffly_sysconf__.version);
-	__ffly_finn(__ffly_sysconf__.root_dir);
-	__ffly_finn(__ffly_sysconf__.moddir);
-	__ffly_finn(__ffly_sysconf__.inidir);
+void ffly_free_sysconf(void) {
+/*
+	TODO:
+		list of pointers to free
+		not this:
+*/
+	__ffly_finn(*sysconf_get(version));
+	__ffly_finn(*sysconf_get(root_dir));
+	__ffly_finn(*sysconf_get(moddir));
+	__ffly_finn(*sysconf_get(inidir));
 
-	__ffly_finn(__ffly_sysconf__.db.ip_addr);
-	__ffly_finn(__ffly_sysconf__.db.enckey);
-	__ffly_finn(__ffly_sysconf__.db.user);
-	__ffly_finn(__ffly_sysconf__.db.passwd);
+	__ffly_finn(*sysconf_get(db_ip_addr));
+	__ffly_finn(*sysconf_get(db_enckey));
+	__ffly_finn(*sysconf_get(db_user));
+	__ffly_finn(*sysconf_get(db_passwd));
 
 	char const **mod;
-	if ((mod = __ffly_sysconf__.modl) != NULL) {
+	if ((mod = *sysconf_get(modl)) != NULL) {
 		while(*mod != NULL) {
 			__ffly_mem_free((void*)*mod);
 			mod++;
 		}
-		__ffly_mem_free(__ffly_sysconf__.modl);
+		__ffly_mem_free(*sysconf_get(modl));
 	}
 
 	char const **ini;	
-	if ((ini = __ffly_sysconf__.inil) != NULL) {
+	if ((ini = *sysconf_get(inil)) != NULL) {
 		while(*ini != NULL) {
 			__ffly_mem_free((void*)*ini);
 			ini++;
 		}
-		__ffly_mem_free(__ffly_sysconf__.inil);
+		__ffly_mem_free(*sysconf_get(inil));
 	}
 }

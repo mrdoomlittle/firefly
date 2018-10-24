@@ -93,15 +93,19 @@ ff_i8_t static
 check_conf_version(void) {
 	ff_i8_t ret;
 	char p[] = ffly_version;
-	if ((ret = ffly_mem_cmp(__ffly_sysconf__.version, p, ffly_version_len))<0) {
+	char const *vers;
+	vers = *sysconf_get(version);
+	if ((ret = ffly_mem_cmp(vers, p, ffly_version_len))<0) {
 		ffly_printf("sysconf out of date.\n");
 		ff_u64_t a;
-		ffly_ff6_dec(__ffly_sysconf__.version, &a, ffly_version_len);
+		ffly_ff6_dec(vers, &a, ffly_version_len);
 		if (a>ffly_version_int) {
 			ffly_printf("config version too in date.\n");
 		} else if (a<ffly_version_int) {
 			ffly_printf("config version out of date.\n");
 		}
+	} else {
+		ffly_printf("config in date.\n");
 	}
 	return ret;
 }
@@ -269,7 +273,7 @@ void _ffstart(void) {
 	*/
 	ff_i8_t conf = -1;
 	ff_i8_t hatch = -1;
-	if (argc > 1) {
+	if (argc>1) {
 		if (!ffly_str_cmp(*argp, "-proc")) {
 			evalopts(*(++argp));
 			argp++;
@@ -302,7 +306,16 @@ void _ffstart(void) {
 		//goto _end;
 	}
 
-	if (conf<0)
+	if (conf == -1) {
+		if (!access("sys.bole", F_OK)) {
+			ffly_printf("loading sysconfig.\n");
+			ffly_ld_sysconf("sys.bole");
+			check_conf_version();
+			conf = 0;
+		}
+	}
+
+	if (conf == -1)
 		// load default builtin config if no file was provided
 		ffly_ld_sysconf_def();
 	/*
