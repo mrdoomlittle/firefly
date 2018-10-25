@@ -12,19 +12,19 @@ struct frag {
 	ff_int_t m, k;
 	ff_int_t m0, k0;
 	char const *ident;
-	ff_int_t u0, u1;
+	ff_int_t u;
 };
 
 #define FN 8
 struct frag frags[] = {
-	{20, 0, 114, NULL, NULL, 0, 0, 0, 0, "\e[1;31ma\e[0m"},
-	{20, 20, 200, NULL, NULL, 0, 0, 0, 0, "\e[1;31mb\e[0m"},
-	{20, 40, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31mc\e[0m"},
-	{20, 60, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31md\e[0m"},
-	{20, 80, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31me\e[0m"},
-	{20, 100, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31mf\e[0m"},
-	{20, 120, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31mg\e[0m"},
-	{20, 140, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31mh\e[0m"}
+	{20, 0, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31ma\e[0m", 0},
+	{20, 20, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31mb\e[0m", 0},
+	{20, 40, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31mc\e[0m", 0},
+	{20, 60, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31md\e[0m", 0},
+	{20, 80, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31me\e[0m", 0},
+	{20, 100, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31mf\e[0m", 0},
+	{20, 120, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31mg\e[0m", 0},
+	{20, 140, 0, NULL, NULL, 0, 0, 0, 0, "\e[1;31mh\e[0m", 0}
 };
 
 ff_uint_t __n(long long __val) {
@@ -54,40 +54,64 @@ prb(long long __val, ff_u8_t __b) {
 	*(buf+i+offset) = '\0';
 	printf("%s", buf);
 }
-
+//#define T0
+//#define T1
 int main(void) {
-	struct frag *a0, *a1, *b0, *b1;
+	struct frag *a0, *a1, *a2, *b0, *b1, *b2;
+#ifdef T0
+	a0 = frags+2;
+	a1 = frags+5;
+	b0 = frags+6;
+	b1 = frags+1;
+
+	a2 = frags;
+	b2 = frags+7;
+	a2->dst = b2;
+	a0->offset = 400;
+#endif
+#ifdef T1
 	a0 = frags;
 	a1 = frags+1;
 	b0 = frags+7;
 	b1 = frags+6;
-
+#endif
 	a0->dst = b0;
 	a1->dst = b1;
 
-	char buf[24];
+	char bf0[24], bf1[24];
 	struct frag *f, *r;
 	ff_uint_t i;
 	i = 0;
 
 	ff_int_t m, k;
+	while(i != FN) {
+		f = frags+(i++);
+		if (f->dst != NULL) {
+			f->link = f->dst->link;
+			f->dst->link = f;
+		}
+	}
+_again:
 	m = 0;
 	k = 0;
+	i = 0;
 	while(i != FN) {
 		f = frags+(i++);
 		f->m = m;
 		f->k = k;
-//		m-=f->m0;
-//		k-=f->k0;
-		
-		memset(buf, '#', m);
-		buf[m] = '\0';
-		printf("%s\t\t%s>%s", buf, f->ident, !f->dst?"non":f->dst->ident);
+		memset(bf0, '#', m);
+		bf0[m] = '\0';
+		memset(bf1, '#', k);
+		bf1[k] = '\0';
+		printf("%s\t%s\t%s>%s", bf0, bf1, f->ident, !f->dst?"non":f->dst->ident);
 		if (f->dst != NULL) {
 			ff_int_t dis;
 			dis = (f->dst->offset+f->label)-f->offset;
 			if (dis<0)
 				dis = -dis;
+			ff_int_t x;
+			x = f->dst->m-f->m;
+			dis+=x<0?-x:x;
 			ff_uint_t n, u, h;
 			n = __n(dis);
 			u = (n+((1<<3)-1))>>3;
@@ -99,57 +123,21 @@ int main(void) {
 				goto _again0;
 			}
 			u = h;
-			m+=u;
 			f->dst->m0 = u;
-			f->u0 = u;
-			f->link = f->dst->link;
-			f->dst->link = f;
-			printf(", dis: %d, %u", dis+u, u);
+			m+=u;
+			printf(", dis: %d, %d", dis, u);
 		}
 
-		if (f->link != NULL) {
-			r = f;
-			f = f->link;
-			while(f != NULL) {
-				ff_int_t dis;
-				dis = (r->offset+f->label)-f->offset;
-				if (dis<0)
-					dis = -dis;
-				dis+=k;
-				ff_uint_t n, u, h;
-				n = __n(dis);
-				u = (n+((1<<3)-1))>>3;
-			_again1:
-				n = __n(dis+u);
-				h = (n+((1<<3)-1))>>3;
-				if (h != u) {
-					u = h;
-					goto _again1;
-				}
-				u = h;
-				k+=u;
-				f->u1 = u;
-				f->k0 = u;
-				f = f->link;
-			}
-		}
 		printf("\n");
 	}
 
 	i = 0;
 	while(i != FN) {
 		f = frags+(i++);
-
 		if (f->dst != NULL) {
-			if (f->u0 != f->u1) {
-				printf("@");
-			}
-			printf("%s-%u,%u>", f->ident, f->u0, f->u1);
-			if (f->offset<f->dst->offset) {
-				printf("m: %d\n", f->dst->m-f->m);	
-			} else {
-				printf("k: %d\n", f->k-f->dst->k);
-			}
+			printf("%s, %d\n", f->ident, f->dst->m-f->m);
 		}
 	}
+	usleep(1000000);
+	goto _again;
 }
