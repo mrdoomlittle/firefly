@@ -11,3 +11,7 @@ local labels:
 	.l 0
 	.l 1
 store local labels in array 0-... and not in hash table
+
+
+MAJOR:
+	fragment

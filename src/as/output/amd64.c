@@ -234,9 +234,9 @@ _fixins(struct fix_s *__fx) {
 
 		ff_u8_t n;
 
-		n = (l->f->adr+l->foffset)-(__fx->adr+__fx->size);
+//		n = (l->f->adr+l->foffset)-(__fx->adr+__fx->size);
 
-		__fx->f->bs = 
+//		__fx->f->bs = 
 	}
 }
 

@@ -52,14 +52,14 @@ struct frag* ff_as_fnew(void) {
 		frt_page_c++;
 	} else {
 		if (pg>= frt_page_c) {
-			fr_tbl = (struct frag***)ff_as_ral((++frt_page_c)*sizeof(struct frag**));
+			fr_tbl = (struct frag***)ff_as_ral(fr_tbl, (++frt_page_c)*sizeof(struct frag**));
 		} else
 			goto _sk;
 	}
 
-	*(frt_tbl+pg) = (struct frag**)ff_as_al(FRT_PAGE_SIZE*sizeof(struct frag*));
+	*(fr_tbl+pg) = (struct frag**)ff_as_al(FRT_PAGE_SIZE*sizeof(struct frag*));
 _sk:
-	page = frt_tbl+pg;
+	page = fr_tbl+pg;
 	*((*page)+pg_off) = f;
 	return f;
 }
@@ -156,7 +156,7 @@ struct frag *ff_as_fbn(ff_uint_t __n) {
 
 	pg = __n>>FRT_PAGE_SHIFT;
 	pg_off = __n-(pg*FRT_PAGE_SIZE);
-	return *((*(frt_tbl+pg))+pg_off);
+	return *((*(fr_tbl+pg))+pg_off);
 }
 
 # include "../hexdump.h"

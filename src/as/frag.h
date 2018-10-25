@@ -72,6 +72,8 @@ struct frag {
 	ff_u8_t flags;
 
 	ff_int_t bs;
+
+	struct fix_s *fx;
 };
 
 // current fragment

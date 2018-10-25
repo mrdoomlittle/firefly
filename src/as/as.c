@@ -408,15 +408,15 @@ void ff_as_final(void) {
 	if (outbuf.off>0) {
 		drain();
 	}
-
+/*
 	struct fix_s *fx;
 
-	fx = f->fx;
+	fx = fr_head->fx;
 	while(fx != NULL) { 
 		ff_as_fixins(fx);
 		fx = fx->next;
 	}
-
+*/
 	struct frag *f;
 	f = fr_head;
 	while(f != NULL) {
