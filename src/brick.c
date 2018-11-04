@@ -3,8 +3,8 @@
 # include "memory/mem_free.h"
 # include "memory/mem_realloc.h"
 # include "system/io.h"
-# define PAGE_SHIFT 2
-# define PAGE_SIZE (1<<PAGE_SHIFT)
+#define PAGE_SHIFT 2
+#define PAGE_SIZE (1<<PAGE_SHIFT)
 
 /*
 	later on we need to download files for shit to work e.g. config files
@@ -29,8 +29,8 @@ static ffly_brickp bin = NULL;
 
 static ffly_brickp top = NULL;
 
-# define get_brick(__id) \
-	((*(bricks+(__id&0xfff)))+((__id>>12)&0xfffff))
+#define get_brick(__id) \
+	((*(bricks+(__id>>PAGE_SHIFT)))+(__id&0xffffffffffffffff>>(64-PAGE_SHIFT)))
 void static delink(ffly_brickp);
 
 ff_u32_t
@@ -49,7 +49,7 @@ ffly_brick_new(ff_u8_t __sz,
 		goto _sk0;
 	}
 	page = off>>PAGE_SHIFT;
-	pg_off;
+
 	if (!bricks) {
 		bricks = (ffly_brickp*)__ffly_mem_alloc(sizeof(ffly_brickp));
 		page_c++;
@@ -62,9 +62,8 @@ ffly_brick_new(ff_u8_t __sz,
 
 	*(bricks+page) = (ffly_brickp)__ffly_mem_alloc(PAGE_SIZE*sizeof(struct ffly_brick));
 _sk:
-	pg_off = (off++)-(page*PAGE_SIZE);
+	pg_off = (rd = off++)-(page*PAGE_SIZE);
 	b = (*(bricks+page))+pg_off;
-	rd = (page&0xfff)|((pg_off&0xfffff)<<12);
 
 	b->next = top;
 	if (top != NULL)
@@ -77,7 +76,7 @@ _sk0:
 	b->write = __write;
 	b->del = __del;
 	b->p = NULL;
-	b->flags = 0x0;
+	b->flags = 0x00;
 	b->inuse = 0;
 	b->sz = __sz;
 	return (b->id = rd);
@@ -103,6 +102,12 @@ void ffly_brick_close(ff_u32_t __id) {
 		if (b->write != NULL)
 			b->write(b->arg, b->p, b->sz);
 	}
+}
+
+ff_i8_t ffly_brick_exist(ff_u32_t __id) {
+	if (__id<off)
+		return 0;
+	return -1;
 }
 
 void* ffly_brick_get(ff_u32_t __id) {
@@ -151,7 +156,7 @@ void ffly_bricks_show(void) {
 	ffly_brickp cur = top;
 	ff_uint_t i = 0;
 	while(cur != NULL) {
-		ffly_printf("%u: %s, id: %u, pg: %u\n", i++, !cur->inuse?"inuse":"not inuse", cur->id, cur->id&0xfff);
+		ffly_printf("%u: %s, id: %u, pg: %u\n", i++, !cur->inuse?"inuse":"not inuse", cur->id, cur->id>>PAGE_SHIFT);
 		cur = cur->next;
 	}
 }
@@ -161,7 +166,7 @@ void ffly_brick_rid(ff_u32_t __id) {
 	ffly_brickp b = get_brick(__id);
 	if (b->del != NULL)
 		b->del(b->arg);
-	ff_u64_t bo = ((__id&0xfff)*PAGE_SIZE)+(__id>>12&0xfffff);
+	ff_u64_t bo = __id;
 
 	if (bo == off-1 && page_c>1) {
 		ffly_printf(".... next: %p\n", b->next);

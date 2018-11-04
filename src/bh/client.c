@@ -5,8 +5,7 @@
 //static struct ff_bh bh;
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_bh_open(&bh);
-	ff_bh_connect(&bh, "127.0.0.1", 21299);
-	
+	ff_bh_connect(&bh, "192.168.0.111", 40960);	
 	ff_err_t err;
 	
 	ff_uint_t const n = 8;

@@ -20,7 +20,7 @@ ff_u64_t static off = 0;
 sched_entityp static dead = NULL;
 
 # define get_entity(__id) \
-	((*(entities+(__id&0xfff)))+((__id>>12)&0xfffff))
+	((*(entities+(__id>>PAGE_SHIFT)))+(__id&(0xffffffffffffffff-(64-PAGE_SHIFT))))
 
 # define sched_lock ffly_mutex_lock(&lock)
 # define sched_unlock ffly_mutex_unlock(&lock)
@@ -60,9 +60,8 @@ ff_u32_t ffly_schedule(ff_i8_t(*__func)(void*), void *__arg_p, ff_u64_t __interv
 	}
 	*(entities+page) = (sched_entityp)__ffly_mem_alloc(PAGE_SIZE*sizeof(struct sched_entity));
 _sk:
-	pg_off = (off++)-(page*PAGE_SIZE);
+	pg_off = (ret = off++)-(page*PAGE_SIZE);
 	ent = (*(entities+page))+pg_off;
-	ret = (ent->id = ((page&0xfff)|((pg_off&0xfffff)<<12)));
 _dead:
 	ffly_fprintf(ffly_log, "sched, interval: %u, id: %u\n", __interval, ret);
 	if (!top)
@@ -80,7 +79,7 @@ _dead:
 		end->next = ent;
 	end = ent;
 	sched_unlock;
-	return ret;
+	return (ent->id = ret);
 }
 
 void static 
@@ -123,7 +122,7 @@ remove(sched_entityp __ent) {
 
 void ffly_sched_rm(ff_u32_t __id) {
 	sched_lock;
-	if (((__id&0xfff)*PAGE_SIZE)+((__id>>12)&0xfffff) == off-1) {
+	if (__id == off-1) {
 		deatach(get_entity(__id));
 		off--;
 		sched_entityp p;

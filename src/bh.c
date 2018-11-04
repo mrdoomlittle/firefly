@@ -60,7 +60,7 @@ void ff_bhs_open(void) {
 	ffly_bzero(&addr, sizeof(struct sockaddr_in));
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htons(INADDR_ANY);
-	addr.sin_port = htons(21299);
+	addr.sin_port = htons(40960);
 	FF_SOCKET *sock;
 
 	sock = ff_net_creat(&err, _NET_PROT_TCP);
@@ -176,6 +176,13 @@ ff_err_t ff_bh_bclose(ff_bhp __bh, ff_u32_t __b) {
 	*(ff_u32_t*)(code+1) = __b;
 	tape(__bh, code, 5, &err);
 	return err;
+}
+
+ff_i8_t ff_bh_bexist(ff_bhp __bh, ff_u32_t __b, ff_err_t *__err) {
+	ff_u8_t code[5];
+	*code = _bhop_bexist;
+	*(ff_u32_t*)(code+1) = __b;
+	tape(__bh, code, 5, __err);
 }
 
 struct {FF_SOCKET *sock;} client;
@@ -302,6 +309,11 @@ bh_bclose(void) {
 	ffly_printf("closing brick -%u\n", b);
 }
 
+void static
+bh_bexist(void) {
+
+}
+
 ff_i8_t static dc;
 void bh_disconnect();
 __asm__("bh_disconnect:\n\t"
@@ -317,7 +329,8 @@ static void(*op[])(void) = {
 	bh_bwrite,
 	bh_bread,
 	bh_bclose,
-	bh_disconnect
+	bh_disconnect,
+	bh_bexist
 };
 
 ff_uint_t static osz[] = {
@@ -329,7 +342,8 @@ ff_uint_t static osz[] = {
 	12,
 	12,
 	4,
-	0
+	0,
+	4
 };
 
 /*

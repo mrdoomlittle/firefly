@@ -11,7 +11,7 @@ enum {
 	_ff_brick_256
 };
 
-# define BRICK_OPEN 0x1
+# define BRICK_OPEN 0x01
 typedef struct ffly_brick {
 	struct ffly_brick *next, **pn, *fd, **bk;
 	void(*read)(long long, void*, ff_u8_t);
@@ -25,6 +25,7 @@ typedef struct ffly_brick {
 	ff_u8_t flags;
 } *ffly_brickp;
 
+ff_i8_t ffly_brick_exist(ff_u32_t);
 void ffly_bricks_show(void);
 ff_u32_t ffly_brick_new(ff_u8_t, void(*)(long long, void*, ff_u8_t), void(*)(long long, void*, ff_u8_t), void(*)(long long), long long);
 void ffly_brick_rid(ff_u32_t);

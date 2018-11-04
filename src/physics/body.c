@@ -8,8 +8,8 @@
 # include "../memory/mem_free.h"
 # include "../memory/mem_realloc.h"
 # include "../system/error.h"
-# define PAGE_SHIFT 4
-# define PAGE_SIZE (1<<PAGE_SHIFT)
+#define PAGE_SHIFT 4
+#define PAGE_SIZE (1<<PAGE_SHIFT)
 
 ff_err_t ffly_uni_attach_body(ffly_unip, ffly_phy_bodyp);
 ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
@@ -25,8 +25,8 @@ ff_u64_t static off = 0;
 ff_uint_t static page_c = 0;
 
 static ffly_phy_bodyp top = NULL;
-# define get_body(__id) \
-	((*(bodies+(__id&0xfff)))+((__id>>12)&0xfffff))
+#define get_body(__id) \
+	((*(bodies+(__id>>PAGE_SHIFT)))+(__id&(0xffffffffffffffff>>(64-PAGE_SHIFT))))
 
 ffly_phy_bodyp ffly_get_phy_body(ff_u32_t __id) {
 	return get_body(__id);
@@ -43,6 +43,7 @@ void ffly_phy_body_fd(ffly_phy_bodyp *__p) {
 ff_u32_t ffly_physical_body(void(*__get)(ff_u8_t, long long, void*), ff_u8_t __flags, void *__arg) {
 	ffly_phy_bodyp body;
 
+	ff_uint_t bo;
 	ff_uint_t page = off>>PAGE_SHIFT;
 	ff_uint_t pg_off;
 	if (!bodies) {
@@ -57,7 +58,7 @@ ff_u32_t ffly_physical_body(void(*__get)(ff_u8_t, long long, void*), ff_u8_t __f
 
 	*(bodies+page) = (ffly_phy_bodyp)__ffly_mem_alloc(PAGE_SIZE*sizeof(struct ffly_phy_body));
 _sk:
-	pg_off = (off++)-(page*PAGE_SIZE);
+	pg_off = (bo = off++)-(page*PAGE_SIZE);
 	body = (*(bodies+page))+pg_off;
 	if (top != NULL)
 		top->bk = &body->next;
@@ -80,7 +81,7 @@ _sk:
 	body->lot = NULL;
 	body->lock = FFLY_MUTEX_INIT;
 	body->flags = __flags;
-	return (body->id = (page&0xfff)|((pg_off&0xfffff)<<12));
+	return (body->id = bo);
 }
 
 /*
