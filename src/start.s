@@ -1,6 +1,11 @@
+	.globl FF_LP
+.data
+FF_LP: .quad
+.text
 	.extern _ffstart
 	.globl _start
 _start:
+	movq %rsp, FF_LP(%rip)
 	xorq %rbp, %rbp
 	// align stack
 	andq $~15, %rsp

@@ -135,7 +135,7 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "bron/tex.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 //	__asm__("subq $16, %rsp");
-	ffly_printf("%f\n", 0.003);
+	ffly_printf("%u\n", __argc);
 /*
 	struct ffly_cistern ctn;
 	ffly_cistern_init(&ctn, "test.cis");

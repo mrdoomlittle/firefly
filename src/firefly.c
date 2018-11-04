@@ -250,26 +250,27 @@ fini() {
 }
 
 # include "env.h"
+__asm__(".extern FF_LP");
 void _ffstart(void) {
 	init();
 	int long long argc;
 	char const **argv;
 	char const **envp;
-	// add prefix to instructions
-	__asm__("movq 8(%%rbp), %0\t\n"
-			"movq %%rbp, %%rdi\n\t"
-			"addq $16, %%rdi\n\t"
+	__asm__("movq FF_LP(%%rip), %%rbx\t\n"
+			"movq (%%rbx), %0\t\n"
+			"movq %%rbx, %%rdi\n\t"
+			"leaq 8(%%rbx), %%rdi\n\t"
 			"movq %%rdi, %1\n\t"
-			"movq 8(%%rbp), %%rax\n\t"
+			"movq (%%rbx), %%rax\n\t"
 			"addq $8, %%rdi\n\t"
 			"movq $8, %%rcx\n\t"
 			"mulq %%rcx\n\t"
 			"addq %%rax, %%rdi\n\t"
-			"movq %%rdi, %2" : "=r"(argc), "=r"(argv), "=r"(envp) : : "rax", "rdi", "rcx");
+			"movq %%rdi, %2" : "=r"(argc), "=r"(argv), "=r"(envp) : : "rax", "rdi", "rcx", "rbx");
 	char const **argp = argv;
 	char const **end = argp+argc;
 
-//	ffly_printf("%u - %u, %s\n", envp-argv, argc, *envp);
+//	ffly_printf("%u - %s - %s\n", argc, *argv, *envp);
 //	fini();
 //	exit(0);
 

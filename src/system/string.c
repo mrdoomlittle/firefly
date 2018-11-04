@@ -3,6 +3,10 @@
 # include "../ffly_def.h"
 
 /*
+	NOTE/THINK?
+		i wanted to avoid buffers in this, instead went with function pointer to 
+		buffer thats emited in 'CUT SIZES' but because of this things might be slower
+		and more obstacles to get around.
 	TODO:
 		replace switch statments
 		with array
@@ -221,7 +225,7 @@ ff_uint_t ffly_floatts(double __no, char *__buf) {
 	ff_u8_t off = 0;
 	return _ffly_floatts(__no, &cut, &off, drain);
 }
-
+//# include <stdio.h>
 ff_uint_t _ffly_floatts(double __no, ff_u16_t *__cut, ff_u8_t *__off, void(*__drain)(ff_u8_t*, ff_u16_t, ff_u16_t, ff_u8_t)) {
 	char buf[CUT_SIZE];
 	ff_u16_t cut = *__cut;
@@ -234,14 +238,21 @@ ff_uint_t _ffly_floatts(double __no, ff_u16_t *__cut, ff_u8_t *__off, void(*__dr
 		i++;	   
 	}
 
+	ff_uint_t dpp;
+	dpp = (cut*CUT_SIZE)+ct_off+i;
 
 	ff_u64_t no, s = 0;
 	ff_uint_t l = 0;
 	char *p = buf;
 	char *end = p+CUT_SIZE;
 _bk:
-	if (__no<1) {
-		while(__no<1) {
+	if (__no*10<1) {
+		while(__no*10<1) {
+/*
+	TODO:
+		count x zeros then fill buf with '0' 
+		and emit x after count to remove assignment of buf to zero
+*/
 			if (s>=CUT_SIZE) {
 				__drain(buf, s, cut++, ct_off);
 				s = 0;
@@ -276,7 +287,7 @@ _bk:
 			__drain(p = buf, CUT_SIZE, cut++, ct_off);
 
 		if (t++ == i) {
-			*(p++) = '.';
+			*(p++) = '0';
 			l++;
 			goto _again;
 		}
@@ -309,6 +320,9 @@ _bk:
 
 	*buf = '\0';
 	__drain(buf, 1, cut, ct_off);
+	// temp fix
+	*buf = '.';
+	__drain(buf, 1, dpp>>CUT_SHIFT, dpp-((dpp>>CUT_SHIFT)*CUT_SIZE));
 	*__cut = cut;
 	*__off = ct_off;
 	return l;
@@ -399,16 +413,16 @@ static double t[] = {
 int main() {
 	char buf[200];
 	ff_uint_t l;
-	l = ffly_floatts(0.0021, buf);
-	printf("%s, '%c'\n", buf, *(buf+l));
-	l = ffly_noths(21299, buf);
-	printf("%s, '%c'\n", buf, *(buf+l));
-	l = ffly_nots(21299, buf);
+	l = ffly_floatts(216.387733334, buf);
+	printf("%s\n", buf);
+//	l = ffly_noths(21299, buf);
+//	printf("%s, '%c'\n", buf, *(buf+l));
+//	l = ffly_nots(21299, buf);
 //	ff_u64_t i = 2376345750600;
 //	ff_u16_t cut = 0;
 //	ff_u8_t off = 0;
 //	ffly_nots(21299, &cut, &off, drain);
-	printf("%s, '%c'\n", buf, *(buf+l));
+//	printf("%s, '%c'\n", buf, *(buf+l));
 }
 */
 /*
