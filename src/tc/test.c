@@ -7,7 +7,18 @@
 # include <time.h>
 # include <sys/ioctl.h>
 # include "../tc.h"
+# include "math.h"
+# include <signal.h>
+ff_i8_t run = -1;
+void sig(int __sig) {
+	run = 0;
+}
 int main() {
+	struct sigaction sa;
+	memset(&sa, 0, sizeof(struct sigaction));
+	sa.sa_handler = sig;
+	sigaction(SIGINT, &sa, NULL); 
+
 	int sock;
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -18,24 +29,32 @@ int main() {
 	adr.sin_family = AF_INET;
 	adr.sin_port = htons(33216);
 	ff_i8_t ack;
-
-	struct timespec ts;
-	clock_gettime(CLOCK_REALTIME, &ts);
+	struct timeval tv;
 	struct tc_spec t;
+_again:
 	sendto(sock, &ack, 1, 0, (struct sockaddr*)&adr, len);
 	recvfrom(sock, &t, sizeof(struct tc_spec), 0, (struct sockaddr*)&adr, &len);
-	struct timeval tv;
 	int err = ioctl(sock, SIOCGSTAMP, &tv);
 	if (err<0) {
 		printf("error.\n");
 	}
-	ff_u64_t h, m, s;
-	h = t.sec/3600;
-	m = t.sec/60;
-	s = t.sec;
 
-    printf("time: %u-hour : %u-min %u-sec : %u\n", h, m, s, t.nsec);
-//	printf("sec: %u, nsec: %u, %d:%f, %u\n", t.sec, t.nsec, tv.tv_sec-ts.tv_sec, ((float)(tv.tv_usec-(ts.tv_nsec/1000)))/1000000.0, tv.tv_sec);
+	float v;
+	v = t.sec;
+	float d, h, m, s;
+	d = v/86400.;
+	v-=floor(d)*86400.;
+	h = v/3600.;
+	v-=floor(h)*3600.;
+	m = v/60.;
+	v-=floor(m)*60;
+	s = v;
 
+	printf("\e[2Jcurrent time: %u-%u-%u-%u or %u\n", (ff_u64_t)d, (ff_u64_t)h, (ff_u64_t)m, (ff_u64_t)s, t.sec);
+	if (run == -1) {
+		usleep(10000);
+		goto _again;
+	}
+	printf("goodbye.\n");
 	close(sock);
 }

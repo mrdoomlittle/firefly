@@ -299,16 +299,16 @@ int main() {
 			kc = xev.xkey.keycode;
 			printf("key: %u\n", kc);
 			switch(kc) {
-				case 65:
+				case 65://space
 					drawpoints();
 				break;
-				case 24:
+				case 24://q
 					clear();
 				break;
-				case 42:
+				case 42://g
 					output();
 				break;
-				case 57:
+				case 57://n
 					new();
 				break;
 

@@ -38,17 +38,18 @@ ffly_brick_new(ff_u8_t __sz,
 	void(*__read)(long long, void*, ff_u8_t), void(*__write)(long long, void*, ff_u8_t),
 	void(*__del)(long long), long long __arg)
 {
+	ff_u32_t rd, pg_off;
 	ffly_brickp b;
+	ff_uint_t page;
 	if (bin != NULL) {
 		b = bin;
 		if ((bin = bin->fd) != NULL)
 			bin->bk = &bin;
-		
-		b->inuse = 0;
-		return b->id;
+		rd = b->id;
+		goto _sk0;
 	}
-	ff_uint_t page = off>>PAGE_SHIFT;
-	ff_u32_t pg_off;
+	page = off>>PAGE_SHIFT;
+	pg_off;
 	if (!bricks) {
 		bricks = (ffly_brickp*)__ffly_mem_alloc(sizeof(ffly_brickp));
 		page_c++;
@@ -63,7 +64,14 @@ ffly_brick_new(ff_u8_t __sz,
 _sk:
 	pg_off = (off++)-(page*PAGE_SIZE);
 	b = (*(bricks+page))+pg_off;
+	rd = (page&0xfff)|((pg_off&0xfffff)<<12);
 
+	b->next = top;
+	if (top != NULL)
+		top->pn = &b->next;
+	b->pn = &top;
+	top = b;
+_sk0:
 	b->arg = __arg;
 	b->read = __read;
 	b->write = __write;
@@ -71,13 +79,8 @@ _sk:
 	b->p = NULL;
 	b->flags = 0x0;
 	b->inuse = 0;
-	b->next = top;
-	if (top != NULL)
-		top->pn = &b->next;
-	b->pn = &top;
 	b->sz = __sz;
-	top = b;
-	return (b->id = (page&0xfff)|((pg_off&0xfffff)<<12));
+	return (b->id = rd);
 }
 
 void ffly_brick_open(ff_u32_t __id) {
@@ -159,6 +162,7 @@ void ffly_brick_rid(ff_u32_t __id) {
 	if (b->del != NULL)
 		b->del(b->arg);
 	ff_u64_t bo = ((__id&0xfff)*PAGE_SIZE)+(__id>>12&0xfffff);
+
 	if (bo == off-1 && page_c>1) {
 		ffly_printf(".... next: %p\n", b->next);
 		ffly_brickp cur = b->next;

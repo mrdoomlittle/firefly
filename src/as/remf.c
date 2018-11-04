@@ -31,12 +31,16 @@ syt_gut(void) {
 		sy.name = ff_as_stt(cur->p, cur->len);
 		sy.type = cur->type;
 		sy.reg = 0;
+		sy.loc = 0;
 		if (is_sylabel(cur)) {
 			labelp la = (labelp)ff_as_hash_get(&env, cur->p, cur->len);
 			sy.reg = la->reg->no;
 			sy.loc = la->f->adr+la->foffset;
+			printf("??? %d, %d\n", la->f->adr, la->foffset);
 		}
 
+		printf("symbol out; loc: %d\n", sy.loc);
+	
 		sy.l = cur->len+1;
 		ff_as_oust((ff_u8_t*)&sy, remf_sysz);
 		symbolp bk = cur;
@@ -121,6 +125,12 @@ _remf_hook(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob, ff_u8_t __l) {
 }
 
 void static
+outfrags(void) {
+
+
+}
+
+void static
 forge(void) {
 	struct remf_hdr hdr;
 	*hdr.ident = FF_REMF_MAG0;
@@ -139,6 +149,33 @@ forge(void) {
 	hdr.rl = FF_REMF_NULL;
 	hdr.hk = FF_REMF_NULL;
 
+	struct remf_ft ft;
+	ft.n = fr_nr;
+
+	ff_uint_t i;
+	i = 0;
+	struct remf_frag *fr;
+	fr = (struct remf_frag*)malloc(fr_nr*sizeof(struct remf_frag));
+	struct remf_frag *f;
+	struct frag *frg;
+_again:
+	if (i != fr_nr) {
+		f = fr+i;
+		printf("frag: %u\n", i);
+		frg = ff_as_fbn(i);
+		f->id = i;
+		f->src = frg->dst;
+		f->size = frg->size;
+		i++;
+		goto _again;
+	}
+
+	ff_as_oust((ff_u8_t*)fr, fr_nr*sizeof(struct remf_frag));
+	free(fr);
+	ft.array = offset-sizeof(struct remf_frag);
+
+	hdr.ft = offset;
+	ff_as_oust((ff_u8_t*)&ft, sizeof(struct remf_ft));
 	/*
 		bottom of program memory - where other data should be placed	
 	*/

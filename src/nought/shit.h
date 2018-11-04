@@ -1,7 +1,7 @@
 # ifndef __ffly__nt__shit__h
 # define __ffly__nt__shit__h
 # include "../ffint.h"
-# define SR_BLEND 0x01
+# define NT_BLEND 0x01
 
 # define is_bit(__bits, __bit) \
 	(((__bits)&(__bit))>0)

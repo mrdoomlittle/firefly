@@ -3,12 +3,14 @@
 # include "../../bron/prim.h"
 # include "../../nought/types.h"
 # include "../../nought/context.h"
+# include "../../hexdump.h"
 static ff_u8_t cb[2048];
 static ff_u8_t *cb_p = cb;
 
 void static
 nt_done(void) {
 	nt_raise(cb, cb_p-cb);
+	ffly_hexdump(cb, cb_p-cb);
 	cb_p = cb;
 }
 
@@ -71,13 +73,6 @@ nt_tri2(struct bron_tri2 *__tri, ff_u16_t __dst) {
 
 	tri->v2.x = __tri->v2.x;
 	tri->v2.y = __tri->v2.y;
-}
-
-void static
-nt_tex(struct bron_tex *__tex, ff_u16_t __dst) {
-	struct nt_tex *tx;
-	tx = (struct nt_tex*)nt_stack(__dst);
-	*(ff_u32_t*)tx->inn = *(ff_u32_t*)__tex->inn;
 }
 
 void static
@@ -184,6 +179,7 @@ _nt_sb(ff_u8_t __bits) {
 	*(cb_p+1) = __bits;
 	cb_p+=2;
 }
+
 void static
 _nt_cb(ff_u8_t __bits) {
 	*cb_p = _nt_op_cb;
@@ -191,7 +187,146 @@ _nt_cb(ff_u8_t __bits) {
 	cb_p+=2;
 }
 
+void static
+_nt_objbuf_new(ff_u16_t __buf, ff_u32_t __size) {
+	*cb_p = _nt_op_obn;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+3) = __size;
+	cb_p+=7;
+}
+
+void static
+_nt_objbuf_destroy(ff_u16_t __buf) {
+	*cb_p = _nt_op_obd;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	cb_p+=3;
+}
+
+void static
+_nt_objbuf_map(ff_u16_t __buf) {
+	*cb_p = _nt_op_obm;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	cb_p+=3;
+}
+
+void static
+_nt_objbuf_unmap(ff_u16_t __buf) {
+	*cb_p = _nt_op_obum;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	cb_p+=3;
+}
+
+void static
+_nt_objbuf_write(ff_u16_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__src) {
+	*cb_p = _nt_op_obw;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+3) = __offset;
+	*(ff_u32_t*)(cb_p+7) = __size;
+	*(void**)(cb_p+11) = __src;
+	cb_p+=19;
+}
+
+void static
+_nt_objbuf_read(ff_u16_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__dst) {
+	*cb_p = _nt_op_obr;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+3) = __offset;
+	*(ff_u32_t*)(cb_p+7) = __size;
+	*(void**)(cb_p+11) = __dst;
+	cb_p+=19;
+}
+
+void static
+_nt_draw(ff_u16_t __buf, ff_u32_t __n) {
+	*cb_p = _nt_op_draw;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+3) = __n;
+	cb_p+=7;
+}
+
+void static
+_nt_texbuf_new(ff_u16_t __buf, ff_u32_t __size) {
+	*cb_p = _nt_op_txbn;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+3) = __size;
+	cb_p+=7;
+}
+
+void static
+_nt_texbuf_destroy(ff_u16_t __buf) {
+	*cb_p = _nt_op_txbd;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	cb_p+=3;
+}
+
+void static
+_nt_texbuf_map(ff_u16_t __buf) {
+	*cb_p = _nt_op_txbm;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	cb_p+=3;
+}
+
+void static
+_nt_texbuf_unmap(ff_u16_t __buf) {
+	*cb_p = _nt_op_txbum;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	cb_p+=3;
+}
+
+void static
+_nt_texbuf_write(ff_u16_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__src) {
+	*cb_p = _nt_op_txbw;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+3) = __offset;
+	*(ff_u32_t*)(cb_p+7) = __size;
+	*(void**)(cb_p+11) = __src;
+	cb_p+=19;
+}
+
+void static
+_nt_texbuf_read(ff_u16_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__dst) {
+	*cb_p = _nt_op_txbr;
+	*(ff_u16_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+3) = __offset;
+	*(ff_u32_t*)(cb_p+7) = __size;
+	*(void**)(cb_p+11) = __dst;
+	cb_p+=19;
+}
+
+void static
+_nt_tex_new(ff_u16_t __tx, ff_u16_t __txb) {
+	*cb_p = _nt_op_txn;
+	*(ff_u16_t*)(cb_p+1) = __tx;
+	*(ff_u16_t*)(cb_p+3) = __txb;
+	cb_p+=5;
+}
+
+void static
+_nt_tex_destroy(ff_u16_t __tx) {
+	*cb_p = _nt_op_txd;
+	*(ff_u16_t*)(cb_p+1) = __tx;
+	cb_p+=3;
+}
+# include "../../nought/tex.h"
 # include "../../bron/driver.h"
+void static
+_nt_info(ff_u8_t __what, long long __arg) {
+	switch(__what) {
+		case BI_CTX_ST_SZ:
+			*(ff_u32_t*)__arg = sizeof(struct nt_context);
+		break;
+		case BI_TRI2_ST_SZ:
+			*(ff_u32_t*)__arg = sizeof(struct nt_tri2);
+		break;
+		case BI_TEX_ST_SZ:
+			*(ff_u32_t*)__arg = sizeof(struct nt_tex);
+		break;
+		case BI_VTX2_ST_SZ:
+			*(ff_u32_t*)__arg = sizeof(struct nt_vertex2);
+		break;
+	}
+}
+
 void ffly_nought(struct bron_driver *__driver) {
 	__driver->sb = _nt_sb;
 	__driver->cb = _nt_cb;
@@ -210,7 +345,6 @@ void ffly_nought(struct bron_driver *__driver) {
 	__driver->ctx_destroy = _nt_ctx_destroy;
 	__driver->raster_tri2 = _nt_raster_tri2;
 	__driver->tri2 = nt_tri2;
-	__driver->tex = nt_tex;
 	__driver->done = nt_done;
 	__driver->ctx_struc_sz = sizeof(struct nt_context);
 	__driver->tri2_struc_sz = sizeof(struct nt_tri2);
@@ -219,4 +353,19 @@ void ffly_nought(struct bron_driver *__driver) {
 	__driver->setctx = _nt_setctx;
 	__driver->start = _nt_start;
 	__driver->finish = _nt_finish;
+	__driver->objbuf_new = _nt_objbuf_new;
+	__driver->objbuf_destroy = _nt_objbuf_destroy;
+	__driver->objbuf_map = _nt_objbuf_map;
+	__driver->objbuf_unmap = _nt_objbuf_unmap;
+	__driver->objbuf_write = _nt_objbuf_write;
+	__driver->objbuf_read = _nt_objbuf_read;
+	__driver->draw = _nt_draw;
+	__driver->texbuf_new = _nt_texbuf_new;
+	__driver->texbuf_destroy = _nt_texbuf_destroy;
+	__driver->texbuf_map = _nt_texbuf_map;
+	__driver->texbuf_unmap = _nt_texbuf_unmap;
+	__driver->texbuf_write = _nt_texbuf_write;
+	__driver->texbuf_read = _nt_texbuf_read;
+	__driver->tex_new = _nt_tex_new;
+	__driver->tex_destroy = _nt_tex_destroy;
 }

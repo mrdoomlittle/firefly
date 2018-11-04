@@ -7,6 +7,8 @@
 # include "system/error.h"
 # include "system/log.h"
 void ffly_init_run() {
+	if (*sysconf_get(loaded) == -1)
+		return;
 	char const **inil;
 	inil = *sysconf_get(inil);
 

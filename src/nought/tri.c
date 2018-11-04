@@ -6,6 +6,7 @@
 # include "context.h"
 # include "../system/io.h"
 # include "pixel.h"
+# include "tex.h"
 // need to be worked on but will do for now
 /*
 	only can rasterize tri
@@ -77,7 +78,6 @@ void nt_raster_tri2(void) {
 	v2 = tri->v2;
 
 	ffly_printf("v0: %d, %d\nv1: %d, %d\nv2: %d, %d\n", v0.x, v0.y, v1.x, v1.y, v2.x, v2.y);
-	ffly_printf("tex: %u, %u, %u, %u\n", tex->inn[0], tex->inn[1], tex->inn[2], tex->inn[3]);
 
 	ff_int_t xmin = ffly_min3(v0.x, v1.x, v2.x);
 	ff_int_t ymin = ffly_min3(v0.y, v1.y, v2.y);
@@ -98,9 +98,12 @@ void nt_raster_tri2(void) {
 	ff_uint_t tx, ty;
 	ff_uint_t txo, tyo;
 	ff_int_t x, y = ymin;
-	while(y < ymax) {
+	ff_u8_t *c;
+	c = (ff_u8_t*)tex->b->data;
+
+	while(y<ymax) {
 		x = xmin;
-		while(x < xmax) {
+		while(x<xmax) {
 #ifdef use_barycentric
 //			barycentric(x, y, 0, &v0, &v1, &v2, &a, &b, &g);
 #else
@@ -122,7 +125,8 @@ void nt_raster_tri2(void) {
 
 				ff_byte_t *dst;
 				dst = tilepx(t, txo, tyo);
-				nt_setpix(tex->inn, dst);
+				nt_setpix(c, dst);
+				c+=4;
 			}
 			
 			x++;

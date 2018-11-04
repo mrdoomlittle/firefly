@@ -416,7 +416,7 @@ void ff_as_final(void) {
 		ff_as_fixins(fx);
 		fx = fx->next;
 	}
-*/
+
 	struct frag *f;
 	f = fr_head;
 	while(f != NULL) {
@@ -424,7 +424,7 @@ void ff_as_final(void) {
 		fgrowb(f, f->bs);
 		f = f->next;
 	}
-
+*/
 	ff_as_foutput();
 	if (of == _of_raw)
 		goto _sk;

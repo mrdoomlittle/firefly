@@ -6,7 +6,8 @@
 # include "maths/rotate.h"
 # include "maths/abs.h"
 # include "maths/round.h"
-
+# include "maths/floor.h"
+# include "maths/ceil.h"
 # define min3 ffly_min3
 # define max3 ffly_max3
 # define abs ffly_abs

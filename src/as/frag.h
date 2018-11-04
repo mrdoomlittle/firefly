@@ -28,6 +28,7 @@ _next:
 	could do this with linked lists but i like to keep my distance from useing them
 	and only use them when necessary or theres no other way.
 */
+extern ff_uint_t fr_nr;
 struct frag *ff_as_fbn(ff_uint_t);
 struct frag {
 	// next fragment in list

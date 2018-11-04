@@ -112,6 +112,7 @@ void* th(void *__arg) {
 # include "bron/prim.h"
 # include "bron/pixel.h"
 # include "bron/frame_buff.h"
+# include "bron/objbuf.h"
 # include "pallet.h"
 # include "graphics/pipe.h"
 # include "graphics/fill.h"
@@ -130,7 +131,29 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 	
 }
 # include "tc.h"
+# include "nought/types.h"
+# include "bron/tex.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	struct ffly_cistern ctn;
+	ffly_cistern_init(&ctn, "test.cis");
+# define N 24
+	while(1) {
+		void *p[N];
+		ff_uint_t i;
+
+		i = 0;
+		while(i != N) {
+			p[i++] = ffly_cistern_alloc(&ctn, 256);
+		}
+
+		i = 0;
+		while(i != N) {
+			ffly_cistern_free(&ctn, p[i++]);
+		}
+	}
+
+	ffly_cistern_de_init(&ctn);
+/*
 	struct sigaction sa;
 	memset(&sa, 0, sizeof(struct sigaction));
 	sa.sa_handler = sig;
@@ -150,6 +173,7 @@ _again:
 	if (run == -1) {
 		goto _again;
 	}
+*/
 /*
 	ff_stores_connect("127.0.0.1", 21299, "firefly");
 
@@ -177,15 +201,15 @@ _again:
 */
 //	s_test();	
 /*
-	ffly_driver(_driver_sr, &G_CONTEXT->driver);
-	G_CONTEXT->stack = 0;
+	ffly_bron_driver(_bron_dd_nought, &BRON_CONTEXT->driver);
+	BRON_CONTEXT->stack = 0;
 
-	struct ffly_tex tex;
+	struct ffly_bron_tex tex;
 	tex.inn[0] = 255;
 	tex.inn[1] = 255;
 	tex.inn[2] = 255;
 	tex.inn[3] = 255;
-	struct ffly_tri2 tri;
+	struct ffly_bron_tri2 tri;
 	tri.v0.x = -10;
 	tri.v0.y = 0;
 	tri.v1.x = 10;
@@ -194,22 +218,22 @@ _again:
 	tri.v2.y = 10;
 
 	ff_u16_t fb;
-	ffly_g_setctx(ffly_g_ctx_new());
-	fb = ffly_g_fb_new(76, 76);
-	ffly_g_fb_set(fb);
+	ffly_bron_setctx(ffly_g_ctx_new());
+	fb = ffly_bron_fb_new(76, 76);
+	ffly_bron_fb_set(fb);
 
-	ffly_g_start();
+	ffly_bron_start();
 
 	ff_u8_t dfc[4] = {20, 21, 22, 23};
-	ffly_g_pixfill(10*76, dfc);
-	ffly_g_tri2(&tri, ffly_g_tex(&tex));
+	ffly_bron_pixfill(10*76, dfc);
+	ffly_bron_tri2(&tri, ffly_g_tex(&tex));
 	ff_u8_t dst[76*76*4];
 	ffly_mem_set(dst, 0, 76*76*4);
-	G_CONTEXT->driver.frame(dst, 0, 0, 76, 76);
+	BRON_CONTEXT->driver.frame(dst, 0, 0, 76, 76);
 
-	ffly_g_finish();
-	ffly_g_fb_destroy(fb);
-	ffly_g_done();
+	ffly_bron_finish();
+	ffly_bron_fb_destroy(fb);
+	ffly_bron_done();
 
 	ffly_printf("dst: %p\n", dst);
 	ff_uint_t x, y;
@@ -245,9 +269,27 @@ _again:
 	}
 */
 /*
-# define WIDTH 128
-# define HEIGHT 128
-	bron_dd(_bron_dd_sr, &BRON_CONTEXT->driver);
+# define WIDTH 512
+# define HEIGHT 512
+# define NV 5
+	struct bron_vertex2 v[2][NV] = {
+	{
+		{0, 0},
+		{256-44, 44},
+		{256, 256},
+		{44, 256-44},
+		{0, 0}
+	},
+	{
+		{511, 0},
+		{256+44, 44},
+		{256, 256},
+		{511-44, 256-44},
+		{511, 0}
+	}
+	};
+
+	bron_dd(_bron_dd_nought, &BRON_CONTEXT->driver);
 	BRON_CONTEXT->stack = 0;
 
 	ff_err_t err;
@@ -271,13 +313,30 @@ _again:
 
 	bron_start();
 
+
+
+	ff_u16_t ob0, ob1;
+	ob0 = ffly_bron_objbuf_new(NV*sizeof(struct bron_vertex2));
+	ob1 = ffly_bron_objbuf_new(NV*sizeof(struct bron_vertex2));
+	ffly_bron_objbuf_map(ob0);
+	ffly_bron_objbuf_map(ob1);
+	ffly_bron_objbuf_write(ob0, 0, NV*sizeof(struct bron_vertex2), &v[0]);
+	ffly_bron_objbuf_write(ob1, 0, NV*sizeof(struct bron_vertex2), &v[1]);
+
 	ffly_colour_t ca = {122, 34, 4, 255};
 	ffly_colour_t cb = {41, 65, 104, 255};
 	ffly_pixfill(WIDTH*HEIGHT, ca, 0);	
 	ffly_grp_unload(&__ffly_grp__);
-//	BRON_CONTEXT->driver.sb(0x01);
-	ffly_pixfill(WIDTH*64, cb, 0);
+	//BRON_CONTEXT->driver.sb(NOUGHT_BLEND);
+	ffly_pixfill(WIDTH*256, cb, 0);
 	ffly_grp_unload(&__ffly_grp__);
+
+	BRON_CONTEXT->driver.draw(ob0, NV);
+	BRON_CONTEXT->driver.draw(ob1, NV);
+	ffly_bron_objbuf_unmap(ob0);
+	ffly_bron_objbuf_unmap(ob1);
+	ffly_bron_objbuf_destroy(ob0);
+	ffly_bron_objbuf_destroy(ob1);
 	ffly_fb_copy(__frame_buff__);
 	bron_finish();
 	bron_fb_destroy(fb);

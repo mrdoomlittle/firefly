@@ -102,7 +102,7 @@ void static to_free(void *__p) {
 ff_u64_t bot = 0;
 ff_u64_t rise = 0;
 
-void ff_bond_write(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
+void bond_write(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 	ff_u8_t *p = (ff_u8_t*)__buf;
 	ff_u8_t *end = p+__size;
 	ff_u64_t offset;
@@ -127,7 +127,7 @@ void ff_bond_write(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 	}
 }
 
-void ff_bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
+void bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
 	ff_uint_t page = __offset>>PAGE_SHIFT;
 	ff_uint_t pg_off = __offset-(page*PAGE_SIZE);
 	ff_u64_t end = __size+__offset;
@@ -164,7 +164,7 @@ void ff_bond_mapout(ff_u64_t __offset, ff_uint_t __size) {
 	}
 }
 
-void ff_bond_read(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
+void bond_read(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 	ff_u8_t *p = (ff_u8_t*)__buf;
 	ff_u8_t *end = p+__size;
 
@@ -189,7 +189,7 @@ void ff_bond_read(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 }
 
 void
-ff_bond_oust(void *__p, ff_uint_t __size) {
+bond_oust(void *__p, ff_uint_t __size) {
 	lseek(d, offset, SEEK_SET);
 	write(d, __p, __size);
 	offset+=__size;
@@ -205,7 +205,7 @@ absorb_symbol(remf_syp __sy, symbolp *__stp) {
 	printf("symbol: %s\n", name);
 
 	symbolp p;
-	if ((p = (symbolp)ff_bond_hash_get(&symbols, name, __sy->l-1)) != NULL) {
+	if ((p = (symbolp)bond_hash_get(&symbols, name, __sy->l-1)) != NULL) {
 		printf("symbol already exists.\n");
 		if (__sy->type == FF_SY_IND)
 			goto _sk1;
@@ -217,7 +217,7 @@ absorb_symbol(remf_syp __sy, symbolp *__stp) {
 	p->next = cursy;
 	cursy = p;
 
-	ff_bond_hash_put(&symbols, name, __sy->l-1, p);
+	bond_hash_put(&symbols, name, __sy->l-1, p);
 	p->name = strdup(name);
 _sk0:
 	p->loc = curadr()+__sy->loc;
@@ -299,8 +299,8 @@ absorb_region(remf_reg_hdrp __reg) {
 	}
 
 	if (__reg->type == FF_RG_PROG) {
-		ff_bond_mapout(reg->beg, size);
-		ff_bond_write(reg->beg, buf, size);
+		bond_mapout(reg->beg, size);
+		bond_write(reg->beg, buf, size);
 	}
 
 	free(buf);
@@ -421,7 +421,7 @@ void latch_hooks() {
 		else {		
 			if (cur->to->type == FF_SY_GBL) {
 				ff_i64_t loc = ((ff_i64_t)cur->to->loc)-(ff_i64_t)cur->adr;
-				ff_bond_write(cur->offset, &loc, cur->l);	
+				bond_write(cur->offset, &loc, cur->l);	
 				printf("hooking at: %u\n", cur->offset);
 			} else
 				printf("symbol hasen't been defined.\n");
@@ -434,7 +434,7 @@ void reloc() {
 	relocatep cur = currel;
 	while(cur != NULL) {
 		ff_i64_t loc = ((ff_i64_t)(cur->sy->loc+cur->addto))-(ff_i64_t)cur->adr;
-		ff_bond_write(cur->offset, &loc, cur->l);	
+		bond_write(cur->offset, &loc, cur->l);	
 		cur = cur->next;
 	}
 }
@@ -455,7 +455,7 @@ cleanup() {
 	}
 }
 
-void ff_bond(char const *__s, char const *__dst) {
+void bond(char const *__s, char const *__dst) {
 /*
 	printf("pagesize: %u\n", PAGE_SIZE);
 	char const *text = "1/2/3/4/5/6/7/8/9/10/11/12/13/14/15/16/17/18/19/20";
@@ -470,7 +470,7 @@ void ff_bond(char const *__s, char const *__dst) {
 	cleanup();
 return;
 */
-	ff_bond_hash_init(&symbols);
+	bond_hash_init(&symbols);
 	char const *p = __s;
 
 	if ((d = open(__dst, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU)) == -1) {
@@ -508,8 +508,8 @@ return;
 	latch_hooks();
 	reloc();
 	offset+=bot;
-	ff_bond_output(&dhdr);
+	bond_output(&dhdr);
 	cleanup();
 	close(d);
-	ff_bond_hash_destroy(&symbols);
+	bond_hash_destroy(&symbols);
 }

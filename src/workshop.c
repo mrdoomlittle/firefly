@@ -30,6 +30,8 @@ enum {
 	TODO:
 		add ff_i8_t for return is no such 'what?' is possible
 	obtain crap that the user controls like mouse pointer coords,state, etc
+	"POINTER FORM/TO!"
+
 */
 void static
 _get(ff_u8_t __what, long long __d, void *__arg) {
@@ -83,7 +85,7 @@ void ffly_workshop_start() {
 		}
 
 		// 30 rps
-		ffly_nanosleep(0, 30000000);
+		ffly_nanosleep(0, 5454545454);
 		ffly_grp_unload(&__ffly_grp__);
 
 		ffly_fb_copy(__frame_buff__);
@@ -94,7 +96,7 @@ void ffly_workshop_start() {
 		ffly_fb_yank(__frame_buff__);
 		if (!ff_duct_serve(dc))
 			break;
-		ffly_printf("\e[1Jcycle count: %u\n", cc++);
+		ffly_printf("cycle count: %u\n", cc++);
 		struct ffly_meminfo mi;
 		ffly_meminfo(&mi);
 		ffly_dmi(&mi);

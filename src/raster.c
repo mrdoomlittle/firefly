@@ -27,10 +27,10 @@ void ffly_rasterize(ffly_modelp __model,
 	ff_uint_t __width, ff_uint_t __height,
 	ff_uint_t __xmax, ff_uint_t __ymax)
 {
-	if (!__model->texture) {
-		ffly_printf("model has no texture.\n");
-		return;
-	}
+//	if (!__model->texture) {
+//		ffly_printf("model has no texture.\n");
+//		return;
+//	}
 
 	ffly_polygonp poly;
 	ffly_vertex v0, v1, v2;
@@ -42,11 +42,9 @@ void ffly_rasterize(ffly_modelp __model,
 	i = 0;
 	while(i != poly_c) {
 		poly = __model->poly+i;
-		ff_byte_t *c;
+		struct ffly_model_poly_tex *tx;
 
-		// *4
-		c = __model->texture+(poly->c<<2);
-
+		tx = __model->tex+i;
 		v0 = *poly->vertices;
 		v1 = poly->vertices[1];
 		v2 = poly->vertices[2];
@@ -57,16 +55,10 @@ void ffly_rasterize(ffly_modelp __model,
 			.v2 = {v2.x, v2.y}
 		};
 
-		struct bron_tex tx;
-		tx.inn[0] = c[0];
-		tx.inn[1] = c[1];
-		tx.inn[2] = c[2];
-		tx.inn[3] = c[3];
-
 		ff_u16_t tex;
 
 		ffly_printf("#}}}}}}}}} %u, %u\n", __x, __y);
-		tex = bron_tex(&tx);
+		tex = tx->tx;
 		bron_tri2(&tri, tex, __x, __y);
 		i++;
 	}

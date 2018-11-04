@@ -24,6 +24,8 @@
 	TODO:
 		add timeout
 		add delay in loops to reduce cpu load
+
+	put debug define over debug statment
 */
 
 typedef struct hdr {

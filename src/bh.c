@@ -46,7 +46,7 @@ void ff_bhs_prep(void) {
 	ffly_bzero(&sa, sizeof(struct sigaction));
 	sa.sa_handler = sig;
 	sigaction(SIGINT, &sa, NULL);
-//	ffly_cistern_init(&ctn, "bh.cis");
+	ffly_cistern_init(&ctn, "bh.cis");
 }
 
 
@@ -195,8 +195,11 @@ bh_bnewm(void) {
 	ff_uint_t i;
 	i = 0;
 
-	while(i != n)
-		b[i++] = ffly_brick_new(sz, bread, bwrite, bdel, (long long)ffly_cistern_alloc(&ctn, bricksz(sz)));
+	while(i != n) {
+		void *p;
+		b[i++] = ffly_brick_new(sz, bread, bwrite, bdel, (long long)(p = ffly_cistern_alloc(&ctn, bricksz(sz))));
+		ffly_printf("---> %p\n", p);
+	}
 	ff_net_send(client.sock, b, n*sizeof(ff_u32_t), 0, &err);
 	__ffly_mem_free(b);
 	ffly_printf("created new brick/s - %u, size: %u\n", n, bricksz(sz));
@@ -383,6 +386,7 @@ _again:
 		return;
 
 	ffly_printf("some bigshot has decided to connected.\n");
+
 	client.sock = peer;
 	dc = -1;
 	while(dc == -1) {
@@ -393,7 +397,6 @@ _again:
 		t = bh_tape_new(tsz);
 		ffly_printf("tape size: %u\n", tsz);
 		ff_net_recv(peer, t->text, tsz, 0, &err);
-
 		if (_err(err))
 			break;
 		texec(t);

@@ -18,8 +18,8 @@ static ff_u64_t flags = 0;
 	((flags&(__what)) == (__what))
 #define isnset(__what) \
 	!isset(__what)
-void static
-init(void) {
+void
+ff_sysconf_init(void) {
 	ffly_mem_set(ffly_sysconf, 0, 256);
 	*sysconf_get(loaded) = -1;
 	*sysconf_get(db_loaded) = -1;
@@ -148,7 +148,6 @@ ld_db(void const *__db) {
 }
 
 ff_err_t ffly_ld_sysconf(char const *__path) {
-	init();
 	struct ffly_bole conf;
 	ff_err_t err = FFLY_SUCCESS;
 	if (_err(err = ffly_bole_init(&conf))) {

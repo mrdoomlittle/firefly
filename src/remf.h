@@ -70,6 +70,21 @@ typedef struct remf_hok {
 	ff_u16_t to;
 } *remf_hokp;
 
+struct remf_frag {
+/*
+	fragments may or may not be in order from 0-...
+*/
+	ff_uint_t id;
+	ff_u64_t src;
+	ff_uint_t size;
+};
+
+// fragment table
+typedef struct remf_ft {
+	ff_uint_t n;
+	ff_u64_t array;
+} *remf_ftp;
+
 typedef struct remf_hdr {
 	char ident[FF_REMF_IL];
 	ff_u8_t format; // <- remove
@@ -92,6 +107,7 @@ typedef struct remf_hdr {
 	*/
 	ff_u64_t sg, rg, rl, hk;
 	ff_u32_t adr;
+	ff_u64_t ft;
 } *remf_hdrp;
 
 # endif /*__ffly__remf__h*/

@@ -15,3 +15,5 @@ store local labels in array 0-... and not in hash table
 
 MAJOR:
 	fragment
+
+remove '\0' from remf names

@@ -69,15 +69,15 @@ ff_uint_t extern offset;
 ff_uint_t extern adr;
 int extern d;
 
-void ff_bond_oust(void*, ff_uint_t);
+void bond_oust(void*, ff_uint_t);
 
-void ff_bond_hash_init(hashp);
-void ff_bond_hash_destroy(hashp);
-void ff_bond_hash_put(hashp, ff_u8_t const*, ff_uint_t, void*);
+void bond_hash_init(hashp);
+void bond_hash_destroy(hashp);
+void bond_hash_put(hashp, ff_u8_t const*, ff_uint_t, void*);
 void* const ff_bond_hash_get(hashp, ff_u8_t const*, ff_uint_t);
-void ff_bond(char const*, char const*);
-void ff_bond_output(remf_hdrp);
-void ff_bond_write(ff_u64_t, void*, ff_uint_t);
-void ff_bond_mapout(ff_u64_t, ff_uint_t);
-void ff_bond_read(ff_u64_t, void*, ff_uint_t);
+void bond(char const*, char const*);
+void bond_output(remf_hdrp);
+void bond_write(ff_u64_t, void*, ff_uint_t);
+void bond_mapout(ff_u64_t, ff_uint_t);
+void bond_read(ff_u64_t, void*, ff_uint_t);
 # endif /*__ffly__bond__h*/

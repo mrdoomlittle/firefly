@@ -17,18 +17,36 @@
 # include "version.h"
 # include "system/util/ff6.h"
 # include "system/error.h"
+# include "linux/time.h"
 /*
 extern void*(*ffly_allocp)(ff_uint_t);
 extern void(*ffly_freep)(void*);
 extern void*(*ffly_reallocp)(void*, ff_uint_t);
 */
+#define CFG_FILE "sys.bole"
+#define INIT_ARRSZ 1
+void ff_time_init(void);
+void ff_sysconf_init(void);
+static void(*init_array[])(void) = {
+	ff_time_init
+};
+
+void __init_array(void) {
+	void(**init)(void),(**end)(void);
+	init = init_array;
+	end = init+INIT_ARRSZ;
+	ffly_printf("initing shit.\n");
+	while(init != end) {
+		(*(init++))();
+	}
+}
 
 typedef struct _ffopt {
 	char const *name, *val;
 	struct _ffopt *next;
 } ffopt, *ffoptp;
 
-# define ffopt_size sizeof(struct _ffopt)
+#define ffopt_size sizeof(struct _ffopt)
 
 ffopt static *optbed = NULL;
 // rename
@@ -149,6 +167,7 @@ init() {
 	write(fd, buf, n);
 	close(fd);
 # endif
+	ff_sysconf_init();
 }
 
 # include "init.h"
@@ -233,20 +252,20 @@ fini() {
 # include "env.h"
 void _ffstart(void) {
 	init();
-	int long argc;
+	int long long argc;
 	char const **argv;
 	char const **envp;
 	// add prefix to instructions
-	__asm__("mov 8(%%rbp), %0\t\n"
-			"mov %%rbp, %%rdi\n\t"
-			"add $16, %%rdi\n\t"
-			"mov %%rdi, %1\n\t"
+	__asm__("movq 8(%%rbp), %0\t\n"
+			"movq %%rbp, %%rdi\n\t"
+			"addq $16, %%rdi\n\t"
+			"movq %%rdi, %1\n\t"
 			"movq 8(%%rbp), %%rax\n\t"
-			"add $8, %%rdi\n\t"
-			"mov $8, %%rcx\n\t"
-			"mul %%rcx\n\t"
-			"add %%rax, %%rdi\n\t"
-			"mov %%rdi, %2" : "=r"(argc), "=r"(argv), "=r"(envp) : : "rax", "rdi", "rcx");
+			"addq $8, %%rdi\n\t"
+			"movq $8, %%rcx\n\t"
+			"mulq %%rcx\n\t"
+			"addq %%rax, %%rdi\n\t"
+			"movq %%rdi, %2" : "=r"(argc), "=r"(argv), "=r"(envp) : : "rax", "rdi", "rcx");
 	char const **argp = argv;
 	char const **end = argp+argc;
 
@@ -307,7 +326,7 @@ void _ffstart(void) {
 	}
 
 	if (conf == -1) {
-		if (!access("sys.bole", F_OK)) {
+		if (!access(CFG_FILE, F_OK)) {
 			ffly_printf("loading sysconfig.\n");
 			ffly_ld_sysconf("sys.bole");
 			check_conf_version();
@@ -337,9 +356,15 @@ void _ffstart(void) {
 	if (!hatch)
 		ffly_hatch_start();
 
+	__init_array();
+	struct timespec start, finish;
+	clock_gettime(CLOCK_MONOTONIC, &start);
 	ffmain(arg-argl, argl);
+	clock_gettime(CLOCK_MONOTONIC, &finish);
+	ffly_printf("runtime: %u.%u {sec.ns}\n", finish.tv_sec-start.tv_sec, finish.tv_nsec-start.tv_nsec);
 # else
 	prep();
+	__init_array();
 	ffmain(argc, argv);
 # endif
 # ifndef __ffly_crucial

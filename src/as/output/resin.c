@@ -129,6 +129,9 @@ getreg(char const *__name) {
 	}
 
 	printf("reg: %u, %s\n", no, __name);
+/*
+	put in array is __ffly_mscars if not defined
+*/
 	switch(no) {
 		case 0xf8:	return reg+rax_rg;
 		case 0xf1:	return reg+eax_rg;
@@ -163,7 +166,9 @@ void static
 emit_label(void) {
 
 }
-
+/*
+	at the moment some registers might use memory
+*/
 # define POSTST 48//registers
 void ff_as_prepstack(void) {
 	bed+=POSTST;		

@@ -23,7 +23,7 @@ struct frag ***fr_tbl = NULL;
 */
 
 // fragment number
-ff_uint_t static fr_nr = 0;
+ff_uint_t fr_nr = 0;
 ff_uint_t static frt_page_c = 0;
 struct frag* ff_as_fnew(void) {
 	struct frag *f = (struct frag*)ff_as_al(sizeof(struct frag));	
@@ -148,6 +148,7 @@ static ff_u32_t fr_adr = 0;
 void ff_as_fdone(struct frag *__f) {
 	__f->adr = fr_adr;
 	fr_adr+=__f->size+__f->bs;
+	printf("frag done, %u, %u, %u\n", __f->size, __f->bs, __f->adr);
 	adr = fr_adr;
 }
 

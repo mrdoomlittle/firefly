@@ -11,7 +11,7 @@ out_seg(segmentp __seg) {
 	seg.offset = __seg->offset;
 	seg.adr = __seg->addr;
 	seg.sz = __seg->size;
-	ff_bond_oust(&seg, remf_seghdrsz);
+	bond_oust(&seg, remf_seghdrsz);
 }
 
 # include "../rdm.h"
@@ -27,7 +27,7 @@ void ff_bond_output(remf_hdrp __hdr) {
 		seg->size = (cur->end-cur->beg);
 		seg->addr = cur->adr;
 		seg->p = (ff_u8_t*)malloc(seg->size);
-		ff_bond_read(cur->beg, seg->p, seg->size);
+		bond_read(cur->beg, seg->p, seg->size);
 		ffly_rdmp(seg->p, seg->size);
 		cur = cur->next;
 	}

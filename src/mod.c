@@ -32,6 +32,8 @@
 */
 # define DSS 262144
 void ffly_mod() {
+	if (*sysconf_get(loaded) == -1)
+		return;
 	char const **modl;
 	modl = *sysconf_get(modl);
 

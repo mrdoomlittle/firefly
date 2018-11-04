@@ -67,7 +67,8 @@ int main(void) {
 	a2 = frags;
 	b2 = frags+7;
 	a2->dst = b2;
-	a0->offset = 400;
+	a0->label = 433400;
+	a1->label = 4444444;
 #endif
 #ifdef T1
 	a0 = frags;
@@ -91,6 +92,7 @@ int main(void) {
 			f->dst->link = f;
 		}
 	}
+	ff_i8_t c = -1;
 _again:
 	m = 0;
 	k = 0;
@@ -111,7 +113,7 @@ _again:
 				dis = -dis;
 			ff_int_t x;
 			x = f->dst->m-f->m;
-			dis+=x<0?-x:x;
+			dis+=(x<0?-x:x)-f->u;
 			ff_uint_t n, u, h;
 			n = __n(dis);
 			u = (n+((1<<3)-1))>>3;
@@ -124,6 +126,10 @@ _again:
 			}
 			u = h;
 			f->dst->m0 = u;
+			if (f->u != u) {
+				c = 0;
+			}
+			f->u = u;
 			m+=u;
 			printf(", dis: %d, %d", dis, u);
 		}
@@ -138,6 +144,9 @@ _again:
 			printf("%s, %d\n", f->ident, f->dst->m-f->m);
 		}
 	}
-	usleep(1000000);
-	goto _again;
+	if (!c) {
+		c = -1;
+		usleep(1000000);
+		goto _again;
+	}
 }

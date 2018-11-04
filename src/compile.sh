@@ -66,6 +66,7 @@ ffly_objs="$ffly_objs $(
 dst_dir=$PWD
 root_dir=.
 if ! [ -f $dus ]; then
+$ffly_cc $cc_flags -c -o $dst_dir/time.o $root_dir/time.c
 $ffly_cc $cc_flags -c -o $dst_dir/ui/window.o $root_dir/ui/window.c
 $ffly_cc $cc_flags -c -o $dst_dir/copy.o $root_dir/copy.c
 $ffly_cc $cc_flags -c -o $dst_dir/clock.o $root_dir/clock.c
@@ -211,6 +212,9 @@ $ffly_cc $cc_flags -c -o $dst_dir/slurry/connection.o $root_dir/slurry/connectio
 $ffly_cc $cc_flags -c -o $dst_dir/slurry/proto.o $root_dir/slurry/proto.c
 $ffly_cc $cc_flags -c -o $dst_dir/slurry/slurry.o $root_dir/slurry/slurry.c
 $ffly_cc $cc_flags -c -o $dst_dir/tc.o $root_dir/tc.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/objbuf.o $root_dir/nought/objbuf.c
+$ffly_cc $cc_flags -c -o $dst_dir/bron/objbuf.o $root_dir/bron/objbuf.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/tex.o $root_dir/nought/tex.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -251,4 +255,5 @@ $dst_dir/clay.o $dst_dir/clay/memalloc.o $dst_dir/clay/lexer.o $dst_dir/clay/inp
 $dst_dir/clay/parser.o $dst_dir/clay/hash.o $dst_dir/clay/solidify.o \
 $dst_dir/bron/tile.o $dst_dir/nought/shit.o $dst_dir/nought/pixel.o \
 $dst_dir/slurry/client.o $dst_dir/slurry/connection.o \
-$dst_dir/slurry/proto.o $dst_dir/slurry/slurry.o $dst_dir/tc.o"
+$dst_dir/slurry/proto.o $dst_dir/slurry/slurry.o $dst_dir/tc.o $dst_dir/time.o \
+$dst_dir/nought/objbuf.o $dst_dir/bron/objbuf.o $dst_dir/nought/tex.o"

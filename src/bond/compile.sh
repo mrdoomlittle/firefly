@@ -7,4 +7,5 @@ ffly_objs="$ffly_objs"
 gcc $cc_flags -c hash.c
 gcc $cc_flags -c bond.c
 gcc $cc_flags -c output.c
-gcc $cc_flags -o ffbond main.c output.o hash.o bond.o $ffly_objs -nostdlib
+gcc $cc_flags -c frag.c
+gcc $cc_flags -o ffbond main.c output.o hash.o bond.o frag.o $ffly_objs -nostdlib

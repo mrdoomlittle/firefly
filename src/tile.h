@@ -13,6 +13,7 @@
 	phantom tile
 
 	tile is here but graphics driver 'nought' will get the tile memory, size, etc thru 'get' function
+	also memory resided here.
 
 */
 #define TILE_PH			0x02

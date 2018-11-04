@@ -4,6 +4,7 @@
 *.exec
 *.fuse_hidden*
 a.out
+micro
 log
 err
 main

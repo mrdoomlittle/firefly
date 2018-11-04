@@ -698,7 +698,8 @@ static void(*op[])() = {
 __asm__("\t.globl _res_fi\n"
 		"\t.globl _res_end");
 /*
-	register pointers
+	register pointers 
+	4 registers 2 pointers
 */
 ff_u64_t *res_r0, *res_r1;
 ff_u64_t *res_bp, *res_sp;

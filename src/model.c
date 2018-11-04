@@ -3,6 +3,7 @@
 # include "memory/mem_free.h"
 # include "system/io.h"
 # include "dep/mem_set.h"
+# include "bron/tex.h"
 ffly_modelp
 ffly_model_new(ff_uint_t __poly_c) {
 	ffly_modelp m;
@@ -15,7 +16,7 @@ ffly_model_new(ff_uint_t __poly_c) {
 
 	m->poly_c = __poly_c;
 	m->off = 0;
-	m->texture = NULL;
+	m->tex = (struct ffly_model_poly_tex*)__ffly_mem_alloc(__poly_c*sizeof(struct ffly_model_poly_tex));
 	return m;
 }
 
@@ -24,13 +25,19 @@ void ffly_model_dismantle(ffly_modelp __model) {
 	__ffly_mem_free(__model);	
 }
 
-void ffly_model_tex(ffly_modelp __model, ff_uint_t __n, ff_u32_t *__loc) {
+void ffly_model_tex(ffly_modelp __model, struct ffly_mpvec *__vec) {
 	ff_uint_t i;
 
-	ff_u32_t *l;
-
-	l = __loc;
+	struct ffly_mpvec *p;
+	struct ffly_model_poly_tex *tx;
 	i = 0;
-	for(;i != __n;i++)
-		(__model->poly+i)->c = *(l++);
+	while(i != __model->poly_c) {
+		p = __vec+i;
+		tx = __model->tex+i;
+		tx->txb = ffly_bron_texbuf_new(p->n*4);
+		ffly_bron_texbuf_write(tx->txb, 0, p->n*4, p->inn);
+		tx->tx = ffly_bron_tex_new(tx->txb);
+		tx->n = p->n;
+		i++;
+	}
 }
