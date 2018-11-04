@@ -164,7 +164,6 @@ ff_err_t ff_bh_bread(ff_bhp __bh, ff_u32_t __b, void *__buf, ff_uint_t __len, ff
 	*(ff_u32_t*)(code+5) = __len;
 	*(ff_u32_t*)(code+9) = __offset;
 	tape(__bh, code, 13, &err);
-
 	ff_net_recv(__bh->sock, __buf, __len, 0, &err);
 	return err;
 }
@@ -183,6 +182,9 @@ ff_i8_t ff_bh_bexist(ff_bhp __bh, ff_u32_t __b, ff_err_t *__err) {
 	*code = _bhop_bexist;
 	*(ff_u32_t*)(code+1) = __b;
 	tape(__bh, code, 5, __err);
+	ff_i8_t r;
+	ff_net_recv(__bh->sock, &r, 1, 0, __err);
+	return r;
 }
 
 struct {FF_SOCKET *sock;} client;
@@ -311,7 +313,13 @@ bh_bclose(void) {
 
 void static
 bh_bexist(void) {
-
+	ff_err_t err;
+	ff_u32_t b;
+	b = *(ff_u32_t*)bh_cc;
+	ff_i8_t res;
+	ffly_printf("checking for existance of brick %u\n", b);
+	res = ffly_brick_exist(b);
+	ff_net_send(client.sock, &res, 1, 0, &err);
 }
 
 ff_i8_t static dc;

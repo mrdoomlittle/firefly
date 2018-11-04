@@ -123,7 +123,7 @@ void* ffly_cistern_alloc(ffly_cisternp __cis, ff_uint_t __size) {
 	s = (ffly_cis_slabp*)__ffly_mem_alloc(sc*sizeof(struct ffly_cis_slab));
 	end = s+sc;
 	r->slabs = s;
-	while(s != end)
+	while(s != end) 
 		*(s++) = slab_alloc(__cis);
 	ffly_printf("slabs: %u\n", sc);
 	return r;
@@ -176,8 +176,8 @@ void ffly_cistern_write(ffly_cisternp __cis, void *__r, void *__p,
 
 	ff_uint_t left;
 	left = __size-(p-(ff_u8_t*)__p);
-	ffly_printf("write, left: %u, %u, file: %u, slab: %u : %p\n", left, offset, __cis->fd, (*s)->off, *s);
 	if (left>0) {
+		ffly_printf("write, left: %u, %u, file: %u, slab: %u : %p\n", left, offset, __cis->fd, (*s)->off, *s);
 		if (pwrite(__cis->fd, p, left, ((*s)->off*SLAB_SIZE)+offset) == -1) {
 			ffly_printf("write failure, %s\n", strerror(errno));
 		}
@@ -218,8 +218,8 @@ void ffly_cistern_read(ffly_cisternp __cis, void *__r, void *__p,
 
 	ff_uint_t left;
 	left = __size-(p-(ff_u8_t*)__p);
-	ffly_printf("read, left: %u, %u, file: %u, slab: %u : %p\n", left, offset, __cis->fd, (*s)->off, *s);
 	if (left>0) {
+		ffly_printf("read, left: %u, %u, file: %u, slab: %u : %p\n", left, offset, __cis->fd, (*s)->off, *s);
 		if (pread(__cis->fd, p, left, ((*s)->off*SLAB_SIZE)+offset) == -1) {
 			ffly_printf("read failure, %s\n", strerror(errno));
 		}

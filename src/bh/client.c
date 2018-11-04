@@ -1,5 +1,6 @@
 # include "../bh.h"
 # include "../stdio.h"
+# include "../string.h"
 # include "../brick.h"
 # include "../system/util/ff5.h"
 //static struct ff_bh bh;
@@ -7,11 +8,10 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_bh_open(&bh);
 	ff_bh_connect(&bh, "192.168.0.111", 40960);	
 	ff_err_t err;
-	
+/*	
 	ff_uint_t const n = 8;
 	ff_u32_t b[n];
 
-/*
 	ff_uint_t i;
 
 	i = 0;
@@ -24,13 +24,28 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		ff_bh_brid(&bh, b[i++]);
 	}
 */
-	ff_bh_bnewm(&bh, _ff_brick_256, b, n);
-	char buf[1024];
+//	ff_bh_bnewm(&bh, _ff_brick_256, b, n);
+//	char buf[1024];
 
-	*(buf+ffly_ff5_enc(b, buf, n*sizeof(ff_u32_t))) = '\0';
-	printf("brick key: %s\n", buf);
-	ff_bh_bridm(&bh, b, n);
-	
+//	*(buf+ffly_ff5_enc(b, buf, n*sizeof(ff_u32_t))) = '\0';
+//	printf("brick key: %s\n", buf);
+//	ff_bh_bridm(&bh, b, n);
+
+	char buf0[256];
+	ff_u32_t b;
+	if (__argc>1) {
+		ffly_ff5_dec(__argv[1], &b, strlen(__argv[1]));
+		ff_bh_bread(&bh, b, buf0, 256, 0);
+		printf("%s\n", buf0);
+	} else {
+		strcpy(buf0, "hello mother fucker.\n");
+		b = ff_bh_bnew(&bh, _ff_brick_256, &err);
+		char buf[1024];
+		*(buf+ffly_ff5_enc(&b, buf, sizeof(ff_u32_t))) = '\0';
+		printf("brick key: %s\n", buf);
+		ff_bh_bwrite(&bh, b, buf0, 100, 0);
+	}
+
 	ff_bh_disconnect(&bh);
 	ff_bh_close(&bh);
 }
