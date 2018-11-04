@@ -134,9 +134,12 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "nought/types.h"
 # include "bron/tex.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+//	__asm__("subq $16, %rsp");
+	ffly_printf("%f\n", 0.003);
+/*
 	struct ffly_cistern ctn;
 	ffly_cistern_init(&ctn, "test.cis");
-/*
+
 # define N 24
 	while(1) {
 		void *p[N];
@@ -152,12 +155,13 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 			ffly_cistern_free(&ctn, p[i++]);
 		}
 	}
-*/
+
 	void *r;
 	r = ffly_cistern_alloc(&ctn, 256);
 	char buf[1024];
 	ffly_cistern_write(&ctn, r, buf, 0, 256);
 	ffly_cistern_de_init(&ctn);
+*/
 /*
 	struct sigaction sa;
 	memset(&sa, 0, sizeof(struct sigaction));

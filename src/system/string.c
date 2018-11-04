@@ -1,6 +1,12 @@
 # include "string.h"
 # include "../ffint.h"
 # include "../ffly_def.h"
+
+/*
+	TODO:
+		replace switch statments
+		with array
+*/
 ff_u64_t static powof10[] = {
 	1,
 	10,
@@ -275,6 +281,7 @@ _bk:
 			goto _again;
 		}
 
+		// fix
 		switch(n) {
 			case 0: *p = '0'; break;
 			case 1: *p = '1'; break;
