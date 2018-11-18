@@ -13,9 +13,10 @@
 # include "mutex.h"
 
 // multithread support
+// TODO: cleanup
 
-# define CHUNK_SHIFT 4
-# define CHUNK_SIZE (1<<CHUNK_SHIFT)
+#define CHUNK_SHIFT 4
+#define CHUNK_SIZE (1<<CHUNK_SHIFT)
 ff_mlock_t static lock = FFLY_MUTEX_INIT;
 static void **chunks;
 ff_u16_t static cut;

@@ -6,6 +6,10 @@
 /*
 	TODO:
 		rename again
+
+	file system like. but uses memory
+	but only to store engine stuff for user to read.
+	and other things, user is not to use, only read.
 */
 # define ss_dir_creat(__name) \
 	*ffly_ss_alias(__name) = ffly_ss_dir_creat()

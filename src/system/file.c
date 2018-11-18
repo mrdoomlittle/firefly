@@ -14,6 +14,9 @@
 # ifndef __fflib
 # include <string.h>
 /*
+	TODO:
+		i dont think we need to keep checking the file desc if valid
+		remove valid_fd from r/w routines
 	allow for flags to be passed to write to bypass the buffer for errors
 */
 char const static* mode_str(ff_u32_t __flags) {
@@ -98,6 +101,13 @@ ffly_fopen(char const *__path, int __flags, ff_u32_t __mode, ff_err_t *__err) {
 }
 
 ff_bool_t static valid_fd(int __fd) {
+/*
+	workout diffrent way, i think file desc work from 0 to ...
+	so putting this in a map of ff_u64_t where if bit is high then 
+	its valid, issue doing this would be gaps of wasted memory.
+	i dont know
+*/
+
 	if (fcntl(__fd, F_GETFD, 0) == -1)
 		return 0;
 	return 1;
@@ -177,6 +187,7 @@ ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	ffly_mutex_lock(&__f->lock);
 	if (is_flag(__f->flags, FF_NOBUFF)) {
 		write(__f->fd, __p, __bc);		
+		// goto _end; <<- remove else
 	} else {
 	if (!__f->drain) {
 		drain(__f);

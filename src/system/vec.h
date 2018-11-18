@@ -2,12 +2,12 @@
 # define __ffly__vec__h
 # define VEC_PAGE_SHIFT 5
 # define VEC_PAGE_SIZE (1<<VEC_PAGE_SHIFT) // dont change
-# define VEC_AUTO_RESIZE 0x1
-# define VEC_ITR_FD 0x0
-# define VEC_ITR_BK 0x1
-# define VEC_BLK_CHAIN 0x2
-# define VEC_UUU_BLKS 0x4
-# define VEC_NONCONTINUOUS 0x8
+# define VEC_AUTO_RESIZE 0x01
+# define VEC_ITR_FD 0x00
+# define VEC_ITR_BK 0x01
+# define VEC_BLK_CHAIN 0x02
+# define VEC_UUU_BLKS 0x04
+# define VEC_NONCONTINUOUS 0x08
 # include "../ffint.h"
 # include "../types.h"
 # include "io.h"

@@ -7,8 +7,8 @@
 # include "../dep/mem_cpy.h"
 # include "errno.h"
 # define VEC_NULL ((ff_off_t)~0)
-# define VEC_BLK_USED 0x1
-# define VEC_BLK_FREE 0x2
+# define VEC_BLK_USED 0x01
+# define VEC_BLK_FREE 0x02
 # define is_flag(__vec, __flag) ffly_is_flag(__vec->flags, __flag)
 # define not_null(__v)(__v!=VEC_NULL)
 
@@ -18,6 +18,11 @@ ffly_vecp static top = NULL;
 ffly_vecp ffly_vec_list() {
 	return top;
 }
+
+/*
+	TODO:
+		mega cleanup
+*/
 
 // later
 struct page {
@@ -54,7 +59,9 @@ ffly_vecp ffly_vec_creat(ff_size_t __blk_size, ff_flag_t __flags, ff_err_t *__er
 }
 
 ffly_vecp ffly_vec(ff_size_t __blk_size, ff_flag_t __flags, ff_err_t *__err) { 
-	ffly_vecp p = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
+	ffly_vecp p;
+	
+	p = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
 	p->flags = __flags;
 	*__err = ffly_vec_init(p, __blk_size);
 	ffly_vec_attach(p);

@@ -136,7 +136,17 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 //	__asm__("subq $16, %rsp");
 	ffly_printf("%u\n", __argc);
+#define N 12
+	ff_u32_t b[N];
 
+	ff_uint_t i;
+	i = 0;
+	for(;i != N;i++)
+		b[i] = ffly_brick_new(_ff_brick_256, NULL, NULL, NULL, 0);
+	
+	for(;i != N;i++)
+		ffly_brick_rid(b[i]);
+/*
 	struct ffly_cistern ctn;
 	ffly_cistern_init(&ctn, "test.cis");
 
@@ -156,6 +166,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 			ffly_cistern_free(&ctn, p[i++]);
 		}
 //	}
+*/
 /*
 	void *r;
 	r = ffly_cistern_alloc(&ctn, 256);

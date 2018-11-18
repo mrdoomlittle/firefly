@@ -10,6 +10,9 @@
 # ifdef __cplusplus
 extern "C" {
 # endif
+
+// string of x size to number
+ff_u64_t ffly_sntno(char*, ff_uint_t);
 ff_u64_t ffly_stno(char*);
 ff_uint_t ffly_nots(ff_u64_t, char*);
 ff_uint_t _ffly_nots(ff_u64_t, ff_u16_t*, ff_u8_t*, void(*)(ff_u8_t*, ff_u16_t, ff_u16_t, ff_u8_t));

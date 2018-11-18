@@ -145,15 +145,41 @@ ff_uint_t _ffly_nots(ff_u64_t __no, ff_u16_t *__cut, ff_u8_t *__off, void(*__dra
 	return l;
 }
 
-ff_u64_t ffly_stno(char *__s) {
-	if(*__s == '0' && *(__s+1) == '\0')
-		return 0;
+ff_u64_t ffly_sntno(char *__s, ff_uint_t __len) {
+	if (__len == 1) {
+		return (*__s)-'0';
+	}
 
 	ff_u8_t sign;
 	if (sign = (*__s == '-')) __s++;
 
 	ff_u64_t no = 0;
-	char *p = __s;
+	char *p, *e;
+
+	p = __s;
+	e = p+__len;
+	ff_uint_t i;
+
+	i = __len;
+	for(;p != e;p++)
+		no+=(*p-'0')*powof10[--i];
+	if (sign)
+		return -no;
+	return no;	
+}
+
+ff_u64_t ffly_stno(char *__s) {
+	if(*(__s+1) == '\0') {
+		return *__s-'0';
+	}
+
+	ff_u8_t sign;
+	if (sign = (*__s == '-')) __s++;
+
+	ff_u64_t no = 0;
+	char *p;
+	
+	p = __s;
 	for(;*p != '\0';p++) {
 		no = no*10;
 		switch(*p) {

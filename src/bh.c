@@ -99,6 +99,10 @@ ff_err_t ff_bh_bnewm(ff_bhp __bh, ff_u8_t __sz, ff_u32_t *__b, ff_uint_t __n) {
 	tape(__bh, code, 6, &err);
 
 	ff_net_recv(__bh->sock, __b, __n*sizeof(ff_u32_t), 0, &err);
+	ff_uint_t i;
+	i = 0;
+	for(;i != __n;i++)
+		ffly_printf("new brick: %u\n", __b[i]);
 	return err;
 }
 
@@ -108,6 +112,11 @@ ff_err_t ff_bh_bridm(ff_bhp __bh, ff_u32_t *__b, ff_uint_t __n) {
 	*code = _bhop_bridm;
 	*(ff_u32_t*)(code+1) = __n;
 	tape(__bh, code, 5, &err);
+
+	ff_uint_t i;
+	i = 0;
+	for(;i != __n;i++)
+		ffly_printf("rid brick: %u\n", __b[i]);
 
 	ff_net_send(__bh->sock, __b, __n*sizeof(ff_u32_t), 0, &err);
 	return err;
@@ -207,7 +216,7 @@ bh_bnewm(void) {
 	while(i != n) {
 		void *p;
 		b[i++] = ffly_brick_new(sz, bread, bwrite, bdel, (long long)(p = ffly_cistern_alloc(&ctn, bricksz(sz))));
-		ffly_printf("---> %p\n", p);
+		ffly_printf("new brick: %u\n", b[i-1]);
 	}
 	ff_net_send(client.sock, b, n*sizeof(ff_u32_t), 0, &err);
 	__ffly_mem_free(b);
@@ -226,8 +235,10 @@ bh_bridm(void) {
 	ff_uint_t i;
 
 	i = 0;
-	while(i != n)
+	while(i != n) {
+		ffly_printf("rid brick: %u\n", b[i]);
 		ffly_brick_rid(b[i++]);
+	}
 	__ffly_mem_free(b);
 }
 

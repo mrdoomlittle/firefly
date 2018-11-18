@@ -215,3 +215,19 @@ given as a output segment and input segment is where data should be put for proc
 why?? because later i want to be able to use over network
 
 rename all under level - remove ffly_ & ff_
+
+-. maths:
+	for some values check if pow of 2 and use another method and stay away from fpu or those things
+
+-. scale rosin:
+	start implementing functions to access diffrent parts of engine
+
+-. vec:
+	pages get done
+
+-. work on db and get it online.
+-. remove chunkmanager pointer id system.
+-. get as fragments working as we cant begin work with gpu without assembler
+-. things using pages,slabs,chunk etc. count x times location and time between,
+determine if memory should be freed or after accessed and prepare for x to be accessed later,
+also allow for sched to be used as option to free x after x time including ^info. <- cistern, resv, etc

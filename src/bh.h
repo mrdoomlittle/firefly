@@ -26,6 +26,10 @@
 #define _bhop_bclose		0x07
 #define _bhop_disconnect	0x08
 #define _bhop_bexist		0x09
+struct bh_vec {
+	// later
+};
+
 typedef struct bh_tape {
 	void *text;
 	ff_uint_t len;
