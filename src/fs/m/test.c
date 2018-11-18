@@ -6,20 +6,21 @@
 # include "../../linux/unistd.h"
 # include "../../linux/fcntl.h"
 # include "../../linux/stat.h"
-
+# include "../../system/nanosleep.h"
 ff_u8_t static data[2048];
 void static __write(void *__buf, ff_uint_t __size, ff_u64_t __offset) {
+	ffly_nanosleep(0, 1000000); // 10ms
 	if (__offset+__size>=2048) {
-		ffly_printf("r/w error.\n");
+		ffly_printf("r/w error, %u:%u\n", __offset, __size);
 		return;
 	}
-
 	ffly_mem_cpy(data+__offset, __buf, __size);
 }
 
 void static __read(void *__buf, ff_uint_t __size, ff_u64_t __offset) {
+	ffly_nanosleep(0, 10000000);
 	if (__offset+__size>2048) {
-		ffly_printf("r/w error.\n");
+		ffly_printf("r/w error, %u:%u\n", __offset, __size);
 		return;
 	}
 
@@ -32,7 +33,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	struct stat st;
 	int fd;
 	fd = open("test.bin", O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
-	fstat(fdm, &st);
+	fstat(fd, &st);
 	read(fd, data, st.st_size);
 
 	struct ffly_mfs _mfs = {
@@ -46,7 +47,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	void(*fs_fin)(void);
 	fs_fin = ffly_fs(_ff_mfs);
 
-//	ff_u32_t f;
+	ff_u32_t f;
+
 //	fs_mkdir("/test");
 //	f = fs_open("/test/test.txt", MFS_CREAT);
 

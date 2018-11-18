@@ -33,6 +33,7 @@ void mfs_dmscope(struct mfs_scope*);
 void mfs_swrite(struct mfs_scope *__sc, void *__buf,
 	ff_uint_t __size, ff_u64_t __offset)
 {
+	ffly_printf("write, %u, %u\n", __size, __offset);
 	ff_uint_t ss, offset;
 	ss = (__offset>>MFS_SLAB_SHIFT);
 	struct mfs_slab **s, *sb;
@@ -77,6 +78,7 @@ void mfs_swrite(struct mfs_scope *__sc, void *__buf,
 void mfs_sread(struct mfs_scope *__sc, void *__buf,
 	ff_uint_t __size, ff_u64_t __offset)
 {
+	ffly_printf("read, %u, %u\n", __size, __offset);
 	ff_uint_t ss, offset;
 	ss = (__offset>>MFS_SLAB_SHIFT);
 	struct mfs_slab **s, *sb;
@@ -494,23 +496,33 @@ void static mfs_close(ff_u32_t __f) {
 
 }
 
+void mfs_slabs_save(ff_uint_t*, ff_u32_t);
+void mfs_slabs_load(ff_uint_t, ff_u32_t);
 void ffly_mfs_init(void) {
 	mfs->off+=sizeof(struct mfs_tract);
 	struct mfs_tract t;
 	mfs->read(&t, sizeof(struct mfs_tract), 0);
+	ffly_printf("CR: %u, CRNC: %u, ROOT: %u, CRSC: %u, SC: %u\n", t.cr, t.crnc, t.root, t.crsc, t.sc);
 	struct mfs_node *root;
 	root = mfs_node_new();
 
 	mfs->root = root;
 	root->h = mfs_hash_new();
-	if (t.crnc>0) {
+	if (t.sc>0) {
+		mfs_slabs_load(t.sc, t.slabs);
+	}
+	
+	if (t.crsc>0 && t.crnc>0) {
 		cr_init = 0;
 		ff_u32_t *sr_slabs;
-		sr_slabs = (ff_u32_t*)__ffly_mem_alloc(t.crnc*sizeof(ff_u32_t));
+		sr_slabs = (ff_u32_t*)__ffly_mem_alloc(t.crsc*sizeof(ff_u32_t));
 
-		mfs->read(sr_slabs, t.crnc*sizeof(ff_u32_t), t.cr);	
-		cr.s = mfs_build(sr_slabs, t.crnc);
-
+		mfs->read(sr_slabs, t.crsc*sizeof(ff_u32_t), t.cr);	
+		ff_uint_t i;
+		for(i = 0;i != t.crsc;i++)
+			ffly_printf("CRSB: %u\n", sr_slabs[i]);
+		cr.s = mfs_build(sr_slabs, t.crsc);
+		cr.n = t.crnc;
 		root->ca = t.root;
 		loadin_node(root);
 		__ffly_mem_free(sr_slabs);
@@ -518,9 +530,11 @@ void ffly_mfs_init(void) {
 	}
 
 	map_node(root);
+	commit_node(root);
 }
 
 void ffly_mfs_de_init(void) {
+	commit_node(mfs->root);
 	struct mfs_tract t;
 	t.cr = mfs->off;
 	t.crnc = cr.n;
@@ -530,14 +544,22 @@ void ffly_mfs_de_init(void) {
 
 	sc = cr.s->slab_c;
 
-	cr_slabs = (ff_u32_t*)__ffly_mem_alloc(sc);
+	t.slabs = t.cr+(sc*sizeof(ff_u32_t));
+	t.crsc = sc;
+
+	ffly_printf("CR: %u, CRNC: %u, ROOT: %u, CRSC: %u\n", t.cr, t.crnc, t.root, t.crsc);
+	cr_slabs = (ff_u32_t*)__ffly_mem_alloc(sc*sizeof(ff_u32_t));
 	ff_uint_t i;
 
-	for(;i != sc;i++)
+	i = 0;
+	for(;i != sc;i++) {
 		cr_slabs[i] = (*(cr.s->slabs+i))->in;
-	
-	__ffly_mem_free(cr_slabs);
+		ffly_printf("CRSB: %u\n", cr_slabs[i]);
+	}
+
 	mfs->write(cr_slabs, sc*sizeof(ff_u32_t), t.cr);
+	__ffly_mem_free(cr_slabs);
+	mfs_slabs_save(&t.sc, t.slabs);
 	mfs->write(&t, sizeof(struct mfs_tract), 0);
 }
 
@@ -557,6 +579,7 @@ mfs_tree(struct mfs_node *__n) {
 	ff_uint_t n;
 	n = __n->n/sizeof(ff_u32_t);
 
+	ffly_printf("%u or %u\n", n, __n->n);
 	struct mfs_node *nn;
 	i = 0;
 	for(;i != n;i++) {

@@ -12,6 +12,44 @@ struct mfs_slab **slabs = NULL;
 static ff_u32_t page_c = 0;
 static ff_u64_t off = 0;
 
+
+struct mfs_slab static* slab_alloc(void);
+struct mfs_slab* slabat(ff_u32_t);
+
+void mfs_slabs_save(ff_uint_t *__n, ff_u32_t __to) {
+	ff_u32_t *slabs;
+
+	slabs = (ff_u32_t*)__ffly_mem_alloc(off*sizeof(ff_u32_t));
+	ff_uint_t i;
+
+	i = 0;
+	for(;i != off;i++) {
+		slabs[i] = slabat(i)->off;
+		ffly_printf("slab, save: %u\n", slabs[i]);
+	}
+
+	mfs->write(slabs, off*sizeof(ff_u32_t), __to);
+	__ffly_mem_free(slabs);
+	*__n = off;
+}
+
+void mfs_slabs_load(ff_uint_t __n, ff_u32_t __from) {
+	ff_uint_t i;
+
+	ff_u32_t *slabs;
+	slabs = (ff_u32_t*)__ffly_mem_alloc(__n*sizeof(ff_u32_t));
+	mfs->read(slabs, __n*sizeof(ff_u32_t), __from);
+
+	i = 0;
+	while(i != __n) {
+		slab_alloc()->off = slabs[i];
+		ffly_printf("slab, load: %u\n", slabs[i]);
+		i++;
+	}
+
+	__ffly_mem_free(slabs);
+}
+
 struct mfs_slab*
 slabat(ff_u32_t __of) {
 	ff_u32_t pg, pg_off;
@@ -48,7 +86,7 @@ ff_u32_t mfs_balloc(void) {
 	return r;
 }
 
-struct mfs_slab static *slab_alloc(void) {
+struct mfs_slab* slab_alloc(void) {
 	struct mfs_slab *sb;
 	ff_u32_t pg, pg_off;
 

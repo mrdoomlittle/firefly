@@ -46,18 +46,25 @@ struct mfs_dent {
 	struct mfs_node *n;
 };
 
-#define MFS_BALE_NULL 0xffffffff
-#define MFS_BALE_SHIFT 4
-#define MFS_BALE_SIZE (1<<MFS_BALE_SHIFT)
+#define MFS_BALE_NULL	0xffffffff
+#define MFS_BALE_SHIFT	4
+#define MFS_BALE_SIZE	(1<<MFS_BALE_SHIFT)
 struct mfs_bale {
 	ff_u32_t slabs[MFS_BALE_SIZE];
 	ff_u32_t next;
 };
 
 struct mfs_tract {
+	// cauldron start location for slab ident
 	ff_u32_t cr;
+	// node count
 	ff_uint_t crnc;
+	// root node - cauldron address
 	ff_u32_t root;
+	// slab count
+	ff_uint_t crsc;
+	ff_uint_t sc;
+	ff_u32_t slabs;
 };
 
 struct mfs_engrave {
