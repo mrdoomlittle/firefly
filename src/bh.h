@@ -59,4 +59,5 @@ ff_err_t ff_bh_bopen(ff_bhp, ff_u32_t);
 ff_err_t ff_bh_bwrite(ff_bhp, ff_u32_t, void*, ff_uint_t, ff_uint_t);
 ff_err_t ff_bh_bread(ff_bhp, ff_u32_t, void*, ff_uint_t, ff_uint_t);
 ff_err_t ff_bh_bclose(ff_bhp, ff_u32_t);
+ff_i8_t ff_bh_bexist(ff_bhp, ff_u32_t, ff_err_t*);
 # endif /*__ffly__bh__h*/

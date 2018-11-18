@@ -9,6 +9,9 @@ lexer: clean
 	gcc $(cc_flags) -Wall -o main lexer.c $(ffly_objs) -nostdlib
 test: clean
 	gcc $(cc_flags) -Wall -o main test.c $(ffly_objs) -nostdlib
+mfs: clean
+	gcc $(cc_flags) -c fs/m/test.c
+	gcc $(cc_flags) -Wall -o main test.o $(ffly_objs) -nostdlib
 mod: clean
 	gcc $(cc_flags) -c -Wall mod/pipe.c -o mod_pipe.o
 #	gcc $(cc_flags) -c -Wall -o uapi/mod/printf.o uapi/mod/printf.c

@@ -445,6 +445,7 @@ void ff_bhs_closedown(void) {
 }
 
 void ff_bhs_cleanup(void) {
+	ffly_cistern_de_init(&ctn);
 }
 
 void ff_bh_open(ff_bhp __bh) {

@@ -168,6 +168,15 @@ void ffly_cistern_write(ffly_cisternp __cis, void *__r, void *__p,
 		offset = 0;
 	}
 
+	if (offset+__size>SLAB_SIZE && __size<SLAB_SIZE) {
+		ff_uint_t a0, a1;
+		a0 = SLAB_SIZE-offset;
+		a1 = __size-a0;
+		pwrite(__cis->fd, p, a0, ((*s)->off*SLAB_SIZE)+offset);
+		pwrite(__cis->fd, p+a0, a1, (*(s+1))->off*SLAB_SIZE);
+		return;
+	}
+
 	while(s<end) {
 		sb = *(s++);
 		pwrite(__cis->fd, p, SLAB_SIZE, sb->off*SLAB_SIZE);
@@ -201,6 +210,7 @@ void ffly_cistern_read(ffly_cisternp __cis, void *__r, void *__p,
 	end = s+(__size>>SLAB_SHIFT);
 	ff_u8_t *p;
 
+	p = (ff_u8_t*)__p;
 	if (offset>0 && __size>=SLAB_SIZE) {
 		ff_uint_t sz;
 		pread(__cis->fd, p, sz = (SLAB_SIZE-offset), ((*s)->off*SLAB_SIZE)+offset);
@@ -209,7 +219,15 @@ void ffly_cistern_read(ffly_cisternp __cis, void *__r, void *__p,
 		offset = 0;
 	}
 
-	p = (ff_u8_t*)__p;
+	if (offset+__size>SLAB_SIZE && __size<SLAB_SIZE) {
+		ff_uint_t a0, a1;
+		a0 = SLAB_SIZE-offset;
+		a1 = __size-a0;
+		pread(__cis->fd, p, a0, ((*s)->off*SLAB_SIZE)+offset);
+		pread(__cis->fd, p+a0, a1, (*(s+1))->off*SLAB_SIZE);
+		return;
+	}
+
 	while(s<end) {
 		sb = *(s++);
 		pread(__cis->fd, p, SLAB_SIZE, sb->off*SLAB_SIZE);

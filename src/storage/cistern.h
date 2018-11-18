@@ -7,6 +7,11 @@
 	- more personalized idk its because resv is being used 
 	for game gravity shit and other higher level crap.
 */
+
+/*
+	TODO:
+		rename ffly_cis_slab to cis_slab
+*/
 typedef struct ffly_cis_slab {
 	ff_u64_t off;
 	struct ffly_cis_slab **bk, *fd;

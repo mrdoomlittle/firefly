@@ -15,6 +15,9 @@
 		depending on resv alloc size the slab size should change
 */
 
+/*
+	rename ffly_slab to resv_slab
+*/
 typedef struct ffly_slab {
 	ff_u64_t off;
 	struct ffly_slab **bk, *fd;

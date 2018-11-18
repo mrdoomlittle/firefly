@@ -33,17 +33,24 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	char buf0[256];
 	ff_u32_t b;
-	if (__argc>1) {
-		ffly_ff5_dec(__argv[1], &b, strlen(__argv[1]));
-		ff_bh_bread(&bh, b, buf0, 256, 0);
-		printf("%s\n", buf0);
+	if (*__argv[1] == '#') {
+		ffly_ff5_dec(__argv[2], &b, strlen(__argv[2]));
+		if (!ff_bh_bexist(&bh, b, &err)) {
+			ff_bh_bopen(&bh, b);
+			ff_bh_bread(&bh, b, buf0, 256, 0);
+			ff_bh_bclose(&bh, b);
+			printf("%s\n", buf0);
+		} else
+			printf("brick/s do not exist.\n");
 	} else {
-		strcpy(buf0, "hello mother fucker.\n");
+		strcpy(buf0, __argv[2]);
 		b = ff_bh_bnew(&bh, _ff_brick_256, &err);
 		char buf[1024];
 		*(buf+ffly_ff5_enc(&b, buf, sizeof(ff_u32_t))) = '\0';
 		printf("brick key: %s\n", buf);
+		ff_bh_bopen(&bh, b);
 		ff_bh_bwrite(&bh, b, buf0, 100, 0);
+		ff_bh_bclose(&bh, b);
 	}
 
 	ff_bh_disconnect(&bh);

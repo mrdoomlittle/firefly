@@ -4,6 +4,13 @@
 # include "../types.h"
 # include "../dep/str_dup.h"
 
+#define offof(__p) (((ff_u8_t*)(__p))-ffly_sysconf)
+#define SCF_LC_EXIT	0x00
+#define SCF_LC_PP	0x01
+/*
+	i dont know
+*/
+#define SCF_SZ 102
 #define SCF_version			0
 #define SCF_max_threads 	8
 #define SCF_root_dir 		12
@@ -19,6 +26,8 @@
 #define SCF_db_user			75
 #define SCF_db_passwd		83
 #define SCF_loaded			91
+#define SCF_bh_ip_addr		92
+#define SCF_bh_port			100
 
 #define SCF_TY_version			char const*
 #define SCF_TY_max_threads 		ff_u32_t
@@ -35,7 +44,8 @@
 #define SCF_TY_db_user			char const*
 #define SCF_TY_db_passwd		char const*
 #define SCF_TY_loaded			ff_i8_t
-
+#define SCF_TY_bh_ip_addr		char const*
+#define SCF_TY_bh_port			ff_u16_t
 #define sysconf_get(__what) \
 	((SCF_TY_ ## __what*) (ffly_sysconf+(SCF_ ## __what)))
 extern ff_u8_t ffly_sysconf[];
@@ -46,7 +56,6 @@ extern ff_u8_t ffly_sysconf[];
 # ifdef __cplusplus
 extern "C" {
 # endif
-//extern struct ffly_sysconf __ffly_sysconf__;
 ff_err_t ffly_ld_sysconf(char const*);
 void ffly_ld_sysconf_def(void);
 void ffly_free_sysconf(void);

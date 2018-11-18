@@ -136,26 +136,27 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 ff_err_t ffmain(int __argc, char const *__argv[]) {
 //	__asm__("subq $16, %rsp");
 	ffly_printf("%u\n", __argc);
-/*
+
 	struct ffly_cistern ctn;
 	ffly_cistern_init(&ctn, "test.cis");
 
 # define N 24
-	while(1) {
+//	while(1) {
 		void *p[N];
 		ff_uint_t i;
 
 		i = 0;
 		while(i != N) {
 			p[i++] = ffly_cistern_alloc(&ctn, 256);
+			ffly_cistern_write(&ctn, p[i-1], &i, (i-1)*sizeof(ff_uint_t), sizeof(ff_uint_t));
 		}
 
 		i = 0;
 		while(i != N) {
 			ffly_cistern_free(&ctn, p[i++]);
 		}
-	}
-
+//	}
+/*
 	void *r;
 	r = ffly_cistern_alloc(&ctn, 256);
 	char buf[1024];

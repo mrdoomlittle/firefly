@@ -213,3 +213,5 @@ been using send and recv as its quick to implement
 pointers passed to read,write data should be channeled through with no pointers say
 given as a output segment and input segment is where data should be put for processing or to be used,
 why?? because later i want to be able to use over network
+
+rename all under level - remove ffly_ & ff_

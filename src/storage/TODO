@@ -4,3 +4,12 @@ locking needs to be redone why?
 it was done for quick implementation so locking is 
 most certainly slow as fuck this applys to everything thats using them
 but here is more crucial.
+
+resv:
+	rename slab to rv_slab or resv_slab
+
+	and not ffly_slab
+
+resv and cistern:
+	allow for linear memory to be allocated if r/w need to be fast but all should be aligned to slab size,
+	this should be provided as an option.

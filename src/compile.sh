@@ -215,6 +215,11 @@ $ffly_cc $cc_flags -c -o $dst_dir/tc.o $root_dir/tc.c
 $ffly_cc $cc_flags -c -o $dst_dir/nought/objbuf.o $root_dir/nought/objbuf.c
 $ffly_cc $cc_flags -c -o $dst_dir/bron/objbuf.o $root_dir/bron/objbuf.c
 $ffly_cc $cc_flags -c -o $dst_dir/nought/tex.o $root_dir/nought/tex.c
+$ffly_cc $cc_flags -c -o $dst_dir/fs/m/file.o $root_dir/fs/m/file.c
+$ffly_cc $cc_flags -c -o $dst_dir/fs/m/hash.o $root_dir/fs/m/hash.c
+$ffly_cc $cc_flags -c -o $dst_dir/fs/m/alloc.o $root_dir/fs/m/alloc.c
+$ffly_cc $cc_flags -c -o $dst_dir/fs/m/m.o $root_dir/fs/m/m.c
+$ffly_cc $cc_flags -c -o $dst_dir/fs.o $root_dir/fs.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -256,4 +261,5 @@ $dst_dir/clay/parser.o $dst_dir/clay/hash.o $dst_dir/clay/solidify.o \
 $dst_dir/bron/tile.o $dst_dir/nought/shit.o $dst_dir/nought/pixel.o \
 $dst_dir/slurry/client.o $dst_dir/slurry/connection.o \
 $dst_dir/slurry/proto.o $dst_dir/slurry/slurry.o $dst_dir/tc.o $dst_dir/time.o \
-$dst_dir/nought/objbuf.o $dst_dir/bron/objbuf.o $dst_dir/nought/tex.o"
+$dst_dir/nought/objbuf.o $dst_dir/bron/objbuf.o $dst_dir/nought/tex.o \
+$dst_dir/fs.o $dst_dir/fs/m/file.o $dst_dir/fs/m/hash.o $dst_dir/fs/m/alloc.o $dst_dir/fs/m/m.o"

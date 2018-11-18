@@ -86,8 +86,12 @@ void ffly_brick_open(ff_u32_t __id) {
 	ffly_brickp b;
 
 	b = get_brick(__id);
-	b->flags |= BRICK_OPEN;}
+	b->flags |= BRICK_OPEN;
 
+	if (!b->p)
+		b->p = __ffly_mem_alloc(1<<b->sz);
+	b->read(b->arg, b->p, b->sz);
+}
 void ffly_brick_close(ff_u32_t __id) {
 	ffly_brickp b;
 	
@@ -101,20 +105,27 @@ void ffly_brick_close(ff_u32_t __id) {
 	if (b->p != NULL) {
 		if (b->write != NULL)
 			b->write(b->arg, b->p, b->sz);
+		__ffly_mem_free(b->p);
+		b->p = NULL;
 	}
 }
 
 ff_i8_t ffly_brick_exist(ff_u32_t __id) {
-	if (__id<off)
-		return 0;
+	ffly_brickp b;
+	if (__id<off) {
+		b = get_brick(__id);
+		if (!b->inuse) {
+			return 0;
+		}
+	}
 	return -1;
 }
 
 void* ffly_brick_get(ff_u32_t __id) {
 	ffly_brickp b = get_brick(__id);
 	if (!b->p) {
-		b->p = __ffly_mem_alloc(1<<b->sz);
-		b->read(b->arg, b->p, b->sz);
+		//error
+		return NULL;
 	}
 	return b->p;
 }
@@ -127,8 +138,10 @@ void ffly_brick_cleanup(void) {
 		cur = cur->next;
 	}
 
-	ff_uint_t page = 0;
+	ff_uint_t page;
+
 	ffly_printf("brick.c; %u pages to be freed.\n", page_c);
+	page = 0;
 	while(page != page_c) {
 		__ffly_mem_free(*(bricks+page));
 		page++;
@@ -182,8 +195,10 @@ void ffly_brick_rid(ff_u32_t __id) {
 			}
 			if (!(off-1>>PAGE_SHIFT))
 				break;
-			if (b->p != NULL)
+			if (b->p != NULL) {
+				//display warn
 				__ffly_mem_free(b->p);
+			}
 			ffly_printf("found more dead bricks, id: %u\n", b->id);
 			delink(b);
 			deattach(b);
