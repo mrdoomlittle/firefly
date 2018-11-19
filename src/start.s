@@ -10,6 +10,7 @@ _start:
 	// align stack
 	andq $~15, %rsp
 
+	// as its a c function it will think that we are using call
 	// push jump{return as not using call}
 	push %rax
 	// no point in calling function as its not going to return anyway

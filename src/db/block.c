@@ -13,8 +13,13 @@
 
 
 	also 
+		allow for slab allocation on top
 */
 // not the best but for now its okay 
+/*
+	
+	complete cesspool using lseek and direct r/w
+*/
 /*
 	TODO:
 		ffdb_bbin static

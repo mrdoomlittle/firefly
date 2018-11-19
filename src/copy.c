@@ -7,7 +7,7 @@
 # include "linux/fcntl.h"
 # include "linux/stat.h"
 # include "system/io.h"
-# define CHUNK_SHIFT 8
+# define CHUNK_SHIFT 8//256
 # define CHUNK_SIZE (1<<CHUNK_SHIFT)
 
 /*

@@ -7,16 +7,16 @@
 # include "linux/unistd.h"
 # include "linux/fcntl.h"
 # include "linux/stat.h"
+# include "system/io.h"
 char static dir[PATH_MAX];
 #define PLAN_FILE "firefly.plan"
 #define PLAN_FNL 13
+
+#define is_space(__c) \
+	(__c == ' ' || __c == '\n' || __c == '\t')
 void ff_pkc_init(void) {
 
 }
-
-#define IG_FILE		0x00
-#define IG_DIR		0x01
-#define IG_UNKNOWN	0x02
 
 struct link {
 	struct link *next;
@@ -33,7 +33,11 @@ ff_u8_t static at_eof(void) {
 
 struct pkc_ingot static*
 read_ingot(void) {
-	if (at_eof())
+	ff_u8_t eo;
+	while(is_space(*(text+cur)) && !(eo = at_eof()))
+		cur++;
+	
+	if (eo || *(text+cur) == '#')
 		return NULL;
 	ff_u8_t *p;
 
@@ -78,6 +82,7 @@ pkc_get_plan(void) {
 	plan = (struct pkc_plan*)__ffly_mem_alloc(sizeof(struct pkc_plan));
 	txsz = st.st_size;
 	text = (ff_u8_t*)__ffly_mem_alloc(txsz);
+	read(fd, text, txsz);
 	struct link *l, *top = NULL;
 	struct pkc_ingot *i;
 	ff_uint_t n;
@@ -88,7 +93,7 @@ _again:
 		goto _end;
 	}
 
-	l = (struct link*)__ffly_mem_alloc(sizeof(struct link*));
+	l = (struct link*)__ffly_mem_alloc(sizeof(struct link));
 
 	l->p = i;
 	l->next = top;
@@ -97,17 +102,20 @@ _again:
 	goto _again;
 _end:
 	plan->n = n;
+	ffly_printf("N: %u\n", n);
 	if (n>0) {
 		plan->i = (struct pkc_ingot**)__ffly_mem_alloc(n*sizeof(struct pkc_ingot*));
 	
 		struct link *b;
-		struct pkc_ingot *ip;
-		ip = plan->i+(n-1);
+		struct pkc_ingot **ip;
+		ip = plan->i+n;
 		l = top;
 		while(l != NULL) {
 			b = l;
 			l = l->next;
-			*(ip--) = (i = l->p);
+
+			*(--ip) = (i = b->p);
+
 			unsigned int mode;
 			stat(i->path, &st);
 			switch(st.st_mode&S_IFMT) {
@@ -122,6 +130,8 @@ _end:
 			}
 
 			__ffly_mem_free(b);
+
+			ffly_printf("ingot: %s, type: %s\n", i->path, i->type == IG_FILE?"file":"directory");
 		}
 	} else
 		plan->i = NULL;
@@ -131,4 +141,19 @@ _end:
 
 void ff_pkc_de_init(void) {
 
+}
+
+void ff_pkc_construct(char const*, char const*);
+ff_err_t ffmain(int __argc, char const *__argv[]) {
+	if (__argc<1){
+		return 0;
+	}
+
+	char dc;
+	dc = *__argv[1];
+	if (dc == 'c') {
+		ff_pkc_construct(NULL, "out.dat");
+	} else if (dc == 'd') {
+		ff_pkc_deconstruct(NULL, "out.dat");
+	}
 }

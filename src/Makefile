@@ -21,9 +21,9 @@ mod: clean
 	gcc $(cc_flags) -c -Wall call.c
 	gcc $(cc_flags) -Wall -o main mod.c mod_pipe.o call.o $(ffly_objs) -nostdlib
 pkg: clean
-	gcc -c extract.c
-	gcc -c build.c
-	gcc $(cc_flags) -Wall -o pkg extract.c build.c $(ffly_objs) -nostdlib
+#	gcc -c extract.c
+	gcc $(cc_flags) -Wall -c pkg/construct.c
+	gcc $(cc_flags) -Wall -o main pkg.c construct.o $(ffly_objs) -nostdlib
 #	gcc -Wall -o main pkg.c build.o extract.o $(ffly_objs)
 crypto: clean
 	gcc -Wall -o main crypto.c $(ffly_objs)
