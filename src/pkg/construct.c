@@ -52,12 +52,15 @@ ff_u32_t static cleave(ff_uint_t __n) {
 	return r;
 }
 
-void ff_pkc_construct(char const *__dir, char const *__file) {
+void ff_pkc_construct(char const *__plan, char const *__dst) {
     struct pkc_plan *plan;
+	pkc_plan = __plan;
+	pkc_pfl = ffly_str_len(__plan);
+
     plan = pkc_get_plan();
 
 	struct pkc_header h;
-	out = open(__file, O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR);
+	out = open(__dst, O_CREAT|O_TRUNC|O_WRONLY, S_IRUSR|S_IWUSR);
 
 	struct pkc_ingot *i, **ii;
 	struct pkc_ingot **e;

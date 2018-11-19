@@ -9,8 +9,9 @@
 # include "linux/stat.h"
 # include "system/io.h"
 char static dir[PATH_MAX];
-#define PLAN_FILE "firefly.plan"
-#define PLAN_FNL 13
+
+char const *pkc_plan;
+ff_uint_t pkc_pfl;
 
 #define is_space(__c) \
 	(__c == ' ' || __c == '\n' || __c == '\t')
@@ -70,7 +71,8 @@ pkc_get_plan(void) {
 	char file[PATH_MAX];
 	char *p = file;
 	p+=ffly_str_cpy(p, dir);
-	ffly_mem_cpy(p, PLAN_FILE, PLAN_FNL);
+	ffly_mem_cpy(p, pkc_plan, pkc_pfl);
+	*(p+pkc_pfl) = '\0';
 
 	int fd;
 	fd = open(file, O_RDONLY, 0);
@@ -143,17 +145,37 @@ void ff_pkc_de_init(void) {
 
 }
 
+# include "dep/str_cmp.h"
 void ff_pkc_construct(char const*, char const*);
 ff_err_t ffmain(int __argc, char const *__argv[]) {
-	if (__argc<2){
+	if (__argc<3){
 		return 0;
 	}
 
 	char dc;
-	dc = *__argv[1];
+	char const *a0, *a1;
+	char const **av, **e;
+	av = __argv+1;
+	e = av+__argc;
+	while(av != e) {
+		if (!ffly_str_cmp(*av, "-c")) {
+			dc = 'c';
+		} else if (!ffly_str_cmp(*av, "-d")) {
+			dc = 'd';
+		} else if (!ffly_str_cmp(*av, "-p")) {
+			a0 = *(++av);
+		} else if (!ffly_str_cmp(*av, "-dat")) {
+			a1 = *(++av);
+		} else if (!ffly_str_cmp(*av, "-dir")) {
+			a0 = *(++av);
+		}
+		av++;
+	}
+
+	ffly_printf("%c : %s:%s\n", dc, a0, a1);
 	if (dc == 'c') {
-		ff_pkc_construct(NULL, "out.dat");
+		ff_pkc_construct(a0, a1);
 	} else if (dc == 'd') {
-		ff_pkc_deconstruct(__argv[2], "out.dat");
+		ff_pkc_deconstruct(a0, a1);
 	}
 }

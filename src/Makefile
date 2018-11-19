@@ -9,11 +9,6 @@ lexer: clean
 	gcc $(cc_flags) -Wall -o main lexer.c $(ffly_objs) -nostdlib
 test: clean
 	gcc $(cc_flags) -Wall -o main test.c $(ffly_objs) -nostdlib
-mfs: clean
-	gcc $(cc_flags) -c fs/m/test.c
-	gcc $(cc_flags) -Wall -o main test.o $(ffly_objs) -nostdlib
-bfv: clean
-	gcc $(cc_flags) -Wall -o main bfv.c $(ffly_objs) -nostdlib
 mod: clean
 	gcc $(cc_flags) -c -Wall mod/pipe.c -o mod_pipe.o
 #	gcc $(cc_flags) -c -Wall -o uapi/mod/printf.o uapi/mod/printf.c
@@ -22,9 +17,8 @@ mod: clean
 	gcc $(cc_flags) -Wall -o main mod.c mod_pipe.o call.o $(ffly_objs) -nostdlib
 pkg: clean
 #	gcc -c extract.c
-	gcc $(cc_flags) -Wall -c pkg/construct.c
-	gcc $(cc_flags) -Wall -o main pkg.c construct.o $(ffly_objs) -nostdlib
-#	gcc -Wall -o main pkg.c build.o extract.o $(ffly_objs)
+	gcc $(cc_flags) -c pkg/construct.c
+	gcc $(cc_flags) -Wall -o fpk pkg.c construct.o $(ffly_objs) -nostdlib
 crypto: clean
 	gcc -Wall -o main crypto.c $(ffly_objs)
 hatch: clean
@@ -114,8 +108,7 @@ bh: clean
 	gcc $(cc_flags) -o ffbhs bh/server.c bh.o bh/input.o bh/output.o bh/tape.o $(ffly_objs) -nostdlib
 	gcc $(cc_flags) -o ffbhc bh/client.c bh.o bh/input.o bh/output.o bh/tape.o $(ffly_objs) -nostdlib
 workshop: clean
-	gcc $(cc_flags) -c -o workshop/font_forge.o workshop/font_forge.c
-	gcc $(cc_flags) workshop.c workshop/font_forge.o $(ffly_objs) -nostdlib
+	gcc $(cc_flags) workshop.c $(ffly_objs) -nostdlib
 all:
 	rm -f *.o
 	nasm -f elf64 $(nasm_flags) -o mutex.o system/asm/mutex.asm

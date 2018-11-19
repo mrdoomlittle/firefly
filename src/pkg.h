@@ -8,7 +8,8 @@
 	(__type == IG_FILE)
 #define IG_ISDIR(__type) \
 	(__type == IG_DIR)
-
+extern char const *pkc_plan;
+extern ff_uint_t pkc_pfl;
 /*
 	NOTE:
 		packages are done in a linear fashion
