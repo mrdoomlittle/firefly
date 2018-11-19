@@ -145,7 +145,7 @@ void ff_pkc_de_init(void) {
 
 void ff_pkc_construct(char const*, char const*);
 ff_err_t ffmain(int __argc, char const *__argv[]) {
-	if (__argc<1){
+	if (__argc<2){
 		return 0;
 	}
 
@@ -154,6 +154,6 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	if (dc == 'c') {
 		ff_pkc_construct(NULL, "out.dat");
 	} else if (dc == 'd') {
-		ff_pkc_deconstruct(NULL, "out.dat");
+		ff_pkc_deconstruct(__argv[2], "out.dat");
 	}
 }

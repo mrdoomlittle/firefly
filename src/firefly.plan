@@ -1,3 +1,6 @@
-pkg/test,
-pkg/test/test.txt,
-pkg/test/hello.txt,#
+fortify,
+fortify/compile.sh,
+fortify/dec,
+fortify/enc,
+fortify/fortify,
+fortify/main.c,#

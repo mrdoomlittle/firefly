@@ -23,20 +23,20 @@
 #define S_ISFIFO(__m)	(((__m)&S_IFMT) == S_IFIFO)
 #define S_ISSOCK(__m)	(((__m)&S_IFMT) == S_IFSOCK)
 
-# define S_IRWXU 00700 // user: r/w/x
-# define S_IRUSR 00400 // user: r
-# define S_IWUSR 00200 // user: w
-# define S_IXUSR 00100 // user: x
+#define S_IRWXU 00700 // user: r/w/x
+#define S_IRUSR 00400 // user: r
+#define S_IWUSR 00200 // user: w
+#define S_IXUSR 00100 // user: x
 
-# define S_IRWXG 00070 // group: r/w/x
-# define S_IRGRP 00040 // group: r
-# define S_IWGRP 00020 // group: w
-# define S_IXGRP 00010 // group: x
+#define S_IRWXG 00070 // group: r/w/x
+#define S_IRGRP 00040 // group: r
+#define S_IWGRP 00020 // group: w
+#define S_IXGRP 00010 // group: x
 
-# define S_IRWXO 00007 // others: r/w/x
-# define S_IROTH 00004 // others: r
-# define S_IWOTH 00002 // others: w
-# define S_IXOTH 00001 // others: x
+#define S_IRWXO 00007 // others: r/w/x
+#define S_IROTH 00004 // others: r
+#define S_IWOTH 00002 // others: w
+#define S_IXOTH 00001 // others: x
 struct stat { //needs testing
 	unsigned long st_dev;
 	unsigned long st_ino;

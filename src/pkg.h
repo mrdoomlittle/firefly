@@ -10,19 +10,33 @@
 	(__type == IG_DIR)
 
 /*
+	NOTE:
+		packages are done in a linear fashion
+		there is not to be any magic, e.g. test/a/file.txt
+		<- dir 'a' will not be created and will attempt to open file at "test/a/file.txt"
+		but as directory 'a' does not exit error <- i think i dont actily know if open creates the path to the file along the way.
+		plan file should include
+
+		test/a				<- register dir
+		test/a/file.txt		<- register file
+
+		so when deconstruction occurs it will be done in the right order, and ... idfk read pkg/construct.c
+*/
+
+/*
 	do clean up and naming
 */
 struct pkc_header {
-	ff_u32_t dof, dlen;
+	ff_u32_t grain, glen;
 	ff_u32_t it;
 	ff_uint_t ic;
 
 };
 
-
 struct __pkc_ingot {
 	ff_u8_t type;
 	ff_u32_t path;
+	ff_u32_t mode;
 	ff_uint_t plen;
 	ff_u32_t tract;
 	ff_uint_t ts;
