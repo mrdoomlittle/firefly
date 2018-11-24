@@ -284,6 +284,7 @@ bh_bwrite(void) {
 	len = *(ff_u32_t*)(bh_cc+4);
 	off = *(ff_u32_t*)(bh_cc+8);
 
+	ffly_brick_open(b);
 	void *p;
 	if (!(p = ffly_brick_get(b))) {
 		// error
@@ -291,6 +292,7 @@ bh_bwrite(void) {
 
 	ff_net_recv(client.sock, p, len, 0, &err);
 	ffly_printf("brick : write -%u, buflen: %u\n", b, len);
+	ffly_brick_close(b);
 }
 
 void static 
@@ -304,6 +306,7 @@ bh_bread(void) {
 	len = *(ff_u32_t*)(bh_cc+4);
 	off = *(ff_u32_t*)(bh_cc+8);
 
+	ffly_brick_open(b);
 	void *p;
 	if (!(p = ffly_brick_get(b))) {
 		// error
@@ -311,6 +314,7 @@ bh_bread(void) {
 
 	ff_net_send(client.sock, p, len, 0, &err);	
 	ffly_printf("brick : read -%u, buflen: %u\n", b, len);
+	ffly_brick_close(b);
 }
 
 void static
@@ -335,6 +339,7 @@ bh_bexist(void) {
 
 ff_i8_t static dc;
 void bh_disconnect();
+// this might break idk i dont think gcc pushes stuff to stack before call and popes them at return of said function
 __asm__("bh_disconnect:\n\t"
 		"movb $0, dc(%rip)\n\t"
 		"ret");
@@ -379,6 +384,7 @@ asm labels:
 
 	e.g.
 	move brick, copy brick, etc the small shit
+	so no overhead from stack setup
 */
 void static
 texec(bh_tapep __t) {

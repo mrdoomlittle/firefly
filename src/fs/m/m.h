@@ -65,6 +65,7 @@ struct mfs_tract {
 	ff_uint_t crsc;
 	ff_uint_t sc;
 	ff_u32_t slabs;
+	ff_u32_t off;
 };
 
 struct mfs_engrave {
@@ -82,6 +83,8 @@ struct mfs_node {
 	struct mfs_scope *s;
 	ff_u32_t ca;
 	ff_u8_t flags;
+
+	// why the fuck is this here?
 	ff_uint_t size;
 	ff_u32_t h;
 	ff_u8_t mode;

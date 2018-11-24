@@ -1,12 +1,13 @@
 I'm only working on this engine because i just enjoy making shit,
 also the reason why im not using libc or other librarys is because its
-more enjoyable attempting to remake them.
+more enjoyable attempting to remake them but also less restrictive.
 
 lots of things have been quickly made as ive been working on
 all parts of the engine and switching midway as a result allocr, dep/mem_cpy.s, ...
 are not going to be changing any time soon or are going to be left in a bad condition
 as i havent got the time because i want to get it up and working for now then later
-work will be done on them.
+work will be done on them. this is just how i do shit get it working and work out and improve later
+when all is working.
 
 this engine is for a game im wanting to make.
 
@@ -17,6 +18,11 @@ file: src/test.c
 
 execute:
 	./main
+
+graphics:
+	at the moment all is done in the cpu because the assembler that ive got for it
+	does hasent been finished.
+	so for now we will just use the cpu.
 
 system:
 

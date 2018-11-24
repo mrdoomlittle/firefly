@@ -3,6 +3,14 @@ nasm_flags="-I${PWD}/system/asm/"
 dst_dir=${PWD}
 cc_flags=-O0 -Wall -fno-builtin -D__ffly_testing -D__ffly_no_task_pool -D__ffly_use_allocr -D__ffly_source -D__fflib
 ffly_objs=$(shell export dst_dir=$(dst_dir);export root_dir=${PWD};. ./compile.sh;echo $$ffly_objs)
+fs: clean #claen
+	gcc $(cc_flags) -Wall -o main fs/m/test.c $(ffly_objs) -nostdlib
+bfv: clean
+	gcc $(cc_flags) -c bh.c
+	gcc $(cc_flags) -c -o bh/tape.o bh/tape.c
+	gcc $(cc_flags) -c -o bh/input.o bh/input.c
+	gcc $(cc_flags) -c -o bh/output.o bh/output.c
+	gcc $(cc_flags) -Wall -o main bfv.c bh/tape.o bh/output.o bh/input.o bh.o $(ffly_objs) -nostdlib
 comp: clean
 	gcc $(cc_flags) -D__ffly_compactor_bin -Wall -o main compactor.c $(ffly_objs) -nostdlib
 lexer: clean

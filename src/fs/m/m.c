@@ -23,6 +23,7 @@ _sk:
 	return cr.n-__size;
 }
 
+# define DEBUG
 struct mfs_scope* mfs_build(ff_u32_t*, ff_uint_t);
 void mfs_dmscope(struct mfs_scope*);
 #define cr_write(__buf, __size, __dst)\
@@ -248,7 +249,7 @@ loadin_node(struct mfs_node *__n) {
 		ff_u32_t bs;
 		bs = eg.start;
 #ifdef DEBUG
-		ffly_printf("BLK_C: %u\n", eg.bale_c);
+		ffly_printf("BAL_C: %u\n", eg.bale_c);
 #endif
 		struct mfs_bale b;
 		i = 0;
@@ -262,7 +263,9 @@ loadin_node(struct mfs_node *__n) {
 				
 			mfs->read(&b, sizeof(struct mfs_bale), bs*MFS_SLAB_SIZE);
 			ii = 0;
-			for(;ii != MFS_BALE_SIZE;ii++) {	
+			for(;ii != MFS_BALE_SIZE;ii++) {
+				if ((i*MFS_BALE_SIZE)+ii >= slab_c)
+					break;
 				slabs[((eg.bale_c*MFS_BALE_SIZE)-((i+1)*MFS_BALE_SIZE))+ii] = b.slabs[ii];
 #ifdef DEBUG
 				ffly_printf("LD-SLB: %u\n", b.slabs[ii]);
@@ -306,7 +309,7 @@ commit_node(struct mfs_node *__n) {
 		i = 0;
 		
 		for(;i != bale_c;i++) {
-			// block space
+			// bale space
 			bs = mfs_balloc();	
 #ifdef DEBUG
 			ffly_printf("ST-BS: %u\n", bs);
@@ -366,8 +369,6 @@ __mfs_mkdir(struct mfs_node *__dir, struct mfs_dent *__de) {
 	commit_node(n);
 	insert_node(__dir, n);
 }
-
-
 
 void static
 mfs_mkdir(char const *__path) {
@@ -458,7 +459,7 @@ _esc:
 		return NULL;
 	}
 
-	struct node *fn;
+	struct mfs_node *fn;
 	fn = (struct mfs_node*)mfs_hash_get(n->h, buf, bp-buf);
 
 	if (!fn && is_flag(__flags, MFS_CREAT)) {
@@ -499,10 +500,10 @@ void static mfs_close(ff_u32_t __f) {
 void mfs_slabs_save(ff_uint_t*, ff_u32_t);
 void mfs_slabs_load(ff_uint_t, ff_u32_t);
 void ffly_mfs_init(void) {
-	mfs->off+=sizeof(struct mfs_tract);
 	struct mfs_tract t;
 	mfs->read(&t, sizeof(struct mfs_tract), 0);
-	ffly_printf("CR: %u, CRNC: %u, ROOT: %u, CRSC: %u, SC: %u\n", t.cr, t.crnc, t.root, t.crsc, t.sc);
+	mfs->off = t.off;
+	ffly_printf("CR: %u, CRNC: %u, ROOT: %u, CRSC: %u, SC: %u, OFF: %u\n", t.cr, t.crnc, t.root, t.crsc, t.sc, t.off);
 	struct mfs_node *root;
 	root = mfs_node_new();
 
@@ -538,6 +539,7 @@ void ffly_mfs_de_init(void) {
 	struct mfs_tract t;
 	t.cr = mfs->off;
 	t.crnc = cr.n;
+	t.off = mfs->off;
 	t.root = mfs->root->ca;
 	ff_u32_t *cr_slabs;
 	ff_uint_t sc;
@@ -584,14 +586,16 @@ mfs_tree(struct mfs_node *__n) {
 	i = 0;
 	for(;i != n;i++) {
 		nn = mfs_nget(__n->s, i);
+		if (nn != NULL) {
 		if (nn->mode == MFS_FDIR) {
 #ifdef DEBUG
-			ffly_printf("-----> %u\n", nn->n);
+			ffly_printf("-----> N: %u, H: %u, SZ: %u, CA: %u\n", nn->n, nn->h, nn->size, nn->ca);
 #endif
 			ffly_printf("%s\e[34m%s\e[0m\n", PAD, nn->name);
 			mfs_tree(nn);
 		} else {
 			ffly_printf("%s.%s\n", PAD, nn->name);
+		}
 		}
 	}
 

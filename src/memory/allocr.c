@@ -15,6 +15,17 @@
 # include "../dep/str_cpy.h"
 # include "../dep/mem_set.h"
 # include "../system/io.h"
+
+/*
+	NOTE:
+		this is complete garbage and will stay this way until i have time to work on it,
+		full of quick fixes.
+*/
+
+/*
+	ISSUES:
+		reallocate of same size causes failue i think?
+*/
 //	might want to keep track of mmaps
 
 /*
@@ -22,7 +33,7 @@
 */
 
 /*
-	TOD:
+	TODO:
 		remove mmap and brk and push it to an function that will i will choose
 		what to use. why to allow the user to divert it.
 

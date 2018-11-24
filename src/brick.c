@@ -103,8 +103,7 @@ void ffly_brick_close(ff_u32_t __id) {
 #endif
 
 	if (b->p != NULL) {
-		if (b->write != NULL)
-			b->write(b->arg, b->p, b->sz);
+		b->write(b->arg, b->p, b->sz);
 		__ffly_mem_free(b->p);
 		b->p = NULL;
 	}

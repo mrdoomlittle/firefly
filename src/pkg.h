@@ -22,6 +22,13 @@ extern ff_uint_t pkc_pfl;
 		test/a/file.txt		<- register file
 
 		so when deconstruction occurs it will be done in the right order, and ... idfk read pkg/construct.c
+
+	TODO:
+		remove text plan file and go for a binary method
+
+		soo
+		dest <- exec-file(THIS) <- binary-file <- converter <- text-file
+
 */
 
 /*

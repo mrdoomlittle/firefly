@@ -168,7 +168,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_u32_t b;
 	ff_uint_t n;
 	ff_uint_t i;
-	struct arg *a0, *a1;
+	struct arg *a0, *a1, *a2, *a3;
 _again:
 	ffly_printf("~: ");
 	ffly_fdrain(ffly_out);
@@ -216,6 +216,81 @@ _again:
 		case 4:
 			if (!ffly_mem_cmp(cur_command.id, "exit", 4)) {
 				goto _esc;
+			} else if (!ffly_mem_cmp(cur_command.id, "load", 4)) {
+				a0 = *cur_command.args;
+				a1 = *(cur_command.args+1);
+				a2 = *(cur_command.args+2);
+				char file[86];
+				ffly_mem_cpy(file, a0->data, a0->len);
+				*(file+a0->len) = '\0';
+				ff_uint_t n;
+				n = ffly_sntno(a1->data, a1->len);
+				ff_u32_t *b;
+				b = (ff_u32_t*)__ffly_mem_alloc(n*sizeof(ff_u32_t));
+				ffly_ff5_dec(a2->data, b, a2->len);
+			
+				int fd;
+				fd = open(file, O_RDONLY, 0);
+				if (fd == -1) {
+					ffly_printf("error file could not be opened.\n");
+				}
+				struct stat st;
+				fstat(fd, &st);
+
+				char buf[(1<<_ff_brick_256)];
+				ff_uint_t bc, i;
+				bc = st.st_size>>_ff_brick_256;
+				ffly_printf("BC: %u, SZ: %u\n", bc, st.st_size);
+				i = 0;
+				while(i != bc) {	
+					read(fd, buf, 1<<_ff_brick_256);
+					ff_bh_bwrite(&bh, *(b+i), buf, 1<<_ff_brick_256, 0);
+					i++;
+				}	
+
+				ff_uint_t left;
+			
+				if ((left = (st.st_size-(bc<<_ff_brick_256)))>0) {
+					read(fd, buf, left);
+					ff_bh_bwrite(&bh, *(b+i), buf, left, 0);
+				}
+
+				close(fd);			
+				__ffly_mem_free(b);
+			}
+			break;
+		case 5:
+			if (!ffly_mem_cmp(cur_command.id, "store", 5)) {
+				a0 = *cur_command.args;
+				a1 = *(cur_command.args+1);
+				a2 = *(cur_command.args+2);
+				char file[86];
+				ffly_mem_cpy(file, a0->data, a0->len);
+				*(file+a0->len) = '\0';
+				ff_uint_t n;
+				n = ffly_sntno(a1->data, a1->len);
+				ff_u32_t *b;
+				b = (ff_u32_t*)__ffly_mem_alloc(n*sizeof(ff_u32_t));
+				ffly_ff5_dec(a2->data, b, a2->len);
+			
+				int fd;
+				fd = open(file, O_WRONLY|O_TRUNC|O_CREAT, S_IRUSR|S_IWUSR);
+				if (fd == -1) {
+					ffly_printf("error file could not be opened.\n");
+				}			
+
+				char buf[(1<<_ff_brick_256)];
+				ff_uint_t i;
+				i = 0;
+				while(i != n) {	
+					ff_bh_bread(&bh, *(b+i), buf, 1<<_ff_brick_256, 0);
+					write(fd, buf, 1<<_ff_brick_256);
+					i++;
+				}	
+
+				close(fd);			
+				__ffly_mem_free(b);			
+
 			}
 		break;
 	}
