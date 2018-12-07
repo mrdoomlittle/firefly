@@ -33,6 +33,7 @@ extern ff_u8_t(*ff_as_regsz)(void*);
 extern ff_i8_t(*ff_as_suffix)(ff_u8_t);
 extern void(*ff_as_fixins)(struct fix_s*);
 
+ff_u8_t extern fix_flgs;
 ff_u8_t extern of;
 ff_u64_t extern offset;
 

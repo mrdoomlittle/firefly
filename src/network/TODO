@@ -1,1 +1,3 @@
 allow for segment text to be encrypted or manipulated by user
+
+udp, tcp and 'are own protocol'  

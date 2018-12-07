@@ -234,3 +234,6 @@ also allow for sched to be used as option to free x after x time including ^info
 
 allocr -. remove brk and mmap from and add function pointer to call when more memory is needed to be allocated.
 	^ or do somthing alike
+
+
+.- all files that are created by engine should have path to a dedicated directory else store them in temp directory

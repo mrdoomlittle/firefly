@@ -1,0 +1,3 @@
+mem_alloc, realloc, free have them use function pointer to alloc, free, etc
+
+and assign them to allocr funcs this is so the user can intercept the calls

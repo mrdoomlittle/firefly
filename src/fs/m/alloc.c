@@ -22,6 +22,7 @@ void mfs_slabs_save(ff_uint_t *__n, ff_u32_t __to) {
 	slabs = (ff_u32_t*)__ffly_mem_alloc(off*sizeof(ff_u32_t));
 	ff_uint_t i;
 
+	ffly_printf("slab save\n");
 	i = 0;
 	for(;i != off;i++) {
 		slabs[i] = slabat(i)->off;
@@ -39,6 +40,8 @@ void mfs_slabs_load(ff_uint_t __n, ff_u32_t __from) {
 	ff_u32_t *slabs;
 	slabs = (ff_u32_t*)__ffly_mem_alloc(__n*sizeof(ff_u32_t));
 	mfs->read(slabs, __n*sizeof(ff_u32_t), __from);
+
+	ffly_printf("slab load.\n");
 
 	i = 0;
 	while(i != __n) {

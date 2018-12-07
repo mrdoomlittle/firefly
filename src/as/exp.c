@@ -1,8 +1,8 @@
 # include "as.h"
 # include "../ffly_def.h"
 
-# define isno(__c) ((__c >= '0' && __c <= '9') || __c == '-')
-# define is_next(__p, __c) \
+#define isno(__c) ((__c >= '0' && __c <= '9') || __c == '-')
+#define is_next(__p, __c) \
 	(*(__p+1) == __c)
 
 # define nextc(__p) (*(__p+1))
@@ -17,7 +17,7 @@ symbolp ff_as_eval(char *__s) {
 	char *bufp;
 
 	while(*p != '\0' && *p != ';') {
-		while(*p == ' ') p++;
+		while(*p == ' ' || *p == '\t') p++;
 		if (*p == '\0') break;
 		switch(*p) {
 			/*

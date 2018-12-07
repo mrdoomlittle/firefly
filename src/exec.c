@@ -30,7 +30,9 @@ typedef struct segment {
 	struct segment *next;
 	struct remf_seg_hdr hdr;
 } *segmentp;
-
+/*
+	static?
+*/
 // stack segments
 static segmentp ss = NULL;
 
@@ -72,6 +74,7 @@ get(ff_uint_t __from, ff_uint_t __size, void *__buf) {
 	load program segments into its own file.
 	TODO:
 		move to cistern file
+		clean
 */
 # define CHUNK_SIZE 20
 void static
@@ -167,6 +170,14 @@ void ffexecf(char const *__file) {
 	/*
 		TODO:
 			change
+
+		we need to load segments into file as the segments might not be in the proper order
+		and might be to large to load into memory <- will never happen but there is no point in loading into memory.
+	*/
+
+	/*
+		TODO:
+			create file name and attach number to end of name
 	*/
 	prog = open("resin.temp", O_RDWR|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
 

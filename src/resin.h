@@ -266,13 +266,17 @@
 # define _op_exit2r0 0xb8
 # define _op_exit2r1 0xb9
 
-# define _gt 0x01
-# define _lt 0x02
-# define _eq 0x04
+#define _op_jmp0 0xba
+#define _gt 0x01
+#define _lt 0x02
+#define _eq 0x04
 
 // resin byte code interp
 
 /*
+	TODO:
+		exec context
+
 	TODO:
 		no use of ff_off_t, ff_addr_t, etc
 		use own.
@@ -307,6 +311,15 @@ typedef struct ffly_resin {
 	ff_addr_t rtbuf[22];//return buffer
 	ff_addr_t *retto;
 } *ffly_resinp;
+/*
+	TODO:
+stack_get and stack_put go thru pointer so to allow user to change shit
+
+to be passed thru exec 
+struct exec_context {
+
+};
+*/
 /*
 	operation size
 	TODO:

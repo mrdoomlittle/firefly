@@ -1,5 +1,6 @@
 #!/bin/bash
 dirs=(
+	fs/m
 	sr
 	dep
 	audio

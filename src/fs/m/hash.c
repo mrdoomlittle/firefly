@@ -9,7 +9,7 @@ struct hash_entry {
 	struct hash_entry *next;
 	ff_u8_t const *key;
 	ff_uint_t len;
-	void *p;
+	long long p;
 };
 
 struct hash {
@@ -41,7 +41,7 @@ ff_u32_t mfs_hash_new(void) {
 }
 
 void
-mfs_hash_put(ff_u32_t __h, ff_u8_t const *__key, ff_uint_t __len, void *__p) {
+mfs_hash_put(ff_u32_t __h, ff_u8_t const *__key, ff_uint_t __len, long long __p) {
 	struct hash *h;
 
 	h = *(_h+__h);
@@ -58,8 +58,8 @@ mfs_hash_put(ff_u32_t __h, ff_u8_t const *__key, ff_uint_t __len, void *__p) {
 	entry->len = __len;
 }
 
-void*
-mfs_hash_get(ff_u32_t __h, ff_u8_t const *__key, ff_uint_t __len) {
+long long
+mfs_hash_get(ff_u32_t __h, ff_u8_t const *__key, ff_uint_t __len, ff_i8_t *__found) {
 	struct hash *h;
 
 	h = *(_h+__h);
@@ -67,12 +67,15 @@ mfs_hash_get(ff_u32_t __h, ff_u8_t const *__key, ff_uint_t __len) {
 	struct hash_entry *cur = *(h->table+(sum&0xff));
 	while(cur != NULL) {
 		if (cur->len == __len) {
-			if (!ffly_mem_cmp(cur->key, __key, __len))
+			if (!ffly_mem_cmp(cur->key, __key, __len)) {
+				*__found = 0;
 				return cur->p;
+			}
 		}
 		cur = cur->next;
 	}
 
-	return NULL;
+	*__found = -1;
+	return 0;
 }
 

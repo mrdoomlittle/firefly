@@ -15,7 +15,7 @@ out_seg(segmentp __seg) {
 }
 
 # include "../rdm.h"
-void ff_bond_output(remf_hdrp __hdr) {
+void bond_output(remf_hdrp __hdr) {
 	regionp cur = curbin, bk;
 	segmentp seg;
 	while(cur != NULL) {

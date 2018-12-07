@@ -74,7 +74,9 @@ struct frag {
 
 	ff_int_t bs;
 
+	ff_int_t m;
 	struct fix_s *fx;
+	ff_u8_t data[24];
 };
 
 // current fragment

@@ -16,4 +16,7 @@ store local labels in array 0-... and not in hash table
 MAJOR:
 	fragment
 
+alloc, free, realloc
+move to func pointers
+and assign them to alloca funcs
 remove '\0' from remf names

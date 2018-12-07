@@ -27,6 +27,13 @@ naming:
 testing:
 	tests are performed at a bare level or not at all
 
+page sizes,chunk:
+	size of pages and chunk and ...
+	are random and need to be tested to fix X as i havent got the time to spend on it.
+	
+	so go thru all sizes and change to match whats needed
+
+
 process:
 	use as less time as possible
 	make and done <- no testing dents can be fixed later		

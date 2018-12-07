@@ -7,6 +7,48 @@
 static void(*get)(ff_uint_t, ff_uint_t, void*);
 ff_u32_t static end;
 ff_u32_t static ip;
+
+#define PAGE_SHIFT 4
+#define PAGE_SIZE (1<<PAGE_SHIFT)
+struct page {
+	void *p;
+	ff_uint_t n;
+};
+
+struct page **pages = NULL;
+
+void static
+ldpage(struct page *__page) {
+	ff_uint_t off;
+	off = __page->n<<PAGE_SHIFT;
+	ff_uint_t d;
+	if ((d = end-off)<PAGE_SIZE) {
+		get(off, d, __page->p);
+		return;
+	}
+
+	get(off, PAGE_SIZE, __page->p);
+}
+
+struct page static* getpage(ff_uint_t __n) {
+	struct page **pp, *p;
+	pp = pages+__n;
+
+	if (!(p = *pp)) {
+		p = *pp = (struct page*)__ffly_mem_alloc(sizeof(struct page));
+		p->p = __ffly_mem_alloc(PAGE_SIZE);	
+		p->n = __n;
+	}
+
+	ldpage(p);
+	return p;
+}
+
+void static
+__get(ff_uint_t __offset, ff_uint_t __size, void *__dst) {
+
+}
+
 /*
 	TODO:
 		read by page and not single bytes
@@ -30,7 +72,7 @@ ip_incr(ff_uint_t __by) {
 }
 
 ff_addr_t static
-get_ip() {
+get_ip(void) {
 	return ip;
 }
 
@@ -108,10 +150,27 @@ static struct ffly_resin ctx = {
 	.rin = ring
 };
 
+void static init(void) {
+	ff_uint_t pac;
+
+	pac = (end+(PAGE_SIZE-1))>>PAGE_SHIFT;
+	pages = (struct page**)__ffly_mem_alloc(pac*sizeof(struct page*));
+	
+	ff_uint_t i;
+	i = 0;
+	for(;i != pac;i++)
+		*(pages+i) = NULL;
+}
+
+void static de_init(void) {
+
+}
+
 void ffres_exec(void(*__get)(ff_uint_t, ff_uint_t, void*), ff_u32_t __end, void(*__prep)(void*, void*), void *__hdr, ff_u32_t __entry) {
 	get = __get;
 	end = __end;
 	ip = __entry;
+	init();
 	ff_resin_init(&ctx);
 	if (__prep != NULL)
 		__prep(__hdr, (void*)&ctx);
@@ -119,4 +178,5 @@ void ffres_exec(void(*__get)(ff_uint_t, ff_uint_t, void*), ff_u32_t __end, void(
 	ff_resin_exec(&ctx, &exit_code);
 	printf("exit code: %d\n", exit_code);
 	ff_resin_de_init(&ctx);
+	de_init();
 }

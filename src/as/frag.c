@@ -4,8 +4,8 @@
 struct frag *fr_head = NULL;
 struct frag *curfrag = NULL;
 
-# define PAGE_SHIFT 4
-# define PAGE_SIZE (1<<PAGE_SHIFT)
+#define PAGE_SHIFT 4
+#define PAGE_SIZE (1<<PAGE_SHIFT)
 
 /*
 	fragments from top to bottom
@@ -15,8 +15,8 @@ struct frag *curfrag = NULL;
 */
 struct frag ***fr_tbl = NULL;
 
-# define FRT_PAGE_SHIFT 4
-# define FRT_PAGE_SIZE (1<<FRT_PAGE_SHIFT)
+#define FRT_PAGE_SHIFT 4
+#define FRT_PAGE_SIZE (1<<FRT_PAGE_SHIFT)
 /*
 	MIGHTDO:
 		store pointers of frags in array
@@ -26,7 +26,8 @@ struct frag ***fr_tbl = NULL;
 ff_uint_t fr_nr = 0;
 ff_uint_t static frt_page_c = 0;
 struct frag* ff_as_fnew(void) {
-	struct frag *f = (struct frag*)ff_as_al(sizeof(struct frag));	
+	struct frag *f;
+	f = (struct frag*)ff_as_al(sizeof(struct frag));	
 	if (!fr_head)
 		fr_head = f;
 	if (curfrag != NULL)
@@ -40,6 +41,7 @@ struct frag* ff_as_fnew(void) {
 	f->adr = 0;
 	f->bs = 0;
 	f->flags = 0x00;
+	f->m = 0;
 
 	struct frag ***page;
 	ff_uint_t pg, pg_off;
@@ -147,8 +149,8 @@ static ff_u32_t fr_adr = 0;
 // we are done with this fragment and are moving onto a new one
 void ff_as_fdone(struct frag *__f) {
 	__f->adr = fr_adr;
-	fr_adr+=__f->size+__f->bs;
-	printf("frag done, %u, %u, %u\n", __f->size, __f->bs, __f->adr);
+	fr_adr+=__f->size;
+	printf("frag done, %u, %u\n", __f->size, __f->adr);
 	adr = fr_adr;
 }
 
@@ -162,7 +164,6 @@ struct frag *ff_as_fbn(ff_uint_t __n) {
 
 # include "../hexdump.h"
 # include "../chrdump.h"
-
 extern void(*ff_as_fixins)(struct fix_s*);
 void ff_as_foutput(void) {
 	struct frag *f = fr_head;
@@ -172,7 +173,10 @@ void ff_as_foutput(void) {
 	lseek(out, offset, SEEK_SET);
 	while(f != NULL) {
 		printf("outputing frag, size: %u\n", f->size);
+	
 		f->dst = offset;
+		if (!f->size)
+			goto _skf;
 
 		page = 0;
 		pg_c = f->size>>PAGE_SHIFT;
@@ -199,6 +203,13 @@ void ff_as_foutput(void) {
 		}
 
 		offset+=f->size;
+	_skf:
+		if (f->bs>0) {
+			printf("-============-. %u - %u - %u\n", f->f, f->bs, f->size);
+			ffly_hexdump(f->data, f->bs);
+			write(out, f->data, f->bs);
+			offset+=f->bs;
+		}
 		f = f->next;
 	}
 }

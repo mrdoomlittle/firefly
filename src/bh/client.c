@@ -172,7 +172,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 _again:
 	ffly_printf("~: ");
 	ffly_fdrain(ffly_out);
-	n = ffly_rdline(line, 200, ffly_in);
+	n = ffly_rdline(line, sizeof(line), ffly_in);
 	read_comd(line, n-1);
 
 	ffly_printf("line: %s : %u\n", line, n);

@@ -5,7 +5,9 @@
 # include "dep/mem_cpy.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
-# define is_flag(__flags, __flag) \
+#define copymem(__src, __dst, __size) \
+	ffly_mem_cpy(__dst, __src, __size)
+#define is_flag(__flags, __flag) \
 	((__flags&__flag)==__flag)
 /*
 	make stack put and get better somehow
@@ -14,6 +16,17 @@
 	TODO: COULDDO
 		add lock memory - a range from X to X within stack where memory can be locked
 		and can only be unlocked by an external source
+*/
+/*
+	TODO:
+	stack_put and stack_get to asm not c
+*/
+
+/*
+	TODO:
+		use function pointer for get functions e.g. get_8l
+		as if flag not set we will use a direct method to get a byte else will go thru getbits
+		as to allow for compact code
 */
 ff_err_t static
 stack_put(ffly_resinp __resin, ff_u8_t *__src, ff_uint_t __bc, ff_addr_t __addr) {
@@ -128,80 +141,82 @@ get(ffly_resinp __resin, ff_u8_t *__dst, ff_u8_t __n, ff_err_t *__err) {
 		so we dont need to read byte per byte thru instruction
 		also could do this a few steps ahead
 */
+
+#define __ADDR_TS sizeof(ff_addr_t)
 ff_u8_t static ops[] = {
-	sizeof(ff_addr_t),		// exit
+	__ADDR_TS,		//exit
 
-	sizeof(ff_addr_t)+1,	// asb
-	sizeof(ff_addr_t)+2,	// asw
-	sizeof(ff_addr_t)+4,	// asd
-	sizeof(ff_addr_t)+8,	// asq
+	__ADDR_TS+1,	//asb
+	__ADDR_TS+2,	//asw
+	__ADDR_TS+4,	//asd
+	__ADDR_TS+8,	//asq
 
-	sizeof(ff_addr_t),		// jmp
+	__ADDR_TS,		//jmp
 
-	sizeof(ff_addr_t)*2,	// stb
-	sizeof(ff_addr_t)*2,	// stw
-	sizeof(ff_addr_t)*2,	// std
-	sizeof(ff_addr_t)*2,	// stq
+	__ADDR_TS*2,	//stb
+	__ADDR_TS*2,	//stw
+	__ADDR_TS*2,	//std
+	__ADDR_TS*2,	//stq
 
-	sizeof(ff_addr_t)*2,    // ldb
-	sizeof(ff_addr_t)*2,    // ldw
-	sizeof(ff_addr_t)*2,    // ldd
-	sizeof(ff_addr_t)*2,    // ldq
+	__ADDR_TS*2,    //ldb
+	__ADDR_TS*2,    //ldw
+	__ADDR_TS*2,    //ldd
+	__ADDR_TS*2,    //ldq
 
-	sizeof(ff_addr_t),		// outb
-	sizeof(ff_addr_t),		// outw
-	sizeof(ff_addr_t),		// outd
-	sizeof(ff_addr_t),		// outq
+	__ADDR_TS,		//outb
+	__ADDR_TS,		//outw
+	__ADDR_TS,		//outd
+	__ADDR_TS,		//outq
 
-	sizeof(ff_addr_t)*2,	// movb
-	sizeof(ff_addr_t)*2,	// movw
-	sizeof(ff_addr_t)*2,	// movd
-	sizeof(ff_addr_t)*2,	// movq
+	__ADDR_TS*2,	//movb
+	__ADDR_TS*2,	//movw
+	__ADDR_TS*2,	//movd
+	__ADDR_TS*2,	//movq
 
-	sizeof(ff_addr_t)+1,	// rin
+	__ADDR_TS+1,	//rin
 
-	sizeof(ff_addr_t)*2,	// divb
-	sizeof(ff_addr_t)*2,	// divw
-	sizeof(ff_addr_t)*2,	// divd
-	sizeof(ff_addr_t)*2,	// divq
+	__ADDR_TS*2,	//divb
+	__ADDR_TS*2,	//divw
+	__ADDR_TS*2,	//divd
+	__ADDR_TS*2,	//divq
 
-	sizeof(ff_addr_t)*2,	// mulb
-	sizeof(ff_addr_t)*2,	// mulw
-	sizeof(ff_addr_t)*2,	// muld
-	sizeof(ff_addr_t)*2,	// mulq
+	__ADDR_TS*2,	//mulb
+	__ADDR_TS*2,	//mulw
+	__ADDR_TS*2,	//muld
+	__ADDR_TS*2,	//mulq
 
-	sizeof(ff_addr_t)*2,	// subb
-	sizeof(ff_addr_t)*2,	// subw
-	sizeof(ff_addr_t)*2,	// subd
-	sizeof(ff_addr_t)*2,	// subq
+	__ADDR_TS*2,	//subb
+	__ADDR_TS*2,	//subw
+	__ADDR_TS*2,	//subd
+	__ADDR_TS*2,	//subq
 
-	sizeof(ff_addr_t)*2,	// addb
-	sizeof(ff_addr_t)*2,	// addw
-	sizeof(ff_addr_t)*2,	// addd
-	sizeof(ff_addr_t)*2,	// addq
+	__ADDR_TS*2,	//addb
+	__ADDR_TS*2,	//addw
+	__ADDR_TS*2,	//addd
+	__ADDR_TS*2,	//addq
 
-	sizeof(ff_addr_t),		// incb
-	sizeof(ff_addr_t),		// incw
-	sizeof(ff_addr_t),		// incd
-	sizeof(ff_addr_t),		// incq
+	__ADDR_TS,		//incb
+	__ADDR_TS,		//incw
+	__ADDR_TS,		//incd
+	__ADDR_TS,		//incq
 
-	sizeof(ff_addr_t),		// decb
-	sizeof(ff_addr_t),		// decw
-	sizeof(ff_addr_t),		// decd
-	sizeof(ff_addr_t),		// decq
+	__ADDR_TS,		//decb
+	__ADDR_TS,		//decw
+	__ADDR_TS,		//decd
+	__ADDR_TS,		//decq
 
-	sizeof(ff_addr_t)*2,	// cmpb
-	sizeof(ff_addr_t)*2,	// cmpw
-	sizeof(ff_addr_t)*2,	// cmpd
-	sizeof(ff_addr_t)*2,	// cmpq
+	__ADDR_TS*2,	//cmpb
+	__ADDR_TS*2,	//cmpw
+	__ADDR_TS*2,	//cmpd
+	__ADDR_TS*2,	//cmpq
 
-	sizeof(ff_addr_t),	// cjmp
-	sizeof(ff_addr_t),	// cjmp
-	sizeof(ff_addr_t),	// cjmp
-	sizeof(ff_addr_t),	// cjmp
+	__ADDR_TS,	//cjmp
+	__ADDR_TS,	//cjmp
+	__ADDR_TS,	//cjmp
+	__ADDR_TS,	//cjmp
 
-	sizeof(ff_addr_t),		// call
-	0						// ret
+	__ADDR_TS,	//call
+	0			//ret
 };
 
 ff_u8_t ff_resin_ops(ff_u8_t __op) {
@@ -710,6 +725,7 @@ ff_u8_t *res_stack;
 	TODO:
 		"allow" for copy of all code so we can append finish at end
 */
+ff_u8_t static ob[64];
 ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	ff_err_t err;
 	ff_u16_t opno;
@@ -744,6 +760,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 		return FFLY_FAILURE;
 	}
 
+	get(__resin, ob, ops[opno], &err);
 	jmpto(op[opno]);
 
 	__asm__("_res_push0b:			\n\t"
@@ -761,7 +778,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	{
 		ff_addr_t dst, src;
 		dst = (*sp = (*sp-l));
-		src = get_addr(__resin, &err);
+		src = *(ff_addr_t*)ob;
 		ff_u8_t tmp[8];
 		stack_get(__resin, (ff_u8_t*)tmp, l, src);
 		stack_put(__resin, (ff_u8_t*)tmp, l, dst);		
@@ -782,7 +799,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"_res_pop0:				\n\t" : "=m"(l));
 	{
 		ff_addr_t dst, src;
-		dst = get_addr(__resin, &err);
+		dst = *(ff_addr_t*)ob;
 		src = *sp;
 		*sp+=l;
 		ff_u8_t tmp[8];
@@ -806,8 +823,8 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	{
 		ff_u64_t lt, rt;
 		ff_addr_t lt_adr, rt_adr;
-		lt_adr = get_addr(__resin, &err);
-		rt_adr = get_addr(__resin, &err);
+		lt_adr = *(ff_addr_t*)ob;
+		rt_adr = *(ff_addr_t*)(ob+__ADDR_TS);
 
 		stack_get(__resin, (ff_u8_t*)&lt, l, lt_adr);
 		stack_get(__resin, (ff_u8_t*)&rt, l, rt_adr);
@@ -837,8 +854,8 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	{
 		ff_u64_t lt, rt;
 		ff_addr_t lt_adr, rt_adr;
-		lt_adr = get_addr(__resin, &err);
-		rt_adr = get_addr(__resin, &err);
+		lt_adr = *(ff_addr_t*)ob;
+		rt_adr = *(ff_addr_t*)(ob+__ADDR_TS);
 
 		stack_get(__resin, (ff_u8_t*)&lt, l, lt_adr);
 		stack_get(__resin, (ff_u8_t*)&rt, l, rt_adr);
@@ -868,8 +885,8 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	{
 		ff_u64_t lt, rt;
 		ff_addr_t lt_adr, rt_adr;
-		lt_adr = get_addr(__resin, &err);
-		rt_adr = get_addr(__resin, &err);
+		lt_adr = *(ff_addr_t*)ob;
+		rt_adr = *(ff_addr_t*)(ob+__ADDR_TS);
 
 		stack_get(__resin, (ff_u8_t*)&lt, l, lt_adr);
 		stack_get(__resin, (ff_u8_t*)&rt, l, rt_adr);
@@ -899,8 +916,8 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	{
 		ff_u64_t lt, rt;
 		ff_addr_t lt_adr, rt_adr;
-		lt_adr = get_addr(__resin, &err);
-		rt_adr = get_addr(__resin, &err);
+		lt_adr = *(ff_addr_t*)ob;
+		rt_adr = *(ff_addr_t*)(ob+__ADDR_TS);
 
 		stack_get(__resin, (ff_u8_t*)&lt, l, lt_adr);
 		stack_get(__resin, (ff_u8_t*)&rt, l, rt_adr);
@@ -929,7 +946,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"movb $8, %0		\n"
 			"_res_inc0:			\n\t" : "=m"(l));
 	{
-		ff_addr_t adr = get_addr(__resin, &err);
+		ff_addr_t adr = *(ff_addr_t*)ob;
 		ff_u64_t tmp = 0;
 		stack_get(__resin, (ff_u8_t*)&tmp, l, adr);
 		tmp++;
@@ -950,7 +967,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"movb $8, %0		\n"
 			"_res_dec0:			\n\t" : "=m"(l));
 	{
-		ff_addr_t adr = get_addr(__resin, &err);
+		ff_addr_t adr = *(ff_addr_t*)ob;
 		ff_u64_t tmp = 0;
 		stack_get(__resin, (ff_u8_t*)&tmp, l, adr);
 		tmp--;
@@ -972,8 +989,8 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"_res_cmp0:			\n\t" : "=m"(l));
 	{
 		ff_addr_t la, ra;
-		la = get_addr(__resin, &err);
-		ra = get_addr(__resin, &err);
+		la = *(ff_addr_t*)ob;
+		ra = *(ff_addr_t*)(ob+__ADDR_TS);
 
 		ff_u64_t lv = 0, rv = 0;
 		stack_get(__resin, (ff_u8_t*)&lv, l, la);
@@ -999,7 +1016,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"_res_as1qr1:		\n\t"
 			"movb $8, %0		\n"
 			"_res_as1r1:		\n\t" : "=m"(l));
-	get(__resin, (ff_u8_t*)res_r1, l, &err);
+	copymem(ob, res_r1, l);
 	fi;
 
 	__asm__("_res_as1br0:		\n\t"
@@ -1014,7 +1031,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"_res_as1qr0:		\n\t"
 			"movb $8, %0		\n"
 			"_res_as1r0:		\n\t" : "=m"(l));
-	get(__resin, (ff_u8_t*)res_r0, l, &err);
+	copymem(ob, res_r0, l);
 	fi;
 
 	__asm__("_res_as0b:			\n\t"
@@ -1031,16 +1048,16 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"_res_as0:			\n\t" : "=m"(l));
 	{
 		ff_addr_t to;
-		to = get_addr(__resin, &err);	
+		to = *(ff_addr_t*)ob;	
 
 		ff_u64_t val;
-		get(__resin, (ff_u8_t*)&val, l, &err);
+		copymem(ob+__ADDR_TS, &val, l);
 		stack_put(__resin, (ff_u8_t*)&val, l, to);
 	}
 	fi;
 
 	__asm__("_res_cjmp0:\n\t"); {
-		ff_addr_t adr = get_addr(__resin, &err);
+		ff_addr_t adr = *(ff_addr_t*)ob;
 		ff_s16_t dst;
 		stack_get(__resin, (ff_u8_t*)&dst, sizeof(ff_s16_t), adr);
 
@@ -1073,7 +1090,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	next;
 
 	__asm__("_res_jmp2:		\n\t");
-	__resin->set_ip(__resin->get_ip()+(ff_s16_t)get_addr(__resin, &err));
+	__resin->set_ip(__resin->get_ip()+*(ff_s16_t*)ob);
 	__resin->ip_off = 0;
 	fi;
 
@@ -1086,9 +1103,14 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	__resin->ip_off = 0;
 	fi;
 
-	__asm__("_res_jmp0:\n\t");
+	__asm__("_res_jmp8:		\n\t"
+			"movb $1, %0	\n\t"
+			"jmp _res_jmp0	\n\t"
+			"_res_jmp16:	\n\t"
+			"movb $2, %0	" : "=m"(l));
+	__asm__("_res_jmp0:	\n\t");
 	{
-		ff_addr_t adr = (ff_s16_t)get_addr(__resin, &err);
+		ff_addr_t adr = *(ff_addr_t*)ob;
 		ff_s16_t dst;
 		stack_get(__resin, (ff_u8_t*)&dst, sizeof(ff_s16_t), adr);
 		__resin->set_ip(__resin->get_ip()+dst);
@@ -1109,8 +1131,8 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"movb $8, %0		\n"
 			"_res_ld0:			\n\t" : "=m"(l));
 	{
-		ff_addr_t dst = get_addr(__resin, &err);
-		ff_addr_t src = get_addr(__resin, &err);
+		ff_addr_t dst = *(ff_addr_t*)ob;
+		ff_addr_t src = *(ff_addr_t*)(ob+__ADDR_TS);
 		ff_addr_t adr;
 		stack_get(__resin, (ff_u8_t*)&adr, sizeof(ff_addr_t), dst);
 
@@ -1133,8 +1155,8 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"movb $8, %0		\n"
 			"_res_st0:			\n\t" : "=m"(l));
 	{
-		ff_addr_t src = get_addr(__resin, &err);
-		ff_addr_t dst = get_addr(__resin, &err);
+		ff_addr_t src = *(ff_addr_t*)ob;
+		ff_addr_t dst = *(ff_addr_t*)(ob+__ADDR_TS);
 		ff_addr_t adr;
 		stack_get(__resin, (ff_u8_t*)&adr, sizeof(ff_addr_t), src);
 
@@ -1179,7 +1201,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"movq %%r8, %1		\n"
 			"_res_mov1:			\n\t" : "=m"(l), "=m"(r) : "m"(res_r0), "m"(res_r1));
 	{
-		ff_addr_t s = get_addr(__resin, &err);
+		ff_addr_t s = *(ff_addr_t*)ob;
 		stack_get(__resin, (ff_u8_t*)r, l, s);
 	}
 	fi;
@@ -1219,7 +1241,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"movq %%r8, %1		\n"
 			"_res_mov2:				\n\t" : "=m"(l), "=m"(r) : "m"(res_r0), "m"(res_r1));
 	{
-		ff_addr_t d = get_addr(__resin, &err);
+		ff_addr_t d = *(ff_addr_t*)ob;
 		stack_put(__resin, (ff_u8_t*)r, l, d);
 	}
 	fi;
@@ -1237,8 +1259,8 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"movb $8, %0		\n"
 			"_res_mov0:			\n\t" : "=m"(l));
 	{
-		ff_addr_t src = get_addr(__resin, &err);
-		ff_addr_t dst = get_addr(__resin, &err);
+		ff_addr_t src = *(ff_addr_t*)ob;
+		ff_addr_t dst = *(ff_addr_t*)(ob+__ADDR_TS);
 
 		ff_u8_t tmp[8];
 		stack_get(__resin, tmp, l, src);
@@ -1248,8 +1270,8 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	
 	__asm__("_res_rin0:\n\t");
 	{
-		ff_u8_t no = get_8l(__resin, &err);
-		ff_addr_t adr = get_addr(__resin, &err);
+		ff_u8_t no = *(ff_u8_t*)ob;
+		ff_addr_t adr = *(ff_addr_t*)(ob+1);
 		__resin->rin(no, ff_resin_resolv_adr(__resin, adr));
 	}
 	fi;
@@ -1301,7 +1323,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"movb $8, %0		\n"
 			"_res_out0:			\n\t" : "=m"(l));
 	{
-		ff_addr_t addr = get_addr(__resin, &err);
+		ff_addr_t addr = *(ff_addr_t*)ob;
 		ff_u64_t val = 0;
 		stack_get(__resin, (ff_u8_t*)&val, l, addr);
 		ffly_printf("out: %u\n", val);
@@ -1350,7 +1372,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 
 	__asm__("_res_call0:\n\t");
 	{
-		ff_addr_t adr = get_addr(__resin, &err);
+		ff_addr_t adr = *(ff_addr_t*)ob;
 		ff_s16_t dst;
 		stack_get(__resin, (ff_u8_t*)&dst, sizeof(ff_addr_t), adr);
 		*(__resin->retto++) = __resin->get_ip()+__resin->ip_off;
@@ -1381,12 +1403,12 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 			"jmp _res_end" : "=m"(code) : "m"(res_r0));
 
 	__asm__("_res_exit1:\n\t");
-	get(__resin, (ff_u8_t*)&code, 1, &err);
+	copymem(ob, &code, 1);
 	end;
 
 	__asm__("_res_exit0:\n\t");
 	{
-		ff_addr_t adr = get_addr(__resin, &err);
+		ff_addr_t adr = *(ff_addr_t*)ob;
 		stack_get(__resin, (ff_u8_t*)&code, sizeof(ff_err_t), adr);
 	}
 	end;

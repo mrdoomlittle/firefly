@@ -494,7 +494,7 @@ return;
 	dhdr.rg = FF_REMF_NULL;
 	dhdr.rl = FF_REMF_NULL;
 	dhdr.hk = FF_REMF_NULL;
-
+	dhdr.ft = FF_REMF_NULL;
 	dhdr.sttr = FF_REMF_NULL;
 
 	ff_i8_t epdeg = -1;

@@ -358,6 +358,11 @@ void _ffstart(void) {
 		ffly_hatch_start();
 
 	__init_array();
+	/*
+		TODO:
+			show time since prog start as well
+			not just ffmain time
+	*/
 	struct timespec start, finish;
 	clock_gettime(CLOCK_MONOTONIC, &start);
 	ffmain(arg-argl, argl);

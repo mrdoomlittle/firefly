@@ -164,10 +164,10 @@ _post(void) {
 			if (sz>0) {
 				fgrowb(curfrag, sz);
 				ff_as_plant(curfrag, buf, sz);
+				p = buf;
 			}
 			fix(curfrag, la, _fx_dis, 0x00);
 			pf_flags |= FR_FIX;
-			curfrag->bs = 8;
 			ff_as_fdone(curfrag);
 			ff_as_fnew(); // new frag
 		}
@@ -225,19 +225,40 @@ _suffix(ff_u8_t __c) {
 	return 0;
 }
 
+ff_uint_t static __n(long long __val) {
+	ff_uint_t i;
+	i = 0;
+	while((__val&(0xffffffffffffffff<<i))>0)
+		i++;
+	return i;
+}
+
+
 void static
 _fixins(struct fix_s *__fx) {
+	printf("^^^^^^^^^^^^^^^fix.\n");
 	if (__fx->type == _fx_dis) {
-		ffly_printf("instruction fix.\n");
-		ff_u8_t buf[8];
 		labelp l = (labelp)__fx->arg;
+		ff_int_t dis;
+		printf("----> fix: %u, %u\n", l->f->m, __fx->f->m);
+		dis = ((l->f->adr+l->f->m)+l->foffset)-(__fx->f->adr+__fx->f->m+__fx->f->size);
+		printf("dis: %d\n", dis);
+		ff_uint_t n;
+		n = __n(dis<0?-dis:dis);
+		ff_uint_t bs;
+		ff_int_t *bsp;
+		bsp = &__fx->f->bs;
+		bs = ((n+1)+((1<<3)-1))>>3;
 
-		ff_u8_t n;
+		*(ff_i64_t*)__fx->f->data = dis-bs;
 
-//		n = (l->f->adr+l->foffset)-(__fx->adr+__fx->size);
-
-//		__fx->f->bs = 
+		printf("before %u, after %u\n", *bsp, bs);
+		if (*bsp != bs)
+			fix_flgs |= 0x01;
+		*bsp+=(bs-*bsp);
+		return;
 	}
+	fix_flgs = 0x00;
 }
 
 # include "../../dep/str_len.h"

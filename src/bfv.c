@@ -28,6 +28,7 @@ static ff_uint_t page_c = 0;
 struct page static* getpage(ff_uint_t __num) {
 	if ((__num+1)>page_c) {
 		ffly_printf("new pages: %u\n", __num+1);
+		
 		ff_uint_t prior;
 		prior = page_c;
 		page_c = __num+1;
@@ -41,16 +42,17 @@ struct page static* getpage(ff_uint_t __num) {
 		pg = prior;
 		while(pg != page_c)
 			*(pages+(pg++)) = NULL;
-
 	}
 
 	struct page *pg, **pp;
 	pp = pages+__num;
 	if (!(pg = *pp)) {
+		ffly_printf("page_c: %u, page: %u, pagesize: %u, %u\n", page_c, __num, PAGE_SIZE, sizeof(struct page));
 		pg = (*pp = (struct page*)__ffly_mem_alloc(sizeof(struct page)));
 		pg->p = __ffly_mem_alloc(PAGE_SIZE);
 		pg->n = __num;
 	}
+	
 	return pg;	
 }
 
@@ -108,6 +110,7 @@ void static __write(void *__buf, ff_uint_t __size, ff_u64_t __offset) {
 
 	ff_uint_t left;
 	if ((left = (__size-(p-(ff_u8_t*)__buf)))>0) {	
+		ffly_printf("----> page: %u\n", pg);
 		pa = getpage(pg);
 		pg_write(pa, p, pg_off, left);
 	}
@@ -169,7 +172,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ff_uint_t nb;
 	nb = ffly_stno(__argv[1]);
-	bricks = (ff_u32_t*)__ffly_mem_alloc(nb*sizeof(ff_u32_t));
+	bricks = (ff_u32_t*)__ffly_mem_alloc((nb*sizeof(ff_u32_t))+18);
 	ffly_ff5_dec(__argv[2], bricks, ffly_str_len(__argv[2]));
 
 	ff_bh_open(&bh);
@@ -193,6 +196,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		ffly_printf("reading brick, %u\n", i);
 		ff_bh_bread(&bh, *(bricks+i), buf, 1<<_ff_brick_256, 0);
 		__write(buf, 1<<_ff_brick_256, i<<_ff_brick_256);
+		ffly_printf("brick: %u\n", *(bricks+i));
 		i++;	
 	}
 	fs_fin = ffly_fs(_ff_mfs);

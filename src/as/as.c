@@ -8,6 +8,11 @@
 # include "../malloc.h"
 # include "../dep/str_cmp.h"
 # include "../remf.h"
+
+/*
+	TODO:
+		fix glob and extn
+*/
 /*
 	operation tray
 */
@@ -19,6 +24,7 @@ void*(*ff_as_getreg)(char const*);
 ff_u8_t(*ff_as_regsz)(void*);
 ff_i8_t(*ff_as_suffix)(ff_u8_t);
 void(*ff_as_fixins)(struct fix_s*);
+ff_u8_t fix_flgs;
 /*
 	rename
 
@@ -41,7 +47,7 @@ char const **extrn;
 
 struct flask *fak_;
 
-struct fix_s *fx = NULL;
+struct fix_s *fx_head = NULL;
 segmentp curseg = NULL;
 regionp curreg = NULL;
 relocatep rel = NULL;
@@ -66,8 +72,8 @@ void fix(struct frag *__f, void *__arg, ff_u8_t __type, ff_u8_t __flags) {
 	s->arg = __arg;
 	s->type = __type;
 	s->flags = __flags;
-	s->next = fx;
-	fx = s;
+	s->next = fx_head;
+	fx_head = s;
 }
 
 struct {
@@ -138,6 +144,7 @@ ff_as_read_no(char *__p, ff_uint_t *__len, ff_u8_t *__sign) {
 }
 
 # include "../linux/unistd.h"
+
 char static*
 copyln(char *__dst, char *__src, char *__end, ff_uint_t *__len) {
 	char *p = __src;
@@ -165,14 +172,16 @@ _macro(void) {
 
 void static 
 _label(void) {
-	labelp la = (labelp)ff_as_hash_get(&env, sy->p, sy->len);
+	labelp la;
+	
+	la = (labelp)ff_as_hash_get(&env, sy->p, sy->len);
 	ff_i8_t exist = !la?-1:0;
 
 	if (exist == -1)
 		la = (labelp)ff_as_al(sizeof(struct label));
 	la->s_adr = ff_as_stackadr();
 	la->s = sy->p;
-	la->flags = 0x0;
+	la->flags = 0x00;
 	la->reg = curreg;
 	la->f = curfrag;
 	la->foffset = frag_offset(curfrag);
@@ -185,7 +194,10 @@ _label(void) {
 	s->sort = SY_LABEL;
 	s->type = FF_SY_LCA;
 	curlabel = la;
-	printf("label\n");
+
+	printf("new label at frag: %u, offset: %u\n", la->f->f, la->foffset);
+	ff_as_fdone(curfrag);
+	ff_as_fnew();
 }
 
 void static
@@ -309,7 +321,6 @@ ff_as(char *__p, char *__end) {
 		p = copyln(buf, p, __end, &len)+1;
 		*(buf+len) = '\0';
 		printf(":: %s\n", buf);
-
 		if ((sy = ff_as_parse(buf)) != NULL) {
 			if (is_symac(sy)) {
 				_macro();
@@ -408,24 +419,42 @@ void ff_as_final(void) {
 	if (outbuf.off>0) {
 		drain();
 	}
-/*
+	ff_uint_t bs;
+	struct frag *f;
 	struct fix_s *fx;
-
-	fx = fr_head->fx;
+	
+_again:
+	bs = 0;
+	fix_flgs = 0x00;
+	fx = fx_head;
 	while(fx != NULL) { 
 		ff_as_fixins(fx);
+		printf("fix: BS: %u, M: %u\n", fx->f->bs, fx->f->m);
 		fx = fx->next;
 	}
 
-	struct frag *f;
 	f = fr_head;
 	while(f != NULL) {
-		f->adr+=f->bs-8;
-		fgrowb(f, f->bs);
+		f->m = bs;
+		bs+=f->bs;
+		printf("frag-%u: BS: %u, M:%u\n", f->f, f->bs, f->m);
+		
 		f = f->next;
 	}
-*/
+
+	if (fix_flgs&0x01) {
+		printf("#################change.\n");
+		goto _again;
+	}
+
+	f = fr_head;
+	while(f != NULL) {
+		f->adr+=f->m;
+		f = f->next;
+	}
+	
 	ff_as_foutput();
+
 	if (of == _of_raw)
 		goto _sk;
 	if (!ep)

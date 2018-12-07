@@ -8,27 +8,32 @@
 	because there too much uneeded things
 	and to minimize dependencies of files
 	as such
+
+	TODO:
+		rename _resin_op
+		to _rs_op or _res_op
+		or _ro_ for resin operation
 */
-# define _resin_op_exit 0x0
-# define _resin_op_asb 0x1
-# define _resin_op_asw 0x2
-# define _resin_op_asd 0x3
-# define _resin_op_asq 0x4
+# define _resin_op_exit 0x00
+# define _resin_op_asb 0x01
+# define _resin_op_asw 0x02
+# define _resin_op_asd 0x03
+# define _resin_op_asq 0x04
 
-# define _resin_op_jmp 0x5
+# define _resin_op_jmp 0x05
 
-# define _resin_op_stb 0x6
-# define _resin_op_stw 0x7
-# define _resin_op_std 0x8
-# define _resin_op_stq 0x9
+# define _resin_op_stb 0x06
+# define _resin_op_stw 0x07
+# define _resin_op_std 0x08
+# define _resin_op_stq 0x09
 
-# define _resin_op_ldb 0xa
-# define _resin_op_ldw 0xb
-# define _resin_op_ldd 0xc
-# define _resin_op_ldq 0xd
+# define _resin_op_ldb 0x0a
+# define _resin_op_ldw 0x0b
+# define _resin_op_ldd 0x0c
+# define _resin_op_ldq 0x0d
 
-# define _resin_op_outb 0xe
-# define _resin_op_outw 0xf
+# define _resin_op_outb 0x0e
+# define _resin_op_outw 0x0f
 # define _resin_op_outd 0x10
 # define _resin_op_outq 0x11
 

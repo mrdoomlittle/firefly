@@ -74,7 +74,7 @@ void bond_oust(void*, ff_uint_t);
 void bond_hash_init(hashp);
 void bond_hash_destroy(hashp);
 void bond_hash_put(hashp, ff_u8_t const*, ff_uint_t, void*);
-void* const ff_bond_hash_get(hashp, ff_u8_t const*, ff_uint_t);
+void* const bond_hash_get(hashp, ff_u8_t const*, ff_uint_t);
 void bond(char const*, char const*);
 void bond_output(remf_hdrp);
 void bond_write(ff_u64_t, void*, ff_uint_t);

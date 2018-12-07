@@ -72,6 +72,7 @@ struct mfs_engrave {
 	ff_u32_t h;
 	ff_u8_t mode;
 	ff_u8_t flags;
+	ff_u32_t nn;
 	ff_uint_t n;
 	ff_u32_t start;
 	ff_uint_t bale_c;
@@ -81,7 +82,10 @@ struct mfs_engrave {
 struct mfs_node {
 	char name[86];
 	struct mfs_scope *s;
+	// cauldron address
 	ff_u32_t ca;
+	// node number
+	ff_u32_t nn;
 	ff_u8_t flags;
 
 	// why the fuck is this here?
@@ -115,8 +119,8 @@ void ffly_mfs_read(ff_u32_t, void*, ff_uint_t, ff_u64_t);
 void mfs_resize(struct mfs_scope*, ff_uint_t);
 
 ff_u32_t mfs_hash_new(void);
-void mfs_hash_put(ff_u32_t, ff_u8_t const*, ff_uint_t, void*);
-void* mfs_hash_get(ff_u32_t, ff_u8_t const*, ff_uint_t);
+void mfs_hash_put(ff_u32_t, ff_u8_t const*, ff_uint_t, long long);
+long long mfs_hash_get(ff_u32_t, ff_u8_t const*, ff_uint_t, ff_i8_t*);
 struct mfs_file* mfs_file_new(void);
 struct mfs_file* mfs_file_get(ff_u32_t);
 void mfs_file_destroy(struct mfs_file*);
