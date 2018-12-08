@@ -11,9 +11,9 @@
 # include "memory/mem_realloc.h"
 # include "memory/mem_free.h"
 # include "system/nanosleep.h"
-# define hdrsize sizeof(struct hdr)
+#define hdrsize sizeof(struct hdr)
 
-# define CHUNK_LOADED 0x1
+#define CHUNK_LOADED 0x1
 typedef struct hdr {
 	struct hdr *prev, *next;
 	ff_uint_t bc;
@@ -55,9 +55,9 @@ _end:
 /*
 	needs testing
 */
-# define PAGE_SHIFT 4
-# define PAGE_SIZE (1<<PAGE_SHIFT)
-# define PULLIN 20
+#define PAGE_SHIFT 4
+#define PAGE_SIZE (1<<PAGE_SHIFT)
+#define PULLIN 20
 struct pullin {
 	ff_i8_t used;
 	ff_tokenp tok;

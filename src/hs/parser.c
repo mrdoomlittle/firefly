@@ -96,7 +96,7 @@ parser_func(ff_hsp __hs) {
 	return n;
 }
 
-void
+void static
 parser_struct_decl(ff_hsp __hs, struct hs_hash *__fields, ff_uint_t *__size) {
 	if (!ff_hs_reckon(__hs, _tok_keywd, _l_brace)) {
 		ffly_printf("missing left side brace.\n");
@@ -130,7 +130,7 @@ parser_struct_decl(ff_hsp __hs, struct hs_hash *__fields, ff_uint_t *__size) {
 	*__size = size;
 }
 
-void
+void static
 parser_struct_spec(ff_hsp __hs, ff_hs_typep __t) {
 	hs_nexttok(__hs);
 	ffly_printf("struct %s\n", hs_tok_data);
@@ -145,7 +145,7 @@ parser_struct_spec(ff_hsp __hs, ff_hs_typep __t) {
 	ffly_printf("struct size: %u\n", size);
 }
 
-void
+void static
 decl_spec(ff_hsp __hs, ff_hs_typep *__ty, ff_u8_t __tok) {
 	if (__tok == _tok_keywd) {
 		ff_hs_typep t;
@@ -180,7 +180,7 @@ decl_spec(ff_hsp __hs, ff_hs_typep *__ty, ff_u8_t __tok) {
 		ffly_printf("error. %u\n", __tok);
 }
 
-ff_hs_nodep
+ff_hs_nodep static
 parser_decl(ff_hsp __hs) {
 	ff_hs_typep t;
 
@@ -209,7 +209,7 @@ parser_decl(ff_hsp __hs) {
 	return n;
 }
 
-ff_hs_nodep
+ff_hs_nodep static
 parser_func_call(ff_hsp __hs) {
 	char const *name;
 	ff_u8_t tok;
@@ -244,7 +244,7 @@ read_no(ff_hsp __hs, ff_hs_nodep *__n) {
 	*__n = n;
 }
 
-ff_hs_nodep
+ff_hs_nodep static
 parser_primary_exp(ff_hsp __hs) {
 	ff_u8_t tok;
 	tok = hs_nexttok(__hs);
@@ -269,7 +269,7 @@ _fail:
 	return NULL;
 }
 
-void
+void static
 parser_struct_field(ff_hsp __hs, ff_hs_nodep *__n, ff_hs_nodep __struc) {
 	if (!__struc) {
 		ffly_printf("error.\n");
@@ -289,9 +289,9 @@ parser_struct_field(ff_hsp __hs, ff_hs_nodep *__n, ff_hs_nodep __struc) {
 	*__n = n;
 }
 
-ff_hs_nodep parser_exp(ff_hsp);
+ff_hs_nodep static parser_exp(ff_hsp);
 
-ff_hs_nodep
+ff_hs_nodep static
 parser_assign_exp(ff_hsp __hs, ff_hs_nodep __l) {
 	ff_hs_nodep n;
 	n = newnode;

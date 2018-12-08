@@ -125,7 +125,7 @@ getpath(char *__dir, char *__buf, char const *__file) {
 }
 
 void static
-_get(ff_uint_t __from, ff_uint_t __offset, ff_uint_t __size, void *__buf, void *__arg) {
+_get(ff_uint_t __from, ff_uint_t __size, void *__buf, void *__arg) {
 	FF_FILE *f = (FF_FILE*)__arg;
 	ffly_fpread(f, __buf, __size, __from);
 }
@@ -318,11 +318,11 @@ void print_line(struct ffly_compiler *__compiler, ff_uint_t __off) {
 	ff_u32_t off = __off;
 	char c;
 
-	_get(off, 0, 1, &c, __compiler->file->f); 
+	_get(off, 1, &c, __compiler->file->f); 
 	while(c != '\n' && c != '\0') {
 		if (c != '\t')
 			ffly_printf("%c", c);
-		_get(++off, 0, 1, &c, __compiler->file->f);
+		_get(++off, 1, &c, __compiler->file->f);
 	}
 	ffly_printf("\n");
 }

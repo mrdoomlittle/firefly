@@ -7,7 +7,7 @@
 # include "depart.h"
 
 /*
-	need to work on
+	need to work on this as for now it will do
 */
 # ifndef __ffly_compactor_bin
 void prb(ff_u8_t __v) {

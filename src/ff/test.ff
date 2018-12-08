@@ -1,11 +1,4 @@
-void main() {
-	u8_t i = 21;
-	if (i == 21) {
-		out(i);
-	}
-}
-
-as(	"_start:\n\t"
-	"rin 0, 0\n\t"
-	"call $main\n\t"
-	"exit %al\n");
+/*
+	test
+*/
+%define return ret

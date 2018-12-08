@@ -4,7 +4,11 @@
 # include "resin.h"
 # include "rdm.h"
 # include "string.h"
-# define MAX 0x38
+#define MAX 0x38
+
+/*
+	redisign < move __p to static
+*/
 void static
 op_exit(ff_u8_t *__p, char const *__ident) {
 	ff_u8_t *p = __p;
@@ -321,7 +325,7 @@ void ffly_rdm(void(*__get)(ff_uint_t, ff_uint_t, void*), ff_u32_t __offset, ff_u
 	while(cur-__offset < __end) {
 		ff_u8_t op;
 		__get(cur, 1, &op);	
-		if (op > MAX) {
+		if (op>MAX) {
 			ffly_printf("error malformed opno, got{%u}\n", op);
 			break;
 		}

@@ -7,9 +7,9 @@
 # include "../../memory/mem_free.h"
 # include "../../system/string.h"
 # include "../../dep/mem_dup.h"
-# define align_to(__no, __to)(((__no)+((__to)-1))&((~(__to))+1))
+#define align_to(__no, __to)(((__no)+((__to)-1))&((~(__to))+1))
 void static emit(ff_compilerp, struct node*);
-void emit_load(ff_compilerp, ff_int_t, ff_u8_t);
+void static emit_load(ff_compilerp, ff_int_t, ff_u8_t);
 void static
 out_s(ff_compilerp __compiler, char const *__s) {
 	__compiler->out(__s, ffly_str_len(__s));
@@ -45,8 +45,8 @@ char const static *_reg[][4] = {
 # define s_off_dec(__by) s_off-=__by
 # define s_off_inc(__by) s_off+=__by
 
-ff_uint_t label_id = 0;
-char* label() {
+ff_uint_t static label_id = 0;
+char static* label() {
 	char buf[64];
 	char *p = buf;
 	*(p++) = 'l';
@@ -82,7 +82,8 @@ _sk:
 	__compiler->out(buf, (p-buf)+1);
 }
 
-void push(ff_compilerp __compiler, char const *__src, ff_u8_t __l) {
+void static
+push(ff_compilerp __compiler, char const *__src, ff_u8_t __l) {
 	char buf[128];
 	ffly_nots(__l, buf);
 	out_s(__compiler, "\t;push start\n");
@@ -93,7 +94,8 @@ void push(ff_compilerp __compiler, char const *__src, ff_u8_t __l) {
 	s_off_inc(__l);
 }
 
-void pop(ff_compilerp __compiler, char const *__dst, ff_u8_t __l) {
+void static
+pop(ff_compilerp __compiler, char const *__dst, ff_u8_t __l) {
 	char buf[128];
 	ffly_nots(__l, buf);
 	out_s(__compiler, "\t;pop start\n");
@@ -126,7 +128,7 @@ emit_as(ff_compilerp __compiler, struct node *__node) {
 	__ffly_mem_free(__node->p);
 }
 
-char *func_end;
+char static *func_end;
 void static
 emit_func(ff_compilerp __compiler, struct node *__node) {
 	char buf[128];
@@ -274,19 +276,19 @@ void emit_load(ff_compilerp __compiler, ff_int_t __off, ff_u8_t __l) {
 	out_s(__compiler, "\t;load end\n");
 }
 
-void emit_decl_init(ff_compilerp __compiler, struct node *__node, ff_uint_t __off) {
+void static emit_decl_init(ff_compilerp __compiler, struct node *__node, ff_uint_t __off) {
 	emit(__compiler, __node);
 	emit_load(__compiler, __off, __node->_type->size);
 }
 
-void emit_decl(ff_compilerp __compiler, struct node *__node) {
+void static emit_decl(ff_compilerp __compiler, struct node *__node) {
 	s_off_inc(__node->var->_type->size);
 	__node->var->s_off = s_off;
 	if (__node->init != NULL)
 		emit_decl_init(__compiler, __node->init, s_off);
 }
 
-void emit_assign(ff_compilerp __compiler, struct node *__node) {
+void static emit_assign(ff_compilerp __compiler, struct node *__node) {
 	emit(__compiler, __node->r);
 	struct node *l = __node->l;
 	if (l->kind == _ast_deref) {
@@ -314,7 +316,7 @@ void emit_assign(ff_compilerp __compiler, struct node *__node) {
 		emit_load(__compiler, l->s_off, l->_type->size);
 }
 
-void emit_literal(ff_compilerp __compiler, struct node *__node) {
+void static emit_literal(ff_compilerp __compiler, struct node *__node) {
 	out_op_s(__compiler, "asq %rel, 0\n");
 	ff_u8_t sz;
 	sz = __node->_type->size;
@@ -322,7 +324,7 @@ void emit_literal(ff_compilerp __compiler, struct node *__node) {
 	op(__compiler, "as", pbsz(sz), rbsz(sz, _r_ae_el_ael_rel), __node->p, NULL);
 }
 
-void emit_out(ff_compilerp __compiler, struct node *__node) {
+void static emit_out(ff_compilerp __compiler, struct node *__node) {
 	emit(__compiler, __node->var);
 	ff_u8_t sz;
 	sz = __node->var->_type->size;
@@ -337,7 +339,7 @@ void emit_out(ff_compilerp __compiler, struct node *__node) {
 	__compiler->out(buf, (p-buf)+1);
 }
 
-void emit_var(ff_compilerp __compiler, struct node *__node) {
+void static emit_var(ff_compilerp __compiler, struct node *__node) {
 	char buf[128];
 	ffly_nots(__node->s_off, buf);
 	if (__node->_type->kind == _array) {
@@ -358,17 +360,17 @@ void emit_var(ff_compilerp __compiler, struct node *__node) {
 	op(__compiler, "st", pbsz(sz), "%rlx", rbsz(sz, _r_ae_el_ael_rel), NULL);
 }
 
-void emit_exit(ff_compilerp __compiler, struct node *__node) {
+void static emit_exit(ff_compilerp __compiler, struct node *__node) {
 	emit(__compiler, __node->code);
 	out_op_s(__compiler, "exit %ae\n");
 }
 
-void emit_conv(ff_compilerp __compiler, struct node *__node) {
+void static emit_conv(ff_compilerp __compiler, struct node *__node) {
 	out_op_s(__compiler, "asq %rel, 0\n");
 	emit(__compiler, __node->operand);
 }
 
-void emit_label(ff_compilerp __compiler, struct node *__node) {
+void static emit_label(ff_compilerp __compiler, struct node *__node) {
 	char buf[128];
 	char *p = buf;
 	p+=ffly_str_cpy(p, ".l");
@@ -378,7 +380,7 @@ void emit_label(ff_compilerp __compiler, struct node *__node) {
 	__compiler->out(buf, (p-buf)+1);
 }
 
-void emit_jmpto(ff_compilerp __compiler, struct node *__node) {
+void static emit_jmpto(ff_compilerp __compiler, struct node *__node) {
 	char buf[128];
 	char *p = buf;
 	p+=ffly_str_cpy(p, "jmp");
@@ -389,7 +391,7 @@ void emit_jmpto(ff_compilerp __compiler, struct node *__node) {
 	__compiler->out(buf, (p-buf)+1);
 }
 
-void emit_if(ff_compilerp __compiler, struct node *__node) {
+void static emit_if(ff_compilerp __compiler, struct node *__node) {
 	out_s(__compiler, "\t;if start\n");
 	char buf[128];
 	char *p = buf;
@@ -431,7 +433,7 @@ void emit_if(ff_compilerp __compiler, struct node *__node) {
 	out_s(__compiler, "\t;if end\n");
 }
 
-void emit_addrof(ff_compilerp __compiler, struct node *__node) {
+void static emit_addrof(ff_compilerp __compiler, struct node *__node) {
 	char buf[128];
 	ffly_nots(__node->operand->s_off, buf);
 	op(__compiler, "as", 'q', "%xes", buf, NULL);
@@ -439,7 +441,7 @@ void emit_addrof(ff_compilerp __compiler, struct node *__node) {
 	out_op_s(__compiler, "subq %xes, %rel\n");
 }
 
-void emit_binop(ff_compilerp __compiler, struct node *__node) {
+void static emit_binop(ff_compilerp __compiler, struct node *__node) {
 	out_s(__compiler, "\t;binary op start\n");
 	out_op_s(__compiler, "asq %rel, 0\n");
 	emit(__compiler, __node->l);
@@ -467,14 +469,14 @@ void emit_binop(ff_compilerp __compiler, struct node *__node) {
 	out_s(__compiler, "\t;binary op end\n");
 }
 
-void emit_deref(ff_compilerp __compiler, struct node *__node) {
+void static emit_deref(ff_compilerp __compiler, struct node *__node) {
 	emit(__compiler, __node->operand);
 	ff_u8_t sz;
 	sz = __node->_type->size;
 	op(__compiler, "st", pbsz(sz), "%rel", rbsz(sz, _r_ae_el_ael_rel), NULL);
 }
 
-void emit_struct_ref(ff_compilerp __compiler, struct node *__node) {
+void static emit_struct_ref(ff_compilerp __compiler, struct node *__node) {
 	char buf[128];
 	ffly_nots(__node->_struct->s_off-__node->_type->off, buf);
 	op(__compiler, "as", 'q', "%rel", buf, NULL);
@@ -492,7 +494,7 @@ void
 emit(ff_compilerp __compiler, struct node *__node) {
 # ifndef __ffly_mscarcity
 	void(*func)(ff_compilerp, struct node*);
-	if ((func = _emit(__node->kind)) != NULL) { 
+	if ((func = *(emit_tbl+__node->kind)) != NULL) { 
 		func(__compiler, __node);
 		return;
 	}
@@ -567,27 +569,27 @@ final(ff_compilerp __compiler) {
 
 # ifndef __ffly_mscarcity
 struct emit_s {
-	void(*src, **dst)(ff_compilerp, struct node*);
+	void(*src)(ff_compilerp, struct node*), (**dst)(ff_compilerp, struct node*);
 };
 
-struct emit_s emit_funcs[] = {
-	{emit_if,			_emit+_ast_if},
-	{emit_label,		_emit+_ast_label},
-	{emit_jmpto,		_emit+_ast_jmpto},
-	{emit_var,			_emit+_ast_var},
-	{emit_func,			_emit+_ast_func},
-	{emit_as,			_emit+_ast_as},
-	{emit_ret, 			_emit+_ast_ret},
-	{emit_func_call,	_emit+_ast_func_call},
-	{emit_decl,			_emit+_ast_decl},
-	{emit_assign,		_emit+_ast_assign},
-	{emit_literal,		_emit+_ast_literal},
-	{emit_out,			_emit+_ast_out},
-	{emit_exit,			_emit+_ast_exit},
-	{emit_conv,			_emit+_ast_conv},
-	{emit_addrof,		_emit+_ast_addrof},
-	{emit_deref,		_emit+_ast_deref},
-	{emit_struct_ref,	_ast_struct_ref}
+static struct emit_s emit_funcs[] = {
+	{emit_if,			emit_tbl+_ast_if},
+	{emit_label,		emit_tbl+_ast_label},
+	{emit_jmpto,		emit_tbl+_ast_jmpto},
+	{emit_var,			emit_tbl+_ast_var},
+	{emit_func,			emit_tbl+_ast_func},
+	{emit_as,			emit_tbl+_ast_as},
+	{emit_ret, 			emit_tbl+_ast_ret},
+	{emit_func_call,	emit_tbl+_ast_func_call},
+	{emit_decl,			emit_tbl+_ast_decl},
+	{emit_assign,		emit_tbl+_ast_assign},
+	{emit_literal,		emit_tbl+_ast_literal},
+	{emit_out,			emit_tbl+_ast_out},
+	{emit_exit,			emit_tbl+_ast_exit},
+	{emit_conv,			emit_tbl+_ast_conv},
+	{emit_addrof,		emit_tbl+_ast_addrof},
+	{emit_deref,		emit_tbl+_ast_deref},
+	{emit_struct_ref,	emit_tbl+_ast_struct_ref}
 };
 # endif
 
@@ -597,7 +599,7 @@ void ffly_ff_resin(void) {
 	ffly_fprintf(ffly_log, "loading resin generator.\n");
 # ifndef __ffly_mscarcity
 	ff_uint_t n, i;
-	n = sizeof(emit_funcs)/sizeof(emit_s);
+	n = sizeof(emit_funcs)/sizeof(struct emit_s);
 	i = 0;
 	for(;i!=n;i++) {
 		struct emit_s *e;

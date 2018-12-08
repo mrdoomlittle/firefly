@@ -23,6 +23,7 @@ char const static *keywords[] = {
 	"goto",
 	"if",
 	"struct",
+	"ret",
 	NULL
 };
 
