@@ -1,8 +1,8 @@
 # include "hexdump.h"
 # include "system/io.h"
 # include "system/string.h"
-# define ROW_SHIFT 3
-# define ROW_LEN (1<<ROW_SHIFT)
+#define ROW_SHIFT 3
+#define ROW_LEN (1<<ROW_SHIFT)
 void ffly_hexdump(ff_u8_t *__p, ff_uint_t __size) {
 	char buf[128];
 	char *bufp;

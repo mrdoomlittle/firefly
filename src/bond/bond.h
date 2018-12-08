@@ -2,6 +2,9 @@
 # define __ffly__bond__h
 # include "../ffint.h"
 # include "../remf.h"
+# include "frag.h"
+#define imos(__off)\
+	offset = __off
 /*
 	segments will be freed on output
 */
@@ -26,11 +29,17 @@ typedef struct segment {
 } *segmentp;
 
 typedef struct hook* hookp;
+
+/*
+put in own region 'fragmentitized region'
+*/
 typedef struct region {
 	struct region *next;
 	ff_u8_t type;
-	ff_u64_t beg, end;
+	ff_u64_t offset;
+	ff_u32_t size;
 	ff_uint_t adr;
+	ff_u16_t fs, nf;
 } *regionp;
 
 typedef struct symbol {
@@ -39,6 +48,7 @@ typedef struct symbol {
 	ff_u8_t type;
 	ff_uint_t loc;
 	regionp *reg;
+	ff_uint_t f;
 } *symbolp;
 
 typedef struct relocate {
@@ -48,6 +58,7 @@ typedef struct relocate {
 	ff_u16_t addto;
 	ff_u16_t adr;
 	symbolp sy;
+	ff_uint_t f;
 } *relocatep;
 
 typedef struct hook {
@@ -56,6 +67,7 @@ typedef struct hook {
 	symbolp to;
 	ff_u16_t adr;
 	ff_uint_t l;
+	ff_uint_t f;
 } *hookp;
 
 struct ffly_bond {

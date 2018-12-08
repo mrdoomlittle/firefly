@@ -4,6 +4,9 @@
 # include "../linux/stat.h"
 # include "../remf.h"
 # include "mm.h"
+# include "../memory/mem_alloc.h"
+# include "../memory/mem_free.h"
+# include "../memory/mem_realloc.h"
 static void(*get)(ff_uint_t, ff_uint_t, void*);
 ff_u32_t static end;
 ff_u32_t static ip;

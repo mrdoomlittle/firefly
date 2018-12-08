@@ -24,7 +24,7 @@ syt_drop(void) {
 
 void static 
 syt_gut(void) {
-	reg.beg = offset;
+	reg.offset = offset;
 	symbolp cur = syt_head;
 	while(cur != NULL) {
 		struct remf_sy sy;
@@ -35,6 +35,7 @@ syt_gut(void) {
 		if (is_sylabel(cur)) {
 			labelp la = (labelp)ff_as_hash_get(&env, cur->p, cur->len);
 			sy.reg = la->reg->no;
+			sy.f = la->f->f;
 			sy.loc = la->f->adr+la->foffset;
 			printf("??? %d, %d\n", la->f->adr, la->foffset);
 		}
@@ -49,13 +50,13 @@ syt_gut(void) {
 		free(bk->p);
 		free(bk);
 	}
-	reg.end = offset;
+	reg.size = offset-reg.offset;
 }
 
 ff_u64_t static
 stt_drop(void) {
 	struct remf_reg_hdr reg;
-	reg.beg = offset;
+	reg.offset = offset;
 	stp cur = stt_head;
 	while(cur != NULL) {
 		ff_as_oust((ff_u8_t*)cur->p, cur->l);
@@ -64,7 +65,7 @@ stt_drop(void) {
 		cur = cur->next;
 		free(bk);
 	}
-	reg.end = offset;
+	reg.size = offset-reg.offset;
 
 	ff_u64_t ret;
 	char const *name = "stt";
@@ -97,11 +98,10 @@ void outsegs() {
 }
 
 void
-_remf_reloc(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob, ff_u8_t __l) {
+_remf_reloc(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob) {
 	printf("reloc.\n");
 	relocatep rl = (relocatep)ff_as_al(sizeof(struct relocate));
 	rl->dis = __dis;
-	rl->l = __l;
 	rl->sy = !_local?&((local_labelp)__label)->parent->sy:&((labelp)__label)->sy;
 	rl->f = __f;
 	rl->ob = __ob;
@@ -111,12 +111,11 @@ _remf_reloc(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob, ff_u8_t __l) {
 }
 
 void
-_remf_hook(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob, ff_u8_t __l) {
+_remf_hook(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob) {
 	printf("hook.\n");
 	hookp hk = (hookp)ff_as_al(sizeof(struct hook));
 	
 	hk->dis = __dis;
-	hk->l = __l;
 	hk->f = __f;
 	hk->ob = __ob;
 	hk->to = &((labelp)__label)->sy;
@@ -158,14 +157,20 @@ forge(void) {
 	fr = (struct remf_frag*)malloc(fr_nr*sizeof(struct remf_frag));
 	struct remf_frag *f;
 	struct frag *frg;
+	printf("nof: %u\n", fr_nr);
 _again:
 	if (i != fr_nr) {
 		f = fr+i;
 		printf("frag: %u\n", i);
 		frg = ff_as_fbn(i);
+		if (!frg) {
+			printf("fragment has come back 0, skipping might cause major issues.\n");
+			goto _sk;
+		}
 		f->id = i;
-		f->src = frg->dst;
+		f->src = frg->adr;
 		f->size = frg->size;
+	_sk:
 		i++;
 		goto _again;
 	}
@@ -197,10 +202,11 @@ _again:
 			printf("symbol: %s:%p, len: %u\n", (*hk->to)->p, hk->to, hk->l);
 			if (!strcmp((*hk->to)->p, *cur)) {
 				struct remf_hok hok;
-				hok.offset = hk->f->dst+hk->dis;
+				hok.offset = hk->f->adr+hk->dis;
 				hok.l = hk->l;
 				hok.adr = hk->f->adr+hk->ob;
 				hok.to = (*hk->to)->off;
+				hok.f = hk->f->f;
 				ff_as_oust((ff_u8_t*)&hok, remf_hoksz);
 				hdr.nhk++;
 			}
@@ -214,13 +220,14 @@ _again:
 	relocatep rl = rel;
 	while(rl != NULL) {
 		struct remf_rel rel;
-		rel.offset = rl->f->dst+rl->dis;
+		rel.offset = rl->f->adr+rl->dis;
 		rel.l = rl->l;
 		local_labelp ll = rl->ll;
 		rel.addto = !ll?0:(ll->f->dst+ll->foffset)-((*ll->p_f)->dst+*ll->p_foffset);
 		printf("reloc: %s\n", (*rl->sy)->p);
 		rel.adr = rl->f->adr+rl->ob;
 		rel.sy = (*rl->sy)->off;
+		rel.f = rl->f->f;
 		ff_as_oust((ff_u8_t*)&rel, remf_relsz);
 		rl = rl->next;
 		hdr.nrl++;
@@ -249,9 +256,11 @@ _again:
 		reg.l = ffly_str_len(rg->name)+1;
 		reg.name = offset;
 		ff_as_oust(rg->name, reg.l);
-		reg.beg = (rg->beg.f->dst+rg->beg.offset);
-		reg.end = (rg->end.f->dst+rg->end.offset);
+		reg.offset = rg->beg.f->dst+rg->beg.offset;
+		reg.size = (rg->end.f->dst+rg->end.offset)-reg.offset;
 		reg.adr = rg->adr;
+		reg.fs = rg->beg.f->f;
+		reg.nf = (rg->end.f->f-rg->beg.f->f)+1;
 		if (!strcmp(rg->name, "text"))
 			reg.type = FF_RG_PROG;
 		else

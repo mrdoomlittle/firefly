@@ -14,7 +14,7 @@ struct frag *curfrag = NULL;
 		find fragment inbetween jump and label
 */
 struct frag ***fr_tbl = NULL;
-
+#define FR_DONE 0x02
 #define FRT_PAGE_SHIFT 4
 #define FRT_PAGE_SIZE (1<<FRT_PAGE_SHIFT)
 /*
@@ -26,6 +26,11 @@ struct frag ***fr_tbl = NULL;
 ff_uint_t fr_nr = 0;
 ff_uint_t static frt_page_c = 0;
 struct frag* ff_as_fnew(void) {
+	if (curfrag != NULL) {
+		if (!(curfrag->flags&FR_DONE)) {
+			printf("warning previous fragment not done.\n");
+		}
+	}
 	struct frag *f;
 	f = (struct frag*)ff_as_al(sizeof(struct frag));	
 	if (!fr_head)
@@ -152,9 +157,14 @@ void ff_as_fdone(struct frag *__f) {
 	fr_adr+=__f->size;
 	printf("frag done, %u, %u\n", __f->size, __f->adr);
 	adr = fr_adr;
+	__f->flags |= FR_DONE;
 }
 
 struct frag *ff_as_fbn(ff_uint_t __n) {
+	if (__n>=fr_nr) {
+		printf("what the fuck are you trying to do!\n");
+		return NULL;
+	}
 	ff_uint_t pg, pg_off;
 
 	pg = __n>>FRT_PAGE_SHIFT;
@@ -172,7 +182,7 @@ void ff_as_foutput(void) {
 	ff_u16_t left;
 	lseek(out, offset, SEEK_SET);
 	while(f != NULL) {
-		printf("outputing frag, size: %u\n", f->size);
+		printf("outputing frag-%u, size: %u\n", f->f, f->size);
 	
 		f->dst = offset;
 		if (!f->size)

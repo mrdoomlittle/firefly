@@ -1,6 +1,6 @@
 ./ffas -f remf -i test.asm -o test.o
 #./ffas -f ffef -i func.asm -o func.o
-../readremf/readremf test.o
+#../readremf/readremf test.o
 #../readffef/readffef func.o
 #../bond/ffbond -s "test.o" -d a.out
 #../exec/ffexec a.out

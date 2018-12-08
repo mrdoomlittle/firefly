@@ -699,15 +699,15 @@ static void(*op[])() = {
 */
 
 // for debug
-# define MAX 0xff
-# define get_addr(__resin, __err) \
+#define MAX 0xff
+#define get_addr(__resin, __err) \
 	get_16l(__resin, __err)
 
-# define fi __asm__("jmp _res_fi"); // finished
-# define next __asm__("jmp _res_next")
-# define end __asm__("jmp _res_end")
-# define jmpto(__p) __asm__("jmp *%0" : : "r"(__p))
-# define errjmp if (_err(err)) jmpend
+#define fi			__asm__("jmp _res_fi"); // finished
+#define next		__asm__("jmp _res_next")
+#define end			__asm__("jmp _res_end")
+#define jmpto(__p)	__asm__("jmp *%0" : : "r"(__p))
+#define errjmp if (_err(err)) jmpend
 # include "system/io.h"
 # include "system/nanosleep.h"
 __asm__("\t.globl _res_fi\n"

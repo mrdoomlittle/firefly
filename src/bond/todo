@@ -2,3 +2,6 @@ use fragments as we going to deal with unknown call/jump displacments and the le
 
 
 all relocs should take place within linker and not asmlr even local ones
+
+
+this is a mess and needs to be fixed

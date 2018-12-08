@@ -101,6 +101,7 @@ void static to_free(void *__p) {
 
 ff_u64_t bot = 0;
 ff_u64_t rise = 0;
+ff_uint_t fbt = 0;
 
 void bond_write(ff_u64_t __offset, void *__buf, ff_uint_t __size) {
 	ff_u8_t *p = (ff_u8_t*)__buf;
@@ -223,6 +224,7 @@ _sk0:
 	p->loc = curadr()+__sy->loc;
 	p->type = __sy->type;
 	p->reg = rindx+__sy->reg;
+	p->f = fbt+__sy->f;
 _sk1:
 	*__stp = p;
 }
@@ -238,6 +240,7 @@ absorb_hook(remf_hokp __hook) {
 	p->to = *(syt-__hook->to);	
 	p->l = __hook->l;
 	p->adr = curadr()+__hook->adr;
+	p->f = fbt+__hook->f;
 }
 
 void static
@@ -252,7 +255,7 @@ absorb_segment(remf_seg_hdrp __seg) {
 	read(d, seg->p, __seg->sz);
 }
 
-# include "../rdm.h"
+# include "../hexdump.h"
 void static
 absorb_region(remf_reg_hdrp __reg) {
 	char name[128];
@@ -261,10 +264,10 @@ absorb_region(remf_reg_hdrp __reg) {
 	printf("region, %s\n", name);
 
 	ff_uint_t size;
-	ff_u8_t *buf = (ff_u8_t*)malloc(size = (__reg->end-__reg->beg));
+	ff_u8_t *buf = (ff_u8_t*)malloc(size = __reg->size);
 	printf("region size: %u\n", size);
 
-	lseek(s, __reg->beg, SEEK_SET);
+	lseek(s, __reg->offset, SEEK_SET);
 	read(s, buf, size);
 
 	if (__reg->type == FF_RG_SYT) {
@@ -280,27 +283,29 @@ absorb_region(remf_reg_hdrp __reg) {
 		return;
 	}
 
-	regionp reg = (regionp)malloc(sizeof(struct region));
+	regionp reg;
+	
+	reg = (regionp)malloc(sizeof(struct region));
 	to_free(reg);
-	reg->beg = __reg->beg;
-	reg->end = __reg->end;
+	reg->offset = bot+rise;
+	reg->size = __reg->size;
+	reg->fs = fbt+__reg->fs;
+	reg->nf = __reg->nf;
 	if (__reg->type == FF_RG_PROG) {
 		reg->next = curbin;
 		curbin = reg;
-		reg->beg+=bot;
-		reg->end+=bot;
-		rise+=__reg->end-__reg->beg;
-		printf("region placed at: %u\n", reg->beg);
+		rise+=__reg->size;
+		printf("region placed at: %u\n", reg->offset);
 		reg->adr = __reg->adr+curadr();
-		ffly_rdmp(buf, size);
+		ffly_hexdump(buf, size);
 	} else {
 		reg->next = curreg;
 		curreg = reg;
 	}
 
 	if (__reg->type == FF_RG_PROG) {
-		bond_mapout(reg->beg, size);
-		bond_write(reg->beg, buf, size);
+		bond_mapout(reg->offset, size);
+		bond_write(reg->offset, buf, size);
 	}
 
 	free(buf);
@@ -317,6 +322,7 @@ absorb_relocate(remf_relp __rel) {
 	rel->addto = __rel->addto;
 	rel->adr = curadr()+__rel->adr;
 	rel->sy = *(syt-__rel->sy);
+	rel->f = fbt+__rel->f;
 	printf("reloc: symbol, %s\n", rel->sy->name);
 }
 
@@ -328,10 +334,32 @@ ldstt(remf_hdrp __hdr) {
 	read(s, &reg, remf_reghdrsz);
 
 	ff_uint_t size;
-	stt = (char const*)malloc(size = (reg.end-reg.beg));
-	lseek(s, reg.beg, SEEK_SET);
+	stt = (char const*)malloc(size = reg.size);
+	lseek(s, reg.offset, SEEK_SET);
 	read(s, (void*)stt, size);
 	stte = stt+size;
+}
+
+
+void lif(ff_u32_t __ft) {
+	struct remf_ft ft;
+	pread(s, &ft, sizeof(struct remf_ft), __ft);
+
+	struct remf_frag *fr, *f;
+	fr = (struct remf_frag*)malloc(ft.n*sizeof(struct remf_frag));
+
+	printf("number of fragments: %u\n", ft.n);
+	pread(s, fr, ft.n*sizeof(struct remf_frag), ft.array-((ft.n-1)*sizeof(struct remf_frag)));
+	ff_uint_t i;
+	i = 0;
+	while(i != ft.n) {
+		f = fr+(i++);
+		printf("fragment; id: %u, src: %u, sz: %u\n", f->id, f->src, f->size);
+		bond_fnew(f->src, f->size, f->id);
+	}
+
+	fbt+=ft.n;
+	free(fr);
 }
 
 ff_i8_t static epdeg = -1;
@@ -406,6 +434,7 @@ process_srcfl(char const *__file, remf_hdrp __dhdr) {
 		}
 	}
 
+	lif(hdr.ft);
 	bot+=rise;
 	rise=0;
 	iadr(hdr.adr);
@@ -413,15 +442,80 @@ process_srcfl(char const *__file, remf_hdrp __dhdr) {
 	close(s);
 }
 
-void latch_hooks() {
+struct fix {
+	struct fix *next;
+	void *arg;
+	ff_u8_t type;
+	ff_u8_t flags;
+	struct frag *f;
+	ff_uint_t addto;
+};
+
+enum {
+	_fx_dis
+};
+
+struct fix *fx_head = NULL;
+void fix(ff_uint_t __f, void *__arg, ff_u8_t __type, ff_u8_t __flags, ff_uint_t __addto) {
+	struct fix *fx = (struct fix*)malloc(sizeof(struct fix));
+	fx->f = bond_fbn(__f);
+	fx->arg = __arg;
+	fx->type = __type;
+	fx->flags = __flags;
+	fx->addto = __addto;
+	fx->next = fx_head;
+	fx_head = fx;
+}
+
+ff_uint_t static __n(long long __val) {
+	ff_uint_t i;
+	i = 0;
+	while((__val&(0xffffffffffffffff<<i))>0)
+		i++;
+	return i;
+}
+
+
+ff_u8_t fix_flgs = 0x00;
+void static
+_fixins(struct fix *__fx) {
+	printf("^^^^^^^^^^^^^^^fix.\n");
+	if (__fx->type == _fx_dis) {
+		symbolp sy = (symbolp)__fx->arg;
+		struct frag *sf;
+		sf = bond_fbn(sy->f);
+		ff_int_t dis;
+		printf("----> fix: %u, %u\n", sf->m, __fx->f->m);
+		dis = ((sf->adr+sf->m)+(sy->loc-sf->adr)+__fx->addto)-(__fx->f->adr+__fx->f->m+__fx->f->size);
+		printf("dis: %d\n", dis);
+		ff_uint_t n;
+		n = __n(dis<0?-dis:dis);
+		ff_uint_t bs;
+		ff_int_t *bsp;
+		bsp = &__fx->f->bs;
+		bs = ((n+1)+((1<<4)-1))>>3;
+
+		*(ff_i64_t*)__fx->f->data = dis-bs;
+
+		printf("before %u, after %u\n", *bsp, bs);
+		if (*bsp != bs)
+			fix_flgs |= 0x01;
+		*bsp+=(bs-*bsp);
+		return;
+	}
+	fix_flgs = 0x00;
+}
+
+void latch_hooks(void) {
 	hookp cur = curhok;
 	while(cur != NULL) {
 		if (!cur->to)
 			printf("cant hook onto a symbol that doesen't exist.\n");
 		else {		
 			if (cur->to->type == FF_SY_GBL) {
-				ff_i64_t loc = ((ff_i64_t)cur->to->loc)-(ff_i64_t)cur->adr;
-				bond_write(cur->offset, &loc, cur->l);	
+				fix(cur->f, cur->to, _fx_dis, 0x00, 0);
+//				ff_i64_t loc = ((ff_i64_t)cur->to->loc)-(ff_i64_t)cur->adr;
+//				bond_write(cur->offset, &loc, cur->l);	
 				printf("hooking at: %u\n", cur->offset);
 			} else
 				printf("symbol hasen't been defined.\n");
@@ -430,17 +524,18 @@ void latch_hooks() {
 	}
 }
 
-void reloc() {
+void reloc(void) {
 	relocatep cur = currel;
 	while(cur != NULL) {
-		ff_i64_t loc = ((ff_i64_t)(cur->sy->loc+cur->addto))-(ff_i64_t)cur->adr;
-		bond_write(cur->offset, &loc, cur->l);	
+		fix(cur->f, cur->sy, _fx_dis, 0x00, cur->addto);
+//		ff_i64_t loc = ((ff_i64_t)(cur->sy->loc+cur->addto))-(ff_i64_t)cur->adr;
+//		bond_write(cur->offset, &loc, cur->l);	
 		cur = cur->next;
 	}
 }
 
 void static 
-cleanup() {
+cleanup(void) {
 	void **cur = tf;
 	while(cur != fresh)
 		free(*(cur++));
@@ -504,9 +599,44 @@ return;
 			break;
 		process_srcfl(file, &dhdr);
 	}
-	
+
 	latch_hooks();
 	reloc();
+
+	ff_uint_t bs;
+	struct frag *f;
+	struct fix *fx;
+
+_again:
+	bs = 0;
+	fix_flgs = 0x00;
+	fx = fx_head;
+	while(fx != NULL) {
+		_fixins(fx);
+		printf("fix: BS: %u, M: %u\n", fx->f->bs, fx->f->m);
+		fx = fx->next;
+	}
+
+	f = fr_head;
+	while(f != NULL) {
+		f->m = bs;
+		bs+=f->bs;
+		printf("frag-%u: BS: %u, M:%u\n", f->f, f->bs, f->m);
+
+		f = f->next;
+	}
+
+	if (fix_flgs&0x01) {
+		printf("#################change.\n");
+		goto _again;
+	}
+
+	f = fr_head;
+	while(f != NULL) {
+		f->adr+=f->m;
+		f = f->next;
+	}
+
 	offset+=bot;
 	bond_output(&dhdr);
 	cleanup();

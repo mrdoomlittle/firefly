@@ -2,50 +2,57 @@
 # define __ffly__remf__h
 # include "ffint.h"
 
-#define FF_REMF_IL 16
-#define FF_REMF_MAG0 'r'
-#define FF_REMF_MAG1 'e'
-#define FF_REMF_MAG2 'm'
-#define FF_REMF_MAG3 'f'
+#define FF_REMF_IL		16
+#define FF_REMF_MAG0	'r'
+#define FF_REMF_MAG1	'e'
+#define FF_REMF_MAG2	'm'
+#define FF_REMF_MAG3	'f'
 
 #define FF_REMF_NULL (~(ff_u64_t)0)
 
-#define FF_SG_NULL 0x0
-#define FF_SG_STACK 0x1
-#define FF_SG_PROG 0x2
+#define FF_SG_NULL	0x00
+#define FF_SG_STACK	0x01
+#define FF_SG_PROG	0x02
 
-#define remf_hdrsz sizeof(struct remf_hdr)
+#define remf_hdrsz		sizeof(struct remf_hdr)
 
-#define remf_sysz sizeof(struct remf_sy)
-#define remf_reghdrsz sizeof(struct remf_reg_hdr)
-#define remf_seghdrsz sizeof(struct remf_seg_hdr)
-#define remf_relsz sizeof(struct remf_rel)
-#define remf_hoksz sizeof(struct remf_hok)
+#define remf_sysz		sizeof(struct remf_sy)
+#define remf_reghdrsz	sizeof(struct remf_reg_hdr)
+#define remf_seghdrsz	sizeof(struct remf_seg_hdr)
+#define remf_relsz		sizeof(struct remf_rel)
+#define remf_hoksz		sizeof(struct remf_hok)
 
-#define FF_RG_NULL 0x0
-#define FF_RG_PROG 0x1
-#define FF_RG_SS 0x2
-#define FF_RG_STT 0x3
-#define FF_RG_SYT 0x4
+#define FF_RG_NULL	0x00
+#define FF_RG_PROG	0x01
+#define FF_RG_SS	0x02
+#define FF_RG_STT	0x03
+#define FF_RG_SYT	0x04
 
-#define FF_SY_NULL 0x0
-#define FF_SY_IND 0x1
-#define FF_SY_GBL 0x2
-#define FF_SY_LCA 0x3
+#define FF_SY_NULL	0x00
+#define FF_SY_IND	0x01
+#define FF_SY_GBL	0x02
+#define FF_SY_LCA	0x03
 typedef struct remf_sy {
 	ff_u16_t name;
 	ff_u8_t type;
 	ff_u8_t l;
 	ff_u64_t loc;
 	ff_u16_t reg;
+	ff_u16_t f;
 } *remf_syp;
 
 typedef struct remf_reg_hdr {
 	ff_u64_t name;
 	ff_u8_t l;
 	ff_u8_t type;
-	ff_u64_t beg, end;
+	ff_u64_t offset;
+	ff_u32_t size;
 	ff_u64_t adr;
+
+	/*
+		put own struct e.g. freg for 'fragmentized region'
+	*/
+	ff_u16_t fs, nf;
 } *remf_reg_hdrp;
 
 typedef struct remf_seg_hdr {
@@ -61,6 +68,7 @@ typedef struct remf_rel {
 	ff_u16_t sy;
 	ff_u16_t adr;
 	ff_u16_t addto;
+	ff_u16_t f;
 } *remf_relp;
 
 typedef struct remf_hok {
@@ -68,6 +76,7 @@ typedef struct remf_hok {
 	ff_uint_t l;
 	ff_u16_t adr;
 	ff_u16_t to;
+	ff_u16_t f;
 } *remf_hokp;
 
 struct remf_frag {
@@ -106,7 +115,13 @@ typedef struct remf_hdr {
 		where segments/regions... are located within file{offset to}
 	*/
 	ff_u64_t sg, rg, rl, hk;
+
+	/*
+		bottom of program data usage: bond -> where next file program data will be placed
+	*/
 	ff_u32_t adr;
+
+	// frag table location
 	ff_u64_t ft;
 } *remf_hdrp;
 

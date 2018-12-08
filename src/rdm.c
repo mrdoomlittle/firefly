@@ -345,7 +345,7 @@ void ffly_rdmp(ff_u8_t *__p, ff_u32_t __end) {
 			ffly_printf("error malformed opno, got{%u}\n", op);
 			break;
 		}
-		ffly_printf("%u-%u:(%x)\t\t", i++, p-__p, op);
+		ffly_printf("%u-%u:(%x)\t\t", i++, (p-__p)-1, op);
 		out[op](p, ident[op]);
 		p+=ff_resin_ops(op);
 	}

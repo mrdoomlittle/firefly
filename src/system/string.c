@@ -10,6 +10,9 @@
 	TODO:
 		replace switch statments
 		with array
+
+		allow for static buffer and no use of cut buffer method
+		for all routines below
 */
 ff_u64_t static powof10[] = {
 	1,
@@ -206,7 +209,7 @@ ff_u64_t ffly_stno(char *__s) {
 }
 
 char ffly_tolow(char __c) {
-	if (__c >= 'a' && __c <= 'z') return __c;
+	if (__c>='a'&&__c<='z') return __c;
 	return 'a'+(__c-'A');
 }
 

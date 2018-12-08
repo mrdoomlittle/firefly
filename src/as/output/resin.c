@@ -122,7 +122,9 @@ char const* rbl(ff_u8_t __l) {
 reginfo*
 getreg(char const *__name) {
 	char const *p = __name;
-	ff_u8_t no = 0xff;
+	ff_u8_t no;
+
+	no = 0xff;
 	while(*p != '\0') {
 		no ^= 1<<c[(*p)];
 		p++;
@@ -131,6 +133,7 @@ getreg(char const *__name) {
 	printf("reg: %u, %s\n", no, __name);
 /*
 	put in array is __ffly_mscars if not defined
+	might be a wast of memory but we will give the option
 */
 	switch(no) {
 		case 0xf8:	return reg+rax_rg;
@@ -305,9 +308,21 @@ _post(void) {
 				call/jmp %ax
 			*/
 
-			rgasw(rgname, 0x4);
+			struct frag *f;
+			f = curfrag;
+			ff_u32_t ob;
+			ob = frag_offset(curfrag);
+			ff_u8_t buf0[3];
+			*buf0 = _resin_op_asw;
+			*(ff_u16_t*)(buf0+1) = getreg(rgname)->addr;
+			fgrowb(curfrag, 3);
+			ff_as_plant(curfrag, buf0, 3);
+
 			ff_u32_t fo = frag_offset(curfrag);
-	
+
+			ff_as_fdone(curfrag);
+			ff_as_fnew();
+
 			*(ff_addr_t*)p = getreg(rgname)->addr;
 			p+=sizeof(ff_addr_t);	
 
@@ -318,11 +333,10 @@ _post(void) {
 			ff_as_plant(curfrag, buf, sz);
 
 			if (is_flag(la->flags, LA_LOOSE))
-				_remf_hook(curfrag, fo-sizeof(ff_addr_t), frag_offset(curfrag)-sz, 2);
+				_remf_hook(f, fo, ob, 2);
 			else
-				_remf_reloc(curfrag, fo-sizeof(ff_addr_t), frag_offset(curfrag)-sz, 2);
-			fix(curfrag, la, _fx_dis, 0x00);
-			ff_as_fnew();
+				_remf_reloc(f, fo, ob, 2);
+	//		fix(curfrag, la, _fx_dis, 0x00);
 			p = buf;
 		} else {
 			printf("error unknown operand.\n");
