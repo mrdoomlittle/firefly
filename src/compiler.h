@@ -9,6 +9,44 @@
 # include "lexer.h"
 # include "parser.h"
 # include "linux/limits.h"
+
+
+// ignore
+#define _fc_k_prin
+#define _fc_k_if
+#define _fc_k_uint_t
+#define _fc_k_int_t
+#define _fc_k_u64_t
+#define _fc_k_i64_t
+#define _fc_k_u32_t
+#define _fc_k_i32_t
+#define _fc_k_u16_t
+#define _fc_k_i16_t
+#define _fc_k_u8_t
+#define _fc_k_i8_t
+#define _fc_k_fn
+#define _fc_k_extern
+#define _fc_k_struct
+#define _fc_k_void
+#define _fc_k_var
+#define _fc_k_exit
+#define _fc_k_while
+#define _fc_k_match
+#define _fc_k_else
+#define _fc_k_float
+#define _fc_k_typedef
+#define _fc_k_ret
+#define _fc_k_brk
+#define _fc_k_as
+#define _fc_k_out
+#define _fc_k_goto
+#define _fc_k_syput
+#define _fc_k_va_args
+#define _fc_k_sizeof
+#define _fc_k_no_va
+#define _fc_k_no_params
+#define _fc_k_no_ret
+
 # ifdef __ffly_script
 # ifndef ffc_final
 # define ffc_final(__compiler, __top, __stack, __syput) \

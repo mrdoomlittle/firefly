@@ -21,6 +21,14 @@ typedef struct {
 	ff_u8_t l;
 } reginfo;
 
+struct fix_arg {
+	labelp l;
+	struct ff_as_op *op;
+};
+
+struct fix_arg arg_lk[20];
+struct fix_arg *arg_nxt = arg_lk;
+
 static struct ff_as_op *op;
 # define regc 14
 static reginfo reg[] = {
@@ -162,11 +170,15 @@ _post(void) {
 			labelp la = (labelp)__label;
 			ff_uint_t sz = p-buf;
 			if (sz>0) {
-				fgrowb(curfrag, sz);
-				ff_as_plant(curfrag, buf, sz);
+				curfrag->k+=sz;
+				memcpy(curfrag->data, buf, sz);
 				p = buf;
 			}
-			fix(curfrag, la, _fx_dis, 0x00);
+			printf("frag-%u: K: %u\n", curfrag->f, curfrag->k);
+			arg_nxt->l = la;
+			arg_nxt->op = op;
+			arg_nxt++;
+			fix(curfrag, arg_nxt-1, _fx_dis, 0x00);
 			pf_flags |= FR_FIX;
 			ff_as_fdone(curfrag);
 			ff_as_fnew(); // new frag
@@ -234,14 +246,18 @@ ff_uint_t static __n(long long __val) {
 }
 
 
+#define _dn 0x01
+ff_u8_t static ff = 0x00;
 void static
 _fixins(struct fix_s *__fx) {
 	printf("^^^^^^^^^^^^^^^fix.\n");
+	struct fix_arg *arg;
+	arg = (struct fix_arg*)__fx->arg;
 	if (__fx->type == _fx_dis) {
-		labelp l = (labelp)__fx->arg;
+		labelp l = arg->l;
 		ff_int_t dis;
 		printf("----> fix: %u, %u\n", l->f->m, __fx->f->m);
-		dis = ((l->f->adr+l->f->m)+l->foffset)-(__fx->f->adr+__fx->f->m+__fx->f->size);
+		dis = ((l->f->adr+l->f->m)+l->foffset)-(__fx->f->adr+__fx->f->m+__fx->f->size+__fx->f->bs+__fx->f->k);
 		printf("dis: %d\n", dis);
 		ff_uint_t n;
 		n = __n(dis<0?-dis:dis);
@@ -249,8 +265,37 @@ _fixins(struct fix_s *__fx) {
 		ff_int_t *bsp;
 		bsp = &__fx->f->bs;
 		bs = ((n+1)+((1<<3)-1))>>3;
+	
+		printf("}}}}}}}}}}}}}M:%u, BS:%u\n", __fx->f->m, bs);
 
-		*(ff_i64_t*)__fx->f->data = dis-bs;
+		ff_u8_t x, j;
+		x = 1<<(bs-1);
+
+		if ((x&0x01) >0) {
+			bs = 1+(j = (arg->op->ad>>_d8s&0x01));
+			x<<=j;
+			
+		}
+		
+		if ((x&0x02) >0) {
+			if (is_flag(arg->op->flags, osof16) && !(ff&_dn)) {
+				__fx->f->data[1] = *__fx->f->data;
+				*__fx->f->data = 0x66;
+				__fx->f->k++;
+				fix_flgs |= 0x01;
+				ff |= _dn;
+			}
+			bs = 2+((arg->op->ad>>_d16s&0x01)<<1);
+		}
+		if ((x&0x0c) >0) {
+			bs = 4+((arg->op->ad>>_d32s&0x01)<<2);
+		}
+		if ((x&0xf0) >0) {
+			bs = 8;
+		}
+		printf("B: %u, W: %u, D: %u, Q: %u, DIS: %d\n", x&0x01, x&0x02, x&0x0c, x&0xf0, dis-bs);
+
+		*(ff_i64_t*)(__fx->f->data+__fx->f->k) = dis;
 
 		printf("before %u, after %u\n", *bsp, bs);
 		if (*bsp != bs)
@@ -258,7 +303,6 @@ _fixins(struct fix_s *__fx) {
 		*bsp+=(bs-*bsp);
 		return;
 	}
-	fix_flgs = 0x00;
 }
 
 # include "../../dep/str_len.h"

@@ -1,4 +1,6 @@
 .region text
+test:
+ret
 _start:
 /
 push %rax
@@ -29,11 +31,9 @@ mov %rbp, %rsp
 pop %rbp
 /
 
-movq %rax, 60
-test:
 
-xor %rax, %rax
+call $test
+
 movq %rax, 60
-jmp $test
 syscall
 .endof

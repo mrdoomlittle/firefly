@@ -429,15 +429,15 @@ _again:
 	fx = fx_head;
 	while(fx != NULL) { 
 		ff_as_fixins(fx);
-		printf("fix: BS: %u, M: %u\n", fx->f->bs, fx->f->m);
+		printf("fix: BS: %u, M: %u, K: %u\n", fx->f->bs, fx->f->m, fx->f->k);
 		fx = fx->next;
 	}
 
 	f = fr_head;
 	while(f != NULL) {
 		f->m = bs;
-		bs+=f->bs;
-		printf("frag-%u: BS: %u, M:%u\n", f->f, f->bs, f->m);
+		bs+=f->bs+f->k;
+		printf("frag-%u: BS: %u, M: %u, K: %u\n", f->f, f->bs, f->m, f->k);
 		
 		f = f->next;
 	}

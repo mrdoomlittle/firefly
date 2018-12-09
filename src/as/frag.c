@@ -47,6 +47,7 @@ struct frag* ff_as_fnew(void) {
 	f->bs = 0;
 	f->flags = 0x00;
 	f->m = 0;
+	f->k = 0;
 
 	struct frag ***page;
 	ff_uint_t pg, pg_off;
@@ -214,11 +215,15 @@ void ff_as_foutput(void) {
 
 		offset+=f->size;
 	_skf:
-		if (f->bs>0) {
-			printf("-============-. %u - %u - %u\n", f->f, f->bs, f->size);
-			ffly_hexdump(f->data, f->bs);
-			write(out, f->data, f->bs);
-			offset+=f->bs;
+		{
+		ff_uint_t x;
+		x = f->bs+f->k;
+		if (x>0) {
+			printf("-============-. %u - %u - %u\n", f->f, x, f->size);
+			ffly_hexdump(f->data, x);
+			write(out, f->data, x);
+			offset+=x;
+		}
 		}
 		f = f->next;
 	}
