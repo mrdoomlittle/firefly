@@ -59,6 +59,7 @@ typedef struct relocate {
 	ff_u16_t adr;
 	symbolp sy;
 	ff_uint_t f;
+	ff_u8_t flags;
 } *relocatep;
 
 typedef struct hook {
@@ -68,6 +69,7 @@ typedef struct hook {
 	ff_u16_t adr;
 	ff_uint_t l;
 	ff_uint_t f;
+	ff_u8_t flags;
 } *hookp;
 
 struct ffly_bond {

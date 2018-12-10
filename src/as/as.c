@@ -383,9 +383,10 @@ ff_as(char *__p, char *__end) {
 
 							} else if (is_sylabel(cur)) {
 								_local = -1;
-								if (!__label)
+								if (!__label) {
 									ff_as_hash_put(&env, cur->p, cur->len, __label = ff_as_al(sizeof(struct label)));
-								((labelp)__label)->flags = 0x00;
+									((labelp)__label)->flags = 0x00;
+								}
 							}
 
 							info = _o_label;
@@ -472,13 +473,16 @@ _sk:
 
 void
 drain() {
-	lseek(out, outbuf.dst, SEEK_SET);
-	write(out, outbuf.p, outbuf.off);
+	printf("draining to %u, size: %u\n", outbuf.dst, outbuf.off);
+	if (outbuf.off>0) {
+		lseek(out, outbuf.dst, SEEK_SET);
+		write(out, outbuf.p, outbuf.off);
+	}
 	outbuf.off = 0;
 	outbuf.dst = offset;
 }
 
-void ff_as_oust(ff_u8_t *__p, ff_u8_t __n) {
+void ff_as_oust(ff_u8_t *__p, ff_u16_t __n) {
 	while(__n>OBSIZE) {
 		ff_as_oust(__p, OBSIZE);
 		__n-=OBSIZE; 
@@ -492,25 +496,31 @@ void ff_as_oust(ff_u8_t *__p, ff_u8_t __n) {
 
 	/* if offset has been changed by an alternative means drain it
 	*/
-	if (outbuf.dst+outbuf.off != offset)
+	if (outbuf.dst+outbuf.off != offset) {
+		printf("draining buffer as its no longer on track.\n");
 		drain();
+	}
 
 	ff_int_t overflow;
-	if ((overflow = (ff_int_t)(outbuf.off+__n)-(ff_int_t)((outbuf.end-outbuf.p)-1))>0)
+	if ((overflow = (ff_int_t)(outbuf.off+__n)-(ff_int_t)((OBSIZE)-1))>0)
 		__n-=overflow;
 
+//	printf("filling in buffer at : %u : %u\n", outbuf.off, __n);
 	ffly_mem_cpy(outbuf.p+outbuf.off, __p, __n);
 	offset+=__n;
 	outbuf.off+=__n;
 
-	if (outbuf.p+outbuf.off == outbuf.end-1)
+	if (outbuf.off == OBSIZE-1)
 		drain();
 
 	if (overflow>0) {
-		ff_u8_t *p = __p+__n;
-		ff_u8_t *end = p+overflow;
-		while(p != end)
+		ff_u8_t *p;
+		p = __p+__n;
+		ff_u8_t *end;
+		end = p+overflow;
+		while(p != end) {
 			ff_as_oust(p++, 1);
+		}
 	}
 }
 

@@ -98,20 +98,21 @@ void outsegs() {
 }
 
 void
-_remf_reloc(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob) {
+_remf_reloc(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob, ff_u8_t __flags) {
 	printf("reloc.\n");
 	relocatep rl = (relocatep)ff_as_al(sizeof(struct relocate));
 	rl->dis = __dis;
 	rl->sy = !_local?&((local_labelp)__label)->parent->sy:&((labelp)__label)->sy;
 	rl->f = __f;
 	rl->ob = __ob;
+	rl->flags = __flags;
 	rl->next = rel;
 	rl->ll = !_local?(local_labelp)__label:NULL;
 	rel = rl;
 }
 
 void
-_remf_hook(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob) {
+_remf_hook(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob, ff_u8_t __flags) {
 	printf("hook.\n");
 	hookp hk = (hookp)ff_as_al(sizeof(struct hook));
 	
@@ -119,6 +120,7 @@ _remf_hook(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob) {
 	hk->f = __f;
 	hk->ob = __ob;
 	hk->to = &((labelp)__label)->sy;
+	hk->flags = __flags;
 	hk->next = hok;
 	hok = hk;
 }
@@ -157,12 +159,12 @@ forge(void) {
 	fr = (struct remf_frag*)malloc(fr_nr*sizeof(struct remf_frag));
 	struct remf_frag *f;
 	struct frag *frg;
-	printf("nof: %u\n", fr_nr);
+	printf("nof: %u, offset: %u\n", fr_nr, offset);
 _again:
 	if (i != fr_nr) {
 		f = fr+i;
-		printf("frag: %u\n", i);
 		frg = ff_as_fbn(i);
+		printf("frag: %u : %u : %u : %u\n", i, frg->adr, frg->size, offset+(i*sizeof(struct remf_frag)));
 		if (!frg) {
 			printf("fragment has come back 0, skipping might cause major issues.\n");
 			goto _sk;
@@ -175,9 +177,12 @@ _again:
 		goto _again;
 	}
 
+	printf("offset: %u, %u\n", offset, fr_nr*sizeof(struct remf_frag));
 	ff_as_oust((ff_u8_t*)fr, fr_nr*sizeof(struct remf_frag));
+	printf("offset: %u\n", offset);
 	free(fr);
 	ft.array = offset-sizeof(struct remf_frag);
+	printf("ft-array: %u\n", ft.array);
 
 	hdr.ft = offset;
 	ff_as_oust((ff_u8_t*)&ft, sizeof(struct remf_ft));
@@ -207,6 +212,7 @@ _again:
 				hok.adr = hk->f->adr+hk->ob;
 				hok.to = (*hk->to)->off;
 				hok.f = hk->f->f;
+				hok.flags = hk->flags;
 				ff_as_oust((ff_u8_t*)&hok, remf_hoksz);
 				hdr.nhk++;
 			}
@@ -228,6 +234,7 @@ _again:
 		rel.adr = rl->f->adr+rl->ob;
 		rel.sy = (*rl->sy)->off;
 		rel.f = rl->f->f;
+		rel.flags = rl->flags;
 		ff_as_oust((ff_u8_t*)&rel, remf_relsz);
 		rl = rl->next;
 		hdr.nrl++;
@@ -270,14 +277,13 @@ _again:
 		hdr.nrg++;
 		rg = rg->next;
 	}
-	
-	// drop the region header hear
+
+	// drop the region header here
 	ff_as_syt_drop();
 
 	if (curreg != NULL)
 		hdr.rg = offset-remf_reghdrsz;
 	hdr.nrg++;
-
 	// put contents
 	ff_as_syt_gut();
 	// store header - save
@@ -285,8 +291,8 @@ _again:
 
 	// string table region
 	hdr.sttr = ff_as_stt_drop();
-	lseek(out, 0, SEEK_SET);
-	write(out, &hdr, remf_hdrsz);
+
+	pwrite(out, &hdr, remf_hdrsz, 0);
 }
 
 void ff_as_remf(void) {

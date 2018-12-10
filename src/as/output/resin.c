@@ -3,10 +3,11 @@
 # include "../../stdio.h"
 # include "../opcodes/resin.h"
 # include "../../string.h"
-# define _suffix_byte 0x0
-# define _suffix_word 0x1
-# define _suffix_dword 0x2
-# define _suffix_qword 0x3
+# include "../../remf.h"
+#define _suffix_byte 0x0
+#define _suffix_word 0x1
+#define _suffix_dword 0x2
+#define _suffix_qword 0x3
 
 labelp extern curlabel;
 // bed of stack
@@ -333,9 +334,9 @@ _post(void) {
 			ff_as_plant(curfrag, buf, sz);
 
 			if (is_flag(la->flags, LA_LOOSE))
-				_remf_hook(f, fo, ob, 2);
+				_remf_hook(f, fo, ob, FF_RF_SLFNF);
 			else
-				_remf_reloc(f, fo, ob, 2);
+				_remf_reloc(f, fo, ob, FF_RF_SLFNF);
 	//		fix(curfrag, la, _fx_dis, 0x00);
 			p = buf;
 		} else {
@@ -397,6 +398,7 @@ ff_uint_t static __n(long long __val) {
 }
 
 
+// to be updated
 void static
 _fixins(struct fix_s *__fx) {
 	printf("^^^^^^^^^^^^^^^fix.\n");

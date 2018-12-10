@@ -23,6 +23,7 @@ typedef struct {
 
 struct fix_arg {
 	labelp l;
+	ff_u8_t suffix;
 	struct ff_as_op *op;
 };
 
@@ -177,6 +178,7 @@ _post(void) {
 			printf("frag-%u: K: %u\n", curfrag->f, curfrag->k);
 			arg_nxt->l = la;
 			arg_nxt->op = op;
+			arg_nxt->suffix = suffix;
 			arg_nxt++;
 			fix(curfrag, arg_nxt-1, _fx_dis, 0x00);
 			pf_flags |= FR_FIX;
@@ -256,9 +258,19 @@ _fixins(struct fix_s *__fx) {
 	if (__fx->type == _fx_dis) {
 		labelp l = arg->l;
 		ff_int_t dis;
+		ff_u8_t x, j;
 		printf("----> fix: %u, %u\n", l->f->m, __fx->f->m);
 		dis = ((l->f->adr+l->f->m)+l->foffset)-(__fx->f->adr+__fx->f->m+__fx->f->size+__fx->f->bs+__fx->f->k);
 		printf("dis: %d\n", dis);
+		if (arg->suffix != -1) {
+			*(ff_i64_t*)(__fx->f->data+__fx->f->k) = dis;
+			if (__fx->f->bs != 4) {
+				fix_flgs |= 0x01;
+			}
+			__fx->f->bs = 4;
+			return;
+		}
+
 		ff_uint_t n;
 		n = __n(dis<0?-dis:dis);
 		ff_uint_t bs;
@@ -268,7 +280,6 @@ _fixins(struct fix_s *__fx) {
 	
 		printf("}}}}}}}}}}}}}M:%u, BS:%u\n", __fx->f->m, bs);
 
-		ff_u8_t x, j;
 		x = 1<<(bs-1);
 
 		if ((x&0x01) >0) {
@@ -294,7 +305,7 @@ _fixins(struct fix_s *__fx) {
 			bs = 8;
 		}
 		printf("B: %u, W: %u, D: %u, Q: %u, DIS: %d\n", x&0x01, x&0x02, x&0x0c, x&0xf0, dis-bs);
-
+	
 		*(ff_i64_t*)(__fx->f->data+__fx->f->k) = dis;
 
 		printf("before %u, after %u\n", *bsp, bs);

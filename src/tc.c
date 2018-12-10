@@ -15,6 +15,10 @@ static ff_i8_t init = -1;
 // precision 
 #define PREC
 #define SYNC_X 10
+/*
+	TODO:
+		keep connection??
+*/
 void static
 get(struct tc_spec *__spec) {
 	ffly_printf("syncing...\n");
@@ -61,6 +65,7 @@ get(struct tc_spec *__spec) {
 #ifdef PREC
 	uu = ts.tv_nsec/1000;
 #else
+	//could do more here
 	uu = ts.tv_nsec>>10;
 	uu+=((uu*24)+(ts.tv_nsec-(uu<<10)))>>10;
 #endif

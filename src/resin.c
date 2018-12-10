@@ -761,6 +761,15 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 	}
 
 	get(__resin, ob, ops[opno], &err);
+/*
+	{
+		ff_uint_t i;
+		i = 0;
+		for(;i != ops[opno];i++) {
+			ffly_printf("%u\n", ob[i]);
+		}
+	}
+*/
 	jmpto(op[opno]);
 
 	__asm__("_res_push0b:			\n\t"
@@ -1113,6 +1122,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 		ff_addr_t adr = *(ff_addr_t*)ob;
 		ff_s16_t dst;
 		stack_get(__resin, (ff_u8_t*)&dst, sizeof(ff_s16_t), adr);
+//		ffly_printf("jump dis: %d, dst: %u\n", dst, __resin->get_ip()+dst);
 		__resin->set_ip(__resin->get_ip()+dst);
 		__resin->ip_off = 0;
 	}

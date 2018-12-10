@@ -241,6 +241,7 @@ absorb_hook(remf_hokp __hook) {
 	p->l = __hook->l;
 	p->adr = curadr()+__hook->adr;
 	p->f = fbt+__hook->f;
+	p->flags = __hook->flags;
 }
 
 void static
@@ -323,6 +324,7 @@ absorb_relocate(remf_relp __rel) {
 	rel->adr = curadr()+__rel->adr;
 	rel->sy = *(syt-__rel->sy);
 	rel->f = fbt+__rel->f;
+	rel->flags = __rel->flags;
 	printf("reloc: symbol, %s\n", rel->sy->name);
 }
 
@@ -354,8 +356,8 @@ void lif(ff_u32_t __ft) {
 	i = 0;
 	while(i != ft.n) {
 		f = fr+(i++);
-		printf("fragment; id: %u, src: %u, sz: %u\n", f->id, f->src, f->size);
-		bond_fnew(f->src, f->size, f->id);
+		printf("fragment; id: %u, src: %u, sz: %u\n", fbt+f->id, f->src, f->size);
+		bond_fnew(f->src+curadr(), f->size, fbt+f->id);
 	}
 
 	fbt+=ft.n;
@@ -486,7 +488,15 @@ _fixins(struct fix *__fx) {
 		sf = bond_fbn(sy->f);
 		ff_int_t dis;
 		printf("----> fix: %u, %u\n", sf->m, __fx->f->m);
-		dis = ((sf->adr+sf->m)+(sy->loc-sf->adr)+__fx->addto)-(__fx->f->adr+__fx->f->m+__fx->f->size);
+		/*
+			jmp could be in next fragment
+		*/
+		dis = (sf->adr+sf->m)+(sy->loc-sf->adr)+__fx->addto;
+		if ((__fx->flags&FF_RF_SLFNF)>0) {
+			dis = dis-(__fx->f->next->adr+__fx->f->next->m);
+		} else
+			dis = dis-(__fx->f->adr+__fx->f->m+__fx->f->size);
+
 		printf("dis: %d\n", dis);
 		ff_uint_t n;
 		n = __n(dis<0?-dis:dis);
@@ -495,7 +505,7 @@ _fixins(struct fix *__fx) {
 		bsp = &__fx->f->bs;
 		bs = ((n+1)+((1<<4)-1))>>3;
 
-		*(ff_i64_t*)__fx->f->data = dis-bs;
+		*(ff_i64_t*)__fx->f->data = dis;
 
 		printf("before %u, after %u\n", *bsp, bs);
 		if (*bsp != bs)
@@ -513,7 +523,7 @@ void latch_hooks(void) {
 			printf("cant hook onto a symbol that doesen't exist.\n");
 		else {		
 			if (cur->to->type == FF_SY_GBL) {
-				fix(cur->f, cur->to, _fx_dis, 0x00, 0);
+				fix(cur->f, cur->to, _fx_dis, cur->flags, 0);
 //				ff_i64_t loc = ((ff_i64_t)cur->to->loc)-(ff_i64_t)cur->adr;
 //				bond_write(cur->offset, &loc, cur->l);	
 				printf("hooking at: %u\n", cur->offset);
@@ -527,7 +537,7 @@ void latch_hooks(void) {
 void reloc(void) {
 	relocatep cur = currel;
 	while(cur != NULL) {
-		fix(cur->f, cur->sy, _fx_dis, 0x00, cur->addto);
+		fix(cur->f, cur->sy, _fx_dis, cur->flags, cur->addto);
 //		ff_i64_t loc = ((ff_i64_t)(cur->sy->loc+cur->addto))-(ff_i64_t)cur->adr;
 //		bond_write(cur->offset, &loc, cur->l);	
 		cur = cur->next;
@@ -599,7 +609,7 @@ return;
 			break;
 		process_srcfl(file, &dhdr);
 	}
-
+	
 	latch_hooks();
 	reloc();
 
@@ -640,6 +650,7 @@ _again:
 	offset+=bot;
 	bond_output(&dhdr);
 	cleanup();
+
 	close(d);
 	bond_hash_destroy(&symbols);
 }

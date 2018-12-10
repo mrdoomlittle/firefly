@@ -78,7 +78,7 @@ forge(void) {
 
 	hdr.type = ET_REL;
 	hdr.machine = EM_X86_64;
-
+	hdr.version = EV_CURR;
 	ff_as_syt_gut();
 	hdr.sh_off = offset;
 	struct elf64_shdr sec;

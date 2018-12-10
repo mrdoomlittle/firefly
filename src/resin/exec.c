@@ -99,9 +99,10 @@ static struct ffly_resin ctx;
 // needs cleaning
 void* ring(ff_u8_t __no, void *__arg_p) {
 	struct arg_s *arg;
-	if (__arg_p != NULL)
+	if (__arg_p != NULL) {
+		ffly_printf("this error is nothing to panic about, resin/exec.c.\n");
 		arg = (struct arg_s*)ff_resin_resolv_adr(&ctx, *(ff_addr_t*)__arg_p);
-	else
+	} else
 		arg = NULL;
 	switch(__no) {
 		case 0x0: {// set stack pointer

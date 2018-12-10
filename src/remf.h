@@ -32,6 +32,7 @@
 #define FF_SY_IND	0x01
 #define FF_SY_GBL	0x02
 #define FF_SY_LCA	0x03
+#define FF_RF_SLFNF	0x01
 typedef struct remf_sy {
 	ff_u16_t name;
 	ff_u8_t type;
@@ -64,6 +65,7 @@ typedef struct remf_seg_hdr {
 
 typedef struct remf_rel {
 	ff_u64_t offset;
+	ff_u8_t flags;
 	ff_u8_t l;
 	ff_u16_t sy;
 	ff_u16_t adr;
@@ -73,6 +75,7 @@ typedef struct remf_rel {
 
 typedef struct remf_hok {
 	ff_u64_t offset;
+	ff_u8_t flags;
 	ff_uint_t l;
 	ff_u16_t adr;
 	ff_u16_t to;

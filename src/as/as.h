@@ -144,6 +144,7 @@ typedef struct relocate {
 	// length of value
 	ff_u8_t l;
 
+	ff_u8_t flags;
 	/*
 		rename; offset from fragment base to call/jmp opbase
 	*/
@@ -163,6 +164,7 @@ typedef struct hook {
 	// length of value
 	ff_u8_t l;
 
+	ff_u8_t flags;
 	/*
 		rename; offset from fragment base to call/jmp opbase
 	*/
@@ -215,7 +217,7 @@ void* ff_as_memdup(void*, ff_uint_t);
 symbolp ff_as_eval(char*);
 struct hash extern env;
 
-void ff_as_oust(ff_u8_t*, ff_u8_t);
+void ff_as_oust(ff_u8_t*, ff_u16_t);
 void ff_as_oustbyte(ff_u8_t);
 void ff_as_oust_16l(ff_u16_t);
 void ff_as_oust_32l(ff_u32_t);
