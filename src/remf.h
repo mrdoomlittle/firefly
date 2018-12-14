@@ -108,6 +108,7 @@ typedef struct remf_hdr {
 		start routine could just rename to entry .... COULD
 	*/
 	ff_u64_t routine;
+	ff_u16_t rf;
 
 	// string table region
 	ff_u64_t sttr;

@@ -1,40 +1,50 @@
 	.region text
 	.globl abort
 abort:
-;save %bp
+	;save %bp
+	;push start
 	asq %rlx, 8
-	subq %sp, %rlx, %sp
+	subq %rlx, %sp
 	ldq %sp, %bp
+	;push end
 	movq %sp, %bp
 	asq %rel, 0
 	asb %ae, 0
 	exit %ae
 .l l0
 	movq %bp, %sp
-;reset %bp
+	;reset %bp
+	;pop start
 	stq %sp, %bp
 	asq %rlx, 8
-	addq %sp, %rlx, %sp
+	addq %rlx, %sp
+	;pop end
 	ret
 	.globl test
 test:
-;save %bp
+	;save %bp
+	;push start
 	asq %rlx, 8
-	subq %sp, %rlx, %sp
+	subq %rlx, %sp
 	ldq %sp, %bp
+	;push end
 	movq %sp, %bp
+	;place %sp at end
 	asq %rlx, 8
-	subq %sp, %rlx, %sp
+	subq %rlx, %sp
+	asq %rel, 8
+	movq %bp, %rlx
+	subq %rel, %rlx
 	asq %rel, 0
-	asq %rlx, 8
-	subq %bp, %rlx, %rlx
 	stb %rlx, %ae
-	outb %ae
+outb %ae
 .l l1
 	movq %bp, %sp
-;reset %bp
+	;reset %bp
+	;pop start
 	stq %sp, %bp
 	asq %rlx, 8
-	addq %sp, %rlx, %sp
+	addq %rlx, %sp
+	;pop end
 	ret
 .endof

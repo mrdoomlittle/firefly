@@ -361,6 +361,7 @@ void lif(ff_u32_t __ft) {
 	free(fr);
 }
 
+ff_u16_t static rf = 0xfffff;
 ff_i8_t static epdeg = -1;
 void static
 process_srcfl(char const *__file, remf_hdrp __dhdr) {
@@ -376,12 +377,12 @@ process_srcfl(char const *__file, remf_hdrp __dhdr) {
 		return;
 	}
 
-	if (hdr.routine != FF_REMF_NULL) {
+	if (hdr.rf != 0xffff) {
 		if (!epdeg) {
 			printf("entry point already designated, skipping.\n");
 			return;
 		}
-		__dhdr->routine = curadr()+hdr.routine;
+		rf = fbt+hdr.rf;
 	}
 
 	ldstt(&hdr);
@@ -454,7 +455,7 @@ enum {
 };
 
 struct fix *fx_head = NULL;
-void fix(ff_uint_t __f, void *__arg, ff_u8_t __type, ff_u8_t __flags) {
+void fix(ff_uint_t __f, long long __arg, ff_u8_t __type, ff_u8_t __flags) {
 	struct fix *fx = (struct fix*)malloc(sizeof(struct fix));
 	fx->f = bond_fbn(__f);
 	fx->arg = __arg;
@@ -642,6 +643,12 @@ _again:
 	}
 
 	offset+=bot;
+	if (rf != 0xffff) {
+		struct frag *_rf;
+		_rf = bond_fbn(rf);
+
+		dhdr.routine = _rf->adr+_rf->size;
+	}
 	bond_output(&dhdr);
 	cleanup();
 

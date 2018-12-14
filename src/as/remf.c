@@ -140,7 +140,8 @@ forge(void) {
 	hdr.ident[2] = FF_REMF_MAG2;
 	hdr.ident[3] = FF_REMF_MAG3;
 	hdr.ident[4] = '\0';
-	hdr.routine = ff_as_entry != NULL?ff_as_entry->f->adr+ff_as_entry->foffset:FF_REMF_NULL;
+	hdr.routine = FF_REMF_NULL;
+	hdr.rf = ff_as_entry != NULL?ff_as_entry->f->f:0xffff;
 	hdr.format = _ffexec_bc;
 	hdr.nsg = 0;
 	hdr.nrg = 0;

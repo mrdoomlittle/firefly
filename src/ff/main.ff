@@ -6,7 +6,7 @@
 /*
 
 */
-%define test
+//%define test
 u8_t main() {
 %ifdef test
 	u8_t i = 0;
