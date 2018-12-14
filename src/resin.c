@@ -1005,7 +1005,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 		stack_get(__resin, (ff_u8_t*)&lv, l, la);
 		stack_get(__resin, (ff_u8_t*)&rv, l, ra);
 
-		ff_u8_t flags = 0x0;
+		ff_u8_t flags = 0x00;
 		if (lv>rv) flags |= _gt;
 		if (lv<rv) flags |= _lt;
 		if (lv==rv) flags |= _eq;
@@ -1073,6 +1073,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 		ff_u8_t flags;
 		
 		flags = *cflags;
+		
 		if (is_flag(flags, _gt)) {
 			if (opno == _op_jg)
 				goto _end;
@@ -1094,7 +1095,7 @@ ff_err_t ff_resin_exec(ffly_resinp __resin, ff_err_t *__exit_code) {
 		fi;
 	_end:
 		__resin->set_ip(__resin->get_ip()+dst);
-		__resin->ip_off = 0;
+		__resin->ip_off = 0;	
 	}
 	next;
 

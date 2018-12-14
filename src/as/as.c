@@ -184,6 +184,7 @@ _label(void) {
 	la->flags = 0x00;
 	la->reg = curreg;
 	la->f = curfrag;
+	la->fn = curfrag->f;
 	la->foffset = frag_offset(curfrag);
 	if (exist == -1)
 		ff_as_hash_put(&env, sy->p, sy->len, la);
@@ -278,8 +279,13 @@ _directive(void) {
 			ff_as_hash_put(&env, sy->next->p, sy->next->len, ll);
 		}
 
+		printf("local label frag-%u\n", curfrag->f);
+		ll->fn = curfrag->f;
 		ll->f = curfrag;
 		ll->foffset = frag_offset(curfrag);
+		ff_as_fdone(curfrag);
+		ff_as_fnew();
+
 	}
 }
 

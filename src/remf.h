@@ -63,20 +63,23 @@ typedef struct remf_seg_hdr {
 	ff_uint_t sz;
 } *remf_seg_hdrp;
 
+/*
+	internal no symbols only frags
+*/
 typedef struct remf_rel {
 	ff_u64_t offset;
 	ff_u8_t flags;
-	ff_u8_t l;
-	ff_u16_t sy;
 	ff_u16_t adr;
-	ff_u16_t addto;
+	ff_u16_t to;// frag
 	ff_u16_t f;
 } *remf_relp;
 
+/*
+	external hooking
+*/
 typedef struct remf_hok {
 	ff_u64_t offset;
 	ff_u8_t flags;
-	ff_uint_t l;
 	ff_u16_t adr;
 	ff_u16_t to;
 	ff_u16_t f;

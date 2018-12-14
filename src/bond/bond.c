@@ -238,7 +238,6 @@ absorb_hook(remf_hokp __hook) {
 
 	p->offset = bot+__hook->offset;
 	p->to = *(syt-__hook->to);	
-	p->l = __hook->l;
 	p->adr = curadr()+__hook->adr;
 	p->f = fbt+__hook->f;
 	p->flags = __hook->flags;
@@ -319,13 +318,11 @@ absorb_relocate(remf_relp __rel) {
 	rel->next = currel;
 	currel = rel;
 	rel->offset = bot+__rel->offset;
-	rel->l = __rel->l;
-	rel->addto = __rel->addto;
 	rel->adr = curadr()+__rel->adr;
-	rel->sy = *(syt-__rel->sy);
+	rel->to = fbt+__rel->to;
 	rel->f = fbt+__rel->f;
 	rel->flags = __rel->flags;
-	printf("reloc: symbol, %s\n", rel->sy->name);
+	printf("reloc: frag-%u\n", rel->to);
 }
 
 // load string table
@@ -446,11 +443,10 @@ process_srcfl(char const *__file, remf_hdrp __dhdr) {
 
 struct fix {
 	struct fix *next;
-	void *arg;
+	long long arg;
 	ff_u8_t type;
 	ff_u8_t flags;
 	struct frag *f;
-	ff_uint_t addto;
 };
 
 enum {
@@ -458,13 +454,12 @@ enum {
 };
 
 struct fix *fx_head = NULL;
-void fix(ff_uint_t __f, void *__arg, ff_u8_t __type, ff_u8_t __flags, ff_uint_t __addto) {
+void fix(ff_uint_t __f, void *__arg, ff_u8_t __type, ff_u8_t __flags) {
 	struct fix *fx = (struct fix*)malloc(sizeof(struct fix));
 	fx->f = bond_fbn(__f);
 	fx->arg = __arg;
 	fx->type = __type;
 	fx->flags = __flags;
-	fx->addto = __addto;
 	fx->next = fx_head;
 	fx_head = fx;
 }
@@ -483,15 +478,14 @@ void static
 _fixins(struct fix *__fx) {
 	printf("^^^^^^^^^^^^^^^fix.\n");
 	if (__fx->type == _fx_dis) {
-		symbolp sy = (symbolp)__fx->arg;
 		struct frag *sf;
-		sf = bond_fbn(sy->f);
+		sf = bond_fbn(__fx->arg);
 		ff_int_t dis;
 		printf("----> fix: %u, %u\n", sf->m, __fx->f->m);
 		/*
 			jmp could be in next fragment
 		*/
-		dis = (sf->adr+sf->m)+(sy->loc-sf->adr)+__fx->addto;
+		dis = (sf->adr+sf->m)+sf->size;
 		if ((__fx->flags&FF_RF_SLFNF)>0) {
 			dis = dis-(__fx->f->next->adr+__fx->f->next->m);
 		} else
@@ -503,7 +497,7 @@ _fixins(struct fix *__fx) {
 		ff_uint_t bs;
 		ff_int_t *bsp;
 		bsp = &__fx->f->bs;
-		bs = ((n+1)+((1<<4)-1))>>3;
+		bs = (((n+1)+((1<<4)-1))>>4)<<1;
 
 		*(ff_i64_t*)__fx->f->data = dis;
 
@@ -523,7 +517,7 @@ void latch_hooks(void) {
 			printf("cant hook onto a symbol that doesen't exist.\n");
 		else {		
 			if (cur->to->type == FF_SY_GBL) {
-				fix(cur->f, cur->to, _fx_dis, cur->flags, 0);
+				fix(cur->f, cur->to->f, _fx_dis, cur->flags);
 //				ff_i64_t loc = ((ff_i64_t)cur->to->loc)-(ff_i64_t)cur->adr;
 //				bond_write(cur->offset, &loc, cur->l);	
 				printf("hooking at: %u\n", cur->offset);
@@ -537,7 +531,7 @@ void latch_hooks(void) {
 void reloc(void) {
 	relocatep cur = currel;
 	while(cur != NULL) {
-		fix(cur->f, cur->sy, _fx_dis, cur->flags, cur->addto);
+		fix(cur->f, cur->to, _fx_dis, cur->flags);
 //		ff_i64_t loc = ((ff_i64_t)(cur->sy->loc+cur->addto))-(ff_i64_t)cur->adr;
 //		bond_write(cur->offset, &loc, cur->l);	
 		cur = cur->next;

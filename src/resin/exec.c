@@ -18,7 +18,7 @@ struct page {
 	ff_uint_t n;
 };
 
-struct page **pages = NULL;
+static struct page **pages = NULL;
 
 void static
 ldpage(struct page *__page) {

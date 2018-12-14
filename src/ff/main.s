@@ -86,7 +86,7 @@ outb %ae
 	;push end
 	asq %rel, 0
 	asq %rel, 0
-	asb %ae, 21
+	asb %ae, 4
 	movq %rel, %xes
 	;pop start
 	stq %sp, %rel

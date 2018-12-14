@@ -86,7 +86,7 @@ hookp extern hok;
 
 
 // not working not the time at the moment
-void outsegs() {
+void outsegs(void) {
 	segmentp cur = curseg;
 	while(cur != NULL) {
 		cur->offset = offset;
@@ -102,7 +102,8 @@ _remf_reloc(struct frag *__f, ff_u64_t __dis, ff_u32_t __ob, ff_u8_t __flags) {
 	printf("reloc.\n");
 	relocatep rl = (relocatep)ff_as_al(sizeof(struct relocate));
 	rl->dis = __dis;
-	rl->sy = !_local?&((local_labelp)__label)->parent->sy:&((labelp)__label)->sy;
+	printf("local: %p\n", _local);
+	rl->sf = !_local?&((local_labelp)__label)->fn:&((labelp)__label)->fn;
 	rl->f = __f;
 	rl->ob = __ob;
 	rl->flags = __flags;
@@ -204,11 +205,10 @@ _again:
 		hookp hk = hok;
 
 		while(hk != NULL) {
-			printf("symbol: %s:%p, len: %u\n", (*hk->to)->p, hk->to, hk->l);
+			printf("symbol: %s:%p\n", (*hk->to)->p, hk->to);
 			if (!strcmp((*hk->to)->p, *cur)) {
 				struct remf_hok hok;
 				hok.offset = hk->f->adr+hk->dis;
-				hok.l = hk->l;
 				hok.adr = hk->f->adr+hk->ob;
 				hok.to = (*hk->to)->off;
 				hok.f = hk->f->f;
@@ -227,12 +227,10 @@ _again:
 	while(rl != NULL) {
 		struct remf_rel rel;
 		rel.offset = rl->f->adr+rl->dis;
-		rel.l = rl->l;
 		local_labelp ll = rl->ll;
-		rel.addto = !ll?0:(ll->f->dst+ll->foffset)-((*ll->p_f)->dst+*ll->p_foffset);
-		printf("reloc: %s\n", (*rl->sy)->p);
+		printf("reloc: frag-%u\n", *rl->sf);
 		rel.adr = rl->f->adr+rl->ob;
-		rel.sy = (*rl->sy)->off;
+		rel.to = *rl->sf;
 		rel.f = rl->f->f;
 		rel.flags = rl->flags;
 		ff_as_oust((ff_u8_t*)&rel, remf_relsz);

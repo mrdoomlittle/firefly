@@ -48,17 +48,17 @@ typedef struct symbol {
 	ff_u8_t type;
 	ff_uint_t loc;
 	regionp *reg;
-	ff_uint_t f;
+	ff_u16_t f;
 } *symbolp;
 
 typedef struct relocate {
 	struct relocate *next;
 	ff_u64_t offset;
-	ff_u8_t l;
-	ff_u16_t addto;
 	ff_u16_t adr;
-	symbolp sy;
-	ff_uint_t f;
+	// fragment of symbol/label
+	ff_u16_t to;
+	// fragment reloc is in
+	ff_u16_t f;
 	ff_u8_t flags;
 } *relocatep;
 
@@ -67,7 +67,6 @@ typedef struct hook {
 	ff_uint_t offset;
 	symbolp to;
 	ff_u16_t adr;
-	ff_uint_t l;
 	ff_uint_t f;
 	ff_u8_t flags;
 } *hookp;

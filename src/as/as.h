@@ -88,6 +88,7 @@ typedef struct label {
 	symbolp sy;
 	regionp reg;
 
+	ff_u16_t fn;
 	struct frag *f;
 	ff_uint_t foffset;
 } *labelp;
@@ -99,7 +100,7 @@ typedef struct local_label {
 
 	struct frag *f;
 	ff_uint_t foffset;
-
+	ff_u16_t fn;
 	struct label *parent;
 } *local_labelp;
 
@@ -141,16 +142,13 @@ typedef struct relocate {
 	*/
 	ff_u64_t dis;
 
-	// length of value
-	ff_u8_t l;
-
 	ff_u8_t flags;
 	/*
 		rename; offset from fragment base to call/jmp opbase
 	*/
 	ff_u32_t ob;
 	struct frag *f;
-	symbolp *sy;
+	ff_u16_t *sf;
 	local_labelp ll;
 } *relocatep;
 
@@ -160,9 +158,6 @@ typedef struct hook {
 		displacement value location within fragment
 	*/
 	ff_u64_t dis;
-
-	// length of value
-	ff_u8_t l;
 
 	ff_u8_t flags;
 	/*

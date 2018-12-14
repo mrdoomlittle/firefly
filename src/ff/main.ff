@@ -14,7 +14,7 @@ u8_t main() {
 bk:
 	i = i+1;
 	out(i);
-	if (i != 21) {
+	if (i != 4) {
 		goto bk;
 	}
 %else
