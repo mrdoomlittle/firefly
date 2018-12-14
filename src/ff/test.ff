@@ -2,3 +2,13 @@
 	test
 */
 %define return ret
+void main() {
+
+}
+
+void _start() {
+	main();
+	as("movq %rax, 60\nsyscall\n");
+}
+
+

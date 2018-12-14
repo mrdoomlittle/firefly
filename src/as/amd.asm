@@ -33,6 +33,7 @@ pop %rbp
 callq $test
 
 movq %rax, 60
+movq %rdi, 21
 syscall
 test:
 ret

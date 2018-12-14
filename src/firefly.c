@@ -98,9 +98,9 @@ char const static *by = "mrdoomlittle";
 # include "dep/str_cpy.h"
 # include "mod.h"
 
-# ifdef __ffly_mal_track
+#ifdef __ffly_mal_track
 # include "system/mal_track.h"
-# endif
+#endif
 
 # include "system/tls.h"
 # include "piston.h"
@@ -148,17 +148,20 @@ init() {
 
 	ffly_string_init();
 	ff_location_init();
-# ifndef __ffly_crucial
-# ifdef __ffly_mal_track
+#ifndef __ffly_crucial
+#ifdef __ffly_mal_track
 	ffly_mal_track_init(&__ffly_mal_track__);
-# endif
-# endif
+#endif
+#endif
 	ffly_io_init();
-# ifndef __ffly_crucial
+#ifndef __ffly_crucial
 	ffly_ss_prime();
-# endif
+#endif
 	ffly_thread_init();
-# ifndef __ffly_crucial
+#ifndef __ffly_crucial
+	/*
+		ignore is only if the program goes rogue but usless if threads are too
+	*/
 	int fd;
 	fd = open("pid", O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR);
 	char buf[24];
@@ -166,7 +169,7 @@ init() {
 	n = ffly_nots(getpid(), buf);
 	write(fd, buf, n);
 	close(fd);
-# endif
+#endif
 	ff_sysconf_init();
 }
 
@@ -176,7 +179,7 @@ void ffly_bog_start(void);
 void ffly_bog_stop(void);
 void static
 prep() {
-# ifndef __ffly_crucial
+#ifndef __ffly_crucial
 	void **p = ffly_alloca(sizeof(void*), NULL);
 	*p = (void*)by;
 	ss_dir_creat("info");
@@ -190,7 +193,7 @@ prep() {
 	ffly_pengage();
 	ffly_bog_start();
 	ffly_piston();
-# endif
+#endif
 //	ff_mod_init();
 //	ff_mod_handle();
 //	ffly_mod();
@@ -198,34 +201,34 @@ prep() {
 
 void static
 fini() {
-# ifndef __ffly_crucial
+#ifndef __ffly_crucial
 	ffly_corrode_start();
 	ffly_pistons_stall();
 	ffly_bog_stop();
 	ffly_pdisengage();
-# endif
+#endif
 //	ff_mod_de_init();
-# ifndef __ffly_crucial
+#ifndef __ffly_crucial
 	ffly_ss_fin();
-# endif
+#endif
 	ffly_alloca_cleanup();
 	ffly_thread_cleanup();
 //	pr();
 //	pf();
-# ifndef __ffly_crucial
-# ifdef __ffly_mal_track
+#ifndef __ffly_crucial
+#ifdef __ffly_mal_track
 	ffly_mal_track_dump(&__ffly_mal_track__);
-# endif
-# endif
+#endif
+#endif
 
 	ffly_io_closeup();
 
-# ifndef __ffly_crucial
-# ifdef __ffly_mal_track
+#ifndef __ffly_crucial
+#ifdef __ffly_mal_track
 	ffly_mal_track_de_init(&__ffly_mal_track__);
-# endif
-# endif
-# ifdef __ffly_debug
+#endif
+#endif
+#ifdef __ffly_debug
 	/*
 		if any leaks then say so.
 	*/
@@ -244,7 +247,7 @@ fini() {
 		write(fd, buf, (p-buf)+1);
 		close(fd);
 	}
-# endif
+#endif
 	ffly_ar_cleanup();
 	ffly_tls_destroy();
 }
@@ -276,7 +279,7 @@ void _ffstart(void) {
 
 	envinit();
 	envload(envp);
-# ifndef __ffly_crucial
+#ifndef __ffly_crucial
 	void *frame;
 	void *tmp;
 
@@ -368,12 +371,12 @@ void _ffstart(void) {
 	ffmain(arg-argl, argl);
 	clock_gettime(CLOCK_MONOTONIC, &finish);
 	ffly_printf("runtime: %u.%u {sec.ns}\n", finish.tv_sec-start.tv_sec, finish.tv_nsec-start.tv_nsec);
-# else
+#else
 	prep();
 	__init_array();
 	ffmain(argc, argv);
-# endif
-# ifndef __ffly_crucial
+#endif
+#ifndef __ffly_crucial
 	ffly_printf("\n\n");
 
 	if (!hatch) {
@@ -395,12 +398,12 @@ _end:
 			__ffly_mem_free(bk);
 		}
 	}
-# ifdef __ffly_debug
+#ifdef __ffly_debug
 	__ffmod_debug
 		ffly_arstat();
-# endif
+#endif
 	ffly_collapse(frame);
-# endif // __ffly_crucial
+#endif // __ffly_crucial
 //	pr();
 //	pf();
 	envcleanup();

@@ -31,11 +31,13 @@ struct fix_arg arg_lk[20];
 struct fix_arg *arg_nxt = arg_lk;
 
 static struct ff_as_op *op;
-# define regc 14
+# define regc 22
 static reginfo reg[] = {
 	{"rax", 0, 0, 8}, {"eax", 0, 0, 4}, {"ax", 0, 0, 2}, {"al", 0, 0, 1},
-	{"rbx", 3, 0, 8}, {"ebx", 3, 3, 4}, {"bx", 3, 3, 2}, {"bl", 3, 3, 1},
-	{"rcx", 1, 0, 8}, {"ecx", 1, 1, 4}, {"cx", 1, 1, 2}, {"cl", 1, 1, 1},
+	{"rbx", 3, 3, 8}, {"ebx", 3, 3, 4}, {"bx", 3, 3, 2}, {"bl", 3, 3, 1},
+	{"rcx", 1, 1, 8}, {"ecx", 1, 1, 4}, {"cx", 1, 1, 2}, {"cl", 1, 1, 1},
+	{"rdx", 2, 2, 8}, {"edx", 2, 2, 4}, {"dx", 2, 2, 2}, {"dl", 2, 2, 1},
+	{"rdi", 7, 8, 8}, {"edi", 7, 8, 4}, {"di", 7, 8, 2}, {"dil", 7, 8, 1},
 	{"rbp", 5, 5, 8}, {"rsp", 4, 4, 8}
 };
 

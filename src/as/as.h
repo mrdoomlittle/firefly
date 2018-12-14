@@ -235,4 +235,8 @@ void ff_as_resin(void);
 void ff_as_amd64(void);
 void ff_as_remf(void);
 void ff_as_elf(void);
+// local.c
+long long* as_local_new(ff_u16_t);
+long long* as_local_get(ff_u16_t);
+
 # endif /*__ffly__as__h*/
