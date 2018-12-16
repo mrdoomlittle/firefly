@@ -6,24 +6,26 @@
 # include "../../dep/str_cpy.h"
 # include "../../dep/mem_set.h"
 # include "../../dep/mem_cpy.h"
+# include "../../hexdump.h"
 #define is_flag(__flags, __flag) \
 	(((__flags)&(__flag)) == (__flag))
 struct ffly_mfs *mfs;
-static struct mfs_cauldron cr = {.n = 0};
+struct mfs_cauldron mfs_cr = {.n = 0};
 static ff_i8_t cr_init = -1;
 ff_u32_t static
 cr_alloc(ff_uint_t __size) {
-	cr.n+=__size;
+	mfs_cr.n+=__size;
 	if (cr_init == -1) {
-		cr.s = mfs_alloc(__size);	
+		mfs_cr.s = mfs_alloc(__size);	
 		cr_init = 0;
 		goto _sk;
 	}
-	mfs_resize(cr.s, cr.n);
+	mfs_resize(mfs_cr.s, mfs_cr.n);
 _sk:
-	return cr.n-__size;
+	return mfs_cr.n-__size;
 }
 
+void static commit_node(struct mfs_node*);
 struct mfs_node **nodes = NULL;
 static ff_u32_t nc = 0;
 
@@ -53,7 +55,14 @@ struct mfs_node *mfs_getnode(ff_u32_t __n) {
 	np = nodes+__n;
 	if (!(n = *np)) {
 		n = (*np = (struct mfs_node*)__ffly_mem_alloc(sizeof(struct mfs_node)));
+		ffly_mem_set(n, 0, sizeof(struct mfs_node));
 		n->nn = __n;
+
+		/*
+			if node has not been loaded yet then say that is should be
+		*/
+		n->flags = MFS_NNL;
+
 	}
 
 	return n;
@@ -62,10 +71,6 @@ struct mfs_node *mfs_getnode(ff_u32_t __n) {
 struct mfs_node static* mfs_nget(struct mfs_scope*, ff_u32_t);
 struct mfs_scope* mfs_build(ff_u32_t*, ff_uint_t);
 void mfs_dmscope(struct mfs_scope*);
-#define cr_write(__buf, __size, __dst)\
-	mfs_swrite(cr.s, __buf, __size, __dst)
-#define cr_read(__buf, __size, __src)\
-	mfs_sread(cr.s, __buf, __size, __src)
 
 void mfs_swrite(struct mfs_scope *__sc, void *__buf,
 	ff_uint_t __size, ff_u64_t __offset)
@@ -161,13 +166,70 @@ void mfs_sread(struct mfs_scope *__sc, void *__buf,
 struct mfs_scope* mfs_alloc(ff_uint_t);
 void mfs_free(struct mfs_scope*);
 
-struct mfs_node static* mfs_node_new(ff_u32_t __nn) {
+struct mfs_node* mfs_node_new(ff_u32_t __nn) {
 	struct mfs_node *n;
 	n = (struct mfs_node*)mfs_getnode(__nn);
-	ffly_mem_set(n, 0, sizeof(struct mfs_node));
-	n->flags = MFS_NNA|MFS_NDNA;
+	n->flags |= MFS_NNA|MFS_NDNA;
+	n->cbs = NULL;
+	n->cbc = 0;
 	ffly_mem_set(n->name, 0, sizeof(n->name));
 	return n;
+}
+
+void static
+unload_node(struct mfs_node *__n) {
+	if (is_flag(__n->flags, MFS_PCP)) {
+		ff_u8_t *buf, *d;
+		buf = (ff_u8_t*)__ffly_mem_alloc(__n->pcs);
+		d = buf;
+		struct mfs_cb_struc *_cb, *_b;
+		_cb = (struct mfs_cb_struc*)__ffly_mem_alloc(__n->cbc*sizeof(struct mfs_cb_struc));
+		struct mfs_cb **cb, *b;
+		cb = __n->cbs;
+		ff_uint_t i;
+		i = 0;
+		for(;i != __n->cbc;i++,cb++) {
+			_b = _cb+i;
+			b = *cb;
+			_b->off = b->off;
+			_b->size = b->size;
+			ffly_mem_cpy(d, b->p, b->size);	
+			d+=b->size;
+		}
+
+		__n->_cbs = mfs_valloc(__n->cbc*sizeof(struct mfs_cb_struc))<<MFS_SLAB_SHIFT;
+		__n->pc = mfs_valloc(__n->pcs)<<MFS_SLAB_SHIFT;
+		ffly_printf("unloadcode: %u, %u\n", __n->pcs, __n->pc);
+		ffly_hexdump(buf, __n->pcs);
+		mfs->write(buf, __n->pcs, __n->pc);
+		mfs->write(_cb, __n->cbc*sizeof(struct mfs_cb_struc), __n->_cbs);
+		__ffly_mem_free(buf);
+		commit_node(__n);
+	}
+
+	*(nodes+__n->nn) = NULL;
+	__ffly_mem_free(__n);
+}
+
+ff_u16_t static
+mfs_cbinsert(struct mfs_node *__n, ff_u8_t *__code, ff_uint_t __nn) {
+	__n->cbc++;
+	if (!__n->cbs) {
+		__n->cbs = (struct mfs_cb**)__ffly_mem_alloc(__n->cbc*sizeof(struct mfs_cb*));
+	} else {
+		__n->cbs = (struct mfs_cb**)__ffly_mem_realloc(__n->cbs, __n->cbc*sizeof(struct mfs_cb*));
+	}
+
+	struct mfs_cb **cbp, *b;
+	cbp = __n->cbs+(__n->cbc-1);
+	b = *cbp = (struct mfs_cb*)__ffly_mem_alloc(sizeof(struct mfs_cb));
+	b->p = __ffly_mem_alloc(__nn);
+	ffly_mem_cpy(b->p, __code, __nn);
+	b->size = __nn;
+	ffly_printf("new code block-%u; size: %u\n", __n->cbc-1, __nn);
+	b->off = __n->pcs;
+	__n->pcs+=__nn;
+	return __n->cbc-1;
 }
 
 void static mfs_node_destroy(struct mfs_node *__n) {
@@ -253,8 +315,6 @@ mfs_new(struct mfs_node *__dir, struct mfs_dent *__de) {
 	__de->n = n;
 }
 
-void static commit_node(struct mfs_node*);
-
 void static
 insert_node(struct mfs_node *__dir, struct mfs_node *__n) {
 	ff_uint_t siz;
@@ -269,40 +329,57 @@ insert_node(struct mfs_node *__dir, struct mfs_node *__n) {
 
 	mfs_resize(__dir->s, siz);
 _sk:
+	{
+		ff_u8_t code[18];
+		*code = 0x00;
+		*(ff_u32_t*)(code+1) = __n->nn;
+		*(ff_u32_t*)(code+5) = __n->ca;
+		*(code+9) = 0x01;
+		*(ff_u32_t*)(code+10) = __dir->nn;
+		*(ff_u32_t*)(code+14) = __n->nn;
+
+		mfs_cbinsert(__dir, code, 18);
+		__dir->flags |= MFS_PCP;
+	}
 	ffly_printf("insert_node, %u, %u, %u, %u\n", siz-sizeof(ff_u32_t), __dir->s->slab_c, __dir->s->slab_c*MFS_SLAB_SIZE, __n->ca);
 	mfs_swrite(__dir->s, &__n->ca, sizeof(ff_u32_t), siz-sizeof(ff_u32_t));
 	commit_node(__dir);
 	return;
 }
-# include "../../hexdump.h"
+
 ff_u32_t mfs_balloc(void);
 void
 loadin_node(struct mfs_node *__n, struct mfs_engrave *__eg) {	
 	__n->n = __eg->n;
 	__n->h = __eg->h;
+	__n->cbc = __eg->cbc;
+	__n->_cbs = __eg->cbs;
 	__n->mode = __eg->mode;
 	__n->flags = __eg->flags;
+	__n->pc = __eg->pc;
+	__n->pcs = __eg->pcs;
 	ffly_mem_cpy(__n->name, __eg->name, sizeof(__eg->name));
 	if (!is_flag(__eg->flags, MFS_NDNA)) {
 		ff_uint_t slab_c;
 		slab_c = (__eg->n+(MFS_SLAB_SIZE-1))>>MFS_SLAB_SHIFT;
 		ff_u32_t *slabs;
 		slabs = (ff_u32_t*)__ffly_mem_alloc((__eg->bale_c*MFS_BALE_SIZE)*sizeof(ff_u32_t));
-		ffly_mem_set(slabs, 255, (__eg->bale_c*MFS_BALE_SIZE)*sizeof(ff_u32_t));
+		ffly_mem_set(slabs, 0xff, (__eg->bale_c*MFS_BALE_SIZE)*sizeof(ff_u32_t));
 		ff_uint_t i, ii;
 		ff_u32_t bs;
 		bs = __eg->start;
 #ifdef DEBUG
-		ffly_printf("bale_count: %u\n", __eg->bale_c);
+		ffly_printf("bale_count: %u, start: %u\n", __eg->bale_c, __eg->start);
 #endif
 		struct mfs_bale b;
 		i = 0;
 		for(;i != __eg->bale_c;i++) {
 #ifdef DEBUG
-			ffly_printf("load_bale: %u\n", bs);
+			ffly_printf("load_bale: %u\n", bs*MFS_SLAB_SIZE);
 #endif
 			if (bs == MFS_BALE_NULL) {
 				ffly_printf("error.\n");
+				break;
 			}
 				
 			mfs->read(&b, sizeof(struct mfs_bale), bs*MFS_SLAB_SIZE);
@@ -323,6 +400,32 @@ loadin_node(struct mfs_node *__n, struct mfs_engrave *__eg) {
 #endif
 		__n->s = mfs_build(slabs, slab_c);
 	}
+	//run
+
+	if (is_flag(__eg->flags, MFS_PCP)) {
+		ff_u8_t *buf;
+		buf = (ff_u8_t*)__ffly_mem_alloc(__eg->pcs);
+		ffly_printf("PC %u, %u\n", __eg->pcs, __eg->pc);
+		mfs->read(buf, __eg->pcs, __eg->pc);
+		mfs_exec(buf, __eg->pcs);
+	
+		struct mfs_cb *b;
+		struct mfs_cb_struc *cbs, *_b;
+		cbs = (struct mfs_cb_struc*)__ffly_mem_alloc(__n->cbc*sizeof(struct mfs_cb_struc));
+		mfs->read(cbs, __n->cbc*sizeof(struct mfs_cb_struc), __eg->cbs);
+		__n->cbs = (struct mfs_cb**)__ffly_mem_alloc(__n->cbc*sizeof(struct mfs_cb*));
+		ff_uint_t i;
+		i = 0;
+		for(;i != __n->cbc;i++) {
+			_b = cbs+i;
+			b = *(__n->cbs+i) = __ffly_mem_alloc(sizeof(struct mfs_cb));
+			b->off = _b->off;
+			b->size = _b->size;
+			b->p = __ffly_mem_alloc(_b->size);
+			ffly_mem_cpy(b->p, buf+_b->off, _b->size);
+		}
+		__ffly_mem_free(buf);
+	}
 }
 
 void
@@ -339,7 +442,12 @@ commit_node(struct mfs_node *__n) {
 	eg.nn = __n->nn;
 	eg.n = __n->n;
 	eg.h = __n->h;
+	eg.pc = __n->pc;
+	eg.pcs = __n->pcs;
+	eg.cbc = __n->cbc;
+	eg.cbs = __n->_cbs;
 	eg.mode = __n->mode;
+	ffly_printf("commit_node; n: %u\n", eg.n);
 	ffly_mem_cpy(eg.name, __n->name, sizeof(__n->name));
 	if (!is_flag(__n->flags, MFS_NDNA)) {
 		ff_uint_t bale_c;
@@ -387,8 +495,6 @@ commit_node(struct mfs_node *__n) {
 	ffly_printf("node ca: %u\n", __n->ca);
 	cr_write(&eg, sizeof(struct mfs_engrave), __n->ca);
 }
-
-
 
 void static
 mfs_creat(struct mfs_node *__dir, struct mfs_dent *__de) {
@@ -536,11 +642,14 @@ struct mfs_node* mfs_nget(struct mfs_scope *__s, ff_u32_t __n) {
 	cr_read(&eg, sizeof(struct mfs_engrave), ca);
 
 	n = mfs_node_new(eg.nn);
-	n->ca = ca;
+	if (is_flag(n->flags, MFS_NNL)) {
+		n->ca = ca;
 #ifdef DEBUG
-	ffly_printf("nget{ca: %u, offset: %u}\n", ca, offset);
+		ffly_printf("nget{ca: %u, offset: %u}\n", ca, offset);
 #endif
-	loadin_node(n, &eg);
+		loadin_node(n, &eg);
+		n->flags ^= MFS_NNL;
+	}
 	return n;
 }
 
@@ -555,13 +664,13 @@ void ffly_mfs_init(void) {
 	struct mfs_tract t;
 	mfs->read(&t, sizeof(struct mfs_tract), 0);
 	mfs->off = t.off;
-	ffly_printf("mfs_init{cr: %u, crnc: %u, root: %u, crsc: %u, sc: %u, off: %u}\n", t.cr, t.crnc, t.root, t.crsc, t.sc, t.off);
+	ffly_printf("mfs_init{cr: %u, crnc: %u, root: %u, crsc: %u, sc: %u, off: %u-slabs}\n", t.cr, t.crnc, t.root, t.crsc, t.sc, t.off);
 	struct mfs_node *root;
 	root = mfs_node_new(0);
 
 	mfs->root = root;
 	root->h = mfs_hash_new();
-
+	root->ntf |= MFS_HHT;
 	if (t.sc>0) {
 		mfs_slabs_load(t.sc, t.slabs);
 	}
@@ -575,12 +684,14 @@ void ffly_mfs_init(void) {
 		ff_uint_t i;
 		for(i = 0;i != t.crsc;i++)
 			ffly_printf("crsb: %u\n", sr_slabs[i]);
-		cr.s = mfs_build(sr_slabs, t.crsc);
-		cr.n = t.crnc;
+		mfs_cr.s = mfs_build(sr_slabs, t.crsc);
+		mfs_cr.n = t.crnc;
 		
 		struct mfs_engrave eg;
 		cr_read(&eg, sizeof(struct mfs_engrave), t.root);
 
+		ffly_printf("root: h: %u, pc: %u, pcs: %u, mode: %u, flags: %u, nn: %u, n: %u, start: %u, bale_c: %u\n",
+			eg.h, eg.pc, eg.pcs, eg.mode, eg.flags, eg.nn, eg.n, eg.start, eg.bale_c);
 		loadin_node(root, &eg);
 		__ffly_mem_free(sr_slabs);
 		return;
@@ -591,32 +702,41 @@ void ffly_mfs_init(void) {
 }
 
 void ffly_mfs_de_init(void) {
-	commit_node(mfs->root);
 	struct mfs_tract t;
-	t.cr = mfs->off;
-	t.crnc = cr.n;
-	t.off = mfs->off;
+	ff_uint_t i;
+
 	t.root = mfs->root->ca;
+	struct mfs_node *n;
+	i = 0;
+	while(i != nc) {
+		n = mfs_getnode(i++);
+		if (n != NULL)
+			unload_node(n);
+	}
+
+	t.cr = mfs->off<<MFS_SLAB_SHIFT;
+	t.crnc = mfs_cr.n;
+	t.off = mfs->off;
 	ff_u32_t *cr_slabs;
 	ff_uint_t sc;
 
-	sc = cr.s->slab_c;
+	sc = mfs_cr.s->slab_c;
 
 	t.slabs = t.cr+(sc*sizeof(ff_u32_t));
 	t.crsc = sc;
 
 	ffly_printf("mfs_de_init{cr: %u, crnc: %u, root: %u, crsc: %u}\n", t.cr, t.crnc, t.root, t.crsc);
 	cr_slabs = (ff_u32_t*)__ffly_mem_alloc(sc*sizeof(ff_u32_t));
-	ff_uint_t i;
 
 	i = 0;
 	for(;i != sc;i++) {
-		cr_slabs[i] = (*(cr.s->slabs+i))->in;
+		cr_slabs[i] = (*(mfs_cr.s->slabs+i))->in;
 		ffly_printf("crsb: %u\n", cr_slabs[i]);
 	}
 
 	mfs->write(cr_slabs, sc*sizeof(ff_u32_t), t.cr);
 	__ffly_mem_free(cr_slabs);
+
 	mfs_slabs_save(&t.sc, t.slabs);
 	mfs->write(&t, sizeof(struct mfs_tract), 0);
 }

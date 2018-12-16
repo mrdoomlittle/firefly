@@ -10,8 +10,13 @@
 //static struct ff_bh bh;
 
 /*
+	ignore file, it for debuging
+*/
+/*
 	TODO:
 		add "load" command, load contents of file into bricks 
+
+	rename - i dont care about naming but 
 */
 struct wedge {
 	void *p, *pp;
@@ -190,6 +195,7 @@ _again:
 
 	switch(cur_command.idlen) {
 		case 3:
+			// new <x num>
 			if (!ffly_mem_cmp(cur_command.id, "new", 3)) {
 				a0 = *cur_command.args;
 				ff_uint_t n;
@@ -201,6 +207,7 @@ _again:
 				*(bkbuf+ffly_ff5_enc(b, bkbuf, n*sizeof(ff_u32_t))) = '\0';
 				__ffly_mem_free(b);
 				ffly_printf("%s\n", bkbuf);
+			// rid <x num> <key>
 			} else if (!ffly_mem_cmp(cur_command.id, "rid", 3)) {
 				a0 = *cur_command.args;
 				a1 = *(cur_command.args+1);

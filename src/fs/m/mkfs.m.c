@@ -13,7 +13,7 @@ int main() {
 	t.cr = 0;
 	t.sc = 0;
 	t.slabs = 0;
-	t.off = sizeof(struct mfs_tract);
+	t.off = (sizeof(struct mfs_tract)+(MFS_SLAB_SIZE-1))>>MFS_SLAB_SHIFT;
 	write(fd, &t, sizeof(struct mfs_tract));
 	close(fd);
 }

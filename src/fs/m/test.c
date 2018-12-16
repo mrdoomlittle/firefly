@@ -49,13 +49,14 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	void(*fs_fin)(void);
 	fs_fin = ffly_fs(_ff_mfs);
 
-	ff_u32_t f;
+//	ff_u32_t f;
 	fs_mkdir("/test");
-	f = fs_open("/test/test.txt", MFS_CREAT);
+//	f = fs_open("/test/test.txt", MFS_CREAT);
 //	fs_close(f);
 
 	mfs_tree(mfs->root);
-//	fs_fin();
-//	pwrite(fd, data, SIZE, 0);
+	fs_fin();
+	pwrite(fd, data, SIZE, 0);
+
 	close(fd);
 }
