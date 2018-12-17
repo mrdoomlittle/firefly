@@ -5,6 +5,8 @@
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/error.h"
+# include "ffly_def.h"
+# include "system/io.h"
 # ifdef __ffly_debug
 # include "location.h"
 # endif

@@ -1,27 +1,47 @@
 # ifndef __ffly__vec__h
 # define __ffly__vec__h
-# define VEC_PAGE_SHIFT 5
-# define VEC_PAGE_SIZE (1<<VEC_PAGE_SHIFT) // dont change
-# define VEC_AUTO_RESIZE 0x01
-# define VEC_ITR_FD 0x00
-# define VEC_ITR_BK 0x01
-# define VEC_BLK_CHAIN 0x02
-# define VEC_UUU_BLKS 0x04
-# define VEC_NONCONTINUOUS 0x08
+#define VEC_PAGE_SHIFT 5
+#define VEC_PAGE_SIZE (1<<VEC_PAGE_SHIFT) // dont change
+
+/*
+	if push and under size then will auto resize
+*/
+#define VEC_AUTO_RESIZE 0x01
+#define VEC_ITR_FD 0x00
+#define VEC_ITR_BK 0x01
+
+/*
+	blocks have header that are linked
+*/
+#define VEC_BLK_CHAIN 0x02
+
+/*
+	VEC_BLK_CHAIN <- must be specified
+	blocks get reused
+*/
+#define VEC_UUU_BLKS 0x04
+
+/*
+	use of pages
+*/
+#define VEC_NONCONTINUOUS 0x08
 # include "../ffint.h"
 # include "../types.h"
 # include "io.h"
 # include "flags.h"
 # include "err.h"
-# define FF_VEC struct ffly_vec
-# define ff_vec struct ffly_vec
-# define ___ffly_vec_nonempty(__vec) if (ffly_vec_nonempty(__vec))
-# define vec_prev(__vec) ((__vec)->prev)
-# define vec_next(__vec) ((__vec)->next)
+#define FF_VEC struct ffly_vec
+#define ff_vec struct ffly_vec
+#define ___ffly_vec_nonempty(__vec) if (ffly_vec_nonempty(__vec))
+#define vec_prev(__vec) ((__vec)->prev)
+#define vec_next(__vec) ((__vec)->next)
 
-# define vec_at_deadstop(__p, __end) ((void*)__p > (void*)__end)
-# define vec_deadstop(__p, __vec) ((void*)__p > ffly_vec_end(__vec))
-# define ffly_vec_beg ffly_vec_begin
+#define vec_at_deadstop(__p, __end) ((void*)__p>(void*)__end)
+#define vec_deadstop(__p, __vec) ((void*)__p>ffly_vec_end(__vec))
+#define ffly_vec_beg ffly_vec_begin
+
+//#define FF_VEC_SA
+
 /*
     needs testing - 'VEC_NONCONTINUOUS'
 	TODO:
@@ -36,11 +56,30 @@ struct ffly_vec_blkd {
 
 typedef struct ffly_vec_blkd* ffly_vec_blkdp;
 typedef struct ffly_vec {
+#ifdef FF_POOL_SA
+	/**/
+	union {
+		void*(*alloc)(ff_uint_t);
+		void(*free)(void*);
+		void*(realloc)(void*, ff_uint_t);
+	};
+#endif
 	ff_off_t top, end;
 	void *p;
 	ff_flag_t flags;
+
+	/*
+		where next block is to be if pushed
+	*/
 	ff_off_t off;
-	ff_size_t size, blk_size;
+	/*
+		N *blocks
+	*/
+	ff_size_t size;
+	/*
+		size of block in full {with header}
+	*/
+	ff_size_t blk_size;
 	ff_uint_t page_c;
 	struct ffly_vec *uu_blks;
     struct ffly_vec *prev, *next;

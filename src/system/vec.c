@@ -6,22 +6,48 @@
 # include "io.h"
 # include "../dep/mem_cpy.h"
 # include "errno.h"
-# define VEC_NULL ((ff_off_t)~0)
-# define VEC_BLK_USED 0x01
-# define VEC_BLK_FREE 0x02
-# define is_flag(__vec, __flag) ffly_is_flag(__vec->flags, __flag)
-# define not_null(__v)(__v!=VEC_NULL)
+# include "../oddity.h"
+#define VEC_NULL ((ff_off_t)~0)
+#define VEC_BLK_USED 0x01
+#define VEC_BLK_FREE 0x02
+#define is_flag(__vec, __flag) ffly_is_flag(__vec->flags, __flag)
+#define not_null(__v)(__v!=VEC_NULL)
 
-# define get_at(__vec, __off) \
-	((void*)(((ff_u8_t*)*((void**)__vec->p+(__off>>VEC_PAGE_SHIFT)))+(((__off)-(((__off)>>VEC_PAGE_SHIFT)*VEC_PAGE_SIZE))*__vec->blk_size)))
+#define get_at(__vec, __off) \
+	((void*)(((ff_u8_t*)*((void**)__vec->p+(__off>>VEC_PAGE_SHIFT)))+(((__off)-(((__off)>>VEC_PAGE_SHIFT)<<VEC_PAGE_SHIFT))*__vec->blk_size)))
+/*
+void static get_at(ffly_vecp __vec, ff_off_t __off) {
+	ff_uint_t pg, pg_off;
+	pg = __off>>VEC_PAGE_SHIFT;
+	pg_off = __off-(pg<<VEC_PAGE_SHIFT);
+	return ((ff_u8_t*)*((void**)(__vec->p+pg)))+(pg_off*__vec->blk_size);
+}
+*/
+
+#ifndef FF_POOL_SA
+# define mem_alloc(__n)\
+    __ffly_mem_alloc(__n)   
+# define mem_free(__p)\
+    __ffly_mem_free(__p)
+# define mem_realloc(__p, __n)\
+    __ffly_mem_realloc(__p, __n)
+#else
+# define mem_alloc(__n)\
+    __pool->alloc(__n)
+# define mem_free(__p)\
+    __pool->free(__p)
+# define mem_realloc(__p, __n)\
+    __pool->realloc(__p, __n)
+#endif
+
 ffly_vecp static top = NULL;
-ffly_vecp ffly_vec_list() {
+ffly_vecp ffly_vec_list(void) {
 	return top;
 }
 
 /*
 	TODO:
-		mega cleanup
+		mega cleanup, i am not joking it bad
 */
 
 // later
@@ -52,7 +78,9 @@ void ffly_vec_detach(ffly_vecp __vec) {
 }
 
 ffly_vecp ffly_vec_creat(ff_size_t __blk_size, ff_flag_t __flags, ff_err_t *__err) {
-	ffly_vecp p = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
+	ffly_vecp p;
+	
+	p = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
 	p->flags = __flags;
 	*__err = ffly_vec_init(p, __blk_size);
 	return p;
@@ -78,6 +106,9 @@ ff_err_t ffly_vec_free(ffly_vecp __vec) {
 	__ffly_mem_free(__vec);
 }
 
+#define vec_off(__vec, __p)\
+	((ff_u8_t*)__p-(ff_u8_t*)__vec->p)
+
 ff_off_t ffly_vec_off(ffly_vecp __vec, void *__p) {
 	return (ff_u8_t*)__p-(ff_u8_t*)__vec->p;
 }
@@ -87,14 +118,17 @@ void* ffly_vec_at(ffly_vecp __vec, ff_uint_t __off) {
 }
 
 ff_uint_t ffly_vec_blk_off(ffly_vecp __vec, void *__p) {
-	ff_off_t off = ffly_vec_off(__vec, __p);
+	ff_off_t off;
+	off = ffly_vec_off(__vec, __p);
 	if (is_flag(__vec, VEC_BLK_CHAIN))
 		return (off-sizeof(struct ffly_vec_blkd))/__vec->blk_size;
 	return off/__vec->blk_size;
 }
 
 void* ffly_vec_begin(ffly_vecp __vec) {
-	void *p = is_flag(__vec, VEC_NONCONTINUOUS)?(*(void**)__vec->p):__vec->p;
+	void *p;
+	
+	p = is_flag(__vec, VEC_NONCONTINUOUS)?(*(void**)__vec->p):__vec->p;
 	if (is_flag(__vec, VEC_BLK_CHAIN))
 		p = (ff_u8_t*)p+sizeof(struct ffly_vec_blkd);
 	return p;
@@ -118,19 +152,21 @@ ff_err_t ffly_vec_init(ffly_vecp __vec, ff_size_t __blk_size) {
 	__vec->page_c = 0;
 
 	__vec->blk_size = __blk_size;
+	// add block header to blksize
 	if (is_flag(__vec, VEC_BLK_CHAIN))
-		__vec->blk_size+= sizeof(struct ffly_vec_blkd);
+		__vec->blk_size+=sizeof(struct ffly_vec_blkd);
 
 	if (is_flag(__vec, VEC_AUTO_RESIZE)) {
 		if (is_flag(__vec, VEC_NONCONTINUOUS)) {
-			if ((__vec->p = __ffly_mem_alloc(sizeof(void*))) == NULL) {
+			if ((__vec->p = mem_alloc(sizeof(void*))) == NULL) {
 				return FFLY_FAILURE;
 			}
 
-			*(void**)__vec->p = __ffly_mem_alloc(VEC_PAGE_SIZE*__vec->blk_size);
+			*(void**)__vec->p = mem_alloc(VEC_PAGE_SIZE*__vec->blk_size);
 		} else {
-			if ((__vec->p = __ffly_mem_alloc(VEC_PAGE_SIZE*__vec->blk_size)) == NULL) {
+			if ((__vec->p = mem_alloc(VEC_PAGE_SIZE*__vec->blk_size)) == NULL) {
 				ffly_fprintf(ffly_err, "vec: failed to alloc memory, errno: %d.\n", 0);
+				caught_oddity;
 				return FFLY_FAILURE;
 			}
 		}
@@ -146,6 +182,7 @@ ff_err_t ffly_vec_init(ffly_vecp __vec, ff_size_t __blk_size) {
 		__vec->uu_blks->flags = VEC_AUTO_RESIZE;
 		if (ffly_vec_init(__vec->uu_blks, sizeof(ff_off_t)) != FFLY_SUCCESS) {
 			ffly_fprintf(ffly_err, "vec: failed to init uu_blks->\n");
+			caught_oddity;
 			return FFLY_FAILURE;
 		}
 	} else
@@ -163,7 +200,10 @@ void ffly_vec_fd(ffly_vecp __vec, void **__p) {
 }
 
 void ffly_vec_bk(ffly_vecp __vec,  void **__p) {
-	struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)(((ff_u8_t*)*__p)-sizeof(struct ffly_vec_blkd));
+	struct ffly_vec_blkd *blk;
+	
+	blk = (struct ffly_vec_blkd*)(((ff_u8_t*)*__p)-sizeof(struct ffly_vec_blkd));
+
 	if (!not_null(blk->prev)) {*__p = NULL;return;}
 	if (is_flag(__vec, VEC_NONCONTINUOUS))
 		*__p = (void*)((ff_u8_t*)get_at(__vec, blk->prev)+sizeof(struct ffly_vec_blkd));
@@ -183,7 +223,9 @@ void ffly_vec_itr(ffly_vecp __vec, void **__p, ff_u8_t __dir, ff_uint_t __ia) {
 }
 
 void* ffly_vec_rbegin(ffly_vecp __vec) {
-	struct ffly_vec_blkd *blk = (struct ffly_vec_blkd*)((ff_u8_t*)ffly_vec_begin(__vec)-sizeof(struct ffly_vec_blkd));
+	struct ffly_vec_blkd *blk;
+	
+	blk = (struct ffly_vec_blkd*)((ff_u8_t*)ffly_vec_begin(__vec)-sizeof(struct ffly_vec_blkd));
 	ff_uint_t page = blk->page;
 	ff_uint_t off = blk->off;
 	while(ffly_is_flag(blk->flags, VEC_BLK_FREE)) {
@@ -277,10 +319,19 @@ void ffly_vec_del(ffly_vecp __vec, void *__p) {
 ff_err_t ffly_vec_push_back(ffly_vecp __vec, void **__p) {
 	__vec->size++;
 	if (is_flag(__vec, VEC_BLK_CHAIN) && is_flag(__vec, VEC_UUU_BLKS)) {
-		if (ffly_vec_size(__vec->uu_blks) > 0) {
+		/*
+			check for unused blocks
+		*/
+		if (ffly_vec_size(__vec->uu_blks)>0) {
 			ff_off_t off;
 			ffly_vec_pop_back(__vec->uu_blks, (void*)&off);
-			ffly_vec_blkdp blk = (ffly_vec_blkdp)(is_flag(__vec, VEC_NONCONTINUOUS)?get_at(__vec, off):((ff_u8_t*)__vec->p+(off*__vec->blk_size)));
+			ffly_vec_blkdp blk;
+			
+			if (is_flag(__vec, VEC_NONCONTINUOUS))
+				blk = (ffly_vec_blkdp)get_at(__vec, off);
+			else
+				blk = (ffly_vec_blkdp)((ff_u8_t*)__vec->p+(off*__vec->blk_size));
+
 			blk->flags = VEC_BLK_USED;
 			blk->prev = __vec->end;
 			blk->next = VEC_NULL;
@@ -298,11 +349,12 @@ ff_err_t ffly_vec_push_back(ffly_vecp __vec, void **__p) {
 	if (is_flag(__vec, VEC_AUTO_RESIZE)) {
 		if (__vec->off>>VEC_PAGE_SHIFT >= __vec->page_c) {
 			if (is_flag(__vec, VEC_NONCONTINUOUS)) {
-				__vec->p = __ffly_mem_realloc(__vec->p, (++__vec->page_c)*sizeof(void*));
-				*((void**)__vec->p+(__vec->page_c-1)) = __ffly_mem_alloc(VEC_PAGE_SIZE*__vec->blk_size);
+				__vec->p = mem_realloc(__vec->p, (++__vec->page_c)*sizeof(void*));
+				*((void**)__vec->p+(__vec->page_c-1)) = mem_alloc(VEC_PAGE_SIZE*__vec->blk_size);
 			} else {
-				if ((__vec->p = __ffly_mem_realloc(__vec->p, (++__vec->page_c)*(VEC_PAGE_SIZE*__vec->blk_size))) == NULL) {
+				if ((__vec->p = mem_realloc(__vec->p, (++__vec->page_c)*(VEC_PAGE_SIZE*__vec->blk_size))) == NULL) {
 					ffly_fprintf(ffly_err, "vec: failed to realloc memory for next page, errno: %d.\n", 0);
+					caught_oddity;
 					return FFLY_FAILURE;
 				}
 			}
@@ -323,7 +375,7 @@ ff_err_t ffly_vec_push_back(ffly_vecp __vec, void **__p) {
 		blk->next = VEC_NULL;
 		blk->flags = VEC_BLK_USED;
 		blk->page = blk_off>>VEC_PAGE_SHIFT;
-		blk->off = blk_off-(blk->page*VEC_PAGE_SIZE);
+		blk->off = blk_off-(blk->page<<VEC_PAGE_SHIFT);
 		if (not_null(__vec->end)) {
 			blk->prev = __vec->end;
 			if (is_flag(__vec, VEC_NONCONTINUOUS))
@@ -347,11 +399,12 @@ ff_err_t ffly_vec_pop_back(ffly_vecp __vec, void *__p) {
 		if (page < __vec->page_c-1 && __vec->page_c>1) {
 			if (is_flag(__vec, VEC_NONCONTINUOUS)) { 
 				void *page = *((void**)__vec->p+(--__vec->page_c));
-				__ffly_mem_free(page);
-				__vec->p = __ffly_mem_realloc(__vec->p, __vec->page_c*sizeof(void*)); 
+				mem_free(page);
+				__vec->p = mem_realloc(__vec->p, __vec->page_c*sizeof(void*)); 
 			} else {
-				if ((__vec->p = __ffly_mem_realloc(__vec->p, (--__vec->page_c)*(VEC_PAGE_SIZE*__vec->blk_size))) == NULL) {
+				if ((__vec->p = mem_realloc(__vec->p, (--__vec->page_c)*(VEC_PAGE_SIZE*__vec->blk_size))) == NULL) {
 					ffly_fprintf(ffly_err, "vec: failed to realloc memory for next page, errno: %d.\n", 0);
+					caught_oddity;
 					return FFLY_FAILURE;
 				}
 			}
@@ -363,7 +416,21 @@ ff_err_t ffly_vec_pop_back(ffly_vecp __vec, void *__p) {
 		ff_uint_t size = __vec->blk_size-sizeof(struct ffly_vec_blkd);
 		ffly_vec_blkdp blk = (ffly_vec_blkdp)((ff_u8_t*)last-sizeof(struct ffly_vec_blkd));
 		ffly_mem_cpy(__p, last, size);
-		if (is_flag(__vec, VEC_NONCONTINUOUS)?(blk == get_at(__vec, __vec->off-1)):(blk == (void*)((ff_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size)))) {
+		
+		/*
+			check if block matches end block
+		*/
+		ff_u8_t co;
+		if (is_flag(__vec, VEC_NONCONTINUOUS))
+			co = ((void*)blk == get_at(__vec, __vec->off-1));
+		else
+			co = ((void*)blk == (void*)((ff_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size)));
+
+		/*
+			if block is at the end, then remove it else delete it.
+			delete wont remove block but put it with all the other unused blocks so push can take a pick from the pool of them
+		*/
+		if (co) {
 			ffly_vec_dechain(__vec, blk);
 			__vec->off--;
 		} else {
@@ -371,42 +438,74 @@ ff_err_t ffly_vec_pop_back(ffly_vecp __vec, void *__p) {
 			ffly_vec_del(__vec, last);
 		}
 	} else {
+		ff_uint_t bks;
+		bks = __vec->blk_size;
+		/*
+			copy memory to user
+		*/
 		if (is_flag(__vec, VEC_NONCONTINUOUS))
-			ffly_mem_cpy(__p, get_at(__vec, __vec->off-1), __vec->blk_size);
+			ffly_mem_cpy(__p, get_at(__vec, __vec->off-1), bks);
 		else
-			ffly_mem_cpy(__p, (void*)((ff_u8_t*)__vec->p+((__vec->off-1)*__vec->blk_size)), __vec->blk_size);
+			ffly_mem_cpy(__p, (void*)((ff_u8_t*)__vec->p+((__vec->off-1)*bks)), bks);
 		__vec->off--;
 	}
 	return FFLY_SUCCESS;
 }
 
+/*
+	only works without VEC_NONCONTINUOUS
+*/
 ff_err_t ffly_vec_resize(ffly_vecp __vec, ff_size_t __size) {
 	__vec->size = __size;
-	if (!__size) {__ffly_mem_free(__vec->p); __vec->p = NULL; return FFLY_SUCCESS;}
-	if (!__vec->p) {__vec->p = __ffly_mem_alloc(__size*__vec->blk_size); return FFLY_SUCCESS;}
-	if ((__vec->p = __ffly_mem_realloc(__vec->p, __size*__vec->blk_size)) == NULL) {
+	if (!__size) {
+		if (__vec->p != NULL) {
+			mem_free(__vec->p);
+			__vec->p = NULL;
+		}
+		return FFLY_SUCCESS;	
+	}
+
+	if (!__vec->p) {
+		__vec->p = mem_alloc(__size*__vec->blk_size);
+		return FFLY_SUCCESS;
+	}
+
+	if ((__vec->p = mem_realloc(__vec->p, __size*__vec->blk_size)) == NULL) {
 		ffly_fprintf(ffly_err, "vec: failed to realloc memory for resize, errno: %d\n", 0);
-		return FFLY_FAILURE;}
-	ffly_fprintf(ffly_log, "resize.\n");
+		caught_oddity;
+		return FFLY_FAILURE;
+	}
+	ffly_fprintf(ffly_log, "vec, resize.\n");
 	return FFLY_SUCCESS;
 }
 
 ff_err_t ffly_vec_de_init(ffly_vecp __vec) {
 	if (is_flag(__vec, VEC_NONCONTINUOUS)) {
+		/*
+			free all pages
+		*/
 		void **page = (void**)__vec->p;
-		while(page != (void**)__vec->p+__vec->page_c) {
-			__ffly_mem_free(*page);
+		void **end;
+		end = page+__vec->page_c;
+		while(page != end) {
+			if (*page != NULL)	
+				mem_free(*page);
+			else {
+				// something is wrong
+				caught_oddity;
+			}
 			page++;
 		}
 	}
 
 	if (__vec->p != NULL) {
-		__ffly_mem_free(__vec->p);
+		mem_free(__vec->p);
 		__vec->p = NULL;
 	}
 
 	if (__vec->uu_blks != NULL) {
 		ffly_vec_de_init(__vec->uu_blks);
+		__ffly_mem_free(__vec->uu_blks);
 		__vec->uu_blks = NULL;
 	}
 	return FFLY_SUCCESS;

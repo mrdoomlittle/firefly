@@ -2,10 +2,20 @@
 # define __ffly__pool__h
 # include "../ffint.h"
 # include "../types.h"
+
+//#define FF_POOL_SA
+
 /*
 	move to /memory as it has nothing to do with /system
 */
 struct ffly_pool {
+#ifdef FF_POOL_SA
+	union {
+		void*(*alloc)(ff_uint_t);
+		void(*free)(void*);
+		void*(realloc)(void*, ff_uint_t);
+	};
+#endif
 	void *p, *uu_slices;
 	ff_size_t size, slice_size;
 	ff_off_t off;

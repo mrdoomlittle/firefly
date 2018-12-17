@@ -239,3 +239,5 @@ allocr -. remove brk and mmap from and add function pointer to call when more me
 .- all files that are created by engine should have path to a dedicated directory else store them in temp directory
 
 .- place bytecode in remf file so readremf can exec that and output and or display shit about it
+
+-. work on src/system/port.c/pipe.c

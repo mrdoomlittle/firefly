@@ -14,7 +14,7 @@ void ff_encrypt(void *__p, ff_uint_t __bc, ff_u64_t __key) {
 	while(p != end) {
 		c = NUM;
 	_again:
-		*p = ((*p&0xf)^(__key>>4&0xf))|(((*p>>4&0xf)^(__key&0xf))<<4);
+		*p = ((*p&0x0f)^(__key>>4&0x0f))|(((*p>>4&0x0f)^(__key&0x0f))<<4);
 		__key = (__key>>60)|__key<<4;
 		if (c>0) {
 			c--;
@@ -31,7 +31,7 @@ void ff_decrypt(void *__p, ff_uint_t __bc, ff_u64_t __key) {
 	while(p != end) {
 		c = NUM;
 	_again:
-		*p = ((__key>>4&0xf)^(*p&0xf))|(((__key&0xf)^(*p>>4&0xf))<<4);
+		*p = ((__key>>4&0x0f)^(*p&0x0f))|(((__key&0x0f)^(*p>>4&0x0f))<<4);
 		__key = (__key>>60)|__key<<4;
 		if (c>0) {
 			c--;
@@ -44,7 +44,7 @@ void ff_decrypt(void *__p, ff_uint_t __bc, ff_u64_t __key) {
 void print_bin(ff_u8_t __d) {
 	ff_u8_t i = 0;
 	for (;i != 8;i++)
-		ffly_printf("%u", __d>>(7-i)&0x1);
+		ffly_printf("%u", __d>>(7-i)&0x01);
 	ffly_printf("\n");
 }
 

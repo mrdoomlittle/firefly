@@ -221,6 +221,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/fs/m/alloc.o $root_dir/fs/m/alloc.c
 $ffly_cc $cc_flags -c -o $dst_dir/fs/m/m.o $root_dir/fs/m/m.c
 $ffly_cc $cc_flags -c -o $dst_dir/fs.o $root_dir/fs.c
 $ffly_cc $cc_flags -c -o $dst_dir/fs/m/exec.o $root_dir/fs/m/exec.c
+$ffly_cc $cc_flags -c -o $dst_dir/oddity.o $root_dir/oddity.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -240,16 +241,16 @@ $dst_dir/pallet.o $dst_dir/resource.o $dst_dir/cache.o $dst_dir/clock.o \
 $dst_dir/copy.o $dst_dir/ui/window.o $dst_dir/location.o \
 $dst_dir/storage/slab.o $dst_dir/storage/reservoir.o \
 $dst_dir/piston.o $dst_dir/corrode.o $dst_dir/bog.o \
-$dst_dir/env.o $dst_dir/line.o $dst_dir/db/load.o
+$dst_dir/env.o $dst_dir/line.o $dst_dir/db/load.o \
 $dst_dir/db/store.o $dst_dir/db/block.o $dst_dir/db/error.o \
 $dst_dir/signal/sigemptyset.o $dst_dir/pulse.o $dst_dir/hexdump.o \
-$dst_dir/brick.o $dst_dir/br.o $dst_dir/chrdump.o $dst_dir/raster.o
+$dst_dir/brick.o $dst_dir/br.o $dst_dir/chrdump.o $dst_dir/raster.o \
 $dst_dir/model.o $dst_dir/start.o $dst_dir/p.o $dst_dir/panel.o $dst_dir/m.o \
-$dst_dir/hs/vec.o $dst_dir/hs/hash.o $dst_dir/hs/lexer.o $dst_dir/hs/memalloc.o
+$dst_dir/hs/vec.o $dst_dir/hs/hash.o $dst_dir/hs/lexer.o $dst_dir/hs/memalloc.o \
 $dst_dir/hs/parser.o $dst_dir/hs/exec.o $dst_dir/hs/gen.o $dst_dir/hs/mm.o $dst_dir/hs.o \
 $dst_dir/storage/cistern.o $dst_dir/texture.o $dst_dir/carriage.o $dst_dir/tools.o \
-$dst_dir/typo.o $dst_dir/typo/raster.o $dst_dir/typo/raise.o $dst_dir/drivers/typo/mcd/driver.o
-$dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o $dst_dir/tape.o $dst_dir/resin/tape.o
+$dst_dir/typo.o $dst_dir/typo/raster.o $dst_dir/typo/raise.o $dst_dir/drivers/typo/mcd/driver.o \
+$dst_dir/drivers/typo/mcd/load.o $dst_dir/typo/memalloc.o $dst_dir/tape.o $dst_dir/resin/tape.o \
 $dst_dir/rosin.o $dst_dir/rosin/exec.o $dst_dir/typo/mcd/concoct.o $dst_dir/typo/mcd/gen/classic.o \
 $dst_dir/drivers/font/typo.o $dst_dir/font.o $dst_dir/ui/text.o $dst_dir/nought/context.o \
 $dst_dir/drivers/nought/driver.o $dst_dir/nought/framebuff.o $dst_dir/nought/raise.o \
@@ -263,4 +264,5 @@ $dst_dir/bron/tile.o $dst_dir/nought/shit.o $dst_dir/nought/pixel.o \
 $dst_dir/slurry/client.o $dst_dir/slurry/connection.o \
 $dst_dir/slurry/proto.o $dst_dir/slurry/slurry.o $dst_dir/tc.o $dst_dir/time.o \
 $dst_dir/nought/objbuf.o $dst_dir/bron/objbuf.o $dst_dir/nought/tex.o \
-$dst_dir/fs.o $dst_dir/fs/m/file.o $dst_dir/fs/m/hash.o $dst_dir/fs/m/alloc.o $dst_dir/fs/m/m.o $dst_dir/fs/m/exec.o"
+$dst_dir/fs.o $dst_dir/fs/m/file.o $dst_dir/fs/m/hash.o $dst_dir/fs/m/alloc.o \
+$dst_dir/fs/m/m.o $dst_dir/fs/m/exec.o $dst_dir/oddity.o"

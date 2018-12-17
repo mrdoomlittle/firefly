@@ -1,5 +1,7 @@
 # include "../db.h"
 # include "block.h"
+# include "../ffly_def.h"
+# include "../system/io.h"
 void static
 out_record(ffdbp __db, ffdb_recordp __rec) {
 	struct ffdb_record_hdr out;

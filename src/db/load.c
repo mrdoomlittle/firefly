@@ -3,6 +3,7 @@
 # include "block.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
+# include "../system/io.h"
 void ld_record(ffdbp __db, ffdb_pilep __pile, struct ffdb_record_hdr *__rec) {
 	ffdb_recordp p = ffdb_record_creat(__db, __pile, __rec->size);
 	p->p = __rec->p;

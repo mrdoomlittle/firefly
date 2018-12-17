@@ -134,8 +134,15 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "nought/types.h"
 # include "bron/tex.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	ffly_mapp p;
+	p = ffly_map(_ffly_map_255);
+
+	ffly_map_put(p, "hello", 5, NULL);
+
+	ffly_map_destroy(p);
 //	__asm__("subq $16, %rsp");
-	ffly_printf("%u\n", __argc);
+/*
+ffly_printf("%u\n", __argc);
 #define N 12
 	ff_u32_t b[N];
 
@@ -146,6 +153,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	
 	for(;i != N;i++)
 		ffly_brick_rid(b[i]);
+*/
 /*
 	struct ffly_cistern ctn;
 	ffly_cistern_init(&ctn, "test.cis");
