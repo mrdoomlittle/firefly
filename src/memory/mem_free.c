@@ -6,6 +6,16 @@
 ff_u64_t ffly_mem_free_bc = 0;
 ff_u64_t ffly_mem_free_c = 0;
 # endif
+
+void static _memfree(void *__p) {
+#ifndef __ffly_use_allocr
+    free(__p);
+#else
+    ffly_bfree(__p);
+#endif
+}
+
+void(*__memfree)(void*) = _memfree;
 # ifdef __ffly_mal_track
 ff_err_t ffly_mem_free(void *__p, ff_bool_t __track_bypass) {
 	ff_err_t err;
@@ -48,17 +58,9 @@ ff_err_t ffly_mem_free(void *__p) {
 			"=m"(ffly_mem_free_bc),
 				"=m"(ffly_mem_free_c) :
 					"r"(p) : "rax");
-# ifndef __ffly_use_allocr
-	free((void*)p);
+	__memfree((void*)p);
 # else
-    ffly_bfree((void*)p);
-# endif
-# else
-# ifndef __ffly_use_allocr
-	free(__p);
-# else
-    ffly_bfree(__p);
-# endif
+	__memfree(__p);
 # endif
 	err = FFLY_SUCCESS;
 	goto _succ;

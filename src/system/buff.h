@@ -6,10 +6,16 @@
 # include "mutex.h"
 # include "err.h"
 # include "flags.h"
-# ifdef __cplusplus
+#ifdef __cplusplus
 #	include "errno.h"
-# endif
+#endif
 struct ffly_buff {
+#ifdef FF_BUFF_SA
+	void*(*alloc)(long long, ff_uint_t);
+	void(*free)(long long, void*);
+	void*(*realloc)(long long, void*, ff_uint_t);
+	long long arg;
+#endif
 	ff_mlock_t lock;
 	ff_u8_t *p;
 	ff_off_t off;

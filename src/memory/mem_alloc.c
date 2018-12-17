@@ -7,6 +7,17 @@
 ff_u64_t ffly_mem_alloc_bc = 0;
 ff_u64_t ffly_mem_alloc_c = 0;
 # endif
+
+void static* _memalloc(ff_uint_t __n) {
+#ifndef __ffly_use_allocr
+	return malloc(__n);
+#else
+	return ffly_balloc(__n);
+#endif
+}
+
+void*(*__memalloc)(ff_uint_t) = _memalloc;
+
 # ifdef __ffly_mal_track
 void* ffly_mem_alloc(ff_uint_t __bc, ff_u8_t __track_bypass) {
 # else
@@ -17,14 +28,10 @@ void* ffly_mem_alloc(ff_uint_t __bc) {
 # endif /*__ffly_mal_track*/
 	ff_u8_t *p;
 # ifdef __ffly_debug
-# ifndef __ffly_use_allocr
-	if ((p = (ff_u8_t*)malloc(__bc+sizeof(ff_uint_t))) == NULL) {
+	if ((p = (ff_u8_t*)__memalloc(__bc+sizeof(ff_uint_t))) == NULL) {
 		ffly_fprintf(ffly_err, "mem_alloc: failed to allocate memory.\n");
 		goto _fail;
 	}
-# else
-    p = ffly_balloc(__bc+sizeof(ff_uint_t));
-# endif
 
 	*((ff_uint_t*)p) = __bc;
 	__asm__(
@@ -43,11 +50,7 @@ void* ffly_mem_alloc(ff_uint_t __bc) {
 						"r"(__bc) : "rax");
 	p+=sizeof(ff_uint_t);
 # else
-# ifndef __ffly_use_allocr
-	p = (ff_u8_t*)malloc(__bc);
-# else
-    p = ffly_balloc(__bc);
-# endif
+	p = (ff_u8_t*)__memalloc(__bc);
 # endif
 # ifdef __ffly_mal_track
 	if (!__track_bypass) {
@@ -55,11 +58,7 @@ void* ffly_mem_alloc(ff_uint_t __bc) {
 # ifdef __ffly_debug
 			ffly_fprintf(ffly_err, "mem_alloc: mal track failure.\n");
 # endif
-# ifndef __ffly_use_allocr
-			free((void*)(p-sizeof(ff_uint_t)));
-# else
-            ffly_bfree((void*)(p-sizeof(ff_uint_t)));
-# endif
+			__memfree((void*)(p-sizeof(ff_uint_t)));
 			goto _fail;
 		}
 	}

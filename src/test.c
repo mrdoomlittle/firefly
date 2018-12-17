@@ -134,11 +134,12 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "nought/types.h"
 # include "bron/tex.h"
 # include "system/vec.h"
+# include "system/pool.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
-	ffly_vecp p;
-	ff_err_t err;
-	p = ffly_vec(10, VEC_AUTO_RESIZE, &err);
-	void *pp;
+//	ffly_vecp p;
+//	ff_err_t err;
+//	p = ffly_vec(10, VEC_AUTO_RESIZE|VEC_AS, &err);
+//	void *pp;
 
 //	ffly_vec_push_back(p, &pp);
 //	ffly_vec_destroy(p);

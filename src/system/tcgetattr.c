@@ -7,7 +7,7 @@ ff_s32_t tcgetattr(ff_u32_t __fd, struct termios *__tr) {
 	struct termios tr;
 	ff_s32_t retv;
 
-	retv = ioctl(__fd, TCGETS, &tr);
+	retv = ioctl(__fd, TCGETS, (long long)&tr);
 	__tr->c_iflag = tr.c_iflag;
 	__tr->c_oflag = tr.c_oflag;
 	__tr->c_cflag = tr.c_cflag;

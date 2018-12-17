@@ -160,9 +160,11 @@ void static* dummy_realloc(long long __arg, void *__p, ff_uint_t __n) {
 #endif
 ff_err_t ffly_vec_init(ffly_vecp __vec, ff_size_t __blk_size) {
 #ifdef FF_VEC_SA
-	__vec->alloc = dummy_alloc;
-	__vec->free = dummy_free;
-	__vec->realloc = dummy_realloc;
+	if (!is_flag(__vec, VEC_AS)) {
+		__vec->alloc = dummy_alloc;
+		__vec->free = dummy_free;
+		__vec->realloc = dummy_realloc;
+	}
 #endif
 	__vec->p = NULL;
 	__vec->page_c = 0;

@@ -25,6 +25,7 @@
 	use of pages
 */
 #define VEC_NONCONTINUOUS 0x08
+#define VEC_AS 0x10
 # include "../ffint.h"
 # include "../types.h"
 # include "io.h"

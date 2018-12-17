@@ -20,7 +20,7 @@ extern "C" {
 ff_u64_t extern ffly_mem_alloc_bc;
 ff_u64_t extern ffly_mem_alloc_c;
 # endif
-
+extern void*(*__memalloc)(ff_uint_t);
 # ifdef __ffly_mal_track
 void* ffly_mem_alloc(ff_uint_t, ff_bool_t);
 # else

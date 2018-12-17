@@ -8,6 +8,8 @@
 /*
 	TODO:
 		needs work done on 
+	what is this for?
+		like pool.c but fixed size and linkable
 */
 # define ffly_barrel_link(__barrel, __to) \
 	(__barrel)->link = __to

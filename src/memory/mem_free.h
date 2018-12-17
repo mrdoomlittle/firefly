@@ -19,7 +19,7 @@ extern "C" {
 ff_u64_t extern ffly_mem_free_bc;
 ff_u64_t extern ffly_mem_free_c;
 # endif /*__ffly_debug_enabled*/
-
+extern void(*__memfree)(void*);
 # ifdef __ffly_mal_track
 ff_err_t ffly_mem_free(void*, ff_bool_t);
 # else
