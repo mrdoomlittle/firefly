@@ -133,13 +133,21 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "tc.h"
 # include "nought/types.h"
 # include "bron/tex.h"
+# include "system/vec.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
-	ffly_mapp p;
-	p = ffly_map(_ffly_map_255);
+	ffly_vecp p;
+	ff_err_t err;
+	p = ffly_vec(10, VEC_AUTO_RESIZE, &err);
+	void *pp;
 
-	ffly_map_put(p, "hello", 5, NULL);
+//	ffly_vec_push_back(p, &pp);
+//	ffly_vec_destroy(p);
+//	ffly_mapp p;
+//	p = ffly_map(_ffly_map_255);
 
-	ffly_map_destroy(p);
+//	ffly_map_put(p, "hello", 5, NULL);
+
+//	ffly_map_destroy(p);
 //	__asm__("subq $16, %rsp");
 /*
 ffly_printf("%u\n", __argc);

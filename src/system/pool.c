@@ -12,19 +12,19 @@
 */
 
 #ifndef FF_POOL_SA
-# define mem_alloc(__n)\
+#define mem_alloc(__n)\
 	__ffly_mem_alloc(__n)	
-# define mem_free(__p)\
+#define mem_free(__p)\
 	__ffly_mem_free(__p)
-# define mem_realloc(__p, __n)\
+#define mem_realloc(__p, __n)\
 	__ffly_mem_realloc(__p, __n)
 #else
-# define mem_alloc(__n)\
-	__pool->alloc(__n)
-# define mem_free(__p)\
-	__pool->free(__p)
-# define mem_realloc(__p, __n)\
-	__pool->realloc(__p, __n)
+#define mem_alloc(__n)\
+	__pool->alloc(__pool->arg, __n)
+#define mem_free(__p)\
+	__pool->free(__pool->arg, __p)
+#define mem_realloc(__p, __n)\
+	__pool->realloc(__pool->arg, __p, __n)
 #endif
 ff_err_t ffly_pool_init(struct ffly_pool *__pool, ff_size_t __size, ff_size_t __slice_size) {
 	if ((__pool->p = mem_alloc(__size*__slice_size)) == NULL) {

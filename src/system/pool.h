@@ -10,11 +10,10 @@
 */
 struct ffly_pool {
 #ifdef FF_POOL_SA
-	union {
-		void*(*alloc)(ff_uint_t);
-		void(*free)(void*);
-		void*(realloc)(void*, ff_uint_t);
-	};
+	void*(*alloc)(long long, ff_uint_t);
+	void(*free)(long long, void*);
+	void*(realloc)(long long, void*, ff_uint_t);
+	long long arg;
 #endif
 	void *p, *uu_slices;
 	ff_size_t size, slice_size;

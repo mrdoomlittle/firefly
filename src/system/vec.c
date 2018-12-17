@@ -24,20 +24,20 @@ void static get_at(ffly_vecp __vec, ff_off_t __off) {
 }
 */
 
-#ifndef FF_POOL_SA
-# define mem_alloc(__n)\
+#ifndef FF_VEC_SA
+#define mem_alloc(__n)\
     __ffly_mem_alloc(__n)   
-# define mem_free(__p)\
+#define mem_free(__p)\
     __ffly_mem_free(__p)
-# define mem_realloc(__p, __n)\
+#define mem_realloc(__p, __n)\
     __ffly_mem_realloc(__p, __n)
 #else
-# define mem_alloc(__n)\
-    __pool->alloc(__n)
-# define mem_free(__p)\
-    __pool->free(__p)
-# define mem_realloc(__p, __n)\
-    __pool->realloc(__p, __n)
+#define mem_alloc(__n)\
+    __vec->alloc(__vec->arg, __n)
+#define mem_free(__p)\
+    __vec->free(__vec->arg, __p)
+#define mem_realloc(__p, __n)\
+    __vec->realloc(__vec->arg, __p, __n)
 #endif
 
 ffly_vecp static top = NULL;
@@ -147,7 +147,23 @@ void* ffly_vec_end(ffly_vecp __vec) {
 	return p;
 }
 
+#ifdef FF_VEC_SA
+void static* dummy_alloc(long long __arg, ff_uint_t __n) {
+	return __ffly_mem_alloc(__n);
+}
+void static dummy_free(long long __arg, void *__p) {
+    __ffly_mem_free(__p);
+}
+void static* dummy_realloc(long long __arg, void *__p, ff_uint_t __n) {
+    return __ffly_mem_realloc(__p, __n);
+}
+#endif
 ff_err_t ffly_vec_init(ffly_vecp __vec, ff_size_t __blk_size) {
+#ifdef FF_VEC_SA
+	__vec->alloc = dummy_alloc;
+	__vec->free = dummy_free;
+	__vec->realloc = dummy_realloc;
+#endif
 	__vec->p = NULL;
 	__vec->page_c = 0;
 

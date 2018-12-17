@@ -40,7 +40,7 @@
 #define vec_deadstop(__p, __vec) ((void*)__p>ffly_vec_end(__vec))
 #define ffly_vec_beg ffly_vec_begin
 
-//#define FF_VEC_SA
+#define FF_VEC_SA
 
 /*
     needs testing - 'VEC_NONCONTINUOUS'
@@ -56,13 +56,11 @@ struct ffly_vec_blkd {
 
 typedef struct ffly_vec_blkd* ffly_vec_blkdp;
 typedef struct ffly_vec {
-#ifdef FF_POOL_SA
-	/**/
-	union {
-		void*(*alloc)(ff_uint_t);
-		void(*free)(void*);
-		void*(realloc)(void*, ff_uint_t);
-	};
+#ifdef FF_VEC_SA
+	void*(*alloc)(long long, ff_uint_t);
+	void(*free)(long long, void*);
+	void*(*realloc)(long long, void*, ff_uint_t);
+	long long arg;
 #endif
 	ff_off_t top, end;
 	void *p;
