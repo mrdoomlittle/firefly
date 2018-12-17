@@ -139,8 +139,9 @@ void ffly_workshop_init() {
 	ff_set_frame_size(WIDTH, HEIGHT);
 	ff_graphics_init();
 
-	dc = ff_duct_open(FF_PIPE_CREAT);
-	ff_duct_listen(dc);
+	dc = ff_duct(0, FF_PIPE_CREAT);
+	duct(dc, open);
+	duct(dc, listen);
 
 	ffly_queue_init(&ffly_event_queue, sizeof(ff_eventp));
 
@@ -195,7 +196,7 @@ void ffly_workshop_de_init() {
 	bron_done();
 //	ffly_tiles_usched();
 	ffly_queue_de_init(&ffly_event_queue);
-	ff_duct_close(dc);
+	duct(dc, close);
 	ff_graphics_de_init();
 	ffly_plate_cleanup();
 	__ffly_mem_free(tex0);

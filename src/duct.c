@@ -1,7 +1,4 @@
 # include "duct.h"
-
-
-# include "system/pipe.h"
 # ifndef __ffly_bridge
 # include "graphics/frame_buff.h"
 # include "memory/plate.h"
@@ -18,27 +15,17 @@ ff_u8_t static stack[STACKSZ];
 # else
 ff_uint_t static stack = 0;
 # endif
-
-ff_dcp ff_duct_open(ff_u8_t __flags) {
-	ff_err_t err;
+void duct_ipc_pipe(ff_dcp, ff_u8_t);
+ff_dcp ff_duct(ff_u8_t __comm, ff_u8_t __flags) {
 	ff_dcp c;
 	c = (ff_dcp)__ffly_mem_alloc(sizeof(struct ff_dc));
-	c->pipe = ffly_pipe(8, __flags, 0, &err);
+	duct_ipc_pipe(c, __flags);
 
 	return c;
 }
 
-void ff_duct_close(ff_dcp __c) {
-	ffly_pipe_close(__c->pipe);
+void ff_duct_destroy(ff_dcp __c) {
 	__ffly_mem_free(__c);
-}
-
-void ff_duct_connect(ff_dcp __c) {
-	ffly_pipe_connect(__c->pipe);
-}
-
-void ff_duct_listen(ff_dcp __c) {
-	ffly_pipe_listen(__c->pipe);
 }
 
 enum {
@@ -63,11 +50,10 @@ enum {
 	_write(__c, __code, __len);\
 }
 
-# define _write(__c, __buf, __size) \
-	ffly_pipe_write(__buf, __size, (__c)->pipe)
-# define _read(__c, __buf, __size) \
-	ffly_pipe_read(__buf, __size, (__c)->pipe)
-
+# define _write(__c, __buf, __size)\
+	duct(__c, write, __buf, __size)
+# define _read(__c, __buf, __size)\
+	duct(__c, read, __buf, __size)
 # ifdef __ffly_bridge
 void ff_duct_exit(ff_dcp __c) {
 	ff_u8_t code;

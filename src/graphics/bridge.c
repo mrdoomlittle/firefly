@@ -14,7 +14,8 @@ int main() {
 	ffly_io_init();
 	ff_err_t err;
 	ff_dcp c;
-	c = ff_duct_open(FF_PIPE_SHMM);
+	c = ff_duct(0, FF_PIPE_SHMM);
+	duct(c, open);
 //	if (err != FFLY_SUCCESS) {
 //		goto _fail;	
 //	}
@@ -24,7 +25,7 @@ int main() {
 	ffly_wd_init(&window, WIDTH, HEIGHT, "Hello");
 	ffly_wd_open(&window);
 	ffly_printf("waiting.\n");
-	ff_duct_connect(c);
+	duct(c, connect);
 	ffly_printf("connected.\n");
 	ffly_wd_display(&window);
 //	ff_u8_t i;
@@ -68,7 +69,7 @@ _end:
 	ffly_wd_close(&window);
 	ffly_wd_cleanup(&window);
 
-	ff_duct_close(c);
+	duct(c, close);
 _fail:
 	ffly_io_closeup();
 }
