@@ -1,23 +1,23 @@
 # include "pipe.h"
 # include "shm.h"
 # include "../dep/bcopy.h"
-# ifdef __fflib
+#ifdef __fflib
 # include "../linux/ipc.h"
 # include "../linux/stat.h"
-# else
+#else
 # include <sys/ipc.h>
 # include <sys/stat.h>
-# endif
-# ifndef __ffly_module
+#endif
+#ifndef __ffly_module
 # include "io.h"
-# else
+#else
 # include "../mod/io.h"
-# endif
+#endif
 # include "../mode.h"
 # include "err.h"
 # include "mutex.h"
 # include "nanosleep.h"
-# define delay ffly_nanosleep(0, 1000);
+#define delay ffly_nanosleep(0, 1000);
 // needs testing
 /*
 	NOTE: cleanup
@@ -26,16 +26,22 @@
 		add delay in loops to reduce cpu load
 
 	put debug define over debug statment
+	
+	NOTE:
+		i was not going to use shm at first but decided it might be faster then real pipes,
+		i might be wrong but i dont like using system calls i find that there the big pitfull when is comes to stuff like this 
+		that requires alot of calls and would cause too much core jumping and will result in lag lots of it.
+
 */
 
 typedef struct hdr {
 	ff_u16_t size;
 } *hdrp;
 
-# define STRT 0x1
-# define STOP 0x2
-# define DUMP 0x4
-# define OK 0x8
+#define STRT 0x01
+#define STOP 0x02
+#define DUMP 0x04
+#define OK 0x08
 struct pipe {
 	ff_uint_t shm_id;
 	ff_u8_t *bits;

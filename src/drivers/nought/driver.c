@@ -10,7 +10,9 @@ static ff_u8_t *cb_p = cb;
 void static
 nt_done(void) {
 	nt_raise(cb, cb_p-cb);
+#ifdef DEBUG
 	ffly_hexdump(cb, cb_p-cb);
+#endif
 	cb_p = cb;
 }
 
@@ -39,7 +41,7 @@ _nt_raster_tri2(ff_u16_t __tri, ff_u16_t __tex, ff_u32_t __x, ff_u32_t __y) {
 }
 
 # include "../../dep/mem_cpy.h"
-# define nt_stack(__at) \
+#define nt_stack(__at) \
 	(nt_raise_stack+(__at))
 
 void static

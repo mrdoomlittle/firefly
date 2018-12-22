@@ -47,11 +47,11 @@
 
 	also not fully done so using wont do much but mess up alot
 */
-# define ALIGN 1
-# define align_to(__no, __to)(((__no)+((__to)-1))&((~(__to))+1))
-# define is_aligned_to(__no, __align)(((__no&__align) == __align)||!(__no&__align))
-# define PAGE_SHIFT 8
-# define PAGE_SIZE (1<<PAGE_SHIFT)
+#define ALIGN 1
+#define align_to(__no, __to)(((__no)+((__to)-1))&((~(__to))+1))
+#define is_aligned_to(__no, __align)(((__no&__align) == __align)||!(__no&__align))
+#define PAGE_SHIFT 8
+#define PAGE_SIZE (1<<PAGE_SHIFT)
 typedef ff_u32_t ar_off_t;
 typedef ff_u32_t ar_size_t;
 typedef ff_u32_t ar_uint_t;
@@ -59,18 +59,18 @@ typedef ff_s32_t ar_int_t;
 
 /* recycle old spots
 */
-# ifndef NULL
-#	define NULL ((void*)0)
-# endif
+#ifndef NULL
+# define NULL ((void*)0)
+#endif
 
 // block flags
-# define BLK_FREE 0x1
-# define BLK_USED 0x2
-# define MMAPED 0x4
-# define BLK_STATIC 0x8
-# define BLK_LINKED 0x10
+#define BLK_FREE 0x01
+#define BLK_USED 0x02
+#define MMAPED 0x04
+#define BLK_STATIC 0x08
+#define BLK_LINKED 0x10
 // pot flag
-# define USE_BRK 0x1
+#define USE_BRK 0x01
 
 /*
 	min about that can be trimed from oversized block
@@ -78,58 +78,58 @@ typedef ff_s32_t ar_int_t;
 #define TRIM_MIN 0x13
 
 // MAX SHRINK
-#define MAX_SH 0xf
+#define MAX_SH 0x0f
 
 // MAX GROW
-#define MAX_GR 0xf
+#define MAX_GR 0x0f
 
-# define get_pot(__b) \
+#define get_pot(__b) \
 	*(potp*)(((ff_u8_t*)(__b)-(__b)->off)-sizeof(potp*))
-# define is_flag(__flags, __flag) \
+#define is_flag(__flags, __flag) \
 	(((__flags)&(__flag))==(__flag))
 
-# define is_free(__b) \
+#define is_free(__b) \
 	is_flag((__b)->flags, BLK_FREE)
-# define is_used(__b) \
+#define is_used(__b) \
 	is_flag((__b)->flags, BLK_USED)
-# define is_static(__b) \
+#define is_static(__b) \
 	is_flag((__b)->flags, BLK_STATIC)
 
-# define get_block(__pot, __off) \
+#define get_block(__pot, __off) \
 	((blockp)(((ff_u8_t*)(__pot)->end)+(__off)))
 
-# define block_next(__pot, __b) \
+#define block_next(__pot, __b) \
 	get_block(__pot, (__b)->next)
-# define block_prev(__pot, __b) \
+#define block_prev(__pot, __b) \
 	get_block(__pot, (__b)->prev)
 
-# define AR_NULL ((ar_off_t)~0)
-# define is_null(__p) ((__p)==AR_NULL) 
-# define not_null(__p) ((__p)!=AR_NULL)
+#define AR_NULL ((ar_off_t)~0)
+#define is_null(__p) ((__p)==AR_NULL) 
+#define not_null(__p) ((__p)!=AR_NULL)
 
-# define POT_SIZE 0x986f
-# define lkpot(__pot) \
+#define POT_SIZE 0x986f
+#define lkpot(__pot) \
 	ffly_mutex_lock(&(__pot)->lock)
-# define ulpot(__pot) \
+#define ulpot(__pot) \
 	ffly_mutex_unlock(&(__pot)->lock)
 
-# define lkrod(__rod) \
+#define lkrod(__rod) \
 	ffly_mutex_lock(&(__rod)->lock)
-# define ulrod(__rod) \
+#define ulrod(__rod) \
 	ffly_mutex_unlock(&(__rod)->lock)
 
-# define no_bins 81
-# define bin_no(__bc) \
+#define no_bins 81
+#define bin_no(__bc) \
 	(((ff_u32_t)(__bc))>>3 > 16?16+(((ff_u32_t)(__bc))>>7 > 16?16+(((ff_u32_t)(__bc))>>11 > 16?16+(((ff_u32_t)(__bc))>>15 > 16?16+(((ff_u32_t)(__bc))>>19 > 16?16: \
 	(((ff_u32_t)(__bc))>>19)):(((ff_u32_t)(__bc))>>15)):(((ff_u32_t)(__bc))>>11)):(((ff_u32_t)(__bc))>>7)):(((ff_u32_t)(__bc))>>3))
 
-# define get_bin(__pot, __bc) \
+#define get_bin(__pot, __bc) \
 	(*((__pot)->bins+bin_no(__bc)))
-# define bin_at(__pot, __bc) \
+#define bin_at(__pot, __bc) \
 	((__pot)->bins+bin_no(__bc))
 
 
-# define be_vigilant
+#define be_vigilant
 //# define barebone
 /*
 	erase block when freed
@@ -276,14 +276,14 @@ typedef struct block {
 	ff_u8_t flags;
 } __attribute__((packed)) *blockp;
 
-# define pot_size sizeof(struct pot)
-# define block_size sizeof(struct block)
+#define pot_size sizeof(struct pot)
+#define block_size sizeof(struct block)
 void static* _ffly_balloc(potp, ff_uint_t);
 void static _ffly_bfree(potp, void*);
 ff_u64_t static ff_ar_dead(potp);
 ff_u64_t static ff_ar_used(potp);
 ff_u64_t static ff_ar_buried(potp);
-# define cur_arena \
+#define cur_arena \
 	((potp)*(spot+ffly_tls_get(arena_tls)))
 /*
 	TODO:
@@ -610,11 +610,11 @@ _erase(void *__p, ff_uint_t __size) {
 ff_err_t
 ffly_ar_init(void) {
 	ar_erase = _erase;
-# ifndef __tty
+#ifndef __tty
 	arout = open("arout", O_WRONLY|O_CREAT, S_IRUSR|S_IWUSR);
-# else
+#else
 	arout = open("/dev/tty", O_WRONLY, 0);
-# endif
+#endif
 	if (arout == -1) {
 		reterr;
 	}

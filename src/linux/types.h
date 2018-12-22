@@ -5,7 +5,7 @@
 	TODO:
 		remove __linux and just use __size_t or __ksize_t
 */
-typedef long __slong_t;
+typedef long int __slong_t;
 typedef long unsigned __ulong_t;
 // remove linux so __pid_t
 typedef ff_s32_t __linux_pid_t;

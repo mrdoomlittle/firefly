@@ -14,7 +14,7 @@
 __linux_pid_t getpid(void);
 __linux_pid_t getppid(void);
 
-ff_s32_t open(char const*, ff_s32_t, ff_s32_t);
+ff_s32_t open(char const*, ff_u32_t, ff_u32_t);
 
 ff_s32_t read(ff_u32_t, void*, ff_u64_t);
 ff_s32_t write(ff_u32_t, void*, ff_u64_t);
@@ -22,7 +22,7 @@ ff_s32_t pwrite(ff_u32_t, void*, ff_u64_t, ff_u64_t);
 ff_s32_t pread(ff_u32_t, void*, ff_u64_t, ff_u64_t);
 ff_s32_t access(char const*, ff_u32_t);
 
-ff_s32_t fsync(ff_s32_t);
+ff_s32_t fsync(ff_u32_t);
 ff_s32_t lseek(ff_u32_t, ff_u64_t, ff_u32_t);
 ff_s32_t exit(ff_s32_t);
 ff_s32_t getcwd(char*, ff_u64_t);

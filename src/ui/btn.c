@@ -12,14 +12,21 @@
 # include "../memory/mem_free.h"
 # include "../system/flags.h"
 # include "../carriage.h"
-# define BTN_SCHED 0x01
+#define BTN_SCHED 0x01
+# include "../graphics/chamber.h"
+# include "../oddity.h"
+void static draw(long long __arg) {
+	ffly_gui_btnp b;
+	b = (ffly_gui_btnp)__arg;
+	ffly_fprintf(ffly_log, "button draw.\n");
+	ffly_pallet_draw(&b->texture, b->x, b->y);
+}
 
 void
-ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
-	ff_u16_t __height, ff_u16_t __x, ff_u16_t __y, void(*__get)(ff_u8_t, long long, void*), void *__gt_arg)
+ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width, ff_u16_t __height, ff_u8_t __flags,
+	ff_u16_t __x, ff_u16_t __y, void(*__get)(ff_u8_t, long long, void*), void *__gt_arg)
 {
 	ffly_pallet_init(&__btn->texture, __width, __height, _ffly_tile_16);
-//	ffly_pallet_update(&__btn->texture, __texture, __width, __height);
 	__btn->pressed = -1;
 	__btn->hovering = -1;
 	__btn->x = __x;
@@ -29,12 +36,16 @@ ffly_gui_btn_init(ffly_gui_btnp __btn, ff_u8_t *__texture, ff_u16_t __width,
 	__btn->arg_p = NULL;
 	__btn->press = NULL;
 	__btn->hover = NULL;
-	__btn->flags = 0x00;
+	__btn->flags = __flags;
 	__btn->release = NULL;
 	__btn->c = ffly_carriage_add(_ff_carr0);
 	ffly_carriage_dud(_ff_carr0);	
 	__btn->get = __get;
 	__btn->gt_arg = __gt_arg;
+
+	if ((__flags&FFLY_UI_BT_HOG)>0) {
+		__btn->co = ffly_chamber_add(draw, (long long)__btn, __btn->ch = __ffly__chamber__);
+	}
 
 	__get(0x00, (long long)&__btn->pt_x, __gt_arg);
 	__get(0x01, (long long)&__btn->pt_y, __gt_arg);
@@ -57,18 +68,17 @@ void ffly_gui_btn_disable(ffly_gui_btnp __btn) {
 
 ff_err_t ffly_gui_btn_draw(ffly_gui_btnp __btn) {
 	ff_err_t err;
-	ffly_fprintf(ffly_log, "button draw.\n");
-	ffly_pallet_draw(&__btn->texture, __btn->x, __btn->y);
+	draw((long long)__btn);
 	return FFLY_SUCCESS;
 }
 
-ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t *__texture, ff_u16_t __width,
-	ff_u16_t __height, ff_u16_t __x, ff_u16_t __y,  void(*__get)(ff_u8_t, long long, void*), void *__gt_arg)
+ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t *__texture, ff_u16_t __width, ff_u16_t __height, ff_u8_t __flags,
+	ff_u16_t __x, ff_u16_t __y,  void(*__get)(ff_u8_t, long long, void*), void *__gt_arg)
 {
 	ffly_gui_btnp btn;
 
 	btn = (ffly_gui_btnp)__ffly_mem_alloc(sizeof(struct ffly_gui_btn));
-	ffly_gui_btn_init(btn, __texture, __width, __height, __x, __y, __get, __gt_arg);
+	ffly_gui_btn_init(btn, __texture, __width, __height, __flags, __x, __y, __get, __gt_arg);
 	return btn;
 }
 
@@ -77,6 +87,7 @@ void ffly_gui_btn_sched(ffly_gui_btnp __btn) {
 		__btn->sched_id = ffly_schedule(ffly_gui_btn_handle, __btn, 2);
 		__btn->flags |= BTN_SCHED;
 	} else {
+		caught_oddity;
 		// warning
 	}
 }
@@ -86,6 +97,10 @@ void ffly_gui_btn_destroy(ffly_gui_btnp __btn) {
 		ffly_sched_rm(__btn->sched_id);
 
 	ffly_pallet_de_init(&__btn->texture);
+
+	if ((__btn->flags&FFLY_UI_BT_HOG)>0) {
+		ffly_chamber_rm(__btn->ch, __btn->co);
+	}
 	__ffly_mem_free(__btn);
 }
 

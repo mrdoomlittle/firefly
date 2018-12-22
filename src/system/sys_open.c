@@ -1,5 +1,5 @@
 # include "../ffint.h"
-ff_s32_t open(char const *__file, ff_s32_t __flags, ff_s32_t __mode) {
+ff_s32_t open(char const *__file, ff_u32_t __flags, ff_u32_t __mode) {
     ff_s32_t ret;
     __asm__("movq %1, %%rdi\n\t"
         "movl %2, %%esi\n\t"

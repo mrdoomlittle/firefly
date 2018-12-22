@@ -6,8 +6,20 @@
 # include "../ffly_def.h"
 # include "../event.h"
 # include "../pallet.h"
-# define FFLY_UI_BT_ENABLED 0x02
-# define FFLY_UI_BT_TEXT 0x04
+#define FFLY_UI_BT_HOG 0x08
+#define FFLY_UI_BT_ENABLED 0x02
+#define FFLY_UI_BT_TEXT 0x04
+
+#define _ui_btn_creat(...)\
+	ffly_gui_btn_creat(__VA_ARGS__)
+#define _ui_btn_sched(...)\
+	ffly_gui_btn_sched(__VA_ARGS__)
+#define _ui_btn_enable(...)\
+	ffly_gui_btn_enable(__VA_ARGS__)
+#define _ui_btn_disable(...)\
+	ffly_gui_btn_disable(__VA_ARGS__)
+#define _ui_btn_destroy(...)\
+	ffly_gui_btn_destroy(__VA_ARGS__)
 struct ffly_gui_btn {
 	ff_u8_t id;
 	struct ffly_pallet texture;
@@ -24,6 +36,7 @@ struct ffly_gui_btn {
 	ff_u8_t flags;
 	ff_u32_t sched_id;
 	ff_i8_t c;
+	ff_u32_t co, ch;
 	void *arg_p;
 	void(*press)(struct ffly_gui_btn*, void*);
 	void(*release)(struct ffly_gui_btn*, void*);
@@ -37,10 +50,10 @@ extern "C" {
 # endif
 void ffly_gui_btn_enable(ffly_gui_btnp);
 void ffly_gui_btn_disable(ffly_gui_btnp);
-ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t*, ff_u16_t, ff_u16_t, ff_u16_t, ff_u16_t, void(*)(ff_u8_t, long long, void*), void*);
+ffly_gui_btnp ffly_gui_btn_creat(ff_u8_t*, ff_u16_t, ff_u16_t, ff_u8_t, ff_u16_t, ff_u16_t, void(*)(ff_u8_t, long long, void*), void*);
 void ffly_gui_btn_sched(ffly_gui_btnp);
 void ffly_gui_btn_destroy(ffly_gui_btnp);
-void ffly_gui_btn_init(ffly_gui_btnp, ff_u8_t*, ff_u16_t, ff_u16_t, ff_u16_t, ff_u16_t, void(*)(ff_u8_t, long long, void*), void*);
+void ffly_gui_btn_init(ffly_gui_btnp, ff_u8_t*, ff_u16_t, ff_u16_t, ff_u8_t, ff_u16_t, ff_u16_t, void(*)(ff_u8_t, long long, void*), void*);
 ff_err_t ffly_gui_btn_draw(ffly_gui_btnp);
 ff_err_t ffly_gui_btn_enable_ir(ffly_gui_btnp);
 ff_i8_t ffly_gui_btn_handle(void*);

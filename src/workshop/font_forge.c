@@ -25,14 +25,20 @@ void static clear(void) {
 #define dentat(__x, __y) \
 	(map+(__x)+((__y)*(ws_width>>DENT_SHIFT)))
 
+static void de_init(void) {
+	free(map);
+}
 
-void ws_fontforge_init(void) {
-	*(workshop.cu++) =  ws_fontforge_de_init;
+void static _tick(void);
+
+void ws_fontforge(void) {
+	workshop.de_init = de_init;
+	tick = _tick;
 	map = (struct dent*)malloc((nd = ((ws_width>>DENT_SHIFT)*(ws_height>>DENT_SHIFT)))*sizeof(struct dent));
 }
 
 
-void ws_fontforge_tick(void) {
+void _tick(void) {
 	struct dent *d;
 	ff_uint_t x, y;
 	y = 0;
@@ -49,8 +55,3 @@ void ws_fontforge_tick(void) {
 		y++;
 	}
 }
-
-void ws_fontforge_de_init(void) {
-	free(map);
-}
-

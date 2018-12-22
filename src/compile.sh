@@ -82,11 +82,11 @@ $ffly_cc $cc_flags -c -o $dst_dir/compactor.o $root_dir/compactor.c
 $ffly_cc $cc_flags -c -o $dst_dir/terrain.o $root_dir/terrain.c
 $ffly_cc $cc_flags -c -o $dst_dir/duct.o $root_dir/duct.c
 $ffly_cc $cc_flags -c -o $dst_dir/gravity.o $root_dir/gravity.c
-$ffly_cc $cc_flags -c -o $dst_dir/graphics.o $root_dir/graphics.c
 $ffly_cc $cc_flags -c -o $dst_dir/lot.o $root_dir/lot.c
 $ffly_cc $cc_flags -c -o $dst_dir/chunk_manager.o $root_dir/chunk_manager.c
 $ffly_cc $cc_flags -c -o $dst_dir/uni.o $root_dir/uni.c
 $ffly_cc $cc_flags -c -o $dst_dir/chunk.o $root_dir/chunk.c
+$ffly_cc $cc_flags -c -o $dst_dir/context.o $root_dir/context.c
 $ffly_cc $cc_flags -c -o $dst_dir/obj.o $root_dir/obj.c
 $ffly_cc $cc_flags -c -o $dst_dir/obj_pool.o $root_dir/obj_pool.c
 $ffly_cc $cc_flags -c -o $dst_dir/obj_manager.o $root_dir/obj_manager.c
@@ -222,7 +222,8 @@ $ffly_cc $cc_flags -c -o $dst_dir/fs/m/m.o $root_dir/fs/m/m.c
 $ffly_cc $cc_flags -c -o $dst_dir/fs.o $root_dir/fs.c
 $ffly_cc $cc_flags -c -o $dst_dir/fs/m/exec.o $root_dir/fs/m/exec.c
 $ffly_cc $cc_flags -c -o $dst_dir/oddity.o $root_dir/oddity.c
-$ffly_cc $cc_flags -c -o $dst_dir/duct/ipc_pipe.o $root_dir/duct/ipc_pipe.c
+$ffly_cc $cc_flags -c -o $dst_dir/duct/shm_pipe.o $root_dir/duct/shm_pipe.c
+$ffly_cc $cc_flags -c -o $dst_dir/log.o $root_dir/log.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -232,10 +233,10 @@ $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/bole.o $dst_dir/put_bit.o  $d
 $dst_dir/ss.o $dst_dir/call.o $dst_dir/rand.o $dst_dir/lib.o $dst_dir/mod.o $dst_dir/mod/port.o \
 $dst_dir/net.o $dst_dir/crypto.o $dst_dir/in.o $dst_dir/inet_addr.o $dst_dir/init.o \
 $dst_dir/opt.o $dst_dir/depart.o $dst_dir/rdm.o $dst_dir/pellet.o $dst_dir/crypto/frazzle.o \
-$dst_dir/signal.o $dst_dir/hatch.o $dst_dir/rat.o \
+$dst_dir/signal.o $dst_dir/context.o $dst_dir/hatch.o $dst_dir/rat.o \
 $dst_dir/lot.o $dst_dir/chunk_manager.o $dst_dir/uni.o $dst_dir/chunk.o \
 $dst_dir/obj.o $dst_dir/obj_pool.o $dst_dir/obj_manager.o $dst_dir/polygon.o \
-$dst_dir/ui/camera.o $dst_dir/graphics.o $dst_dir/gravity.o $dst_dir/duct.o \
+$dst_dir/ui/camera.o $dst_dir/gravity.o $dst_dir/duct.o \
 $dst_dir/terrain.o $dst_dir/compactor.o $dst_dir/stores.o $dst_dir/db.o \
 $dst_dir/db/connect.o $dst_dir/layer.o $dst_dir/ui/btn.o $dst_dir/tile.o \
 $dst_dir/pallet.o $dst_dir/resource.o $dst_dir/cache.o $dst_dir/clock.o \
@@ -266,4 +267,5 @@ $dst_dir/slurry/client.o $dst_dir/slurry/connection.o \
 $dst_dir/slurry/proto.o $dst_dir/slurry/slurry.o $dst_dir/tc.o $dst_dir/time.o \
 $dst_dir/nought/objbuf.o $dst_dir/bron/objbuf.o $dst_dir/nought/tex.o \
 $dst_dir/fs.o $dst_dir/fs/m/file.o $dst_dir/fs/m/hash.o $dst_dir/fs/m/alloc.o \
-$dst_dir/fs/m/m.o $dst_dir/fs/m/exec.o $dst_dir/oddity.o $dst_dir/duct/ipc_pipe.o"
+$dst_dir/fs/m/m.o $dst_dir/fs/m/exec.o $dst_dir/oddity.o $dst_dir/duct/shm_pipe.o
+$dst_dir/log.o"

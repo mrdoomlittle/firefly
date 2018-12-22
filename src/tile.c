@@ -12,9 +12,9 @@
 static struct ffly_tile *top = NULL;
 ff_mlock_t static lock = FFLY_MUTEX_INIT;
 
-# define lk \
+#define lk\
 	ffly_mutex_lock(&lock)
-# define ul \
+#define ul\
 	ffly_mutex_unlock(&lock)
 
 void static

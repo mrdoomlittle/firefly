@@ -40,11 +40,15 @@ gcc $cc_flags -c config.c
 gcc $cc_flags -c server.c
 gcc $cc_flags -c ../oddity.c
 gcc $cc_flags -c window.c -o window.o.0
-objs="config.o io.o file.o mem_dup.o mem_set.o str_len.o mem_cpy.o \
-mutex.o.0 mutex.o.1 atomic_op.o.0 atomic_op.o.1 \
+gcc $cc_flags -c ../duct/shm_pipe.c -o shm_pipe.o
+gcc $cc_flags -c ../system/fs.c -o fs.o
+gcc $cc_flags -c ../system/posix_fs.c -o posix_fs.o
+gcc $cc_flags -c ../log.c -o log.o
+objs="config.o io.o file.o log.o mem_dup.o mem_set.o str_len.o mem_cpy.o \
+mutex.o.0 mutex.o.1 atomic_op.o.0 atomic_op.o.1 posix_fs.o \
 mem_alloc.o mem_free.o mem_realloc.o pool.o event.o.0 event.o.1 queue.o \
 pipe.o shm.o mode.o bcopy.o duct.o image.o png.o jpeg.o sys_nanosleep.o.0 \
-sys_nanosleep.o.1 slurry.o server.o window.o.0 proto.o oddity.o"
+sys_nanosleep.o.1 slurry.o server.o window.o.0 proto.o oddity.o shm_pipe.o fs.o"
 #gcc $cc_flags -c connection.c
 #gcc $cc_flags client.c connection.o -o client
 gcc $cc_flags main.c $objs -lpng -ljpeg -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm 

@@ -116,8 +116,13 @@ bh: clean
 	gcc $(cc_flags) -o ffbhs bh/server.c bh.o bh/input.o bh/output.o bh/tape.o $(ffly_objs) -nostdlib
 	gcc $(cc_flags) -o ffbhc bh/client.c bh.o bh/input.o bh/output.o bh/tape.o $(ffly_objs) -nostdlib
 workshop: clean
+	gcc $(cc_flags) -c engine/init.c -o engine/init.o
+	gcc $(cc_flags) -c engine/entry.c
+	gcc $(cc_flags) -c engine/loop.c
+	gcc $(cc_flags) -c engine/view.c
 	gcc $(cc_flags) -c workshop/font_forge.c
-	gcc $(cc_flags) workshop.c font_forge.o $(ffly_objs) -nostdlib
+	gcc $(cc_flags) -c workshop/front.c
+	gcc $(cc_flags) workshop.c font_forge.o engine/init.o front.o loop.o entry.o view.o $(ffly_objs) -nostdlib
 all:
 	rm -f *.o
 	nasm -f elf64 $(nasm_flags) -o mutex.o system/asm/mutex.asm

@@ -1,25 +1,27 @@
 # include "duct.h"
-# ifndef __ffly_bridge
-# include "graphics/frame_buff.h"
+#ifndef __ffly_bridge
+# include "context.h"
 # include "memory/plate.h"
 # include "dep/mem_dup.h"
 # include "dep/mem_cpy.h"
-# endif
+#endif
 # include "system/io.h"
 # include "memory/mem_alloc.h"
 # include "memory/mem_free.h"
 # include "system/error.h"
-# ifndef __ffly_bridge
-# define STACKSZ 512
+#ifndef __ffly_bridge
+#define STACKSZ 512
 ff_u8_t static stack[STACKSZ];
-# else
+#else
 ff_uint_t static stack = 0;
-# endif
-void duct_ipc_pipe(ff_dcp, ff_u8_t);
+#endif
+void duct_shm_pipe(ff_dcp, ff_u8_t);
 ff_dcp ff_duct(ff_u8_t __comm, ff_u8_t __flags) {
 	ff_dcp c;
 	c = (ff_dcp)__ffly_mem_alloc(sizeof(struct ff_dc));
-	duct_ipc_pipe(c, __flags);
+	
+	// ignore for now this is default
+	duct_shm_pipe(c, __flags);
 
 	return c;
 }
@@ -158,16 +160,17 @@ void static *op[] = {
 	_duct_nt
 };
 
+# include "intsize.h"
 ff_uint_t static osz[] = {
-	sizeof(ff_u16_t)*2,		//duct_load
-	sizeof(ff_u16_t)*2,		//duct_store
+	__16*2,					//duct_load
+	__16*2,					//duct_store
 	0,						//duct_end
 	0,						//duct_exit
-	(sizeof(ff_u32_t)*2)+sizeof(ff_u16_t),	//duct_write
-	(sizeof(ff_u32_t)*2)+sizeof(ff_u16_t),  //duct_read
+	(__32*2)+__16,			//duct_write
+	(__32*2)+__16,			//duct_read
 	sizeof(struct ff_des),	//duct_event
-	sizeof(ff_u32_t)+sizeof(ff_u16_t),		//duct_alloc
-	sizeof(ff_u16_t),		//duct_free
+	__32+__16,				//duct_alloc
+	__16,					//duct_free
 	0,						//duct_get_frame
 	0
 };
@@ -243,15 +246,15 @@ duct_read(void) {
 	_write(c, ((ff_u8_t*)dst)+off, size);
 }
 
-# define jmpagain \
+#define jmpagain \
 	__asm__("jmp _duct_again")
-# define jmpnext \
+#define jmpnext \
 	__asm__("jmp _duct_next")
-# define jmpend \
+#define jmpend \
 	__asm__("jmp _duct_end")
-# define jmpfi \
+#define jmpfi \
 	__asm__("jmp _duct_fi")
-# define OP(__name) \
+#define OP(__name) \
 	__asm__(__name ":\n\t")
 # define MAX 11
 ff_i8_t ff_duct_serve(ff_dcp __c) {
@@ -287,8 +290,10 @@ ff_i8_t ff_duct_serve(ff_dcp __c) {
 	jmpfi;
 
 	OP("_duct_get_frame"); {
-		ffly_fb_gen(__frame_buff__);
-		_write(__c, ffly_frame(__frame_buff__), __frame_buff__->width*__frame_buff__->height*__frame_buff__->chn_c);
+		ffly_frame_buffp fb;
+		fb = __ctx(hl_fb);
+		fb_gen(fb);
+		_write(__c, ffly_frame(fb), fb_w(fb)*fb_h(fb)*fb_cc(fb));
 	}
 	jmpfi;
 

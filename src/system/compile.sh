@@ -207,6 +207,8 @@ $ffly_cc -c $cc_flags -o $dst_dir/util/ff6.o $root_dir/util/ff6.c
 $ffly_cc -c $cc_flags -o $dst_dir/util/ff5.o $root_dir/util/ff5.c
 $ffly_cc -c $cc_flags -o $dst_dir/tcsetattr.o $root_dir/tcsetattr.c
 $ffly_cc -c $cc_flags -o $dst_dir/tcgetattr.o $root_dir/tcgetattr.c
+$ffly_cc -c $cc_flags -o $dst_dir/fs.o $root_dir/fs.c
+$ffly_cc -c $cc_flags -o $dst_dir/posix_fs.o $root_dir/posix_fs.c
 
 #$ffly_cc -c $cc_flags -o $dst_dir/mal_track.o $root_dir/mal_track.c
 
@@ -275,5 +277,5 @@ $dst_dir/sys_ioctl.o.0 $dst_dir/sys_ioctl.o.1 $dst_dir/tcsetattr.o $dst_dir/tcge
 $dst_dir/sys_timer_settime.o.0 $dst_dir/sys_timer_settime.o.1 \
 $dst_dir/sys_timer_create.o.0 $dst_dir/sys_timer_create.o.1 \
 $dst_dir/sys_timer_delete.o.0 $dst_dir/sys_timer_delete.o.1 \
-$dst_dir/util/ff5.o"
+$dst_dir/util/ff5.o $dst_dir/fs.o $dst_dir/posix_fs.o"
 # $dst_dir/mal_track.o"

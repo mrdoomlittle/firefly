@@ -136,6 +136,17 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "system/vec.h"
 # include "system/pool.h"
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	struct timespec ts0, ts1, ts2, ts3;
+
+	ts2.tv_sec = 0;
+	ts3.tv_sec = 0;
+_again:
+	ffly_printf("%u, %u\n", ts2.tv_sec, ts3.tv_sec);
+	clock_gettime(CLOCK_MONOTONIC, &ts0);
+ 
+	clock_gettime(CLOCK_MONOTONIC, &ts1);
+
+	goto _again;
 //	ffly_vecp p;
 //	ff_err_t err;
 //	p = ffly_vec(10, VEC_AUTO_RESIZE|VEC_AS, &err);

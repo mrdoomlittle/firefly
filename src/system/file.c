@@ -8,7 +8,7 @@
 # include "../dep/mem_dup.h"
 # include "../dep/mem_cpy.h"
 # include "error.h"
-
+# include "fs.h"
 # define is_flag(__flags, __flag) \
 	(((__flags)&(__flag))==(__flag))
 # ifndef __fflib
@@ -49,12 +49,12 @@ ff_err_t drain(struct ffly_file *__f) {
 	if (!(size = __f->ob_p-__f->obuf))
 		return FFLY_SUCCESS;
 	if (is_flag(__f->flags, FF_STREAM)) {
-		if (write(__f->fd, __f->obuf, size) == -1) {
+		if (fswrite(__f->fd, __f->obuf, size) == -1) {
 
 		}
 	} else {
 		// not tested
-		if (pwrite(__f->fd, __f->obuf, size, __f->bufdst) == -1) {
+		if (fspwrite(__f->fd, __f->obuf, size, __f->bufdst) == -1) {
 			ffly_fprintfs(ffly_err, "failed to write to file, %s\n", __f->path);
 			return FFLY_FAILURE;
 		}
@@ -75,7 +75,7 @@ ff_err_t ffly_fdrain(struct ffly_file *__f) {
 struct ffly_file*
 ffly_fopen(char const *__path, int __flags, ff_u32_t __mode, ff_err_t *__err) {
 	struct ffly_file *file = (struct ffly_file*)__ffly_mem_alloc(sizeof(struct ffly_file));
-	if ((file->fd = open(__path, __flags, __mode)) == -1) {
+	if ((file->fd = fsopen(__path, __flags, __mode)) == -1) {
 		ffly_fprintfs(ffly_err, "file, failed to open file, error: %d, %s\n", errno, strerror(errno));
 		return NULL;
 	}
@@ -86,11 +86,11 @@ ffly_fopen(char const *__path, int __flags, ff_u32_t __mode, ff_err_t *__err) {
 		return NULL;
 	}
 	*__err = FFLY_SUCCESS;
-# ifndef __fflib
+#ifndef __fflib
 	printf("%s\n", mode_str(__flags));
 	file->libc_fp = fdopen(dup(file->fd), mode_str(__flags));
 	fchmod(fileno(file->libc_fp), __mode);
-# endif
+#endif
 	file->drain = -1;
 	file->bufdst = 0;
 	file->off = 0;
@@ -128,7 +128,7 @@ ff_err_t ffly_fstat(char const *__path, struct ffly_stat *__stat) {
 }
 
 ff_off_t ffly_fseek(struct ffly_file *__f, ff_off_t __off, int __whence) {
-	__linux_off_t off = lseek(__f->fd, __off, __whence);
+	__linux_off_t off = fslseek(__f->fd, __off, __whence);
 	if (off == (__linux_off_t)-1) {
 		ffly_fprintfs(ffly_err, "fseek failed.\n");
 		return 0;
@@ -142,12 +142,12 @@ ff_off_t ffly_fseek(struct ffly_file *__f, ff_off_t __off, int __whence) {
 }
 
 ff_err_t ffly_fcreat(char const *__path, ff_u32_t __mode) {
-	if (access(__path, F_OK)) {
+	if (fsaccess(__path, F_OK)) {
 		ffly_fprintfs(ffly_err, "file at '%s' allready exists.\n");
 		return FFLY_FAILURE;
 	}
 
-	if (creat(__path, __mode) < 0) {
+	if (fscreat(__path, __mode) < 0) {
 		ffly_fprintfs(ffly_err, "file, failed to create file, errno: %d, %s\n", errno, strerror(errno));
 		return FFLY_FAILURE;
 	}
@@ -163,7 +163,7 @@ ff_err_t ffly_fwrites(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 	ffly_mutex_lock(&__f->lock);
 	if (__f->ob_p>__f->obuf)
 		drain(__f);
-	if (write(__f->fd, __p, __bc) == -1) {
+	if (fswrite(__f->fd, __p, __bc) == -1) {
 
 	}
 	ffly_mutex_unlock(&__f->lock);
@@ -171,19 +171,14 @@ ff_err_t ffly_fwrites(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 }
 
 ff_err_t ffly_fpread(struct ffly_file *__f, void *__p, ff_uint_t __bc, ff_uint_t __offset) {
-	pread(__f->fd, __p, __bc, __offset);
+	fspread(__f->fd, __p, __bc, __offset);
 }
 
 ff_err_t ffly_fpwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc, ff_uint_t __offset) {
-	pwrite(__f->fd, __p, __bc, __offset);
+	fspwrite(__f->fd, __p, __bc, __offset);
 }
 
 ff_err_t ffly_fwrite(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
-	if (!valid_fd(__f->fd)) {
-		ffly_fprintfs(ffly_err, "file descriptor not valid.\n");
-		return FFLY_FAILURE;
-	}
-
 	ffly_mutex_lock(&__f->lock);
 	if (is_flag(__f->flags, FF_NOBUFF)) {
 		write(__f->fd, __p, __bc);		
@@ -234,12 +229,7 @@ _end:
 }
 
 ff_err_t ffly_fread(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
-	if (!valid_fd(__f->fd)) {
-		ffly_fprintfs(ffly_err, "file descriptor not valid.\n");
-		return FFLY_FAILURE;
-	}
-
-	if (read(__f->fd, __p, __bc) == -1) {
+	if (fsread(__f->fd, __p, __bc) == -1) {
 		ffly_fprintfs(ffly_err, "failed to read file, %s\n", __f->path);
 		return FFLY_FAILURE;
 	}
@@ -247,14 +237,9 @@ ff_err_t ffly_fread(struct ffly_file *__f, void *__p, ff_uint_t __bc) {
 }
 
 ff_err_t ffly_fclose(struct ffly_file *__f) {
-	if (!valid_fd(__f->fd)) {
-		ffly_fprintfs(ffly_err, "file descriptor not valid.\n");
-		return FFLY_FAILURE;
-	}
-
 	drain(__f);
 
-	close(__f->fd);
+	fsclose(__f->fd);
 # ifndef __fflib
 	fclose(__f->libc_fp);
 # endif

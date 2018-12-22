@@ -3,6 +3,7 @@
 # include "ffint.h"
 /*
 	anything out of the ordinary
+	errors/warnings/etc...
 */
 extern ff_u32_t oddity_count;
 #ifdef ignore_odditys

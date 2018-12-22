@@ -12,6 +12,10 @@
 	TODO:
 		lock address within stack that a pointer may be stored or plate them like /memory/plate
 		to avoid giving the user the pointer or dont.... as i dont realy care.
+
+	TODO:
+		for operations that cause sock read/write - create struct and push it onto a stack
+		and after tape has finished or operation calling for stack to be flushed.
 */
 static struct sockaddr_in adr;
 int static sock;

@@ -106,7 +106,7 @@ void ffly_io_closeup() {
 	ffly_fclose(ffly_err);
 }
 
-# ifndef __fflib
+#ifndef __fflib
 ff_mlock_t static lock = FFLY_MUTEX_INIT;
 void static
 ffly_print(FF_FILE *__file, char const *__format, va_list __args) {
@@ -130,10 +130,14 @@ void ffly_fprintfs(FF_FILE *__file, char const *__format, ...) {
 	va_end(args);
 }
 
+void ffly_vfprintf(FF_FILE *__file, char const *__format, va_list __args) {
+	ffly_print(__file, __format, __args);
+}
+
 void ffly_printf(char const *__format, ...) {
 	va_list args;
 	va_start(args, __format);
 	ffly_print(ffly_out, __format, args);
 	va_end(args);
 }
-# endif
+#endif

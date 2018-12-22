@@ -225,7 +225,7 @@ ld_db(void const *__db) {
 # include "../linux/unistd.h"
 # include "../linux/fcntl.h"
 # include "../linux/stat.h"
-
+# include "../oddity.h"
 void static exec(ff_uint_t __n) {
 	ff_u8_t *p, *e;
 	p = ldcode;
@@ -246,11 +246,12 @@ void static exec(ff_uint_t __n) {
 				p+=4;
 				break;
 			}
+			default:
+				caught_oddity;
 
 		}
 	}
 _end:
-
 	return;
 }
 

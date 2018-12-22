@@ -8,9 +8,11 @@
 # include "../system/nanosleep.h"
 # include "../dep/mem_set.h"
 # include "../types/wd_event_t.h"
-# define WIDTH 448
-# define HEIGHT 448
+# include "../system/fs.h"
+#define WIDTH 448
+#define HEIGHT 448
 int main() {
+	ffly_sysfs(FF_POSIX_FS);
 	ffly_io_init();
 	ff_err_t err;
 	ff_dcp c;
@@ -48,7 +50,6 @@ _again:
 
 		ffly_wd_free_event(&window, event);
 		ff_event_free(event);
-		ffly_nanosleep(0, 30000000);
 	}
 
 	ff_duct_get_frame(c, ffly_wd_frame_buff(&window), WIDTH, HEIGHT, 4);

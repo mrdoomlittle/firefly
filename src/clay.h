@@ -2,14 +2,27 @@
 # define __ffly__clay__h
 # include "ffint.h"
 # include "clay/hash.h"
-
-# define clay_8(__p) \
+#ifdef __noninternal
+#define _clay_init(...)\
+	ffly_clay_init(__VA_ARGS__)
+#define _clay_load(...)\
+	ffly_clay_load(__VA_ARGS__)
+#define _clay_read(...)\
+	ffly_clay_read(__VA_ARGS__)
+#define _clay_get(...)\
+	ffly_clay_get(__VA_ARGS__)
+#define _clay_tget(...)\
+	ffly_clay_tget(__VA_ARGS__)
+#define _clay_de_init(...)\
+	ffly_clay_de_init(__VA_ARGS__)
+#endif
+#define _clay_8(__p) \
 	(*(ff_u8_t*)ffly_clay_gettext(__p))
-# define clay_16(__p) \
+#define _clay_16(__p) \
 	(*(ff_u16_t*)ffly_clay_gettext(__p))
-# define clay_32(__p) \
+#define _clay_32(__p) \
 	(*(ff_u32_t*)ffly_clay_gettext(__p))
-# define clay_64(__p) \
+#define _clay_64(__p) \
 	(*(ff_u64_t*)ffly_clay_gettext(__p))
 typedef struct ffly_clay {
 	ff_u8_t *p;

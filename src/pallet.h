@@ -4,6 +4,11 @@
 # include "types.h"
 # include "tile.h"
 
+#define _plt_write(...)\
+	ffly_pallet_write(__VA_ARGS__)
+#define _plt_read(...)\
+	ffly_pallet_read(__VA_ARGS__)
+
 typedef struct ffly_tile* ffly_tilep;
 typedef struct ffly_pallet {
 	ff_uint_t width, height;
@@ -16,7 +21,6 @@ typedef struct ffly_pallet {
 ffly_tilep ffly_tile_at(ffly_palletp, ff_uint_t, ff_uint_t);
 ffly_palletp ffly_pallet_new(ff_uint_t, ff_uint_t, ff_u8_t);
 void ffly_pallet_distroy(ffly_palletp);
-
 void ffly_pallet_init(ffly_palletp, ff_uint_t, ff_uint_t, ff_u8_t);
 void ffly_pallet_de_init(ffly_palletp);
 void ffly_pallet_write(ffly_palletp, void*, ff_uint_t, ff_uint_t, ff_uint_t, ff_uint_t);

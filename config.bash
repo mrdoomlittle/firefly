@@ -1,5 +1,6 @@
 #!/bin/bash
 dirs=(
+	engine
 	fs/m
 	sr
 	dep

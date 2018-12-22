@@ -2,6 +2,15 @@
 # define __ffly__ui__text__h
 # include "../ffint.h"
 # include "../font.h"
+
+#define _ui_text_creat(...)\
+	ffly_ui_text_creat(__VA_ARGS__)
+#define _ui_text_font(...)\
+    ffly_ui_text_font(__VA_ARGS__)
+#define _ui_text_destroy(...)\
+    ffly_ui_text_destroy(__VA_ARGS__)
+#define _ui_text_draw(...)\
+	ffly_ui_text_draw(__VA_ARGS__)
 typedef struct ffly_ui_text {
 	char const *s;
 	ffly_fontp font;

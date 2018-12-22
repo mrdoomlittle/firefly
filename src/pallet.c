@@ -4,11 +4,13 @@
 # include "graphics/draw.h"
 # include "system/io.h"
 # include "system/log.h"
-# define tile_at(__pallet, __x, __y) \
+#define tile_at(__pallet, __x, __y) \
 	(*((__pallet)->tiles+(__x)+((__y)*(__pallet)->wt)))
-# define at(__pallet, __x, __y) \
+#define at(__pallet, __x, __y) \
 	((__pallet)->tiles+(__x)+((__y)*(__pallet)->wt))
-ffly_tilep ffly_tile_at(ffly_palletp __pallet, ff_uint_t __x, ff_uint_t __y) {
+
+ffly_tilep
+ffly_tile_at(ffly_palletp __pallet, ff_uint_t __x, ff_uint_t __y) {
 	return tile_at(__pallet, __x, __y);
 }
 
@@ -35,9 +37,9 @@ void ffly_pallet_draw(ffly_palletp __src, ff_uint_t __x, ff_uint_t __y) {
 	while(y != __src->ht) {
 		x = 0;
 		while(x != __src->wt) {
-# ifdef __ffly_debug
+#ifdef __ffly_debug
 			log("tile, %u:%u\n", x, y);
-# endif
+#endif
 			if (!*(p = at(__src, x, y)))
 				goto _sk;
 
@@ -78,7 +80,10 @@ void ffly_pallet_init(ffly_palletp __pallet, ff_uint_t __width, ff_uint_t __heig
 /*
 	for now simple but inefficient and less error while working on things
 */
-void ffly_pallet_write(ffly_palletp __pallet, void *__src, ff_uint_t __width, ff_uint_t __height, ff_uint_t __x, ff_uint_t __y) {
+void ffly_pallet_write(ffly_palletp __pallet, void *__src,
+	ff_uint_t __width, ff_uint_t __height,
+	ff_uint_t __x, ff_uint_t __y) 
+{
 	ffly_tilep *dst;
 
 	ff_uint_t tx, ty;
@@ -111,7 +116,6 @@ void ffly_pallet_write(ffly_palletp __pallet, void *__src, ff_uint_t __width, ff
 		y++;
 	}
 }
-
 
 void ffly_pallet_read(ffly_palletp __pallet, void *__dst,
 	ff_uint_t __width, ff_uint_t __height,

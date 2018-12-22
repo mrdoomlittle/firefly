@@ -3,30 +3,72 @@
 # include "../ffint.h"
 # include "../types.h"
 # include "err.h"
+#define QUEUE_
 /*
 	page shift
 	value: 32
 */
-# define QUEUE_PAGE_SHIFT 5
+#define QUEUE_PAGE_SHIFT 5
 /*
 	real size = page_count*blk_size
 */
-# define QUEUE_PAGE_SIZE (1<<QUEUE_PAGE_SHIFT)
+#define QUEUE_PAGE_SIZE (1<<QUEUE_PAGE_SHIFT)
 /*
 	max number of pages.
 */
-# define QUEUE_MAX_PAGE_C 32
+#define QUEUE_MAX_PAGE_C 32
+#define _queue_loadfuncs(...)\
+	ffly_queue_loadfuncs(__VA_ARGS__)
+#define _queue_init(...)\
+	ffly_queue_init(__VA_ARGS__)
+#define _queue_de_init(...)\
+	ffly_queue_de_init(__VA_ARGS__)
+#define _queue_size(...)\
+	ffly_queue_size(__VA_ARGS__)
+#define _queue_push(...)\
+	ffly_queue_push(__VA_ARGS__)
+#define _queue_pop(...)\
+	ffly_queue_pop(__VA_ARGS__)
+#define _queue_front(...)\
+	ffly_queue_front(__VA_ARGS__)
+#define _queue_back(...)\
+	ffly_queue_back(__VA_ARGS__)
 struct ffly_queue {
+/*
 	void **p;
 	ff_uint_t page_c;
 	ff_size_t blk_size;
 	ff_off_t top, end;
+*/
+	ff_err_t(*init)(long long, ff_uint_t);
+	ff_err_t(*de_init)(long long);
+	ff_size_t(*size)(long long);
+	ff_err_t(*push)(long long, void*);
+	ff_err_t(*pop)(long long, void*);
+	void*(*front)(long long);
+	void*(*back)(long long);
+	long long ctx;
 };
 
 typedef struct ffly_queue* ffly_queuep;
+#define ffly_queue_init(__q, __bks)\
+	(__q)->init((__q)->ctx, __bks)
+#define ffly_queue_de_init(__q)\
+	(__q)->de_init((__q)->ctx)
+#define ffly_queue_size(__q)\
+	(__q)->size((__q)->ctx)
+#define ffly_queue_push(__q, __p)\
+	(__q)->push((__q)->ctx, __p)
+#define ffly_queue_pop(__q, __p)\
+	(__q)->pop((__q)->ctx, __p)
+#define ffly_queue_front(__q)\
+	(__q)->front((__q)->ctx)
+#define ffly_queue_back(__q)\
+	(__q)->back((__q)->ctx)
 # ifdef __cplusplus
 extern "C" {
 # endif
+/*
 ff_err_t ffly_queue_init(ffly_queuep, ff_uint_t);
 ff_err_t ffly_queue_de_init(ffly_queuep);
 ff_size_t ffly_queue_size(ffly_queuep);
@@ -34,6 +76,8 @@ ff_err_t ffly_queue_push(ffly_queuep, void*);
 ff_err_t ffly_queue_pop(ffly_queuep, void*);
 void* ffly_queue_front(ffly_queuep);
 void* ffly_queue_back(ffly_queuep);
+*/
+void ffly_queue_loadfuncs(ffly_queuep);
 # ifdef __cplusplus
 }
 # include "io.h"

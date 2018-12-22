@@ -60,12 +60,14 @@ gcc $cc_flags -c png.c
 gcc $cc_flags -c jpeg.c
 gcc $cc_flags -c mare.c
 gcc $cc_flags -c ../oddity.c
-gcc $cc_flags -c ../duct/ipc_pipe.c
+gcc $cc_flags -c ../duct/shm_pipe.c
+gcc $cc_flags -c ../log.c
+gcc $cc_flags -c ../system/posix_fs.c
+gcc $cc_flags -c ../system/fs.c
 objs="window.o io.o file.o mem_dup.o mem_set.o str_len.o mem_cpy.o \
 mutex.o.0 mutex.o.1 atomic_op.o.0 atomic_op.o.1 \
 mem_alloc.o mem_free.o mem_realloc.o pool.o event.o.0 event.o.1 queue.o \
-pipe.o shm.o mode.o bcopy.o oddity.o duct.o image.o png.o jpeg.o sys_nanosleep.o.0 sys_nanosleep.o.1 mare.o ipc_pipe.o"
-
+pipe.o shm.o mode.o bcopy.o oddity.o fs.o duct.o image.o png.o jpeg.o sys_nanosleep.o.0 sys_nanosleep.o.1 mare.o shm_pipe.o log.o posix_fs.o"
 if [ $use_x11 -eq 1 ]; then
 	objs="$objs x11.o x11_m.o"
 fi

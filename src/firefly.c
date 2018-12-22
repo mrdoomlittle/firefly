@@ -18,11 +18,7 @@
 # include "system/util/ff6.h"
 # include "system/error.h"
 # include "linux/time.h"
-/*
-extern void*(*ffly_allocp)(ff_uint_t);
-extern void(*ffly_freep)(void*);
-extern void*(*ffly_reallocp)(void*, ff_uint_t);
-*/
+# include "log.h"
 #define CFG_FILE "sys.bole"
 #define INIT_ARRSZ 1
 void ff_time_init(void);
@@ -35,6 +31,7 @@ void __init_array(void) {
 	void(**init)(void),(**end)(void);
 	init = init_array;
 	end = init+INIT_ARRSZ;
+	ff_log("initing array.\n");
 	ffly_printf("initing shit.\n");
 	while(init != end) {
 		(*(init++))();
@@ -131,6 +128,7 @@ check_conf_version(void) {
 # include "linux/stat.h"
 # include "linux/fcntl.h"
 # include "system/string.h"
+# include "system/fs.h"
 void ffly_string_init(void);
 ff_err_t static
 init() {
@@ -146,6 +144,7 @@ init() {
 		_ret;
 	}
 
+	ffly_sysfs(FF_POSIX_FS);
 	ffly_string_init();
 	ff_location_init();
 #ifndef __ffly_crucial

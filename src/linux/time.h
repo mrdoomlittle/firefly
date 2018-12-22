@@ -5,7 +5,7 @@
 # include "signal.h"
 struct timespec {
 	__linux_time_t tv_sec;
-	ff_u64_t tv_nsec;
+	long tv_nsec;
 };
 
 struct timeval {
@@ -18,8 +18,8 @@ struct itimerspec {
 	struct timespec it_value;
 };
 
-# define CLOCK_REALTIME 0
-# define CLOCK_MONOTONIC 1
+#define CLOCK_REALTIME 0
+#define CLOCK_MONOTONIC 1
 
 ff_s32_t clock_gettime(__linux_clockid_t, struct timespec*);
 ff_s32_t timer_create(__linux_clockid_t, struct sigevent*, __linux_timer_t*);

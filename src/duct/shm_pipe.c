@@ -38,7 +38,7 @@ _connect(struct context *__ct) {
 	ffly_pipe_connect(__ct->pipe);
 }
 
-void duct_ipc_pipe(ff_dcp __c, ff_u8_t __flags) {
+void duct_shm_pipe(ff_dcp __c, ff_u8_t __flags) {
 	struct context *ct;
 	ct = __ffly_mem_alloc(sizeof(struct context));
 	ct->flags = __flags;

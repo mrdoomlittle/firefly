@@ -150,6 +150,7 @@ static char const *ostr[] = {
 	"tex_new",
 	"tex_destroy"
 };
+
 void nt_raise(ff_u8_t *__bin, ff_uint_t __size) {
 	ffly_printf("bin size: %u\n", __size);
 
@@ -165,7 +166,9 @@ _again:
 		ffly_printf("invalid operation.\n");
 		return;
 	}
+#ifdef DEBUG
 	ffly_printf("nought_op{%s}\n", ostr[on]);
+#endif
 	op[on]();
 
 	nt_raise_p+=os[on];

@@ -16,13 +16,15 @@ struct cmd {
 	ff_uint_t func;
 };
 
+#define CMD(__name)\
+	&(struct cmd){#__name, _cmd_ ## __name}
 static struct cmd *cmd_tbl[] = {
-	&(struct cmd){"help", _cmd_help},
-	&(struct cmd){"exit", _cmd_exit},
-	&(struct cmd){"info", _cmd_info},
-	&(struct cmd){"ff5", _cmd_ff5},
-	&(struct cmd){"ff6", _cmd_ff6},
-	&(struct cmd){"exec", _cmd_exec},
+	CMD(help),
+	CMD(exit),
+	CMD(info),
+	CMD(ff5),
+	CMD(ff6),
+	CMD(exec),
 	&(struct cmd){"p", _cmd_er},
 	NULL
 };

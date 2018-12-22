@@ -3,7 +3,7 @@
 # include "ffint.h"
 # include "types.h"
 
-# define ff_event_build(__kind, __field, __data, __size, __p) \
+#define ff_event_build(__kind, __field, __data, __size, __p) \
     *(__p) = (ff_event_t){.kind=(__kind), .field=(__field), .data=(__data), .size=(__size)}
 
 /*

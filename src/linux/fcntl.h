@@ -13,7 +13,7 @@
 
 #define F_GETFD 1
 
-ff_s32_t fcntl(ff_u32_t, ff_s32_t, ff_u64_t);
+ff_s32_t fcntl(ff_u32_t, ff_u32_t, ff_u64_t);
 ff_s32_t close(ff_u32_t);
-ff_s32_t creat(char const*, ff_s32_t);
+ff_s32_t creat(char const*, ff_u32_t);
 # endif /*__ffly__linux__fcntl__h*/

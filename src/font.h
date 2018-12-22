@@ -1,6 +1,14 @@
 # ifndef __ffly__font__h
 # define __ffly__font__h
 # include "ffint.h"
+#define _font_new()\
+	ffly_font_new()
+#define _font_init(...)\
+	ffly_font_init(__VA_ARGS__)
+#define _font_destroy(...)\
+	ffly_font_destroy(__VA_ARGS__)
+#define _font_face(...)\
+	ffly_font_face(__VA_ARGS__)
 struct font_driver {
 	void(*init)(void);
 	void(*done)(void);

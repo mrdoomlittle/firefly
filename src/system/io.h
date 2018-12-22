@@ -18,15 +18,16 @@ extern FF_FILE *ffly_log;
 extern  FF_FILE *ffly_err;
 ff_err_t ffly_io_init();
 void ffly_io_closeup();
-# ifdef __fflib
+#ifdef __fflib
 void putchar(char);
 void ppad(char, ff_uint_t);
 ff_uint_t ffly_rdline(void*, ff_uint_t, FF_FILE*);
-# else
+#else
 void ffly_fprintf(FF_FILE*, char const*, ...);
 void ffly_printf(char const*, ...);
 void ffly_fprintfs(FF_FILE*, char const*, ...);
-# endif
+void ffly_vfprintf(FF_FILE*, char const*, va_list);
+#endif
 /*
 ffly_size_t ffly_write(ffly_fd_t, void*, ffly_size_t, ff_err_t*);
 ffly_size_t ffly_read(ffly_fd_t, void*, ffly_size_t, ff_err_t*);

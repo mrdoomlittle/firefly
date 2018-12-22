@@ -2,10 +2,11 @@
 # define __ffly__map__h
 # include "../ffint.h"
 # include "../types.h"
-# define MAP_ITR_FD 0x1
-# define MAP_ITR_BK 0x1
-# define FF_MAP struct ffly_map
-# define ff_map struct ffly_map
+
+#define MAP_ITR_FD 0x1
+#define MAP_ITR_BK 0x1
+#define FF_MAP struct ffly_map
+#define ff_map struct ffly_map
 typedef struct ffly_map {
 	void **table;
     void *begin, *end;

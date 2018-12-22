@@ -22,7 +22,7 @@
 # endif
 # include "../mal.h"
 # define T_USEABLE 0x1
-
+# include "../log.h"
 
 /*
 	TODO:
@@ -79,7 +79,7 @@ ff_mlock_t static mutex = FFLY_MUTEX_INIT;
 	we could use timing but that can be left for higher level function to do
 */
 
-# define NHOLES 48
+#define NHOLES 48
 ff_i32_t static holes[NHOLES] = {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -103,16 +103,13 @@ void ffly_trelinquish_hole(ff_u16_t __hole) {
 	*(holes+__hole) = -1;
 }
 
-# define hset(__h, __val) \
+#define hset(__h, __val)\
 	*(holes+(__h)) = (__val)
-
-# define hget(__h) \
+#define hget(__h)\
 	*(holes+(__h))
-
-# define get_thr(__t) \
+#define get_thr(__t)\
 	(*(threads+(__t)))
-
-# define no_threads \
+#define no_threads\
 	(off-uu.off)
 
 static ff_uint_t id;
@@ -261,7 +258,7 @@ void ffly_thread_wait(ff_tid_t __t) {
 
 ff_err_t ffly_thread_create(ff_tid_t *__tid, void*(*__p)(void*), void *__arg_p) {
 	if (no_threads == MAX_THREADS) {
-		ffly_fprintf(ffly_log, "thread: only %u threads are allowed.\n", MAX_THREADS);
+		ff_log("thread: only %u threads are allowed.\n", MAX_THREADS);
 		return FFLY_FAILURE;
 	}
 
@@ -397,19 +394,19 @@ _fail:
 ff_err_t ffly_thread_cleanup() {
 	ffly_threadp *itr = threads, cur;
 	ffly_threadp *end = threads+off;
-	ffly_fprintf(ffly_log, "thread/s - shutdown&cleanup, phase{0}.\n");
+	ff_log("thread/s - shutdown&cleanup, phase{0}.\n");
 	while(itr != end) {
-		ffly_fprintf(ffly_log, "thread with id: %u, cleaning.\n", itr-threads);
+		ff_log("thread with id: %u, cleaning.\n", itr-threads);
 		cur = *(itr++);
 
 		wait4(cur->pid, NULL, __WALL|__WCLONE, NULL);
 
 		if (cur->sp != NULL) {
-			ffly_fprintf(ffly_log, "\t.- stack release.\n");
+			ff_log("\t.- stack release.\n");
 			__ffly_mem_free(cur->sp);
 		}
 		if (cur->tls != NULL) {
-			ffly_fprintf(ffly_log, "\t.- tls release.\n");
+			ff_log("\t.- tls release.\n");
 			__ffly_mem_free(cur->tls);
 		}
 		if (cur->exit == -1) { // if exit was a not a success and has been forced to stop
@@ -421,13 +418,13 @@ ff_err_t ffly_thread_cleanup() {
 		
 	}
 
-	ffly_fprintf(ffly_log, "thread free, phase{1}.\n");
+	ff_log("thread free, phase{1}.\n");
 	if (threads != NULL) {
 		__ffly_mem_free(threads);
 		threads = NULL;
 	}
 
-	ffly_fprintf(ffly_log, "uu free, phase{2}.\n");
+	ff_log("uu free, phase{2}.\n");
 	if (uu.p != NULL) {
 		__ffly_mem_free(uu.p);
 		uu.p = NULL;

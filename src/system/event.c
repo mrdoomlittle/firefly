@@ -5,6 +5,8 @@
 # include "../types/wd_event_t.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
+# include "../context.h"
+# include "../log.h"
 void *ir_arg[20];
 ff_err_t(*ir_top[20])(ffly_event_t*, void*) = {NULL};
 ff_err_t(**ir_end)(ffly_event_t*, void*) = ir_top;
@@ -31,7 +33,6 @@ ffly_event_t* ffly_event_dup(ffly_event_t *__event) {
     return event; 
 }
 
-struct ffly_queue ffly_event_queue;
 ff_err_t ffly_event_push(ffly_event_t *__event) {
     ff_err_t(**next)(ffly_event_t*, void*) = ir_top;
     while(*next != NULL) {
@@ -39,42 +40,41 @@ ff_err_t ffly_event_push(ffly_event_t *__event) {
         next++;
 	}
 
-	if (ffly_queue_size(&ffly_event_queue) > 20) {
+	if (ffly_queue_size(&__ctx(event_queue)) > 20) {
 		ffly_fprintf(ffly_err, "event queue overflow.\n");
 		return FFLY_FAILURE;
 	}
 
 	ff_err_t err;
-	if (_err(err = ffly_queue_push(&ffly_event_queue, &__event))) {
+	if (_err(err = ffly_queue_push(&__ctx(event_queue), &__event))) {
 		ffly_fprintf(ffly_err, "failed to push event to queue.\n");
 		return FFLY_FAILURE;
 	}
 
-	ffly_fprintf(ffly_log, "pushed event to queue.\n");
+	ff_log("pushed event to queue.\n");
 	return FFLY_SUCCESS;
 }
 
 ff_err_t ffly_event_peek(ffly_event_t **__event) {
-    if (!ffly_queue_size(&ffly_event_queue)) {
+    if (!ffly_queue_size(&__ctx(event_queue))) {
         return FFLY_FAILURE;
     }
 
-    *__event = (ffly_event_t*)ffly_queue_front(&ffly_event_queue);
+    *__event = (ffly_event_t*)ffly_queue_front(&__ctx(event_queue));
     return FFLY_SUCCESS;
 }
 
 ff_err_t ffly_event_pop(ffly_event_t **__event) {
 	ff_err_t err;
-	if (_err(err = ffly_queue_pop(&ffly_event_queue, __event))) {
+	if (_err(err = ffly_queue_pop(&__ctx(event_queue), __event))) {
 		ffly_fprintf(ffly_err, "failed to pop event from queue.\n");
 		return FFLY_FAILURE;
 	}
-
-	ffly_fprintf(ffly_log, "popped event from queue.\n");
+	ff_log("popped event from queue.\n");
 	return FFLY_SUCCESS;
 }
 
-ff_bool_t ffly_pending_event() {
-	return ffly_queue_size(&ffly_event_queue)>0;
+ff_bool_t ffly_pending_event(void) {
+	return ffly_queue_size(&__ctx(event_queue))>0;
 }
 

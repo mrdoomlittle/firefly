@@ -1,6 +1,10 @@
 # ifndef __ffly__fs__h
 # define __ffly__fs__h
 # include "ffint.h"
+/*
+	TODO:
+		this is diffrent then sys/fs
+*/
 #define fs(__func, ...)\
 	__ff_fso__->__func(__VA_ARGS__)
 #define fs_open(...)	fs(open, __VA_ARGS__)

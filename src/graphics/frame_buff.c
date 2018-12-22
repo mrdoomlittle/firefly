@@ -134,5 +134,3 @@ void ffly_fb_write(ffly_frame_buffp __fb, void *__src,
 		y++;
 	}
 }
-
-ffly_frame_buffp __frame_buff__;
