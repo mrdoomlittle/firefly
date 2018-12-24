@@ -1,7 +1,7 @@
 # include "../../../types.h"
 # include "../concoct.h"
 # include "../../../typo.h"
-# define SZ 256
+#define SZ 256
 # include "../../../tools/typo/test.h"
 
 # include "../../../dep/mem_cpy.h"
@@ -14,7 +14,7 @@ void static _write(void *__buf, ff_uint_t __size, ff_u32_t __offset) {
 }
 
 //# define ENABLE
-# ifdef ENABLE
+#ifdef ENABLE
 ff_err_t ffmain(int __argc, char const *__argv[]) { 
 	ffly_mcd_cc_write = _write;
 	ffly_mcd_cc_prime();
@@ -96,4 +96,4 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ffly_mcd_cc();
 	close(fd);
 }
-# endif
+#endif

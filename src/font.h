@@ -15,7 +15,7 @@ struct font_driver {
 	void(*face_load)(char const*);
 	void(*glyph_load)(char);
 	void(*scale)(ff_uint_t);
-	void(*info)(ff_u8_t, void*);
+	void(*info)(ff_u8_t, long long);
 };
 
 typedef struct ffly_font {
@@ -32,7 +32,7 @@ enum {
 	_face_height
 };
 
-void ffly_font_info(ffly_fontp, ff_u8_t, void*);
+void ffly_font_info(ffly_fontp, ff_u8_t, long long);
 ffly_fontp ffly_font_new(void);
 void ffly_font_init(ffly_fontp, ff_u8_t);
 void ffly_font_de_init(ffly_fontp);

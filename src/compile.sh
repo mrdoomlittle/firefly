@@ -224,6 +224,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/fs/m/exec.o $root_dir/fs/m/exec.c
 $ffly_cc $cc_flags -c -o $dst_dir/oddity.o $root_dir/oddity.c
 $ffly_cc $cc_flags -c -o $dst_dir/duct/shm_pipe.o $root_dir/duct/shm_pipe.c
 $ffly_cc $cc_flags -c -o $dst_dir/log.o $root_dir/log.c
+$ffly_cc $cc_flags -c -o $dst_dir/bitfont.o $root_dir/bitfont.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -268,4 +269,4 @@ $dst_dir/slurry/proto.o $dst_dir/slurry/slurry.o $dst_dir/tc.o $dst_dir/time.o \
 $dst_dir/nought/objbuf.o $dst_dir/bron/objbuf.o $dst_dir/nought/tex.o \
 $dst_dir/fs.o $dst_dir/fs/m/file.o $dst_dir/fs/m/hash.o $dst_dir/fs/m/alloc.o \
 $dst_dir/fs/m/m.o $dst_dir/fs/m/exec.o $dst_dir/oddity.o $dst_dir/duct/shm_pipe.o
-$dst_dir/log.o"
+$dst_dir/log.o $dst_dir/bitfont.o"

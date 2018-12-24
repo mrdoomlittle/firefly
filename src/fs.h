@@ -14,7 +14,7 @@
 #define fs_mkdir(...)	fs(mkdir, __VA_ARGS__)
 struct ff_fso {
 	ff_u32_t(*open)(char const*, ff_u8_t);
-	void(*close)(fff_u32_t);
+	void(*close)(ff_u32_t);
 	void(*write)(ff_u32_t, void*, ff_uint_t, ff_u64_t);
 	void(*read)(ff_u32_t, void*, ff_uint_t, ff_u64_t);
 	void(*mkdir)(char const*);

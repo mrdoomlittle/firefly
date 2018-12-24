@@ -241,3 +241,11 @@ allocr -. remove brk and mmap from and add function pointer to call when more me
 .- place bytecode in remf file so readremf can exec that and output and or display shit about it
 
 -. work on src/system/port.c/pipe.c
+
+-. ui/btn,window,etc anything user level that has a needed struct <- i dont know but i want to seperate so private and public or underground struct 
+for the operation of say things that the user may not be able to alter or change but will have to go thru user level functions.
+so the only things that would stay at user level for example using ui/btn would be {press, release, hover} <- funcs, flags, stuff that if the user
+where to change in anyform would not cause anyissues internaly. i know the changing of func pointers will cause an issue but the user will need to set flags to halt use of them until user
+is finished.
+
+-. add way to disable all output 'print' as takes up lots of time

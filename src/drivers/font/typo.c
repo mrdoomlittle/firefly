@@ -34,16 +34,16 @@ scale(ff_uint_t __x) {
 }
 
 
-# define FACE_WIDTH 0
-# define FACE_HEIGHT 1
+#define FACE_WIDTH		0
+#define FACE_HEIGHT		1
 void static
-info(ff_u8_t __what, void *__p) {
+info(ff_u8_t __what, long long __arg) {
 	switch(__what) {
 		case FACE_WIDTH:
-			*(ff_uint_t*)__p = ffly_typo_translate_to(sheet.f_width);
+			*(ff_uint_t*)__arg = ffly_typo_translate_to(sheet.f_width);
 		break;
 		case FACE_HEIGHT:
-			*(ff_uint_t*)__p = ffly_typo_translate_to(sheet.f_height);
+			*(ff_uint_t*)__arg = ffly_typo_translate_to(sheet.f_height);
 		break;
 	}
 }

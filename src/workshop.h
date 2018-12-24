@@ -9,7 +9,7 @@ extern ff_uint_t ws_width;
 extern ff_uint_t ws_height;
 struct ff_workshop {
 	void(*de_init)(void);
-	void(*get)(ff_u8_t, long long, void*);
+	void(*get)(ff_u8_t, long long, long long);
 };
 
 extern void(*tick)(void);

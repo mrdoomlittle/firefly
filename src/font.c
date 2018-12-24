@@ -7,8 +7,8 @@ static void(*load_driver[])(struct font_driver*) = {
 	ffly_font_typo
 };
 
-void ffly_font_info(ffly_fontp __font, ff_u8_t __what, void *__p) {
-	__font->driver.info(__what, __p);
+void ffly_font_info(ffly_fontp __font, ff_u8_t __what, long long __arg) {
+	__font->driver.info(__what, __arg);
 }
 
 ffly_fontp ffly_font_new(void) {

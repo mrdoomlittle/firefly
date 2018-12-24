@@ -5,6 +5,10 @@
 # include "graphics/frame_buff.h"
 #define __ctx(__what)\
 	__ffctx__->__what
+
+/*
+	i was going to static type content of context but i think it would be better to have it all in one place
+*/
 struct ff_context {
 	ff_u16_t vpw, vph;
 	// high level frame buffer

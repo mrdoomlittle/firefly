@@ -17,15 +17,15 @@ struct entry {
 	ff_u64_t cur;
 };
 
-# define FUS 9
-# define FUF 0.000001
+#define FUS 9
+#define FUF 0.000001
 
 static struct entry entries[] = {
 	{.func=ffly_sched_clock_tick, .rate=SCHED_TIME_PERIOD/FUF, .cur=0},
 	{.func=ffly_clock_tick, .rate=TIME_PERIOD/FUF, .cur=0}
 };
 
-# define N 2
+#define N 2
 
 ff_u64_t static buf = 0;
 void static

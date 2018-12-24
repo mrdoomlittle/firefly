@@ -24,7 +24,7 @@
 */
 # define ffly_fileno(__file) \
     (__file)->fd
-# define OBUFSZ 76
+#define OBUFSZ 76
 struct ffly_file {
 	char const *path;
 	ff_u32_t fd;
@@ -40,8 +40,8 @@ struct ffly_file {
 	ff_mlock_t lock;
 };
 
-#define FF_STREAM 0x1
-#define FF_NOBUFF 0x2
+#define FF_STREAM 0x01
+#define FF_NOBUFF 0x02
 #define FF_O_TRUNC O_TRUNC
 #define FF_O_RDONLY O_RDONLY
 #define FF_O_WRONLY O_WRONLY

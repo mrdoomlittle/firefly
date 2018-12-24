@@ -31,7 +31,7 @@
 */
 //# define debug
 // no process linked
-# define T_NOP 0x2
+#define T_NOP 0x02
 typedef struct ffly_thread {
 	ff_cond_lock_t lock;
 	__linux_pid_t pid;

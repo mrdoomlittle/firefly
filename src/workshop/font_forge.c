@@ -1,6 +1,7 @@
 # include "font_forge.h"
 # include "../ffint.h"
 # include "../malloc.h"
+# include "../ui/btn.h"
 struct dent {
 	ff_u8_t r, g, b, a;
 };
@@ -9,6 +10,8 @@ struct dent {
 #define DENT_SIZE (1<<DENT_SHIFT)
 static struct dent *map;
 static ff_uint_t nd;
+
+
 void static clear(void) {
 	struct dent *d, *e;
 	d = map;
@@ -35,6 +38,7 @@ void ws_fontforge(void) {
 	workshop.de_init = de_init;
 	tick = _tick;
 	map = (struct dent*)malloc((nd = ((ws_width>>DENT_SHIFT)*(ws_height>>DENT_SHIFT)))*sizeof(struct dent));
+
 }
 
 

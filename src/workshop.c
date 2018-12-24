@@ -24,19 +24,22 @@
 # include "graphics/chamber.h"
 # include "context.h"
 # include "workshop/front.h"
+
 struct ff_workshop workshop;
 
 ff_i16_t static pt_x = 0, pt_y = 0;
 ff_i8_t static pt_state;
+ff_u8_t static m_bits = 0x00;
 /*
 	TODO:
 		add ff_i8_t for return is no such 'what?' is possible
 	obtain crap that the user controls like mouse pointer coords,state, etc
 	"POINTER FORM/TO!"
 
+	i could just pass thru init func but its less flexable and i dont have all the time in the world.
 */
 void static
-_get(ff_u8_t __what, long long __d, void *__arg) {
+_get(ff_u8_t __what, long long __d, long long __arg) {
 	switch(__what) {
 		case 0x00:
 			*(ff_i16_t**)__d = &pt_x;
@@ -47,6 +50,9 @@ _get(ff_u8_t __what, long long __d, void *__arg) {
 		case 0x02:
 			*(ff_i8_t**)__d = &pt_state;
 		break;
+		case 0x03:
+			*(ff_u8_t**)__d = &m_bits;
+		break;
 	}
 }
 
@@ -55,6 +61,7 @@ ff_dcp static dc;
 # include "m.h"
 # include "types/wd_event_t.h"
 # include "log.h"
+# include "linux/time.h"
 ff_i8_t static
 workshop_tick(void) {
 	ffly_pixfill(WIDTH*HEIGHT, ffly_colour(255, 255, 255, 255), 0);
@@ -65,20 +72,25 @@ workshop_tick(void) {
 		if (event->kind == _ffly_wd_ek_btn_press || event->kind == _ffly_wd_ek_btn_release) {
 			pt_x = ((ffly_wd_event_t*)event->data)->x;
 			pt_y = ((ffly_wd_event_t*)event->data)->y;
-			ffly_carriage_put(_ff_carr0);
-			ffly_carriage_wait(_ff_carr0);
-			ffly_carriage_reset(_ff_carr0);
 			if (event->kind == _ffly_wd_ek_btn_press) {
 				pt_state = 0;
 			} else if (event->kind == _ffly_wd_ek_btn_release) {
 				pt_state = -1;
 			}
+			m_bits |= 0x01;
+
+			ffly_carriage_put(_ff_carr0);
+			ffly_carriage_wait(_ff_carr0);
+			ffly_carriage_reset(_ff_carr0);
 		}
 		
 		ffly_printf("event.\n");
 		ff_event_del(event);
 	}
 
+	ffly_printf("----> %u, %u, %d\n", pt_x, pt_y, pt_state);
+
+	m_bits = 0x00;
 	if (!ff_duct_serve(dc))
 		return -1;
 	return 0;

@@ -9,8 +9,8 @@ ff_u64_t static clock = 0;
 
 sched_entityp static top = NULL;
 sched_entityp static end = NULL;
-# define PAGE_SHIFT 3
-# define PAGE_SIZE (1<<PAGE_SHIFT)
+#define PAGE_SHIFT 3
+#define PAGE_SIZE (1<<PAGE_SHIFT)
 
 sched_entityp static *entities = NULL;
 
@@ -19,15 +19,15 @@ ff_u64_t static off = 0;
 
 sched_entityp static dead = NULL;
 
-# define get_entity(__id) \
+#define get_entity(__id) \
 	((*(entities+(__id>>PAGE_SHIFT)))+(__id&(0xffffffffffffffff-(64-PAGE_SHIFT))))
 
-# define sched_lock ffly_mutex_lock(&lock)
-# define sched_unlock ffly_mutex_unlock(&lock)
+#define sched_lock ffly_mutex_lock(&lock)
+#define sched_unlock ffly_mutex_unlock(&lock)
 
-# define entity_lock(__ent) \
+#define entity_lock(__ent) \
 	ffly_mutex_lock(&(__ent)->lock)
-# define entity_unlock(__ent) \
+#define entity_unlock(__ent) \
 	ffly_mutex_unlock(&(__ent)->lock)
 
 void static
@@ -37,7 +37,7 @@ delink(sched_entityp __ent) {
 		__ent->fd->bk = __ent->bk;
 }
 
-ff_u32_t ffly_schedule(ff_i8_t(*__func)(void*), void *__arg_p, ff_u64_t __interval) {
+ff_u32_t ffly_schedule(ff_i8_t(*__func)(long long), long long __arg, ff_u64_t __interval) {
 	sched_lock;
 	ff_u32_t ret;
 	ff_uint_t page = off>>PAGE_SHIFT;
@@ -71,7 +71,7 @@ _dead:
 	ent->next = NULL;
 	ent->lock = FFLY_MUTEX_INIT;
 	ent->func = __func;
-	ent->arg_p = __arg_p;
+	ent->arg = __arg;
 	ent->interval = __interval;
 	ent->elapsed = 0;
 	ent->fd = NULL;
@@ -164,18 +164,18 @@ void ffly_sched_clock_tick(ff_u32_t __delta) {
 	clock+=__delta;
 }
 
-# define set_flag(__flag) \
+#define set_flag(__flag) \
 	__asm__("mov %1, %%eax\n" \
 			"lock orb %%al, %0\n" : "=m"(flags) : "r"(__flag) : "eax");
-# define clr_flag(__flag) \
+#define clr_flag(__flag) \
 	__asm__("mov %1, %%eax\n" \
 			"lock xorb %%al, %0\n" : "=m"(flags) : "r"(__flag) : "eax");
-# define is_flag(__flags, __flag) \
+#define is_flag(__flags, __flag) \
 	((__flags&__flag)==__flag)
 
-# define STOP 0x01
-# define INIT 0x02
-# define OKAY 0x04
+#define STOP 0x01
+#define INIT 0x02
+#define OKAY 0x04
 ff_i8_t static flags = 0x00;
 ff_u64_t static last_time = 0;
 
@@ -197,7 +197,7 @@ void ffly_scheduler_tick(void) {
 		cur = cur->next;
 		if ((ent->elapsed+=clock-last_time) >= ent->interval) {
 			ent->elapsed = 0;
-			if (!ent->func(ent->arg_p)) {
+			if (!ent->func(ent->arg)) {
 				remove(ent);
 			}
 		}
