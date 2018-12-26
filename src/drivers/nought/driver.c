@@ -4,7 +4,7 @@
 # include "../../nought/types.h"
 # include "../../nought/context.h"
 # include "../../hexdump.h"
-static ff_u8_t cb[2048];
+static ff_u8_t cb[4048];
 static ff_u8_t *cb_p = cb;
 
 void static
@@ -116,7 +116,7 @@ _nt_pixdraw(ff_u32_t __x, ff_u32_t __y, ff_u8_t *__pixels, ff_u32_t __width, ff_
 	*(ff_u8_t**)(cb_p+9) = __pixels;
 	*(ff_u32_t*)(cb_p+17) = __width;
 	*(ff_u32_t*)(cb_p+21) = __height;
-	cb_p+=24;
+	cb_p+=25;
 }
 
 void static

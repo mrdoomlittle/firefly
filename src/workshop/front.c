@@ -39,7 +39,7 @@ void static bt_hover(ffly_ui_btnp __btn, long long __arg) {
 
 void static init(void) {
 	tex0 = (ff_u8_t*)malloc(144*23*4);
-	ffly_mem_set(tex0, 0, 144*23*4);
+	ffly_mem_set(tex0, 1, 144*23*4);
 
 	ffly_ui_btnp btn;
 	btn = _ui_btn_creat(FFLY_UI_BT_HOG, workshop.get, 0);
@@ -52,10 +52,16 @@ void static init(void) {
 		.width = 144,
 		.height = 23,
 		.x = 0,
-		.y = 0
+		.y = 0,
+		.text = {
+			"test button",
+			11,
+			FFLY_UI_BT_TEXT_CENTRE,
+			FFLY_UI_BT_TA
+		}
 	};
 
-	_ui_btn_set((long long)&btn_set, btn, FF_UI_BS_AREA|FF_UI_BS_POS);
+	_ui_btn_set((long long)&btn_set, btn, FF_UI_BS_AREA|FF_UI_BS_POS|FF_UI_BS_TEXT);
 	_ui_btn_compose(btn);
 	_ui_btn_sched(btn);
 	_ui_btn_enable(btn);

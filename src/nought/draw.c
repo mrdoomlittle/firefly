@@ -91,6 +91,7 @@ nt_pixdraw(void) {
 	ff_u8_t *s, *d;
 	ff_uint_t x, y;
 	y = _y;
+
 	while(y != _y+height) {
 		x = _x;
 		while(x != _x+width) {

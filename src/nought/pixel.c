@@ -7,7 +7,8 @@ void nt_setpix(ff_u8_t *__ntc, ff_u8_t *__dst) {
 		__dst[2] = (__dst[2]+__ntc[2])>>1;
 		__dst[3] = (__dst[3]+__ntc[3])>>1;
 	} else {
-		*(ff_u32_t*)__dst = *(ff_u32_t*)__ntc;
+		if (__ntc[3]>0)
+			*(ff_u32_t*)__dst = *(ff_u32_t*)__ntc;
 	}
 }
 

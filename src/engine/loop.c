@@ -9,6 +9,7 @@
 # include "../linux/time.h"
 # include "../log.h"
 # include "../context.h"
+# include "../graphics/dk.h"
 ff_i8_t(*ffe_tick)(void);
 
 ff_u16_t static sf;
@@ -41,6 +42,7 @@ _again:
 	bron_finish();
 	bron_done();
 
+	ffly_grdk_run();
 	clock_gettime(CLOCK_MONOTONIC, &stop);
 
 	ff_log("time taken to prossess graphics{bron}, sec: %u, ns: %u\n", stop.tv_sec-start.tv_sec, stop.tv_nsec-start.tv_nsec);

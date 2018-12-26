@@ -35,14 +35,14 @@ struct ffly_grj* ffly_grj_mk(ff_u8_t __kind, void *__p) {
 
 
 
-# define parsz3(__t0, __t1, __t2) \
+#define parsz3(__t0, __t1, __t2) \
 	(sizeof(__t0)+sizeof(__t1)+sizeof(__t2))
-# define parsz4(__t0, __t1, __t2, __t3) \
+#define parsz4(__t0, __t1, __t2, __t3) \
 	(sizeof(__t0)+sizeof(__t1)+sizeof(__t2)+sizeof(__t3))
-# define parsz5(__t0, __t1, __t2, __t3, __t4) \
+#define parsz5(__t0, __t1, __t2, __t3, __t4) \
 	(sizeof(__t0)+sizeof(__t1)+sizeof(__t2)+sizeof(__t3)+sizeof(__t4))
 
-# define put(__dst, __src, __ty) \
+#define put(__dst, __src, __ty) \
 	*((__ty*)(__dst)) = __src
 /*
 	might be worth having its own allocator for parameters memory

@@ -64,7 +64,12 @@ void ffly_bitfont_scalefactor(ff_u8_t __factor) {
 	scale = __factor;
 }
 
+#define tolc(__c)\
+	if (__c>='A' && __c <= 'Z') {\
+		__c = 'a'+(__c-'A');\
+	}
 ff_u8_t* ffly_bitfont_char(ff_u8_t __id) {
+	tolc(__id);
 	ff_u64_t ch;
 	ch = stuff[__id];
 
