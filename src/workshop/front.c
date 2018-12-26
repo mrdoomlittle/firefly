@@ -69,7 +69,7 @@ void static init(void) {
 	_ui_btn_enable(btn);
 
 	_plt_write(&btn->texture, tex0, 144, 23, 0, 0);
-/*
+
 	window = _ui_window_creat(FFLY_UI_WD_HOG);
 
 	struct ffly_ui_window_struc wd_set = {
@@ -100,21 +100,18 @@ void static init(void) {
 	_ui_text_destroy(text);
 
 	_ui_window_write(window, pixels, 128,128, 0, 0);
-*/
 }
 
 void static de_init(void) {
 	free(tex0);
-//	_ui_window_destroy(window);
+	_ui_window_destroy(window);
 	_ui_btn_destroy(fontforge);
 }
 
 void static _tick(void) {
 	if (!(flags&CTFF)) {
-//		workshop.de_init();
-//		ws_front();
-//		ffly_ui_btn_usched(fontforge);	
-//		ffly_ui_btn_sched(fontforge);
+		workshop.de_init();
+		ws_fontforge();
 		flags = 0xff;
 	}
 }

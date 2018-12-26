@@ -98,8 +98,7 @@ void ws_fontforge(void) {
 	_ui_btn_sched(btn);
 	_ui_btn_enable(btn);
 
-//	_plt_write(&btn->texture, tex0, 144, 23, 0, 0);
-
+	_plt_write(&btn->texture, tex0, 144, 23, 0, 0);
 }
 
 void _tick(void) {
