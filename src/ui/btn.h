@@ -139,6 +139,7 @@ extern "C" {
 	i think it should be quicker and neater <- nice to look at.
 
 */
+void ffly_ui_btn_usched(ffly_ui_btnp);
 void ffly_ui_btn_set(long long, ffly_ui_btnp, ff_u8_t);
 void ffly_ui_btn_setarea(ffly_ui_btnp, ff_u16_t, ff_u16_t);
 void ffly_ui_btn_setpos(ffly_ui_btnp, ff_u16_t, ff_u16_t);

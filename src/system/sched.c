@@ -8,7 +8,6 @@ ff_mlock_t static lock = FFLY_MUTEX_INIT;
 ff_u64_t static clock = 0;
 
 sched_entityp static top = NULL;
-sched_entityp static end = NULL;
 #define PAGE_SHIFT 3
 #define PAGE_SIZE (1<<PAGE_SHIFT)
 
@@ -19,15 +18,15 @@ ff_u64_t static off = 0;
 
 sched_entityp static dead = NULL;
 
-#define get_entity(__id) \
-	((*(entities+(__id>>PAGE_SHIFT)))+(__id&(0xffffffffffffffff-(64-PAGE_SHIFT))))
+#define get_entity(__id)\
+	((*(entities+((__id)>>PAGE_SHIFT)))+((__id)&(0xffffffffffffffff>>(64-PAGE_SHIFT))))
 
 #define sched_lock ffly_mutex_lock(&lock)
 #define sched_unlock ffly_mutex_unlock(&lock)
 
-#define entity_lock(__ent) \
+#define entity_lock(__ent)\
 	ffly_mutex_lock(&(__ent)->lock)
-#define entity_unlock(__ent) \
+#define entity_unlock(__ent)\
 	ffly_mutex_unlock(&(__ent)->lock)
 
 void static
@@ -43,12 +42,16 @@ ff_u32_t ffly_schedule(ff_i8_t(*__func)(long long), long long __arg, ff_u64_t __
 	ff_uint_t page = off>>PAGE_SHIFT;
 	ff_uint_t pg_off;
 	sched_entityp ent;
+
 	if (dead != NULL) {
 		ent = dead;
 		dead = dead->fd;
+		if (dead != NULL)
+			dead->bk = &dead;
 		ret = ent->id;
 		goto _dead;
 	}
+
 	if (!entities) {
 		entities = (sched_entityp*)__ffly_mem_alloc(sizeof(sched_entityp));
 		page_c++;
@@ -60,26 +63,28 @@ ff_u32_t ffly_schedule(ff_i8_t(*__func)(long long), long long __arg, ff_u64_t __
 	}
 	*(entities+page) = (sched_entityp)__ffly_mem_alloc(PAGE_SIZE*sizeof(struct sched_entity));
 _sk:
-	pg_off = (ret = off++)-(page*PAGE_SIZE);
+	pg_off = (ret = off++)-(page<<PAGE_SHIFT);
 	ent = (*(entities+page))+pg_off;
+	ent->id = ret;
+//	ffly_printf("page: %u, off: %u, %u\n", page, pg_off, off);
 _dead:
 	ffly_fprintf(ffly_log, "sched, interval: %u, id: %u\n", __interval, ret);
-	if (!top)
-		top = ent;
 	ent->inuse = 0;
-	ent->prev = end;
-	ent->next = NULL;
+	ent->prev = NULL;
 	ent->lock = FFLY_MUTEX_INIT;
 	ent->func = __func;
 	ent->arg = __arg;
 	ent->interval = __interval;
 	ent->elapsed = 0;
 	ent->fd = NULL;
-	if (end != NULL)
-		end->next = ent;
-	end = ent;
+	ent->bk = NULL;
+	if (top != NULL)
+		top->prev = ent;
+	ent->next = top;
+	top = ent;
+   
 	sched_unlock;
-	return (ent->id = ret);
+	return ret;
 }
 
 void static 
@@ -88,16 +93,7 @@ deatach(sched_entityp __ent) {
 	if (__ent == top) {
 		if ((top = __ent->next) != NULL) {
 			top->prev = NULL;
-		} else
-			end = NULL;
-		return;
-	}
-
-	if (__ent == end) {
-		if ((end = __ent->prev) != NULL) {
-			end->next = NULL;
-		} else
-			top = NULL;
+		}
 		return;
 	}
 
@@ -109,7 +105,6 @@ deatach(sched_entityp __ent) {
 
 void static
 remove(sched_entityp __ent) {
-	sched_lock;
 	deatach(__ent);
 	__ent->fd = dead;
 	__ent->bk = &dead;
@@ -117,17 +112,17 @@ remove(sched_entityp __ent) {
 		dead->bk = &__ent->fd;
 	dead = __ent;
 	__ent->inuse = -1;
-	sched_unlock;
 }
 
 void ffly_sched_rm(ff_u32_t __id) {
 	sched_lock;
 	if (__id == off-1) {
 		deatach(get_entity(__id));
-		off--;
+		
 		sched_entityp p;
 		ff_uint_t page, pg_off;
 	_again:
+	
 		if (off>0) {
 			off--;
 			page = off>>PAGE_SHIFT;
@@ -140,9 +135,9 @@ void ffly_sched_rm(ff_u32_t __id) {
 				goto _again;
 			} else
 				ffly_fprintf(ffly_log, "sched upper inuse.\n");
+			off++;
 		}
-
-		off++;
+		
 		page = off>>PAGE_SHIFT;
 		if (page < page_c-1 && page_c>1) {
 			sched_entityp *p = entities+(page+1);
@@ -152,12 +147,13 @@ void ffly_sched_rm(ff_u32_t __id) {
 			page_c = page+1;
 			entities = (sched_entityp*)__ffly_mem_realloc(entities, page_c*sizeof(sched_entityp));
 		}
+
 		sched_unlock;
 		return;
 	}
-	sched_unlock;
 
 	remove(get_entity(__id));
+	sched_unlock;
 }
 
 void ffly_sched_clock_tick(ff_u32_t __delta) {
@@ -190,7 +186,8 @@ void ffly_scheduler_tick(void) {
 		}
 		return;
 	}
-	
+
+	sched_lock;
 	sched_entityp cur = top, ent;
 	while(cur != NULL) {
 		ent = cur;
@@ -202,6 +199,8 @@ void ffly_scheduler_tick(void) {
 			}
 		}
 	}
+	sched_unlock;
+
 	last_time = clock;
 }
 
@@ -226,7 +225,7 @@ void ffly_scheduler_de_init(void) {
 	ffly_fprintf(ffly_log, "sched de-init.\n");
 	set_flag(STOP);
 	// decomment ??????
-//	while(!is_flag(flags, OKAY));
+	while(!is_flag(flags, OKAY));
 	sched_entityp *cur = entities;
 	sched_entityp *end = cur+page_c;
 	while(cur != end)

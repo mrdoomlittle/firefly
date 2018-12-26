@@ -15,8 +15,8 @@ struct carriage {
 	ff_u16_t dud;
 };
 
-# define N 1
-# define BUSY 0x01
+#define N 1
+#define BUSY 0x01
 static struct carriage cr[] = {
 	{0, 0, 0x02, 0, 0, NULL, 0}
 };
@@ -57,6 +57,10 @@ ff_u16_t ffly_carriage_add(ff_uint_t __c) {
 _sk:
 
 	return r;
+}
+
+void ffly_carriage_rm(ff_uint_t __c, ff_u16_t __n) {
+
 }
 
 void ffly_carriage_done(ff_uint_t __c, ff_u16_t __n) {

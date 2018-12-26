@@ -135,7 +135,37 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "bron/tex.h"
 # include "system/vec.h"
 # include "system/pool.h"
+# include "system/sched.h"
+ff_i8_t static sched_test(long long __arg) {
+//	ffly_printf("hello %u.\n", __arg);
+	return -1;
+}
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	ffly_scheduler_init(SCHED_CORRODE);
+	ff_u32_t sched_id0, sched_id1;
+
+	sched_id1 = ffly_schedule(sched_test, 1, 100);
+	ff_uint_t i;
+	i = 0;
+_again:
+	if (i++ >2)
+		goto _ex;
+	ffly_printf("%u\n", i);
+	ffly_fdrain(ffly_out);
+	sched_id0 = ffly_schedule(sched_test, 0, 100);
+	ffly_nanosleep(0, 100000000);
+	ffly_sched_rm(sched_id0);
+	ffly_nanosleep(0, 100000000);
+	goto _again;
+_ex:
+    ffly_printf("exit.\n");
+    ffly_fdrain(ffly_out);
+
+	ffly_sched_rm(sched_id1);
+	ffly_printf("exit.\n");
+	ffly_fdrain(ffly_out);
+	return 0;
+/*
 	struct timespec ts0, ts1, ts2, ts3;
 
 	ts2.tv_sec = 0;
@@ -147,6 +177,7 @@ _again:
 	clock_gettime(CLOCK_MONOTONIC, &ts1);
 
 	goto _again;
+*/
 //	ffly_vecp p;
 //	ff_err_t err;
 //	p = ffly_vec(10, VEC_AUTO_RESIZE|VEC_AS, &err);

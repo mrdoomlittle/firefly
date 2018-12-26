@@ -33,6 +33,12 @@ void ffly_chamber_run(ff_u32_t __ch) {
 	*__ob->bk = __ob->next;\
 	if (__ob->next != NULL)\
 		__ob->next->bk = __ob->bk;
+#define attach(__c, __ob)\
+	if (__c->top != NULL)\
+		__c->top->bk = &__ob->next;\
+	__ob->bk = &__c->top;\
+	__ob->next = __c->top;\
+	__c->top = ob;
 
 ff_u32_t ffly_chamber_add(void(*__func)(long long), long long __arg, ff_u32_t __ch) {
 	_ff_log("adding to chamber.\n");
@@ -44,17 +50,13 @@ ff_u32_t ffly_chamber_add(void(*__func)(long long), long long __arg, ff_u32_t __
 	if (c->uu != NULL) {
 		ob = c->uu;
 		c->uu = ob->next;
-		c->uu->bk = &c->uu;
+		if (c->uu != NULL)
+			c->uu->bk = &c->uu;
 		rt = ob->n;
 		goto _sk;
 	}
 
 	ob = (struct object*)__ffly_mem_alloc(sizeof(struct object));	
-	if (c->top != NULL)
-		c->top->bk = &ob->next;
-	ob->bk = &c->top;
-	ob->next = c->top;
-	c->top = ob;
 
 	if (!c->objs) {
 		c->objs = (struct object**)__ffly_mem_alloc(sizeof(struct object*));
@@ -65,6 +67,7 @@ ff_u32_t ffly_chamber_add(void(*__func)(long long), long long __arg, ff_u32_t __
 
 	ob->n = rt;
 _sk:
+	attach(c, ob);
 	ob->func = __func;
 	ob->arg = __arg;
 	return rt;

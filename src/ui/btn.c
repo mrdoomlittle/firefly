@@ -217,6 +217,7 @@ void ffly_ui_btn_compose(ffly_ui_btnp __btn) {
 	ffly_pallet_init(&__btn->texture, __btn->width, __btn->height, _ffly_tile_16);
 }
 
+static ff_i8_t added = -1;
 void
 ffly_ui_btn_init(ffly_ui_btnp __btn, ff_u8_t __flags, void(*__get)(ff_u8_t, long long, long long), long long __gt_arg) {
 	__btn->pressed = -1;
@@ -248,7 +249,10 @@ ffly_ui_btn_init(ffly_ui_btnp __btn, ff_u8_t __flags, void(*__get)(ff_u8_t, long
 	__get(0x00, (long long)&__btn->pt_x, __gt_arg);
 	__get(0x01, (long long)&__btn->pt_y, __gt_arg);
 	__get(0x02, (long long)&__btn->pt_state, __gt_arg);
-	ffly_grdk_add(_gdone);
+	if (added<0) {
+		ffly_grdk_add(_gdone);
+		added = 0;
+	}
 }
 
 void ffly_ui_btn_text(ffly_ui_btnp __btn, char const *__text) {
@@ -283,6 +287,10 @@ ffly_ui_btnp ffly_ui_btn_creat(ff_u8_t __flags, void(*__get)(ff_u8_t, long long,
 	add to scheduler
 */
 ff_i8_t static handle(long long);
+
+void ffly_ui_btn_usched(ffly_ui_btnp __btn) {
+	ffly_sched_rm(__btn->sched_id);
+}
 
 void ffly_ui_btn_sched(ffly_ui_btnp __btn) {
 	if (!(__btn->flags&BTN_SCHED)) {

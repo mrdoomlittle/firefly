@@ -7,8 +7,13 @@ void nt_setpix(ff_u8_t *__ntc, ff_u8_t *__dst) {
 		__dst[2] = (__dst[2]+__ntc[2])>>1;
 		__dst[3] = (__dst[3]+__ntc[3])>>1;
 	} else {
-		if (__ntc[3]>0)
-			*(ff_u32_t*)__dst = *(ff_u32_t*)__ntc;
+		ff_u16_t da, sa;
+		da = 255-__ntc[3];
+		sa = __ntc[3];
+		*__dst = ((da*(ff_u16_t)*__dst)+(sa*(ff_u16_t)*__ntc))>>8;
+		__dst[1] = ((da*(ff_u16_t)__dst[1])+(sa*(ff_u16_t)__ntc[1]))>>8;
+		__dst[2] = ((da*(ff_u16_t)__dst[2])+(sa*(ff_u16_t)__ntc[2]))>>8;
+		__dst[3] = (da+sa)>>1;
 	}
 }
 
