@@ -40,8 +40,10 @@ typedef struct s_buff {
 	ff_uint_t len;
 } *s_buffp;
 
-void(*s_io_send)(void*, ff_uint_t, long long);
-void(*s_io_recv)(void*, ff_uint_t, long long);
+ff_s32_t s__send(long long, void*, ff_uint_t, ff_u32_t);
+ff_s32_t s__recv(long long, void*, ff_uint_t, ff_u32_t);
+ff_s32_t(*s_io_send)(void*, ff_uint_t, long long);
+ff_s32_t(*s_io_recv)(void*, ff_uint_t, long long);
 
 s_tapep s_tape_new(ff_uint_t);
 void s_tape_destroy(s_tapep);

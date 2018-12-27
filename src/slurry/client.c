@@ -12,12 +12,12 @@
 # include "../linux/socket.h"
 # include "../stdio.h"
 # endif
-# define tape(__conn, __code, __len) \
+#define tape(__conn, __code, __len) \
 {	\
 	ff_uint_t len; \
 	len = __len; \
-	send(__conn->sock, &len, sizeof(ff_uint_t), 0); \
-	send(__conn->sock, __code, __len, 0);\
+	s_send(&len, sizeof(ff_uint_t), __conn->sock); \
+	s_send(__code, __len, __conn->sock);\
 }
 
 /*
@@ -46,7 +46,7 @@ void s_read(s_connp __conn, ff_u16_t __adr, ff_uint_t __n, void *__buf) {
 	*(ff_u16_t*)(code+1) = __adr;
 	*(ff_u16_t*)(code+3) = __n;
 	tape(__conn, code, 5);
-	recv(__conn->sock, __buf, __n, 0);
+	s_recv(__buf, __n, __conn->sock);
 }
 
 void s_write(s_connp __conn, ff_u16_t __adr, ff_uint_t __n, void *__buf) {
@@ -55,7 +55,7 @@ void s_write(s_connp __conn, ff_u16_t __adr, ff_uint_t __n, void *__buf) {
 	*(ff_u16_t*)(code+1) = __adr;
 	*(ff_u16_t*)(code+3) = __n;
 	tape(__conn, code, 5);
-	send(__conn->sock, __buf, __n, 0);
+	s_send(__buf, __n, __conn->sock);
 }
 
 void s_window_init(s_connp __conn, ff_u16_t __wd, 
@@ -132,11 +132,12 @@ void s_event(s_connp __conn, ff_u16_t __d, struct s_event **__dst) {
 		tape(__conn, code, 3);
 
 		ff_uint_t n;
-		recv(__conn->sock, &n, sizeof(ff_uint_t), 0);
+		s_recv(&n, sizeof(ff_uint_t), __conn->sock);
 		nev = n;
+		printf("----> %u\n", n);
 		ev = 0;
 		if (n>0)
-			recv(__conn->sock, evbuf, n*sizeof(struct s_event), 0);
+			s_recv(evbuf, n*sizeof(struct s_event), __conn->sock);
 		else {
 			*__dst = NULL;
 			return;
@@ -155,7 +156,7 @@ ff_i8_t s_pending(s_connp __conn, ff_u16_t __d) {
 		*(ff_u16_t*)(code+1) = __d;
 		tape(__conn, code, 3);
 		ff_i8_t res;
-		recv(__conn->sock, &res, 1, 0);
+		s_recv(&res, 1, __conn->sock);
 	}
 	return res;
 }
@@ -172,13 +173,18 @@ void s_disconnect(s_connp __conn) {
 	code = _op_disconnect;
 	tape(__conn, &code, 1);
 }
-# ifdef __fflib
+
+//# ifdef __fflib
 # include "../system/nanosleep.h"
+# include <string.h>
+static ff_u8_t buf[600*600*4];
 void s_test(void) {
+	memset(buf, 255, 600*600*4);
 	stack = 0;
 	s_connp con;
 	con = s_open();
 	s_connect(con, 10198, "127.0.0.1");
+
 	ff_u16_t d;
 	d = s_display_open(con);
 	ff_u16_t wd;
@@ -189,10 +195,27 @@ void s_test(void) {
 	title = s_rtn(strlen(tstr)+1);
 	s_write(con, title, strlen(tstr)+1, tstr);
 	s_window_init(con, wd, 600, 600, title);
-	ffly_nanosleep(5, 0);	
+
+	ff_uint_t i;
+	struct s_event *fe;
+	for(i = 0;i!= 400;i++) {
+		s_window_frame(con, wd, buf, 600, 600);
+		s_window_display(con, wd);
+//		if (!s_pending(con, d)) {
+//			s_event(con, d, &ev);
+//			printf("event is pending.\n");
+//		}
+	}
+
+	ffly_nanosleep(5, 0);
 	s_window_destroy(con, wd);
 	s_display_close(con, d);
 	s_disconnect(con);
 	s_close(con);
 }
-# endif
+
+int main() {
+	s_test();
+}
+//# endif
+

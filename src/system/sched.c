@@ -160,12 +160,10 @@ void ffly_sched_clock_tick(ff_u32_t __delta) {
 	clock+=__delta;
 }
 
-#define set_flag(__flag) \
-	__asm__("mov %1, %%eax\n" \
-			"lock orb %%al, %0\n" : "=m"(flags) : "r"(__flag) : "eax");
-#define clr_flag(__flag) \
-	__asm__("mov %1, %%eax\n" \
-			"lock xorb %%al, %0\n" : "=m"(flags) : "r"(__flag) : "eax");
+#define set_flag(__flag)\
+	__asm__("lock orb %%al, %0\n" : "=m"(flags) : "a"(__flag));
+#define clr_flag(__flag)\
+	__asm__("lock xorb %%al, %0\n" : "=m"(flags) : "a"(__flag));
 #define is_flag(__flags, __flag) \
 	((__flags&__flag)==__flag)
 

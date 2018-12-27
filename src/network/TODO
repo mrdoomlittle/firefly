@@ -1,3 +1,5 @@
 allow for segment text to be encrypted or manipulated by user
 
 udp, tcp and 'are own protocol'  
+
+remove header from mix and recv segments add size up and compare to size of buffer user provided

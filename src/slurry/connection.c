@@ -25,6 +25,7 @@ s_connp s_open(void) {
 	if ((con->sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		printf("failed to create socket.\n");
 	}
+
 	return con;
 }
 

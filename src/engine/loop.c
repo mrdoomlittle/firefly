@@ -34,21 +34,23 @@ _again:
 	rs = ffe_tick();
 
 //	ffly_nanosleep(0, 5454545454);
+	clock_gettime(CLOCK_MONOTONIC, &start);
 	ffly_grp_unload(&__ffly_grp__);
 
 	ffly_fb_copy(__ctx(hl_fb));
 
-	clock_gettime(CLOCK_MONOTONIC, &start);
 	bron_finish();
 	bron_done();
 
 	ffly_grdk_run();
-	clock_gettime(CLOCK_MONOTONIC, &stop);
 
-	ff_log("time taken to prossess graphics{bron}, sec: %u, ns: %u\n", stop.tv_sec-start.tv_sec, stop.tv_nsec-start.tv_nsec);
 	BRON_CONTEXT->stack = sf;
 
 	ffly_fb_yank(__ctx(hl_fb));
+
+	clock_gettime(CLOCK_MONOTONIC, &stop);
+
+	ff_log("time taken to prossess graphics{bron}, sec: %u, ns: %u\n", stop.tv_sec-start.tv_sec, stop.tv_nsec-start.tv_nsec);
 
 	ffly_printf("cycle count: %u\n", cc++);
 	ffly_meminfo(&mi);

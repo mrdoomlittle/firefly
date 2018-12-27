@@ -64,6 +64,7 @@ ff_dcp static dc;
 # include "linux/time.h"
 ff_i8_t static
 workshop_tick(void) {
+	struct timespec start, stop;
 	ffly_pixfill(WIDTH*HEIGHT, ffly_colour(255, 255, 255, 255), 0);
 	tick();
 	ffly_chamber_run(0);
@@ -91,8 +92,11 @@ workshop_tick(void) {
 	ffly_printf("----> %u, %u, %d\n", pt_x, pt_y, pt_state);
 
 	m_bits = 0x00;
+	clock_gettime(CLOCK_MONOTONIC, &start);
 	if (!ff_duct_serve(dc))
 		return -1;
+	clock_gettime(CLOCK_MONOTONIC, &stop);
+	ff_log("time taken at workshop sec: %u, ns: %u\n", stop.tv_sec-start.tv_sec, stop.tv_nsec-start.tv_nsec);
 	return 0;
 }
 

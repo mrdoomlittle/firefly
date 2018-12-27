@@ -49,6 +49,6 @@ mutex.o.0 mutex.o.1 atomic_op.o.0 atomic_op.o.1 posix_fs.o \
 mem_alloc.o mem_free.o mem_realloc.o pool.o event.o.0 event.o.1 queue.o \
 pipe.o shm.o mode.o bcopy.o duct.o image.o png.o jpeg.o sys_nanosleep.o.0 \
 sys_nanosleep.o.1 slurry.o server.o window.o.0 proto.o oddity.o shm_pipe.o fs.o"
-#gcc $cc_flags -c connection.c
-#gcc $cc_flags client.c connection.o -o client
+gcc $cc_flags -c connection.c
+gcc $cc_flags client.c connection.o $objs -o client -lpng -ljpeg -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm
 gcc $cc_flags main.c $objs -lpng -ljpeg -lX11 -lGL -lglut -lX11-xcb -lxcb -lxcb-icccm 

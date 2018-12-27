@@ -1,0 +1,9 @@
+i dont know how to get around this but im using defines so resymbol function names
+
+so
+
+#define _test_func(...)\
+	ffly_test_func(__VA_ARGS__)
+
+i would do this with the function but the issue is that symbols may collide at the linker level and or asm level
+and i dont want 'ffly_' part as it makes the code look to big when it comes to single line

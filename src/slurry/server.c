@@ -8,6 +8,8 @@
 # include <stdio.h>
 # include <string.h>
 # include <signal.h>
+# include <errno.h>
+# include <fcntl.h>
 /*
 	TODO:
 		lock address within stack that a pointer may be stored or plate them like /memory/plate
@@ -29,6 +31,8 @@ void sse_open(void) {
 	adr.sin_port = htons(*(ff_uint_t*)s_ov[OV_PORTN]);
 	int val = 1;		
 	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int));
+
+	fcntl(sock, F_GETFL);
 
 	if (bind(sock, (struct sockaddr*)&adr, sizeof(struct sockaddr_in)) == -1) {
 		printf("failed to bind socket to address.");
@@ -66,7 +70,7 @@ _read(void) {
 	ff_u16_t src, n;
 	src = *(ff_u16_t*)p;
 	n = *(ff_u16_t*)(p+2);
-	send(client.sock, stackat(src), n, 0);
+	s_send(stackat(src), n, client.sock);
 }
 
 void static
@@ -75,7 +79,7 @@ _write(void) {
 	ff_u16_t dst, n;
 	dst = *(ff_u16_t*)p;
 	n = *(ff_u16_t*)(p+2);
-	recv(client.sock, stackat(dst), n, 0);
+	s_recv(stackat(dst), n, client.sock);
 }
 
 void static
@@ -174,9 +178,9 @@ _again:
 	ff_uint_t n;
 	n = ev-evbuf;
 	printf("number: %u\n", n);
-	send(client.sock, &n, sizeof(ff_uint_t), 0);
+	s_send(&n, sizeof(ff_uint_t), client.sock);
 	if (n>0)
-		send(client.sock, evbuf, n*sizeof(struct s_event), 0);
+		s_send(evbuf, n*sizeof(struct s_event), client.sock);
 }
 
 void static
@@ -188,7 +192,7 @@ pending(void) {
 	if (XPending(d)>0) {
 		res = 0;
 	}
-	send(client.sock, &res, 1, 0);
+	s_send(&res, 1, client.sock);
 }
 
 ff_i8_t static dc;
@@ -270,17 +274,20 @@ void sse_run(void) {
 		ff_uint_t tsz;
 	_again:
 		if (run == -1) break;
-		if (recv(client.sock, &tsz, sizeof(ff_uint_t), 0)<=0) {
-			printf("failed to recv.\n");
+		if (s_recv(&tsz, sizeof(ff_uint_t), client.sock)<=0) {
+			printf("failed to recv. %s:%d\n", strerror(errno), errno);
 			break;
 		}
 		printf("got size: %u\n", tsz);
 		printf("recved tape size.\n");
+		if (tsz>4088) {
+			return;
+		}
 		t = s_tape_new(tsz);
 		printf("waiting for tape text.\n");
 
-		if (recv(client.sock, t->text, tsz, 0)<=0) {
-			printf("failed to recv.\n");
+		if (s_recv(t->text, tsz, client.sock)<=0) {
+			printf("failed to recv. %s:%d\n", strerror(errno), errno);
 			break;
 		}
 		printf("exec.\n");

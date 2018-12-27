@@ -16,6 +16,7 @@ tcp_socket(struct tcp_context *__ctx) {
 		return FFLY_FAILURE;
 
 	ffly_printf("net socket: %d\n", __ctx->fd);
+// remove only needed on serve side
 	int val = 1;
 	setsockopt(__ctx->fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(int));
 	return FFLY_SUCCESS;

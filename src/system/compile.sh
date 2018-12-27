@@ -187,6 +187,12 @@ $ffly_cc $cc_flags -c -o $dst_dir/sys_pwrite.o.1 $root_dir/sys_pwrite.c
 nasm -f elf64 $as_inc -o $dst_dir/sys_pread.o.0 $root_dir/asm/sys_pread.asm
 $ffly_cc $cc_flags -c -o $dst_dir/sys_pread.o.1 $root_dir/sys_pread.c
 
+nasm -f elf64 $as_inc -o $dst_dir/sys_writev.o.0 $root_dir/asm/sys_writev.asm
+$ffly_cc $cc_flags -c -o $dst_dir/sys_writev.o.1 $root_dir/sys_writev.c
+
+nasm -f elf64 $as_inc -o $dst_dir/sys_readv.o.0 $root_dir/asm/sys_readv.asm
+$ffly_cc $cc_flags -c -o $dst_dir/sys_readv.o.1 $root_dir/sys_readv.c
+
 $ffly_cc -c $cc_flags -o $dst_dir/sched.o $root_dir/sched.c
 
 $ffly_cc -c $cc_flags -o $dst_dir/send.o $root_dir/send.c
@@ -277,5 +283,6 @@ $dst_dir/sys_ioctl.o.0 $dst_dir/sys_ioctl.o.1 $dst_dir/tcsetattr.o $dst_dir/tcge
 $dst_dir/sys_timer_settime.o.0 $dst_dir/sys_timer_settime.o.1 \
 $dst_dir/sys_timer_create.o.0 $dst_dir/sys_timer_create.o.1 \
 $dst_dir/sys_timer_delete.o.0 $dst_dir/sys_timer_delete.o.1 \
-$dst_dir/util/ff5.o $dst_dir/fs.o $dst_dir/posix_fs.o"
+$dst_dir/util/ff5.o $dst_dir/fs.o $dst_dir/posix_fs.o \
+$dst_dir/sys_writev.o.0 $dst_dir/sys_writev.o.1 $dst_dir/sys_readv.o.0 $dst_dir/sys_readv.o.1"
 # $dst_dir/mal_track.o"
