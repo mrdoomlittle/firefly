@@ -57,28 +57,50 @@ ff_uint_t static
 tcp_send(struct tcp_context *__ctx, void *__buf,
 	ff_uint_t __size, int __flags, ff_i8_t *__err)
 {
+	ff_u8_t *src;
+	src = (ff_u8_t*)__buf;
+	ff_uint_t size;
+	size = __size;
 	ff_i32_t res;
-	if ((res = send(__ctx->fd, __buf, __size, __flags)) <= 0) {
+_again:
+	if ((res = send(__ctx->fd, src, size, __flags)) <= 0) {
 		ffly_printf("tcp; failed to send.\n");
 		*__err = FFLY_FAILURE;
 		return 0;
 	}
+
+	size-=res;
+	src+=res;
+	if (size>0) {
+		goto _again;
+	}
+
 	*__err = FFLY_SUCCESS;
-	return res;
+	return __size;
 }
 
 ff_uint_t static
 tcp_recv(struct tcp_context *__ctx, void *__buf,
 	ff_uint_t __size, int __flags, ff_i8_t *__err)
 {
+	ff_u8_t *dst;
+	dst = (ff_u8_t*)__buf;
+	ff_uint_t size;
+	size = __size;
 	ff_i32_t res;
-	if ((res = recv(__ctx->fd, __buf, __size, __flags)) <= 0) {
+_again:
+	if ((res = recv(__ctx->fd, dst, size, __flags)) <= 0) {
 		ffly_printf("tcp; failed to recv.\n");
 		*__err = FFLY_FAILURE;
 		return 0;
 	}
+	size-=res;
+	dst+=res;
+	if(size>0) {
+		goto _again;
+	}
 	*__err = FFLY_SUCCESS;
-	return res;
+	return __size;
 }
 
 ff_i8_t static

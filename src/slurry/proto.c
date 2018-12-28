@@ -5,7 +5,6 @@ void s_flush(long long);
 ff_s32_t s_send(void *__buf, ff_uint_t __size, long long __arg) {
 	if (s_io_send(__buf, __size, __arg)<0)
 		return -1;
-	s_flush(__arg);
 /*
 	f_u8_t *p;
 	ff_uint_t n;

@@ -155,7 +155,6 @@ ff_i8_t s_pending(s_connp __conn, ff_u16_t __d) {
 		*code = _op_pending;
 		*(ff_u16_t*)(code+1) = __d;
 		tape(__conn, code, 3);
-		ff_i8_t res;
 		s_recv(&res, 1, __conn->sock);
 	}
 	return res;
@@ -173,10 +172,11 @@ void s_disconnect(s_connp __conn) {
 	code = _op_disconnect;
 	tape(__conn, &code, 1);
 }
-
+/*
 //# ifdef __fflib
 # include "../system/nanosleep.h"
 # include <string.h>
+# include <time.h>
 static ff_u8_t buf[600*600*4];
 void s_test(void) {
 	memset(buf, 255, 600*600*4);
@@ -196,20 +196,26 @@ void s_test(void) {
 	s_write(con, title, strlen(tstr)+1, tstr);
 	s_window_init(con, wd, 600, 600, title);
 
+	struct timespec start, stop;
 	ff_uint_t i;
 	struct s_event *fe;
 	for(i = 0;i!= 400;i++) {
+		clock_gettime(CLOCK_MONOTONIC, &start);
 		s_window_frame(con, wd, buf, 600, 600);
+		clock_gettime(CLOCK_MONOTONIC, &stop);
+		printf("time taken sec: %u, ns: %u\n", stop.tv_sec-start.tv_sec, stop.tv_nsec-start.tv_nsec);
 		s_window_display(con, wd);
-//		if (!s_pending(con, d)) {
-//			s_event(con, d, &ev);
-//			printf("event is pending.\n");
-//		}
+		if (!s_pending(con, 0)) {
+			s_event(con, d, &ev);
+			printf("event is pending.\n");
+			break;
+		}
 	}
 
 	ffly_nanosleep(5, 0);
 	s_window_destroy(con, wd);
 	s_display_close(con, d);
+
 	s_disconnect(con);
 	s_close(con);
 }
@@ -218,4 +224,4 @@ int main() {
 	s_test();
 }
 //# endif
-
+*/

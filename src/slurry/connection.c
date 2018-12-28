@@ -18,6 +18,7 @@
 # include "../linux/net.h"
 # include "../linux/in.h"
 # endif
+void s_flush(long long);
 s_connp s_open(void) {
 	s_connp con;
 
@@ -42,6 +43,7 @@ void s_connect(s_connp __conn, ff_u16_t __port, char const *__addr) {
 }
 
 void s_close(s_connp __conn) {
+	s_flush(__conn->sock);
 	shutdown(__conn->sock, SHUT_RDWR);
 	close(__conn->sock);
 }

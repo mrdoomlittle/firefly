@@ -28,14 +28,19 @@ static void chd(ff_u8_t *__p, ff_uint_t __n) {
 	printf("\n");
 }
 
-#define SEGEND 0x01
+//#define DEBUG
+#define SHH 0x01
 struct seghdr {
 	ff_u16_t n;
 	ff_u16_t size;
-	ff_u8_t flags;
-};
+} __attribute__((aligned(8)));
 
-#define SEGSHFT 15
+struct plhdr {
+	ff_u8_t size;
+} __attribute__((aligned(8)));
+
+#define WTBD 0x01
+#define SEGSHFT 16
 #define SEGSIZE (1<<SEGSHFT)
 
 #define NSTB 12
@@ -43,56 +48,109 @@ struct seghdr {
 
 static ff_u8_t buf[BUFSIZE];
 static struct seghdr *sh;
-static ff_uint_t bn = sizeof(struct seghdr);
-static ff_uint_t sn = 0;
+static ff_u32_t bn = sizeof(struct plhdr);
+static ff_u16_t sn = 0;
 static ff_u64_t sent = 0, recved = 0;
 
-
-static ff_u8_t *test_icb[20000];
+static ff_u8_t flags = 0x00;
+static ff_u8_t *test_icb[600*600*8];
 static ff_uint_t ticbs_sn = 0;
 static ff_uint_t ticbs_rv = 0;
 ff_s32_t s__send(long long __sock, void *__buf, ff_uint_t __size, ff_u32_t __flags) {
 	ff_s32_t res;
 
-	sent+=__size;
+//	sent+=__size;
 
 //	memcpy(test_icb+ticbs_sn, __buf, __size);
 //	ticbs_sn+=__size;
-//return 1;
-	printf("%lu v %lu\n", sent, recved);
+//	return 1;
+//	printf("%lu v %lu, %lu\n", sent, recved, 600*600*8);
+	ff_u8_t *p;
+	p = (ff_u8_t*)__buf;
+	ff_uint_t size;
+	size = __size;
 _again:
-	res = send(__sock, __buf, __size, __flags);
+#ifdef DEBUG
+	printf("send %u, %u\n", size, __sock);
+#endif
+	res = send(__sock, p, size, __flags);
 	if (res<=0) {
 		if (errno == EAGAIN) {
-			printf("trying again, %u\n", __size);
+			printf("trying again, %u\n", size);
 			goto _again;
 		}
+
+		printf("got error, %s\n", strerror(errno));
+		return -1;
 	}
-	return res;
+	p+=res;
+	size-=res;
+	if (size>0) {
+#ifdef DEBUG
+		printf("dident send right amount.\n");
+#endif
+		goto _again;
+	}
+	return 1;
 }
 
 ff_s32_t s__recv(long long __sock, void *__buf, ff_uint_t __size, ff_u32_t __flags) {
 	ff_s32_t res;
-	recved+=__size;
+//	recved+=__size;
 
 //	memcpy(__buf, test_icb+ticbs_rv, __size);
 //	ticbs_rv+=__size;
-//return 1;
-	printf("%lu v %lu\n", sent, recved);
+//	return 1;
+//	printf("%lu v %lu\n", sent, recved);
+	ff_u8_t *p;
+	p = (ff_u8_t*)__buf;
+	ff_uint_t size;
+	size = __size;
 _again:
-	res = recv(__sock, __buf, __size, __flags);
+#ifdef DEBUG
+	printf("recv %u, %u\n", size, __sock);
+#endif
+	res = recv(__sock, p, size, __flags);
 	if (res<=0) {
 		if (errno == EAGAIN) {
-			printf("trying again, %u\n", __size);
+			printf("trying again, %u\n", size);
 			goto _again;
 		}
+
+		printf("got error, %s\n", strerror(errno));
+		return -1;
 	}
-	return res;
+	p+=res;
+	size-=res;
+
+	if (size>0) {
+#ifdef DEBUG
+		printf("dident recv right amount.\n");
+#endif
+		goto _again;
+	}
+	return 1;
 }
 
+#define segat(__n) ((struct seghdr*)(buf+((__n)<<SEGSHFT)))
+#define PL_HDR ((struct plhdr*)(buf+sizeof(struct seghdr)))
+
+#define SHSZ sizeof(struct seghdr)
+#define PLHSZ sizeof(struct plhdr)
 void static _flush(long long __sock) {
-	sh = (struct seghdr*)(buf+((sn-1)<<SEGSHFT));
-	sh->flags = SEGEND;
+	/*
+		if last segment has not been finished add it
+	*/
+	if (bn>0) {
+		sh = segat(sn);
+		sh->size = bn;
+		sn++;
+	}
+
+	struct plhdr *plh;
+	plh = PL_HDR;
+	plh->size = sn;
+
 	ff_uint_t i;
 	i = 0;
 	ff_u8_t *out;
@@ -100,13 +158,16 @@ void static _flush(long long __sock) {
 		out = buf+(i<<SEGSHFT);
 		sh = (struct seghdr*)out;
 		sh->n = i;
-		printf("out segment: %u, %u\n", i, sh->size);
+#ifdef DEBUG
+		printf("out segment: %u, %u : %u\n", i, sh->size, SEGSIZE);
+#endif
 		s__send(__sock, out, SEGSIZE, 0);
 		i++;
 	}
-
-	bn = sizeof(struct seghdr);
+	
+	bn = sizeof(struct plhdr);
 	sn = 0;
+	flags &= ~WTBD;
 }
 
 # include "../system/nanosleep.h"
@@ -119,46 +180,44 @@ _send(void *__buf, ff_uint_t __size, long long __sock) {
 	ff_uint_t size;
 	size = __size;
 _btt:
-	if (sn >= NSTB) {
+	if (sn>=NSTB) {
+#ifdef DEUBG
 		printf("flush, %u\n", sn);
+#endif
 		_flush(__sock);
 	}
 	if (!size)
 		return 0;
-//	printf("%u, %u\n", size, 0);
-	of = ((ff_int_t)size)-(ff_int_t)(SEGSIZE-bn);
-	dst = (buf+(sn<<SEGSHFT))+bn;
-//	printf("%u, %u, %d\n", bn, size, of);
-//	printf("---> %u, %d\n", sn, of);
+
+	flags |= WTBD;
+	of = ((ff_int_t)size)-(ff_int_t)((SEGSIZE-SHSZ)-bn);
+	dst = (buf+((sn<<SEGSHFT)+SHSZ))+bn;
+
 	if (of<=0) {
 		memcpy(dst, src, size);
 		bn+=size;
 	} else {			
 		ff_uint_t left;
-		left = SEGSIZE-bn;
+		left = (SEGSIZE-SHSZ)-bn;
 		memcpy(dst, src, left);
-		bn+=left;
 		src+=left;
 		size-=left;
 
-		sh = (struct seghdr*)(buf+(sn<<SEGSHFT));
-		sh->size = bn-sizeof(struct seghdr);
-		sh->flags = 0x00;
+		sh = segat(sn);
+		sh->size = bn+left;
 		sn++;
-		bn = sizeof(struct seghdr);
 
+		bn = 0;
 		goto _btt;
 	}
-//	if (bn>0)
-//		flush(__sock);
 	return 0;
 }
 
 
 static ff_u8_t ibuf[BUFSIZE];
-static ff_uint_t cds = 0;
-static ff_uint_t is = 0;
-static ff_uint_t soff = 0;
+static ff_u16_t cds = 0;
+static ff_u16_t is = 0;
+static ff_u16_t soff = 0;
 
 ff_s32_t static _in(long long __sock, ff_u8_t *__buf, ff_uint_t __size) {
 	ff_u8_t *dst, *src;
@@ -166,7 +225,9 @@ ff_s32_t static _in(long long __sock, ff_u8_t *__buf, ff_uint_t __size) {
 	ff_uint_t n;
 	n = __size;
 	ff_uint_t size;
+#ifdef DEBUG
 	printf("--> %u, %u, %u\n", cds, is, soff);
+#endif
 	_back:
 	if (!n)
 		return 0;
@@ -178,7 +239,7 @@ ff_s32_t static _in(long long __sock, ff_u8_t *__buf, ff_uint_t __size) {
 
 		if (n<size) {
 			memcpy(dst, src, n);
-			soff = n;
+			soff+=n;
 			return 0;
 		}
 
@@ -204,37 +265,45 @@ ff_s32_t static _in(long long __sock, ff_u8_t *__buf, ff_uint_t __size) {
 	i = 0;
 	sh = (struct seghdr*)bf;
 
-	while(1) {
+	ff_uint_t totsz;
+	
+	totsz = ~(ff_uint_t)0;
+	while(i<totsz) {
 		if (s__recv(__sock, bf, SEGSIZE, 0)<=0)
 			return -1;
-		chd(bf, SEGSIZE);
 		memcpy(ibuf+(sh->n<<SEGSHFT), bf, SEGSIZE);
+#ifdef DEBUG
+		chd(bf, SEGSIZE);
 		printf("in segment: %u, %u\n", sh->n, sh->size);
+#endif
 		i++;
-		if ((sh->flags&SEGEND)>0) {
-			printf("got segment end.\n");
-			break;
+		if (!sh->n) {
+#ifdef DEBUG
+			printf("got segment that contains payload meta info.\n");
+#endif
+			struct plhdr *plh;
+			plh = (struct plhdr*)(bf+sizeof(struct seghdr));
+			totsz = plh->size;
+#ifdef DEBUG
+			printf("total payload size: %u : %u\n", totsz, i);
+#endif
 		}
 	}
 	is = i;
 	cds = 0;
-	soff = 0;
+	soff = sizeof(struct plhdr);
 	goto _b;
 	}
 }
 
 ff_s32_t static
 _recv(void *__buf, ff_uint_t __size, long long __sock) {
-
+	s_flush(__sock);
 	return _in(__sock, (ff_u8_t*)__buf, __size);
 }
 
 void s_flush(long long __sock) {
-	if (bn == sizeof(struct seghdr) && !sn) return;
-	if (bn>sizeof(struct seghdr)) {
-		((struct seghdr*)(buf+(sn<<SEGSHFT)))->size = bn-sizeof(struct seghdr);
-		sn++;
-	}
+	if (!(flags&WTBD) && !sn) return;
 	_flush(__sock);
 }
 ff_s32_t(*s_io_send)(void*, ff_uint_t, long long) = _send;

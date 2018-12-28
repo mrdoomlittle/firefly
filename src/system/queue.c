@@ -6,6 +6,17 @@
 # include "../memory/mem_realloc.h"
 # include "../dep/mem_cpy.h"
 # include "../memory/mem_free.h"
+/*
+	TODO:
+		queue size should depend on (0xffffffffffffffff>>(64-{QUEUE SIZE}))
+		so 
+
+		QUEUE_SIZE&MASK
+
+
+		this will loop back to zero
+*/
+
 typedef struct queue_priv {
 	void **p;
 	ff_uint_t page_c;

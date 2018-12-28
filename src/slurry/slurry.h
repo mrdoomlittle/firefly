@@ -48,6 +48,7 @@ ff_s32_t(*s_io_recv)(void*, ff_uint_t, long long);
 s_tapep s_tape_new(ff_uint_t);
 void s_tape_destroy(s_tapep);
 void s_confload(void);
+void s_flush(long long);
 # ifndef __slurry_client
 void sse_open(void);
 void sse_run(void);
