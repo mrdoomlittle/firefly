@@ -21,6 +21,8 @@
 # include "../oddity.h"
 # include "../bitfont.h"
 # include "../graphics/dk.h"
+# include "../log.h"
+# include "../dep/str_len.h"
 #define isbit(__bits, __bit)\
 	(((__bits)&(__bit)) == (__bit))
 void ffly_ui_btn_fnode(ffly_ui_btnp __btn, ff_i16_t __x, ff_i16_t __y) {
@@ -146,7 +148,6 @@ void static draw(long long __arg) {
 	ffly_ui_btnp b;
 	b = (ffly_ui_btnp)__arg;
 	ffly_fprintf(ffly_log, "button draw.\n");
-		
 	ffly_pallet_draw(&b->texture, b->x, b->y);
 	if ((b->flags&FFLY_UI_BT_PT)>0) {
 		draw_text(b);		
@@ -314,9 +315,10 @@ void ffly_ui_btn_destroy(ffly_ui_btnp __btn) {
 	ffly_carriage_dud(_ff_carr0);
 	__ffly_mem_free(__btn);
 }
-
+# include "../system/nanosleep.h"
 ff_i8_t handle(long long __arg) {
 	ffly_ui_btnp btn = (ffly_ui_btnp)__arg;
+
 	if (!(btn->flags&FFLY_UI_BT_ENABLED))
 		return -1;
 	ff_i16_t pt_x, pt_y;

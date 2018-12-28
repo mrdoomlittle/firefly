@@ -60,11 +60,22 @@ _s_window_destroy(void *__ctx) {
 	__ffly_mem_free(ctx->frame_buff);
 }
 
+# include "../system/io.h"
+#ifdef __ffly_bridge
+# include <time.h>
+#else
+# include "../linux/time.h"
+#endif
 void static
 _s_window_display(void *__ctx) {
 	struct ffly_slurry_ctx *ctx;
 	ctx = (struct ffly_slurry_ctx*)__ctx;
+	struct timespec start, stop;
+	clock_gettime(CLOCK_MONOTONIC, &start);
 	s_window_frame(ctx->conn, ctx->w, ctx->frame_buff, ctx->width, ctx->height);
+	clock_gettime(CLOCK_MONOTONIC, &stop);
+	ffly_fprintf(ffly_log, "time taken to copy over frame sec: %u, ns: %u\n", stop.tv_sec-start.tv_sec, stop.tv_nsec-start.tv_nsec);
+
 	s_window_display(ctx->conn, ctx->w);
 }
 

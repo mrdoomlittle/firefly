@@ -9,6 +9,7 @@
 # include "../dep/mem_set.h"
 # include "../types/wd_event_t.h"
 # include "../system/fs.h"
+# include <time.h>
 #define WIDTH 448
 #define HEIGHT 448
 int main() {
@@ -32,6 +33,7 @@ int main() {
 	ffly_wd_display(&window);
 //	ff_u8_t i;
 //	i = 0;
+	struct timespec start, stop;
 _again:		
 	while(1) {
 		event = ffly_wd_poll_event(&window, &err);
@@ -52,7 +54,10 @@ _again:
 		ff_event_free(event);
 	}
 
+	clock_gettime(CLOCK_MONOTONIC, &start);
 	ff_duct_get_frame(c, ffly_wd_frame_buff(&window), WIDTH, HEIGHT, 4);
+	clock_gettime(CLOCK_MONOTONIC, &stop);
+	ffly_fprintf(ffly_log, "time taken to get frame sec: %u, ns: %u\n", stop.tv_sec-start.tv_sec, stop.tv_nsec-start.tv_nsec);
 	ff_duct_done(c);
 	ffly_wd_display(&window);
 

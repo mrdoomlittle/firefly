@@ -22,7 +22,7 @@ ff_u8_t static flags = 0xff;
 void static
 bt_press(ffly_ui_btnp __btn, long long __arg) {
 	ffly_printf("button press.\n");
-	if (__btn->id == _bt_fontforge) {
+	if (__btn->id == _bt_fontforge && (flags&CTFF)>0) {
 		ffly_printf("fontforge.\n");
 		flags ^= CTFF;
 	}
@@ -67,7 +67,6 @@ void static init(void) {
 	_ui_btn_compose(btn);
 	_ui_btn_sched(btn);
 	_ui_btn_enable(btn);
-
 	_plt_write(&btn->texture, tex0, 144, 23, 0, 0);
 
 	window = _ui_window_creat(FFLY_UI_WD_HOG);
@@ -108,6 +107,8 @@ void static de_init(void) {
 	_ui_btn_destroy(fontforge);
 }
 
+# include "../graphics/chamber.h"
+# include "../system/nanosleep.h"
 void static _tick(void) {
 	if (!(flags&CTFF)) {
 		workshop.de_init();

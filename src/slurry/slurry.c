@@ -10,6 +10,7 @@
 # include "../linux/socket.h"
 # include "../stdio.h"
 # include "../linux/errno.h"
+# include "../system/errno.h"
 # endif
 void *s_ov[] = {
 	NULL

@@ -17,7 +17,7 @@
 # include "err.h"
 # include "mutex.h"
 # include "nanosleep.h"
-#define delay ffly_nanosleep(0, 1000);
+#define delay ffly_nanosleep(0, 100000);
 // needs testing
 /*
 	NOTE: cleanup

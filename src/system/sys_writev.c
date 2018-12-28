@@ -6,7 +6,7 @@ ff_s32_t writev(ff_u32_t __fd, struct iovec *__vec, ff_u32_t __vlen) {
 		"movl %1, %%edi\n\t"
 		"movq %2, %%rsi\n\t"
 		"xorq %%rdx, %%rdx\n\t"
-		"movl %3, %%rdx\n\t"
+		"movl %3, %%edx\n\t"
 		"call __writev\n\t"
 		"movl %%eax, %0": "=m"(ret) : "m"(__fd), "m"(__vec), "m"(__vlen) : "rdi", "rsi", "rdx", "rax");
 	return ret;

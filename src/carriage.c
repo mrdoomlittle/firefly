@@ -29,7 +29,8 @@ void ffly_carriage_put(ff_uint_t __c) {
 ff_i8_t ffly_carriage_turn(ff_uint_t __c, ff_u16_t __n) {
 	struct carriage *c = cr+__c;
 
-	ff_u8_t off, b;
+	ff_u8_t off;
+	ff_u16_t b;
 
 	off = 63-(__n-((b = (__n>>6))*64));
 	return 0-(ff_i8_t)((*(c->ib+b)>>off)&0x01);
@@ -43,19 +44,22 @@ ff_i8_t ffly_carriage_ready(ff_uint_t __c) {
 ff_u16_t ffly_carriage_add(ff_uint_t __c) {
 	struct carriage *c = cr+__c;
 	ff_u16_t r;
+	if (c->n == 0xffff) {
+		ffly_printf("error maxed charriage.\n");
+		while(1);
+	}
 	r = c->n++;
 	if (!c->ib) {
 		c->ib = (ff_u64_t*)__ffly_mem_alloc(sizeof(ff_u64_t));
 		c->ibs++;
 	} else {
-		if (r>>6 >= c->ibs)
+		if ((r>>6) >= c->ibs)
 			c->ib = (ff_u64_t*)__ffly_mem_realloc(c->ib, (++c->ibs)*sizeof(ff_u64_t));
 		else
 			goto _sk;
 	}
 	*(c->ib+r) = 0;
 _sk:
-
 	return r;
 }
 
@@ -92,8 +96,9 @@ _again:
 			c->bits ^= BUSY;
 	}
 
-	ff_u8_t off, b;
-    off = 63-(__n-((b = (__n>>6))*63));
+	ff_u8_t off;
+	ff_u16_t b;
+    off = 63-(__n-((b = (__n>>6))*64));
 	__asm__("movq $1, %%rax\n"
 			"movb %1, %%cl\n"
 			"shlq %%cl, %%rax\n"
@@ -126,7 +131,7 @@ void ffly_carriage_wait(ff_uint_t __c) {
 	ff_u64_t *p;
 	ff_u64_t *end;
 	p = c->ib;
-	end = p+c->n;
+	end = p+c->ibs;
 	while(p != end) {
 		*p ^= *p;
 		p++;

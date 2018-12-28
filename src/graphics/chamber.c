@@ -21,11 +21,19 @@ ff_u32_t static off = 0;
 ff_u32_t ffly_cch;
 
 void ffly_chamber_run(ff_u32_t __ch) {
-	_ff_log("running chamber: %u\n", (ch+__ch)->obc);
+	if (__ch>=off) {
+		_ff_log("no such chamber.\n");
+		return;
+	}
+	struct chamber *c;
+	c = ch+__ch;
+
+	_ff_log("running chamber: %u\n", c->obc);
 	struct object *co;
-	co = (ch+__ch)->top;
+	co = c->top;
 	while(co != NULL) {
-		co->func(co->arg);
+		if (co->func != NULL)
+			co->func(co->arg);
 		co = co->next;
 	}
 }
@@ -41,6 +49,10 @@ void ffly_chamber_run(ff_u32_t __ch) {
 	__c->top = ob;
 
 ff_u32_t ffly_chamber_add(void(*__func)(long long), long long __arg, ff_u32_t __ch) {
+	if (__ch>=off) {
+		_ff_log("no such chamber.\n");
+		return 0xffffffff;
+	}
 	_ff_log("adding to chamber.\n");
 	struct chamber *c;
 	c = ch+__ch;
@@ -74,9 +86,19 @@ _sk:
 }
 
 void ffly_chamber_rm(ff_u32_t __ch, ff_uint_t __n) {
+	if (__ch>=off) {
+		_ff_log("no such chamber.\n");
+		return;
+	}
+
 	_ff_log("removing from chamber.\n");
 	struct chamber *c;
 	c = ch+__ch;
+
+	if (__n>=c->obc) {
+		_ff_log("chamber error no such object.\n");
+		return;
+	}
 
 	struct object *ob;
 	ob = c->objs[__n];

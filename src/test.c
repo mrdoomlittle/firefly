@@ -136,11 +136,14 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "system/vec.h"
 # include "system/pool.h"
 # include "system/sched.h"
+# include "graphics/chamber.h"
+# include "carriage.h"
 ff_i8_t static sched_test(long long __arg) {
 //	ffly_printf("hello %u.\n", __arg);
 	return -1;
 }
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+/*
 	ffly_scheduler_init(SCHED_CORRODE);
 	ff_u32_t sched_id0, sched_id1;
 
@@ -164,7 +167,27 @@ _ex:
 	ffly_sched_rm(sched_id1);
 	ffly_printf("exit.\n");
 	ffly_fdrain(ffly_out);
+*/
+/*
+	ffly_chamber_new();
+	while(1) {
+		ff_u32_t co0, co1;
+		co0 = ffly_chamber_add(sched_test, 0, 0);
+		co1 = ffly_chamber_add(sched_test, 0, 0);
+		ffly_chamber_rm(0, co0);
+		ffly_chamber_rm(0, co1);
+		ffly_chamber_run(0);
+	}
 	return 0;
+*/
+	ff_u16_t b;
+	ff_uint_t i;
+	i = 0;
+	while(i != 200) {
+		b = ffly_carriage_add(_ff_carr0);
+		ffly_printf("|| %u\n", b);
+		i++;
+	}
 /*
 	struct timespec ts0, ts1, ts2, ts3;
 
