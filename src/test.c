@@ -138,11 +138,39 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "system/sched.h"
 # include "graphics/chamber.h"
 # include "carriage.h"
+# include "hs.h"
+# include "hs/exec.h"
+# include "bron/tex.h"
 ff_i8_t static sched_test(long long __arg) {
 //	ffly_printf("hello %u.\n", __arg);
 	return -1;
 }
+
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+	ffly_bron_driver(_bron_dd_nought, &BRON_CONTEXT->driver);
+	BRON_CONTEXT->stack = 0;
+	ff_u16_t buf;
+	buf = ffly_bron_texbuf_new(4);
+	ff_u8_t tex[4];
+	ffly_bron_texbuf_write(buf, 0, 4, tex);
+	ffly_bron_done();
+/*
+	void *obj0 = NULL, *obj1 = NULL;
+	struct ff_hs h;
+    ff_hs_init(&h);
+    ff_hs_load(&h, "main.ffhs");
+    ff_hs_objp o;
+    o = ff_hs_build(&h);
+    void *fins[] = {
+        &obj0,
+        &obj1
+    };
+
+    ff_hs_run(o, fins);
+    ff_hs_clean(&h);
+	ffly_printf("-- %p, %p\n", obj0, obj1);
+*/
+
 /*
 	ffly_scheduler_init(SCHED_CORRODE);
 	ff_u32_t sched_id0, sched_id1;
@@ -180,6 +208,7 @@ _ex:
 	}
 	return 0;
 */
+/*
 	ff_u16_t b;
 	ff_uint_t i;
 	i = 0;
@@ -188,6 +217,7 @@ _ex:
 		ffly_printf("|| %u\n", b);
 		i++;
 	}
+*/
 /*
 	struct timespec ts0, ts1, ts2, ts3;
 

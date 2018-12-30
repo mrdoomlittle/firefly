@@ -292,10 +292,40 @@ static void(*emit[])(ff_hs_nodep) = {
 };
 # else
 void
-emit(ff_hs_nodep __nod) {
-	switch(__nod->kind) {
+emit(ff_hs_nodep __n) {
+	switch(__n->kind) {
+		case _func:
+			emit_func(__n);
+		break;
 		case _decl:
-			emit_decl(__nod);
+			emit_decl(__n);
+		break;
+		case __ret:
+			emit_ret(__n);
+		break;
+		case _func_call:
+			emit_func_call(__n);
+		break;
+		case _rin:
+			emit_rin(__n);
+		break;
+		case _var:
+			emit_var(__n);
+		break;
+		case _literal:
+			emit_literal(__n);
+		break;
+		case _struct_ref:
+			emit_struct_ref(__n);
+		break;
+		case _assign:
+			emit_assign(__n);
+		break;
+		case _fset:
+			emit_fset(__n);
+		break;
+		case _fget:
+			emit_fget(__n);
 		break;
 	}
 }

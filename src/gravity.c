@@ -31,12 +31,16 @@ ff_err_t ffly_uni_detach_body(ffly_unip, ffly_phy_bodyp);
 	todo:
 	
 */
-# define PAGE_DEATH 800//ms
-# define PAGE_SHIFT 2
-# define PAGE_SIZE (1<<PAGE_SHIFT)
-# define ZONE_SHIFT 4
+#define PAGE_DEATH 800//ms
+#define PAGE_SHIFT 2
+#define PAGE_SIZE (1<<PAGE_SHIFT)
+#define ZONE_SHIFT 4
 
-# define ZONE_LENGTH (1<<ZONE_SHIFT)
+#define ZONE_LENGTH (1<<ZONE_SHIFT)
+#define ison(__what)\
+	!(flags&__what)
+#define HAS_INITED 0x01
+static ff_u8_t flags = 0xff;
 struct page {
 	float **p;
 	// reservoir region
@@ -57,10 +61,10 @@ static struct page *pages = NULL;
 ff_u32_t static sched_id;
 ff_uint_t static size;
 
-# define lk(__page) \
+#define lk(__page)\
 	(__page)->inuse = 0; \
 	ffly_mutex_lock(&(__page)->lock)
-# define ul(__page) \
+#define ul(__page)\
 	(__page)->inuse = -1; \
 	ffly_mutex_unlock(&(__page)->lock)
 
@@ -133,6 +137,7 @@ update(void *__arg) {
 
 ff_err_t
 ffly_gravity_init(ff_uint_t __xl, ff_uint_t __yl, ff_uint_t __zl) {	
+	flags ^= HAS_INITED;
 	size = (xl = 1<<(__xl-ZONE_SHIFT))*(yl = 1<<(__yl-ZONE_SHIFT))*(zl = 1<<(__zl-ZONE_SHIFT));
 	page_c = ((size+(0xffffffffffffffff>>(64-PAGE_SHIFT)))>>PAGE_SHIFT);
 	pages = (struct page*)__ffly_mem_alloc(page_c*sizeof(struct page));
@@ -353,7 +358,9 @@ float ffly_gravity_at(ff_uint_t __x, ff_uint_t __y, ff_uint_t __z) {
 	return ret;
 }
 
-void ffly_gravity_cleanup() {
+void ffly_gravity_cleanup(void) {
+	if (!ison(HAS_INITED))
+		return;
 	ffly_sched_rm(sched_id);
 	struct page *pg;
 	float **p = map;

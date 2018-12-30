@@ -64,7 +64,7 @@ void nt_raster_tri2(void) {
 	/*
 		texture will be loaded diffrently but for now
 	*/
-	tex = (struct nt_tex*)(nt_raise_stack+(*(ff_u16_t*)(nt_raise_p+2)));
+	tex = *(struct nt_tex**)(nt_raise_stack+(*(ff_u16_t*)(nt_raise_p+2)));
 	ff_u32_t _x, _y;
 
 	_x = *(ff_u32_t*)(nt_raise_p+4);
@@ -101,6 +101,7 @@ void nt_raster_tri2(void) {
 	ff_u8_t *c;
 	c = (ff_u8_t*)tex->b->data;
 
+	ffly_printf("tri2 texture: %u\n", tex->b->size);
 	while(y<ymax) {
 		x = xmin;
 		while(x<xmax) {
@@ -126,7 +127,7 @@ void nt_raster_tri2(void) {
 				ff_byte_t *dst;
 				dst = tilepx(t, txo, tyo);
 				nt_setpix(c, dst);
-				c+=4;
+	//			c+=4;
 			}
 			
 			x++;

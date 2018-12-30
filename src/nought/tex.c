@@ -3,11 +3,13 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../dep/mem_cpy.h"
+# include "../stdio.h"
 #define is_flag(__flags, __flag) \
 	(((__flags)&(__flag))>0)
 
 nt_texp static
 tex_new(nt_texbufp __buf) {
+	printf("new texture with buff size of %u\n", __buf->size);
 	nt_texp tx;
 	tx = (nt_texp)__ffly_mem_alloc(sizeof(struct nt_tex));
 	tx->b = __buf;
@@ -21,6 +23,7 @@ tex_destroy(nt_texp __tex) {
 
 nt_texbufp static
 texbuf_new(ff_u32_t __size) {
+	printf("new texbuf %u\n", __size);
 	nt_texbufp buf;
 	buf = (nt_texbufp)__ffly_mem_alloc(sizeof(struct nt_texbuf));
 	buf->size = __size;
@@ -48,7 +51,7 @@ texbuf_unmap(nt_texbufp __buf) {
 #ifndef be_vigilant
 	__buf->flags ^= NT_TB_MAPPED;
 #else
-	__buf->flags &= NT_TB_MAPPED;
+	__buf->flags &= ~NT_TB_MAPPED;
 #endif
 }
 
@@ -108,7 +111,6 @@ void nt_texbuf_unmap(void) {
 void nt_texbuf_write(void) {
 	nt_texbufp buf;
 	buf = *(nt_texbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
-	
 	ff_u32_t offset, size;
 	void *src;
 

@@ -4,7 +4,7 @@
 # include "../dep/mem_cpy.h"
 # include "../system/error.h"
 // return buffer
-# define RTBUF_SIZE 20
+#define RTBUF_SIZE 20
 
 ff_hs_objp static rtbuf[RTBUF_SIZE];
 ff_hs_objp static *retto = rtbuf;
@@ -277,7 +277,7 @@ void ff_hs_run(ff_hs_objp __top, void **__fin_tbl) {
 	cop = &cur;
 	while(cur != NULL && done == -1) {
 		ffly_printf("op: %s\n", ops(cur->op));
-		flags = 0x0;
+		flags = 0x00;
 		op[cur->op](cur);
 		if ((flags&_rl)>0)
 			continue;

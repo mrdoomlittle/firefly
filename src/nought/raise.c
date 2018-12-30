@@ -38,117 +38,117 @@ nt_sget(void) {
 }
 
 static void(*op[])(void) = {
-	nt_raster_tri2,
-	nt_ctx_new,
-	nt_ctx_destroy,
-	nt_putframe,
-	nt_setctx,
-	nt_start,
-	nt_finish,
-	nt_pixcopy,
-	nt_pixdraw,
-	nt_pixfill,
-	nt_fb_set,
-	nt_fb_new,
-	nt_fb_destroy,
-	nt_ptile_new,
-	nt_ptile_destroy,
-	nt_tdraw,
-	nt_sput,
-	nt_sget,
-	nt_sb,
-	nt_cb,
-	nt_objbuf_new,
-	nt_objbuf_destroy,
-	nt_objbuf_map,
-	nt_objbuf_unmap,
-	nt_objbuf_write,
-	nt_objbuf_read,
-	nt_draw,
-	nt_texbuf_new,
-	nt_texbuf_destroy,
-	nt_texbuf_map,
-	nt_texbuf_unmap,
-	nt_texbuf_write,
-	nt_texbuf_read,
-	nt_tex_new,
-	nt_tex_destroy
-
+	nt_raster_tri2,		//0
+	nt_ctx_new,			//1
+	nt_ctx_destroy,		//2
+	nt_putframe,		//3
+	nt_setctx,			//4
+	nt_start,			//5
+	nt_finish,			//6
+	nt_pixcopy,			//7
+	nt_pixdraw,			//8
+	nt_pixfill,			//9
+	nt_fb_set,			//10
+	nt_fb_new,			//11
+	nt_fb_destroy,		//12
+	nt_ptile_new,		//13
+	nt_ptile_destroy,	//14
+	nt_tdraw,			//15
+	nt_sput,			//16
+	nt_sget,			//17
+	nt_sb,				//18
+	nt_cb,				//19
+	nt_objbuf_new,		//20
+	nt_objbuf_destroy,	//21
+	nt_objbuf_map,		//22
+	nt_objbuf_unmap,	//23
+	nt_objbuf_write,	//24
+	nt_objbuf_read,		//25
+	nt_draw,			//26
+	nt_texbuf_new,		//27
+	nt_texbuf_destroy,	//28
+	nt_texbuf_map,		//29
+	nt_texbuf_unmap,	//30
+	nt_texbuf_write,	//31
+	nt_texbuf_read,		//32
+	nt_tex_new,			//33
+	nt_tex_destroy		//34
 };
 
 ff_uint_t static os[] = {
-	(sizeof(ff_u16_t)*2)+(sizeof(ff_u32_t)*2),			//nt_raster_tri2
-	sizeof(ff_u16_t),									//nt_ctx_new
-	sizeof(ff_u16_t),									//nt_ctx_destroy
-	sizeof(ff_u8_t*)+(sizeof(ff_u32_t)*4),				//nt_putframe
-	sizeof(ff_u16_t),									//nt_setctx
-	0,													//nt_start
-	0,													//nt_finish
-	0,													//nt_pixcopy
-	(sizeof(ff_u32_t)*4)+sizeof(ff_u8_t*),				//nt_pixdraw
-	sizeof(ff_u8_t*)+sizeof(ff_u32_t),					//nt_pixfill
-	sizeof(ff_u16_t),									//nt_fb_set
-	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),				//nt_fb_new
-	sizeof(ff_u16_t),									//nt_fb_destroy
-	sizeof(ff_u16_t)+(sizeof(void*)*2),					//nt_ptile_new
-	sizeof(ff_u16_t),									//nt_ptile_destroy
-	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),				//nt_tdraw
-	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t),	//nt_sput
-	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t),	//nt_sget
-	1,													//nt_sb
-	1,													//nt_cb
-	6,													//nt_objbuf_new
-	2,													//nt_objbuf_destroy
-	2,													//nt_objbuf_map
-	2,													//nt_objbuf_unmap
-	18,													//nt_objbuf_write
-	18,													//nt_objbuf_read
-	6,													//nt_draw
-	6,													//nt_texbuf_new
-	2,													//nt_texbuf_destroy
-	2,													//nt_texbuf_map
-	2,													//nt_texbuf_unmap
-	18,													//nt_texbuf_write
-	18,													//nt_texbuf_read
-	6,													//nt_tex_new
-	2													//nt_tex_destroy
+	(sizeof(ff_u16_t)*2)+(sizeof(ff_u32_t)*2),			//nt_raster_tri2		-0
+	sizeof(ff_u16_t),									//nt_ctx_new			-1
+	sizeof(ff_u16_t),									//nt_ctx_destroy		-2
+	sizeof(ff_u8_t*)+(sizeof(ff_u32_t)*4),				//nt_putframe			-3
+	sizeof(ff_u16_t),									//nt_setctx				-4
+	0,													//nt_start				-5
+	0,													//nt_finish				-6
+	0,													//nt_pixcopy			-7
+	(sizeof(ff_u32_t)*4)+sizeof(ff_u8_t*),				//nt_pixdraw			-8
+	sizeof(ff_u8_t*)+sizeof(ff_u32_t),					//nt_pixfill			-9
+	sizeof(ff_u16_t),									//nt_fb_set				-10
+	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),				//nt_fb_new				-11
+	sizeof(ff_u16_t),									//nt_fb_destroy			-12
+	sizeof(ff_u16_t)+(sizeof(void*)*2),					//nt_ptile_new			-13
+	sizeof(ff_u16_t),									//nt_ptile_destroy		-14
+	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),				//nt_tdraw				-15
+	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t),	//nt_sput				-16
+	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t),	//nt_sget				-17
+	1,													//nt_sb					-18
+	1,													//nt_cb					-19
+	6,													//nt_objbuf_new			-20
+	2,													//nt_objbuf_destroy		-21
+	2,													//nt_objbuf_map			-22
+	2,													//nt_objbuf_unmap		-23
+	18,													//nt_objbuf_write		-24
+	18,													//nt_objbuf_read		-25
+	6,													//nt_draw				-26
+	6,													//nt_texbuf_new			-27
+	2,													//nt_texbuf_destroy		-28
+	2,													//nt_texbuf_map			-29
+	2,													//nt_texbuf_unmap		-30
+	18,													//nt_texbuf_write		-31
+	18,													//nt_texbuf_read		-32
+	4,													//nt_tex_new			-33
+	2													//nt_tex_destroy		-34
 };
 
 static char const *ostr[] = {
-	"raster_tri2",
-	"ctx_new",
-	"ctx_destroy",
-	"putframe",
-	"setctx",
-	"start",
-	"pixcopy",
-	"pixdraw",
-	"pixfill",
-	"fb_set",
-	"fb_new",
-	"fb_destroy",
-	"ptile_new",
-	"ptile_destroy",
-	"tdraw",
-	"sput",
-	"sget",
-	"sb",
-	"cb",
-	"objbuf_new",
-	"objbuf_destroy",
-	"objbuf_map",
-	"objbuf_unmap",
-	"objbuf_write",
-	"objbuf_read",
-	"draw",
-	"texbuf_new",
-	"texbuf_destroy",
-	"texbuf_map",
-	"texbuf_unmap",
-	"texbuf_write",
-	"texbuf_read",
-	"tex_new",
-	"tex_destroy"
+	"raster_tri2",		//0
+	"ctx_new",			//1
+	"ctx_destroy",		//2
+	"putframe",			//3
+	"setctx",			//4
+	"start",			//5
+	"finish",			//6
+	"pixcopy",			//7
+	"pixdraw",			//8
+	"pixfill",			//9
+	"fb_set",			//10
+	"fb_new",			//11
+	"fb_destroy",		//12
+	"ptile_new",		//13
+	"ptile_destroy",	//14
+	"tdraw",			//15
+	"sput",				//16
+	"sget",				//17
+	"sb",				//18
+	"cb",				//19
+	"objbuf_new",		//20
+	"objbuf_destroy",	//21
+	"objbuf_map",		//22
+	"objbuf_unmap",		//23
+	"objbuf_write",		//24
+	"objbuf_read",		//25
+	"draw",				//26
+	"texbuf_new",		//27
+	"texbuf_destroy",	//28
+	"texbuf_map",		//29
+	"texbuf_unmap",		//30
+	"texbuf_write",		//31
+	"texbuf_read",		//32
+	"tex_new",			//33
+	"tex_destroy"		//34
 };
 
 void nt_raise(ff_u8_t *__bin, ff_uint_t __size) {
@@ -166,9 +166,9 @@ _again:
 		ffly_printf("invalid operation.\n");
 		return;
 	}
-#ifdef DEBUG
+//#ifdef DEBUG
 	ffly_printf("nought_op{%s}\n", ostr[on]);
-#endif
+//#endif
 	op[on]();
 
 	nt_raise_p+=os[on];

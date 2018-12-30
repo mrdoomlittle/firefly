@@ -4,6 +4,7 @@
 # include "../../nought/types.h"
 # include "../../nought/context.h"
 # include "../../hexdump.h"
+# include "../../system/io.h"
 static ff_u8_t cb[4048];
 static ff_u8_t *cb_p = cb;
 
@@ -67,14 +68,14 @@ nt_tri2(struct bron_tri2 *__tri, ff_u16_t __dst) {
 	struct nt_tri2 *tri;
 
 	tri = (struct nt_tri2*)nt_stack(__dst);
-	tri->v0.x = __tri->v0.x;
-	tri->v0.y = __tri->v0.y;
+	tri->v0.x = __tri->x0;
+	tri->v0.y = __tri->y0;
 
-	tri->v1.x = __tri->v1.x;
-	tri->v1.y = __tri->v1.y;
+	tri->v1.x = __tri->x1;
+	tri->v1.y = __tri->y1;
 
-	tri->v2.x = __tri->v2.x;
-	tri->v2.y = __tri->v2.y;
+	tri->v2.x = __tri->x2;
+	tri->v2.y = __tri->y2;
 }
 
 void static
@@ -248,6 +249,7 @@ _nt_draw(ff_u16_t __buf, ff_u32_t __n) {
 
 void static
 _nt_texbuf_new(ff_u16_t __buf, ff_u32_t __size) {
+	ffly_printf("texbuf new: %u\n", _nt_op_txbn);
 	*cb_p = _nt_op_txbn;
 	*(ff_u16_t*)(cb_p+1) = __buf;
 	*(ff_u32_t*)(cb_p+3) = __size;

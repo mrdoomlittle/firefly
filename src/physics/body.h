@@ -15,7 +15,7 @@
 # define ffly_body_vertex(__body, __x, __y, __z) \
 	ffly_vertex3((__body)->model->poly+(__body)->model->off, __x, __y, __z)
 
-# define GRAVITY_ENABLE 0x01
+#define GRAVITY_ENABLE 0x01
 
 typedef struct ffly_uni* ffly_unip;
 typedef struct ffly_lot* ffly_lotp;
@@ -37,6 +37,9 @@ typedef struct ffly_phy_body {
 	ff_u8_t velocity;
 	void(*get)(ff_u8_t, long long, void*);
 	void *arg;
+	/*
+		idk
+	*/
 	ff_uint_t *x, *y, *z;
 
 /*

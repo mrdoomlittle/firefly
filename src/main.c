@@ -225,8 +225,8 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 
 	ffly_model_tex(m0, 2, tx0);
 	ffly_model_tex(m1, 2, tx1);
-	ffly_uni_attach_body(&uni, body0);
-	ffly_uni_attach_body(&uni, body1);
+//	ffly_uni_attach_body(&uni, body0);
+//	ffly_uni_attach_body(&uni, body1);
 
 	// set velocity of object to ...
 	ffly_set_velocity(obj0->phy_body, 1);

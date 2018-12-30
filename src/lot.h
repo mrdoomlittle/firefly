@@ -7,6 +7,7 @@
 	x*x*x sized block where objects are grouped into a nice package
 	so we dont need to look a large area for it.
 */
+// expand
 enum {
     _ffly_lotsize_8 = 3,
     _ffly_lotsize_16,
@@ -17,7 +18,7 @@ enum {
 
 struct ffly_lot {
     ffly_phy_bodypp top;
-    ffly_phy_bodypp end;
+	ffly_phy_bodypp end;
 	ffly_phy_bodyppp bodies;
     ff_uint_t xl, yl, zl;
     ff_uint_t x, y, z;

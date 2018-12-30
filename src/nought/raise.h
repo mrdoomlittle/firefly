@@ -35,8 +35,8 @@
 #define _nt_op_txbum			0x1e
 #define _nt_op_txbw				0x1f
 #define _nt_op_txbr				0x20
-#define	_nt_op_txn				0x00
-#define _nt_op_txd				0x00
+#define	_nt_op_txn				0x21
+#define _nt_op_txd				0x22
 #define stack_at(__adr) \
 	(nt_raise_stack+(__adr))
 extern ff_u8_t *nt_raise_p;

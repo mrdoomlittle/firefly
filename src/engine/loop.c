@@ -21,6 +21,7 @@ void ffe_loop(void) {
 	now.tv_sec = 0;
 	sstart.tv_sec = 0;
 	clock_gettime(CLOCK_MONOTONIC, &sstart);
+	sf = BRON_CONTEXT->stack;
 _again:
 	clock_gettime(CLOCK_MONOTONIC, &now);
 	if((now.tv_sec-sstart.tv_sec)>=1) {
@@ -29,7 +30,6 @@ _again:
 		clock_gettime(CLOCK_MONOTONIC, &sstart);
 	}
 
-	sf = BRON_CONTEXT->stack;
 	bron_start();
 	rs = ffe_tick();
 

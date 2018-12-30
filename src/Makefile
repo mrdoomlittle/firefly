@@ -115,6 +115,12 @@ bh: clean
 	gcc $(cc_flags) -c -o bh/output.o bh/output.c
 	gcc $(cc_flags) -o ffbhs bh/server.c bh.o bh/input.o bh/output.o bh/tape.o $(ffly_objs) -nostdlib
 	gcc $(cc_flags) -o ffbhc bh/client.c bh.o bh/input.o bh/output.o bh/tape.o $(ffly_objs) -nostdlib
+stranded: clean
+	gcc $(cc_flags) -c engine/init.c -o engine/init.o
+	gcc $(cc_flags) -c engine/entry.c -o engine/entry.o
+	gcc $(cc_flags) -c engine/loop.c -o engine/loop.o
+	gcc $(cc_flags) -c engine/view.c -o engine/view.o
+	gcc $(cc_flags) stranded/stranded.c engine/init.o engine/loop.o engine/entry.o engine/view.o $(ffly_objs) -nostdlib
 workshop: clean
 	gcc $(cc_flags) -c engine/init.c -o engine/init.o
 	gcc $(cc_flags) -c engine/entry.c

@@ -5,11 +5,12 @@
 # include "colour.h"
 # include "../pallet.h"
 # include "../tile.h"
-# define _grj_pixfill 0
-# define _grj_pixcopy 1
-# define _grj_pixdraw 2
-# define _grj_tdraw 3
-
+# include "struc.h"
+#define _grj_pixfill	0
+#define _grj_pixcopy	1
+#define _grj_pixdraw	2
+#define _grj_tdraw		3
+#define _grj_tri2		4
 struct ffly_grj {
 	ff_u8_t kind;
 	void *p;
@@ -20,6 +21,7 @@ struct ffly_grj {
 # ifdef __cplusplus
 extern "C" {
 # endif
+struct ffly_grj* ffly_grj_tri2(struct ffly_tri2 *, ff_u16_t, ff_u32_t, ff_u32_t);
 struct ffly_grj* ffly_grj_mk(ff_u8_t, void*);
 struct ffly_grj* ffly_grj_pixfill(ff_u32_t, ffly_colour_t, ff_u32_t);
 struct ffly_grj* ffly_grj_pixdraw(ff_u32_t, ff_u32_t, void*, ff_u32_t, ff_u32_t);

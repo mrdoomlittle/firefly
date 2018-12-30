@@ -5,9 +5,9 @@
 # include "memory/mem_free.h"
 static ffly_lotp top = NULL;
 ff_mlock_t lock = FFLY_MUTEX_INIT;
-# define lk(__lot) \
+#define lk(__lot) \
 	ffly_mutex_lock(&(__lot)->lock)
-# define ul(__lot) \
+#define ul(__lot) \
 	ffly_mutex_unlock(&(__lot)->lock)
 
 void ffly_lot_add(ffly_lotp __lot, ffly_phy_bodyp __body) {
