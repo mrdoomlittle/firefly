@@ -12,6 +12,10 @@
 #define DEF_MAX_THREADS 20
 #define ALLOCA_SSIZE 400
 #define BINFILE "syscf.bin"
+
+/*
+	TODO cleanup
+*/
 ff_u8_t ffly_sysconf[2048];
 ff_u64_t static scdoff = 0;
 

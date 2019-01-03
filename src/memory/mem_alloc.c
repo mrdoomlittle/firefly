@@ -22,9 +22,7 @@ void*(*__memalloc)(ff_uint_t) = _memalloc;
 void* ffly_mem_alloc(ff_uint_t __bc, ff_u8_t __track_bypass) {
 # else
 void* ffly_mem_alloc(ff_uint_t __bc) {
-# ifdef __ffly_debug
-	ff_location_push(_ff_loc_mem_alloc);
-# endif
+	_location_push(_ff_loc_mem_alloc);
 # endif /*__ffly_mal_track*/
 	ff_u8_t *p;
 # ifdef __ffly_debug
@@ -69,9 +67,7 @@ _fail:
 		__ffly_mem_free(p);
 	p = NULL;
 _succ:
-# ifdef __ffly_debug
-	ff_location_pop();
-# endif
+	_location_pop();
 	return (void*)p;
 }
 

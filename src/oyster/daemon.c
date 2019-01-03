@@ -529,7 +529,8 @@ static void(*op[])(void) = {
 	ff_db_acquire_slot,
 	ff_db_scrap_slot,
 	ff_db_exist,
-	ff_db_record_stat
+	ff_db_record_stat,
+	NULL
 };
 
 static ff_uint_t osz[] = {
@@ -554,7 +555,8 @@ static ff_uint_t osz[] = {
 	_FF_ACQUIRE_SLOT_S,
 	_FF_SCRAP_SLOT_S,
 	_FF_EXIST_S,
-	_FF_RECORD_STAT_S
+	_FF_RECORD_STAT_S,
+	0
 };
 
 void static
@@ -578,6 +580,7 @@ cleanup(ff_dbdp __daemon) {
 ffly_potp static main_pot;
 FF_SOCKET *sock;
 ff_i8_t to_shut = -1;
+ff_i8_t cdc = -1;
 ff_atomic_u32_t live = 0;
 int static sockfd;
 
@@ -600,7 +603,18 @@ void static sig(int __sig) {
 		because there most likly to be used
 		and this means we dont need to prepare the stack
 		and call far functions
+
+
+		so:
+
+		ff_u8_t on;
+		on = 0000000 ¬ 0 <- main or sub routine?
 */
+// sub operation table
+void *sot[] = {
+	
+};
+
 void static
 texec(ff_db_tapep __t) {
 	ff_u8_t *end;
@@ -611,8 +625,23 @@ _again:
 	if (db_cc>=end)
 		return;
 	on = *(db_cc++);
-	ffly_printf("op: %u\n", on);
-	op[on]();
+	ffly_printf("op: %u\n", on&~(1<<7));
+	if (!(on>>7)) {
+		op[on]();
+	} else {
+		if (on == _ff_db_op_disconnect) {
+			cdc = 0;
+			ffly_printf("client disconnected.\n");
+			return;
+		}
+		__asm__("jmp *%0" : : "r"(sot[on]));
+	}
+
+	/*
+		ignore sub routines for now
+
+		but for this we can just say if bit is high mul 7f by the bit so 0+opnum or 7f+opnum
+	*/
 	db_cc+=osz[on];
 	goto _again;
 }
@@ -636,10 +665,11 @@ ff_db_serve(void *__arg_p) {
 	ffly_pellet_free(pel);
 	d = daemon;
 	alive = 0;
+	cdc = -1;
 //	ffly_ctl(ffly_malc, _ar_setpot, (ff_u64_t)main_pot);	
 	client.sock = peer;
 	ff_db_tapep t;
-	while(!alive && to_shut<0) {
+	while(!alive && to_shut<0 && cdc<0) {
 		ff_u32_t tsz;
 		ff_net_recv(peer, &tsz, sizeof(ff_u32_t), 0, &err);		
 		t = ff_db_tape_new(tsz);
@@ -650,6 +680,7 @@ ff_db_serve(void *__arg_p) {
 		ff_db_tape_destroy(t);
 	}
 	ff_net_close(peer);	
+	// what here for?
 	__asm__("_ff_exit:\n\t");
 //	ffly_ctl(ffly_malc, _ar_unset, 0);
 	ffly_atomic_decr(&live);

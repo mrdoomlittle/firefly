@@ -9,6 +9,7 @@
 # include "../system/string.h"
 # include "../dep/str_len.h"
 # include "../system/map.h"
+# include "../system/error.h"
 typedef struct dct {
 	char const *ident;
 	char const *params[20];

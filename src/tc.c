@@ -94,7 +94,7 @@ void ff_tc_gettime(struct tc_spec *__spec) {
 		get(&t);
 
 		// may not be 100% right
-		ffly_printf("deviation: %d-sec, %d-ns\n", t.sec-(current.sec+(now.tv_sec-start.tv_sec)),
+		ffly_printf("time deviation: %d-sec, %d-ns\n", t.sec-(current.sec+(now.tv_sec-start.tv_sec)),
 			t.nsec-(current.nsec+(now.tv_nsec-start.tv_nsec)));
 		current = t;
 		start = now;

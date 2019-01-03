@@ -8,7 +8,8 @@
 #define SCF_LC_EXIT	0x00
 #define SCF_LC_PP	0x01
 /*
-	i dont know
+	i dont know, i was going to use a struct
+	but this is simpler, and it does not matter to much.
 */
 #define SCF_SZ 102
 #define SCF_version			0

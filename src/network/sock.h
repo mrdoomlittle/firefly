@@ -7,8 +7,8 @@
 # include "../linux/in.h"
 # include "../in.h"
 # include "../linux/net.h"
-# define FF_SOCKET struct ffly_socket
-# define ffly_sockfd(__sock) (__sock->fd)
+#define FF_SOCKET struct ffly_socket
+#define ffly_sockfd(__sock) (__sock->fd)
 
 struct ffly_sock_proto {
 	ff_i8_t(*socket)(void*);

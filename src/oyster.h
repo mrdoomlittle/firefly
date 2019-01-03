@@ -41,6 +41,7 @@
 #define _FF_SCRAP_SLOT_S		4
 #define _FF_EXIST_S				2
 #define _FF_RECORD_STAT_S		4
+#define _FF_DISCONNECT_S		0
 // needs testing
 
 /*
@@ -93,9 +94,12 @@ enum {
 #define _ff_db_op_scrap_slot		0x13
 #define _ff_db_op_exist				0x14
 #define _ff_db_op_recstat			0x15
-#define _ff_db_op_disconnect		0x16
-#define _ff_db_op_req_errno			0x17
-#define _ff_db_op_pulse				0x18
+#define _ff_db_op_req_errno			0x16
+#define _ff_db_op_pulse				0x17
+
+// minor operation dont need function
+#define _ff_db_op_disconnect        (0x01|(1<<7))
+
 /*
 	put this within define so only db.c and files that define somthing may be allowed to access,
 	so with err value dont mix
@@ -111,7 +115,7 @@ enum {
 typedef ff_u8_t ff_db_key[KEY_SIZE];
 
 typedef ff_u8_t ff_db_err;
-# define MAX_PILES 20
+#define MAX_PILES 20
 /*
 	need to rething
 	'struct ff_db_msg'

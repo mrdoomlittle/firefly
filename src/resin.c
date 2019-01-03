@@ -27,6 +27,21 @@
 		use function pointer for get functions e.g. get_8l
 		as if flag not set we will use a direct method to get a byte else will go thru getbits
 		as to allow for compact code
+
+	THINK:
+		store 8 operations in one 64bit int?????
+		or compact it to smaller range or max operations 0-64??
+		so to only take up smaller xn of bits
+	TODO:
+		allow for selection for multi operation mode
+
+		so operation num will be stored in one 64int
+
+		example: <- only example
+		op0		op1		op2
+		0000 - 0000 - 0000....
+
+		this mode will be user defined so src/as wont be able to use(might)
 */
 ff_err_t static
 stack_put(ffly_resinp __resin, ff_u8_t *__src, ff_uint_t __bc, ff_addr_t __addr) {

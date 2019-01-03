@@ -24,7 +24,7 @@ ff_err_t static ff_db_login(FF_SOCKET*, ff_u16_t, ff_u16_t, ff_u32_t, ff_u8_t*, 
 ff_err_t static ff_db_logout(FF_SOCKET*, ff_u8_t*, ff_u64_t);
 ff_err_t static ff_db_store(FF_SOCKET*, void*, ff_u16_t, ff_u16_t);
 ff_err_t static ff_db_load(FF_SOCKET*, void*, ff_u16_t, ff_u16_t);
-//ff_err_t static ff_db_disconnect(FF_SOCKET*);
+ff_err_t static ff_db_disconnect(FF_SOCKET*);
 ff_err_t static ff_db_pile_creat(FF_SOCKET*, ff_u8_t*, ff_u64_t, ff_u32_t*);
 ff_err_t static ff_db_pile_del(FF_SOCKET*, ff_u8_t*, ff_u64_t, ff_u32_t);
 ff_err_t static ff_db_record_creat(FF_SOCKET*, ff_u8_t*, ff_u64_t, ff_u32_t, ff_u32_t*, ff_u32_t);
@@ -50,9 +50,7 @@ ff_err_t static ff_db_record_stat(FF_SOCKET*, ff_u8_t*, ff_u64_t, ff_u32_t, ffdb
 
 ff_db_ctrp
 ff_db_ctr(ff_u64_t __enckey, char const *__ip_adr, ff_u16_t __port, ff_err_t *__err) {
-# ifdef __ffly_debug
-	ff_location_push(_ff_loc_db_ctr);
-# endif
+	_location_push(_ff_loc_db_ctr);
 	ff_db_ctrp ret = (ff_db_ctrp)__ffly_mem_alloc(sizeof(struct ff_db_ctr));
 	ret->enckey = __enckey;
 	ff_err_t err;
@@ -79,9 +77,7 @@ _fail:
 	__ffly_mem_free(ret);
 	ret = NULL;
 _succ:
-# ifdef __ffly_debug
-	ff_location_pop();
-# endif
+	_location_pop();
 	return ret;
 }
 
@@ -103,15 +99,13 @@ ff_db_ctr_shutdown(ff_db_ctrp __ctr) {
 
 ff_err_t
 ff_db_ctr_disconnect(ff_db_ctrp __ctr) {
-//	return ff_db_disconnect(__ctr->sock);
+	return ff_db_disconnect(__ctr->sock);
 }
 
 
 ff_err_t
 ff_db_ctr_login(ff_db_ctrp __ctr, char const *__id, ff_u32_t __passkey) {
-# ifdef __ffly_debug
-	ff_location_push(_ff_loc_db_ctr_login);
-# endif
+	_location_push(_ff_loc_db_ctr_login);
 	ff_err_t err;
 	if (!__ctr) {
 		err = FFLY_FAILURE;
@@ -126,9 +120,7 @@ ff_db_ctr_login(ff_db_ctrp __ctr, char const *__id, ff_u32_t __passkey) {
 	stack+=id_len;
 	err = ff_db_login(__ctr->sock, id, id_len, __passkey, __ctr->key, __ctr->enckey);
 _fail:
-# ifdef __ffly_debug
-	ff_location_pop();
-# endif
+	_location_pop();
 	return err;
 }
 
@@ -564,4 +556,11 @@ ff_db_record_stat(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey,
 	*(ff_u32_t*)(code+1) = __rec;
 	tape(__sock, code, 1+_FF_RECORD_STAT_S, &err);
 	ff_net_recv(__sock, __st, sizeof(struct ffdb_recstat), 0, &err);
+}
+
+ff_err_t ff_db_disconnect(FF_SOCKET *__sock) {
+	ff_err_t err;
+	ff_u8_t code[1];
+	*code = _ff_db_op_disconnect;
+	tape(__sock, code, 1, &err);
 }

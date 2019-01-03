@@ -57,6 +57,7 @@ struct ffly_vec_blkd {
 
 typedef struct ffly_vec_blkd* ffly_vec_blkdp;
 typedef struct ffly_vec {
+	// todo re'move (move)
 #ifdef FF_VEC_SA
 	void*(*alloc)(long long, ff_uint_t);
 	void(*free)(long long, void*);

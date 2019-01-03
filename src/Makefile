@@ -65,16 +65,16 @@ mul: clean
 #	gcc -Wall -o daemon crypto.o db/daemon.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
 ##	gcc -Wall -o main db/key.c $(ffly_objs)
 db_term: clean
-	gcc $(cc_flags) -o terminal db/terminal.c $(ffly_objs) -nostdlib
+	gcc $(cc_flags) -o foyt oyster/terminal.c $(ffly_objs) -nostdlib
 db: clean
 	gcc $(cc_flags) -o main $(ffly_objs) -nostdlib
 db_daemon: clean
-	gcc $(cc_flags) -c oyster.client.c
-	gcc $(cc_flags) -c db/user.c
-	gcc $(cc_flags) -c db/key.c
-	gcc $(cc_flags) -c db/slot.c
+	gcc $(cc_flags) -c oyster/client.c
+	gcc $(cc_flags) -c oyster/user.c
+	gcc $(cc_flags) -c oyster/key.c
+	gcc $(cc_flags) -c oyster/slot.c
 #	gcc $(cc_flags) -o client db/test.c $(ffly_objs) connect.o db.o user.o key.o -nostdlib
-	gcc $(cc_flags) -o daemon db/daemon.c $(ffly_objs) client.o user.o key.o slot.o -nostdlib
+	gcc $(cc_flags) -o foyd oyster/daemon.c $(ffly_objs) client.o user.o key.o slot.o -nostdlib
 net: clean
 #	gcc $(cc_flags) -Wall -c network/sock.c
 #	gcc $(cc_flags) -Wall -c network/input.c

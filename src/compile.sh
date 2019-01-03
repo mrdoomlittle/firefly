@@ -76,7 +76,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/resource.o $root_dir/resource.c
 $ffly_cc $cc_flags -c -o $dst_dir/cache.o $root_dir/cache.c
 $ffly_cc $cc_flags -c -o $dst_dir/event.o $root_dir/event.c
 $ffly_cc $cc_flags -c -o $dst_dir/oyster.o $root_dir/oyster.c
-$ffly_cc $cc_flags -c -o $dst_dir/db/connect.o $root_dir/db/connect.c
+$ffly_cc $cc_flags -c -o $dst_dir/oyster/connect.o $root_dir/oyster/connect.c
 $ffly_cc $cc_flags -c -o $dst_dir/stores.o $root_dir/stores.c
 $ffly_cc $cc_flags -c -o $dst_dir/compactor.o $root_dir/compactor.c
 $ffly_cc $cc_flags -c -o $dst_dir/terrain.o $root_dir/terrain.c
@@ -132,10 +132,10 @@ $ffly_cc $cc_flags -c -o $dst_dir/corrode.o $root_dir/corrode.c
 $ffly_cc $cc_flags -c -o $dst_dir/bog.o $root_dir/bog.c
 $ffly_cc $cc_flags -c -o $dst_dir/env.o $root_dir/env.c
 $ffly_cc $cc_flags -c -o $dst_dir/line.o $root_dir/line.c
-$ffly_cc $cc_flags -c -o $dst_dir/db/load.o $root_dir/db/load.c
-$ffly_cc $cc_flags -c -o $dst_dir/db/store.o $root_dir/db/store.c
-$ffly_cc $cc_flags -c -o $dst_dir/db/block.o $root_dir/db/block.c
-$ffly_cc $cc_flags -c -o $dst_dir/db/error.o $root_dir/db/error.c
+$ffly_cc $cc_flags -c -o $dst_dir/oyster/load.o $root_dir/oyster/load.c
+$ffly_cc $cc_flags -c -o $dst_dir/oyster/store.o $root_dir/oyster/store.c
+$ffly_cc $cc_flags -c -o $dst_dir/oyster/block.o $root_dir/oyster/block.c
+$ffly_cc $cc_flags -c -o $dst_dir/oyster/error.o $root_dir/oyster/error.c
 $ffly_cc $cc_flags -c -o $dst_dir/signal/sigemptyset.o $root_dir/signal/sigemptyset.c
 $ffly_cc $cc_flags -c -o $dst_dir/pulse.o $root_dir/pulse.c
 $ffly_cc $cc_flags -c -o $dst_dir/hexdump.o $root_dir/hexdump.c
@@ -240,13 +240,13 @@ $dst_dir/lot.o $dst_dir/chunk_manager.o $dst_dir/uni.o $dst_dir/chunk.o \
 $dst_dir/obj.o $dst_dir/obj_pool.o $dst_dir/obj_manager.o $dst_dir/polygon.o \
 $dst_dir/ui/camera.o $dst_dir/gravity.o $dst_dir/duct.o \
 $dst_dir/terrain.o $dst_dir/compactor.o $dst_dir/stores.o $dst_dir/oyster.o \
-$dst_dir/db/connect.o $dst_dir/layer.o $dst_dir/ui/btn.o $dst_dir/tile.o \
+$dst_dir/oyster/connect.o $dst_dir/layer.o $dst_dir/ui/btn.o $dst_dir/tile.o \
 $dst_dir/pallet.o $dst_dir/resource.o $dst_dir/cache.o $dst_dir/clock.o \
 $dst_dir/copy.o $dst_dir/ui/window.o $dst_dir/location.o \
 $dst_dir/storage/slab.o $dst_dir/storage/reservoir.o \
 $dst_dir/piston.o $dst_dir/corrode.o $dst_dir/bog.o \
-$dst_dir/env.o $dst_dir/line.o $dst_dir/db/load.o \
-$dst_dir/db/store.o $dst_dir/db/block.o $dst_dir/db/error.o \
+$dst_dir/env.o $dst_dir/line.o $dst_dir/oyster/load.o \
+$dst_dir/oyster/store.o $dst_dir/oyster/block.o $dst_dir/oyster/error.o \
 $dst_dir/signal/sigemptyset.o $dst_dir/pulse.o $dst_dir/hexdump.o \
 $dst_dir/brick.o $dst_dir/br.o $dst_dir/chrdump.o $dst_dir/raster.o \
 $dst_dir/model.o $dst_dir/start.o $dst_dir/p.o $dst_dir/panel.o $dst_dir/m.o \

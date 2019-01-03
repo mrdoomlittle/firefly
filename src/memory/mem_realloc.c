@@ -20,9 +20,7 @@ void* ffly_mem_realloc(void *__p, ff_uint_t __nbc, ff_bool_t __track_bypass) {
 # else
 void* ffly_mem_realloc(void *__p, ff_uint_t __nbc) {
 # endif
-# ifdef __ffly_debug
-	ff_location_push(_ff_loc_mem_realloc);
-# endif
+	_location_push(_ff_loc_mem_realloc);
 	ff_u8_t *p;
 # ifdef __ffly_debug
 	p = (ff_u8_t*)__p-sizeof(ff_uint_t);
@@ -72,8 +70,6 @@ _fail:
 		__ffly_mem_free(p);
 	p = NULL;
 _succ:
-# ifdef __ffly_debug
-	ff_location_pop();
-# endif
+	_location_pop();
 	return p;
 }

@@ -65,7 +65,7 @@ static dim(ff_int_t __x, ff_int_t __y, struct nt_vertex2 *__a, struct nt_vertex2
 	might remove and might not work
 */
 ff_i8_t static
-barycentric(ff_int_t __x, ff_int_t __y, struct nt_vertex2 *__a, struct nt_vertex2 *__b, struct nt_vertex2 *__c) {
+bary(ff_int_t __x, ff_int_t __y, struct nt_vertex2 *__a, struct nt_vertex2 *__b, struct nt_vertex2 *__c) {
 	struct nt_vertex2 v0 = {
 		.x=__b->x-__a->x,
 		.y=__b->y-__a->y

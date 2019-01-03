@@ -9,7 +9,7 @@
 # include "dep/mem_cpy.h"
 # define msgsize sizeof(struct ff_db_msg)
 # define FFDB_NNO 0xffff
-# include "db/block.h"
+# include "oyster/block.h"
 /*
 	TODO:
 	 make thread safe
@@ -46,7 +46,7 @@ ff_u16_t *ffdb_nnext = ffdb_ndiched;
 ff_u16_t ffdb_nfresh = 0;
 
 ff_u16_t
-ffdb_obtain_no() {
+ffdb_obtain_no(void) {
 	if (ffdb_nnext>ffdb_ndiched)
 		return *(--ffdb_nnext);
 	return ffdb_nfresh++;
