@@ -3,18 +3,12 @@
 # include "ffint.h"
 # include "clay/hash.h"
 #ifdef __noninternal
-#define _clay_init(...)\
-	ffly_clay_init(__VA_ARGS__)
-#define _clay_load(...)\
-	ffly_clay_load(__VA_ARGS__)
-#define _clay_read(...)\
-	ffly_clay_read(__VA_ARGS__)
-#define _clay_get(...)\
-	ffly_clay_get(__VA_ARGS__)
-#define _clay_tget(...)\
-	ffly_clay_tget(__VA_ARGS__)
-#define _clay_de_init(...)\
-	ffly_clay_de_init(__VA_ARGS__)
+#define _clay_init		ffly_clay_init
+#define _clay_load		ffly_clay_load
+#define _clay_read		ffly_clay_read
+#define _clay_get		ffly_clay_get
+#define _clay_tget		ffly_clay_tget
+#define _clay_de_init	ffly_clay_de_init
 #endif
 #define _clay_8(__p) \
 	(*(ff_u8_t*)ffly_clay_gettext(__p))

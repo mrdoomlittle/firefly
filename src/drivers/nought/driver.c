@@ -32,13 +32,13 @@ _nt_ctx_destroy(ff_u16_t __p) {
 }
 
 void static
-_nt_raster_tri2(ff_u16_t __tri, ff_u16_t __tex, ff_u32_t __x, ff_u32_t __y) {
+_nt_raster_tri2(ff_u16_t __tri, ff_u32_t __tex, ff_u32_t __x, ff_u32_t __y) {
 	*cb_p = _nt_op_raster_tri2;
 	*(ff_u16_t*)(cb_p+1) = __tri;
-	*(ff_u16_t*)(cb_p+3) = __tex;
-	*(ff_u32_t*)(cb_p+5) = __x;
-	*(ff_u32_t*)(cb_p+9) = __y;
-	cb_p+=13;
+	*(ff_u32_t*)(cb_p+3) = __tex;
+	*(ff_u32_t*)(cb_p+7) = __x;
+	*(ff_u32_t*)(cb_p+11) = __y;
+	cb_p+=15;
 }
 
 # include "../../dep/mem_cpy.h"
@@ -129,51 +129,51 @@ _nt_pixfill(ff_u32_t __npix, ff_u8_t *__colour) {
 }
 
 void static
-_nt_fb_set(ff_u16_t __fb) {
+_nt_fb_set(ff_u32_t __fb) {
 	*cb_p = _nt_op_fb_set;
-	*(ff_u16_t*)(cb_p+1) = __fb;
-	cb_p+=3;
+	*(ff_u32_t*)(cb_p+1) = __fb;
+	cb_p+=5;
 }
 
 void static
-_nt_fb_new(ff_u32_t __width, ff_u32_t __height, ff_u16_t __fb) {
+_nt_fb_new(ff_u32_t __width, ff_u32_t __height, ff_u32_t __fb) {
 	*cb_p = _nt_op_fb_new;
 	*(ff_u32_t*)(cb_p+1) = __width;
 	*(ff_u32_t*)(cb_p+5) = __height;
-	*(ff_u16_t*)(cb_p+9) = __fb;
-	cb_p+=11;
+	*(ff_u32_t*)(cb_p+9) = __fb;
+	cb_p+=13;
 }
 
 void static
-_nt_fb_destroy(ff_u16_t __fb) {
+_nt_fb_destroy(ff_u32_t __fb) {
 	*cb_p = _nt_op_fb_destroy;
-	*(ff_u16_t*)(cb_p+1) = __fb;
-	cb_p+=3;
+	*(ff_u32_t*)(cb_p+1) = __fb;
+	cb_p+=5;
 }
 
 void static
-_nt_ptile_new(ff_u16_t __pt, void(*__get)(ff_u8_t, long long, void*), void *__tile) {
+_nt_ptile_new(ff_u32_t __pt, void(*__get)(ff_u8_t, long long, void*), void *__tile) {
 	*cb_p = _nt_op_ptile_new;
-	*(ff_u16_t*)(cb_p+1) = __pt;
-	*(void**)(cb_p+3) = (void*)__get;
-	*(void**)(cb_p+11) = __tile;
-	cb_p+=19;
+	*(ff_u32_t*)(cb_p+1) = __pt;
+	*(void**)(cb_p+5) = (void*)__get;
+	*(void**)(cb_p+13) = __tile;
+	cb_p+=21;
 }
 
 void static
-_nt_ptile_destroy(ff_u16_t __pt) {
+_nt_ptile_destroy(ff_u32_t __pt) {
 	*cb_p = _nt_op_ptile_destroy;
-	*(ff_u16_t*)(cb_p+1) = __pt;
-	cb_p+=3;
+	*(ff_u32_t*)(cb_p+1) = __pt;
+	cb_p+=5;
 }
 
 void static
-_nt_tdraw(ff_u16_t __tile, ff_u32_t __x, ff_u32_t __y) {
+_nt_tdraw(ff_u32_t __tile, ff_u32_t __x, ff_u32_t __y) {
 	*cb_p = _nt_op_tdraw;
-	*(ff_u16_t*)(cb_p+1) = __tile;
-	*(ff_u32_t*)(cb_p+3) = __x;
-	*(ff_u32_t*)(cb_p+7) = __y;
-	cb_p+=11;
+	*(ff_u32_t*)(cb_p+1) = __tile;
+	*(ff_u32_t*)(cb_p+5) = __x;
+	*(ff_u32_t*)(cb_p+9) = __y;
+	cb_p+=13;
 }
 
 void static
@@ -191,125 +191,127 @@ _nt_cb(ff_u8_t __bits) {
 }
 
 void static
-_nt_objbuf_new(ff_u16_t __buf, ff_u32_t __size) {
+_nt_objbuf_new(ff_u32_t __buf, ff_u32_t __size) {
 	*cb_p = _nt_op_obn;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	*(ff_u32_t*)(cb_p+3) = __size;
-	cb_p+=7;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+5) = __size;
+	cb_p+=9;
 }
 
 void static
-_nt_objbuf_destroy(ff_u16_t __buf) {
+_nt_objbuf_destroy(ff_u32_t __buf) {
 	*cb_p = _nt_op_obd;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	cb_p+=3;
-}
-
-void static
-_nt_objbuf_map(ff_u16_t __buf) {
-	*cb_p = _nt_op_obm;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	cb_p+=3;
-}
-
-void static
-_nt_objbuf_unmap(ff_u16_t __buf) {
-	*cb_p = _nt_op_obum;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	cb_p+=3;
-}
-
-void static
-_nt_objbuf_write(ff_u16_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__src) {
-	*cb_p = _nt_op_obw;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	*(ff_u32_t*)(cb_p+3) = __offset;
-	*(ff_u32_t*)(cb_p+7) = __size;
-	*(void**)(cb_p+11) = __src;
-	cb_p+=19;
-}
-
-void static
-_nt_objbuf_read(ff_u16_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__dst) {
-	*cb_p = _nt_op_obr;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	*(ff_u32_t*)(cb_p+3) = __offset;
-	*(ff_u32_t*)(cb_p+7) = __size;
-	*(void**)(cb_p+11) = __dst;
-	cb_p+=19;
-}
-
-void static
-_nt_draw(ff_u16_t __buf, ff_u32_t __n) {
-	*cb_p = _nt_op_draw;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	*(ff_u32_t*)(cb_p+3) = __n;
-	cb_p+=7;
-}
-
-void static
-_nt_texbuf_new(ff_u16_t __buf, ff_u32_t __size) {
-	ffly_printf("texbuf new: %u\n", _nt_op_txbn);
-	*cb_p = _nt_op_txbn;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	*(ff_u32_t*)(cb_p+3) = __size;
-	cb_p+=7;
-}
-
-void static
-_nt_texbuf_destroy(ff_u16_t __buf) {
-	*cb_p = _nt_op_txbd;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	cb_p+=3;
-}
-
-void static
-_nt_texbuf_map(ff_u16_t __buf) {
-	*cb_p = _nt_op_txbm;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	cb_p+=3;
-}
-
-void static
-_nt_texbuf_unmap(ff_u16_t __buf) {
-	*cb_p = _nt_op_txbum;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	cb_p+=3;
-}
-
-void static
-_nt_texbuf_write(ff_u16_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__src) {
-	*cb_p = _nt_op_txbw;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	*(ff_u32_t*)(cb_p+3) = __offset;
-	*(ff_u32_t*)(cb_p+7) = __size;
-	*(void**)(cb_p+11) = __src;
-	cb_p+=19;
-}
-
-void static
-_nt_texbuf_read(ff_u16_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__dst) {
-	*cb_p = _nt_op_txbr;
-	*(ff_u16_t*)(cb_p+1) = __buf;
-	*(ff_u32_t*)(cb_p+3) = __offset;
-	*(ff_u32_t*)(cb_p+7) = __size;
-	*(void**)(cb_p+11) = __dst;
-	cb_p+=19;
-}
-
-void static
-_nt_tex_new(ff_u16_t __tx, ff_u16_t __txb) {
-	*cb_p = _nt_op_txn;
-	*(ff_u16_t*)(cb_p+1) = __tx;
-	*(ff_u16_t*)(cb_p+3) = __txb;
+	*(ff_u32_t*)(cb_p+1) = __buf;
 	cb_p+=5;
 }
 
 void static
-_nt_tex_destroy(ff_u16_t __tx) {
+_nt_objbuf_map(ff_u32_t __buf) {
+	*cb_p = _nt_op_obm;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	cb_p+=5;
+}
+
+void static
+_nt_objbuf_unmap(ff_u32_t __buf) {
+	*cb_p = _nt_op_obum;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	cb_p+=5;
+}
+
+void static
+_nt_objbuf_write(ff_u32_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__src) {
+	*cb_p = _nt_op_obw;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+5) = __offset;
+	*(ff_u32_t*)(cb_p+9) = __size;
+	*(void**)(cb_p+13) = __src;
+	cb_p+=21;
+}
+
+void static
+_nt_objbuf_read(ff_u32_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__dst) {
+	*cb_p = _nt_op_obr;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+5) = __offset;
+	*(ff_u32_t*)(cb_p+9) = __size;
+	*(void**)(cb_p+13) = __dst;
+	cb_p+=21;
+}
+
+void static
+_nt_draw(ff_u32_t __buf, ff_u32_t __n) {
+	*cb_p = _nt_op_draw;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+5) = __n;
+	cb_p+=9;
+}
+
+void static
+_nt_texbuf_new(ff_u32_t __buf, ff_u32_t __size) {
+	ffly_printf("texbuf new: %u\n", _nt_op_txbn);
+	*cb_p = _nt_op_txbn;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+5) = __size;
+	cb_p+=9;
+}
+
+void static
+_nt_texbuf_destroy(ff_u32_t __buf) {
+	*cb_p = _nt_op_txbd;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	cb_p+=5;
+}
+
+void static
+_nt_texbuf_map(ff_u32_t __buf) {
+	*cb_p = _nt_op_txbm;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	cb_p+=5;
+}
+
+void static
+_nt_texbuf_unmap(ff_u32_t __buf) {
+	*cb_p = _nt_op_txbum;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	cb_p+=5;
+}
+
+void static
+_nt_texbuf_write(ff_u32_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__src) {
+	*cb_p = _nt_op_txbw;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+5) = __offset;
+	*(ff_u32_t*)(cb_p+9) = __size;
+	*(void**)(cb_p+13) = __src;
+	cb_p+=21;
+}
+
+void static
+_nt_texbuf_read(ff_u32_t __buf, ff_u32_t __offset, ff_u32_t __size, void *__dst) {
+	*cb_p = _nt_op_txbr;
+	*(ff_u32_t*)(cb_p+1) = __buf;
+	*(ff_u32_t*)(cb_p+5) = __offset;
+	*(ff_u32_t*)(cb_p+9) = __size;
+	*(void**)(cb_p+13) = __dst;
+	cb_p+=21;
+}
+
+void static
+_nt_tex_new(ff_u32_t __tx, ff_u32_t __txb, ff_u32_t __width, ff_u32_t __height) {
+	*cb_p = _nt_op_txn;
+	*(ff_u32_t*)(cb_p+1) = __tx;
+	*(ff_u32_t*)(cb_p+5) = __txb;
+	*(ff_u32_t*)(cb_p+9) = __width;
+	*(ff_u32_t*)(cb_p+13) = __height;
+	cb_p+=17;
+}
+
+void static
+_nt_tex_destroy(ff_u32_t __tx) {
 	*cb_p = _nt_op_txd;
-	*(ff_u16_t*)(cb_p+1) = __tx;
-	cb_p+=3;
+	*(ff_u32_t*)(cb_p+1) = __tx;
+	cb_p+=5;
 }
 # include "../../nought/tex.h"
 # include "../../bron/driver.h"

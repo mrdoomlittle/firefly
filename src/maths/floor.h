@@ -1,5 +1,7 @@
 # ifndef __ffly__floor__h
 # define __ffly__floor__h
+#define _floor(__val)\
+	ffly_floor(__val)
 # ifdef __cplusplus
 extern "C" {
 # endif

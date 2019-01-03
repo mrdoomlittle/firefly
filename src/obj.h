@@ -8,25 +8,25 @@
 # include "types/no_t.h"
 # include "uni.h"
 
-# define ffly_set_objx(__obj, __x) \
+#define ffly_set_objx(__obj, __x) \
 	(__obj)->x = __x;	 
-# define ffly_set_objy(__obj, __y) \
+#define ffly_set_objy(__obj, __y) \
 	(__obj)->y = __y;
-# define ffly_set_objz(__obj, __z) \
+#define ffly_set_objz(__obj, __z) \
 	(__obj)->z = __z;
 
-# define ffly_get_objx(__obj) \
+#define ffly_get_objx(__obj) \
 	(__obj)->x
-# define ffly_get_objy(__obj) \
+#define ffly_get_objy(__obj) \
 	(__obj)->y
-# define ffly_get_objz(__obj) \
+#define ffly_get_objz(__obj) \
 	(__obj)->z
 
-# define ffly_set_objxl(__obj, __xl) \
+#define ffly_set_objxl(__obj, __xl) \
 	(__obj)->xl = __xl;    
-# define ffly_set_objyl(__obj, __yl) \
+#define ffly_set_objyl(__obj, __yl) \
 	(__obj)->yl = __yl;
-# define ffly_set_objzl(__obj, __zl) \
+#define ffly_set_objzl(__obj, __zl) \
 	(__obj)->zl = __zl;
 
 struct ffly_obj {

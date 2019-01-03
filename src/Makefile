@@ -56,12 +56,12 @@ mul: clean
 #	gcc -c network/input.c
 #	gcc -c network/output.c
 #	gcc -Wall -c net.c
-#	gcc -c db.c
+#	gcc -c oyster.c
 #	gcc -c crypto.c
-##	gcc -Wall -o main db.c $(ffly_objs) input.o output.o sock.o net.o
+##	gcc -Wall -o main oyster.c $(ffly_objs) input.o output.o sock.o net.o
 #	gcc -Wall -c db/user.c
 #	gcc -Wall -c db/key.c
-#	gcc -Wall -o connect crypto.o db/connect.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
+#	gcc -Wall -o connect crypto.o oyster.connect.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
 #	gcc -Wall -o daemon crypto.o db/daemon.c $(ffly_objs) input.o output.o sock.o net.o db.o user.o key.o
 ##	gcc -Wall -o main db/key.c $(ffly_objs)
 db_term: clean
@@ -69,7 +69,7 @@ db_term: clean
 db: clean
 	gcc $(cc_flags) -o main $(ffly_objs) -nostdlib
 db_daemon: clean
-	gcc $(cc_flags) -c db/client.c
+	gcc $(cc_flags) -c oyster.client.c
 	gcc $(cc_flags) -c db/user.c
 	gcc $(cc_flags) -c db/key.c
 	gcc $(cc_flags) -c db/slot.c

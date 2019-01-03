@@ -1,6 +1,9 @@
 # include "location.h"
 # include "ffly_def.h"
-
+/*
+	what is this?
+	if an error occurs that isent fatal we want to know what happend to lead up to the error
+*/
 /*
 	tls not tested;
 */

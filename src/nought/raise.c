@@ -76,7 +76,7 @@ static void(*op[])(void) = {
 };
 
 ff_uint_t static os[] = {
-	(sizeof(ff_u16_t)*2)+(sizeof(ff_u32_t)*2),			//nt_raster_tri2		-0
+	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*3),				//nt_raster_tri2		-0
 	sizeof(ff_u16_t),									//nt_ctx_new			-1
 	sizeof(ff_u16_t),									//nt_ctx_destroy		-2
 	sizeof(ff_u8_t*)+(sizeof(ff_u32_t)*4),				//nt_putframe			-3
@@ -86,31 +86,31 @@ ff_uint_t static os[] = {
 	0,													//nt_pixcopy			-7
 	(sizeof(ff_u32_t)*4)+sizeof(ff_u8_t*),				//nt_pixdraw			-8
 	sizeof(ff_u8_t*)+sizeof(ff_u32_t),					//nt_pixfill			-9
-	sizeof(ff_u16_t),									//nt_fb_set				-10
-	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),				//nt_fb_new				-11
-	sizeof(ff_u16_t),									//nt_fb_destroy			-12
-	sizeof(ff_u16_t)+(sizeof(void*)*2),					//nt_ptile_new			-13
-	sizeof(ff_u16_t),									//nt_ptile_destroy		-14
-	sizeof(ff_u16_t)+(sizeof(ff_u32_t)*2),				//nt_tdraw				-15
+	sizeof(ff_u32_t),									//nt_fb_set				-10
+	sizeof(ff_u32_t)+(sizeof(ff_u32_t)*2),				//nt_fb_new				-11
+	sizeof(ff_u32_t),									//nt_fb_destroy			-12
+	sizeof(ff_u32_t)+(sizeof(void*)*2),					//nt_ptile_new			-13
+	sizeof(ff_u32_t),									//nt_ptile_destroy		-14
+	sizeof(ff_u32_t)+(sizeof(ff_u32_t)*2),				//nt_tdraw				-15
 	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t),	//nt_sput				-16
 	sizeof(void*)+sizeof(ff_u32_t)+sizeof(ff_u16_t),	//nt_sget				-17
 	1,													//nt_sb					-18
 	1,													//nt_cb					-19
-	6,													//nt_objbuf_new			-20
-	2,													//nt_objbuf_destroy		-21
-	2,													//nt_objbuf_map			-22
-	2,													//nt_objbuf_unmap		-23
-	18,													//nt_objbuf_write		-24
-	18,													//nt_objbuf_read		-25
-	6,													//nt_draw				-26
-	6,													//nt_texbuf_new			-27
-	2,													//nt_texbuf_destroy		-28
-	2,													//nt_texbuf_map			-29
-	2,													//nt_texbuf_unmap		-30
-	18,													//nt_texbuf_write		-31
-	18,													//nt_texbuf_read		-32
-	4,													//nt_tex_new			-33
-	2													//nt_tex_destroy		-34
+	8,													//nt_objbuf_new			-20
+	4,													//nt_objbuf_destroy		-21
+	4,													//nt_objbuf_map			-22
+	4,													//nt_objbuf_unmap		-23
+	20,													//nt_objbuf_write		-24
+	20,													//nt_objbuf_read		-25
+	8,													//nt_draw				-26
+	8,													//nt_texbuf_new			-27
+	4,													//nt_texbuf_destroy		-28
+	4,													//nt_texbuf_map			-29
+	4,													//nt_texbuf_unmap		-30
+	20,													//nt_texbuf_write		-31
+	20,													//nt_texbuf_read		-32
+	16,													//nt_tex_new			-33
+	4													//nt_tex_destroy		-34
 };
 
 static char const *ostr[] = {
@@ -168,6 +168,7 @@ _again:
 	}
 //#ifdef DEBUG
 	ffly_printf("nought_op{%s}\n", ostr[on]);
+	ffly_fdrain(ffly_out);
 //#endif
 	op[on]();
 

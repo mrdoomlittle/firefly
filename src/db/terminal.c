@@ -201,6 +201,10 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 		jmpagain;
 	}
 
+/*
+	ignore labels im only going it because all the code is in one place and its easer 
+	to edit on the fly
+*/
 	__asm__("jmp *%0" : : "r"(to));
 
 	__asm__("_shutdown:\n\t"); {

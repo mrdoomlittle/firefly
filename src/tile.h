@@ -33,7 +33,7 @@ typedef struct ffly_tile {
 	struct ffly_tile **bk, *next;
 	ff_u8_t bits;
 	// phantom tile
-	ff_u16_t pt;
+	ff_u32_t pt;
 } *ffly_tilep;
 
 void ffly_tile_draw(ffly_tilep, ff_u32_t, ff_u32_t);

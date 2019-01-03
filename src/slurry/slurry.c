@@ -29,6 +29,10 @@ static void chd(ff_u8_t *__p, ff_uint_t __n) {
 	printf("\n");
 }
 
+/*
+	tcp packets arive in order but worst case we dont send in order
+*/
+
 //#define DEBUG
 #define SHH 0x01
 struct seghdr {

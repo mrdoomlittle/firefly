@@ -1,4 +1,4 @@
-# include "../db.h"
+# include "../oyster.h"
 # include "../system/io.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
@@ -8,6 +8,8 @@
 # include "../system/mutex.h"
 // needs testing
 /*
+	NOTE:
+		not finished only sketch
 	connected users will need a key inorder to do anything.
 */
 

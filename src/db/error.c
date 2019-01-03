@@ -1,4 +1,4 @@
-# include "../db.h"
+# include "../oyster.h"
 char const* ff_db_errst(ff_db_err __err) {
 	switch(__err) {
 		case _ff_err_null:	return "no error";

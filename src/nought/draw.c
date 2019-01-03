@@ -9,17 +9,17 @@
 # include "pixel.h"
 void
 nt_tdraw(void) {
-	ff_u16_t plate;
+	ff_u32_t plate;
 
-	plate = *(ff_u16_t*)nt_raise_p;
+	plate = *(ff_u32_t*)nt_raise_p;
 
 	struct nt_ptile *pt;
 	pt = (struct nt_ptile*)nt_plate_get(plate);
 
 	ff_u32_t _x, _y;
 
-	_x = *(ff_u32_t*)(nt_raise_p+2);
-	_y = *(ff_u32_t*)(nt_raise_p+6);
+	_x = *(ff_u32_t*)(nt_raise_p+4);
+	_y = *(ff_u32_t*)(nt_raise_p+8);
 
 	ffly_printf("tdraw.\n");	
 	ff_u8_t tsz;
@@ -177,10 +177,10 @@ within(struct nt_vertex2 *__v, ff_int_t __x, ff_int_t __y, ff_uint_t __n) {
 void
 nt_draw(void) {
 	nt_objbufp buf;
-	buf = *(nt_objbufp*)stack_at(*(ff_u16_t*)nt_raise_p);	
+	buf = (nt_objbufp)nt_plate_get(*(ff_u32_t*)nt_raise_p);	
 
 	ff_u32_t n;
-	n = *(ff_u32_t*)(nt_raise_p+2);
+	n = *(ff_u32_t*)(nt_raise_p+4);
 
 	struct nt_vertex2 *v, *cr;
 	v = (struct nt_vertex2*)buf->data;

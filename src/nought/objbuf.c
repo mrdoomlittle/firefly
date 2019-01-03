@@ -3,6 +3,7 @@
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../dep/mem_cpy.h"
+# include "plate.h"
 #define is_flag(__flags, __flag) \
 	(((__flags)&(__flag))>0)
 nt_objbufp static
@@ -50,54 +51,51 @@ objbuf_read(nt_objbufp __buf, ff_u32_t __offset, ff_u32_t __size, void *__dst) {
 
 void nt_objbuf_new(void) {
 	nt_objbufp *buf;
-	buf = (nt_objbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
-	ff_u32_t sz;
-	sz = *(ff_u32_t*)(nt_raise_p+2);
-	*buf = objbuf_new(sz);
+	buf = objbuf_new(*(ff_u32_t*)(nt_raise_p+4));
+	nt_plate_put(*(ff_u32_t*)nt_raise_p, buf);
 }
 
 void nt_objbuf_destroy(void) {
 	nt_objbufp buf;
-	buf = *(nt_objbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
+	buf = (nt_objbufp)nt_plate_get(*(ff_u32_t*)nt_raise_p);
+
 	objbuf_destroy(buf);
 }
 
 void nt_objbuf_map(void) {
 	nt_objbufp buf;
-	buf = *(nt_objbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
+	buf = (nt_objbufp)nt_plate_get(*(ff_u32_t*)nt_raise_p);
 
 	objbuf_map(buf);
 }
 
 void nt_objbuf_unmap(void) {
 	nt_objbufp buf;
-	buf = *(nt_objbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
+	buf = (nt_objbufp)nt_plate_get(*(ff_u32_t*)nt_raise_p);
 
 	objbuf_unmap(buf);
 }
 
 void nt_objbuf_write(void) {
 	nt_objbufp buf;
-	buf = *(nt_objbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
-	
+	buf = (nt_objbufp)nt_plate_get(*(ff_u32_t*)nt_raise_p);
 	ff_u32_t offset, size;
 	void *src;
 
-	offset = *(ff_u32_t*)(nt_raise_p+2);
-	size = *(ff_u32_t*)(nt_raise_p+6);
-	src = *(void**)(nt_raise_p+10);
+	offset = *(ff_u32_t*)(nt_raise_p+4);
+	size = *(ff_u32_t*)(nt_raise_p+8);
+	src = *(void**)(nt_raise_p+12);
 	objbuf_write(buf, offset, size, src);
 }
 
 void nt_objbuf_read(void) {
 	nt_objbufp buf;
-	buf = *(nt_objbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
-
+	buf = (nt_objbufp)nt_plate_get(*(ff_u32_t*)nt_raise_p);
 	ff_u32_t offset, size;
 	void *dst;
 
-	offset = *(ff_u32_t*)(nt_raise_p+2);
-	size = *(ff_u32_t*)(nt_raise_p+6);
-	dst = *(void**)(nt_raise_p+10);
+	offset = *(ff_u32_t*)(nt_raise_p+4);
+	size = *(ff_u32_t*)(nt_raise_p+8);
+	dst = *(void**)(nt_raise_p+12);
 	objbuf_read(buf, offset, size, dst);
 }

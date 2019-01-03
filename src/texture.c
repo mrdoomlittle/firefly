@@ -31,7 +31,7 @@ ff_u16_t ffly_tex_get(ffly_texturep __tex) {
 
 		ffly_bron_texbuf_write(__tex->txb, 0, __tex->size*4, __tex->innards);
 		// texture data+info - full package
-		__tex->tx = ffly_bron_tex_new(__tex->txb);
+		__tex->tx = ffly_bron_tex_new(__tex->txb, 0, 0);
 		__tex->flags |= TX_INO;
 	}
 

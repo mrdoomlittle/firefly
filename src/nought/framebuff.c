@@ -47,31 +47,27 @@ void nt_framebuff_del(struct nt_framebuff *__fb) {
 	__ffly_mem_free(__fb);
 }
 
-
+# include "plate.h"
 void nt_fb_set(void) {
 	struct nt_framebuff *fb;
 
-	fb = *(struct nt_framebuff**)stack_at(*(ff_u16_t*)nt_raise_p);
+	fb = (struct nt_framebuff*)nt_plate_get(*(ff_u32_t*)nt_raise_p);
 	nt_ctx->fb = fb;
 }
 
 void nt_fb_new(void) {
-	struct nt_framebuff **fb;
-
+	ff_u32_t plate;
 	ff_u32_t width, height;
 
 	width = *(ff_u32_t*)nt_raise_p;
 	height = *(ff_u32_t*)(nt_raise_p+4);
-	fb = ((struct nt_framebuff**)stack_at(*(ff_u16_t*)(nt_raise_p+8)));
+	plate = *(ff_u32_t*)(nt_raise_p+8);
 
-	*fb = nt_framebuff_creat(width, height);
+	nt_plate_put(plate, nt_framebuff_creat(width, height));
 }
 
 void nt_fb_destroy(void) {
-	struct nt_framebuff *fb;
-
-	fb = *(struct nt_framebuff**)stack_at(*(ff_u16_t*)nt_raise_p);
-	nt_framebuff_del(fb);
+	nt_framebuff_del((struct nt_framebuff*)nt_plate_get(*(ff_u32_t*)nt_raise_p));
 }
 
 void nt_putframe(void) {
@@ -115,8 +111,8 @@ void nt_putframe(void) {
 				// skip tile
 				goto _sk;				
 			}
-			txo = (x+sc_x)-(tx*(1<<TILESZ));
-			tyo = (y+sc_y)-(ty*(1<<TILESZ));
+			txo = (x+sc_x)-(tx<<TILESZ);
+			tyo = (y+sc_y)-(ty<<TILESZ);
 
 			s = tilepx(t, txo, tyo);
 			*(ff_u32_t*)d = *(ff_u32_t*)s;

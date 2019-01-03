@@ -1,4 +1,4 @@
-# include "../db.h"
+# include "../oyster.h"
 # include "../types.h"
 # include "../system/io.h"
 # include "../dep/bzero.h"
@@ -596,6 +596,10 @@ void static sig(int __sig) {
 		------ small routines
 		_store:
 		_load:
+	why?
+		because there most likly to be used
+		and this means we dont need to prepare the stack
+		and call far functions
 */
 void static
 texec(ff_db_tapep __t) {

@@ -4,10 +4,8 @@
 # include "types.h"
 # include "tile.h"
 
-#define _plt_write(...)\
-	ffly_pallet_write(__VA_ARGS__)
-#define _plt_read(...)\
-	ffly_pallet_read(__VA_ARGS__)
+#define _plt_write	ffly_pallet_write
+#define _plt_read	ffly_pallet_read
 
 typedef struct ffly_tile* ffly_tilep;
 typedef struct ffly_pallet {

@@ -4,7 +4,7 @@
 /*
 	should make this automatic
 */
-# define NO_SLOTS 20
+#define NO_SLOTS 20
 /*
 	so we dont need to give the pointers to clients
 */

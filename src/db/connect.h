@@ -1,7 +1,7 @@
 # ifndef __ffly__db__connect__h
 # define __ffly__db__connect__h
 # include "../ffint.h"
-# include "../db.h"
+# include "../oyster.h"
 # include "../types.h"
 // connector
 typedef struct ff_db_ctr {

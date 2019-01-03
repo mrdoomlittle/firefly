@@ -75,7 +75,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/pallet.o $root_dir/pallet.c
 $ffly_cc $cc_flags -c -o $dst_dir/resource.o $root_dir/resource.c
 $ffly_cc $cc_flags -c -o $dst_dir/cache.o $root_dir/cache.c
 $ffly_cc $cc_flags -c -o $dst_dir/event.o $root_dir/event.c
-$ffly_cc $cc_flags -c -o $dst_dir/db.o $root_dir/db.c
+$ffly_cc $cc_flags -c -o $dst_dir/oyster.o $root_dir/oyster.c
 $ffly_cc $cc_flags -c -o $dst_dir/db/connect.o $root_dir/db/connect.c
 $ffly_cc $cc_flags -c -o $dst_dir/stores.o $root_dir/stores.c
 $ffly_cc $cc_flags -c -o $dst_dir/compactor.o $root_dir/compactor.c
@@ -225,6 +225,7 @@ $ffly_cc $cc_flags -c -o $dst_dir/oddity.o $root_dir/oddity.c
 $ffly_cc $cc_flags -c -o $dst_dir/duct/shm_pipe.o $root_dir/duct/shm_pipe.c
 $ffly_cc $cc_flags -c -o $dst_dir/log.o $root_dir/log.c
 $ffly_cc $cc_flags -c -o $dst_dir/bitfont.o $root_dir/bitfont.c
+$ffly_cc $cc_flags -c -o $dst_dir/bron/plate.o $root_dir/bron/plate.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
@@ -238,7 +239,7 @@ $dst_dir/signal.o $dst_dir/context.o $dst_dir/hatch.o $dst_dir/rat.o \
 $dst_dir/lot.o $dst_dir/chunk_manager.o $dst_dir/uni.o $dst_dir/chunk.o \
 $dst_dir/obj.o $dst_dir/obj_pool.o $dst_dir/obj_manager.o $dst_dir/polygon.o \
 $dst_dir/ui/camera.o $dst_dir/gravity.o $dst_dir/duct.o \
-$dst_dir/terrain.o $dst_dir/compactor.o $dst_dir/stores.o $dst_dir/db.o \
+$dst_dir/terrain.o $dst_dir/compactor.o $dst_dir/stores.o $dst_dir/oyster.o \
 $dst_dir/db/connect.o $dst_dir/layer.o $dst_dir/ui/btn.o $dst_dir/tile.o \
 $dst_dir/pallet.o $dst_dir/resource.o $dst_dir/cache.o $dst_dir/clock.o \
 $dst_dir/copy.o $dst_dir/ui/window.o $dst_dir/location.o \
@@ -269,4 +270,4 @@ $dst_dir/slurry/proto.o $dst_dir/slurry/slurry.o $dst_dir/tc.o $dst_dir/time.o \
 $dst_dir/nought/objbuf.o $dst_dir/bron/objbuf.o $dst_dir/nought/tex.o \
 $dst_dir/fs.o $dst_dir/fs/m/file.o $dst_dir/fs/m/hash.o $dst_dir/fs/m/alloc.o \
 $dst_dir/fs/m/m.o $dst_dir/fs/m/exec.o $dst_dir/oddity.o $dst_dir/duct/shm_pipe.o
-$dst_dir/log.o $dst_dir/bitfont.o"
+$dst_dir/log.o $dst_dir/bitfont.o $dst_dir/bron/plate.o"

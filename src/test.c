@@ -147,6 +147,7 @@ ff_i8_t static sched_test(long long __arg) {
 }
 
 ff_err_t ffmain(int __argc, char const *__argv[]) {
+/*
 	ffly_bron_driver(_bron_dd_nought, &BRON_CONTEXT->driver);
 	BRON_CONTEXT->stack = 0;
 	ff_u16_t buf;
@@ -154,6 +155,7 @@ ff_err_t ffmain(int __argc, char const *__argv[]) {
 	ff_u8_t tex[4];
 	ffly_bron_texbuf_write(buf, 0, 4, tex);
 	ffly_bron_done();
+*/
 /*
 	void *obj0 = NULL, *obj1 = NULL;
 	struct ff_hs h;
@@ -401,7 +403,7 @@ _again:
 		y++;
 	}
 */
-/*
+
 # define WIDTH 512
 # define HEIGHT 512
 # define NV 5
@@ -421,12 +423,12 @@ _again:
 		{511, 0}
 	}
 	};
-
+	ffly_frame_buffp _fb;
 	bron_dd(_bron_dd_nought, &BRON_CONTEXT->driver);
 	BRON_CONTEXT->stack = 0;
 
 	ff_err_t err;
-	__frame_buff__ = ffly_frame_buff_creat(WIDTH, HEIGHT, 4, &err);
+	_fb = ffly_frame_buff_creat(WIDTH, HEIGHT, 4, &err);
 	int out;
 	out = open("test.ppm", O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
     char buf[128];
@@ -460,7 +462,7 @@ _again:
 	ffly_colour_t cb = {41, 65, 104, 255};
 	ffly_pixfill(WIDTH*HEIGHT, ca, 0);	
 	ffly_grp_unload(&__ffly_grp__);
-	//BRON_CONTEXT->driver.sb(NOUGHT_BLEND);
+//	BRON_CONTEXT->driver.sb(NOUGHT_BLEND);
 	ffly_pixfill(WIDTH*256, cb, 0);
 	ffly_grp_unload(&__ffly_grp__);
 
@@ -470,24 +472,45 @@ _again:
 	ffly_bron_objbuf_unmap(ob1);
 	ffly_bron_objbuf_destroy(ob0);
 	ffly_bron_objbuf_destroy(ob1);
-	ffly_fb_copy(__frame_buff__);
+
+	ff_u32_t tb, tex;
+	tb = ffly_bron_texbuf_new(4*4);
+	ffly_bron_texbuf_map(tb);
+
+	ff_u8_t texd[4*4] = {
+		255, 0, 0, 255,
+		0, 255, 0, 255,
+		0, 0, 255, 255,
+		255, 255, 0, 255
+	};
+
+	ffly_bron_texbuf_write(tb, 0, 4*4, texd);
+	tex = ffly_bron_tex_new(tb, 2, 2);
+
+	struct bron_tri2 tri = {
+		0, 256,
+		256, -255,
+		-255, -255
+	};
+	ffly_bron_tri2(&tri, tex, 256, 256);
+	ffly_fb_copy(_fb);
 	bron_finish();
 	bron_fb_destroy(fb);
 	bron_done();
-	ffly_fb_yank(__frame_buff__);
+	ffly_fb_yank(_fb);
 	ff_uint_t y;
 	y = 0;
 	while(y != HEIGHT) {
 		ffly_mem_set(row, 0, WIDTH*3);
-		frame_read_rgb(__frame_buff__, row, WIDTH, 1, 0, y);
+		frame_read_rgb(_fb, row, WIDTH, 1, 0, y);
 		write(out, row, WIDTH*3);
 		y++;
 	}	
 
-	ffly_frame_buff_del(__frame_buff__);
+	ffly_frame_buff_del(_fb);
 	close(out);
 //	ffly_tile_cleanup();
-*/
+
 /*
 	ff_uint_t i, n;
 

@@ -1,6 +1,12 @@
 # ifndef __ffly__location__h
 # define __ffly__location__h
-
+#ifdef __ffly_debug
+#define _location_push	ff_location_push
+#define _location_pop	ff_location_pop
+#else
+#define _location_push
+#define _location_pop
+#endif
 # include "ffint.h"
 enum {
 	_ff_loc_mem_alloc,

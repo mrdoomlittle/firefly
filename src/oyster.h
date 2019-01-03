@@ -1,5 +1,5 @@
-# ifndef __ffly__db__h
-# define __ffly__db__h
+# ifndef __ffly__oyster__h
+# define __ffly__oyster__h
 # include "ffint.h"
 # include "types.h"
 # include "net.h"
@@ -270,4 +270,4 @@ void ffdb_load(ffdbp);
 extern ff_u16_t ffdb_ndiched[100];
 extern ff_u16_t *ffdb_nnext;
 extern ff_u16_t ffdb_nfresh;
-# endif /*__ffly__db__h*/
+# endif /*__ffly__oyster__h*/

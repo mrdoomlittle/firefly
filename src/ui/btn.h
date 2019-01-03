@@ -26,22 +26,15 @@
 
 */
 
-#define _ui_btn_creat(...)\
-	ffly_ui_btn_creat(__VA_ARGS__)
-#define _ui_btn_sched(...)\
-	ffly_ui_btn_sched(__VA_ARGS__)
-#define _ui_btn_enable(...)\
-	ffly_ui_btn_enable(__VA_ARGS__)
-#define _ui_btn_disable(...)\
-	ffly_ui_btn_disable(__VA_ARGS__)
-#define _ui_btn_destroy(...)\
-	ffly_ui_btn_destroy(__VA_ARGS__)
+#define _ui_btn_creat		ffly_ui_btn_creat
+#define _ui_btn_sched		ffly_ui_btn_sched
+#define _ui_btn_enable		ffly_ui_btn_enable
+#define _ui_btn_disable		ffly_ui_btn_disable
+#define _ui_btn_destroy		ffly_ui_btn_destroy
 #define _ui_btn_fnode_v(__bt, __vec)\
 	ffly_ui_btn_fnode(__bt, __vec.x, __vec.y)	
-#define _ui_btn_compose(...)\
-	ffly_ui_btn_compose(__VA_ARGS__)
-#define _ui_btn_set(...)\
-	ffly_ui_btn_set(__VA_ARGS__)
+#define _ui_btn_compose		ffly_ui_btn_compose
+#define _ui_btn_set			ffly_ui_btn_set
 #define FF_UI_BS_AREA	0x01
 #define FF_UI_BS_POS	0x02
 #define FF_UI_BS_TEXT	0x04

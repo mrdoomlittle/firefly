@@ -11,6 +11,7 @@ typedef struct nt_texbuf {
 
 typedef struct nt_tex {
 	nt_texbufp b;
+	ff_u32_t width, height;
 } *nt_texp;
 
 void nt_tex_new(void);

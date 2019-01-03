@@ -9,6 +9,7 @@
 # include "system/mutex.h"
 # include "graphics/job.h"
 # include "graphics/pipe.h"
+# include "bron/plate.h"
 static struct ffly_tile *top = NULL;
 ff_mlock_t static lock = FFLY_MUTEX_INIT;
 
@@ -38,7 +39,7 @@ pt_get(ff_u8_t __what, long long __dst, void *__tile) {
 # include "context.h"
 void ffly_tile_draw(ffly_tilep __tile, ff_u32_t __x, ff_u32_t __y) {
 	if (!(__tile->bits&TILE_PH)) {
-		BRON_CONTEXT->driver.sget(&__tile->pt, 2, bron_ptile_new(pt_get, __tile));
+		__tile->pt = bron_ptile_new(pt_get, __tile);
 		__tile->bits |= TILE_PH;
 		return;
 	}

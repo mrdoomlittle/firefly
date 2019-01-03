@@ -1,5 +1,5 @@
 # include "block.h"
-# include "../db.h"
+# include "../oyster.h"
 # include "../memory/mem_alloc.h"
 # include "../memory/mem_free.h"
 # include "../system/io.h"
@@ -29,6 +29,13 @@
 
 	TONOTE:
 		this is an extremely shit and i know that
+
+		for now this works and allows me to build everything else
+
+	TODO:
+		all large allocations should be linear
+
+		for smaller ones use slabs
 */
 
 // top block

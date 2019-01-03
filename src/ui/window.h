@@ -14,20 +14,13 @@
 #define _ui_window_x(__wd)	_ui_window(x)
 #define _ui_window_y(__wd)	_ui_window(y)
 
-#define _ui_window_destroy(...)\
-	ffly_ui_window_destroy(__VA_ARGS__)
-#define _ui_window_creat(...)\
-	ffly_ui_window_creat(__VA_ARGS__)
-#define _ui_window_init(...)\
-	ffly_ui_window_init(__VA_ARGS__)
-#define _ui_window_write(...)\
-	ffly_ui_window_write(__VA_ARGS__)
-#define _ui_window_de_init(...)\
-	ffly_ui_window_de_init(__VA_ARGS__)
-#define _ui_window_set(...)\
-	ffly_ui_window_set(__VA_ARGS__)
-#define _ui_window_compose(...)\
-	ffly_ui_window_compose(__VA_ARGS__)
+#define _ui_window_destroy	ffly_ui_window_destroy
+#define _ui_window_creat	ffly_ui_window_creat
+#define _ui_window_init		ffly_ui_window_init
+#define _ui_window_write	ffly_ui_window_write
+#define _ui_window_de_init	ffly_ui_window_de_init
+#define _ui_window_set		ffly_ui_window_set
+#define _ui_window_compose	ffly_ui_window_compose
 
 struct ffly_ui_window_struc {
 	ff_u16_t x, y;

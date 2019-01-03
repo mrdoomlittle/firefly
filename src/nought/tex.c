@@ -4,15 +4,18 @@
 # include "../memory/mem_free.h"
 # include "../dep/mem_cpy.h"
 # include "../stdio.h"
+# include "plate.h"
 #define is_flag(__flags, __flag) \
 	(((__flags)&(__flag))>0)
 
 nt_texp static
-tex_new(nt_texbufp __buf) {
+tex_new(nt_texbufp __buf, ff_u32_t __width, ff_u32_t __height) {
 	printf("new texture with buff size of %u\n", __buf->size);
 	nt_texp tx;
 	tx = (nt_texp)__ffly_mem_alloc(sizeof(struct nt_tex));
 	tx->b = __buf;
+	tx->width = __width;
+	tx->height = __height;
 	return tx;
 }
 
@@ -66,69 +69,70 @@ texbuf_read(nt_texbufp __buf, ff_u32_t __offset, ff_u32_t __size, void *__dst) {
 }
 
 void nt_tex_new(void) {
-	nt_texp *tx;
-	tx = (nt_texp*)stack_at(*(ff_u16_t*)nt_raise_p);
-	nt_texbufp buf;
-	buf = *(nt_texbufp*)stack_at(*(ff_u16_t*)(nt_raise_p+2));
-	*tx = tex_new(buf);	
+	nt_texp tx;
+
+	ff_u32_t width, height;
+	width = *(ff_u32_t*)(nt_raise_p+8);
+	height = *(ff_u32_t*)(nt_raise_p+12);
+
+	tx = tex_new((nt_texbufp)nt_plate_get(*(ff_u32_t*)(nt_raise_p+4)), width, height);
+	nt_plate_put(*(ff_u32_t*)nt_raise_p, tx);	
 }
 
 void nt_tex_destroy(void) {
 	nt_texp tx;
-	tx = *(nt_texp*)stack_at(*(ff_u16_t*)nt_raise_p);
+	tx = (nt_texp)nt_plate_get(*(ff_u32_t*)nt_raise_p);
 
 	tex_destroy(tx);
 }
 
 void nt_texbuf_new(void) {
-	nt_texbufp *buf;
-	buf = (nt_texbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
-	ff_u32_t sz;
-	sz = *(ff_u32_t*)(nt_raise_p+2);
-	*buf = texbuf_new(sz);
+	nt_texbufp buf;
+	buf = texbuf_new(*(ff_u32_t*)(nt_raise_p+4));
+
+	nt_plate_put(*(ff_u32_t*)nt_raise_p, buf);
 }
 
 void nt_texbuf_destroy(void) {
 	nt_texbufp buf;
-	buf = *(nt_texbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
+	buf = (nt_texbufp)nt_plate_get(*(ff_u32_t*)nt_raise_p);
 	texbuf_destroy(buf);
 }
 
 void nt_texbuf_map(void) {
 	nt_texbufp buf;
-	buf = *(nt_texbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
+	buf = (nt_texbufp)nt_plate_get(*(ff_u32_t*)nt_raise_p);
 
 	texbuf_map(buf);
 }
 
 void nt_texbuf_unmap(void) {
 	nt_texbufp buf;
-	buf = *(nt_texbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
+	buf = (nt_texbufp)nt_plate_get(*(ff_u32_t*)nt_raise_p);
 
 	texbuf_unmap(buf);
 }
 
 void nt_texbuf_write(void) {
 	nt_texbufp buf;
-	buf = *(nt_texbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
+	buf = (nt_texbufp)nt_plate_get(*(ff_u32_t*)nt_raise_p);
 	ff_u32_t offset, size;
 	void *src;
 
-	offset = *(ff_u32_t*)(nt_raise_p+2);
-	size = *(ff_u32_t*)(nt_raise_p+6);
-	src = *(void**)(nt_raise_p+10);
+	offset = *(ff_u32_t*)(nt_raise_p+4);
+	size = *(ff_u32_t*)(nt_raise_p+8);
+	src = *(void**)(nt_raise_p+12);
 	texbuf_write(buf, offset, size, src);
 }
 
 void nt_texbuf_read(void) {
 	nt_texbufp buf;
-	buf = *(nt_texbufp*)stack_at(*(ff_u16_t*)nt_raise_p);
-
+	buf = (nt_texbufp)nt_plate_get(*(ff_u32_t*)nt_raise_p);
 	ff_u32_t offset, size;
 	void *dst;
 
-	offset = *(ff_u32_t*)(nt_raise_p+2);
-	size = *(ff_u32_t*)(nt_raise_p+6);
-	dst = *(void**)(nt_raise_p+10);
+	offset = *(ff_u32_t*)(nt_raise_p+4);
+	size = *(ff_u32_t*)(nt_raise_p+8);
+	dst = *(void**)(nt_raise_p+12);
 	texbuf_read(buf, offset, size, dst);
 }
