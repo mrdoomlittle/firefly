@@ -1,12 +1,12 @@
 # include "ffint.h"
+# include "crypto.h"
 # include "dep/str_cpy.h"
 # include "dep/str_len.h"
 # include "dep/mem_set.h"
 # include "system/io.h"
 void print_bin(ff_u8_t);
 
-
-# define NUM 16
+#define NUM 16
 void ff_encrypt(void *__p, ff_uint_t __bc, ff_u64_t __key) {
 	ff_u8_t *p = (ff_u8_t*)__p;
 	ff_u8_t *end = p+__bc;
@@ -50,7 +50,10 @@ void print_bin(ff_u8_t __d) {
 
 void(*ffly_encrypt)(void*, ff_uint_t, ff_u64_t) = ff_encrypt;
 void(*ffly_decrypt)(void*, ff_uint_t, ff_u64_t) = ff_decrypt;
-
+void frzz_op(struct crypto_op*);
+void(*crypto_func[])(struct crypto_op*) = {
+	frzz_op
+};
 /*
 int main() {
 	ffly_io_init();

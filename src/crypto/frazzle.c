@@ -1,3 +1,4 @@
+# include "../crypto.h"
 # include "../ffint.h"
 void static
 spook(ff_u8_t *__p, ff_u8_t __imn) {
@@ -51,4 +52,23 @@ void ffly_frzz_dec(void *__p, ff_uint_t __bc, ff_u64_t __key) {
 		__key = (__key>>60)|__key<<4;
 		p++;
 	}
+}
+
+void static
+frzz_enc(long long *__args) {
+	ffly_frzz_enc((void*)*__args, __args[1], __args[2]);
+}
+
+void static
+frzz_dec(long long *__args) {
+	ffly_frzz_enc((void*)*__args, __args[1], __args[2]);
+}
+
+void static(*op[])(long long*) = {
+	frzz_enc,
+	frzz_dec
+};
+
+void frzz_op(struct crypto_op *__op) {
+	op[__op->op](__op->args);
 }
