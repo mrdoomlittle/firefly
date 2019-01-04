@@ -17,22 +17,18 @@
 	max number of pages.
 */
 #define QUEUE_MAX_PAGE_C 32
-#define _queue_loadfuncs(...)\
-	ffly_queue_loadfuncs(__VA_ARGS__)
-#define _queue_init(...)\
-	ffly_queue_init(__VA_ARGS__)
-#define _queue_de_init(...)\
-	ffly_queue_de_init(__VA_ARGS__)
-#define _queue_size(...)\
-	ffly_queue_size(__VA_ARGS__)
-#define _queue_push(...)\
-	ffly_queue_push(__VA_ARGS__)
-#define _queue_pop(...)\
-	ffly_queue_pop(__VA_ARGS__)
-#define _queue_front(...)\
-	ffly_queue_front(__VA_ARGS__)
-#define _queue_back(...)\
-	ffly_queue_back(__VA_ARGS__)
+#define _queue_loadfuncs	ffly_queue_loadfuncs
+#define _queue_init			ffly_queue_init
+#define _queue_de_init		ffly_queue_de_init
+#define _queue_size			ffly_queue_size
+#define _queue_push			ffly_queue_push
+#define _queue_pop			ffly_queue_pop
+#define _queue_front		ffly_queue_front
+#define _queue_back			ffly_queue_back
+
+/*
+	dont ask i dont know why i did this
+*/
 struct ffly_queue {
 /*
 	void **p;

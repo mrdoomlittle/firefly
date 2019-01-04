@@ -3,7 +3,7 @@
 # include "../ffint.h"
 # include "../types.h"
 # include "prim.h"
-
+# include "view.h"
 #define NOUGHT_BLEND 0x01
 # define bron_driver \
 	ff_bron_driver
@@ -20,6 +20,10 @@ struct ff_bron_driver {
 	void(*fb_set)(ff_u32_t);
 	void(*fb_new)(ff_u32_t, ff_u32_t, ff_u32_t);
 	void(*fb_destroy)(ff_u32_t);
+	void(*rb_bind)(ff_u32_t, ff_u32_t);
+	void(*rb_new)(ff_u32_t, ff_u32_t, ff_u32_t);
+	void(*rb_destroy)(ff_u32_t);
+
 	void(*pixcopy)(ff_u8_t*, ff_u32_t);
 	void(*pixdraw)(ff_u32_t, ff_u32_t, ff_u8_t*, ff_u32_t, ff_u32_t);
 	void(*pixfill)(ff_u32_t, ff_u8_t*);
@@ -55,6 +59,7 @@ struct ff_bron_driver {
 
 	void(*draw)(ff_u32_t, ff_u32_t);
 	void(*info)(ff_u8_t, long long);
+	void(*viewport)(struct bron_viewport*);
 	ff_uint_t ctx_struc_sz;
 	ff_uint_t tri2_struc_sz;
 	ff_uint_t tex_struc_sz;

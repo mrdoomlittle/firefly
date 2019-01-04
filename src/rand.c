@@ -26,7 +26,7 @@ ff_u64_t static rv = 0x355A3A4B1C311A4A;
 //# define v
 /*
 	TODO:
-		make use of hardware instruction that generate random values
+		make use of hardware random generation
 
 		remove #l bit
 */

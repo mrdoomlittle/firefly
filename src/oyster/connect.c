@@ -217,6 +217,7 @@ ff_db_ctr_record_stat(ff_db_ctrp __ctr, ff_u32_t __rec, ffdb_recstatp __st) {
     ff_net_send(__sock, __code, __len, 0, __err);   \
 }
 
+// tobe improved(not secure)
 ff_i8_t static
 ratifykey(FF_SOCKET *__sock, ff_u8_t *__key, ff_u64_t __enckey) {
 	ff_u8_t code[1+_FF_RATIFYKEY_S];

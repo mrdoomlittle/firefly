@@ -763,8 +763,8 @@ _again:
 	ffly_pellet_puti(pel, (void**)&p, sizeof(ff_dbdp));
 //	ff_db_client(peer, pel);
 	ff_db_serve(pel);
-//	if (to_shut == -1)
-//		goto _again;
+	if (to_shut == -1)
+		goto _again;
 _end:
 //	ffly_printf("waiting for theads.\n");
 //	while(live>0);

@@ -7,6 +7,7 @@
 # include "plate.h"
 # include "shit.h"
 # include "pixel.h"
+# include "view.h"
 void
 nt_tdraw(void) {
 	ff_u32_t plate;
@@ -50,14 +51,14 @@ nt_tdraw(void) {
 			rx = _x+x;
 			ry = _y+y;
 
-			tx = rx>>TILESZ;
-			ty = ry>>TILESZ;
+			tx = rx>>RB_TILESZ;
+			ty = ry>>RB_TILESZ;
 
-			txo = rx-(tx*(1<<TILESZ));
-			tyo = ry-(ty*(1<<TILESZ));
+			txo = rx-(tx<<RB_TILESZ);
+			tyo = ry-(ty<<RB_TILESZ);
 
-			if (!(t = *(tp = tile_at(tx, ty, ctx->fb)))) {
-				t = (*tp = nt_tile_new(TILESZ));
+			if (!(t = *(tp = rb_tile_at(tx, ty, ctx->rb)))) {
+				t = (*tp = nt_tile_new(RB_TILESZ));
 				nt_tile_map(t);
 			}
 
@@ -96,14 +97,14 @@ nt_pixdraw(void) {
 		x = _x;
 		while(x != _x+width) {
 			s = (pixels+(((x-_x)+((y-_y)*width))*4));
-			tx = x>>TILESZ;
-			ty = y>>TILESZ;
+			tx = x>>RB_TILESZ;
+			ty = y>>RB_TILESZ;
 
-			txo = x-(tx*(1<<TILESZ));
-			tyo = y-(ty*(1<<TILESZ));
+			txo = x-(tx<<RB_TILESZ);
+			tyo = y-(ty<<RB_TILESZ);
 
-			if (!(t = *(tp = tile_at(tx, ty, ctx->fb)))) {
-				t = (*tp = nt_tile_new(TILESZ));
+			if (!(t = *(tp = rb_tile_at(tx, ty, ctx->rb)))) {
+				t = (*tp = nt_tile_new(RB_TILESZ));
 				nt_tile_map(t);
 			}
 
@@ -215,9 +216,9 @@ nt_draw(void) {
 	struct nt_tile *t, **tp;
 
 	ff_u8_t tex[4] = {0, 255, 0, 255};
-	struct nt_framebuff *fb;
+	struct nt_renderbuff *rb;
 
-	fb = nt_ctx->fb;
+	rb = nt_ctx->rb;
 
 	y = mny;
 	while(y != mxy) {
@@ -226,15 +227,16 @@ nt_draw(void) {
 			ff_i8_t rs;
 			rs = within(v, x, y, n);
 			if (!rs) {
-				tx = x>>TILESZ;
-				ty = y>>TILESZ;
-				if (!(t = *(tp = tile_at(tx, ty, fb)))) {
-					t = (*tp = nt_tile_new(TILESZ));
+				tx = x>>RB_TILESZ;
+				ty = y>>RB_TILESZ;
+				nwivpgt(x, y, _sk);
+				if (!(t = *(tp = rb_tile_at(tx, ty, rb)))) {
+					t = (*tp = nt_tile_new(RB_TILESZ));
 					nt_tile_map(t);
 				}
 
-				txo = x-(tx*(1<<TILESZ));
-				tyo = y-(ty*(1<<TILESZ));
+				txo = x-(tx<<RB_TILESZ);
+				tyo = y-(ty<<RB_TILESZ);
 
 				ff_byte_t *dst;
 				dst = tilepx(t, txo, tyo);
@@ -246,6 +248,7 @@ nt_draw(void) {
 					*tex = 0;
 				}
 			}
+		_sk:
 			x++;
 		}
 		y++;

@@ -5,10 +5,10 @@
 # include "tile.h"
 # include "shit.h"
 # include "pixel.h"
+# include "view.h"
 void
 nt_pixfill(void) {
 	ffly_printf("pixfill.\n");
-
 	ff_u8_t *colour;
 	ff_u32_t n;
 
@@ -30,22 +30,23 @@ nt_pixfill(void) {
 	x = 0;
 	i = 0;
 	while(i != n) {
-		tx = x>>TILESZ;
-		ty = y>>TILESZ;
+		tx = x>>RB_TILESZ;
+		ty = y>>RB_TILESZ;
 
-		txo = x-(tx*(1<<TILESZ));
-		tyo = y-(ty*(1<<TILESZ));
+		nwivpgt(x, y, _sk);
 
-		if (!(t = *(tp = tile_at(tx, ty, ctx->fb)))) {
-			t = (*tp = nt_tile_new(TILESZ));
+		txo = x-(tx<<RB_TILESZ);
+		tyo = y-(ty<<RB_TILESZ);
+
+		if (!(t = *(tp = rb_tile_at(tx, ty, ctx->rb)))) {
+			t = (*tp = nt_tile_new(RB_TILESZ));
 			nt_tile_map(t);
 		}
-
 		
 		d = tilepx(t, txo, tyo);
 		nt_setpix(colour, d);
-
-		if ((i-(y*ctx->fb->rw)) >= ctx->fb->rw-1) {
+	_sk:
+		if ((i-(y*ctx->rb->width)) >= ctx->rb->width-1) {
 			y++;
 			x = 0;
 		} else {

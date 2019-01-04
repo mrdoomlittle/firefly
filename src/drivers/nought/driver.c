@@ -5,6 +5,7 @@
 # include "../../nought/context.h"
 # include "../../hexdump.h"
 # include "../../system/io.h"
+# include "../../bron/view.h"
 static ff_u8_t cb[4048];
 static ff_u8_t *cb_p = cb;
 
@@ -148,6 +149,30 @@ void static
 _nt_fb_destroy(ff_u32_t __fb) {
 	*cb_p = _nt_op_fb_destroy;
 	*(ff_u32_t*)(cb_p+1) = __fb;
+	cb_p+=5;
+}
+
+void static
+_nt_rb_bind(ff_u32_t __rb, ff_u32_t __fb) {
+	*cb_p = _nt_op_rb_bind;
+	*(ff_u32_t*)(cb_p+1) = __rb;
+	*(ff_u32_t*)(cb_p+5) = __fb;
+	cb_p+=9;
+}
+
+void static
+_nt_rb_new(ff_u32_t __width, ff_u32_t __height, ff_u32_t __rb) {
+	*cb_p = _nt_op_rb_new;
+	*(ff_u32_t*)(cb_p+1) = __width;
+	*(ff_u32_t*)(cb_p+5) = __height;
+	*(ff_u32_t*)(cb_p+9) = __rb;
+	cb_p+=13;
+}
+
+void static
+_nt_rb_destroy(ff_u32_t __rb) {
+	*cb_p = _nt_op_rb_destroy;
+	*(ff_u32_t*)(cb_p+1) = __rb;
 	cb_p+=5;
 }
 
@@ -313,6 +338,19 @@ _nt_tex_destroy(ff_u32_t __tx) {
 	*(ff_u32_t*)(cb_p+1) = __tx;
 	cb_p+=5;
 }
+
+void static
+_nt_viewport(struct bron_viewport *__vp) {
+	*cb_p = _nt_op_vp;
+	struct nt_viewport *vp;
+	vp = (struct nt_viewport*)(cb_p+1);
+	vp->width = __vp->width;
+	vp->height = __vp->height;
+	vp->x = __vp->x;
+	vp->y = __vp->y;
+
+	cb_p+=1+sizeof(struct nt_viewport);
+}
 # include "../../nought/tex.h"
 # include "../../bron/driver.h"
 void static
@@ -342,6 +380,9 @@ void ffly_nought(struct bron_driver *__driver) {
 	__driver->fb_set = _nt_fb_set;
 	__driver->fb_new = _nt_fb_new;
 	__driver->fb_destroy = _nt_fb_destroy;
+	__driver->rb_bind = _nt_rb_bind;
+	__driver->rb_new = _nt_rb_new;
+	__driver->rb_destroy = _nt_rb_destroy;
 	__driver->pixcopy = (void*)0;
 	__driver->pixdraw = _nt_pixdraw;
 	__driver->pixfill = _nt_pixfill;
@@ -374,4 +415,5 @@ void ffly_nought(struct bron_driver *__driver) {
 	__driver->texbuf_read = _nt_texbuf_read;
 	__driver->tex_new = _nt_tex_new;
 	__driver->tex_destroy = _nt_tex_destroy;
+	__driver->viewport = _nt_viewport;
 }

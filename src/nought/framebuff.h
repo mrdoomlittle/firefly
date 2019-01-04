@@ -3,11 +3,12 @@
 # include "../ffint.h"
 # include "tile.h"
 # define TILESZ _nt_tile_16
-# define tile_at(__x, __y, __fb) \
-	((__fb)->tiles+(__x)+((__y)*(__fb)->width))
+#define tile_at(__x, __y, __fb) \
+	((__fb)->tiles+(__x)+((__y)*(__fb)->tw))
 struct nt_framebuff {
+	// TODO: swap around and use tw like renderbuff
 	ff_uint_t width, height;
-	ff_uint_t rw, rh;
+	ff_uint_t tw, th;
 
 	struct nt_tile **tiles;
 	ff_uint_t n;

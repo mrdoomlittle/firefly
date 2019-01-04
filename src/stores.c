@@ -7,11 +7,9 @@
 # include "system/error.h"
 # include "ffly_def.h"
 # include "system/io.h"
-# ifdef __ffly_debug
 # include "location.h"
-# endif
-# define FF_STORES_MODT 1
-# define FF_STORES_INFO 0
+#define FF_STORES_MODT 1
+#define FF_STORES_INFO 0
 ff_db_ctrp static ct = NULL;
 
 ff_err_t ff_stores_connect(char const *__ip_addr, ff_u16_t __port, char const *__enckey) {
@@ -75,9 +73,7 @@ void* ff_stores_get(ff_u8_t __what) {
 }
 
 ff_err_t ff_stores_logout(void) {
-#ifdef __ffly_debug
-	ff_location_push(_ff_loc_stores_logout);
-#endif
+	_location_push(_ff_loc_stores_logout);
 	ff_err_t err;
 	if (_err(err = ff_db_ctr_logout(ct))) {
 #ifdef __ffly_debug
@@ -91,11 +87,11 @@ ff_err_t ff_stores_logout(void) {
 ff_err_t ff_stores_disconnect(void) {
 	_location_push(_ff_loc_stores_disconnect);
 	ff_err_t err;
-//	if (_err(err = ff_db_ctr_disconnect(ct))) {
+	if (_err(err = ff_db_ctr_disconnect(ct))) {
 #ifdef __ffly_debug
-//		ffly_fprintf(ffly_err, "failed to disconnect.\n");
+		ffly_fprintf(ffly_err, "failed to disconnect.\n");
 #endif
-//	}
+	}
 	ff_db_ctr_shutdown(ct);
 	if (_err(err = ff_db_ctr_destroy(ct))) {
 #ifdef __ffly_debug

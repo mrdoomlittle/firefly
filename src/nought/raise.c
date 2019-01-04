@@ -7,10 +7,12 @@
 # include "shit.h"
 # include "../dep/mem_cpy.h"
 # include "tex.h"
+# include "renderbuff.h"
+# include "view.h"
 ff_u8_t *nt_raise_p;
 ff_u8_t nt_raise_stack[STACK_SIZE];
 ff_u16_t nt_raise_sp;
-#define MAX 35
+#define MAX 39
 void static
 nt_sput(void) {
 	void *buf;
@@ -72,7 +74,11 @@ static void(*op[])(void) = {
 	nt_texbuf_write,	//31
 	nt_texbuf_read,		//32
 	nt_tex_new,			//33
-	nt_tex_destroy		//34
+	nt_tex_destroy,		//34
+	nt_rb_bind,			//35
+	nt_rb_new,			//36
+	nt_rb_destroy,		//37
+	nt_viewport			//38
 };
 
 ff_uint_t static os[] = {
@@ -110,7 +116,11 @@ ff_uint_t static os[] = {
 	20,													//nt_texbuf_write		-31
 	20,													//nt_texbuf_read		-32
 	16,													//nt_tex_new			-33
-	4													//nt_tex_destroy		-34
+	4,													//nt_tex_destroy		-34
+	8,													//nt_rb_bind
+	12,													//nt_rb_new
+	4,													//nt_rb_destroy
+	sizeof(struct nt_viewport)							//nt_viewport
 };
 
 static char const *ostr[] = {
@@ -148,7 +158,11 @@ static char const *ostr[] = {
 	"texbuf_write",		//31
 	"texbuf_read",		//32
 	"tex_new",			//33
-	"tex_destroy"		//34
+	"tex_destroy",		//34
+	"rb_bind",			//35
+	"rb_new",			//36
+	"rb_destroy",		//37
+	"viewport"			//38
 };
 
 void nt_raise(ff_u8_t *__bin, ff_uint_t __size) {

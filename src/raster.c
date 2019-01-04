@@ -19,6 +19,11 @@ void ffly_rraster(struct rr_struc *__s) {
 	}
 }
 
+/*
+	TODO:
+		might need own frame buffer as does not take into account cutting of parts not
+		within users field of view
+*/
 //# define use_barycentric
 void ffly_rasterize(ffly_modelp __model,
 	ff_uint_t __x, ff_uint_t __y,

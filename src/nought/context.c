@@ -12,6 +12,10 @@ nt_ctx_new(void) {
 
 	*((struct nt_context**)stack_at(*(ff_u16_t*)nt_raise_p)) = ctx;
 	ffly_printf("new context: %p\n", ctx);
+	ctx->viewport.x = 0;
+	ctx->viewport.y = 0;
+	ctx->rb_top = NULL;
+	ctx->rb = NULL;
 }
 
 void

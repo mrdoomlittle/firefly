@@ -2,12 +2,18 @@
 # define __ffly__nt__context__h
 # include "types.h"
 # include "framebuff.h"
-
+# include "renderbuff.h"
+# include "view.h"
 struct nt_context {
 	/*
 		the current frame in the making
 	*/
 	struct nt_framebuff *fb;
+
+	struct nt_viewport viewport;
+
+	// first renderbuffer
+	struct nt_renderbuff *rb_top, *rb;
 };
 
 void nt_ctx_destroy(void);

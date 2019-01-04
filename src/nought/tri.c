@@ -124,9 +124,9 @@ void nt_raster_tri2(void) {
 	ff_int_t ymax = ffly_max3(v0.y, v1.y, v2.y);
 	ffly_printf("xmin: %d, ymin: %d, xmax: %d, ymax: %d\n", xmin, ymin, xmax, ymax);
 
-	struct nt_framebuff *fb;
+	struct nt_renderbuff *rb;
 
-	fb = nt_ctx->fb;
+	rb = nt_ctx->rb;
 
 #ifdef use_barycentric
 	float a, b, g;
@@ -165,14 +165,19 @@ void nt_raster_tri2(void) {
 				ff_uint_t x0 = _x-x;
 				ff_uint_t y0 = _y-y;
 
-				tx = x0>>TILESZ;
-				ty = y0>>TILESZ;
-				if (!(t = *(tp = tile_at(tx, ty, fb)))) {
-					t = (*tp = nt_tile_new(TILESZ));
+				/*
+					if not in viewport then dont draw
+				*/
+				nwivpgt(x0, y0, _sk);
+
+				tx = x0>>RB_TILESZ;
+				ty = y0>>RB_TILESZ;
+				if (!(t = *(tp = rb_tile_at(tx, ty, rb)))) {
+					t = (*tp = nt_tile_new(RB_TILESZ));
 					nt_tile_map(t);
 				}	
-				txo = x0-(tx<<TILESZ);
-				tyo = y0-(ty<<TILESZ);
+				txo = x0-(tx<<RB_TILESZ);
+				tyo = y0-(ty<<RB_TILESZ);
 
 				loc = (xmax-x)+((ymax-y)*width);
 				float a, b;
@@ -185,6 +190,7 @@ void nt_raster_tri2(void) {
 		
 				nt_setpix(c+(loc*4), dst);
 			}
+		_sk:
 			x++;
 		}
 		y++;

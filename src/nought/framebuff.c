@@ -4,27 +4,31 @@
 # include "context.h"
 # include "raise.h"
 # include "../system/io.h"
+# include "pixel.h"
+/*
+	add clear function
+*/
 struct nt_framebuff*
 nt_framebuff_creat(ff_uint_t __width, ff_uint_t __height) {
 	struct nt_framebuff *fb;
 
 	fb = (struct nt_framebuff*)__ffly_mem_alloc(sizeof(struct nt_framebuff));
-	ff_uint_t width, height;
-	width = (__width+((1<<TILESZ)-1))>>TILESZ;
-	height = (__height+((1<<TILESZ)-1))>>TILESZ;
+	ff_uint_t wt, ht;
+	wt = (__width+((1<<TILESZ)-1))>>TILESZ;
+	ht = (__height+((1<<TILESZ)-1))>>TILESZ;
 
-	fb->rw = __width;
-	fb->rh = __height;
-	fb->width = width;
-	fb->height = height;
-	fb->tiles = (struct nt_tile**)__ffly_mem_alloc((width*height)*sizeof(struct nt_tile*));
-	ff_uint_t n;
-	n = width*height;
-	fb->n = n;
+	ff_uint_t nt;
+	nt = wt*ht;
+	fb->tw = wt;
+	fb->th = ht;
+	fb->width = __width;
+	fb->height = __height;
+	fb->tiles = (struct nt_tile**)__ffly_mem_alloc(nt*sizeof(struct nt_tile*));
+	fb->n = nt;
 
 	struct nt_tile **t, **e;
 	t = fb->tiles;
-	e = t+n;
+	e = t+nt;
 	while(t != e)
 		*(t++) = NULL;
 	return fb;
@@ -70,7 +74,70 @@ void nt_fb_destroy(void) {
 	nt_framebuff_del((struct nt_framebuff*)nt_plate_get(*(ff_u32_t*)nt_raise_p));
 }
 
+void static
+fb_write(struct nt_framebuff *__fb, void *__buf, ff_uint_t __x, ff_uint_t __y, ff_uint_t __width, ff_uint_t __height) {
+	ff_uint_t x, y;
+	ff_uint_t tx, ty;
+	ff_uint_t txo, tyo;
+
+	struct nt_tile *t, **tp;
+	ff_u8_t *d, *s;
+	y = __y;
+	while(y != __y+__width && y < __fb->height) {
+		x = __x;
+		while(x != __x+__height && x <__fb->width) {
+			tx = x>>TILESZ;
+			ty = y>>TILESZ;
+			txo = x-(tx<<TILESZ);
+			tyo = y-(ty<<TILESZ);
+
+			if (!(t = *(tp = tile_at(tx, ty, __fb)))) {
+				t = (*tp = nt_tile_new(TILESZ));
+				nt_tile_map(t);
+			}
+	
+
+			d = tilepx(t, txo, tyo);
+			s = ((ff_u8_t*)__buf)+(((x-__x)+((y-__y)*__width))*4);
+			*(ff_u32_t*)d = *(ff_u32_t*)s;
+			//nt_setpix(s, d);
+			x++;
+		}
+		y++;
+	}
+}
+
+# include "renderbuff.h"
+// murge everything into one frame
+void static
+converge(void) {
+	struct nt_renderbuff *rb;
+	rb = nt_ctx->rb_top;
+	while(rb != NULL) {
+		struct nt_tile **t;
+		ff_uint_t x, y;
+		ff_uint_t xx, yy;
+		y = 0;
+		while(y != rb->th) {
+			x = 0;
+			while(x != rb->tw) {
+				t = rb->tiles+x+(y*rb->tw); 
+				if (*t != NULL) {
+					xx = x<<RB_TILESZ;
+					yy = y<<RB_TILESZ;
+					fb_write(rb->dst, (*t)->map, xx, yy, 1<<RB_TILESZ, 1<<RB_TILESZ);	
+				}
+				x++;
+			}
+			y++;
+		}
+
+		rb = rb->next;
+	}
+}
+
 void nt_putframe(void) {
+	converge();
 	ff_u8_t *dst;
 	ff_uint_t sc_x, sc_y;
 	ff_uint_t width, height;

@@ -72,6 +72,7 @@ enum {
 	ff_net_recv(__sock, __err, sizeof(ff_err_t), 0, __err);
 #define ff_db_rcv_errno(__sock, __ern, __err) \
 	ff_net_recv(__sock, __ern, sizeof(ff_db_err), 0, __err);
+// major operations
 #define _ff_db_op_login 			0x00
 #define _ff_db_op_logout			0x01
 #define _ff_db_op_store				0x02

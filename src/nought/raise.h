@@ -1,7 +1,7 @@
 # ifndef __ffly__nt__raise__h
 # define __ffly__nt__raise__h
 # include "../ffint.h"
-# define STACK_SIZE 2048
+#define STACK_SIZE 2048
 #define _nt_op_raster_tri2		0x00
 #define _nt_op_ctx_new			0x01
 #define _nt_op_ctx_destroy		0x02
@@ -37,6 +37,10 @@
 #define _nt_op_txbr				0x20
 #define	_nt_op_txn				0x21
 #define _nt_op_txd				0x22
+#define _nt_op_rb_bind			0x23
+#define _nt_op_rb_new			0x24
+#define _nt_op_rb_destroy		0x25
+#define _nt_op_vp				0x26
 #define stack_at(__adr) \
 	(nt_raise_stack+(__adr))
 extern ff_u8_t *nt_raise_p;

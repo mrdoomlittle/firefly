@@ -9,6 +9,10 @@
 #define at(__pallet, __x, __y) \
 	((__pallet)->tiles+(__x)+((__y)*(__pallet)->wt))
 
+/*
+	draw tile by tile why?
+	whats the point in overwriting somthing that hasent been writen to
+*/
 ffly_tilep
 ffly_tile_at(ffly_palletp __pallet, ff_uint_t __x, ff_uint_t __y) {
 	return tile_at(__pallet, __x, __y);

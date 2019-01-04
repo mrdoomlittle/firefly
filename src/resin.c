@@ -42,6 +42,10 @@
 		0000 - 0000 - 0000....
 
 		this mode will be user defined so src/as wont be able to use(might)
+
+	TODO:
+		allow for user minor operations like db but minor operations are user only
+		and wont be used internaly like the rin instruction but more direct.
 */
 ff_err_t static
 stack_put(ffly_resinp __resin, ff_u8_t *__src, ff_uint_t __bc, ff_addr_t __addr) {

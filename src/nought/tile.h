@@ -1,8 +1,23 @@
 # ifndef __ffly__nt__tile__h
 # define __ffly__nt__tile__h
 # include "../ffint.h"
+/*
+	NOTE:
+		with using this memory will be at a loss(some)
+*/
 # define tilepx(__tile, __x, __y) \
 	(((ff_u8_t*)(__tile)->map)+(((__x)+((__y)*(1<<(__tile)->sz)))*4))
+/*
+	TODO:
+		tile read and write functions
+
+		soo to read or write a tile 
+		tilebuf
+		tilebuf = readtile
+		
+		edittile
+		tile = writetile
+*/
 enum {
 	_nt_tile_8 = 3,
 	_nt_tile_16,

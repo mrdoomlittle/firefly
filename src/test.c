@@ -121,7 +121,7 @@ void* th(void *__arg) {
 # include "graphics/frame_buff.h"
 # include "graphics/mutate.h"
 # include "slurry/connection.h"
-# include "db/connect.h"
+# include "oyster/connect.h"
 # include "system/util/hash.h"
 void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_uint_t __height, ff_uint_t __x, ff_uint_t __y) {
 	ff_u8_t buf[__width*__height*4];
@@ -141,6 +141,8 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "hs.h"
 # include "hs/exec.h"
 # include "bron/tex.h"
+# include "bron/render_buff.h"
+# include "bron/view.h"
 ff_i8_t static sched_test(long long __arg) {
 //	ffly_printf("hello %u.\n", __arg);
 	return -1;
@@ -441,11 +443,17 @@ _again:
 	ffly_mem_set(src, 255, WIDTH*HEIGHT*4);
 
 	ffly_grp_prepare(&__ffly_grp__, 100);
-	ff_u16_t fb;
+	ff_u16_t fb, rb;
 	bron_setctx(bron_ctx_new());
 	fb = bron_fb_new(WIDTH, HEIGHT);
+	rb = bron_rb_new(WIDTH, HEIGHT);
 	bron_fb_set(fb);
+	bron_rb_bind(rb, fb);
 
+	struct bron_viewport vp = {
+		WIDTH/2, 0, WIDTH/2, HEIGHT/2
+	};
+	bron_viewport(&vp);
 	bron_start();
 
 
@@ -495,6 +503,7 @@ _again:
 	ffly_bron_tri2(&tri, tex, 256, 256);
 	ffly_fb_copy(_fb);
 	bron_finish();
+	bron_rb_destroy(rb);
 	bron_fb_destroy(fb);
 	bron_done();
 	ffly_fb_yank(_fb);
