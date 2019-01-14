@@ -27,7 +27,7 @@ ff_i8_t _ffe_init(void) {
 			0, 0, EF_WIDTH, EF_HEIGHT
 		};
 		bron_viewport(&vp);
-		bron_lookat(EF_WIDTH/2, EF_HEIGHT/2, 0, 0, 0, 0);
+		bron_lookat(EF_WIDTH/2, EF_HEIGHT/2, 0, 1, 1, 1);
 
 		bron_done();
 		ffly_grp_prepare(&__ffly_grp__, 200);

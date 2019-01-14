@@ -8,8 +8,7 @@
 	ignore name i dont know enough to call it a fragment
 */
 struct slgio {
-	ff_u8_t *pxin;
-	ff_u32_t pxout;
+	ff_u32_t px;
 	ff_u16_t z;
 };
 

@@ -14,10 +14,12 @@ void static _st(void) {
 }
 void static _test(void) {
 	float r, g, b, a;
-	r = *slg.pxin;
-	g = slg.pxin[1];
-	b = slg.pxin[2];
-	a = slg.pxin[3];
+	ff_u8_t *px;
+	px = (ff_u8_t*)&slg.px;
+	r = *px;
+	g = px[1];
+	b = px[2];
+	a = px[3];
 	float z;
 	z = slg.z;
 
@@ -30,7 +32,7 @@ void static _test(void) {
 
 	ff_u32_t out;
 	out = ((ff_u8_t)r)|((ff_u8_t)g)<<8|((ff_u8_t)b)<<16|((ff_u8_t)a)<<24;
-	slg.pxout = out;
+	slg.px = out;
 }
 
 void static(*op[])(void) = {

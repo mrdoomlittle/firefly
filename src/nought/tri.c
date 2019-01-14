@@ -242,10 +242,10 @@ raster_tri(void) {
 				z *= 100;//higher the value the more precision as to push fraction bits into a whole numer
 		//		ffly_printf("%u, ", (ff_u32_t)z);
 				if (!nt_dpbtas((ff_u16_t)z, _x0, _y0)) {
-					slg.pxin = c+(loc*4);
+					slg.px = *(ff_u32_t*)(c+(loc*4));
 					slg.z = (ff_u16_t)z;
 					nt_slags_exec();
-					nt_setpix((ff_u8_t*)&slg.pxout, dst);
+					nt_setpix((ff_u8_t*)&slg.px, dst);
 				}
 
 			}
