@@ -32,7 +32,9 @@ struct ff_bron_driver {
 	void(*ctx_new)(ff_u16_t);
 	void(*ctx_destroy)(ff_u16_t);
 	void(*raster_tri2)(ff_u16_t, ff_u32_t, ff_u32_t, ff_u32_t);
+	void(*raster_tri3)(ff_u16_t, ff_u32_t, ff_u32_t, ff_u32_t, ff_u32_t);
 	void(*tri2)(struct bron_tri2*, ff_u16_t);
+	void(*tri3)(struct bron_tri3*, ff_u16_t);
 	void(*done)(void);
 
 	void(*frame)(ff_u8_t*, ff_u32_t, ff_u32_t, ff_u32_t, ff_u32_t);
@@ -60,9 +62,11 @@ struct ff_bron_driver {
 	void(*draw)(ff_u32_t, ff_u32_t);
 	void(*info)(ff_u8_t, long long);
 	void(*viewport)(struct bron_viewport*);
+	void(*dpbuf_write)(ff_u32_t, ff_u32_t, void*);
 	ff_uint_t ctx_struc_sz;
 	ff_uint_t tri2_struc_sz;
 	ff_uint_t tex_struc_sz;
+	ff_uint_t tri3_struc_sz;
 };
 
 enum {

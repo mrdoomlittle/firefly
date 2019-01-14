@@ -229,10 +229,17 @@ $ffly_cc $cc_flags -c -o $dst_dir/duct/shm_pipe.o $root_dir/duct/shm_pipe.c
 $ffly_cc $cc_flags -c -o $dst_dir/log.o $root_dir/log.c
 $ffly_cc $cc_flags -c -o $dst_dir/bitfont.o $root_dir/bitfont.c
 $ffly_cc $cc_flags -c -o $dst_dir/bron/plate.o $root_dir/bron/plate.c
+$ffly_cc $cc_flags -c -o $dst_dir/bron/matrix.o $root_dir/bron/matrix.c
+
+$ffly_cc $cc_flags -c -o $dst_dir/bron/depth.o $root_dir/bron/depth.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/depth.o $root_dir/nought/depth.c
+$ffly_cc $cc_flags -c -o $dst_dir/nought/text.o $root_dir/nought/text.c
+$ffly_cc $cc_flags -c -o $dst_dir/inform.o $root_dir/inform.c
+$ffly_cc $cc_flags -c -o $dst_dir/gf.o $root_dir/gf.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
-export ffly_objs="$dst_dir/event.o $ffly_objs $dst_dir/resin.o.0 $dst_dir/resin.o.1 $dst_dir/exec.o \
+export ffly_objs="$dst_dir/event.o $dst_dir/gf.o $ffly_objs $dst_dir/inform.o $dst_dir/resin.o.0 $dst_dir/resin.o.1 $dst_dir/exec.o \
 $dst_dir/resin/exec.o $dst_dir/resin/mm.o $dst_dir/mode.o \
 $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/bole.o $dst_dir/put_bit.o  $dst_dir/get_bit.o \
 $dst_dir/ss.o $dst_dir/call.o $dst_dir/rand.o $dst_dir/lib.o $dst_dir/mod.o $dst_dir/mod/port.o \
@@ -245,7 +252,7 @@ $dst_dir/ui/camera.o $dst_dir/gravity.o $dst_dir/duct.o \
 $dst_dir/terrain.o $dst_dir/compactor.o $dst_dir/stores.o $dst_dir/oyster.o \
 $dst_dir/oyster/connect.o $dst_dir/layer.o $dst_dir/ui/btn.o $dst_dir/tile.o \
 $dst_dir/pallet.o $dst_dir/resource.o $dst_dir/cache.o $dst_dir/clock.o \
-$dst_dir/copy.o $dst_dir/ui/window.o $dst_dir/location.o \
+$dst_dir/copy.o $dst_dir/ui/window.o $dst_dir/location.o $dst_dir/bron/matrix.o \
 $dst_dir/storage/slab.o $dst_dir/storage/reservoir.o \
 $dst_dir/piston.o $dst_dir/corrode.o $dst_dir/bog.o \
 $dst_dir/env.o $dst_dir/line.o $dst_dir/oyster/load.o \
@@ -273,4 +280,5 @@ $dst_dir/slurry/proto.o $dst_dir/slurry/slurry.o $dst_dir/tc.o $dst_dir/time.o \
 $dst_dir/nought/objbuf.o $dst_dir/bron/objbuf.o $dst_dir/nought/tex.o $dst_dir/nought/renderbuff.o \
 $dst_dir/fs.o $dst_dir/fs/m/file.o $dst_dir/fs/m/hash.o $dst_dir/fs/m/alloc.o \
 $dst_dir/fs/m/m.o $dst_dir/fs/m/exec.o $dst_dir/oddity.o $dst_dir/duct/shm_pipe.o
-$dst_dir/log.o $dst_dir/bitfont.o $dst_dir/bron/plate.o $dst_dir/bron/view.o $dst_dir/nought/view.o"
+$dst_dir/log.o $dst_dir/bitfont.o $dst_dir/bron/plate.o $dst_dir/bron/view.o \
+$dst_dir/nought/view.o $dst_dir/nought/text.o $dst_dir/nought/depth.o $dst_dir/bron/depth.o"

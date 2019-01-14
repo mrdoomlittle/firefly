@@ -20,7 +20,15 @@ ff_i8_t _ffe_init(void) {
 		BRON_CONTEXT->stack = 0;
 		bron_setctx(bron_ctx_new());
 		__ctx(ll_fb) = bron_fb_new(EF_WIDTH, EF_HEIGHT);
+		__ctx(rb) = bron_rb_new(EF_WIDTH, EF_HEIGHT);
 		bron_fb_set(__ctx(ll_fb));
+		bron_rb_bind(__ctx(rb), __ctx(ll_fb));
+		struct bron_viewport vp = {
+			0, 0, EF_WIDTH, EF_HEIGHT
+		};
+		bron_viewport(&vp);
+		bron_lookat(EF_WIDTH/2, EF_HEIGHT/2, 0, 0, 0, 0);
+
 		bron_done();
 		ffly_grp_prepare(&__ffly_grp__, 200);
 
@@ -30,6 +38,7 @@ ff_i8_t _ffe_init(void) {
 
 ff_i8_t _ffe_de_init(void) {
 	if (hasbit(FF_E_GR)) {
+		bron_rb_destroy(__ctx(rb));
 		bron_fb_destroy(__ctx(ll_fb));
 		bron_done();
 		

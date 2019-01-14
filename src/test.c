@@ -143,6 +143,7 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "bron/tex.h"
 # include "bron/render_buff.h"
 # include "bron/view.h"
+# include "bron/depth.h"
 ff_i8_t static sched_test(long long __arg) {
 //	ffly_printf("hello %u.\n", __arg);
 	return -1;
@@ -432,11 +433,9 @@ _again:
 	ff_err_t err;
 	_fb = ffly_frame_buff_creat(WIDTH, HEIGHT, 4, &err);
 	int out;
-	out = open("test.ppm", O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
-    char buf[128];
+	char buf[128];
 	ff_uint_t size;
-	size = ffly_sprintf(buf, "P6\n%u %u\n255\n", WIDTH, HEIGHT);
-	write(out, buf, size-1);
+
 	ff_u8_t row[WIDTH*3];
 
 	ff_u8_t src[WIDTH*HEIGHT*4];
@@ -445,16 +444,29 @@ _again:
 	ffly_grp_prepare(&__ffly_grp__, 100);
 	ff_u16_t fb, rb;
 	bron_setctx(bron_ctx_new());
+	ff_uint_t n;
+	n = 0;
+	ff_uint_t sp;
+	sp = BRON_CONTEXT->stack;
+//#define N 6
+//	for(;n != N;n++) {
+	out = open("test.ppm", O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR|S_IWUSR);
+	size = ffly_sprintf(buf, "P6\n%u %u\n255\n", WIDTH, HEIGHT);
+	write(out, buf, size-1);
+
+	BRON_CONTEXT->stack = sp;
 	fb = bron_fb_new(WIDTH, HEIGHT);
 	rb = bron_rb_new(WIDTH, HEIGHT);
 	bron_fb_set(fb);
 	bron_rb_bind(rb, fb);
 
 	struct bron_viewport vp = {
-		WIDTH/2, 0, WIDTH/2, HEIGHT/2
+		0, 0, WIDTH, HEIGHT
 	};
 	bron_viewport(&vp);
+	bron_lookat(256, 256, 0, 0, 0, 0);
 	bron_start();
+	bron_dpb_alloc();
 
 
 
@@ -474,34 +486,58 @@ _again:
 	ffly_pixfill(WIDTH*256, cb, 0);
 	ffly_grp_unload(&__ffly_grp__);
 
-	BRON_CONTEXT->driver.draw(ob0, NV);
-	BRON_CONTEXT->driver.draw(ob1, NV);
+//	BRON_CONTEXT->driver.draw(ob0, NV);
+//	BRON_CONTEXT->driver.draw(ob1, NV);
 	ffly_bron_objbuf_unmap(ob0);
 	ffly_bron_objbuf_unmap(ob1);
 	ffly_bron_objbuf_destroy(ob0);
 	ffly_bron_objbuf_destroy(ob1);
 
-	ff_u32_t tb, tex;
-	tb = ffly_bron_texbuf_new(4*4);
-	ffly_bron_texbuf_map(tb);
+	ff_u32_t tb[2], tex[2];
+	*tb = ffly_bron_texbuf_new(4*4);
+	tb[1] = ffly_bron_texbuf_new(4*4);
+	ffly_bron_texbuf_map(*tb);
+	ffly_bron_texbuf_map(tb[1]);
 
-	ff_u8_t texd[4*4] = {
-		255, 0, 0, 255,
-		0, 255, 0, 255,
-		0, 0, 255, 255,
-		255, 255, 0, 255
+	ff_u8_t texd[][4*4] = {
+		{
+			255, 0, 0, 255,
+			255, 0, 0, 255,
+			255, 0, 0, 255,
+			255, 0, 0, 255
+		},
+		{
+			0, 255, 0, 255,
+			0, 255, 0, 255,
+			0, 255, 0, 255,
+			0, 255, 0, 255
+		}
 	};
 
-	ffly_bron_texbuf_write(tb, 0, 4*4, texd);
-	tex = ffly_bron_tex_new(tb, 2, 2);
 
-	struct bron_tri2 tri = {
-		0, 256,
-		256, -255,
-		-255, -255
+
+	ffly_bron_texbuf_write(*tb, 0, 4*4, &texd[0]);
+	ffly_bron_texbuf_write(tb[1], 0, 4*4, &texd[1]);
+	*tex = ffly_bron_tex_new(*tb, 2, 2);
+	tex[1] = ffly_bron_tex_new(tb[1], 2, 2);
+
+	struct bron_tri3 tri[] = {
+		{
+			-56,		-56,		0,
+			56,		56,	0,
+			-56,		56,	6
+		},
+		{
+			-56,	-56,		0,
+			56,		56,	0,
+			56,		-56,	9
+		}
 	};
-	ffly_bron_tri2(&tri, tex, 256, 256);
+	bron_tri3(tri, *tex, 256, 256, 20);
+	bron_tri3(tri+1, tex[1], 256+56+20, 256-56-20, 20);
+
 	ffly_fb_copy(_fb);
+	//bron_dpb_save();
 	bron_finish();
 	bron_rb_destroy(rb);
 	bron_fb_destroy(fb);
@@ -514,10 +550,15 @@ _again:
 		frame_read_rgb(_fb, row, WIDTH, 1, 0, y);
 		write(out, row, WIDTH*3);
 		y++;
-	}	
+	}
+	//	ffly_nanosleep(3, 0);
+		close(out);
 
+	bron_dpb_free();
+//	}
 	ffly_frame_buff_del(_fb);
-	close(out);
+
+
 //	ffly_tile_cleanup();
 
 /*

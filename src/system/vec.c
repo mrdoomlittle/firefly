@@ -33,11 +33,11 @@ void static get_at(ffly_vecp __vec, ff_off_t __off) {
     __ffly_mem_realloc(__p, __n)
 #else
 #define mem_alloc(__n)\
-    __vec->alloc(__vec->arg, __n)
+    __vec->alloc(__vec->ma_arg, __n)
 #define mem_free(__p)\
-    __vec->free(__vec->arg, __p)
+    __vec->free(__vec->ma_arg, __p)
 #define mem_realloc(__p, __n)\
-    __vec->realloc(__vec->arg, __p, __n)
+    __vec->realloc(__vec->ma_arg, __p, __n)
 #endif
 
 ffly_vecp static top = NULL;
@@ -77,21 +77,55 @@ void ffly_vec_detach(ffly_vecp __vec) {
 		__vec->next->prev = __vec->prev;
 }
 
-ffly_vecp ffly_vec_creat(ff_size_t __blk_size, ff_flag_t __flags, ff_err_t *__err) {
+/*
+	just incase user is a idiot and does not set stuff up right 
+*/
+void static* dummy_alloc(long long __arg, ff_uint_t __n) {
+	return __ffly_mem_alloc(__n);
+}
+void static dummy_free(long long __arg, void *__p) {
+    __ffly_mem_free(__p);
+}
+void static* dummy_realloc(long long __arg, void *__p, ff_uint_t __n) {
+    return __ffly_mem_realloc(__p, __n);
+}
+
+ffly_vecp _ffly_vec_creat(ff_size_t __blk_size, ff_flag_t __flags, ff_err_t *__err, void(*__grab)(long long, ff_u8_t)) {
 	ffly_vecp p;
-	
-	p = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
+	void*(*alloc)(long long, ff_uint_t);
+#ifdef FF_VEC_SA
+	if (!__grab) {
+		alloc = dummy_alloc;	
+		goto _sk;
+	}
+	__grab((long long)&alloc, FF_VGF_MA);
+#else
+	alloc = dummy_alloc;
+#endif
+_sk:
+	p = (ffly_vecp)alloc(~0, sizeof(struct ffly_vec));
 	p->flags = __flags;
-	*__err = ffly_vec_init(p, __blk_size);
+	*__err = _ffly_vec_init(p, __blk_size, __grab);
 	return p;
 }
 
-ffly_vecp ffly_vec(ff_size_t __blk_size, ff_flag_t __flags, ff_err_t *__err) { 
+ffly_vecp _ffly_vec(ff_size_t __blk_size, ff_flag_t __flags, ff_err_t *__err, void(*__grab)(long long, ff_u8_t)) { 
 	ffly_vecp p;
-	
-	p = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
+	void*(*alloc)(long long, ff_uint_t);
+#ifdef FF_VEC_SA
+	if (!__grab) {
+		alloc = dummy_alloc;
+		goto _sk;
+	}
+	// get allocation function
+	__grab((long long)&alloc, FF_VGF_MA);
+#else
+	alloc = dummy_alloc;
+#endif
+_sk:
+	p = (ffly_vecp)alloc(~0, sizeof(struct ffly_vec));
 	p->flags = __flags;
-	*__err = ffly_vec_init(p, __blk_size);
+	*__err = _ffly_vec_init(p, __blk_size, __grab);
 	ffly_vec_attach(p);
 	return p;
 }
@@ -147,25 +181,21 @@ void* ffly_vec_end(ffly_vecp __vec) {
 	return p;
 }
 
+ff_err_t _ffly_vec_init(ffly_vecp __vec, ff_size_t __blk_size, void(*__grab)(long long, ff_u8_t)) {
 #ifdef FF_VEC_SA
-void static* dummy_alloc(long long __arg, ff_uint_t __n) {
-	return __ffly_mem_alloc(__n);
-}
-void static dummy_free(long long __arg, void *__p) {
-    __ffly_mem_free(__p);
-}
-void static* dummy_realloc(long long __arg, void *__p, ff_uint_t __n) {
-    return __ffly_mem_realloc(__p, __n);
-}
-#endif
-ff_err_t ffly_vec_init(ffly_vecp __vec, ff_size_t __blk_size) {
-#ifdef FF_VEC_SA
-	if (!is_flag(__vec, VEC_AS)) {
-		__vec->alloc = dummy_alloc;
-		__vec->free = dummy_free;
-		__vec->realloc = dummy_realloc;
+	if (!is_flag(__vec, VEC_AS) && __grab != NULL) {
+		__grab((long long)__vec->alloc, FF_VGF_MA);
+		__grab((long long)__vec->free, FF_VGF_MF);
+		__grab((long long)__vec->realloc, FF_VGF_MR);
+		goto _sk;
 	}
+
+	__vec->alloc = dummy_alloc;
+	__vec->free = dummy_free;
+	__vec->realloc = dummy_realloc;
+_sk:
 #endif
+	__vec->grab = __grab;
 	__vec->p = NULL;
 	__vec->page_c = 0;
 
@@ -196,9 +226,9 @@ ff_err_t ffly_vec_init(ffly_vecp __vec, ff_size_t __blk_size) {
 	__vec->off = 0;
 	__vec->size = 0;
 	if (is_flag(__vec, VEC_BLK_CHAIN)) {
-		__vec->uu_blks = (ffly_vecp)__ffly_mem_alloc(sizeof(struct ffly_vec));
+		__vec->uu_blks = (ffly_vecp)mem_alloc(sizeof(struct ffly_vec));
 		__vec->uu_blks->flags = VEC_AUTO_RESIZE;
-		if (ffly_vec_init(__vec->uu_blks, sizeof(ff_off_t)) != FFLY_SUCCESS) {
+		if (_ffly_vec_init(__vec->uu_blks, sizeof(ff_off_t), __grab) != FFLY_SUCCESS) {
 			ffly_fprintf(ffly_err, "vec: failed to init uu_blks->\n");
 			caught_oddity;
 			return FFLY_FAILURE;

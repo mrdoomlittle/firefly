@@ -6,25 +6,25 @@
 /*
 	if push and under size then will auto resize
 */
-#define VEC_AUTO_RESIZE 0x01
-#define VEC_ITR_FD 0x00
-#define VEC_ITR_BK 0x01
+#define VEC_AUTO_RESIZE		0x01
+#define VEC_ITR_FD			0x00
+#define VEC_ITR_BK			0x01
 
 /*
 	blocks have header that are linked
 */
-#define VEC_BLK_CHAIN 0x02
+#define VEC_BLK_CHAIN		0x02
 
 /*
 	VEC_BLK_CHAIN <- must be specified
 	blocks get reused
 */
-#define VEC_UUU_BLKS 0x04
+#define VEC_UUU_BLKS		0x04
 
 /*
 	use of pages
 */
-#define VEC_NONCONTINUOUS 0x08
+#define VEC_NONCONTINUOUS	0x08
 #define VEC_AS 0x10
 # include "../ffint.h"
 # include "../types.h"
@@ -41,6 +41,9 @@
 #define vec_deadstop(__p, __vec) ((void*)__p>ffly_vec_end(__vec))
 #define ffly_vec_beg ffly_vec_begin
 
+#define FF_VGF_MA	0x00
+#define FF_VGF_MF	0x01
+#define FF_VGF_MR 	0x02
 #define FF_VEC_SA
 
 /*
@@ -62,8 +65,10 @@ typedef struct ffly_vec {
 	void*(*alloc)(long long, ff_uint_t);
 	void(*free)(long long, void*);
 	void*(*realloc)(long long, void*, ff_uint_t);
-	long long arg;
+	long long ma_arg;
 #endif
+	// grab some stuff from user
+	void(*grab)(long long, ff_u8_t);
 	ff_off_t top, end;
 	void *p;
 	ff_flag_t flags;
@@ -98,10 +103,16 @@ void ffly_vec_detach(ffly_vecp);
 void ffly_vec_fd(ffly_vecp, void**);
 void ffly_vec_bk(ffly_vecp, void**);
 // allocate and then attach and init
-ffly_vecp ffly_vec_creat(ff_size_t, ff_flag_t, ff_err_t*);
-ffly_vecp ffly_vec(ff_size_t, ff_flag_t, ff_err_t*);
+#define ffly_vec_creat(__size, __flags, __err)\
+	_ffly_vec_creat(__size, __flags, __err, NULL)
+#define ffly_vec(__size, __flags, __err)\
+	_ffly_vec(__size, __flags, __err, NULL)
+#define ffly_vec_init(__vec, __size)\
+	_ffly_vec_init(__vec, __size, NULL)
+ffly_vecp _ffly_vec_creat(ff_size_t, ff_flag_t, ff_err_t*, void(*)(long long, ff_u8_t));
+ffly_vecp _ffly_vec(ff_size_t, ff_flag_t, ff_err_t*, void(*)(long long, ff_u8_t));
 ffly_vecp ffly_vec_list(); //get list of all vectors
-ff_err_t ffly_vec_init(ffly_vecp, ff_size_t);
+ff_err_t _ffly_vec_init(ffly_vecp, ff_size_t, void(*)(long long, ff_u8_t));
 ff_err_t ffly_vec_push_back(ffly_vecp, void**);
 ff_err_t ffly_vec_pop_back(ffly_vecp, void*);
 ff_err_t ffly_vec_de_init(ffly_vecp);

@@ -38,7 +38,7 @@ void ffly_model_tex(ffly_modelp __model, struct ffly_mpvec *__vec) {
 		// map texture memory
 		ffly_bron_texbuf_map(tx->txb);
 		ffly_bron_texbuf_write(tx->txb, 0, p->n*4, p->inn);
-		tx->tx = ffly_bron_tex_new(tx->txb, 0, 0);
+		tx->tx = ffly_bron_tex_new(tx->txb, 1, 1);
 		tx->n = p->n;
 		i++;
 	}

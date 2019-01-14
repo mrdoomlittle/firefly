@@ -42,6 +42,17 @@ _nt_raster_tri2(ff_u16_t __tri, ff_u32_t __tex, ff_u32_t __x, ff_u32_t __y) {
 	cb_p+=15;
 }
 
+void static
+_nt_raster_tri3(ff_u16_t __tri, ff_u32_t __tex, ff_u32_t __x, ff_u32_t __y, ff_u32_t __z) {
+	*cb_p = _nt_op_raster_tri3;
+	*(ff_u16_t*)(cb_p+1) = __tri;
+	*(ff_u32_t*)(cb_p+3) = __tex;
+	*(ff_u32_t*)(cb_p+7) = __x;
+	*(ff_u32_t*)(cb_p+11) = __y;
+	*(ff_u32_t*)(cb_p+15) = __z;
+	cb_p+=19;
+}
+
 # include "../../dep/mem_cpy.h"
 #define nt_stack(__at) \
 	(nt_raise_stack+(__at))
@@ -77,6 +88,11 @@ nt_tri2(struct bron_tri2 *__tri, ff_u16_t __dst) {
 
 	tri->v2.x = __tri->x2;
 	tri->v2.y = __tri->y2;
+}
+
+void static
+nt_tri3(struct bron_tri3 *__tri, ff_u16_t __dst) {
+	*(struct nt_tri3*)nt_stack(__dst) = *(struct nt_tri3*)__tri;
 }
 
 void static
@@ -339,6 +355,14 @@ _nt_tex_destroy(ff_u32_t __tx) {
 	cb_p+=5;
 }
 
+void _nt_dpbuf_write(ff_u32_t __size, ff_u32_t __offset, void *__src) {
+	*cb_p = _nt_op_dpbw;
+	*(ff_u32_t*)(cb_p+1) = __size;
+	*(ff_u32_t*)(cb_p+5) = __offset;
+	*(void**)(cb_p+9) = __src;
+	cb_p+=17;
+}
+
 void static
 _nt_viewport(struct bron_viewport *__vp) {
 	*cb_p = _nt_op_vp;
@@ -371,6 +395,10 @@ _nt_info(ff_u8_t __what, long long __arg) {
 	}
 }
 
+/*
+	TODO:
+		copy struct to struct
+*/
 void ffly_nought(struct bron_driver *__driver) {
 	__driver->sb = _nt_sb;
 	__driver->cb = _nt_cb;
@@ -391,10 +419,13 @@ void ffly_nought(struct bron_driver *__driver) {
 	__driver->ctx_new = _nt_ctx_new;
 	__driver->ctx_destroy = _nt_ctx_destroy;
 	__driver->raster_tri2 = _nt_raster_tri2;
+	__driver->raster_tri3 = _nt_raster_tri3;
 	__driver->tri2 = nt_tri2;
+	__driver->tri3 = nt_tri3;
 	__driver->done = nt_done;
 	__driver->ctx_struc_sz = sizeof(struct nt_context);
 	__driver->tri2_struc_sz = sizeof(struct nt_tri2);
+	__driver->tri3_struc_sz = sizeof(struct nt_tri3);
 	__driver->tex_struc_sz = sizeof(struct nt_tex);
 	__driver->frame = _nt_putframe;
 	__driver->setctx = _nt_setctx;
@@ -416,4 +447,5 @@ void ffly_nought(struct bron_driver *__driver) {
 	__driver->tex_new = _nt_tex_new;
 	__driver->tex_destroy = _nt_tex_destroy;
 	__driver->viewport = _nt_viewport;
+	__driver->dpbuf_write = _nt_dpbuf_write;
 }

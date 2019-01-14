@@ -15,12 +15,20 @@ _bron_ctx_new(void) {
 	ctx = BRON_CONTEXT;
 	ctx->stack+=sizeof(void*);
 	ctx->driver.ctx_new(ct);
+	ctx->ex = 0;
+	ctx->ey = 0;
+	ctx->ez = 0;
+	ctx->a = 0;
+	ctx->fov = 1;
+	ctx->depth = 0;
+	ctx->m = bron_matrix_new();
 	return ct;
 }
 
 void static
 _bron_ctx_destroy(ff_u16_t __ctx) {
 	BRON_CONTEXT->driver.ctx_destroy(__ctx);
+	bron_matrix_destroy(BRON_CONTEXT->m);
 }
 
 void ffly_bron_setctx(ff_u16_t __ctx) {

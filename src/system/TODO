@@ -1,0 +1,13 @@
+vec, map, etc
+
+there struct need a define name
+
+soo 
+#define VECPARNAME __vec
+
+#define mem_alloc(__size)\
+	VECPARNAME->alloc(__size)
+
+void func(ffly_vecp VECPARNAME) {
+	
+}

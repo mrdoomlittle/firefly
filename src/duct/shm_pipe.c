@@ -10,7 +10,7 @@ struct context {
 void static
 _open(struct context *__ct) {
 	ff_err_t err;
-	__ct->pipe = ffly_pipe(512, __ct->flags, 0, &err);
+	__ct->pipe = ffly_pipe(8, __ct->flags, 0, &err);
 }
 
 void static

@@ -8,6 +8,8 @@ _bron_fb_new(ff_uint_t __width, ff_uint_t __height) {
 	ctx = BRON_CONTEXT;
 	fb = bron_plate_alloc();
 	ctx->driver.fb_new(__width, __height, fb);
+	ctx->width = __width;
+	ctx->height = __height;
 	return fb;
 }
 

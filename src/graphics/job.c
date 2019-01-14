@@ -48,6 +48,11 @@ struct ffly_grj* ffly_grj_mk(ff_u8_t __kind, void *__p) {
 	might be worth having its own allocator for parameters memory
 */
 
+
+/*
+	TODO:
+		par should be data+(offset) ????  and not par[num]???? better?¿??
+*/
 struct ffly_grj*
 ffly_grj_pixfill(ff_u32_t __npix, ffly_colour_t __colour, ff_u32_t __off) {
 	ffly_fprintf(ffly_log, "pixfill job.\n");
@@ -205,6 +210,42 @@ ffly_grj_tri2(struct ffly_tri2 *__tri, ff_u16_t __tex, ff_u32_t __x, ff_u32_t __
 	return j;
 }
 
+struct ffly_grj*
+ffly_grj_tri3(struct ffly_tri3 *__tri, ff_u16_t __tex, ff_u32_t __x, ff_u32_t __y, ff_u32_t __z) {
+	ffly_fprintf(ffly_log, "tri3.\n");
+	ff_u8_t *p;
+	ff_uint_t sz;
+	sz = parsz5(struct ffly_tri3, ff_u16_t, ff_u32_t, ff_u32_t, ff_u32_t);
+	p = (ff_u8_t*)__ffly_mem_alloc(sz);
+
+	struct ffly_grj *j = ffly_grj_mk(_grj_tri3, p);
+
+	void **par = j->par;
+
+	ff_u8_t *tri;
+	ff_u8_t *tex;
+	ff_u8_t *x, *y, *z;
+
+	tri = p;
+	p+=sizeof(struct ffly_tri3);
+	tex = p;
+	x = p+2;
+	y = p+6;
+	z = p+10;
+
+	put(tri, *__tri, struct ffly_tri3);
+	put(tex, __tex, ff_u16_t);
+	put(x, __x, ff_u32_t);
+	put(y, __y, ff_u32_t);
+	put(z, __z, ff_u32_t);
+
+	*par = tri;
+	par[1] = tex;
+	par[2] = x;
+	par[3] = y;
+	par[4] = z;
+	return j;
+}
 void static
 job_free(struct ffly_grj *__job) {
 	if (__job == top) {
@@ -307,12 +348,30 @@ _tri2(struct ffly_grj *__job) {
 	__ffly_tri2(tri, tex, x, y);
 }
 
+void static
+_tri3(struct ffly_grj *__job) {
+	void **par = __job->par;
+
+	struct ffly_tri3 *tri;
+	ff_u16_t tex;
+	ff_u32_t x, y, z; 
+
+	tri = (struct ffly_tri3*)*par;
+	tex = *(ff_u16_t*)par[1];
+	x = *(ff_u32_t*)par[2];
+	y = *(ff_u32_t*)par[3];
+	z = *(ff_u32_t*)par[4];
+
+	__ffly_tri3(tri, tex, x, y, z);
+}
+
 static void(*funcs[])(struct ffly_grj*) = {
 	_pixfill,
 	_pixcopy,
 	_pixdraw,
 	_tdraw,
-	_tri2
+	_tri2,
+	_tri3
 };
 
 /*

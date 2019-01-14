@@ -6,6 +6,9 @@
 	errors/warnings/etc...
 */
 extern ff_u32_t oddity_count;
+/*
+	if odditys exceed x amount then inform the user or panic and begin shutdown procedures
+*/
 #ifdef ignore_odditys
 #define caught_oddity
 #else

@@ -15,7 +15,7 @@ void ffly_vec2_clr(ffly_vec2p __vec) {
 float ffly_vec2_dist(const ffly_vec2p __a, const ffly_vec2p __b) {
 	float xdis = ffly_abs(__a->x-__b->x);
 	float ydis = ffly_abs(__a->y-__b->y);
-	return (xdis+(ydis*0.5));
+	return (xdis+(ydis/xdis));
 }
 
 void ffly_vec2_rotate(ffly_vec2p __vec, float __angle) {

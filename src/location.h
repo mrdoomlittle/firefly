@@ -4,8 +4,8 @@
 #define _location_push	ff_location_push
 #define _location_pop	ff_location_pop
 #else
-#define _location_push
-#define _location_pop
+#define _location_push(...)
+#define _location_pop(...)
 #endif
 # include "ffint.h"
 enum {

@@ -70,18 +70,7 @@ nt_tdraw(void) {
 	}
 }
 
-void
-nt_pixdraw(void) {
-	ff_u32_t _x, _y;
-	ff_u8_t *pixels;
-	ff_uint_t width, height;
-
-	_x = *(ff_u32_t*)nt_raise_p;
-	_y = *(ff_u32_t*)(nt_raise_p+4);
-	pixels = *(ff_u8_t**)(nt_raise_p+8);
-	width = *(ff_u32_t*)(nt_raise_p+16);
-	height = *(ff_u32_t*)(nt_raise_p+20);
-
+void _nt_pixdraw(ff_u32_t __x, ff_u32_t __y, ff_u8_t *__pixels, ff_uint_t __width, ff_uint_t __height) {
 	struct nt_tile *t, **tp;
 	struct nt_context *ctx;
 	ctx = nt_ctx;
@@ -91,12 +80,12 @@ nt_pixdraw(void) {
 
 	ff_u8_t *s, *d;
 	ff_uint_t x, y;
-	y = _y;
+	y = __y;
 
-	while(y != _y+height) {
-		x = _x;
-		while(x != _x+width) {
-			s = (pixels+(((x-_x)+((y-_y)*width))*4));
+	while(y != __y+__height) {
+		x = __x;
+		while(x != __x+__width) {
+			s = (__pixels+(((x-__x)+((y-__y)*__width))*4));
 			tx = x>>RB_TILESZ;
 			ty = y>>RB_TILESZ;
 
@@ -115,6 +104,21 @@ nt_pixdraw(void) {
 		}
 		y++;
 	}
+}
+
+void
+nt_pixdraw(void) {
+	ff_u32_t _x, _y;
+	ff_u8_t *pixels;
+	ff_uint_t width, height;
+
+	_x = *(ff_u32_t*)nt_raise_p;
+	_y = *(ff_u32_t*)(nt_raise_p+4);
+	pixels = *(ff_u8_t**)(nt_raise_p+8);
+	width = *(ff_u32_t*)(nt_raise_p+16);
+	height = *(ff_u32_t*)(nt_raise_p+20);
+
+	_nt_pixdraw(_x, _y, pixels, width, height);
 }
 
 # include "objbuf.h"

@@ -1,2 +1,4 @@
 new file mem.c <- all allocations should go thru are own function
 allow for more direct approch to calling functions
+
+split up 

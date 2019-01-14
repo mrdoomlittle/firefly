@@ -7,6 +7,8 @@
 struct nt_viewport {
 	ff_u32_t width, height;
 	ff_u32_t x, y;
+	
+	ff_u32_t zfar, znear;
 };
 void nt_viewport(void);
 # endif /*__ffly__nt__view__h*/

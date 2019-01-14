@@ -90,36 +90,36 @@ ff_i8_t static _init(void) {
 	m1 = ffly_model_new(2);
 
 	body0->model = m0;
-	ffly_body_vertex(body0, -10, -10, 0);
-	ffly_body_vertex(body0, 10, -10, 0);
-	ffly_body_vertex(body0, 10, 10, 0);
+	ffly_body_vertex(body0, -40, -40, 0);
+	ffly_body_vertex(body0, 40, -40, 9);
+	ffly_body_vertex(body0, 40, 40, 0);
 	ffly_model_nextpoly(m0);
-	ffly_body_vertex(body0, -10, -10, 0);
-	ffly_body_vertex(body0, -10, 10, 0);
-	ffly_body_vertex(body0, 10, 10, 0);
+	ffly_body_vertex(body0, -40, -40, 0);
+	ffly_body_vertex(body0, -40, 40, 0);
+	ffly_body_vertex(body0, 40, 40, 0);
 
-	body0->xl = 20;
-	body0->yl = 20;
+	body0->xl = 80;
+	body0->yl = 80;
 	body0->zl = 1;
 
-	obj0->x = 40;
-	obj0->y = 0;
+	obj0->x = 120;
+	obj0->y = 40;
 	obj0->z = 0;
 
 	body1->model = m1;
-	ffly_body_vertex(body1, -10, -10, 0);
-	ffly_body_vertex(body1, 10, -10, 0);
-	ffly_body_vertex(body1, 10, 10, 0);
+	ffly_body_vertex(body1, -40, -40, 0);
+	ffly_body_vertex(body1, 40, -40, 0);
+	ffly_body_vertex(body1, 40, 40, 0);
 	ffly_model_nextpoly(m1);
-	ffly_body_vertex(body1, -10, -10, 0);
-	ffly_body_vertex(body1, -10, 10, 0);
-	ffly_body_vertex(body1, 10, 10, 0);
+	ffly_body_vertex(body1, -40, -40, 0);
+	ffly_body_vertex(body1, -40, 40, 0);
+	ffly_body_vertex(body1, 40, 40, 6);
 
-	body1->xl = 20;
-	body1->yl = 20;
+	body1->xl = 80;
+	body1->yl = 80;
 	body1->zl = 1;
 
-	obj1->x = 40;
+	obj1->x = 80;
 	obj1->y = 100;
 	obj1->z = 0;
 
@@ -143,7 +143,7 @@ ff_i8_t static _init(void) {
 	ffly_uni_attach_body(&uni, body1);
 
 	// set velocity of object to ...
-	ffly_set_velocity(obj0->phy_body, 1);
+	ffly_set_velocity(obj0->phy_body, 0.4);
 	ffly_set_velocity(obj1->phy_body, 0);
 
 	// set direction to a1 ka right
@@ -187,9 +187,9 @@ ff_i8_t static _tick(void) {
 
 	old_x = obj0->x;
 	old_y = obj0->y;
-	if (obj0->y >= 128) {
+	if (obj0->y >= 146) {
 		ffly_set_direction(obj0->phy_body, _ff_dir_a0);
-	} else if (!obj0->y)
+	} else if (obj0->y < 40)
 		ffly_set_direction(obj0->phy_body, _ff_dir_a2);
 	ffly_uni_update(&uni, delta);
 	ffly_obj_handle(&uni, delta, obj0);

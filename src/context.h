@@ -16,6 +16,7 @@ struct ff_context {
 
 	ff_u16_t ll_fb;
 	struct ffly_queue event_queue;
+	ff_u16_t rb;
 };
 
 struct ff_context* ff_ctx_new(void);

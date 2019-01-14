@@ -12,6 +12,12 @@ struct nt_framebuff {
 
 	struct nt_tile **tiles;
 	ff_uint_t n;
+
+/*
+	im not using floats and its just compare and for better pres 0.01*100 = 1
+	dk 
+*/
+	ff_u16_t *dpb;
 };
 
 

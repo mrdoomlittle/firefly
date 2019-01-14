@@ -9,12 +9,15 @@
 #ifdef __cplusplus
 #	include "errno.h"
 #endif
+#define FF_BGF_MA	0x00
+#define FF_BGF_MF	0x01
+#define FF_BGF_MR	0x02
 struct ffly_buff {
 #ifdef FF_BUFF_SA
 	void*(*alloc)(long long, ff_uint_t);
 	void(*free)(long long, void*);
 	void*(*realloc)(long long, void*, ff_uint_t);
-	long long arg;
+	long long ma_arg;
 #endif
 	ff_mlock_t lock;
 	ff_u8_t *p;
@@ -29,7 +32,9 @@ typedef struct ffly_buff* ffly_buffp;
 # ifdef __cplusplus
 extern "C" {
 # endif
-ff_err_t ffly_buff_init(ffly_buffp, ff_uint_t, ff_size_t);
+#define ffly_buff_init(__buff, __bc, __bs)\
+	_ffly_buff_init(__buff, __bc, __bs, NULL)
+ff_err_t _ffly_buff_init(ffly_buffp, ff_uint_t, ff_size_t, void(*)(long long, ff_u8_t));
 ff_err_t ffly_buff_put(ffly_buffp, void*);
 ff_err_t ffly_buff_get(ffly_buffp, void*);
 ff_err_t ffly_buff_resize(ffly_buffp, ff_uint_t);

@@ -38,8 +38,8 @@ ff_err_t ffly_mem_free(void *__p, ff_bool_t __track_bypass) {
 ff_err_t ffly_mem_free(void *__p) {
 	ff_err_t err;
 # endif
+#ifdef __ffly_debug
 	_location_push(_ff_loc_mem_free);
-# ifdef __ffly_debug
 # ifndef __ffly_mal_track
 	ff_u8_t *
 # endif
@@ -67,6 +67,8 @@ ff_err_t ffly_mem_free(void *__p) {
 _fail:
 	err = FFLY_FAILURE;
 _succ:
+#ifdef __ffly_debug
 	_location_pop();
+#endif
 	return err;
 }

@@ -7,6 +7,8 @@
 
 /*
 	TODO:
+		remove bitget
+
 		add op to run rosin code
 
 		why? to add function to it resin is more bone and more flex

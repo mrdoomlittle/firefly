@@ -52,16 +52,16 @@ void ffly_rasterize(ffly_modelp __model,
 		v1 = poly->vertices[1];
 		v2 = poly->vertices[2];
 
-		struct ffly_tri2 tri = {
-			v0.x, v0.y,
-			v1.x, v1.y,
-			v2.x, v2.y
+		struct ffly_tri3 tri = {
+			v0.x, v0.y, v0.z,
+			v1.x, v1.y, v1.z,
+			v2.x, v2.y, v2.z
 		};
 
 		ff_u16_t tex;
 
 		ffly_printf("#}}}}}}}}} %u, %u\n", __x, __y);
-		ffly_tri2(&tri, tx->tx, __x, __y);
+		ffly_tri3(&tri, tx->tx, __x, __y, 0);
 		i++;
 	}
 }

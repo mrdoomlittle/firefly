@@ -2,12 +2,24 @@
 # define __ffly__map__h
 # include "../ffint.h"
 # include "../types.h"
-
-#define MAP_ITR_FD 0x1
-#define MAP_ITR_BK 0x1
+//#define FF_MAP_SA
+#define MAP_AS 0x01
+#define MAP_ITR_FD	0x00
+#define MAP_ITR_BK	0x01
 #define FF_MAP struct ffly_map
 #define ff_map struct ffly_map
+#define FF_MGF_MA	0x00
+#define FF_MGF_MF	0x01
+#define FF_MGF_MR	0x02
+struct ffly_map_maf {
+	void*(*alloc)(long long, ff_uint_t);
+	void(*free)(long long, void*);
+	void*(*realloc)(long long, void*, ff_uint_t);
+};
+
 typedef struct ffly_map {
+	struct ffly_map_maf maf;
+	long long ma_arg;
 	void **table;
     void *begin, *end;
     ff_uint_t size;
@@ -34,12 +46,18 @@ enum {
 # ifdef __cplusplus
 extern "C" {
 # endif
-ffly_mapp ffly_map_creat(ff_uint_t);
-ffly_mapp ffly_map(ff_uint_t);
+#define ffly_map_creat(__size)\
+	_ffly_map_creat(__size, NULL)
+#define ffly_map(__size)\
+	_ffly_map(__size, NULL)
+#define ffly_map_init(__map, __size)\
+	_ffly_map_init(__map, __size, NULL)
+ffly_mapp _ffly_map_creat(ff_uint_t, void(*)(long long, ff_u8_t));
+ffly_mapp _ffly_map(ff_uint_t, void(*)(long long, ff_u8_t));
 void ffly_map_free(ffly_mapp);
 void ffly_map_destroy(ffly_mapp);
 void ffly_map_parent(ffly_mapp, ffly_mapp);
-ff_err_t ffly_map_init(ffly_mapp, ff_uint_t);
+ff_err_t _ffly_map_init(ffly_mapp, ff_uint_t, void(*)(long long, ff_u8_t));
 void ffly_map_del(ffly_mapp, void const*);
 ff_err_t ffly_map_put(ffly_mapp, ff_u8_t const*, ff_uint_t, void *const);
 void *const ffly_map_get(ffly_mapp, ff_u8_t const*, ff_uint_t, ff_err_t*);

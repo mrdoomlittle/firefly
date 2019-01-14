@@ -11,6 +11,7 @@
 #define _grj_pixdraw	2
 #define _grj_tdraw		3
 #define _grj_tri2		4
+#define _grj_tri3		5
 struct ffly_grj {
 	ff_u8_t kind;
 	void *p;
@@ -22,6 +23,7 @@ struct ffly_grj {
 extern "C" {
 # endif
 struct ffly_grj* ffly_grj_tri2(struct ffly_tri2 *, ff_u16_t, ff_u32_t, ff_u32_t);
+struct ffly_grj* ffly_grj_tri3(struct ffly_tri3 *, ff_u16_t, ff_u32_t, ff_u32_t, ff_u32_t);
 struct ffly_grj* ffly_grj_mk(ff_u8_t, void*);
 struct ffly_grj* ffly_grj_pixfill(ff_u32_t, ffly_colour_t, ff_u32_t);
 struct ffly_grj* ffly_grj_pixdraw(ff_u32_t, ff_u32_t, void*, ff_u32_t, ff_u32_t);

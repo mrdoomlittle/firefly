@@ -9,4 +9,5 @@
 # include "bron/prim.h"
 # include "bron/pixel.h"
 # include "bron/frame_buff.h"
+# include "bron/render_buff.h"
 # endif /*__ffly__graphics__h*/

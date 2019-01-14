@@ -5,6 +5,7 @@
 # include "raise.h"
 # include "../system/io.h"
 # include "pixel.h"
+# include "../dep/mem_set.h"
 /*
 	add clear function
 */
@@ -31,6 +32,8 @@ nt_framebuff_creat(ff_uint_t __width, ff_uint_t __height) {
 	e = t+nt;
 	while(t != e)
 		*(t++) = NULL;
+	fb->dpb = (ff_u16_t*)__ffly_mem_alloc(__width*__height*sizeof(ff_u16_t));
+	ffly_mem_set(fb->dpb, 255, __width*__height*sizeof(ff_u16_t));
 	return fb;
 }
 
@@ -48,6 +51,7 @@ void nt_framebuff_del(struct nt_framebuff *__fb) {
 		}
 	}
 	__ffly_mem_free(__fb->tiles);
+	__ffly_mem_free(__fb->dpb);
 	__ffly_mem_free(__fb);
 }
 

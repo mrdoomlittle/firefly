@@ -38,10 +38,10 @@ typedef struct hdr {
 	ff_u16_t size;
 } *hdrp;
 
-#define STRT 0x01
-#define STOP 0x02
-#define DUMP 0x04
-#define OK 0x08
+#define STRT	0x01
+#define STOP	0x02
+#define DUMP	0x04
+#define OK		0x08
 struct pipe {
 	ff_uint_t shm_id;
 	ff_u8_t *bits;

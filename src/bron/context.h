@@ -21,9 +21,20 @@
 # define bron_context \
 	ff_bron_context
 
+# include "matrix.h"
 struct ff_bron_context {
 	struct bron_driver driver;
 	ff_uint_t stack;
+
+	struct bron_matrix *m;
+	ff_u32_t ex, ey, ez;
+
+	float fov;
+
+	float depth, a;
+	ff_u16_t *dpbuf;
+	ff_u32_t dpbs;
+	ff_u32_t width, height;
 };
 
 void ffly_bron_setctx(ff_u16_t);

@@ -3,7 +3,12 @@
 # include "../memory/mem_free.h"
 # include "raise.h"
 # include "../system/io.h"
+# include "../dep/mem_set.h"
 struct nt_context *nt_ctx;
+
+/*
+	camera pos is 0,0 pointing to 1, 1
+*/
 void
 nt_ctx_new(void) {
 	struct nt_context *ctx;
@@ -35,6 +40,7 @@ void
 nt_start(void) {
 	ffly_printf("start.\n");
 	ffly_printf("FB: %p, width: %u, height: %u\n", nt_ctx->fb, nt_ctx->fb->width, nt_ctx->fb->height);
+	ffly_mem_set(nt_ctx->fb->dpb, 255, nt_ctx->fb->width*nt_ctx->fb->height*sizeof(ff_u16_t));
 }
 
 void
