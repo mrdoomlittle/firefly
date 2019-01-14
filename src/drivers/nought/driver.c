@@ -375,6 +375,15 @@ _nt_viewport(struct bron_viewport *__vp) {
 
 	cb_p+=1+sizeof(struct nt_viewport);
 }
+
+void static
+_nt_slg_prog(ff_u8_t *__p, ff_u32_t __size) {
+	*cb_p = _nt_op_slagprog;
+	*(ff_u8_t**)(cb_p+1) = __p;
+	*(ff_u32_t*)(cb_p+9) = __size;
+	cb_p+=13;
+}
+
 # include "../../nought/tex.h"
 # include "../../bron/driver.h"
 void static
@@ -448,4 +457,5 @@ void ffly_nought(struct bron_driver *__driver) {
 	__driver->tex_destroy = _nt_tex_destroy;
 	__driver->viewport = _nt_viewport;
 	__driver->dpbuf_write = _nt_dpbuf_write;
+	__driver->slgprog = _nt_slg_prog;
 }

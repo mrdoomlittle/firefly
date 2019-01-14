@@ -236,11 +236,13 @@ $ffly_cc $cc_flags -c -o $dst_dir/nought/depth.o $root_dir/nought/depth.c
 $ffly_cc $cc_flags -c -o $dst_dir/nought/text.o $root_dir/nought/text.c
 $ffly_cc $cc_flags -c -o $dst_dir/inform.o $root_dir/inform.c
 $ffly_cc $cc_flags -c -o $dst_dir/gf.o $root_dir/gf.c
+$ffly_cc $cc_flags -c -o $dst_dir/bron/prog.o $root_dir/bron/prog.c
+$ffly_cc $cc_flags -c -o $dst_dir/slagprog.o $root_dir/nought/slagprog.c
 else
 	$dus $root_dir/compile.dus $ffly_cc "$cc_flags" $dst_dir $root_dir
 fi
 export ffly_objs="$dst_dir/event.o $dst_dir/gf.o $ffly_objs $dst_dir/inform.o $dst_dir/resin.o.0 $dst_dir/resin.o.1 $dst_dir/exec.o \
-$dst_dir/resin/exec.o $dst_dir/resin/mm.o $dst_dir/mode.o \
+$dst_dir/resin/exec.o $dst_dir/resin/mm.o $dst_dir/mode.o $dst_dir/bron/prog.o $dst_dir/slagprog.o \
 $dst_dir/firefly.o $dst_dir/ffly_system.o $dst_dir/bole.o $dst_dir/put_bit.o  $dst_dir/get_bit.o \
 $dst_dir/ss.o $dst_dir/call.o $dst_dir/rand.o $dst_dir/lib.o $dst_dir/mod.o $dst_dir/mod/port.o \
 $dst_dir/net.o $dst_dir/crypto.o $dst_dir/in.o $dst_dir/inet_addr.o $dst_dir/init.o \

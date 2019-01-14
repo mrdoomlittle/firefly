@@ -8,6 +8,11 @@
 # include "shit.h"
 # include "pixel.h"
 # include "view.h"
+/*
+	TODO:
+		get read/write function pointers
+		there should be no connection between us and them they give us a memory id and we write or read from said memory
+*/
 void
 nt_tdraw(void) {
 	ff_u32_t plate;
@@ -80,8 +85,8 @@ void _nt_pixdraw(ff_u32_t __x, ff_u32_t __y, ff_u8_t *__pixels, ff_uint_t __widt
 
 	ff_u8_t *s, *d;
 	ff_uint_t x, y;
-	y = __y;
 
+	y = __y;
 	while(y != __y+__height) {
 		x = __x;
 		while(x != __x+__width) {

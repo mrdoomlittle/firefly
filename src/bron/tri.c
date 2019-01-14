@@ -42,6 +42,7 @@ void bron_tri3(struct bron_tri3 *__tri, ff_u32_t __tex, ff_u32_t __x, ff_u32_t _
 	zdis = __z-ctx->ez;
 
 	// going to cause error for 1./0
+	// should just time by x or something
 	float m, j;
 	m = 1./zdis;
 
@@ -55,9 +56,20 @@ void bron_tri3(struct bron_tri3 *__tri, ff_u32_t __tex, ff_u32_t __x, ff_u32_t _
 	x0 = ((float)__tri->x0)*j;
 	x1 = ((float)__tri->x1)*j;
 	x2 = ((float)__tri->x2)*j;
+
 	y0 = ((float)__tri->y0)*j;
 	y1 = ((float)__tri->y1)*j;
 	y2 = ((float)__tri->y2)*j;
+
+	x0 = x0*ctx->a;
+	y0 = y0*ctx->a;
+
+	x1 = x1*ctx->b;
+	y1 = y1*ctx->b;
+
+	x2 = x2*ctx->c;
+	y2 = y2*ctx->c;
+	
 
 	float ex, ey;
 	ex = ctx->ex;

@@ -4,4 +4,5 @@
 
 ff_i8_t nt_dpbtas(ff_u16_t, ff_u32_t, ff_u32_t);
 void nt_dpbuf_write(void);
+ff_u16_t nt_dpbuf_get(ff_u32_t, ff_u32_t);
 # endif /*__ffly__nt_depth__h*/

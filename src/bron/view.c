@@ -21,10 +21,8 @@ void bron_lookat(ff_u32_t __x, ff_u32_t __y, ff_u32_t __z, float __a, float __b,
 	g1 = -c;
 	g3 = (-a)+b;
 */
-	float dis;
-	dis = __a/(ct->depth*0.5);
-
-
-	ct->a = ffly_floor(dis);
+	ct->a = __a;
+	ct->b = __b;
+	ct->c = __c;
 	ffly_printf("lookat: %u, depth: %u\n", (ff_s32_t)ct->a, (ff_s32_t)ct->depth);
 }

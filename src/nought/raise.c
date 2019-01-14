@@ -10,10 +10,11 @@
 # include "renderbuff.h"
 # include "view.h"
 # include "depth.h"
+# include "slagprog.h"
 ff_u8_t *nt_raise_p;
 ff_u8_t nt_raise_stack[STACK_SIZE];
 ff_u16_t nt_raise_sp;
-#define MAX 41
+#define MAX 42
 void static
 nt_sput(void) {
 	void *buf;
@@ -81,7 +82,8 @@ static void(*op[])(void) = {
 	nt_rb_destroy,		//37
 	nt_viewport,		//38
 	nt_dpbuf_write,		//39
-	nt_raster_tri3		//40
+	nt_raster_tri3,		//40
+	nt_slg_prog			//41
 };
 
 ff_uint_t static os[] = {
@@ -125,7 +127,8 @@ ff_uint_t static os[] = {
 	4,													//nt_rb_destroy
 	sizeof(struct nt_viewport),							//nt_viewport
 	16,													//nt_dpbuf_write
-	18													//nt_raster_tri3
+	18,													//nt_raster_tri3
+	12													//nt_slg_prog
 };
 
 static char const *ostr[] = {
@@ -169,7 +172,8 @@ static char const *ostr[] = {
 	"rb_destroy",		//37
 	"viewport",			//38
 	"depth buff write",	//39
-	"raster_tri3"		//40
+	"raster_tri3",		//40
+	"slg_prog"			//41
 };
 
 void nt_raise(ff_u8_t *__bin, ff_uint_t __size) {

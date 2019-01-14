@@ -18,7 +18,9 @@ _bron_ctx_new(void) {
 	ctx->ex = 0;
 	ctx->ey = 0;
 	ctx->ez = 0;
-	ctx->a = 0;
+	ctx->a = 1;
+	ctx->b = 1;
+	ctx->c = 1;
 	ctx->fov = 1;
 	ctx->depth = 0;
 	ctx->m = bron_matrix_new();

@@ -16,6 +16,11 @@ ff_i8_t nt_dpbtas(ff_u16_t __depth, ff_u32_t __x, ff_u32_t __y) {
 	}
 	return -1;
 }
+
+ff_u16_t nt_dpbuf_get(ff_u32_t __x, ff_u32_t __y) {
+	return *(nt_ctx->fb->dpb+__x+(__y*nt_ctx->fb->width));
+}
+
 void nt_dpbuf_write(void) {
 	ff_u32_t size;
 	ff_u32_t offset;

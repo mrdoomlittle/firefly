@@ -112,8 +112,8 @@ ff_i8_t static _init(void) {
 	ffly_body_vertex(body1, 40, 40, 0);
 	ffly_model_nextpoly(m1);
 	ffly_body_vertex(body1, -40, -40, 0);
-	ffly_body_vertex(body1, -40, 40, 0);
-	ffly_body_vertex(body1, 40, 40, 6);
+	ffly_body_vertex(body1, -40, 40, 6);
+	ffly_body_vertex(body1, 40, 40, 0);
 
 	body1->xl = 80;
 	body1->yl = 80;

@@ -1,4 +1,5 @@
 # include "text.h"
+# include "../system/io.h"
 void _nt_pixdraw(ff_u32_t, ff_u32_t, ff_u8_t*, ff_uint_t, ff_uint_t);
 
 ff_u64_t static cmap[0x100] = {

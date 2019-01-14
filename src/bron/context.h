@@ -31,7 +31,7 @@ struct ff_bron_context {
 
 	float fov;
 
-	float depth, a;
+	float depth, a, b, c;
 	ff_u16_t *dpbuf;
 	ff_u32_t dpbs;
 	ff_u32_t width, height;

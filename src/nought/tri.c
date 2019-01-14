@@ -10,6 +10,7 @@
 # include "plate.h"
 # include "../maths/floor.h"
 # include "depth.h"
+# include "slagprog.h"
 // need to be worked on but will do for now
 /*
 	only can rasterize tri
@@ -62,7 +63,12 @@ static dim(ff_int_t __x, ff_int_t __y) {
 	return -1;
 }
 
+/*
+	TODO:
+		change dot
 
+		to __x0, __x1, __y0, __y1
+*/
 //#define use_barycentric
 #define dot(__x0, __y0, __x1, __y1)\
 	((__x0*__x1)+(__y0*__y1))
@@ -201,62 +207,74 @@ raster_tri(void) {
 				ff_byte_t *dst;
 				dst = tilepx(t, txo, tyo);
 
+				double a0, a1, a2, a3, a4, a5;
 				double b0, b1, b2, b3, b4, b5, b6, b7, b8;
 				double d0, d1;
-				d0 = dot(x1, x1, y1, y1);
-				d1 = dot(x2, x2, y2, y2);
+				a0 = x1-x0;
+				a1 = y1-y0;
+				a2 = x2-x0;
+				a3 = y2-y0;
+				a4 = x-x0;
+				a5 = y-y0;
+				d0 = dot(a0, a1, a0, a1);
+				d1 = dot(a2, a3, a2, a3);
 /*
 	may not work on one side of tri idk i dont care this will do for now
 */
 
 				b3 = ((float)z0)/d0;
-				b0 = (d0-dot(x, x1, y, y1))*b3;
+				b0 = (d0-dot(a4, a5, a0, a1))*b3;
 				b4 = b0/d1;
-				b0 = (d1-dot(x, x2, y, y2))*b4;
+				b0 = (d1-dot(a4, a5, a2, a3))*b4;
 
 				b5 = ((float)z1)/d0;
-				b1 = (dot(x, x1, y, y1))*b5;
+				b1 = (dot(a4, a5, a0, a1))*b5;
 				b6 = b1/d1;
-				b1 = (dot(x, x2, y, y2))*b6;
+				b1 = (dot(a4, a5, a2, a3))*b6;
 
 				b7 = ((float)z2)/d0;
-				b2 = (d0-dot(x, x1, y, y1))*b7;
+				b2 = (d0-dot(a4, a5, a0, a1))*b7;
 				b8 = b2/d1;
-				b2 = (dot(x, x2, y, y2))*b8;
+				b2 = (dot(a4, a5, a2, a3))*b8;
 
 				float z;
-				z = b0+b1+b2;
-		//		ffly_printf("%d,", (ff_s32_t)z);
-				z *= 100;
+				z = abs(b0)+abs(b1)+abs(b2);
+				z *= 100;//higher the value the more precision as to push fraction bits into a whole numer
+		//		ffly_printf("%u, ", (ff_u32_t)z);
 				if (!nt_dpbtas((ff_u16_t)z, _x0, _y0)) {
-					nt_setpix(c+(loc*4), dst);
+					slg.pxin = c+(loc*4);
+					slg.z = (ff_u16_t)z;
+					nt_slags_exec();
+					nt_setpix((ff_u8_t*)&slg.pxout, dst);
 				}
 
 			}
 		_sk:
 			x++;
 		}
-		ffly_printf("\n");
+		//ffly_printf("\n");
 		y++;
 	}
-
-	char buf[128];
-	ff_uint_t n;
-	nt_text(_x-x0, _y-y0, "0");
-	nt_text(_x-x1, _y-y1, "1");
-	nt_text(_x-x2, _y-y2, "2");
-
-	n = nds(buf, z0);
-	buf[n] = '\0';
-	nt_text(_x-x0, (_y-y0)+8, buf);
-
-	n = nds(buf, z1);
-	buf[n] = '\0';
-	nt_text(_x-x1, (_y-y1)+8, buf);
-
-	n = nds(buf, z2);
-	buf[n] = '\0';
-	nt_text(_x-x2, (_y-y2)+8, buf);
+	// might change this
+	if (((ff_s32_t)(_x-x0))>0 && ((ff_s32_t)(_y-y0))>0 && ((ff_s32_t)(_x-x1))>0 && ((ff_s32_t)(_y-y1))>0 && ((ff_s32_t)(_x-x2))>0 && ((ff_s32_t)(_y-y2))>0) {
+		char buf[128];
+		ff_uint_t n;
+		nt_text(_x-x0, _y-y0, "0");
+		nt_text(_x-x1, _y-y1, "1");
+		nt_text(_x-x2, _y-y2, "2");
+	
+		n = nds(buf, z0);
+		buf[n] = '\0';
+		nt_text(_x-x0, (_y-y0)+8, buf);
+	
+		n = nds(buf, z1);
+		buf[n] = '\0';
+		nt_text(_x-x1, (_y-y1)+8, buf);
+	
+		n = nds(buf, z2);
+		buf[n] = '\0';
+		nt_text(_x-x2, (_y-y2)+8, buf);
+	}
 }
 
 void nt_raster_tri3(void) {

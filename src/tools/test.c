@@ -48,8 +48,8 @@ static dim(ff_int_t __x, ff_int_t __y) {
 	return -1;
 }
 
-#define WIDTH 6
-#define HEIGHT 6
+#define WIDTH 12
+#define HEIGHT 16
 void draw(void) {
 	ff_u32_t x, y;
 	y = 0;
@@ -72,9 +72,12 @@ void draw(void) {
 				b4 = ((float)z0)/d0;
 	
 				b0 = (d0-dot(x, x1, y, y1))*b4;
+				b0 = b0/d1;
 
-				b5 = b0/d1;
-				b1 = (d1-dot(x, x2, y, y2))*b5;
+				b0 = (d1-dot(x, x2, y, y2))*b0;
+
+//				b5 = b0/d1;
+//				b1 = (d1-dot(x, x2, y, y2))*b5;
 //				b4 = ((float)z0)/(((x1-x0)*(x1-x0))+((y1-y0)*(y1-y0)));
 //				b0 = ((a0*(x1-x0))+(a1*(y1-y0)))*b4;
 	
@@ -85,7 +88,7 @@ void draw(void) {
 				
 
 				double w;
-				w = b1;			
+				w = b0;			
 				printf("%lf . ", w);
 			}
 			x++;

@@ -144,6 +144,7 @@ void frame_read_rgb(ffly_frame_buffp __fb, void *__dst, ff_uint_t __width, ff_ui
 # include "bron/render_buff.h"
 # include "bron/view.h"
 # include "bron/depth.h"
+# include "bron/prog.h"
 ff_i8_t static sched_test(long long __arg) {
 //	ffly_printf("hello %u.\n", __arg);
 	return -1;
@@ -460,11 +461,16 @@ _again:
 	bron_fb_set(fb);
 	bron_rb_bind(rb, fb);
 
+	ff_u8_t slgprog[] = {
+		0x02
+	};
+
+	bron_slgprog(slgprog, sizeof(slgprog));
 	struct bron_viewport vp = {
 		0, 0, WIDTH, HEIGHT
 	};
 	bron_viewport(&vp);
-	bron_lookat(256, 256, 0, 0, 0, 0);
+	bron_lookat(256, 256, 0, 1, 1, 1);
 	bron_start();
 	bron_dpb_alloc();
 
@@ -507,10 +513,10 @@ _again:
 			255, 0, 0, 255
 		},
 		{
-			0, 255, 0, 255,
-			0, 255, 0, 255,
-			0, 255, 0, 255,
-			0, 255, 0, 255
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255
 		}
 	};
 
@@ -525,16 +531,16 @@ _again:
 		{
 			-56,		-56,		0,
 			56,		56,	0,
-			-56,		56,	6
+			-56,		56,	0
 		},
 		{
-			-56,	-56,		0,
+			-56,	-56,		12,
 			56,		56,	0,
-			56,		-56,	9
+			56,		-56,	0
 		}
 	};
 	bron_tri3(tri, *tex, 256, 256, 20);
-	bron_tri3(tri+1, tex[1], 256+56+20, 256-56-20, 20);
+	bron_tri3(tri+1, tex[1], 256+56*2, 256, 20);
 
 	ffly_fb_copy(_fb);
 	//bron_dpb_save();

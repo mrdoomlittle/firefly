@@ -87,6 +87,10 @@ void ffly_tile_del(ffly_tilep __tile) {
 }
 
 ff_u32_t static sched_id;
+
+/*
+	diffrent sized tiles diffrent sched lot
+*/
 ff_i8_t static
 update(void) {
 	lk;

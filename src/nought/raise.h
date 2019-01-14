@@ -43,6 +43,7 @@
 #define _nt_op_vp				0x26
 #define _nt_op_dpbw				0x27
 #define _nt_op_raster_tri3		0x28
+#define _nt_op_slagprog			0x29
 #define stack_at(__adr) \
 	(nt_raise_stack+(__adr))
 extern ff_u8_t *nt_raise_p;

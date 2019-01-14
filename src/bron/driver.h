@@ -63,6 +63,7 @@ struct ff_bron_driver {
 	void(*info)(ff_u8_t, long long);
 	void(*viewport)(struct bron_viewport*);
 	void(*dpbuf_write)(ff_u32_t, ff_u32_t, void*);
+	void(*slgprog)(ff_u8_t*, ff_u32_t);
 	ff_uint_t ctx_struc_sz;
 	ff_uint_t tri2_struc_sz;
 	ff_uint_t tex_struc_sz;
