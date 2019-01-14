@@ -9,7 +9,9 @@
 # include "err.h"
 # include "io.h"
 # include "../oddity.h"
-#define map_mask(__map) ((~(ff_u64_t)0)>>(64-__map->size))
+#define __MFSPS __MFSPS
+#define __VFSPS __VFSPS
+#define map_mask(__MFSPS) ((~(ff_u64_t)0)>>(64-__MFSPS->size))
 #define PAGE_SHIFT 4
 #define PAGE_SIZE (1<<PAGE_SHIFT)
 
@@ -23,18 +25,18 @@
 #else
 #ifdef VEC_STUFF
 #define mem_alloc(__n)\
-	__vec->maf->alloc(*__vec->ma_arg, __n)
+	__VFSPS->maf->alloc(*__VFSPS->ma_arg, __n)
 #define mem_free(__p)\
-	__vec->maf->free(*__vec->ma_arg, __p)
+	__VFSPS->maf->free(*__VFSPS->ma_arg, __p)
 #define mem_realloc(__p, __n)\
-	__vec->maf->realloc(*__vec->ma_arg, __p, __n)
+	__VFSPS->maf->realloc(*__VFSPS->ma_arg, __p, __n)
 #else
 #define mem_alloc(__n)\
-	__map->maf.alloc(__map->ma_arg, __n)
+	__MFSPS->maf.alloc(__MFSPS->ma_arg, __n)
 #define mem_free(__p)\
-	__map->maf.free(__map->ma_arg, __p)
+	__MFSPS->maf.free(__MFSPS->ma_arg, __p)
 #define mem_realloc( __p, __n)\
-	__map->maf.realloc(__map->ma_arg, __p, __n)
+	__MFSPS->maf.realloc(__MFSPS->ma_arg, __p, __n)
 #endif
 #endif
 
@@ -78,24 +80,24 @@ typedef struct vec_blk {
 	struct vec_blk **bk, *fd;
 } *vec_blkp;
 
-ff_err_t static vec_init(vecp __vec, ff_uint_t __blk_size, struct ffly_map_maf *__af, long long *__ma_arg) {
-	__vec->bks = __blk_size+sizeof(struct vec_blk);
-	__vec->p = NULL;
-	__vec->page_c = 0;
-	__vec->off = 0;
-	__vec->uu = NULL;
-	__vec->size = 0;
-	__vec->face = NULL;
-	__vec->maf = __af;
-	__vec->ma_arg = __ma_arg;
+ff_err_t static vec_init(vecp __VFSPS, ff_uint_t __blk_size, struct ffly_map_maf *__af, long long *__ma_arg) {
+	__VFSPS->bks = __blk_size+sizeof(struct vec_blk);
+	__VFSPS->p = NULL;
+	__VFSPS->page_c = 0;
+	__VFSPS->off = 0;
+	__VFSPS->uu = NULL;
+	__VFSPS->size = 0;
+	__VFSPS->face = NULL;
+	__VFSPS->maf = __af;
+	__VFSPS->ma_arg = __ma_arg;
 	return 0;
 }
 #define VEC_STUFF
-ff_err_t static vec_de_init(vecp __vec) {
-	if (__vec->p != NULL) {
+ff_err_t static vec_de_init(vecp __VFSPS) {
+	if (__VFSPS->p != NULL) {
 		void **pg, **end, *p;
-		pg = __vec->p;
-		end = pg+__vec->page_c;
+		pg = __VFSPS->p;
+		end = pg+__VFSPS->page_c;
 		while(pg != end) {
 			if ((p = *pg) != NULL) {
 				mem_free(p);
@@ -106,70 +108,70 @@ ff_err_t static vec_de_init(vecp __vec) {
 			pg++;
 		}
 	}
-	mem_free(__vec->p);
+	mem_free(__VFSPS->p);
 	return 0;
 }
 
-ff_err_t static vec_push_back(vecp __vec, void **__p) {
-	__vec->size++;
-	if (!__vec->face) {
-		__vec->face = (void**)mem_alloc(__vec->size*sizeof(void*));
+ff_err_t static vec_push_back(vecp __VFSPS, void **__p) {
+	__VFSPS->size++;
+	if (!__VFSPS->face) {
+		__VFSPS->face = (void**)mem_alloc(__VFSPS->size*sizeof(void*));
 	} else {
-		__vec->face = (void**)mem_realloc(__vec->face, __vec->size*sizeof(void*));
+		__VFSPS->face = (void**)mem_realloc(__VFSPS->face, __VFSPS->size*sizeof(void*));
 	}
 
 	void **fp;
 
-	fp = __vec->face+(__vec->size-1);
+	fp = __VFSPS->face+(__VFSPS->size-1);
 
-	if (__vec->uu != NULL) {
+	if (__VFSPS->uu != NULL) {
 		vec_blkp b;
-		b = __vec->uu;
-		__vec->uu = b->fd;
+		b = __VFSPS->uu;
+		__VFSPS->uu = b->fd;
 		b->fd->bk = b->bk;
 		b->bk = NULL;
 		b->fd = NULL;
-		b->n = __vec->size-1;
+		b->n = __VFSPS->size-1;
 		b->inuse = 0;
 		*fp = *__p = ((ff_u8_t*)b)+sizeof(struct vec_blk);
 		return 0;
 	}
 
 	ff_uint_t pg, pg_off;
-	pg = __vec->off>>PAGE_SHIFT;
-	pg_off = __vec->off-(pg<<PAGE_SHIFT);
-	if (pg>=__vec->page_c) {
+	pg = __VFSPS->off>>PAGE_SHIFT;
+	pg_off = __VFSPS->off-(pg<<PAGE_SHIFT);
+	if (pg>=__VFSPS->page_c) {
 		ff_uint_t pgc;
-		pgc = ++__vec->page_c;
-		if (!__vec->p) {
-			__vec->p = (void**)mem_alloc(pgc*sizeof(void*));
+		pgc = ++__VFSPS->page_c;
+		if (!__VFSPS->p) {
+			__VFSPS->p = (void**)mem_alloc(pgc*sizeof(void*));
 		} else {
-			__vec->p = (void**)mem_realloc(__vec->p, pgc*sizeof(void*));
+			__VFSPS->p = (void**)mem_realloc(__VFSPS->p, pgc*sizeof(void*));
 		}
-		*(__vec->p+pg) = mem_alloc(PAGE_SIZE*__vec->bks);
+		*(__VFSPS->p+pg) = mem_alloc(PAGE_SIZE*__VFSPS->bks);
 	}
 	ff_u8_t *p;
-	p = ((ff_u8_t*)*(__vec->p+pg))+(pg_off*__vec->bks);
+	p = ((ff_u8_t*)*(__VFSPS->p+pg))+(pg_off*__VFSPS->bks);
 	
 	vec_blkp b;
 	b = (vec_blkp)p;
 	b->bk = NULL;
 	b->fd = NULL;
-	b->off = __vec->off;
+	b->off = __VFSPS->off;
 	b->inuse = 0;
-	b->n = __vec->size-1;
+	b->n = __VFSPS->size-1;
 	*fp = *__p = (void*)(p+sizeof(struct vec_blk));
-	__vec->off++;
+	__VFSPS->off++;
 	return 0;
 }
 
-ff_err_t static vec_pop_back(vecp __vec, void *__p) {
-	__vec->size--;
+ff_err_t static vec_pop_back(vecp __VFSPS, void *__p) {
+	__VFSPS->size--;
 	void *fe;
 
-	fe = *(__vec->face+__vec->size);
-	if (__vec->size>1) {
-		__vec->face = (void**)mem_realloc(__vec->face, __vec->size*sizeof(void*));
+	fe = *(__VFSPS->face+__VFSPS->size);
+	if (__VFSPS->size>1) {
+		__VFSPS->face = (void**)mem_realloc(__VFSPS->face, __VFSPS->size*sizeof(void*));
 	}
 
 	ff_u8_t *p;
@@ -177,24 +179,24 @@ ff_err_t static vec_pop_back(vecp __vec, void *__p) {
 
 	vec_blkp b;
 	b = (vec_blkp)(p-sizeof(struct vec_blk));
-	if (b->off == __vec->off-1) {
-		__vec->off--;
+	if (b->off == __VFSPS->off-1) {
+		__VFSPS->off--;
 		ff_uint_t pg;
-		pg = __vec->off>>PAGE_SHIFT;
-		if (pg < __vec->page_c-1 && __vec->page_c>1) {
-			__vec->page_c--;
-			mem_free(*(__vec->p+pg));
-			__vec->p = (void**)mem_realloc(__vec->p, __vec->page_c*sizeof(void*));
+		pg = __VFSPS->off>>PAGE_SHIFT;
+		if (pg < __VFSPS->page_c-1 && __VFSPS->page_c>1) {
+			__VFSPS->page_c--;
+			mem_free(*(__VFSPS->p+pg));
+			__VFSPS->p = (void**)mem_realloc(__VFSPS->p, __VFSPS->page_c*sizeof(void*));
 		}
 		return 0;
 	}
 	
-	*(__vec->face+b->n) = fe;
-	if (__vec->uu != NULL)
-		__vec->uu->bk = &b->fd;
-	b->fd = __vec->uu;
-	__vec->uu = b;
-	b->bk = &__vec->uu;
+	*(__VFSPS->face+b->n) = fe;
+	if (__VFSPS->uu != NULL)
+		__VFSPS->uu->bk = &b->fd;
+	b->fd = __VFSPS->uu;
+	__VFSPS->uu = b;
+	b->bk = &__VFSPS->uu;
 	b->inuse = -1;
 	return 0;
 }
@@ -210,27 +212,27 @@ void static* dummy_realloc(long long __arg, void *__p, ff_uint_t __n) {
 }
 
 
-ff_err_t _ffly_map_init(ffly_mapp __map, ff_uint_t __size, void(*__grab)(long long, ff_u8_t)) {
+ff_err_t _ffly_map_init(ffly_mapp __MFSPS, ff_uint_t __size, void(*__grab)(long long, ff_u8_t)) {
 #ifdef FF_MAP_SA
 	if (__grab != NULL) {
-		__grab((long long)__vec->alloc, FF_VGF_MA);
-		__grab((long long)__vec->free, FF_VGF_MF);
-		__grab((long long)__vec->realloc, FF_VGF_MR);
+		__grab((long long)__MFSPS->alloc, FF_VGF_MA);
+		__grab((long long)__MFSPS->free, FF_VGF_MF);
+		__grab((long long)__MFSPS->realloc, FF_VGF_MR);
 		goto _sk;
 	}
-	__map->maf.alloc = dummy_alloc;
-	__map->maf.free	= dummy_free;
-	__map->maf.realloc = dummy_realloc;
+	__MFSPS->maf.alloc = dummy_alloc;
+	__MFSPS->maf.free	= dummy_free;
+	__MFSPS->maf.realloc = dummy_realloc;
 _sk:
 #endif
-	__map->size = __size;
-	__map->table = mem_alloc((map_mask(__map)+1)*sizeof(struct vec*));
-	struct vec **itr = (struct vec**)__map->table;
-	while(itr != ((struct vec**)__map->table)+map_mask(__map)+1)
+	__MFSPS->size = __size;
+	__MFSPS->table = mem_alloc((map_mask(__MFSPS)+1)*sizeof(struct vec*));
+	struct vec **itr = (struct vec**)__MFSPS->table;
+	while(itr != ((struct vec**)__MFSPS->table)+map_mask(__MFSPS)+1)
 		*(itr++) = NULL;
-	__map->begin = NULL;
-	__map->end = NULL;
-	__map->parent = NULL;
+	__MFSPS->begin = NULL;
+	__MFSPS->end = NULL;
+	__MFSPS->parent = NULL;
 	return FFLY_SUCCESS;
 }
 
@@ -260,28 +262,28 @@ ffly_mapp _ffly_map(ff_uint_t __size, void(*__grab)(long long, ff_u8_t)) {
 	return p;
 }
 
-void ffly_map_free(ffly_mapp __map) {
-	mem_free(__map);
+void ffly_map_free(ffly_mapp __MFSPS) {
+	mem_free(__MFSPS);
 }
 
-void ffly_map_destroy(ffly_mapp __map) {
-	ffly_map_de_init(__map);
-	mem_free(__map);
+void ffly_map_destroy(ffly_mapp __MFSPS) {
+	ffly_map_de_init(__MFSPS);
+	mem_free(__MFSPS);
 }
 
-void const* ffly_map_begin(ffly_mapp __map) {
-	return (void const*)__map->begin;
+void const* ffly_map_begin(ffly_mapp __MFSPS) {
+	return (void const*)__MFSPS->begin;
 }
 
-void const* ffly_map_beg(ffly_mapp __map) {
-	return (void const*)__map->begin;
+void const* ffly_map_beg(ffly_mapp __MFSPS) {
+	return (void const*)__MFSPS->begin;
 }
 
-void const* ffly_map_end(ffly_mapp __map) {
-	return (void const*)__map->end;
+void const* ffly_map_end(ffly_mapp __MFSPS) {
+	return (void const*)__MFSPS->end;
 }
 
-void ffly_map_del(ffly_mapp __map, void const *__p) {
+void ffly_map_del(ffly_mapp __MFSPS, void const *__p) {
 	map_entry_t *p = (map_entry_t*)__p;
 	mem_free((void*)p->key);
 	map_entry_t *end;
@@ -290,32 +292,32 @@ void ffly_map_del(ffly_mapp __map, void const *__p) {
 	mem_free(end);
 }
 
-void ffly_map_fd(ffly_mapp __map, void const **__p) {
+void ffly_map_fd(ffly_mapp __MFSPS, void const **__p) {
 	*(void**)__p = ((map_entry_t*)*__p)->next;
 }
 
-void ffly_map_bk(ffly_mapp __map, void const **__p) {
+void ffly_map_bk(ffly_mapp __MFSPS, void const **__p) {
 	*(void**)__p = ((map_entry_t*)*__p)->prev;
 }
 
-void ffly_map_itr(ffly_mapp __map, void const **__p, ff_u8_t __dir) {
+void ffly_map_itr(ffly_mapp __MFSPS, void const **__p, ff_u8_t __dir) {
 	if (__dir == MAP_ITR_FD)
-		ffly_map_fd(__map, __p);
+		ffly_map_fd(__MFSPS, __p);
 	else if (__dir == MAP_ITR_BK)
-		ffly_map_bk(__map, __p);	
+		ffly_map_bk(__MFSPS, __p);	
 }
 
 void *const ffly_map_getp(void const *__p) {
 	return ((map_entry_t*)__p)->p;
 }
 
-void ffly_map_parent(ffly_mapp __map, ffly_mapp __child) {
-	__child->parent = __map;
+void ffly_map_parent(ffly_mapp __MFSPS, ffly_mapp __child) {
+	__child->parent = __MFSPS;
 }
 
-map_entry_t static* map_find(ffly_mapp __map, ff_u8_t const *__key, ff_uint_t __bc) {
+map_entry_t static* map_find(ffly_mapp __MFSPS, ff_u8_t const *__key, ff_uint_t __bc) {
 	ff_u64_t val = ffly_hash(__key, __bc);
-	struct vec **blk = ((struct vec**)__map->table)+(val&map_mask(__map));
+	struct vec **blk = ((struct vec**)__MFSPS->table)+(val&map_mask(__MFSPS));
 	if (!*blk) {
 		ffly_fprintf(ffly_log, "map block is null, nothing hear.\n");
 		return NULL;
@@ -332,18 +334,18 @@ map_entry_t static* map_find(ffly_mapp __map, ff_u8_t const *__key, ff_uint_t __
 		}
 	}
 
-	if (__map->parent != NULL)
-		return map_find(__map->parent, __key, __bc);
+	if (__MFSPS->parent != NULL)
+		return map_find(__MFSPS->parent, __key, __bc);
 	ffly_fprintf(ffly_log, "diden't find.\n");
 	return NULL;
 }
 
-ff_err_t ffly_map_put(ffly_mapp __map, ff_u8_t const *__key, ff_uint_t __bc, void *const __p) {
+ff_err_t ffly_map_put(ffly_mapp __MFSPS, ff_u8_t const *__key, ff_uint_t __bc, void *const __p) {
 	ff_u64_t val = ffly_hash(__key, __bc);
-	struct vec **blk = ((struct vec**)__map->table)+(val&map_mask(__map));
+	struct vec **blk = ((struct vec**)__MFSPS->table)+(val&map_mask(__MFSPS));
 	if (!*blk) {
 		*blk = (struct vec*)__ffly_mem_alloc(sizeof(struct vec));
-		if (_err(vec_init(*blk, sizeof(map_entry_t*), &__map->maf, &__map->ma_arg))) {
+		if (_err(vec_init(*blk, sizeof(map_entry_t*), &__MFSPS->maf, &__MFSPS->ma_arg))) {
 			ffly_fprintf(ffly_err, "failed to init vec.\n");
 		}
 	}
@@ -368,23 +370,23 @@ ff_err_t ffly_map_put(ffly_mapp __map, ff_u8_t const *__key, ff_uint_t __bc, voi
 		.blk = *blk
 	};
 
-	if (__map->end != NULL) {
-		((map_entry_t*)__map->end)->next = (void*)*entry;
-		(*entry)->prev = __map->end;
-		__map->end = (void*)*entry;
+	if (__MFSPS->end != NULL) {
+		((map_entry_t*)__MFSPS->end)->next = (void*)*entry;
+		(*entry)->prev = __MFSPS->end;
+		__MFSPS->end = (void*)*entry;
 	} else
-		__map->end = (void*)*entry;
+		__MFSPS->end = (void*)*entry;
 
-	if (!__map->begin)
-		__map->begin = (void*)*entry;
+	if (!__MFSPS->begin)
+		__MFSPS->begin = (void*)*entry;
 }
 
-void const* ffly_map_fetch(ffly_mapp __map, ff_u8_t const *__key, ff_uint_t __bc) {
-	return (void const*)map_find(__map, __key, __bc);
+void const* ffly_map_fetch(ffly_mapp __MFSPS, ff_u8_t const *__key, ff_uint_t __bc) {
+	return (void const*)map_find(__MFSPS, __key, __bc);
 }
 
-void *const ffly_map_get(ffly_mapp __map, ff_u8_t const *__key, ff_uint_t __bc, ff_err_t *__err) {
-	map_entry_t *entry = map_find(__map, __key, __bc);
+void *const ffly_map_get(ffly_mapp __MFSPS, ff_u8_t const *__key, ff_uint_t __bc, ff_err_t *__err) {
+	map_entry_t *entry = map_find(__MFSPS, __key, __bc);
 	if (!entry) {
 		ffly_fprintf(ffly_log, "entry was not found.\n");
 		*__err	= FFLY_FAILURE;
@@ -410,12 +412,12 @@ void static free_blk(struct vec **__blk) {
 	mem_free(*__blk);
 }
 
-ff_err_t ffly_map_de_init(ffly_mapp __map) {
-	struct vec **itr = (struct vec**)__map->table;
-	while(itr != ((struct vec**)__map->table)+map_mask(__map)) {
+ff_err_t ffly_map_de_init(ffly_mapp __MFSPS) {
+	struct vec **itr = (struct vec**)__MFSPS->table;
+	while(itr != ((struct vec**)__MFSPS->table)+map_mask(__MFSPS)) {
 		if (*itr != NULL) free_blk(itr);
 		itr++;
 	}
-	mem_free(__map->table);
+	mem_free(__MFSPS->table);
 	return FFLY_SUCCESS;
 }
